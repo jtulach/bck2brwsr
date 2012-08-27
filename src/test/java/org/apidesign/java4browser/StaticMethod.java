@@ -31,4 +31,10 @@ public class StaticMethod {
     public static double minus(double x, long y) {
         return x - y;
     }
+    public static int div(byte c, double d) {
+        return (int)(d / c);
+    }
+    public static int mix(int a, long b, byte c, double d) {
+        return (int)((b / a + c) * d);
+    }
 }

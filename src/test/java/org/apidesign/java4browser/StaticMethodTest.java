@@ -57,6 +57,23 @@ public class StaticMethodTest {
             3.0d, 1l
         );
     }
+
+    @Test public void divAndRound() throws Exception {
+        assertExec(
+            "Should be rounded to one",
+            "org_apidesign_java4browser_StaticMethod_divIBD", 
+            Double.valueOf(1),
+            3, 3.75
+        );
+    }
+    @Test public void mixedMethodFourParams() throws Exception {
+        assertExec(
+            "Should be two",
+            "org_apidesign_java4browser_StaticMethod_mixIIJBD", 
+            Double.valueOf(20),
+            2, 10l, 5, 2.0
+        );
+    }
     
     private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
         StringBuilder sb = new StringBuilder();
@@ -74,7 +91,7 @@ public class StaticMethodTest {
         if (expRes.equals(ret)) {
             return;
         }
-        assertEquals(ret, expRes, msg + "\n" + sb);
+        assertEquals(ret, expRes, msg + "was: " + ret + "\n" + sb);
         
     }
 

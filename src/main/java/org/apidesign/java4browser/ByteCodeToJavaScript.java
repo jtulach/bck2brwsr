@@ -72,7 +72,7 @@ public final class ByteCodeToJavaScript {
             out.append("arg").append(String.valueOf(index));
             space = ",";
             final String desc = args.get(i).getDescriptor();
-            if ("D".equals(desc)) {
+            if ("D".equals(desc) || "J".equals(desc)) {
                 index += 2;
             } else {
                 index++;
@@ -121,6 +121,22 @@ public final class ByteCodeToJavaScript {
                 case bc_dload_2:
                     out.append("stack.push(arg2);");
                     break;
+                case bc_aload_3:
+                case bc_iload_3:
+                case bc_lload_3:
+                case bc_fload_3:
+                case bc_dload_3:
+                    out.append("stack.push(arg3);");
+                    break;
+                case bc_iload:
+                case bc_lload:
+                case bc_fload:
+                case bc_dload:
+                case bc_aload: {
+                    final int indx = (byteCodes[++i] + 256) % 256;
+                    out.append("stack.push(arg").append(indx + ");");
+                    break;
+                }
                 case bc_iadd:
                 case bc_ladd:
                 case bc_fadd:
@@ -131,13 +147,21 @@ public final class ByteCodeToJavaScript {
                 case bc_lsub:
                 case bc_fsub:
                 case bc_dsub:
-                    out.append("stack.push(- stack.pop() + stack.pop());");
+                    out.append("{ var tmp = stack.pop(); stack.push(stack.pop() - tmp); }");
                     break;
                 case bc_imul:
                 case bc_lmul:
                 case bc_fmul:
                 case bc_dmul:
                     out.append("stack.push(stack.pop() * stack.pop());");
+                    break;
+                case bc_idiv:
+                case bc_ldiv:
+                    out.append("{ var tmp = stack.pop(); stack.push(Math.floor(stack.pop() / tmp)); }");
+                    break;
+                case bc_fdiv:
+                case bc_ddiv:
+                    out.append("{ var tmp = stack.pop(); stack.push(stack.pop() / tmp); }");
                     break;
                 case bc_ireturn:
                 case bc_lreturn:
@@ -149,21 +173,26 @@ public final class ByteCodeToJavaScript {
                 case bc_i2f:
                 case bc_i2d:
                 case bc_l2i:
+                    // max int check?
                 case bc_l2f:
                 case bc_l2d:
+                case bc_f2d:
+                case bc_d2f:
+                    out.append("/* number conversion */");
+                    break;
                 case bc_f2i:
                 case bc_f2l:
-                case bc_f2d:
                 case bc_d2i:
                 case bc_d2l:
-                case bc_d2f:
+                    out.append("stack.push(Math.floor(stack.pop()));");
+                    break;
                 case bc_i2b:
                 case bc_i2c:
                 case bc_i2s:
                     out.append("/* number conversion */");
                     break;
             }
-            out.append("/*");
+            out.append(" /*");
             for (int j = prev; j <= i; j++) {
                 out.append(" ");
                 final int cc = (byteCodes[j] + 256) % 256;
