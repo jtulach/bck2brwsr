@@ -79,14 +79,12 @@ public final class ByteCodeToJavaScript {
                 index++;
             }
         }
-        out.append(") {").append("\n  var ");
+        out.append(") {").append("\n");
         final Code code = m.getCode();
         int len = code.getMaxLocals();
-        space = "";
-        for (int i = 0; i < len; i++) {
-            out.append(space);
-            out.append("var").append(String.valueOf(i));
-            space = ",";
+        for (int index = args.size(), i = args.size(); i < len; i++) {
+            out.append("  var ");
+            out.append("arg").append(String.valueOf(i)).append(";\n");
         }
         out.append(";\n  var stack = new Array(");
         out.append(Integer.toString(code.getMaxStack()));
@@ -139,6 +137,30 @@ public final class ByteCodeToJavaScript {
                     out.append("stack.push(arg").append(indx + ");");
                     break;
                 }
+                case bc_istore_0:
+                case bc_lstore_0:
+                case bc_fstore_0:
+                case bc_dstore_0:
+                    out.append("arg0 = stack.pop();");
+                    break;
+                case bc_istore_1:
+                case bc_lstore_1:
+                case bc_fstore_1:
+                case bc_dstore_1:
+                    out.append("arg1 = stack.pop();");
+                    break;
+                case bc_istore_2:
+                case bc_lstore_2:
+                case bc_fstore_2:
+                case bc_dstore_2:
+                    out.append("arg2 = stack.pop();");
+                    break;
+                case bc_istore_3:
+                case bc_lstore_3:
+                case bc_fstore_3:
+                case bc_dstore_3:
+                    out.append("arg3 = stack.pop();");
+                    break;
                 case bc_iadd:
                 case bc_ladd:
                 case bc_fadd:
@@ -165,6 +187,16 @@ public final class ByteCodeToJavaScript {
                 case bc_ddiv:
                     out.append("{ var tmp = stack.pop(); stack.push(stack.pop() / tmp); }");
                     break;
+                case bc_iinc: {
+                    final int varIndx = (byteCodes[++i] + 256) % 256;
+                    final int incrBy = (byteCodes[++i] + 256) % 256;
+                    if (incrBy == 1) {
+                        out.append("arg" + varIndx).append("++;");
+                    } else {
+                        out.append("arg" + varIndx).append(" += " + incrBy).append(";");
+                    }
+                    break;
+                }
                 case bc_ireturn:
                 case bc_lreturn:
                 case bc_freturn:
@@ -237,6 +269,12 @@ public final class ByteCodeToJavaScript {
                 case bc_if_icmpge:
                     i = generateIf(byteCodes, i, "<=");
                     break;
+                case bc_goto: {
+                    int indx = i + readIntArg(byteCodes, i);
+                    out.append("gt = " + indx).append("; continue;");
+                    i += 2;
+                    break;
+                }
                 case bc_invokestatic: {
                     int methodIndex = readIntArg(byteCodes, i);
                     CPMethodInfo mi = (CPMethodInfo) jc.getConstantPool().get(methodIndex);
@@ -286,9 +324,9 @@ public final class ByteCodeToJavaScript {
     }
 
     private int readIntArg(byte[] byteCodes, int offsetInstruction) {
-        final int indxHi = (byteCodes[offsetInstruction + 1] + 256) % 256;
-        final int indxLo = (byteCodes[offsetInstruction + 2] + 256) % 256;
-        return (indxHi << 16) + indxLo;
+        final int indxHi = byteCodes[offsetInstruction + 1] << 8;
+        final int indxLo = byteCodes[offsetInstruction + 2];
+        return (indxHi & 0xffffff00) | (indxLo & 0xff);
     }
     
     private static int countArgs(String descriptor, boolean[] hasReturnType, StringBuilder sig) {

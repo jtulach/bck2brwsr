@@ -82,6 +82,14 @@ public class StaticMethodTest {
             5
         );
     }
+    @Test public void factIter() throws Exception {
+        assertExec(
+            "Factorial of 5 is 120",
+            "org_apidesign_java4browser_StaticMethod_factIterJI", 
+            Double.valueOf(120),
+            5
+        );
+    }
     
     private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
         StringBuilder sb = new StringBuilder();
@@ -90,6 +98,8 @@ public class StaticMethodTest {
         Object ret = null;
         try {
             ret = i.invokeFunction(methodName, args);
+        } catch (ScriptException ex) {
+            fail("Execution failed in " + sb, ex);
         } catch (NoSuchMethodException ex) {
             fail("Cannot find method in " + sb, ex);
         }

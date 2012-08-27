@@ -44,4 +44,11 @@ public class StaticMethod {
             return n * factRec(n - 1);
         }
     }
+    public static long factIter(int n) {
+        long res = 1;
+        for (int i = 2; i <= n; i++) {
+            res *= i;
+        }
+        return res;
+    }
 }
