@@ -187,6 +187,10 @@ public final class ByteCodeToJavaScript {
                 case bc_ddiv:
                     out.append("{ var tmp = stack.pop(); stack.push(stack.pop() / tmp); }");
                     break;
+                case bc_ixor:
+                case bc_lxor:
+                    out.append("stack.push(stack.pop() ^ stack.pop());");
+                    break;
                 case bc_iinc: {
                     final int varIndx = (byteCodes[++i] + 256) % 256;
                     final int incrBy = (byteCodes[++i] + 256) % 256;

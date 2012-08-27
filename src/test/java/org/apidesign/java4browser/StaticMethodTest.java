@@ -91,6 +91,16 @@ public class StaticMethodTest {
         );
     }
     
+    @Test public void xor() throws Exception {
+        assertExec(
+            "Xor is 4",
+            "org_apidesign_java4browser_StaticMethod_xorJIJ",
+            Double.valueOf(4),
+            7,
+            3
+        );
+    }
+    
     private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
         StringBuilder sb = new StringBuilder();
         Invocable i = compileClass("StaticMethod.class", sb);
