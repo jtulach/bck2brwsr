@@ -1,0 +1,86 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.apidesign</groupId>
+  <artifactId>java4browser</artifactId>
+  <version>0.1-SNAPSHOT</version>
+  <packaging>jar</packaging>
+
+  <name>java4browser</name>
+  <url>http://java4browser.apidesign.org</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <author.name>Jaroslav Tulach</author.name>
+    <author.email>jaroslav.tulach@apidesign.org</author.email>
+  </properties>
+  
+  <repositories>
+      <repository>
+          <id>netbeans</id>
+          <name>NetBeans</name>
+          <url>http://bits.netbeans.org/maven2/</url>
+      </repository>
+  </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+        <id>mc-release</id>
+        <name>Local Maven repository of releases</name>
+        <url>http://mc-repo.googlecode.com/svn/maven2/releases</url>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+        <releases>
+            <enabled>true</enabled>
+        </releases>
+    </pluginRepository>
+  </pluginRepositories>
+  <scm>
+      <connection>scm:hg:http://source.apidesign.org/hg/quoridor</connection>
+      <url>http://source.apidesign.org/hg/quoridor</url>
+  </scm>
+  <licenses>
+    <license>
+        <name>GPL-2.0</name>
+        <url>http://opensource.org/licenses/GPL-2.0</url>
+        <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <organization>
+      <name>API Design</name>
+      <url>http://apidesign.org</url>
+  </organization>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.mycila.maven-license-plugin</groupId>
+                <artifactId>maven-license-plugin</artifactId>
+                <version>1.9.0</version>
+                <configuration>
+                    <header>src/header.txt</header>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+  <dependencies>
+    <dependency>
+      <groupId>org.testng</groupId>
+      <artifactId>testng</artifactId>
+      <version>6.7</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>junit</artifactId>
+          <groupId>junit</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.api</groupId>
+      <artifactId>org-netbeans-modules-classfile</artifactId>
+      <version>RELEASE72</version>
+      <type>jar</type>
+    </dependency>
+  </dependencies>
+</project>
