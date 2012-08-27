@@ -55,7 +55,7 @@ public final class ByteCodeToJavaScript {
         }
     }
     private void generateStaticMethod(Method m) throws IOException {
-        out.append("function ").append(
+        out.append("\nfunction ").append(
             jc.getName().getExternalName().replace('.', '_')
         ).append('_').append(
             m.getName()
@@ -85,7 +85,6 @@ public final class ByteCodeToJavaScript {
         out.append(Integer.toString(code.getMaxStack()));
         out.append(");\n");
         produceCode(code.getByteCodes());
-        out.append(";\nreturn 1;");
         out.append("}");
     }
 
@@ -97,17 +96,36 @@ public final class ByteCodeToJavaScript {
             switch (c) {
                 case ByteCodes.bc_aload_0:
                 case ByteCodes.bc_iload_0:
+                case ByteCodes.bc_lload_0:
+                case ByteCodes.bc_fload_0:
+                case ByteCodes.bc_dload_0:
                     out.append("stack.push(arg0);");
                     break;
                 case ByteCodes.bc_aload_1:
                 case ByteCodes.bc_iload_1:
+                case ByteCodes.bc_lload_1:
+                case ByteCodes.bc_fload_1:
+                case ByteCodes.bc_dload_1:
                     out.append("stack.push(arg1);");
                     break;
                 case ByteCodes.bc_iadd:
+                case ByteCodes.bc_ladd:
+                case ByteCodes.bc_fadd:
+                case ByteCodes.bc_dadd:
                     out.append("stack.push(stack.pop() + stack.pop());");
                     break;
+                case ByteCodes.bc_imul:
+                case ByteCodes.bc_lmul:
+                case ByteCodes.bc_fmul:
+                case ByteCodes.bc_dmul:
+                    out.append("stack.push(stack.pop() * stack.pop());");
+                    break;
                 case ByteCodes.bc_ireturn:
+                case ByteCodes.bc_lreturn:
+                case ByteCodes.bc_freturn:
+                case ByteCodes.bc_dreturn:
                     out.append("return stack.pop();");
+                    break;
             }
             out.append("/*");
             for (int j = prev; j <= i; j++) {

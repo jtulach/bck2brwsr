@@ -25,4 +25,7 @@ public class StaticMethod {
     public static int sum(int x, int y) {
         return x + y;
     }
+    public static float power(float x) {
+        return x * x;
+    }
 }

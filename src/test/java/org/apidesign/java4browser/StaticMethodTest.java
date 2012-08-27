@@ -38,6 +38,13 @@ public class StaticMethodTest {
         assertEquals(ret, Double.valueOf(7), "Should be seven");
     }
 
+    @Test public void powerOfThree() throws Exception {
+        Invocable i = compileClass("StaticMethod.class");
+        
+        Object ret = i.invokeFunction("org_apidesign_java4browser_StaticMethod_powerFF", 3.0f);
+        assertEquals(ret, Double.valueOf(9), "Should be nine");
+    }
+
     static Invocable compileClass(String name) throws ScriptException, IOException {
         InputStream is = StaticMethodTest.class.getResourceAsStream(name);
         assertNotNull(is, "Class file found");
