@@ -74,6 +74,14 @@ public class StaticMethodTest {
             2, 10l, 5, 2.0
         );
     }
+    @Test public void factRec() throws Exception {
+        assertExec(
+            "Factorial of 5 is 120",
+            "org_apidesign_java4browser_StaticMethod_factRecJI", 
+            Double.valueOf(120),
+            5
+        );
+    }
     
     private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
         StringBuilder sb = new StringBuilder();

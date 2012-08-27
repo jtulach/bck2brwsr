@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import static org.netbeans.modules.classfile.ByteCodes.*;
+import org.netbeans.modules.classfile.CPMethodInfo;
 import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.classfile.Code;
 import org.netbeans.modules.classfile.Method;
@@ -95,9 +96,10 @@ public final class ByteCodeToJavaScript {
     }
 
     private void produceCode(byte[] byteCodes) throws IOException {
+        out.append("\nvar gt = 0;\nfor(;;) switch(gt) {\n");
         for (int i = 0; i < byteCodes.length; i++) {
             int prev = i;
-            out.append("  ");
+            out.append("  case " + i).append(": ");
             final int c = (byteCodes[i] + 256) % 256;
             switch (c) {
                 case bc_aload_0:
@@ -191,6 +193,79 @@ public final class ByteCodeToJavaScript {
                 case bc_i2s:
                     out.append("/* number conversion */");
                     break;
+                case bc_iconst_0:
+                case bc_dconst_0:
+                case bc_lconst_0:
+                case bc_fconst_0:
+                    out.append("stack.push(0);");
+                    break;
+                case bc_iconst_1:
+                case bc_lconst_1:
+                case bc_fconst_1:
+                case bc_dconst_1:
+                    out.append("stack.push(1);");
+                    break;
+                case bc_iconst_2:
+                case bc_fconst_2:
+                    out.append("stack.push(2);");
+                    break;
+                case bc_iconst_3:
+                    out.append("stack.push(3);");
+                    break;
+                case bc_iconst_4:
+                    out.append("stack.push(4);");
+                    break;
+                case bc_iconst_5:
+                    out.append("stack.push(5);");
+                    break;
+                case bc_if_icmpeq: {
+                    i = generateIf(byteCodes, i, "==");
+                    break;
+                }
+                case bc_if_icmpne:
+                    i = generateIf(byteCodes, i, "!=");
+                    break;
+                case bc_if_icmplt:
+                    i = generateIf(byteCodes, i, ">");
+                    break;
+                case bc_if_icmple:
+                    i = generateIf(byteCodes, i, ">=");
+                    break;
+                case bc_if_icmpgt:
+                    i = generateIf(byteCodes, i, "<");
+                    break;
+                case bc_if_icmpge:
+                    i = generateIf(byteCodes, i, "<=");
+                    break;
+                case bc_invokestatic: {
+                    int methodIndex = readIntArg(byteCodes, i);
+                    CPMethodInfo mi = (CPMethodInfo) jc.getConstantPool().get(methodIndex);
+                    boolean[] hasReturn = { false };
+                    StringBuilder signature = new StringBuilder();
+                    int cnt = countArgs(mi.getDescriptor(), hasReturn, signature);
+                    
+                    if (hasReturn[0]) {
+                        out.append("stack.push(");
+                    }
+                    out.append(mi.getClassName().getInternalName().replace('/', '_'));
+                    out.append('_');
+                    out.append(mi.getName());
+                    out.append(signature.toString());
+                    out.append('(');
+                    String sep = "";
+                    for (int j = 0; j < cnt; j++) {
+                        out.append(sep);
+                        out.append("stack.pop()");
+                        sep = ", ";
+                    }
+                    out.append(")");
+                    if (hasReturn[0]) {
+                        out.append(")");
+                    }
+                    out.append(";");
+                    i += 2;
+                    break;
+                }
             }
             out.append(" /*");
             for (int j = prev; j <= i; j++) {
@@ -200,5 +275,71 @@ public final class ByteCodeToJavaScript {
             }
             out.append("*/\n");
         }
+        out.append("}\n");
+    }
+
+    private int generateIf(byte[] byteCodes, int i, final String test) throws IOException {
+        int indx = i + readIntArg(byteCodes, i);
+        out.append("if (stack.pop() ").append(test).append(" stack.pop()) { gt = " + indx);
+        out.append("; continue; }");
+        return i + 2;
+    }
+
+    private int readIntArg(byte[] byteCodes, int offsetInstruction) {
+        final int indxHi = (byteCodes[offsetInstruction + 1] + 256) % 256;
+        final int indxLo = (byteCodes[offsetInstruction + 2] + 256) % 256;
+        return (indxHi << 16) + indxLo;
+    }
+    
+    private static int countArgs(String descriptor, boolean[] hasReturnType, StringBuilder sig) {
+        int cnt = 0;
+        int i = 0;
+        Boolean count = null;
+        while (i < descriptor.length()) {
+            char ch = descriptor.charAt(i++);
+            switch (ch) {
+                case '(':
+                    count = true;
+                    continue;
+                case ')':
+                    count = false;
+                    continue;
+                case 'B': 
+                case 'C': 
+                case 'D': 
+                case 'F': 
+                case 'I': 
+                case 'J': 
+                case 'S': 
+                case 'Z': 
+                    if (count) {
+                        cnt++;
+                        sig.append(ch);
+                    } else {
+                        hasReturnType[0] = true;
+                        sig.insert(0, ch);
+                    }
+                    continue;
+                case 'V': 
+                    assert !count;
+                    hasReturnType[0] = false;
+                    sig.insert(0, 'V');
+                    continue;
+                case 'L':
+                    i = descriptor.indexOf(';', i);
+                    if (count) {
+                        cnt++;
+                    } else {
+                        hasReturnType[0] = true;
+                    }
+                    continue;
+                case '[':
+                    //arrays++;
+                    continue;
+                default:
+                    break; // invalid character
+            }
+        }
+        return cnt;
     }
 }

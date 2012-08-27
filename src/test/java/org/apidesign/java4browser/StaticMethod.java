@@ -37,4 +37,11 @@ public class StaticMethod {
     public static int mix(int a, long b, byte c, double d) {
         return (int)((b / a + c) * d);
     }
+    public static long factRec(int n) {
+        if (n <= 1) {
+            return 1;
+        } else {
+            return n * factRec(n - 1);
+        }
+    }
 }
