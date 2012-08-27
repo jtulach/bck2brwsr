@@ -28,4 +28,7 @@ public class StaticMethod {
     public static float power(float x) {
         return x * x;
     }
+    public static double minus(double x, long y) {
+        return x - y;
+    }
 }

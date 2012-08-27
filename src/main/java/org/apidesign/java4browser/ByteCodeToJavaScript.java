@@ -20,7 +20,7 @@ package org.apidesign.java4browser;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import org.netbeans.modules.classfile.ByteCodes;
+import static org.netbeans.modules.classfile.ByteCodes.*;
 import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.classfile.Code;
 import org.netbeans.modules.classfile.Method;
@@ -67,10 +67,16 @@ public final class ByteCodeToJavaScript {
         }
         out.append('(');
         String space = "";
-        for (int i = 0; i < args.size(); i++) {
+        for (int index = 0, i = 0; i < args.size(); i++) {
             out.append(space);
-            out.append("arg").append(String.valueOf(i));
+            out.append("arg").append(String.valueOf(index));
             space = ",";
+            final String desc = args.get(i).getDescriptor();
+            if ("D".equals(desc)) {
+                index += 2;
+            } else {
+                index++;
+            }
         }
         out.append(") {").append("\n  var ");
         final Code code = m.getCode();
@@ -94,37 +100,67 @@ public final class ByteCodeToJavaScript {
             out.append("  ");
             final int c = (byteCodes[i] + 256) % 256;
             switch (c) {
-                case ByteCodes.bc_aload_0:
-                case ByteCodes.bc_iload_0:
-                case ByteCodes.bc_lload_0:
-                case ByteCodes.bc_fload_0:
-                case ByteCodes.bc_dload_0:
+                case bc_aload_0:
+                case bc_iload_0:
+                case bc_lload_0:
+                case bc_fload_0:
+                case bc_dload_0:
                     out.append("stack.push(arg0);");
                     break;
-                case ByteCodes.bc_aload_1:
-                case ByteCodes.bc_iload_1:
-                case ByteCodes.bc_lload_1:
-                case ByteCodes.bc_fload_1:
-                case ByteCodes.bc_dload_1:
+                case bc_aload_1:
+                case bc_iload_1:
+                case bc_lload_1:
+                case bc_fload_1:
+                case bc_dload_1:
                     out.append("stack.push(arg1);");
                     break;
-                case ByteCodes.bc_iadd:
-                case ByteCodes.bc_ladd:
-                case ByteCodes.bc_fadd:
-                case ByteCodes.bc_dadd:
+                case bc_aload_2:
+                case bc_iload_2:
+                case bc_lload_2:
+                case bc_fload_2:
+                case bc_dload_2:
+                    out.append("stack.push(arg2);");
+                    break;
+                case bc_iadd:
+                case bc_ladd:
+                case bc_fadd:
+                case bc_dadd:
                     out.append("stack.push(stack.pop() + stack.pop());");
                     break;
-                case ByteCodes.bc_imul:
-                case ByteCodes.bc_lmul:
-                case ByteCodes.bc_fmul:
-                case ByteCodes.bc_dmul:
+                case bc_isub:
+                case bc_lsub:
+                case bc_fsub:
+                case bc_dsub:
+                    out.append("stack.push(- stack.pop() + stack.pop());");
+                    break;
+                case bc_imul:
+                case bc_lmul:
+                case bc_fmul:
+                case bc_dmul:
                     out.append("stack.push(stack.pop() * stack.pop());");
                     break;
-                case ByteCodes.bc_ireturn:
-                case ByteCodes.bc_lreturn:
-                case ByteCodes.bc_freturn:
-                case ByteCodes.bc_dreturn:
+                case bc_ireturn:
+                case bc_lreturn:
+                case bc_freturn:
+                case bc_dreturn:
                     out.append("return stack.pop();");
+                    break;
+                case bc_i2l:
+                case bc_i2f:
+                case bc_i2d:
+                case bc_l2i:
+                case bc_l2f:
+                case bc_l2d:
+                case bc_f2i:
+                case bc_f2l:
+                case bc_f2d:
+                case bc_d2i:
+                case bc_d2l:
+                case bc_d2f:
+                case bc_i2b:
+                case bc_i2c:
+                case bc_i2s:
+                    out.append("/* number conversion */");
                     break;
             }
             out.append("/*");

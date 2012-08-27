@@ -32,23 +32,58 @@ import org.testng.annotations.Test;
  */
 public class StaticMethodTest {
     @Test public void threePlusFour() throws Exception {
-        Invocable i = compileClass("StaticMethod.class");
-        
-        Object ret = i.invokeFunction("org_apidesign_java4browser_StaticMethod_sumIII", 3, 4);
-        assertEquals(ret, Double.valueOf(7), "Should be seven");
+        assertExec(
+            "Should be seven", 
+            "org_apidesign_java4browser_StaticMethod_sumIII", 
+            Double.valueOf(7), 
+            3, 4
+        );
     }
 
     @Test public void powerOfThree() throws Exception {
-        Invocable i = compileClass("StaticMethod.class");
-        
-        Object ret = i.invokeFunction("org_apidesign_java4browser_StaticMethod_powerFF", 3.0f);
-        assertEquals(ret, Double.valueOf(9), "Should be nine");
+        assertExec(
+            "Should be nine", 
+            "org_apidesign_java4browser_StaticMethod_powerFF", 
+            Double.valueOf(9),
+            3.0f
+        );
     }
 
-    static Invocable compileClass(String name) throws ScriptException, IOException {
+    @Test public void doubleWithoutLong() throws Exception {
+        assertExec(
+            "Should be two",
+            "org_apidesign_java4browser_StaticMethod_minusDDJ", 
+            Double.valueOf(2),
+            3.0d, 1l
+        );
+    }
+    
+    private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
+        StringBuilder sb = new StringBuilder();
+        Invocable i = compileClass("StaticMethod.class", sb);
+        
+        Object ret = null;
+        try {
+            ret = i.invokeFunction(methodName, args);
+        } catch (NoSuchMethodException ex) {
+            fail("Cannot find method in " + sb, ex);
+        }
+        if (ret == null && expRes == null) {
+            return;
+        }
+        if (expRes.equals(ret)) {
+            return;
+        }
+        assertEquals(ret, expRes, msg + "\n" + sb);
+        
+    }
+
+    static Invocable compileClass(String name, StringBuilder sb) throws ScriptException, IOException {
         InputStream is = StaticMethodTest.class.getResourceAsStream(name);
         assertNotNull(is, "Class file found");
-        StringBuilder sb = new StringBuilder();
+        if (sb == null) {
+            sb = new StringBuilder();
+        }
         ByteCodeToJavaScript.compile(name, is, sb);
         ScriptEngineManager sem = new ScriptEngineManager();
         ScriptEngine js = sem.getEngineByExtension("js");
