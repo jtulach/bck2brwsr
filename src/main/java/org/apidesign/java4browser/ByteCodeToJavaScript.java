@@ -187,6 +187,14 @@ public final class ByteCodeToJavaScript {
                 case bc_ddiv:
                     out.append("{ var tmp = stack.pop(); stack.push(stack.pop() / tmp); }");
                     break;
+                case bc_iand:
+                case bc_land:
+                    out.append("stack.push(stack.pop() & stack.pop());");
+                    break;
+                case bc_ior:
+                case bc_lor:
+                    out.append("stack.push(stack.pop() | stack.pop());");
+                    break;
                 case bc_ixor:
                 case bc_lxor:
                     out.append("stack.push(stack.pop() ^ stack.pop());");
@@ -256,6 +264,13 @@ public final class ByteCodeToJavaScript {
                     break;
                 case bc_if_icmpeq: {
                     i = generateIf(byteCodes, i, "==");
+                    break;
+                }
+                case bc_ifeq: {
+                    int indx = i + readIntArg(byteCodes, i);
+                    out.append("if (stack.pop() == 0) { gt = " + indx);
+                    out.append("; continue; }");
+                    i += 2;
                     break;
                 }
                 case bc_if_icmpne:

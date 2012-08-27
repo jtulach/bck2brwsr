@@ -40,6 +40,9 @@ public class StaticMethod {
     public static long xor(int a, long b) {
         return a ^ b;
     }
+    public static long orOrAnd(boolean doOr, int a, int b) {
+        return doOr ? a | b : a & b;
+    }
     public static long factRec(int n) {
         if (n <= 1) {
             return 1;

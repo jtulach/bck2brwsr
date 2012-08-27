@@ -101,6 +101,27 @@ public class StaticMethodTest {
         );
     }
     
+    @Test public void or() throws Exception {
+        assertExec(
+            "Or will be 7",
+            "org_apidesign_java4browser_StaticMethod_orOrAndJZII",
+            Double.valueOf(7),
+            true,
+            4,
+            3
+        );
+    }
+    @Test public void and() throws Exception {
+        assertExec(
+            "And will be 3",
+            "org_apidesign_java4browser_StaticMethod_orOrAndJZII",
+            Double.valueOf(3),
+            false,
+            7,
+            3
+        );
+    }
+    
     private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
         StringBuilder sb = new StringBuilder();
         Invocable i = compileClass("StaticMethod.class", sb);
