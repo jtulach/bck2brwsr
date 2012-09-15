@@ -21,6 +21,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import static org.netbeans.modules.classfile.ByteCodes.*;
+import org.netbeans.modules.classfile.CPClassInfo;
+import org.netbeans.modules.classfile.CPEntry;
+import org.netbeans.modules.classfile.CPFieldInfo;
+import org.netbeans.modules.classfile.CPLongInfo;
 import org.netbeans.modules.classfile.CPMethodInfo;
 import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.classfile.Code;
@@ -137,24 +141,28 @@ public final class ByteCodeToJavaScript {
                     out.append("stack.push(arg").append(indx + ");");
                     break;
                 }
+                case bc_astore_0:
                 case bc_istore_0:
                 case bc_lstore_0:
                 case bc_fstore_0:
                 case bc_dstore_0:
                     out.append("arg0 = stack.pop();");
                     break;
+                case bc_astore_1:
                 case bc_istore_1:
                 case bc_lstore_1:
                 case bc_fstore_1:
                 case bc_dstore_1:
                     out.append("arg1 = stack.pop();");
                     break;
+                case bc_astore_2:
                 case bc_istore_2:
                 case bc_lstore_2:
                 case bc_fstore_2:
                 case bc_dstore_2:
                     out.append("arg2 = stack.pop();");
                     break;
+                case bc_astore_3:
                 case bc_istore_3:
                 case bc_lstore_3:
                 case bc_fstore_3:
@@ -262,6 +270,14 @@ public final class ByteCodeToJavaScript {
                 case bc_iconst_5:
                     out.append("stack.push(5);");
                     break;
+                case bc_ldc_w:
+                case bc_ldc2_w: {
+                    int indx = readIntArg(byteCodes, i);
+                    CPEntry entry = jc.getConstantPool().get(indx);
+                    i += 2;
+                    out.append("stack.push(" + entry.getValue() + ");");
+                    break;
+                }
                 case bc_if_icmpeq: {
                     i = generateIf(byteCodes, i, "==");
                     break;
@@ -323,6 +339,37 @@ public final class ByteCodeToJavaScript {
                     i += 2;
                     break;
                 }
+                case bc_new: {
+                    int indx = readIntArg(byteCodes, i);
+                    CPClassInfo ci = jc.getConstantPool().getClass(indx);
+                    out.append("stack.push(");
+                    out.append("new ").append(ci.getClassName().getExternalName().replace('.','_'));
+                    out.append("());");
+                    i += 2;
+                    break;
+                }
+                case bc_dup:
+                    out.append("stack.push(stack[stack.length - 1]);");
+                    break;
+                case bc_bipush:
+                    out.append("stack.push(" + byteCodes[++i] + ");");
+                    break;
+                case bc_invokevirtual:
+                case bc_invokespecial: {
+                    int indx = readIntArg(byteCodes, i);
+                    CPMethodInfo mi = (CPMethodInfo) jc.getConstantPool().get(indx);
+                    out.append("{ var tmp = stack.pop(); tmp." + mi.getMethodName() + "(); }");
+                    i += 2;
+                    break;
+                }
+                case bc_getfield: {
+                    int indx = readIntArg(byteCodes, i);
+                    CPFieldInfo fi = (CPFieldInfo) jc.getConstantPool().get(indx);
+                    out.append(" stack.push(stack.pop().").append(fi.getFieldName()).append(");");
+                    i += 2;
+                    break;
+                }
+                    
             }
             out.append(" /*");
             for (int j = prev; j <= i; j++) {
