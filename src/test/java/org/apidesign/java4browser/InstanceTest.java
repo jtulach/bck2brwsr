@@ -14,9 +14,23 @@ import static org.testng.Assert.*;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class InstanceTest {
+    @Test public void verifyDefaultDoubleValue() throws Exception {
+        assertExec(
+            "Will be zero",
+            "org_apidesign_java4browser_Instance_defaultDblValueD",
+            Double.valueOf(0)
+        );
+    }
+    @Test public void verifyAssignedByteValue() throws Exception {
+        assertExec(
+            "Will one thirty one",
+            "org_apidesign_java4browser_Instance_assignedByteValueB",
+            Double.valueOf(31)
+        );
+    }
     @Test public void verifyMagicOne() throws Exception {
         assertExec(
-            "Should be seven",
+            "Should be three and something",
             "org_apidesign_java4browser_Instance_magicOneD",
             Double.valueOf(3.3)
         );

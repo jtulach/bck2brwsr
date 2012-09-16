@@ -24,7 +24,6 @@ import static org.netbeans.modules.classfile.ByteCodes.*;
 import org.netbeans.modules.classfile.CPClassInfo;
 import org.netbeans.modules.classfile.CPEntry;
 import org.netbeans.modules.classfile.CPFieldInfo;
-import org.netbeans.modules.classfile.CPLongInfo;
 import org.netbeans.modules.classfile.CPMethodInfo;
 import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.classfile.Code;
@@ -57,6 +56,8 @@ public final class ByteCodeToJavaScript {
         for (Method m : jc.getMethods()) {
             if (m.isStatic()) {
                 compiler.generateStaticMethod(m);
+            } else {
+                compiler.generateInstanceMethod(m);
             }
         }
         for (Variable v : jc.getVariables()) {
@@ -64,20 +65,29 @@ public final class ByteCodeToJavaScript {
                 compiler.generateStaticField(v);
             }
         }
+        out.append("function java_lang_Object_consV(self){}\n"); // XXX temporary
+        
+        out.append("\nfunction ").append(jc.getName().getExternalName().replace('.', '_'));
+        out.append("() {");
+        for (Method m : jc.getMethods()) {
+            if (!m.isStatic()) {
+                
+            }
+        }
+        for (Variable v : jc.getVariables()) {
+            if (!v.isStatic()) {
+                out.append("\n  this." + v.getName() + " = 0;");
+            }
+        }
+        out.append("\n}");
     }
     private void generateStaticMethod(Method m) throws IOException {
         out.append("\nfunction ").append(
             jc.getName().getExternalName().replace('.', '_')
-        ).append('_').append(
-            m.getName()
-        );
-        out.append(m.getReturnType());
-        List<Parameter> args = m.getParameters();
-        for (Parameter t : args) {
-            out.append(t.getDescriptor());
-        }
+        ).append('_').append(findMethodName(m));
         out.append('(');
         String space = "";
+        List<Parameter> args = m.getParameters();
         for (int index = 0, i = 0; i < args.size(); i++) {
             out.append(space);
             out.append("arg").append(String.valueOf(index));
@@ -96,6 +106,37 @@ public final class ByteCodeToJavaScript {
             out.append("  var ");
             out.append("arg").append(String.valueOf(i)).append(";\n");
         }
+        out.append("  var stack = new Array(");
+        out.append(Integer.toString(code.getMaxStack()));
+        out.append(");\n");
+        produceCode(code.getByteCodes());
+        out.append("}");
+    }
+    
+    private void generateInstanceMethod(Method m) throws IOException {
+        out.append("\nfunction ").append(
+            jc.getName().getExternalName().replace('.', '_')
+        ).append('_').append(findMethodName(m));
+        out.append("(arg0");
+        String space = ",";
+        List<Parameter> args = m.getParameters();
+        for (int index = 1, i = 0; i < args.size(); i++) {
+            out.append(space);
+            out.append("arg").append(String.valueOf(index));
+            final String desc = args.get(i).getDescriptor();
+            if ("D".equals(desc) || "J".equals(desc)) {
+                index += 2;
+            } else {
+                index++;
+            }
+        }
+        out.append(") {").append("\n");
+        final Code code = m.getCode();
+        int len = code.getMaxLocals();
+        for (int index = args.size(), i = args.size(); i < len; i++) {
+            out.append("  var ");
+            out.append("arg").append(String.valueOf(i + 1)).append(";\n");
+        }
         out.append(";\n  var stack = new Array(");
         out.append(Integer.toString(code.getMaxStack()));
         out.append(");\n");
@@ -104,10 +145,10 @@ public final class ByteCodeToJavaScript {
     }
 
     private void produceCode(byte[] byteCodes) throws IOException {
-        out.append("\nvar gt = 0;\nfor(;;) switch(gt) {\n");
+        out.append("\n  var gt = 0;\n  for(;;) switch(gt) {\n");
         for (int i = 0; i < byteCodes.length; i++) {
             int prev = i;
-            out.append("  case " + i).append(": ");
+            out.append("    case " + i).append(": ");
             final int c = (byteCodes[i] + 256) % 256;
             switch (c) {
                 case bc_aload_0:
@@ -223,10 +264,14 @@ public final class ByteCodeToJavaScript {
                     }
                     break;
                 }
+                case bc_return:
+                    out.append("return;");
+                    break;
                 case bc_ireturn:
                 case bc_lreturn:
                 case bc_freturn:
                 case bc_dreturn:
+                case bc_areturn:
                     out.append("return stack.pop();");
                     break;
                 case bc_i2l:
@@ -316,41 +361,18 @@ public final class ByteCodeToJavaScript {
                     i += 2;
                     break;
                 }
-                case bc_invokestatic: {
-                    int methodIndex = readIntArg(byteCodes, i);
-                    CPMethodInfo mi = (CPMethodInfo) jc.getConstantPool().get(methodIndex);
-                    boolean[] hasReturn = { false };
-                    StringBuilder signature = new StringBuilder();
-                    int cnt = countArgs(mi.getDescriptor(), hasReturn, signature);
-                    
-                    if (hasReturn[0]) {
-                        out.append("stack.push(");
-                    }
-                    out.append(mi.getClassName().getInternalName().replace('/', '_'));
-                    out.append('_');
-                    out.append(mi.getName());
-                    out.append(signature.toString());
-                    out.append('(');
-                    String sep = "";
-                    for (int j = 0; j < cnt; j++) {
-                        out.append(sep);
-                        out.append("stack.pop()");
-                        sep = ", ";
-                    }
-                    out.append(")");
-                    if (hasReturn[0]) {
-                        out.append(")");
-                    }
-                    out.append(";");
-                    i += 2;
+                case bc_invokespecial:
+                    i = invokeStaticMethod(byteCodes, i, false);
                     break;
-                }
+                case bc_invokestatic:
+                    i = invokeStaticMethod(byteCodes, i, true);
+                    break;
                 case bc_new: {
                     int indx = readIntArg(byteCodes, i);
                     CPClassInfo ci = jc.getConstantPool().getClass(indx);
                     out.append("stack.push(");
                     out.append("new ").append(ci.getClassName().getExternalName().replace('.','_'));
-                    out.append("());");
+                    out.append(");");
                     i += 2;
                     break;
                 }
@@ -360,14 +382,6 @@ public final class ByteCodeToJavaScript {
                 case bc_bipush:
                     out.append("stack.push(" + byteCodes[++i] + ");");
                     break;
-                case bc_invokevirtual:
-                case bc_invokespecial: {
-                    int indx = readIntArg(byteCodes, i);
-                    CPMethodInfo mi = (CPMethodInfo) jc.getConstantPool().get(indx);
-                    out.append("{ var tmp = stack.pop(); tmp." + mi.getMethodName() + "(); }");
-                    i += 2;
-                    break;
-                }
                 case bc_getfield: {
                     int indx = readIntArg(byteCodes, i);
                     CPFieldInfo fi = (CPFieldInfo) jc.getConstantPool().get(indx);
@@ -391,6 +405,14 @@ public final class ByteCodeToJavaScript {
                     i += 2;
                     break;
                 }
+                case bc_putfield: {
+                    int indx = readIntArg(byteCodes, i);
+                    CPFieldInfo fi = (CPFieldInfo) jc.getConstantPool().get(indx);
+                    out.append("{ var v = stack.pop(); stack.pop().")
+                       .append(fi.getFieldName()).append(" = v; }");
+                    i += 2;
+                    break;
+                }
                     
             }
             out.append(" /*");
@@ -401,7 +423,7 @@ public final class ByteCodeToJavaScript {
             }
             out.append("*/\n");
         }
-        out.append("}\n");
+        out.append("  }\n");
     }
 
     private int generateIf(byte[] byteCodes, int i, final String test) throws IOException {
@@ -421,6 +443,7 @@ public final class ByteCodeToJavaScript {
         int cnt = 0;
         int i = 0;
         Boolean count = null;
+        int firstPos = sig.length();
         while (i < descriptor.length()) {
             char ch = descriptor.charAt(i++);
             switch (ch) {
@@ -443,13 +466,13 @@ public final class ByteCodeToJavaScript {
                         sig.append(ch);
                     } else {
                         hasReturnType[0] = true;
-                        sig.insert(0, ch);
+                        sig.insert(firstPos, ch);
                     }
                     continue;
                 case 'V': 
                     assert !count;
                     hasReturnType[0] = false;
-                    sig.insert(0, 'V');
+                    sig.insert(firstPos, 'V');
                     continue;
                 case 'L':
                     i = descriptor.indexOf(';', i);
@@ -473,5 +496,64 @@ public final class ByteCodeToJavaScript {
         out.append("\nvar ")
            .append(jc.getName().getExternalName().replace('.', '_'))
            .append('_').append(v.getName()).append(" = 0;");
+    }
+
+    private String findMethodName(Method m) {
+        StringBuilder out = new StringBuilder();
+        if ("<init>".equals(m.getName())) { // NOI18N
+            out.append("consV"); // NOI18N
+        } else {
+            out.append(m.getName());
+            out.append(m.getReturnType());
+        } 
+        List<Parameter> args = m.getParameters();
+        for (Parameter t : args) {
+            out.append(t.getDescriptor());
+        }
+        return out.toString();
+    }
+
+    private String findMethodName(CPMethodInfo mi, int[] cnt, boolean[] hasReturn) {
+        StringBuilder name = new StringBuilder();
+        if ("<init>".equals(mi.getName())) { // NOI18N
+            name.append("cons"); // NOI18N
+        } else {
+            name.append(mi.getName());
+        }
+        cnt[0] = countArgs(mi.getDescriptor(), hasReturn, name);
+        return name.toString();
+    }
+
+    private int invokeStaticMethod(byte[] byteCodes, int i, boolean isStatic)
+    throws IOException {
+        int methodIndex = readIntArg(byteCodes, i);
+        CPMethodInfo mi = (CPMethodInfo) jc.getConstantPool().get(methodIndex);
+        boolean[] hasReturn = { false };
+        int[] cnt = { 0 };
+        String mn = findMethodName(mi, cnt, hasReturn);
+        if (hasReturn[0]) {
+            out.append("stack.push(");
+        }
+        out.append(mi.getClassName().getInternalName().replace('/', '_'));
+        out.append('_');
+        out.append(mn);
+        out.append('(');
+        String sep = "";
+        if (!isStatic) {
+            out.append("stack.pop()");
+            sep = ", ";
+        }
+        for (int j = 0; j < cnt[0]; j++) {
+            out.append(sep);
+            out.append("stack.pop()");
+            sep = ", ";
+        }
+        out.append(")");
+        if (hasReturn[0]) {
+            out.append(")");
+        }
+        out.append(";");
+        i += 2;
+        return i;
     }
 }
