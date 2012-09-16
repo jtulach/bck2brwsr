@@ -22,6 +22,8 @@ package org.apidesign.java4browser;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class StaticMethod {
+    private static int cnt;
+    
     public static int sum(int x, int y) {
         return x + y;
     }
@@ -56,5 +58,11 @@ public class StaticMethod {
             res *= i;
         }
         return res;
+    }
+    public static int inc4() {
+        cnt++;
+        cnt+=2;
+        cnt++;
+        return cnt;
     }
 }

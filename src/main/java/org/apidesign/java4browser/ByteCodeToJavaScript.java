@@ -30,6 +30,7 @@ import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.classfile.Code;
 import org.netbeans.modules.classfile.Method;
 import org.netbeans.modules.classfile.Parameter;
+import org.netbeans.modules.classfile.Variable;
 
 /** Translator of the code inside class files to JavaScript.
  *
@@ -56,6 +57,11 @@ public final class ByteCodeToJavaScript {
         for (Method m : jc.getMethods()) {
             if (m.isStatic()) {
                 compiler.generateStaticMethod(m);
+            }
+        }
+        for (Variable v : jc.getVariables()) {
+            if (v.isStatic()) {
+                compiler.generateStaticField(v);
             }
         }
     }
@@ -369,6 +375,22 @@ public final class ByteCodeToJavaScript {
                     i += 2;
                     break;
                 }
+                case bc_getstatic: {
+                    int indx = readIntArg(byteCodes, i);
+                    CPFieldInfo fi = (CPFieldInfo) jc.getConstantPool().get(indx);
+                    out.append("stack.push(").append(fi.getClassName().getExternalName().replace('.', '_'));
+                    out.append('_').append(fi.getFieldName()).append(");");
+                    i += 2;
+                    break;
+                }
+                case bc_putstatic: {
+                    int indx = readIntArg(byteCodes, i);
+                    CPFieldInfo fi = (CPFieldInfo) jc.getConstantPool().get(indx);
+                    out.append(fi.getClassName().getExternalName().replace('.', '_'));
+                    out.append('_').append(fi.getFieldName()).append(" = stack.pop();");
+                    i += 2;
+                    break;
+                }
                     
             }
             out.append(" /*");
@@ -445,5 +467,11 @@ public final class ByteCodeToJavaScript {
             }
         }
         return cnt;
+    }
+
+    private void generateStaticField(Variable v) throws IOException {
+        out.append("\nvar ")
+           .append(jc.getName().getExternalName().replace('.', '_'))
+           .append('_').append(v.getName()).append(" = 0;");
     }
 }

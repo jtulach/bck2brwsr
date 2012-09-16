@@ -121,6 +121,13 @@ public class StaticMethodTest {
             3
         );
     }
+    @Test public void inc4() throws Exception {
+        assertExec(
+            "It will be 4",
+            "org_apidesign_java4browser_StaticMethod_inc4I",
+            Double.valueOf(4)
+        );
+    }
     
     private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
         StringBuilder sb = new StringBuilder();
