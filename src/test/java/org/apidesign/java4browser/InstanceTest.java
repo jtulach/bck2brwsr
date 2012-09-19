@@ -35,6 +35,13 @@ public class InstanceTest {
             Double.valueOf(3.3)
         );
     }
+    @Test public void verifyInstanceMethods() throws Exception {
+        assertExec(
+            "Should be ten",
+            "org_apidesign_java4browser_Instance_virtualBytesB",
+            Double.valueOf(10)
+        );
+    }
     
     private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
         StringBuilder sb = new StringBuilder();

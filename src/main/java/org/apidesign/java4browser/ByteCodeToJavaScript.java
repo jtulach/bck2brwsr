@@ -71,7 +71,7 @@ public final class ByteCodeToJavaScript {
         out.append("() {");
         for (Method m : jc.getMethods()) {
             if (!m.isStatic()) {
-                
+                compiler.generateMethodReference(m);
             }
         }
         for (Variable v : jc.getVariables()) {
@@ -111,6 +111,13 @@ public final class ByteCodeToJavaScript {
         out.append(");\n");
         produceCode(code.getByteCodes());
         out.append("}");
+    }
+    
+    private void generateMethodReference(Method m) throws IOException {
+        final String name = findMethodName(m);
+        out.append("\n  this.").append(name).append(" = ")
+           .append(jc.getName().getExternalName().replace('.', '_'))
+           .append('_').append(name).append(";");
     }
     
     private void generateInstanceMethod(Method m) throws IOException {
@@ -361,6 +368,9 @@ public final class ByteCodeToJavaScript {
                     i += 2;
                     break;
                 }
+                case bc_invokevirtual:
+                    i = invokeVirtualMethod(byteCodes, i);
+                    break;
                 case bc_invokespecial:
                     i = invokeStaticMethod(byteCodes, i, false);
                     break;
@@ -552,6 +562,37 @@ public final class ByteCodeToJavaScript {
             out.append(sep);
             out.append("v" + j);
             sep = ", ";
+        }
+        out.append(")");
+        if (hasReturn[0]) {
+            out.append(")");
+        }
+        out.append("; }");
+        i += 2;
+        return i;
+    }
+    private int invokeVirtualMethod(byte[] byteCodes, int i)
+    throws IOException {
+        int methodIndex = readIntArg(byteCodes, i);
+        CPMethodInfo mi = (CPMethodInfo) jc.getConstantPool().get(methodIndex);
+        boolean[] hasReturn = { false };
+        int[] cnt = { 0 };
+        String mn = findMethodName(mi, cnt, hasReturn);
+        out.append("{ ");
+        for (int j = cnt[0] - 1; j >= 0; j--) {
+            out.append("var v" + j).append(" = stack.pop(); ");
+        }
+        out.append("var self = stack.pop(); ");
+        if (hasReturn[0]) {
+            out.append("stack.push(");
+        }
+        out.append("self.");
+        out.append(mn);
+        out.append('(');
+        out.append("self");
+        for (int j = 0; j < cnt[0]; j++) {
+            out.append(", ");
+            out.append("v" + j);
         }
         out.append(")");
         if (hasReturn[0]) {
