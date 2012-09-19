@@ -531,6 +531,11 @@ public final class ByteCodeToJavaScript {
         boolean[] hasReturn = { false };
         int[] cnt = { 0 };
         String mn = findMethodName(mi, cnt, hasReturn);
+        out.append("{ ");
+        for (int j = cnt[0] - 1; j >= 0; j--) {
+            out.append("var v" + j).append(" = stack.pop(); ");
+        }
+        
         if (hasReturn[0]) {
             out.append("stack.push(");
         }
@@ -545,14 +550,14 @@ public final class ByteCodeToJavaScript {
         }
         for (int j = 0; j < cnt[0]; j++) {
             out.append(sep);
-            out.append("stack.pop()");
+            out.append("v" + j);
             sep = ", ";
         }
         out.append(")");
         if (hasReturn[0]) {
             out.append(")");
         }
-        out.append(";");
+        out.append("; }");
         i += 2;
         return i;
     }
