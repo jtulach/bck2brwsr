@@ -42,9 +42,11 @@ public class Instance {
         i.b = (byte)0x09;
         return (i.i - i.b) * i.d;
     }
-    public static byte virtualBytes() {
+    public static int virtualBytes() {
         Instance i = new InstanceSub(7, 2.2d);
         i.setByte((byte)0x0a);
-        return i.getByte();
+        Instance i2 = new Instance(3, 333.0d);
+        i2.setByte((byte)44);
+        return i.getByte() + i2.getByte();
     }
 }

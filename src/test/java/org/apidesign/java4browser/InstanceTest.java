@@ -37,9 +37,9 @@ public class InstanceTest {
     }
     @Test public void verifyInstanceMethods() throws Exception {
         assertExec(
-            "Should be eleven as we invoke overwritten method",
-            "org_apidesign_java4browser_Instance_virtualBytesB",
-            Double.valueOf(11)
+            "Should be eleven as we invoke overwritten method, plus 44",
+            "org_apidesign_java4browser_Instance_virtualBytesI",
+            Double.valueOf(55)
         );
     }
     
