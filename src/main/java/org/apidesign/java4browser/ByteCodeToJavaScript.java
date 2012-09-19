@@ -26,6 +26,7 @@ import org.netbeans.modules.classfile.CPEntry;
 import org.netbeans.modules.classfile.CPFieldInfo;
 import org.netbeans.modules.classfile.CPMethodInfo;
 import org.netbeans.modules.classfile.ClassFile;
+import org.netbeans.modules.classfile.ClassName;
 import org.netbeans.modules.classfile.Code;
 import org.netbeans.modules.classfile.Method;
 import org.netbeans.modules.classfile.Parameter;
@@ -65,9 +66,11 @@ public final class ByteCodeToJavaScript {
                 compiler.generateStaticField(v);
             }
         }
+        out.append("function java_lang_Object(){}\n"); // XXX temporary
         out.append("function java_lang_Object_consV(self){}\n"); // XXX temporary
         
-        out.append("\nfunction ").append(jc.getName().getExternalName().replace('.', '_'));
+        final String className = jc.getName().getExternalName().replace('.', '_');
+        out.append("\nfunction ").append(className);
         out.append("() {");
         for (Method m : jc.getMethods()) {
             if (!m.isStatic()) {
@@ -80,6 +83,11 @@ public final class ByteCodeToJavaScript {
             }
         }
         out.append("\n}");
+        ClassName sc = jc.getSuperClass();
+        if (sc != null) {
+            out.append("\n  ").append(className)
+               .append(".prototype = new ").append(sc.getExternalName().replace('.', '_'));
+        }
     }
     private void generateStaticMethod(Method m) throws IOException {
         out.append("\nfunction ").append(

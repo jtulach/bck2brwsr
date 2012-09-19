@@ -37,15 +37,15 @@ public class InstanceTest {
     }
     @Test public void verifyInstanceMethods() throws Exception {
         assertExec(
-            "Should be ten",
+            "Should be eleven as we invoke overwritten method",
             "org_apidesign_java4browser_Instance_virtualBytesB",
-            Double.valueOf(10)
+            Double.valueOf(11)
         );
     }
     
     private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
         StringBuilder sb = new StringBuilder();
-        Invocable i = StaticMethodTest.compileClass("Instance.class", sb);
+        Invocable i = StaticMethodTest.compileClass(sb, "Instance.class", "InstanceSub.class");
         
         Object ret = null;
         try {

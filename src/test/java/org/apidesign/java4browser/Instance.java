@@ -43,7 +43,7 @@ public class Instance {
         return (i.i - i.b) * i.d;
     }
     public static byte virtualBytes() {
-        Instance i = new Instance();
+        Instance i = new InstanceSub(7, 2.2d);
         i.setByte((byte)0x0a);
         return i.getByte();
     }

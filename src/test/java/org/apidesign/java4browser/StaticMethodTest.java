@@ -131,7 +131,7 @@ public class StaticMethodTest {
     
     private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
         StringBuilder sb = new StringBuilder();
-        Invocable i = compileClass("StaticMethod.class", sb);
+        Invocable i = compileClass(sb, "StaticMethod.class");
         
         Object ret = null;
         try {
@@ -151,13 +151,15 @@ public class StaticMethodTest {
         
     }
 
-    static Invocable compileClass(String name, StringBuilder sb) throws ScriptException, IOException {
-        InputStream is = StaticMethodTest.class.getResourceAsStream(name);
-        assertNotNull(is, "Class file found");
-        if (sb == null) {
-            sb = new StringBuilder();
+    static Invocable compileClass(StringBuilder sb, String... names) throws ScriptException, IOException {
+        for (String name : names) {
+            InputStream is = StaticMethodTest.class.getResourceAsStream(name);
+            assertNotNull(is, "Class file found");
+            if (sb == null) {
+                sb = new StringBuilder();
+            }
+            ByteCodeToJavaScript.compile(name, is, sb);
         }
-        ByteCodeToJavaScript.compile(name, is, sb);
         ScriptEngineManager sem = new ScriptEngineManager();
         ScriptEngine js = sem.getEngineByExtension("js");
         try {
