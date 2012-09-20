@@ -53,4 +53,17 @@ public class Instance {
         GetByte i = new InstanceSub(7, 2.2d);
         return i.getByte();
     }
+    public static boolean instanceOf(boolean sub) {
+        Instance i = createInstance(sub);
+        return isInstanceSubOf(i);
+    }
+    private static boolean isInstanceSubOf(Instance instance) {
+        return instance instanceof InstanceSub;
+    }
+    private static Instance createInstance(boolean sub) {
+        return sub ? new InstanceSub(3, 0) : new Instance();
+    }
+    private static boolean isNull() {
+        return createInstance(true) == null;
+    }
 }

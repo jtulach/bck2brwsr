@@ -355,6 +355,20 @@ public final class ByteCodeToJavaScript {
                     i += 2;
                     break;
                 }
+                case bc_ifnonnull: {
+                    int indx = i + readIntArg(byteCodes, i);
+                    out.append("if (stack.pop()) { gt = " + indx);
+                    out.append("; continue; }");
+                    i += 2;
+                    break;
+                }
+                case bc_ifnull: {
+                    int indx = i + readIntArg(byteCodes, i);
+                    out.append("if (!stack.pop()) { gt = " + indx);
+                    out.append("; continue; }");
+                    i += 2;
+                    break;
+                }
                 case bc_if_icmpne:
                     i = generateIf(byteCodes, i, "!=");
                     break;
@@ -494,12 +508,17 @@ public final class ByteCodeToJavaScript {
                     sig.insert(firstPos, 'V');
                     continue;
                 case 'L':
-                    i = descriptor.indexOf(';', i);
+                    int next = descriptor.indexOf(';', i);
                     if (count) {
                         cnt++;
+                        sig.append(ch);
+                        sig.append(descriptor.substring(i, next).replace('/', '_'));
                     } else {
+                        sig.insert(firstPos, descriptor.substring(i, next).replace('/', '_'));
+                        sig.insert(firstPos, ch);
                         hasReturnType[0] = true;
                     }
+                    i = next + 1;
                     continue;
                 case '[':
                     //arrays++;
@@ -523,11 +542,11 @@ public final class ByteCodeToJavaScript {
             out.append("consV"); // NOI18N
         } else {
             out.append(m.getName());
-            out.append(m.getReturnType());
+            outType(m.getReturnType(), out);
         } 
         List<Parameter> args = m.getParameters();
         for (Parameter t : args) {
-            out.append(t.getDescriptor());
+            outType(t.getDescriptor(), out);
         }
         return out.toString();
     }
@@ -610,5 +629,14 @@ public final class ByteCodeToJavaScript {
         out.append("; }");
         i += 2;
         return i;
+    }
+
+    private void outType(final String d, StringBuilder out) {
+        if (d.charAt(0) == 'L') {
+            assert d.charAt(d.length() - 1) == ';';
+            out.append(d.replace('/', '_').substring(0, d.length() - 1));
+        } else {
+            out.append(d);
+        }
     }
 }

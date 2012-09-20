@@ -49,7 +49,31 @@ public class InstanceTest {
             Double.valueOf(31)
         );
     }
-    
+
+    @Test public void isNull() throws Exception {
+        assertExec(
+            "Yes, we are instance",
+            "org_apidesign_java4browser_Instance_isNullZ",
+            Double.valueOf(0.0)
+        );
+    }
+    /*
+    @Test public void isInstanceOf() throws Exception {
+        assertExec(
+            "Yes, we are instance",
+            "org_apidesign_java4browser_Instance_instanceOfZZ",
+            Double.valueOf(1.0), true
+        );
+    }
+
+    @Test public void notInstanceOf() throws Exception {
+        assertExec(
+            "No, we are not an instance",
+            "org_apidesign_java4browser_Instance_instanceOfZZ",
+            Double.valueOf(0.0), false
+        );
+    }
+    */
     private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
         StringBuilder sb = new StringBuilder();
         Invocable i = StaticMethodTest.compileClass(sb, "Instance.class", "InstanceSub.class");
