@@ -376,6 +376,7 @@ public final class ByteCodeToJavaScript {
                     i += 2;
                     break;
                 }
+                case bc_invokeinterface:
                 case bc_invokevirtual:
                     i = invokeVirtualMethod(byteCodes, i);
                     break;

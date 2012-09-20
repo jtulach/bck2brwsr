@@ -8,7 +8,7 @@ package org.apidesign.java4browser;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class InstanceSub extends Instance {
+public class InstanceSub extends Instance implements GetByte {
     public InstanceSub(int i, double d) {
         super(i, d);
     }

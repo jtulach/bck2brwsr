@@ -42,6 +42,13 @@ public class InstanceTest {
             Double.valueOf(55)
         );
     }
+    @Test public void verifyInterfaceMethods() throws Exception {
+        assertExec(
+            "Retruns default value",
+            "org_apidesign_java4browser_Instance_interfaceBytesF",
+            Double.valueOf(31)
+        );
+    }
     
     private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
         StringBuilder sb = new StringBuilder();

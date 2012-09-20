@@ -49,4 +49,8 @@ public class Instance {
         i2.setByte((byte)44);
         return i.getByte() + i2.getByte();
     }
+    public static float interfaceBytes() {
+        GetByte i = new InstanceSub(7, 2.2d);
+        return i.getByte();
+    }
 }
