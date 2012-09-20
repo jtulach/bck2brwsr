@@ -19,6 +19,10 @@ package org.apidesign.java4browser;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -131,7 +135,7 @@ public class StaticMethodTest {
     
     private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
         StringBuilder sb = new StringBuilder();
-        Invocable i = compileClass(sb, "StaticMethod.class");
+        Invocable i = compileClass(sb, "org/apidesign/java4browser/StaticMethod");
         
         Object ret = null;
         try {
@@ -153,12 +157,12 @@ public class StaticMethodTest {
 
     static Invocable compileClass(StringBuilder sb, String... names) throws ScriptException, IOException {
         for (String name : names) {
-            InputStream is = StaticMethodTest.class.getResourceAsStream(name);
+            InputStream is = StaticMethodTest.class.getClassLoader().getResourceAsStream(name + ".class");
             assertNotNull(is, "Class file found");
             if (sb == null) {
                 sb = new StringBuilder();
             }
-            ByteCodeToJavaScript.compile(name, is, sb);
+            ByteCodeToJavaScript.compile(is, sb, null);
         }
         ScriptEngineManager sem = new ScriptEngineManager();
         ScriptEngine js = sem.getEngineByExtension("js");

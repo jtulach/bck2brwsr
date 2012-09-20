@@ -19,6 +19,7 @@ package org.apidesign.java4browser;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.List;
 import static org.netbeans.modules.classfile.ByteCodes.*;
 import org.netbeans.modules.classfile.CPClassInfo;
@@ -39,21 +40,37 @@ import org.netbeans.modules.classfile.Variable;
 public final class ByteCodeToJavaScript {
     private final ClassFile jc;
     private final Appendable out;
+    private final Collection<? super String> references;
 
-    private ByteCodeToJavaScript(ClassFile jc, Appendable out) {
+    private ByteCodeToJavaScript(
+        ClassFile jc, Appendable out, Collection<? super String> references
+    ) {
         this.jc = jc;
         this.out = out;
+        this.references = references;
     }
-    
-    /** Converts a given class file to a JavaScript version.
-     * @param fileName the name of the file we are reading
+
+    /**
+     * Converts a given class file to a JavaScript version.
+     *
      * @param classFile input stream with code of the .class file
      * @param out a {@link StringBuilder} or similar to generate the output to
+     * @param references a write only collection where the system adds list of
+     *   other classes that were referenced and should be loaded in order the
+     *   generated JavaScript code works properly. The names are in internal 
+     *   JVM form so String is <code>java/lang/String</code>. Can be <code>null</code>
+     *   if one is not interested in knowing references
      * @throws IOException if something goes wrong during read or write or translating
      */
-    public static void compile(String fileName, InputStream classFile, Appendable out) throws IOException {
+    
+    public static void compile(
+        InputStream classFile, Appendable out,
+        Collection<? super String> references
+    ) throws IOException {
         ClassFile jc = new ClassFile(classFile, true);
-        ByteCodeToJavaScript compiler = new ByteCodeToJavaScript(jc, out);
+        ByteCodeToJavaScript compiler = new ByteCodeToJavaScript(
+            jc, out, references
+        );
         for (Method m : jc.getMethods()) {
             if (m.isStatic()) {
                 compiler.generateStaticMethod(m);
@@ -69,7 +86,7 @@ public final class ByteCodeToJavaScript {
         out.append("function java_lang_Object(){}\n"); // XXX temporary
         out.append("function java_lang_Object_consV(self){}\n"); // XXX temporary
         
-        final String className = jc.getName().getExternalName().replace('.', '_');
+        final String className = jc.getName().getInternalName().replace('/', '_');
         out.append("\nfunction ").append(className);
         out.append("() {");
         for (Method m : jc.getMethods()) {
@@ -87,12 +104,12 @@ public final class ByteCodeToJavaScript {
         ClassName sc = jc.getSuperClass();
         if (sc != null) {
             out.append("\n  ").append(className)
-               .append(".prototype = new ").append(sc.getExternalName().replace('.', '_'));
+               .append(".prototype = new ").append(sc.getInternalName().replace('/', '_'));
         }
     }
     private void generateStaticMethod(Method m) throws IOException {
         out.append("\nfunction ").append(
-            jc.getName().getExternalName().replace('.', '_')
+            jc.getName().getInternalName().replace('/', '_')
         ).append('_').append(findMethodName(m));
         out.append('(');
         String space = "";
@@ -110,28 +127,32 @@ public final class ByteCodeToJavaScript {
         }
         out.append(") {").append("\n");
         final Code code = m.getCode();
-        int len = code.getMaxLocals();
-        for (int index = args.size(), i = args.size(); i < len; i++) {
-            out.append("  var ");
-            out.append("arg").append(String.valueOf(i)).append(";\n");
+        if (code != null) {
+            int len = code.getMaxLocals();
+            for (int index = args.size(), i = args.size(); i < len; i++) {
+                out.append("  var ");
+                out.append("arg").append(String.valueOf(i)).append(";\n");
+            }
+            out.append("  var stack = new Array(");
+            out.append(Integer.toString(code.getMaxStack()));
+            out.append(");\n");
+            produceCode(code.getByteCodes());
+        } else {
+            out.append("  /* no code found for ").append(m.getTypeSignature()).append(" */\n");
         }
-        out.append("  var stack = new Array(");
-        out.append(Integer.toString(code.getMaxStack()));
-        out.append(");\n");
-        produceCode(code.getByteCodes());
         out.append("}");
     }
     
     private void generateMethodReference(Method m) throws IOException {
         final String name = findMethodName(m);
         out.append("\n  this.").append(name).append(" = ")
-           .append(jc.getName().getExternalName().replace('.', '_'))
+           .append(jc.getName().getInternalName().replace('/', '_'))
            .append('_').append(name).append(";");
     }
     
     private void generateInstanceMethod(Method m) throws IOException {
         out.append("\nfunction ").append(
-            jc.getName().getExternalName().replace('.', '_')
+            jc.getName().getInternalName().replace('/', '_')
         ).append('_').append(findMethodName(m));
         out.append("(arg0");
         String space = ",";
@@ -148,15 +169,19 @@ public final class ByteCodeToJavaScript {
         }
         out.append(") {").append("\n");
         final Code code = m.getCode();
-        int len = code.getMaxLocals();
-        for (int index = args.size(), i = args.size(); i < len; i++) {
-            out.append("  var ");
-            out.append("arg").append(String.valueOf(i + 1)).append(";\n");
+        if (code != null) {
+            int len = code.getMaxLocals();
+            for (int index = args.size(), i = args.size(); i < len; i++) {
+                out.append("  var ");
+                out.append("arg").append(String.valueOf(i + 1)).append(";\n");
+            }
+            out.append(";\n  var stack = new Array(");
+            out.append(Integer.toString(code.getMaxStack()));
+            out.append(");\n");
+            produceCode(code.getByteCodes());
+        } else {
+            out.append("  /* no code found for ").append(m.getTypeSignature()).append(" */\n");
         }
-        out.append(";\n  var stack = new Array(");
-        out.append(Integer.toString(code.getMaxStack()));
-        out.append(");\n");
-        produceCode(code.getByteCodes());
         out.append("}");
     }
 
@@ -405,8 +430,9 @@ public final class ByteCodeToJavaScript {
                     int indx = readIntArg(byteCodes, i);
                     CPClassInfo ci = jc.getConstantPool().getClass(indx);
                     out.append("stack.push(");
-                    out.append("new ").append(ci.getClassName().getExternalName().replace('.','_'));
+                    out.append("new ").append(ci.getClassName().getInternalName().replace('/','_'));
                     out.append(");");
+                    addReference(ci.getClassName().getInternalName());
                     i += 2;
                     break;
                 }
@@ -426,17 +452,21 @@ public final class ByteCodeToJavaScript {
                 case bc_getstatic: {
                     int indx = readIntArg(byteCodes, i);
                     CPFieldInfo fi = (CPFieldInfo) jc.getConstantPool().get(indx);
-                    out.append("stack.push(").append(fi.getClassName().getExternalName().replace('.', '_'));
+                    final String in = fi.getClassName().getInternalName();
+                    out.append("stack.push(").append(in.replace('/', '_'));
                     out.append('_').append(fi.getFieldName()).append(");");
                     i += 2;
+                    addReference(in);
                     break;
                 }
                 case bc_putstatic: {
                     int indx = readIntArg(byteCodes, i);
                     CPFieldInfo fi = (CPFieldInfo) jc.getConstantPool().get(indx);
-                    out.append(fi.getClassName().getExternalName().replace('.', '_'));
+                    final String in = fi.getClassName().getInternalName();
+                    out.append(in.replace('/', '_'));
                     out.append('_').append(fi.getFieldName()).append(" = stack.pop();");
                     i += 2;
+                    addReference(in);
                     break;
                 }
                 case bc_putfield: {
@@ -451,7 +481,7 @@ public final class ByteCodeToJavaScript {
                     int indx = readIntArg(byteCodes, i);
                     CPClassInfo ci = jc.getConstantPool().getClass(indx);
                     out.append("stack.push(stack.pop().$instOf_")
-                       .append(ci.getClassName().getExternalName().replace('.', '_'))
+                       .append(ci.getClassName().getInternalName().replace('/', '_'))
                        .append(" ? 1 : 0);");
                     i += 2;
                 }
@@ -541,7 +571,7 @@ public final class ByteCodeToJavaScript {
 
     private void generateStaticField(Variable v) throws IOException {
         out.append("\nvar ")
-           .append(jc.getName().getExternalName().replace('.', '_'))
+           .append(jc.getName().getInternalName().replace('/', '_'))
            .append('_').append(v.getName()).append(" = 0;");
     }
 
@@ -586,7 +616,8 @@ public final class ByteCodeToJavaScript {
         if (hasReturn[0]) {
             out.append("stack.push(");
         }
-        out.append(mi.getClassName().getInternalName().replace('/', '_'));
+        final String in = mi.getClassName().getInternalName();
+        out.append(in.replace('/', '_'));
         out.append('_');
         out.append(mn);
         out.append('(');
@@ -606,6 +637,7 @@ public final class ByteCodeToJavaScript {
         }
         out.append("; }");
         i += 2;
+        addReference(in);
         return i;
     }
     private int invokeVirtualMethod(byte[] byteCodes, int i)
@@ -638,6 +670,12 @@ public final class ByteCodeToJavaScript {
         out.append("; }");
         i += 2;
         return i;
+    }
+    
+    private void addReference(String cn) {
+        if (references != null) {
+            references.add(cn);
+        }
     }
 
     private void outType(final String d, StringBuilder out) {
