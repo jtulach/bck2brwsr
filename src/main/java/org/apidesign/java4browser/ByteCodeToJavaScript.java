@@ -82,6 +82,7 @@ public final class ByteCodeToJavaScript {
                 out.append("\n  this." + v.getName() + " = 0;");
             }
         }
+        out.append("\n  this.$instOf_").append(className).append(" = true;");
         out.append("\n}");
         ClassName sc = jc.getSuperClass();
         if (sc != null) {
@@ -445,6 +446,14 @@ public final class ByteCodeToJavaScript {
                        .append(fi.getFieldName()).append(" = v; }");
                     i += 2;
                     break;
+                }
+                case bc_instanceof: {
+                    int indx = readIntArg(byteCodes, i);
+                    CPClassInfo ci = jc.getConstantPool().getClass(indx);
+                    out.append("stack.push(stack.pop().$instOf_")
+                       .append(ci.getClassName().getExternalName().replace('.', '_'))
+                       .append(" ? 1 : 0);");
+                    i += 2;
                 }
                     
             }

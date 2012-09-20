@@ -57,7 +57,7 @@ public class InstanceTest {
             Double.valueOf(0.0)
         );
     }
-    /*
+
     @Test public void isInstanceOf() throws Exception {
         assertExec(
             "Yes, we are instance",
@@ -73,7 +73,7 @@ public class InstanceTest {
             Double.valueOf(0.0), false
         );
     }
-    */
+    
     private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
         StringBuilder sb = new StringBuilder();
         Invocable i = StaticMethodTest.compileClass(sb, "Instance.class", "InstanceSub.class");
