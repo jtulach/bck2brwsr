@@ -77,8 +77,7 @@ public class InstanceTest {
     private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
         StringBuilder sb = new StringBuilder();
         Invocable i = StaticMethodTest.compileClass(sb, 
-            "org/apidesign/java4browser/Instance",
-            "org/apidesign/java4browser/InstanceSub"
+            "org/apidesign/java4browser/Instance"
         );
         
         Object ret = null;

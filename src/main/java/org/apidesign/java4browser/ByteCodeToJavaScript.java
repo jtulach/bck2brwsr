@@ -83,8 +83,6 @@ public final class ByteCodeToJavaScript {
                 compiler.generateStaticField(v);
             }
         }
-        out.append("function java_lang_Object(){}\n"); // XXX temporary
-        out.append("function java_lang_Object_consV(self){}\n"); // XXX temporary
         
         final String className = jc.getName().getInternalName().replace('/', '_');
         out.append("\nfunction ").append(className);
@@ -576,18 +574,20 @@ public final class ByteCodeToJavaScript {
     }
 
     private String findMethodName(Method m) {
-        StringBuilder out = new StringBuilder();
+        StringBuilder tmp = new StringBuilder();
         if ("<init>".equals(m.getName())) { // NOI18N
-            out.append("consV"); // NOI18N
+            tmp.append("consV"); // NOI18N
+        } else if ("<clinit>".equals(m.getName())) { // NOI18N
+            tmp.append("classV"); // NOI18N
         } else {
-            out.append(m.getName());
-            outType(m.getReturnType(), out);
+            tmp.append(m.getName());
+            outType(m.getReturnType(), tmp);
         } 
         List<Parameter> args = m.getParameters();
         for (Parameter t : args) {
-            outType(t.getDescriptor(), out);
+            outType(t.getDescriptor(), tmp);
         }
-        return out.toString();
+        return tmp.toString();
     }
 
     private String findMethodName(CPMethodInfo mi, int[] cnt, boolean[] hasReturn) {

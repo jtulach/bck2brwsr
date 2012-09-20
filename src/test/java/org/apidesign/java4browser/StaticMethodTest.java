@@ -20,7 +20,9 @@ package org.apidesign.java4browser;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.script.Invocable;
@@ -156,13 +158,25 @@ public class StaticMethodTest {
     }
 
     static Invocable compileClass(StringBuilder sb, String... names) throws ScriptException, IOException {
-        for (String name : names) {
+        if (sb == null) {
+            sb = new StringBuilder();
+        }
+        Set<String> processed = new HashSet<String>();
+
+        LinkedList<String> toProcess = new LinkedList<String>(Arrays.asList(names));
+        for (;;) {
+            toProcess.removeAll(processed);
+            if (toProcess.isEmpty()) {
+                break;
+            }
+            String name = toProcess.getFirst();
+            processed.add(name);
+            if (name.startsWith("java/") && !name.equals("java/lang/Object")) {
+                continue;
+            }
             InputStream is = StaticMethodTest.class.getClassLoader().getResourceAsStream(name + ".class");
             assertNotNull(is, "Class file found");
-            if (sb == null) {
-                sb = new StringBuilder();
-            }
-            ByteCodeToJavaScript.compile(is, sb, null);
+            ByteCodeToJavaScript.compile(is, sb, toProcess);
         }
         ScriptEngineManager sem = new ScriptEngineManager();
         ScriptEngine js = sem.getEngineByExtension("js");
