@@ -360,12 +360,26 @@ public final class ByteCodeToJavaScript {
                 case bc_iconst_5:
                     out.append("stack.push(5);");
                     break;
+                case bc_ldc: {
+                    int indx = byteCodes[i++];
+                    CPEntry entry = jc.getConstantPool().get(indx);
+                    out.append("stack.push(" + entry.getValue() + ");");
+                    break;
+                }
                 case bc_ldc_w:
                 case bc_ldc2_w: {
                     int indx = readIntArg(byteCodes, i);
                     CPEntry entry = jc.getConstantPool().get(indx);
                     i += 2;
                     out.append("stack.push(" + entry.getValue() + ");");
+                    break;
+                }
+                case bc_lcmp:
+                case bc_fcmpl:
+                case bc_fcmpg:
+                case bc_dcmpl:
+                case bc_dcmpg: {
+                    out.append("{ var delta = stack.pop() - stack.pop(); stack.push(delta < 0 ?-1 : (delta == 0 ? 0 : 1)); }");
                     break;
                 }
                 case bc_if_icmpeq: {
@@ -375,6 +389,41 @@ public final class ByteCodeToJavaScript {
                 case bc_ifeq: {
                     int indx = i + readIntArg(byteCodes, i);
                     out.append("if (stack.pop() == 0) { gt = " + indx);
+                    out.append("; continue; }");
+                    i += 2;
+                    break;
+                }
+                case bc_ifne: {
+                    int indx = i + readIntArg(byteCodes, i);
+                    out.append("if (stack.pop() != 0) { gt = " + indx);
+                    out.append("; continue; }");
+                    i += 2;
+                    break;
+                }
+                case bc_iflt: {
+                    int indx = i + readIntArg(byteCodes, i);
+                    out.append("if (stack.pop() < 0) { gt = " + indx);
+                    out.append("; continue; }");
+                    i += 2;
+                    break;
+                }
+                case bc_ifle: {
+                    int indx = i + readIntArg(byteCodes, i);
+                    out.append("if (stack.pop() <= 0) { gt = " + indx);
+                    out.append("; continue; }");
+                    i += 2;
+                    break;
+                }
+                case bc_ifgt: {
+                    int indx = i + readIntArg(byteCodes, i);
+                    out.append("if (stack.pop() > 0) { gt = " + indx);
+                    out.append("; continue; }");
+                    i += 2;
+                    break;
+                }
+                case bc_ifge: {
+                    int indx = i + readIntArg(byteCodes, i);
+                    out.append("if (stack.pop() >= 0) { gt = " + indx);
                     out.append("; continue; }");
                     i += 2;
                     break;

@@ -176,7 +176,16 @@ public class StaticMethodTest {
             }
             InputStream is = StaticMethodTest.class.getClassLoader().getResourceAsStream(name + ".class");
             assertNotNull(is, "Class file found");
-            ByteCodeToJavaScript.compile(is, sb, toProcess);
+            try {
+                ByteCodeToJavaScript.compile(is, sb, toProcess);
+            } catch (RuntimeException ex) {
+                int lastBlock = sb.lastIndexOf("{");
+                throw new IllegalStateException(
+                    "Error while compiling " + name + "\n" + 
+                    sb.substring(lastBlock + 1, sb.length()), 
+                    ex
+                );
+            }
         }
         ScriptEngineManager sem = new ScriptEngineManager();
         ScriptEngine js = sem.getEngineByExtension("js");
