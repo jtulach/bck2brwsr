@@ -61,6 +61,13 @@
           <version>RELEASE72</version>
           <type>jar</type>
         </dependency>
+        <dependency>
+          <groupId>org.netbeans.api</groupId>
+          <artifactId>org-openide-util-lookup</artifactId>
+          <version>RELEASE72</version>
+          <scope>compile</scope>
+          <type>jar</type>
+        </dependency>
       </dependencies>
   </dependencyManagement>
   <properties>
