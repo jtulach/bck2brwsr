@@ -3,12 +3,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.apidesign</groupId>
-  <artifactId>java4browser</artifactId>
+  <artifactId>vm4brwsr</artifactId>
   <version>0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>java4browser</name>
-  <url>http://java4browser.apidesign.org</url>
+  <name>Java VM for Browser</name>
+  <url>http://bck2brwsr.apidesign.org</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -37,20 +37,9 @@
     </pluginRepository>
   </pluginRepositories>
   <scm>
-      <connection>scm:hg:http://source.apidesign.org/hg/quoridor</connection>
-      <url>http://source.apidesign.org/hg/quoridor</url>
+      <connection>scm:hg:http://source.apidesign.org/hg/bck2brwsr</connection>
+      <url>http://source.apidesign.org/hg/bck2brwsr</url>
   </scm>
-  <licenses>
-    <license>
-        <name>GPL-2.0</name>
-        <url>http://opensource.org/licenses/GPL-2.0</url>
-        <distribution>repo</distribution>
-    </license>
-  </licenses>
-  <organization>
-      <name>API Design</name>
-      <url>http://apidesign.org</url>
-  </organization>
     <build>
         <plugins>
             <plugin>

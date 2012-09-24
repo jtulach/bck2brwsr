@@ -15,8 +15,9 @@ You should have received a copy of the GNU General Public License
 along with this program. Look for COPYING file in the top folder.
 If not, see http://opensource.org/licenses/GPL-2.0.
 */
-package org.apidesign.java4browser;
+package org.apidesign.vm4brwsr;
 
+import org.apidesign.vm4brwsr.ByteCodeToJavaScript;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -40,7 +41,7 @@ public class StaticMethodTest {
     @Test public void threePlusFour() throws Exception {
         assertExec(
             "Should be seven", 
-            "org_apidesign_java4browser_StaticMethod_sumIII", 
+            "org_apidesign_vm4brwsr_StaticMethod_sumIII", 
             Double.valueOf(7), 
             3, 4
         );
@@ -49,7 +50,7 @@ public class StaticMethodTest {
     @Test public void powerOfThree() throws Exception {
         assertExec(
             "Should be nine", 
-            "org_apidesign_java4browser_StaticMethod_powerFF", 
+            "org_apidesign_vm4brwsr_StaticMethod_powerFF", 
             Double.valueOf(9),
             3.0f
         );
@@ -58,7 +59,7 @@ public class StaticMethodTest {
     @Test public void doubleWithoutLong() throws Exception {
         assertExec(
             "Should be two",
-            "org_apidesign_java4browser_StaticMethod_minusDDJ", 
+            "org_apidesign_vm4brwsr_StaticMethod_minusDDJ", 
             Double.valueOf(2),
             3.0d, 1l
         );
@@ -67,7 +68,7 @@ public class StaticMethodTest {
     @Test public void divAndRound() throws Exception {
         assertExec(
             "Should be rounded to one",
-            "org_apidesign_java4browser_StaticMethod_divIBD", 
+            "org_apidesign_vm4brwsr_StaticMethod_divIBD", 
             Double.valueOf(1),
             3, 3.75
         );
@@ -75,7 +76,7 @@ public class StaticMethodTest {
     @Test public void mixedMethodFourParams() throws Exception {
         assertExec(
             "Should be two",
-            "org_apidesign_java4browser_StaticMethod_mixIIJBD", 
+            "org_apidesign_vm4brwsr_StaticMethod_mixIIJBD", 
             Double.valueOf(20),
             2, 10l, 5, 2.0
         );
@@ -83,7 +84,7 @@ public class StaticMethodTest {
     @Test public void factRec() throws Exception {
         assertExec(
             "Factorial of 5 is 120",
-            "org_apidesign_java4browser_StaticMethod_factRecJI", 
+            "org_apidesign_vm4brwsr_StaticMethod_factRecJI", 
             Double.valueOf(120),
             5
         );
@@ -91,7 +92,7 @@ public class StaticMethodTest {
     @Test public void factIter() throws Exception {
         assertExec(
             "Factorial of 5 is 120",
-            "org_apidesign_java4browser_StaticMethod_factIterJI", 
+            "org_apidesign_vm4brwsr_StaticMethod_factIterJI", 
             Double.valueOf(120),
             5
         );
@@ -100,7 +101,7 @@ public class StaticMethodTest {
     @Test public void xor() throws Exception {
         assertExec(
             "Xor is 4",
-            "org_apidesign_java4browser_StaticMethod_xorJIJ",
+            "org_apidesign_vm4brwsr_StaticMethod_xorJIJ",
             Double.valueOf(4),
             7,
             3
@@ -110,7 +111,7 @@ public class StaticMethodTest {
     @Test public void or() throws Exception {
         assertExec(
             "Or will be 7",
-            "org_apidesign_java4browser_StaticMethod_orOrAndJZII",
+            "org_apidesign_vm4brwsr_StaticMethod_orOrAndJZII",
             Double.valueOf(7),
             true,
             4,
@@ -120,7 +121,7 @@ public class StaticMethodTest {
     @Test public void and() throws Exception {
         assertExec(
             "And will be 3",
-            "org_apidesign_java4browser_StaticMethod_orOrAndJZII",
+            "org_apidesign_vm4brwsr_StaticMethod_orOrAndJZII",
             Double.valueOf(3),
             false,
             7,
@@ -130,14 +131,14 @@ public class StaticMethodTest {
     @Test public void inc4() throws Exception {
         assertExec(
             "It will be 4",
-            "org_apidesign_java4browser_StaticMethod_inc4I",
+            "org_apidesign_vm4brwsr_StaticMethod_inc4I",
             Double.valueOf(4)
         );
     }
     
     private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
         StringBuilder sb = new StringBuilder();
-        Invocable i = compileClass(sb, "org/apidesign/java4browser/StaticMethod");
+        Invocable i = compileClass(sb, "org/apidesign/vm4brwsr/StaticMethod");
         
         Object ret = null;
         try {

@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with this program. Look for COPYING file in the top folder.
 If not, see http://opensource.org/licenses/GPL-2.0.
 */
-package org.apidesign.java4browser;
+package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;

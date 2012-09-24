@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with this program. Look for COPYING file in the top folder.
 If not, see http://opensource.org/licenses/GPL-2.0.
 */
-package org.apidesign.java4browser;
+package org.apidesign.vm4brwsr;
 
 import javax.script.Invocable;
 import javax.script.ScriptException;
@@ -28,12 +28,12 @@ import static org.testng.Assert.*;
  */
 public class ArrayTest {
     @Test public void verifySimpleIntOperation() throws Exception {
-        assertExec("CheckTheSum", "org_apidesign_java4browser_Array_simpleI", 
+        assertExec("CheckTheSum", "org_apidesign_vm4brwsr_Array_simpleI", 
             Double.valueOf(15)
         );
     }
     @Test public void verifyOperationsOnArrays() throws Exception {
-        assertExec("The sum is 105", "org_apidesign_java4browser_Array_sumD", 
+        assertExec("The sum is 105", "org_apidesign_vm4brwsr_Array_sumD", 
             Double.valueOf(105)
         );
     }
@@ -41,7 +41,7 @@ public class ArrayTest {
     private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
         StringBuilder sb = new StringBuilder();
         Invocable i = StaticMethodTest.compileClass(sb, 
-            "org/apidesign/java4browser/Array"
+            "org/apidesign/vm4brwsr/Array"
         );
         
         Object ret = null;
