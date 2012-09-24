@@ -19,6 +19,7 @@ package org.apidesign.java4browser;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import static org.netbeans.modules.classfile.ByteCodes.*;
@@ -26,6 +27,7 @@ import org.netbeans.modules.classfile.CPClassInfo;
 import org.netbeans.modules.classfile.CPEntry;
 import org.netbeans.modules.classfile.CPFieldInfo;
 import org.netbeans.modules.classfile.CPMethodInfo;
+import org.netbeans.modules.classfile.CPStringInfo;
 import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.classfile.ClassName;
 import org.netbeans.modules.classfile.Code;
@@ -71,9 +73,10 @@ public final class ByteCodeToJavaScript {
         ByteCodeToJavaScript compiler = new ByteCodeToJavaScript(
             jc, out, references
         );
+        List<String> toInitilize = new ArrayList<String>();
         for (Method m : jc.getMethods()) {
             if (m.isStatic()) {
-                compiler.generateStaticMethod(m);
+                compiler.generateStaticMethod(m, toInitilize);
             } else {
                 compiler.generateInstanceMethod(m);
             }
@@ -101,14 +104,21 @@ public final class ByteCodeToJavaScript {
         out.append("\n}");
         ClassName sc = jc.getSuperClass();
         if (sc != null) {
-            out.append("\n  ").append(className)
+            out.append("\n").append(className)
                .append(".prototype = new ").append(sc.getInternalName().replace('/', '_'));
         }
+        for (String init : toInitilize) {
+            out.append("\n").append(init).append("();");
+        }
     }
-    private void generateStaticMethod(Method m) throws IOException {
+    private void generateStaticMethod(Method m, List<String> toInitilize) throws IOException {
+        final String mn = findMethodName(m);
         out.append("\nfunction ").append(
             jc.getName().getInternalName().replace('/', '_')
-        ).append('_').append(findMethodName(m));
+        ).append('_').append(mn);
+        if (mn.equals("classV")) {
+            toInitilize.add(jc.getName().getInternalName().replace('/', '_') + '_' + mn);
+        }
         out.append('(');
         String space = "";
         List<Parameter> args = m.getParameters();
@@ -131,9 +141,7 @@ public final class ByteCodeToJavaScript {
                 out.append("  var ");
                 out.append("arg").append(String.valueOf(i)).append(";\n");
             }
-            out.append("  var stack = new Array(");
-            out.append(Integer.toString(code.getMaxStack()));
-            out.append(");\n");
+            out.append("  var stack = new Array();\n");
             produceCode(code.getByteCodes());
         } else {
             out.append("  /* no code found for ").append(m.getTypeSignature()).append(" */\n");
@@ -361,9 +369,10 @@ public final class ByteCodeToJavaScript {
                     out.append("stack.push(5);");
                     break;
                 case bc_ldc: {
-                    int indx = byteCodes[i++];
+                    int indx = byteCodes[++i];
                     CPEntry entry = jc.getConstantPool().get(indx);
-                    out.append("stack.push(" + entry.getValue() + ");");
+                    String v = encodeConstant(entry);
+                    out.append("stack.push(").append(v).append(");");
                     break;
                 }
                 case bc_ldc_w:
@@ -371,7 +380,8 @@ public final class ByteCodeToJavaScript {
                     int indx = readIntArg(byteCodes, i);
                     CPEntry entry = jc.getConstantPool().get(indx);
                     i += 2;
-                    out.append("stack.push(" + entry.getValue() + ");");
+                    String v = encodeConstant(entry);
+                    out.append("stack.push(").append(v).append(");");
                     break;
                 }
                 case bc_lcmp:
@@ -483,6 +493,41 @@ public final class ByteCodeToJavaScript {
                     i += 2;
                     break;
                 }
+                case bc_newarray: {
+                    int type = byteCodes[i++];
+                    out.append("stack.push(new Array(stack.pop()));");
+                    break;
+                }
+                case bc_anewarray: {
+                    i += 2; // skip type of array
+                    out.append("stack.push(new Array(stack.pop()));");
+                    break;
+                }
+                case bc_arraylength:
+                    out.append("stack.push(stack.pop().length);");
+                    break;
+                case bc_iastore:
+                case bc_lastore:
+                case bc_fastore:
+                case bc_dastore:
+                case bc_aastore:
+                case bc_bastore:
+                case bc_castore:
+                case bc_sastore: {
+                    out.append("{ var value = stack.pop(); var indx = stack.pop(); stack.pop()[indx] = value; }");
+                    break;
+                }
+                case bc_iaload:
+                case bc_laload:
+                case bc_faload:
+                case bc_daload:
+                case bc_aaload:
+                case bc_baload:
+                case bc_caload:
+                case bc_saload: {
+                    out.append("{ var indx = stack.pop(); stack.push(stack.pop()[indx]); }");
+                    break;
+                }
                 case bc_dup:
                     out.append("stack.push(stack[stack.length - 1]);");
                     break;
@@ -492,7 +537,7 @@ public final class ByteCodeToJavaScript {
                 case bc_getfield: {
                     int indx = readIntArg(byteCodes, i);
                     CPFieldInfo fi = (CPFieldInfo) jc.getConstantPool().get(indx);
-                    out.append(" stack.push(stack.pop().").append(fi.getFieldName()).append(");");
+                    out.append("stack.push(stack.pop().").append(fi.getFieldName()).append(");");
                     i += 2;
                     break;
                 }
@@ -734,5 +779,15 @@ public final class ByteCodeToJavaScript {
         } else {
             out.append(d);
         }
+    }
+
+    private String encodeConstant(CPEntry entry) {
+        final String v;
+        if (entry instanceof CPStringInfo) {
+            v = "\"" + entry.getValue().toString().replace("\"", "\\\"") + "\"";
+        } else {
+            v = entry.getValue().toString();
+        }
+        return v;
     }
 }

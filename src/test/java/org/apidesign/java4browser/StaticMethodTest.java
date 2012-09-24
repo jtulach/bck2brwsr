@@ -182,7 +182,7 @@ public class StaticMethodTest {
                 int lastBlock = sb.lastIndexOf("{");
                 throw new IllegalStateException(
                     "Error while compiling " + name + "\n" + 
-                    sb.substring(lastBlock + 1, sb.length()), 
+                    sb.substring(0, sb.length()), 
                     ex
                 );
             }
