@@ -87,6 +87,21 @@ public class InstanceTest {
         );
     }
     
+    @Test public void verifyCastToClass() throws Exception {
+        assertExec(
+            "Five signals all is good",
+            "org_apidesign_vm4brwsr_Instance_castsWorkIZ",
+            Double.valueOf(5.0), false
+        );
+    }
+    @Test public void verifyCastToInterface() throws Exception {
+        assertExec(
+            "Five signals all is good",
+            "org_apidesign_vm4brwsr_Instance_castsWorkIZ",
+            Double.valueOf(5.0), true
+        );
+    }
+    
     private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
         StringBuilder sb = new StringBuilder();
         Invocable i = StaticMethodTest.compileClass(sb, 

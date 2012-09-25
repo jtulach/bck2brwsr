@@ -70,6 +70,16 @@ public class Instance {
         Instance i = createInstance(sub);
         return isInstanceSubOf(i);
     }
+    public static int castsWork(boolean interfc) {
+        Instance i = createInstance(true);
+        if (interfc) {
+            GetByte b = (GetByte)i;
+        } else {
+            InstanceSub s = (InstanceSub)i;
+        }
+        return 5;
+    }
+    
     private static boolean isInstanceSubOf(Instance instance) {
         return instance instanceof InstanceSub;
     }

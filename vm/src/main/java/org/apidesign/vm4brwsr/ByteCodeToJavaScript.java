@@ -101,6 +101,9 @@ public final class ByteCodeToJavaScript {
             }
         }
         out.append("\n  this.$instOf_").append(className).append(" = true;");
+        for (ClassName superInterface : jc.getInterfaces()) {
+            out.append("\n  this.$instOf_").append(superInterface.getInternalName().replace('/', '_')).append(" = true;");
+        }
         out.append("\n}");
         ClassName sc = jc.getSuperClass();
         if (sc != null) {
@@ -569,6 +572,15 @@ public final class ByteCodeToJavaScript {
                     i += 2;
                     break;
                 }
+                case bc_checkcast: {
+                    int indx = readIntArg(byteCodes, i);
+                    CPClassInfo ci = jc.getConstantPool().getClass(indx);
+                    out.append("if(stack[stack.length - 1].$instOf_")
+                       .append(ci.getClassName().getInternalName().replace('/', '_'))
+                       .append(" != 1) throw {};"); // XXX proper exception
+                    i += 2;
+                    break;
+                }
                 case bc_instanceof: {
                     int indx = readIntArg(byteCodes, i);
                     CPClassInfo ci = jc.getConstantPool().getClass(indx);
@@ -576,6 +588,7 @@ public final class ByteCodeToJavaScript {
                        .append(ci.getClassName().getInternalName().replace('/', '_'))
                        .append(" ? 1 : 0);");
                     i += 2;
+                    break;
                 }
                     
             }
