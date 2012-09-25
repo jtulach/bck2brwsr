@@ -43,7 +43,10 @@ final class GenJS {
             }
             String name = toProcess.getFirst();
             processed.add(name);
-            if (name.startsWith("java/") && !name.equals("java/lang/Object")) {
+            if (name.startsWith("java/") 
+                && !name.equals("java/lang/Object")
+                && !name.equals("java/lang/String")
+            ) {
                 continue;
             }
             InputStream is = GenJS.class.getClassLoader().getResourceAsStream(name + ".class");
