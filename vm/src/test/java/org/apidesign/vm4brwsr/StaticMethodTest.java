@@ -17,15 +17,7 @@ If not, see http://opensource.org/licenses/GPL-2.0.
 */
 package org.apidesign.vm4brwsr;
 
-import org.apidesign.vm4brwsr.ByteCodeToJavaScript;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Set;
-import java.util.TreeSet;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -162,32 +154,7 @@ public class StaticMethodTest {
         if (sb == null) {
             sb = new StringBuilder();
         }
-        Set<String> processed = new HashSet<String>();
-
-        LinkedList<String> toProcess = new LinkedList<String>(Arrays.asList(names));
-        for (;;) {
-            toProcess.removeAll(processed);
-            if (toProcess.isEmpty()) {
-                break;
-            }
-            String name = toProcess.getFirst();
-            processed.add(name);
-            if (name.startsWith("java/") && !name.equals("java/lang/Object")) {
-                continue;
-            }
-            InputStream is = StaticMethodTest.class.getClassLoader().getResourceAsStream(name + ".class");
-            assertNotNull(is, "Class file found");
-            try {
-                ByteCodeToJavaScript.compile(is, sb, toProcess);
-            } catch (RuntimeException ex) {
-                int lastBlock = sb.lastIndexOf("{");
-                throw new IllegalStateException(
-                    "Error while compiling " + name + "\n" + 
-                    sb.substring(0, sb.length()), 
-                    ex
-                );
-            }
-        }
+        GenJS.compile(sb, names);
         ScriptEngineManager sem = new ScriptEngineManager();
         ScriptEngine js = sem.getEngineByExtension("js");
         try {

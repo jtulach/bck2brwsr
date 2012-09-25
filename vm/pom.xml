@@ -45,18 +45,29 @@
       <connection>scm:hg:http://source.apidesign.org/hg/bck2brwsr</connection>
       <url>http://source.apidesign.org/hg/bck2brwsr</url>
   </scm>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>com.mycila.maven-license-plugin</groupId>
-                <artifactId>maven-license-plugin</artifactId>
-                <version>1.9.0</version>
-                <configuration>
-                    <header>src/header.txt</header>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+  <build>
+      <plugins>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-jar-plugin</artifactId>
+              <configuration>
+                  <archive>
+                      <manifest>
+                          <mainClass>org.apidesign.vm4brwsr.GenJS</mainClass>
+                      </manifest>
+                  </archive>
+              </configuration>
+          </plugin>
+          <plugin>
+              <groupId>com.mycila.maven-license-plugin</groupId>
+              <artifactId>maven-license-plugin</artifactId>
+              <version>1.9.0</version>
+              <configuration>
+                  <header>src/header.txt</header>
+              </configuration>
+          </plugin>
+      </plugins>
+  </build>
   <dependencies>
     <dependency>
       <groupId>org.testng</groupId>
