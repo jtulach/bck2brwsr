@@ -53,14 +53,21 @@ public class Array {
     
     private static final Array[] ARR = { new Array(), new Array(), new Array() };
     
+    private static Array[] arr() {
+        return ARR;
+    }
+    private static <T> T[] filter(T[] in) {
+        return in;
+    }
+    
     public static double sum() {
         double sum = 0.0;
-        for (int i = 0; i < ARR.length; i++) {
-            sum += ARR[i].bytes();
-            sum += ARR[i].shorts();
-            sum += ARR[i].ints()[2];
-            sum += ARR[i].floats();
-            sum += ARR[i].doubles();
+        for (int i = 0; i < arr().length; i++) {
+            sum += arr()[i].bytes();
+            sum += arr()[i].shorts();
+            sum += arr()[i].ints()[2];
+            sum += arr()[i].floats();
+            sum += filter(arr())[i].doubles();
         }
         return sum;
     }

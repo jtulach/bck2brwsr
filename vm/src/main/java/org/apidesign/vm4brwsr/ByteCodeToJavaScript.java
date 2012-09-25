@@ -687,7 +687,7 @@ public final class ByteCodeToJavaScript {
                         sig.insert(firstPos, descriptor.substring(i, next).replace('/', '_'));
                         sig.insert(firstPos, ch);
                         if (array) {
-                            sig.append('A');
+                            sig.insert(firstPos, 'A');
                         }
                         hasReturnType[0] = true;
                     }
@@ -717,11 +717,11 @@ public final class ByteCodeToJavaScript {
             tmp.append("classV"); // NOI18N
         } else {
             tmp.append(m.getName());
-            outType(findDescriptor(m.getReturnType()), tmp);
+            outType(m.getReturnType(), tmp);
         } 
         List<Parameter> args = m.getParameters();
         for (Parameter t : args) {
-            outType(findDescriptor(t.getDescriptor()), tmp);
+            outType(t.getDescriptor(), tmp);
         }
         return tmp.toString();
     }
@@ -814,7 +814,12 @@ public final class ByteCodeToJavaScript {
         }
     }
 
-    private void outType(final String d, StringBuilder out) {
+    private void outType(String d, StringBuilder out) {
+        int arr = 0;
+        while (d.charAt(0) == '[') {
+            out.append('A');
+            d = d.substring(1);
+        }
         if (d.charAt(0) == 'L') {
             assert d.charAt(d.length() - 1) == ';';
             out.append(d.replace('/', '_').substring(0, d.length() - 1));
