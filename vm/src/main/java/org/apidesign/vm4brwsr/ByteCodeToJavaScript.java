@@ -129,7 +129,7 @@ public final class ByteCodeToJavaScript {
             out.append(space);
             out.append("arg").append(String.valueOf(index));
             space = ",";
-            final String desc = args.get(i).getDescriptor();
+            final String desc = findDescriptor(args.get(i).getDescriptor());
             if ("D".equals(desc) || "J".equals(desc)) {
                 index += 2;
             } else {
@@ -169,7 +169,7 @@ public final class ByteCodeToJavaScript {
         for (int index = 1, i = 0; i < args.size(); i++) {
             out.append(space);
             out.append("arg").append(String.valueOf(index));
-            final String desc = args.get(i).getDescriptor();
+            final String desc = findDescriptor(args.get(i).getDescriptor());
             if ("D".equals(desc) || "J".equals(desc)) {
                 index += 2;
             } else {
@@ -633,6 +633,7 @@ public final class ByteCodeToJavaScript {
         int cnt = 0;
         int i = 0;
         Boolean count = null;
+        boolean array = false;
         int firstPos = sig.length();
         while (i < descriptor.length()) {
             char ch = descriptor.charAt(i++);
@@ -643,6 +644,9 @@ public final class ByteCodeToJavaScript {
                 case ')':
                     count = false;
                     continue;
+                case 'A':
+                    array = true;
+                    break;
                 case 'B': 
                 case 'C': 
                 case 'D': 
@@ -653,10 +657,16 @@ public final class ByteCodeToJavaScript {
                 case 'Z': 
                     if (count) {
                         cnt++;
+                        if (array) {
+                            sig.append('A');
+                        }
                         sig.append(ch);
                     } else {
                         hasReturnType[0] = true;
                         sig.insert(firstPos, ch);
+                        if (array) {
+                            sig.insert(firstPos, 'A');
+                        }
                     }
                     continue;
                 case 'V': 
@@ -668,11 +678,17 @@ public final class ByteCodeToJavaScript {
                     int next = descriptor.indexOf(';', i);
                     if (count) {
                         cnt++;
+                        if (array) {
+                            sig.append('A');
+                        }
                         sig.append(ch);
                         sig.append(descriptor.substring(i, next).replace('/', '_'));
                     } else {
                         sig.insert(firstPos, descriptor.substring(i, next).replace('/', '_'));
                         sig.insert(firstPos, ch);
+                        if (array) {
+                            sig.append('A');
+                        }
                         hasReturnType[0] = true;
                     }
                     i = next + 1;
@@ -701,11 +717,11 @@ public final class ByteCodeToJavaScript {
             tmp.append("classV"); // NOI18N
         } else {
             tmp.append(m.getName());
-            outType(m.getReturnType(), tmp);
+            outType(findDescriptor(m.getReturnType()), tmp);
         } 
         List<Parameter> args = m.getParameters();
         for (Parameter t : args) {
-            outType(t.getDescriptor(), tmp);
+            outType(findDescriptor(t.getDescriptor()), tmp);
         }
         return tmp.toString();
     }
@@ -717,7 +733,7 @@ public final class ByteCodeToJavaScript {
         } else {
             name.append(mi.getName());
         }
-        cnt[0] = countArgs(mi.getDescriptor(), hasReturn, name);
+        cnt[0] = countArgs(findDescriptor(mi.getDescriptor()), hasReturn, name);
         return name.toString();
     }
 
@@ -815,5 +831,9 @@ public final class ByteCodeToJavaScript {
             v = entry.getValue().toString();
         }
         return v;
+    }
+
+    private String findDescriptor(String d) {
+        return d.replace('[', 'A');
     }
 }

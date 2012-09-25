@@ -39,8 +39,8 @@ public class Array {
         return shorts[1];
     }
     
-    int ints() {
-        return ints[2];
+    int[] ints() {
+        return ints;
     }
     
     float floats() {
@@ -58,7 +58,7 @@ public class Array {
         for (int i = 0; i < ARR.length; i++) {
             sum += ARR[i].bytes();
             sum += ARR[i].shorts();
-            sum += ARR[i].ints();
+            sum += ARR[i].ints()[2];
             sum += ARR[i].floats();
             sum += ARR[i].doubles();
         }
