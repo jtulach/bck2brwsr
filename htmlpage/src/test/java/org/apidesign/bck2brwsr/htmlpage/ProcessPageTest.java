@@ -43,4 +43,13 @@ public class ProcessPageTest {
     void testWhetherWeCanCallTheGeneratedIdFields() {
         Title t = TestPage.PG_TITLE;
     }
+    
+    @OnClick(id="pg.button")
+    static void handleButtonClick() {
+        
+    }
+    
+    @Test public void testOnclickHandlerGenerated() {
+        
+    }
 }

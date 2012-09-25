@@ -33,4 +33,12 @@ public abstract class Element {
     static void setAttribute(Element el, String property, Object value) {
         throw new UnsupportedOperationException("Needs JavaScript!");
     }
+    
+    /** Executes given runnable when user performs a "click" on the given
+     * element.
+     * @param r the runnable to execute, never null
+     */
+    public final void addOnClick(Runnable r) {
+        throw new UnsupportedOperationException("Needs JavaScript!");
+    }
 }

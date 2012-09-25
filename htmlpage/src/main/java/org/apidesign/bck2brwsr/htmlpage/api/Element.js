@@ -4,3 +4,7 @@ function org_apidesign_bck2brwsr_htmlpage_api_Element_setAttribute_Lorg_apidesig
     document.getElementById(self.id)[property] = value;
 }
 
+function org_apidesign_bck2brwsr_htmlpage_api_Element_addOnClick_Ljava_lang_Runnable(self, run) {
+    document.getElementById(self.id).onClick = function() { run.runV(); };
+}
+
