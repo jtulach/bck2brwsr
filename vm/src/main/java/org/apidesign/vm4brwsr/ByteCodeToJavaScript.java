@@ -238,6 +238,15 @@ public final class ByteCodeToJavaScript {
                     out.append("stack.push(arg").append(indx + ");");
                     break;
                 }
+                case bc_istore:
+                case bc_lstore:
+                case bc_fstore:
+                case bc_dstore:
+                case bc_astore: {
+                    final int indx = (byteCodes[++i] + 256) % 256;
+                    out.append("arg" + indx).append(" = stack.pop()");
+                    break;
+                }
                 case bc_astore_0:
                 case bc_istore_0:
                 case bc_lstore_0:
@@ -536,6 +545,10 @@ public final class ByteCodeToJavaScript {
                     break;
                 case bc_bipush:
                     out.append("stack.push(" + byteCodes[++i] + ");");
+                    break;
+                case bc_sipush:
+                    out.append("stack.push(" + readIntArg(byteCodes, i) + ");");
+                    i += 2;
                     break;
                 case bc_getfield: {
                     int indx = readIntArg(byteCodes, i);
