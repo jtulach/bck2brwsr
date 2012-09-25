@@ -29,4 +29,8 @@ public abstract class Element {
     }
     
     abstract void dontSubclass();
+    
+    static void setAttribute(Element el, String property, Object value) {
+        throw new UnsupportedOperationException("Needs JavaScript!");
+    }
 }

@@ -21,12 +21,16 @@ package org.apidesign.bck2brwsr.htmlpage.api;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class Button extends Element {
+public final class Button extends Element {
     public Button(String id) {
         super(id);
     }
 
     @Override
     void dontSubclass() {
+    }
+
+    public void setDisabled(boolean state) {
+        setAttribute(this, "disabled", state);
     }
 }

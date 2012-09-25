@@ -21,12 +21,16 @@ package org.apidesign.bck2brwsr.htmlpage.api;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class Input extends Element {
+public final class Input extends Element {
     public Input(String id) {
         super(id);
     }
 
     @Override
     void dontSubclass() {
+    }
+    
+    public void setAutocomplete(boolean state) {
+        setAttribute(this, "autocomplete", state);
     }
 }
