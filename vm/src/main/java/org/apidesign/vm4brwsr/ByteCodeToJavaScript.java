@@ -90,11 +90,6 @@ public final class ByteCodeToJavaScript {
         final String className = jc.getName().getInternalName().replace('/', '_');
         out.append("\nfunction ").append(className);
         out.append("() {");
-        for (Method m : jc.getMethods()) {
-            if (!m.isStatic() && !m.isPrivate() && !m.getName().contains("<init>")) {
-                compiler.generateMethodReference(m);
-            }
-        }
         for (Variable v : jc.getVariables()) {
             if (!v.isStatic()) {
                 out.append("\n  this." + v.getName() + " = 0;");
@@ -109,6 +104,11 @@ public final class ByteCodeToJavaScript {
         if (sc != null) {
             out.append("\n").append(className)
                .append(".prototype = new ").append(sc.getInternalName().replace('/', '_'));
+        }
+        for (Method m : jc.getMethods()) {
+            if (!m.isStatic() && !m.isPrivate() && !m.getName().contains("<init>")) {
+                compiler.generateMethodReference("\n" + className + ".prototype.", m);
+            }
         }
         for (String init : toInitilize) {
             out.append("\n").append(init).append("();");
@@ -152,9 +152,9 @@ public final class ByteCodeToJavaScript {
         out.append("}");
     }
     
-    private void generateMethodReference(Method m) throws IOException {
+    private void generateMethodReference(String prefix, Method m) throws IOException {
         final String name = findMethodName(m);
-        out.append("\n  this.").append(name).append(" = ")
+        out.append(prefix).append(name).append(" = ")
            .append(jc.getName().getInternalName().replace('/', '_'))
            .append('_').append(name).append(";");
     }
