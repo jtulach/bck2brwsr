@@ -17,6 +17,14 @@ public class StringTest {
             "H", 0
         );
     }
+
+    @Test public void toStringConcatenation() throws Exception {
+        assertExec(
+            "Five executions should generate 5Hello World!",
+            "org_apidesign_vm4brwsr_StringSample_toStringTestLjava_lang_StringI",
+            "5Hello World!", 5
+        );
+    }
     
     private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
         StringBuilder sb = new StringBuilder();

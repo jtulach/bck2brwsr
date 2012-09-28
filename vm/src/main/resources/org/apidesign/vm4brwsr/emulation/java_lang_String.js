@@ -662,32 +662,6 @@ function java_lang_String_consVIIAC(arg0,arg1,arg2,arg3) {
     case 19: return; // 177
   }
 }
-function java_lang_String_lengthI(arg0) {
-  var arg1;
-;
-  var stack = new Array(1);
-  var gt = 0;
-  for(;;) switch(gt) {
-    case 0: stack.push(arg0); // 42
-    case 1: stack.push(stack.pop().count); // 180 1 97
-    case 4: return stack.pop(); // 172
-  }
-}
-function java_lang_String_isEmptyZ(arg0) {
-  var arg1;
-;
-  var stack = new Array(1);
-  var gt = 0;
-  for(;;) switch(gt) {
-    case 0: stack.push(arg0); // 42
-    case 1: stack.push(stack.pop().count); // 180 1 97
-    case 4: if (stack.pop() != 0) { gt = 11; continue; } // 154 0 7
-    case 7: stack.push(1); // 4
-    case 8: gt = 12; continue; // 167 0 4
-    case 11: stack.push(0); // 3
-    case 12: return stack.pop(); // 172
-  }
-}
 */
 
 String.prototype._toJS = function (self) { return self; };
@@ -695,6 +669,13 @@ String.prototype._toJS = function (self) { return self; };
 function java_lang_String_charAtCI(arg0,arg1) {
     return arg0._toJS(arg0).charAt(arg1);
 }
+function java_lang_String_lengthI(arg0) {
+    return arg0._toJS(arg0).length;
+}
+function java_lang_String_isEmptyZ(arg0) {
+    return arg0._toJS(arg0).length === 0;
+}
+
 /*
 function java_lang_String_codePointAtII(arg0,arg1) {
   var arg2;
@@ -3395,6 +3376,8 @@ java_lang_String.prototype = function _toJS() { return r; };
 
 /* new method for JavaScript String */
 String.prototype.charAtCI = java_lang_String_charAtCI;
+String.prototype.lengthI = java_lang_String_lengthI;
+String.prototype.isEmptyZ = java_lang_String_isEmptyZ;
 
 
 

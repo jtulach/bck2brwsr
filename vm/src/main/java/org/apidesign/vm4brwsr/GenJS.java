@@ -43,9 +43,14 @@ final class GenJS {
             }
             String name = toProcess.getFirst();
             processed.add(name);
+            if (name.startsWith("sun/")) {
+                continue;
+            }
             if (name.startsWith("java/") 
                 && !name.equals("java/lang/Object")
                 && !name.equals("java/lang/String")
+                && !name.equals("java/lang/StringBuilder")
+                && !name.equals("java/lang/AbstractStringBuilder")
             ) {
                 continue;
             }
