@@ -110,6 +110,13 @@ public class StaticMethodTest {
             3
         );
     }
+    @Test public void nullCheck() throws Exception {
+        assertExec(
+            "Returns nothing",
+            "org_apidesign_vm4brwsr_StaticMethod_noneLjava_lang_ObjectII",
+            null, 1, 3
+        );
+    }
     @Test public void and() throws Exception {
         assertExec(
             "And will be 3",
@@ -143,7 +150,7 @@ public class StaticMethodTest {
         if (ret == null && expRes == null) {
             return;
         }
-        if (expRes.equals(ret)) {
+        if (expRes != null && expRes.equals(ret)) {
             return;
         }
         assertEquals(ret, expRes, msg + "was: " + ret + "\n" + sb);
