@@ -95,10 +95,6 @@ public final class ByteCodeToJavaScript {
                 out.append("\n  this." + v.getName() + " = 0;");
             }
         }
-        out.append("\n  this.$instOf_").append(className).append(" = true;");
-        for (ClassName superInterface : jc.getInterfaces()) {
-            out.append("\n  this.$instOf_").append(superInterface.getInternalName().replace('/', '_')).append(" = true;");
-        }
         out.append("\n}");
         ClassName sc = jc.getSuperClass();
         if (sc != null) {
@@ -109,6 +105,10 @@ public final class ByteCodeToJavaScript {
             if (!m.isStatic() && !m.isPrivate() && !m.getName().contains("<init>")) {
                 compiler.generateMethodReference("\n" + className + ".prototype.", m);
             }
+        }
+        out.append("\n" + className + ".prototype.$instOf_").append(className).append(" = true;");
+        for (ClassName superInterface : jc.getInterfaces()) {
+            out.append("\n" + className + ".prototype.$instOf_").append(superInterface.getInternalName().replace('/', '_')).append(" = true;");
         }
         for (String init : toInitilize) {
             out.append("\n").append(init).append("();");
