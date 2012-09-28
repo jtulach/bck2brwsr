@@ -14,7 +14,7 @@ public class StringTest {
         assertExec(
             "First char in Hello is H",
             "org_apidesign_vm4brwsr_StringSample_sayHelloCI",
-            Double.valueOf((int)'H'), 0
+            "H", 0
         );
     }
     
