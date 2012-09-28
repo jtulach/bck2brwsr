@@ -90,25 +90,25 @@ public final class ByteCodeToJavaScript {
         final String className = jc.getName().getInternalName().replace('/', '_');
         out.append("\nfunction ").append(className);
         out.append("() {");
-        for (Method m : jc.getMethods()) {
-            if (!m.isStatic()) {
-                compiler.generateMethodReference(m);
-            }
-        }
         for (Variable v : jc.getVariables()) {
             if (!v.isStatic()) {
                 out.append("\n  this." + v.getName() + " = 0;");
             }
         }
-        out.append("\n  this.$instOf_").append(className).append(" = true;");
-        for (ClassName superInterface : jc.getInterfaces()) {
-            out.append("\n  this.$instOf_").append(superInterface.getInternalName().replace('/', '_')).append(" = true;");
-        }
         out.append("\n}");
         ClassName sc = jc.getSuperClass();
         if (sc != null) {
             out.append("\n").append(className)
-               .append(".prototype = new ").append(sc.getInternalName().replace('/', '_'));
+               .append(".prototype = new ").append(sc.getInternalName().replace('/', '_')).append(';');
+        }
+        for (Method m : jc.getMethods()) {
+            if (!m.isStatic() && !m.isPrivate() && !m.getName().contains("<init>")) {
+                compiler.generateMethodReference("\n" + className + ".prototype.", m);
+            }
+        }
+        out.append("\n" + className + ".prototype.$instOf_").append(className).append(" = true;");
+        for (ClassName superInterface : jc.getInterfaces()) {
+            out.append("\n" + className + ".prototype.$instOf_").append(superInterface.getInternalName().replace('/', '_')).append(" = true;");
         }
         for (String init : toInitilize) {
             out.append("\n").append(init).append("();");
@@ -152,9 +152,9 @@ public final class ByteCodeToJavaScript {
         out.append("}");
     }
     
-    private void generateMethodReference(Method m) throws IOException {
+    private void generateMethodReference(String prefix, Method m) throws IOException {
         final String name = findMethodName(m);
-        out.append("\n  this.").append(name).append(" = ")
+        out.append(prefix).append(name).append(" = ")
            .append(jc.getName().getInternalName().replace('/', '_'))
            .append('_').append(name).append(";");
     }
@@ -588,9 +588,13 @@ public final class ByteCodeToJavaScript {
                 case bc_checkcast: {
                     int indx = readIntArg(byteCodes, i);
                     CPClassInfo ci = jc.getConstantPool().getClass(indx);
-                    out.append("if(stack[stack.length - 1].$instOf_")
-                       .append(ci.getClassName().getInternalName().replace('/', '_'))
-                       .append(" != 1) throw {};"); // XXX proper exception
+                    final String type = ci.getClassName().getType();
+                    if (!type.startsWith("[")) {
+                        // no way to check arrays right now
+                        out.append("if(stack[stack.length - 1].$instOf_")
+                           .append(type.replace('/', '_'))
+                           .append(" != 1) throw {};"); // XXX proper exception
+                    }
                     i += 2;
                     break;
                 }
@@ -605,13 +609,13 @@ public final class ByteCodeToJavaScript {
                 }
                     
             }
-            out.append(" /*");
+            out.append(" //");
             for (int j = prev; j <= i; j++) {
                 out.append(" ");
                 final int cc = (byteCodes[j] + 256) % 256;
                 out.append(Integer.toString(cc));
             }
-            out.append("*/\n");
+            out.append("\n");
         }
         out.append("  }\n");
     }
@@ -710,24 +714,24 @@ public final class ByteCodeToJavaScript {
     }
 
     private String findMethodName(Method m) {
-        StringBuilder tmp = new StringBuilder();
+        StringBuilder name = new StringBuilder();
+        String descr = m.getDescriptor();
         if ("<init>".equals(m.getName())) { // NOI18N
-            tmp.append("consV"); // NOI18N
+            name.append("cons"); // NOI18N
         } else if ("<clinit>".equals(m.getName())) { // NOI18N
-            tmp.append("classV"); // NOI18N
+            name.append("class"); // NOI18N
         } else {
-            tmp.append(m.getName());
-            outType(m.getReturnType(), tmp);
+            name.append(m.getName());
         } 
-        List<Parameter> args = m.getParameters();
-        for (Parameter t : args) {
-            outType(t.getDescriptor(), tmp);
-        }
-        return tmp.toString();
+        
+        boolean hasReturn[] = { false };
+        countArgs(findDescriptor(m.getDescriptor()), hasReturn, name);
+        return name.toString();
     }
 
     private String findMethodName(CPMethodInfo mi, int[] cnt, boolean[] hasReturn) {
         StringBuilder name = new StringBuilder();
+        String descr = mi.getDescriptor();
         if ("<init>".equals(mi.getName())) { // NOI18N
             name.append("cons"); // NOI18N
         } else {
