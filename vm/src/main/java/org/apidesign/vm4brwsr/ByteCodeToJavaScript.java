@@ -588,9 +588,13 @@ public final class ByteCodeToJavaScript {
                 case bc_checkcast: {
                     int indx = readIntArg(byteCodes, i);
                     CPClassInfo ci = jc.getConstantPool().getClass(indx);
-                    out.append("if(stack[stack.length - 1].$instOf_")
-                       .append(ci.getClassName().getInternalName().replace('/', '_'))
-                       .append(" != 1) throw {};"); // XXX proper exception
+                    final String type = ci.getClassName().getType();
+                    if (!type.startsWith("[")) {
+                        // no way to check arrays right now
+                        out.append("if(stack[stack.length - 1].$instOf_")
+                           .append(type.replace('/', '_'))
+                           .append(" != 1) throw {};"); // XXX proper exception
+                    }
                     i += 2;
                     break;
                 }
@@ -710,24 +714,24 @@ public final class ByteCodeToJavaScript {
     }
 
     private String findMethodName(Method m) {
-        StringBuilder tmp = new StringBuilder();
+        StringBuilder name = new StringBuilder();
+        String descr = m.getDescriptor();
         if ("<init>".equals(m.getName())) { // NOI18N
-            tmp.append("consV"); // NOI18N
+            name.append("cons"); // NOI18N
         } else if ("<clinit>".equals(m.getName())) { // NOI18N
-            tmp.append("classV"); // NOI18N
+            name.append("class"); // NOI18N
         } else {
-            tmp.append(m.getName());
-            outType(m.getReturnType(), tmp);
+            name.append(m.getName());
         } 
-        List<Parameter> args = m.getParameters();
-        for (Parameter t : args) {
-            outType(t.getDescriptor(), tmp);
-        }
-        return tmp.toString();
+        
+        boolean hasReturn[] = { false };
+        countArgs(findDescriptor(m.getDescriptor()), hasReturn, name);
+        return name.toString();
     }
 
     private String findMethodName(CPMethodInfo mi, int[] cnt, boolean[] hasReturn) {
         StringBuilder name = new StringBuilder();
+        String descr = mi.getDescriptor();
         if ("<init>".equals(mi.getName())) { // NOI18N
             name.append("cons"); // NOI18N
         } else {
