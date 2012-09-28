@@ -70,28 +70,11 @@ function java_lang_String_consVLjava_lang_String(arg0,arg1) {
     case 60: return; // 177
   }
 }
+*/
 function java_lang_String_consVAC(arg0,arg1) {
-  var arg2;
-;
-  var stack = new Array(2);
-  var gt = 0;
-  for(;;) switch(gt) {
-    case 0: stack.push(arg0); // 42
-    case 1: { java_lang_Object_consV(stack.pop()); } // 183 1 130
-    case 4: stack.push(arg0); // 42
-    case 5: stack.push(0); // 3
-    case 6: { var v = stack.pop(); stack.pop().offset = v; } // 181 1 99
-    case 9: stack.push(arg0); // 42
-    case 10: stack.push(arg1); // 43
-    case 11: stack.push(stack.pop().length); // 190
-    case 12: { var v = stack.pop(); stack.pop().count = v; } // 181 1 97
-    case 15: stack.push(arg0); // 42
-    case 16: stack.push(arg1); // 43
-    case 17: { var v0 = stack.pop(); stack.push(java_lang_StringValue_fromACAC(v0)); } // 184 1 170
-    case 20: { var v = stack.pop(); stack.pop().value = v; } // 181 1 100
-    case 23: return; // 177
-  }
+    arg0.r = arg1.join("");
 }
+/*
 function java_lang_String_consVACII(arg0,arg1,arg2,arg3) {
   var arg4;
 ;
@@ -664,16 +647,14 @@ function java_lang_String_consVIIAC(arg0,arg1,arg2,arg3) {
 }
 */
 
-String.prototype._toJS = function (self) { return self; };
-
 function java_lang_String_charAtCI(arg0,arg1) {
-    return arg0._toJS(arg0).charAt(arg1);
+    return arg0.toString().charAt(arg1);
 }
 function java_lang_String_lengthI(arg0) {
-    return arg0._toJS(arg0).length;
+    return arg0.toString().length;
 }
 function java_lang_String_isEmptyZ(arg0) {
-    return arg0._toJS(arg0).length === 0;
+    return arg0.toString().length === 0;
 }
 
 /*
@@ -813,7 +794,7 @@ function java_lang_String_offsetByCodePointsIII(arg0,arg1,arg2) {
 
 // public void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin) {
 function java_lang_String_getCharsVIIACAI(arg0,arg1,arg2,arg3,arg4) {
-    var s = arg0._toJS(arg0);
+    var s = arg0.toString();
     while (arg1 < arg2) {
         arg3[arg4++] = s[arg1++];
     }
@@ -3001,16 +2982,11 @@ function java_lang_String_trimLjava_lang_String(arg0) {
     case 86: return stack.pop(); // 176
   }
 }
+*/
 function java_lang_String_toStringLjava_lang_String(arg0) {
-  var arg1;
-;
-  var stack = new Array(1);
-  var gt = 0;
-  for(;;) switch(gt) {
-    case 0: stack.push(arg0); // 42
-    case 1: return stack.pop(); // 176
-  }
+    return arg0.toString();
 }
+/*
 function java_lang_String_toCharArrayAC(arg0) {
   var arg1;
   var arg2;
@@ -3233,25 +3209,33 @@ var java_lang_String_serialVersionUID = 0;
 var java_lang_String_serialPersistentFields = 0;
 var java_lang_String_CASE_INSENSITIVE_ORDER = 0;
 function java_lang_String() {
-  /** the real value of this string that we delegate to */
+  /** the real value of this 'string' we delegate to */
   this.r = '';
+  
+  var self = this;
     /*
-  this.consV = java_lang_String_consV;
-  this.consVLjava_lang_String = java_lang_String_consVLjava_lang_String;
-  this.consVAC = java_lang_String_consVAC;
-  this.consVACII = java_lang_String_consVACII;
-  this.consVAIII = java_lang_String_consVAIII;
-  this.consVABIII = java_lang_String_consVABIII;
-  this.consVABI = java_lang_String_consVABI;
-  this.consVABIILjava_lang_String = java_lang_String_consVABIILjava_lang_String;
-  this.consVABIILjava_nio_charset_Charset = java_lang_String_consVABIILjava_nio_charset_Charset;
-  this.consVABLjava_lang_String = java_lang_String_consVABLjava_lang_String;
-  this.consVABLjava_nio_charset_Charset = java_lang_String_consVABLjava_nio_charset_Charset;
-  this.consVABII = java_lang_String_consVABII;
-  this.consVAB = java_lang_String_consVAB;
-  this.consVLjava_lang_StringBuffer = java_lang_String_consVLjava_lang_StringBuffer;
-  this.consVLjava_lang_StringBuilder = java_lang_String_consVLjava_lang_StringBuilder;
-  this.consVIIAC = java_lang_String_consVIIAC;
+  this.value = 0;
+  this.offset = 0;
+  this.count = 0;
+  this.hash = 0;
+  */
+  this.toString = function() { return self.r; };
+}
+java_lang_String.prototype = new String;
+//java_lang_String_classV();
+
+/* new method for JavaScript String */
+String.prototype.charAtCI = java_lang_String_charAtCI;
+String.prototype.lengthI = java_lang_String_lengthI;
+String.prototype.isEmptyZ = java_lang_String_isEmptyZ;
+String.prototype.getCharsVIIACAI = java_lang_String_getCharsVIIACAI;
+String.prototype.toStringLjava_lang_String = java_lang_String_toStringLjava_lang_String;
+String.prototype.$instOf_java_lang_String = true;
+String.prototype.$instOf_java_io_Serializable = true;
+String.prototype.$instOf_java_lang_Comparable = true;
+String.prototype.$instOf_java_lang_CharSequence = true;
+
+/*
   this.lengthI = java_lang_String_lengthI;
   this.isEmptyZ = java_lang_String_isEmptyZ;
   this.charAtCI = java_lang_String_charAtCI;
@@ -3306,25 +3290,7 @@ function java_lang_String() {
   this.toCharArrayAC = java_lang_String_toCharArrayAC;
   this.internLjava_lang_String = java_lang_String_internLjava_lang_String;
   this.compareToILjava_lang_Object = java_lang_String_compareToILjava_lang_Object;
-  this.value = 0;
-  this.offset = 0;
-  this.count = 0;
-  this.hash = 0;
-  this.$instOf_java_lang_String = true;
-  this.$instOf_java_io_Serializable = true;
-  this.$instOf_java_lang_Comparable = true;
-  this.$instOf_java_lang_CharSequence = true;
-  */
-}
-java_lang_String.prototype = new String;
-java_lang_String.prototype = function _toJS() { return r; };
-//java_lang_String_classV();
-
-/* new method for JavaScript String */
-String.prototype.charAtCI = java_lang_String_charAtCI;
-String.prototype.lengthI = java_lang_String_lengthI;
-String.prototype.isEmptyZ = java_lang_String_isEmptyZ;
-String.prototype.getCharsVIIACAI = java_lang_String_getCharsVIIACAI;
+ */
 
 
 

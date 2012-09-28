@@ -18,6 +18,14 @@ public class StringTest {
         );
     }
 
+    @Test public void fromChars() throws Exception {
+        assertExec(
+            "First char in Hello is ABC",
+            "org_apidesign_vm4brwsr_StringSample_fromCharsLjava_lang_StringCCC",
+            "ABC", 'A', 'B', 'C'
+        );
+    }
+
     @Test public void toStringConcatenation() throws Exception {
         assertExec(
             "Five executions should generate 5Hello World!",

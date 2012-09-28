@@ -18,6 +18,11 @@ public class StringSample {
         return HELLO.charAt(indx);
     }
     
+    public static String fromChars(char a, char b, char c) {
+        char[] arr = { a, b, c };
+        return new String(arr).toString();
+    }
+    
     public static String toStringTest(int howMuch) {
         StringSample ss = null;
         for (int i = 0; i < howMuch; i++) {
