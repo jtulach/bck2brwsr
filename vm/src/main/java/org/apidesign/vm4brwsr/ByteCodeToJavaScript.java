@@ -91,7 +91,7 @@ public final class ByteCodeToJavaScript {
         out.append("\nfunction ").append(className);
         out.append("() {");
         for (Method m : jc.getMethods()) {
-            if (!m.isStatic()) {
+            if (!m.isStatic() && !m.isPrivate() && !m.getName().contains("<init>")) {
                 compiler.generateMethodReference(m);
             }
         }
