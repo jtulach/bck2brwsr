@@ -103,7 +103,7 @@ public final class ByteCodeToJavaScript {
         ClassName sc = jc.getSuperClass();
         if (sc != null) {
             out.append("\n").append(className)
-               .append(".prototype = new ").append(sc.getInternalName().replace('/', '_'));
+               .append(".prototype = new ").append(sc.getInternalName().replace('/', '_')).append(';');
         }
         for (Method m : jc.getMethods()) {
             if (!m.isStatic() && !m.isPrivate() && !m.getName().contains("<init>")) {
@@ -605,13 +605,13 @@ public final class ByteCodeToJavaScript {
                 }
                     
             }
-            out.append(" /*");
+            out.append(" //");
             for (int j = prev; j <= i; j++) {
                 out.append(" ");
                 final int cc = (byteCodes[j] + 256) % 256;
                 out.append(Integer.toString(cc));
             }
-            out.append("*/\n");
+            out.append("\n");
         }
         out.append("  }\n");
     }
