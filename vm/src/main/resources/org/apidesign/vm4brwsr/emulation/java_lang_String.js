@@ -809,71 +809,17 @@ function java_lang_String_offsetByCodePointsIII(arg0,arg1,arg2) {
     case 47: return stack.pop(); // 172
   }
 }
-function java_lang_String_getCharsVACI(arg0,arg1,arg2) {
-  var arg3;
-;
-  var stack = new Array(5);
-  var gt = 0;
-  for(;;) switch(gt) {
-    case 0: stack.push(arg0); // 42
-    case 1: stack.push(stack.pop().value); // 180 1 100
-    case 4: stack.push(arg0); // 42
-    case 5: stack.push(stack.pop().offset); // 180 1 99
-    case 8: stack.push(arg1); // 43
-    case 9: stack.push(arg2); // 28
-    case 10: stack.push(arg0); // 42
-    case 11: stack.push(stack.pop().count); // 180 1 97
-    case 14: { var v4 = stack.pop(); var v3 = stack.pop(); var v2 = stack.pop(); var v1 = stack.pop(); var v0 = stack.pop(); java_lang_System_arraycopyVLjava_lang_ObjectILjava_lang_ObjectII(v0, v1, v2, v3, v4); } // 184 1 171
-    case 17: return; // 177
-  }
+*/
+
+// public void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin) {
+function java_lang_String_getCharsVIIACAI(arg0,arg1,arg2,arg3,arg4) {
+    var s = arg0._toJS(arg0);
+    while (arg1 < arg2) {
+        arg3[arg4++] = s[arg1++];
+    }
 }
-function java_lang_String_getCharsVIIACI(arg0,arg1,arg2,arg3,arg4) {
-  var arg5;
-;
-  var stack = new Array(6);
-  var gt = 0;
-  for(;;) switch(gt) {
-    case 0: stack.push(arg1); // 27
-    case 1: if (stack.pop() >= 0) { gt = 13; continue; } // 156 0 12
-    case 4: stack.push(new java_lang_StringIndexOutOfBoundsException); // 187 0 206
-    case 7: stack.push(stack[stack.length - 1]); // 89
-    case 8: stack.push(arg1); // 27
-    case 9: { var v0 = stack.pop(); java_lang_StringIndexOutOfBoundsException_consVI(stack.pop(), v0); } // 183 1 169
-    case 12:  // 191
-    case 13: stack.push(arg2); // 28
-    case 14: stack.push(arg0); // 42
-    case 15: stack.push(stack.pop().count); // 180 1 97
-    case 18: if (stack.pop() >= stack.pop()) { gt = 30; continue; } // 164 0 12
-    case 21: stack.push(new java_lang_StringIndexOutOfBoundsException); // 187 0 206
-    case 24: stack.push(stack[stack.length - 1]); // 89
-    case 25: stack.push(arg2); // 28
-    case 26: { var v0 = stack.pop(); java_lang_StringIndexOutOfBoundsException_consVI(stack.pop(), v0); } // 183 1 169
-    case 29:  // 191
-    case 30: stack.push(arg1); // 27
-    case 31: stack.push(arg2); // 28
-    case 32: if (stack.pop() >= stack.pop()) { gt = 46; continue; } // 164 0 14
-    case 35: stack.push(new java_lang_StringIndexOutOfBoundsException); // 187 0 206
-    case 38: stack.push(stack[stack.length - 1]); // 89
-    case 39: stack.push(arg2); // 28
-    case 40: stack.push(arg1); // 27
-    case 41: { var tmp = stack.pop(); stack.push(stack.pop() - tmp); } // 100
-    case 42: { var v0 = stack.pop(); java_lang_StringIndexOutOfBoundsException_consVI(stack.pop(), v0); } // 183 1 169
-    case 45:  // 191
-    case 46: stack.push(arg0); // 42
-    case 47: stack.push(stack.pop().value); // 180 1 100
-    case 50: stack.push(arg0); // 42
-    case 51: stack.push(stack.pop().offset); // 180 1 99
-    case 54: stack.push(arg1); // 27
-    case 55: stack.push(stack.pop() + stack.pop()); // 96
-    case 56: stack.push(arg3); // 45
-    case 57: stack.push(arg4); // 21 4
-    case 59: stack.push(arg2); // 28
-    case 60: stack.push(arg1); // 27
-    case 61: { var tmp = stack.pop(); stack.push(stack.pop() - tmp); } // 100
-    case 62: { var v4 = stack.pop(); var v3 = stack.pop(); var v2 = stack.pop(); var v1 = stack.pop(); var v0 = stack.pop(); java_lang_System_arraycopyVLjava_lang_ObjectILjava_lang_ObjectII(v0, v1, v2, v3, v4); } // 184 1 171
-    case 65: return; // 177
-  }
-}
+
+/*
 function java_lang_String_getBytesVIIABI(arg0,arg1,arg2,arg3,arg4) {
   var arg5;
   var arg6;
@@ -3378,6 +3324,7 @@ java_lang_String.prototype = function _toJS() { return r; };
 String.prototype.charAtCI = java_lang_String_charAtCI;
 String.prototype.lengthI = java_lang_String_lengthI;
 String.prototype.isEmptyZ = java_lang_String_isEmptyZ;
+String.prototype.getCharsVIIACAI = java_lang_String_getCharsVIIACAI;
 
 
 
