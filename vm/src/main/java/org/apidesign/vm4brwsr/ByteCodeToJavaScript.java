@@ -355,6 +355,9 @@ public final class ByteCodeToJavaScript {
                 case bc_i2s:
                     out.append("/* number conversion */");
                     break;
+                case bc_aconst_null:
+                    out.append("stack.push(null);");
+                    break;
                 case bc_iconst_0:
                 case bc_dconst_0:
                 case bc_lconst_0:
@@ -485,7 +488,10 @@ public final class ByteCodeToJavaScript {
                     i += 2;
                     break;
                 }
-                case bc_invokeinterface:
+                case bc_invokeinterface: {
+                    i = invokeVirtualMethod(byteCodes, i) + 2;
+                    break;
+                }
                 case bc_invokevirtual:
                     i = invokeVirtualMethod(byteCodes, i);
                     break;

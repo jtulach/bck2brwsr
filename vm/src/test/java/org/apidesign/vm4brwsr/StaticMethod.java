@@ -24,6 +24,18 @@ package org.apidesign.vm4brwsr;
 public class StaticMethod {
     private static int cnt;
     
+    public static Object none(int x, int y) {
+        Object toRet = null;
+        for (int i = x; i < y; i++) {
+            if (i == 2) {
+                toRet = null;
+            } else {
+                toRet = new Object();
+            }
+        }
+        return toRet;
+    }
+    
     public static int sum(int x, int y) {
         return x + y;
     }
