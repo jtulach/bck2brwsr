@@ -23,6 +23,10 @@ package org.apidesign.vm4brwsr;
  */
 public class StaticMethod {
     private static int cnt;
+
+    public static int minusOne() {
+        return -1;
+    }
     
     public static Object none(int x, int y) {
         Object toRet = null;

@@ -48,6 +48,14 @@ public class StaticMethodTest {
         );
     }
 
+    @Test public void minusOne() throws Exception {
+        assertExec(
+            "Should be minus one", 
+            "org_apidesign_vm4brwsr_StaticMethod_minusOneI", 
+            Double.valueOf(-1)
+        );
+    }
+
     @Test public void doubleWithoutLong() throws Exception {
         assertExec(
             "Should be two",

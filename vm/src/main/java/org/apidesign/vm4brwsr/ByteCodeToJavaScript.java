@@ -358,6 +358,9 @@ public final class ByteCodeToJavaScript {
                 case bc_aconst_null:
                     out.append("stack.push(null);");
                     break;
+                case bc_iconst_m1:
+                    out.append("stack.push(-1);");
+                    break;
                 case bc_iconst_0:
                 case bc_dconst_0:
                 case bc_lconst_0:
