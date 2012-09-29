@@ -124,7 +124,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
                 throw new OutOfMemoryError();
             newCapacity = Integer.MAX_VALUE;
         }
-        value = copyOf(value, newCapacity);
+        value = String.copyOf(value, newCapacity);
     }
 
     /**
@@ -136,7 +136,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      */
     public void trimToSize() {
         if (count < value.length) {
-            value = copyOf(value, count);
+            value = String.copyOf(value, count);
         }
     }
 
@@ -1399,10 +1399,4 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
         return value;
     }
 
-    private static char[] copyOf(char[] original, int newLength) {
-        char[] copy = new char[newLength];
-        System.arraycopy(original, 0, copy, 0,
-            Math.min(original.length, newLength));
-        return copy;
-    }
 }

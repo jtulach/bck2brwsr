@@ -25,7 +25,6 @@
 
 package java.lang;
 import  java.io.*;
-import  java.util.*;
 
 /**
  * The {@code Throwable} class is the superclass of all errors and
@@ -211,8 +210,9 @@ public class Throwable implements Serializable {
 
     // Setting this static field introduces an acceptable
     // initialization dependency on a few java.util classes.
-    private static final List<Throwable> SUPPRESSED_SENTINEL =
-        Collections.unmodifiableList(new ArrayList<Throwable>(0));
+// I don't think this dependency is acceptable
+//    private static final List<Throwable> SUPPRESSED_SENTINEL =
+//        Collections.unmodifiableList(new ArrayList<Throwable>(0));
 
     /**
      * The list of suppressed exceptions, as returned by {@link
@@ -224,7 +224,7 @@ public class Throwable implements Serializable {
      * @serial
      * @since 1.7
      */
-    private List<Throwable> suppressedExceptions = SUPPRESSED_SENTINEL;
+//    private List<Throwable> suppressedExceptions = SUPPRESSED_SENTINEL;
 
     /** Message for trying to suppress a null exception. */
     private static final String NULL_CAUSE_MESSAGE = "Cannot suppress a null exception.";
@@ -363,8 +363,8 @@ public class Throwable implements Serializable {
         }
         detailMessage = message;
         this.cause = cause;
-        if (!enableSuppression)
-            suppressedExceptions = null;
+//        if (!enableSuppression)
+//            suppressedExceptions = null;
     }
 
     /**
@@ -645,9 +645,9 @@ public class Throwable implements Serializable {
     private void printStackTrace(PrintStreamOrWriter s) {
         // Guard against malicious overrides of Throwable.equals by
         // using a Set with identity equality semantics.
-        Set<Throwable> dejaVu =
-            Collections.newSetFromMap(new IdentityHashMap<Throwable, Boolean>());
-        dejaVu.add(this);
+//        Set<Throwable> dejaVu =
+//            Collections.newSetFromMap(new IdentityHashMap<Throwable, Boolean>());
+//        dejaVu.add(this);
 
         synchronized (s.lock()) {
             // Print our stack trace
@@ -657,13 +657,13 @@ public class Throwable implements Serializable {
                 s.println("\tat " + traceElement);
 
             // Print suppressed exceptions, if any
-            for (Throwable se : getSuppressed())
-                se.printEnclosedStackTrace(s, trace, SUPPRESSED_CAPTION, "\t", dejaVu);
+//            for (Throwable se : getSuppressed())
+//                se.printEnclosedStackTrace(s, trace, SUPPRESSED_CAPTION, "\t", dejaVu);
 
             // Print cause, if any
             Throwable ourCause = getCause();
-            if (ourCause != null)
-                ourCause.printEnclosedStackTrace(s, trace, CAUSE_CAPTION, "", dejaVu);
+//            if (ourCause != null)
+//                ourCause.printEnclosedStackTrace(s, trace, CAUSE_CAPTION, "", dejaVu);
         }
     }
 
@@ -675,12 +675,9 @@ public class Throwable implements Serializable {
                                          StackTraceElement[] enclosingTrace,
                                          String caption,
                                          String prefix,
-                                         Set<Throwable> dejaVu) {
+                                         Object dejaVu) {
         assert Thread.holdsLock(s.lock());
-        if (dejaVu.contains(this)) {
-            s.println("\t[CIRCULAR REFERENCE:" + this + "]");
-        } else {
-            dejaVu.add(this);
+        {
             // Compute number of frames in common between this and enclosing trace
             StackTraceElement[] trace = getOurStackTrace();
             int m = trace.length - 1;
@@ -911,25 +908,25 @@ public class Throwable implements Serializable {
     private void readObject(ObjectInputStream s)
         throws IOException, ClassNotFoundException {
         s.defaultReadObject();     // read in all fields
-        if (suppressedExceptions != null) {
-            List<Throwable> suppressed = null;
-            if (suppressedExceptions.isEmpty()) {
-                // Use the sentinel for a zero-length list
-                suppressed = SUPPRESSED_SENTINEL;
-            } else { // Copy Throwables to new list
-                suppressed = new ArrayList<Throwable>(1);
-                for (Throwable t : suppressedExceptions) {
-                    // Enforce constraints on suppressed exceptions in
-                    // case of corrupt or malicious stream.
-                    if (t == null)
-                        throw new NullPointerException(NULL_CAUSE_MESSAGE);
-                    if (t == this)
-                        throw new IllegalArgumentException(SELF_SUPPRESSION_MESSAGE);
-                    suppressed.add(t);
-                }
-            }
-            suppressedExceptions = suppressed;
-        } // else a null suppressedExceptions field remains null
+//        if (suppressedExceptions != null) {
+//            List<Throwable> suppressed = null;
+//            if (suppressedExceptions.isEmpty()) {
+//                // Use the sentinel for a zero-length list
+//                suppressed = SUPPRESSED_SENTINEL;
+//            } else { // Copy Throwables to new list
+//                suppressed = new ArrayList<Throwable>(1);
+//                for (Throwable t : suppressedExceptions) {
+//                    // Enforce constraints on suppressed exceptions in
+//                    // case of corrupt or malicious stream.
+//                    if (t == null)
+//                        throw new NullPointerException(NULL_CAUSE_MESSAGE);
+//                    if (t == this)
+//                        throw new IllegalArgumentException(SELF_SUPPRESSION_MESSAGE);
+//                    suppressed.add(t);
+//                }
+//            }
+//            suppressedExceptions = suppressed;
+//        } // else a null suppressedExceptions field remains null
 
         /*
          * For zero-length stack traces, use a clone of
@@ -1044,13 +1041,13 @@ public class Throwable implements Serializable {
         if (exception == null)
             throw new NullPointerException(NULL_CAUSE_MESSAGE);
 
-        if (suppressedExceptions == null) // Suppressed exceptions not recorded
-            return;
-
-        if (suppressedExceptions == SUPPRESSED_SENTINEL)
-            suppressedExceptions = new ArrayList<Throwable>(1);
-
-        suppressedExceptions.add(exception);
+//        if (suppressedExceptions == null) // Suppressed exceptions not recorded
+//            return;
+//
+//        if (suppressedExceptions == SUPPRESSED_SENTINEL)
+//            suppressedExceptions = new ArrayList<Throwable>(1);
+//
+//        suppressedExceptions.add(exception);
     }
 
     private static final Throwable[] EMPTY_THROWABLE_ARRAY = new Throwable[0];
@@ -1071,10 +1068,11 @@ public class Throwable implements Serializable {
      * @since 1.7
      */
     public final synchronized Throwable[] getSuppressed() {
-        if (suppressedExceptions == SUPPRESSED_SENTINEL ||
-            suppressedExceptions == null)
-            return EMPTY_THROWABLE_ARRAY;
-        else
-            return suppressedExceptions.toArray(EMPTY_THROWABLE_ARRAY);
+        return new Throwable[0];
+//        if (suppressedExceptions == SUPPRESSED_SENTINEL ||
+//            suppressedExceptions == null)
+//            return EMPTY_THROWABLE_ARRAY;
+//        else
+//            return suppressedExceptions.toArray(EMPTY_THROWABLE_ARRAY);
     }
 }

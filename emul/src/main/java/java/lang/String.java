@@ -27,12 +27,7 @@ package java.lang;
 
 import java.io.ObjectStreamField;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Formatter;
-import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -169,7 +164,7 @@ public final class String
             // String itself.  Perhaps this constructor is being called
             // in order to trim the baggage, so make a copy of the array.
             int off = original.offset;
-            v = Arrays.copyOfRange(originalValue, off, off+size);
+            v = copyOfRange(originalValue, off, off+size);
         } else {
             // The array representing the String is the same
             // size as the String, so no point in making a copy.
@@ -193,7 +188,7 @@ public final class String
         int size = value.length;
         this.offset = 0;
         this.count = size;
-        this.value = Arrays.copyOf(value, size);
+        this.value = copyOf(value, size);
     }
 
     /**
@@ -230,7 +225,7 @@ public final class String
         }
         this.offset = 0;
         this.count = count;
-        this.value = Arrays.copyOfRange(value, offset, offset+count);
+        this.value = copyOfRange(value, offset, offset+count);
     }
 
     /**
@@ -484,6 +479,7 @@ public final class String
      *
      * @since  1.6
      */
+    /* don't want dependnecy on Charset
     public String(byte bytes[], int offset, int length, Charset charset) {
         if (charset == null)
             throw new NullPointerException("charset");
@@ -493,6 +489,7 @@ public final class String
         this.count = v.length;
         this.value = v;
     }
+    */
 
     /**
      * Constructs a new {@code String} by decoding the specified array of bytes
@@ -543,9 +540,11 @@ public final class String
      *
      * @since  1.6
      */
+    /* don't want dep on Charset
     public String(byte bytes[], Charset charset) {
         this(bytes, 0, bytes.length, charset);
     }
+    */
 
     /**
      * Constructs a new {@code String} by decoding the specified subarray of
@@ -972,10 +971,12 @@ public final class String
      *
      * @since  1.6
      */
+    /* don't want dep on Charset
     public byte[] getBytes(Charset charset) {
         if (charset == null) throw new NullPointerException();
         return StringCoding.encode(charset, value, offset, count);
     }
+    */
 
     /**
      * Encodes this {@code String} into a sequence of bytes using the
@@ -2325,7 +2326,7 @@ public final class String
               ((ch-'A')|('Z'-ch)) < 0)) &&
             (ch < Character.MIN_HIGH_SURROGATE ||
              ch > Character.MAX_LOW_SURROGATE))
-        {
+        {/*
             int off = 0;
             int next = 0;
             boolean limited = limit > 0;
@@ -2356,7 +2357,7 @@ public final class String
                     resultSize--;
             String[] result = new String[resultSize];
             return list.subList(0, resultSize).toArray(result);
-        }
+        */}
         return Pattern.compile(regex).split(this, limit);
     }
 
@@ -2454,99 +2455,99 @@ public final class String
      * @see     java.lang.String#toUpperCase(Locale)
      * @since   1.1
      */
-    public String toLowerCase(Locale locale) {
-        if (locale == null) {
-            throw new NullPointerException();
-        }
-
-        int     firstUpper;
-
-        /* Now check if there are any characters that need to be changed. */
-        scan: {
-            for (firstUpper = 0 ; firstUpper < count; ) {
-                char c = value[offset+firstUpper];
-                if ((c >= Character.MIN_HIGH_SURROGATE) &&
-                    (c <= Character.MAX_HIGH_SURROGATE)) {
-                    int supplChar = codePointAt(firstUpper);
-                    if (supplChar != Character.toLowerCase(supplChar)) {
-                        break scan;
-                    }
-                    firstUpper += Character.charCount(supplChar);
-                } else {
-                    if (c != Character.toLowerCase(c)) {
-                        break scan;
-                    }
-                    firstUpper++;
-                }
-            }
-            return this;
-        }
-
-        char[]  result = new char[count];
-        int     resultOffset = 0;  /* result may grow, so i+resultOffset
-                                    * is the write location in result */
-
-        /* Just copy the first few lowerCase characters. */
-        System.arraycopy(value, offset, result, 0, firstUpper);
-
-        String lang = locale.getLanguage();
-        boolean localeDependent =
-            (lang == "tr" || lang == "az" || lang == "lt");
-        char[] lowerCharArray;
-        int lowerChar;
-        int srcChar;
-        int srcCount;
-        for (int i = firstUpper; i < count; i += srcCount) {
-            srcChar = (int)value[offset+i];
-            if ((char)srcChar >= Character.MIN_HIGH_SURROGATE &&
-                (char)srcChar <= Character.MAX_HIGH_SURROGATE) {
-                srcChar = codePointAt(i);
-                srcCount = Character.charCount(srcChar);
-            } else {
-                srcCount = 1;
-            }
-            if (localeDependent || srcChar == '\u03A3') { // GREEK CAPITAL LETTER SIGMA
-                lowerChar = ConditionalSpecialCasing.toLowerCaseEx(this, i, locale);
-            } else if (srcChar == '\u0130') { // LATIN CAPITAL LETTER I DOT
-                lowerChar = Character.ERROR;
-            } else {
-                lowerChar = Character.toLowerCase(srcChar);
-            }
-            if ((lowerChar == Character.ERROR) ||
-                (lowerChar >= Character.MIN_SUPPLEMENTARY_CODE_POINT)) {
-                if (lowerChar == Character.ERROR) {
-                     if (!localeDependent && srcChar == '\u0130') {
-                         lowerCharArray =
-                             ConditionalSpecialCasing.toLowerCaseCharArray(this, i, Locale.ENGLISH);
-                     } else {
-                        lowerCharArray =
-                            ConditionalSpecialCasing.toLowerCaseCharArray(this, i, locale);
-                     }
-                } else if (srcCount == 2) {
-                    resultOffset += Character.toChars(lowerChar, result, i + resultOffset) - srcCount;
-                    continue;
-                } else {
-                    lowerCharArray = Character.toChars(lowerChar);
-                }
-
-                /* Grow result if needed */
-                int mapLen = lowerCharArray.length;
-                if (mapLen > srcCount) {
-                    char[] result2 = new char[result.length + mapLen - srcCount];
-                    System.arraycopy(result, 0, result2, 0,
-                        i + resultOffset);
-                    result = result2;
-                }
-                for (int x=0; x<mapLen; ++x) {
-                    result[i+resultOffset+x] = lowerCharArray[x];
-                }
-                resultOffset += (mapLen - srcCount);
-            } else {
-                result[i+resultOffset] = (char)lowerChar;
-            }
-        }
-        return new String(0, count+resultOffset, result);
-    }
+//    public String toLowerCase(Locale locale) {
+//        if (locale == null) {
+//            throw new NullPointerException();
+//        }
+//
+//        int     firstUpper;
+//
+//        /* Now check if there are any characters that need to be changed. */
+//        scan: {
+//            for (firstUpper = 0 ; firstUpper < count; ) {
+//                char c = value[offset+firstUpper];
+//                if ((c >= Character.MIN_HIGH_SURROGATE) &&
+//                    (c <= Character.MAX_HIGH_SURROGATE)) {
+//                    int supplChar = codePointAt(firstUpper);
+//                    if (supplChar != Character.toLowerCase(supplChar)) {
+//                        break scan;
+//                    }
+//                    firstUpper += Character.charCount(supplChar);
+//                } else {
+//                    if (c != Character.toLowerCase(c)) {
+//                        break scan;
+//                    }
+//                    firstUpper++;
+//                }
+//            }
+//            return this;
+//        }
+//
+//        char[]  result = new char[count];
+//        int     resultOffset = 0;  /* result may grow, so i+resultOffset
+//                                    * is the write location in result */
+//
+//        /* Just copy the first few lowerCase characters. */
+//        System.arraycopy(value, offset, result, 0, firstUpper);
+//
+//        String lang = locale.getLanguage();
+//        boolean localeDependent =
+//            (lang == "tr" || lang == "az" || lang == "lt");
+//        char[] lowerCharArray;
+//        int lowerChar;
+//        int srcChar;
+//        int srcCount;
+//        for (int i = firstUpper; i < count; i += srcCount) {
+//            srcChar = (int)value[offset+i];
+//            if ((char)srcChar >= Character.MIN_HIGH_SURROGATE &&
+//                (char)srcChar <= Character.MAX_HIGH_SURROGATE) {
+//                srcChar = codePointAt(i);
+//                srcCount = Character.charCount(srcChar);
+//            } else {
+//                srcCount = 1;
+//            }
+//            if (localeDependent || srcChar == '\u03A3') { // GREEK CAPITAL LETTER SIGMA
+//                lowerChar = ConditionalSpecialCasing.toLowerCaseEx(this, i, locale);
+//            } else if (srcChar == '\u0130') { // LATIN CAPITAL LETTER I DOT
+//                lowerChar = Character.ERROR;
+//            } else {
+//                lowerChar = Character.toLowerCase(srcChar);
+//            }
+//            if ((lowerChar == Character.ERROR) ||
+//                (lowerChar >= Character.MIN_SUPPLEMENTARY_CODE_POINT)) {
+//                if (lowerChar == Character.ERROR) {
+//                     if (!localeDependent && srcChar == '\u0130') {
+//                         lowerCharArray =
+//                             ConditionalSpecialCasing.toLowerCaseCharArray(this, i, Locale.ENGLISH);
+//                     } else {
+//                        lowerCharArray =
+//                            ConditionalSpecialCasing.toLowerCaseCharArray(this, i, locale);
+//                     }
+//                } else if (srcCount == 2) {
+//                    resultOffset += Character.toChars(lowerChar, result, i + resultOffset) - srcCount;
+//                    continue;
+//                } else {
+//                    lowerCharArray = Character.toChars(lowerChar);
+//                }
+//
+//                /* Grow result if needed */
+//                int mapLen = lowerCharArray.length;
+//                if (mapLen > srcCount) {
+//                    char[] result2 = new char[result.length + mapLen - srcCount];
+//                    System.arraycopy(result, 0, result2, 0,
+//                        i + resultOffset);
+//                    result = result2;
+//                }
+//                for (int x=0; x<mapLen; ++x) {
+//                    result[i+resultOffset+x] = lowerCharArray[x];
+//                }
+//                resultOffset += (mapLen - srcCount);
+//            } else {
+//                result[i+resultOffset] = (char)lowerChar;
+//            }
+//        }
+//        return new String(0, count+resultOffset, result);
+//    }
 
     /**
      * Converts all of the characters in this <code>String</code> to lower
@@ -2619,6 +2620,7 @@ public final class String
      * @see     java.lang.String#toLowerCase(Locale)
      * @since   1.1
      */
+    /* not for javascript 
     public String toUpperCase(Locale locale) {
         if (locale == null) {
             throw new NullPointerException();
@@ -2626,7 +2628,7 @@ public final class String
 
         int     firstLower;
 
-        /* Now check if there are any characters that need to be changed. */
+        // Now check if there are any characters that need to be changed. 
         scan: {
             for (firstLower = 0 ; firstLower < count; ) {
                 int c = (int)value[offset+firstLower];
@@ -2648,11 +2650,11 @@ public final class String
             return this;
         }
 
-        char[]  result       = new char[count]; /* may grow */
+        char[]  result       = new char[count]; /* may grow *
         int     resultOffset = 0;  /* result may grow, so i+resultOffset
-                                    * is the write location in result */
+                                    * is the write location in result *
 
-        /* Just copy the first few upperCase characters. */
+        /* Just copy the first few upperCase characters. *
         System.arraycopy(value, offset, result, 0, firstLower);
 
         String lang = locale.getLanguage();
@@ -2692,7 +2694,7 @@ public final class String
                     upperCharArray = Character.toChars(upperChar);
                 }
 
-                /* Grow result if needed */
+                /* Grow result if needed *
                 int mapLen = upperCharArray.length;
                 if (mapLen > srcCount) {
                     char[] result2 = new char[result.length + mapLen - srcCount];
@@ -2710,6 +2712,7 @@ public final class String
         }
         return new String(0, count+resultOffset, result);
     }
+    */
 
     /**
      * Converts all of the characters in this <code>String</code> to upper
@@ -2731,7 +2734,7 @@ public final class String
      * @see     java.lang.String#toUpperCase(Locale)
      */
     public String toUpperCase() {
-        return toUpperCase(Locale.getDefault());
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -2884,9 +2887,9 @@ public final class String
      * @see  java.util.Formatter
      * @since  1.5
      */
-    public static String format(Locale l, String format, Object ... args) {
-        return new Formatter(l).format(format, args).toString();
-    }
+//    public static String format(Locale l, String format, Object ... args) {
+//        return new Formatter(l).format(format, args).toString();
+//    }
 
     /**
      * Returns the string representation of the <code>Object</code> argument.
@@ -3072,5 +3075,22 @@ public final class String
      *          guaranteed to be from a pool of unique strings.
      */
     public native String intern();
+
+    static char[] copyOfRange(char[] original, int from, int to) {
+        int newLength = to - from;
+        if (newLength < 0) {
+            throw new IllegalArgumentException(from + " > " + to);
+        }
+        char[] copy = new char[newLength];
+        System.arraycopy(original, from, copy, 0,
+            Math.min(original.length - from, newLength));
+        return copy;
+    }
+    static char[] copyOf(char[] original, int newLength) {
+        char[] copy = new char[newLength];
+        System.arraycopy(original, 0, copy, 0,
+            Math.min(original.length, newLength));
+        return copy;
+    }
 
 }
