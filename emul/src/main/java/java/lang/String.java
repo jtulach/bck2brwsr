@@ -25,7 +25,6 @@
 
 package java.lang;
 
-import java.io.ObjectStreamClass;
 import java.io.ObjectStreamField;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
