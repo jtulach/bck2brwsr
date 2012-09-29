@@ -25,7 +25,6 @@
 
 package java.lang;
 
-import java.io.ObjectStreamField;
 import java.io.UnsupportedEncodingException;
 import java.util.Comparator;
 
@@ -128,8 +127,8 @@ public final class String
      * A new handle is generated to  refer to all future references to the
      * string instance within the stream.
      */
-    private static final ObjectStreamField[] serialPersistentFields =
-        new ObjectStreamField[0];
+//    private static final ObjectStreamField[] serialPersistentFields =
+//        new ObjectStreamField[0];
 
     /**
      * Initializes a newly created {@code String} object so that it represents

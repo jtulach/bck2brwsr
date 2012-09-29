@@ -905,9 +905,9 @@ public class Throwable implements Serializable {
      * cause} field can hold; both {@code null} and {@code this} are
      * valid values for the field.
      */
-    private void readObject(ObjectInputStream s)
-        throws IOException, ClassNotFoundException {
-        s.defaultReadObject();     // read in all fields
+//    private void readObject(ObjectInputStream s)
+//        throws IOException, ClassNotFoundException {
+//        s.defaultReadObject();     // read in all fields
 //        if (suppressedExceptions != null) {
 //            List<Throwable> suppressed = null;
 //            if (suppressedExceptions.isEmpty()) {
@@ -927,37 +927,37 @@ public class Throwable implements Serializable {
 //            }
 //            suppressedExceptions = suppressed;
 //        } // else a null suppressedExceptions field remains null
-
-        /*
-         * For zero-length stack traces, use a clone of
-         * UNASSIGNED_STACK rather than UNASSIGNED_STACK itself to
-         * allow identity comparison against UNASSIGNED_STACK in
-         * getOurStackTrace.  The identity of UNASSIGNED_STACK in
-         * stackTrace indicates to the getOurStackTrace method that
-         * the stackTrace needs to be constructed from the information
-         * in backtrace.
-         */
-        if (stackTrace != null) {
-            if (stackTrace.length == 0) {
-                stackTrace = UNASSIGNED_STACK.clone();
-            }  else if (stackTrace.length == 1 &&
-                        // Check for the marker of an immutable stack trace
-                        SentinelHolder.STACK_TRACE_ELEMENT_SENTINEL.equals(stackTrace[0])) {
-                stackTrace = null;
-            } else { // Verify stack trace elements are non-null.
-                for(StackTraceElement ste : stackTrace) {
-                    if (ste == null)
-                        throw new NullPointerException("null StackTraceElement in serial stream. ");
-                }
-            }
-        } else {
-            // A null stackTrace field in the serial form can result
-            // from an exception serialized without that field in
-            // older JDK releases; treat such exceptions as having
-            // empty stack traces.
-            stackTrace = UNASSIGNED_STACK.clone();
-        }
-    }
+//
+//        /*
+//         * For zero-length stack traces, use a clone of
+//         * UNASSIGNED_STACK rather than UNASSIGNED_STACK itself to
+//         * allow identity comparison against UNASSIGNED_STACK in
+//         * getOurStackTrace.  The identity of UNASSIGNED_STACK in
+//         * stackTrace indicates to the getOurStackTrace method that
+//         * the stackTrace needs to be constructed from the information
+//         * in backtrace.
+//         */
+//        if (stackTrace != null) {
+//            if (stackTrace.length == 0) {
+//                stackTrace = UNASSIGNED_STACK.clone();
+//            }  else if (stackTrace.length == 1 &&
+//                        // Check for the marker of an immutable stack trace
+//                        SentinelHolder.STACK_TRACE_ELEMENT_SENTINEL.equals(stackTrace[0])) {
+//                stackTrace = null;
+//            } else { // Verify stack trace elements are non-null.
+//                for(StackTraceElement ste : stackTrace) {
+//                    if (ste == null)
+//                        throw new NullPointerException("null StackTraceElement in serial stream. ");
+//                }
+//            }
+//        } else {
+//            // A null stackTrace field in the serial form can result
+//            // from an exception serialized without that field in
+//            // older JDK releases; treat such exceptions as having
+//            // empty stack traces.
+//            stackTrace = UNASSIGNED_STACK.clone();
+//        }
+//    }
 
     /**
      * Write a {@code Throwable} object to a stream.

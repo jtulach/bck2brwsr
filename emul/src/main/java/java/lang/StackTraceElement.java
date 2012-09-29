@@ -25,8 +25,6 @@
 
 package java.lang;
 
-import java.util.Objects;
-
 /**
  * An element in a stack trace, as returned by {@link
  * Throwable#getStackTrace()}.  Each element represents a single stack frame.
@@ -68,8 +66,8 @@ public final class StackTraceElement implements java.io.Serializable {
      */
     public StackTraceElement(String declaringClass, String methodName,
                              String fileName, int lineNumber) {
-        this.declaringClass = Objects.requireNonNull(declaringClass, "Declaring class is null");
-        this.methodName     = Objects.requireNonNull(methodName, "Method name is null");
+        this.declaringClass = declaringClass;
+        this.methodName     = methodName;
         this.fileName       = fileName;
         this.lineNumber     = lineNumber;
     }
@@ -203,8 +201,8 @@ public final class StackTraceElement implements java.io.Serializable {
         StackTraceElement e = (StackTraceElement)obj;
         return e.declaringClass.equals(declaringClass) &&
             e.lineNumber == lineNumber &&
-            Objects.equals(methodName, e.methodName) &&
-            Objects.equals(fileName, e.fileName);
+            equals(methodName, e.methodName) &&
+            equals(fileName, e.fileName);
     }
 
     /**
@@ -212,9 +210,13 @@ public final class StackTraceElement implements java.io.Serializable {
      */
     public int hashCode() {
         int result = 31*declaringClass.hashCode() + methodName.hashCode();
-        result = 31*result + Objects.hashCode(fileName);
+        result = 31*result + (fileName == null ? 0 : fileName.hashCode());
         result = 31*result + lineNumber;
         return result;
+    }
+    
+    private static boolean equals(Object a, Object b) {
+        return (a == b) || (a != null && a.equals(b));
     }
 
     private static final long serialVersionUID = 6992337162326171013L;
