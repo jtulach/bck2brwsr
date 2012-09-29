@@ -917,7 +917,7 @@ public class Throwable implements Serializable {
                 // Use the sentinel for a zero-length list
                 suppressed = SUPPRESSED_SENTINEL;
             } else { // Copy Throwables to new list
-                suppressed = new ArrayList<>(1);
+                suppressed = new ArrayList<Throwable>(1);
                 for (Throwable t : suppressedExceptions) {
                     // Enforce constraints on suppressed exceptions in
                     // case of corrupt or malicious stream.
@@ -1048,7 +1048,7 @@ public class Throwable implements Serializable {
             return;
 
         if (suppressedExceptions == SUPPRESSED_SENTINEL)
-            suppressedExceptions = new ArrayList<>(1);
+            suppressedExceptions = new ArrayList<Throwable>(1);
 
         suppressedExceptions.add(exception);
     }
