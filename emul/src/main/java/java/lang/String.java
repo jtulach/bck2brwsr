@@ -28,9 +28,6 @@ package java.lang;
 import java.io.ObjectStreamField;
 import java.io.UnsupportedEncodingException;
 import java.util.Comparator;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 /**
  * The <code>String</code> class represents character strings. All
@@ -2108,7 +2105,7 @@ public final class String
      * @spec JSR-51
      */
     public boolean matches(String regex) {
-        return Pattern.matches(regex, this);
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -2164,7 +2161,7 @@ public final class String
      * @spec JSR-51
      */
     public String replaceFirst(String regex, String replacement) {
-        return Pattern.compile(regex).matcher(this).replaceFirst(replacement);
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -2207,7 +2204,7 @@ public final class String
      * @spec JSR-51
      */
     public String replaceAll(String regex, String replacement) {
-        return Pattern.compile(regex).matcher(this).replaceAll(replacement);
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -2225,8 +2222,7 @@ public final class String
      * @since 1.5
      */
     public String replace(CharSequence target, CharSequence replacement) {
-        return Pattern.compile(target.toString(), Pattern.LITERAL).matcher(
-            this).replaceAll(Matcher.quoteReplacement(replacement.toString()));
+        throw new UnsupportedOperationException("This one should be supported, but without dep on rest of regexp");
     }
 
     /**
@@ -2310,55 +2306,7 @@ public final class String
      * @spec JSR-51
      */
     public String[] split(String regex, int limit) {
-        /* fastpath if the regex is a
-           (1)one-char String and this character is not one of the
-              RegEx's meta characters ".$|()[{^?*+\\", or
-           (2)two-char String and the first char is the backslash and
-              the second is not the ascii digit or ascii letter.
-        */
-        char ch = 0;
-        if (((regex.count == 1 &&
-             ".$|()[{^?*+\\".indexOf(ch = regex.charAt(0)) == -1) ||
-             (regex.length() == 2 &&
-              regex.charAt(0) == '\\' &&
-              (((ch = regex.charAt(1))-'0')|('9'-ch)) < 0 &&
-              ((ch-'a')|('z'-ch)) < 0 &&
-              ((ch-'A')|('Z'-ch)) < 0)) &&
-            (ch < Character.MIN_HIGH_SURROGATE ||
-             ch > Character.MAX_LOW_SURROGATE))
-        {/*
-            int off = 0;
-            int next = 0;
-            boolean limited = limit > 0;
-            ArrayList<String> list = new ArrayList<String>();
-            while ((next = indexOf(ch, off)) != -1) {
-                if (!limited || list.size() < limit - 1) {
-                    list.add(substring(off, next));
-                    off = next + 1;
-                } else {    // last one
-                    //assert (list.size() == limit - 1);
-                    list.add(substring(off, count));
-                    off = count;
-                    break;
-                }
-            }
-            // If no match was found, return this
-            if (off == 0)
-                return new String[] { this };
-
-            // Add remaining segment
-            if (!limited || list.size() < limit)
-                list.add(substring(off, count));
-
-            // Construct result
-            int resultSize = list.size();
-            if (limit == 0)
-                while (resultSize > 0 && list.get(resultSize-1).length() == 0)
-                    resultSize--;
-            String[] result = new String[resultSize];
-            return list.subList(0, resultSize).toArray(result);
-        */}
-        return Pattern.compile(regex).split(this, limit);
+        throw new UnsupportedOperationException("Needs regexp");
     }
 
     /**
@@ -2569,7 +2517,7 @@ public final class String
      * @see     java.lang.String#toLowerCase(Locale)
      */
     public String toLowerCase() {
-        return toLowerCase(Locale.getDefault());
+        throw new UnsupportedOperationException("Should be supported but without connection to locale");
     }
 
     /**
@@ -2844,7 +2792,7 @@ public final class String
      * @since  1.5
      */
     public static String format(String format, Object ... args) {
-        return new Formatter().format(format, args).toString();
+        throw new UnsupportedOperationException();
     }
 
     /**
