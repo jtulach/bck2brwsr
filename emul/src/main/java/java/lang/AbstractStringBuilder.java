@@ -25,9 +25,6 @@
 
 package java.lang;
 
-import sun.misc.FloatingDecimal;
-import java.util.Arrays;
-
 /**
  * A mutable sequence of characters.
  * <p>
@@ -127,7 +124,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
                 throw new OutOfMemoryError();
             newCapacity = Integer.MAX_VALUE;
         }
-        value = Arrays.copyOf(value, newCapacity);
+        value = copyOf(value, newCapacity);
     }
 
     /**
@@ -139,7 +136,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      */
     public void trimToSize() {
         if (count < value.length) {
-            value = Arrays.copyOf(value, count);
+            value = copyOf(value, count);
         }
     }
 
@@ -654,8 +651,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @return  a reference to this object.
      */
     public AbstractStringBuilder append(float f) {
-        new FloatingDecimal(f).appendTo(this);
-        return this;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -671,8 +667,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @return  a reference to this object.
      */
     public AbstractStringBuilder append(double d) {
-        new FloatingDecimal(d).appendTo(this);
-        return this;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -1404,4 +1399,10 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
         return value;
     }
 
+    private static char[] copyOf(char[] original, int newLength) {
+        char[] copy = new char[newLength];
+        System.arraycopy(original, 0, copy, 0,
+            Math.min(original.length, newLength));
+        return copy;
+    }
 }
