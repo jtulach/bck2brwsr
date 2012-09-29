@@ -24,7 +24,6 @@
  */
 
 package java.lang;
-import java.util.*;
 
 /**
  * This interface imposes a total ordering on the objects of each class that
