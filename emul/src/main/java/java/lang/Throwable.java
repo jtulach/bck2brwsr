@@ -629,137 +629,137 @@ public class Throwable implements Serializable {
      *          ... 2 more
      * </pre>
      */
-    public void printStackTrace() {
-        printStackTrace(System.err);
-    }
-
-    /**
-     * Prints this throwable and its backtrace to the specified print stream.
-     *
-     * @param s {@code PrintStream} to use for output
-     */
-    public void printStackTrace(PrintStream s) {
-        printStackTrace(new WrappedPrintStream(s));
-    }
-
-    private void printStackTrace(PrintStreamOrWriter s) {
-        // Guard against malicious overrides of Throwable.equals by
-        // using a Set with identity equality semantics.
-//        Set<Throwable> dejaVu =
-//            Collections.newSetFromMap(new IdentityHashMap<Throwable, Boolean>());
-//        dejaVu.add(this);
-
-        synchronized (s.lock()) {
-            // Print our stack trace
-            s.println(this);
-            StackTraceElement[] trace = getOurStackTrace();
-            for (StackTraceElement traceElement : trace)
-                s.println("\tat " + traceElement);
-
-            // Print suppressed exceptions, if any
+//    public void printStackTrace() {
+//        printStackTrace(System.err);
+//    }
+//
+//    /**
+//     * Prints this throwable and its backtrace to the specified print stream.
+//     *
+//     * @param s {@code PrintStream} to use for output
+//     */
+//    public void printStackTrace(PrintStream s) {
+//        printStackTrace(new WrappedPrintStream(s));
+//    }
+//
+//    private void printStackTrace(PrintStreamOrWriter s) {
+//        // Guard against malicious overrides of Throwable.equals by
+//        // using a Set with identity equality semantics.
+////        Set<Throwable> dejaVu =
+////            Collections.newSetFromMap(new IdentityHashMap<Throwable, Boolean>());
+////        dejaVu.add(this);
+//
+//        synchronized (s.lock()) {
+//            // Print our stack trace
+//            s.println(this);
+//            StackTraceElement[] trace = getOurStackTrace();
+//            for (StackTraceElement traceElement : trace)
+//                s.println("\tat " + traceElement);
+//
+//            // Print suppressed exceptions, if any
+////            for (Throwable se : getSuppressed())
+////                se.printEnclosedStackTrace(s, trace, SUPPRESSED_CAPTION, "\t", dejaVu);
+//
+//            // Print cause, if any
+//            Throwable ourCause = getCause();
+////            if (ourCause != null)
+////                ourCause.printEnclosedStackTrace(s, trace, CAUSE_CAPTION, "", dejaVu);
+//        }
+//    }
+//
+//    /**
+//     * Print our stack trace as an enclosed exception for the specified
+//     * stack trace.
+//     */
+//    private void printEnclosedStackTrace(PrintStreamOrWriter s,
+//                                         StackTraceElement[] enclosingTrace,
+//                                         String caption,
+//                                         String prefix,
+//                                         Object dejaVu) {
+//        assert Thread.holdsLock(s.lock());
+//        {
+//            // Compute number of frames in common between this and enclosing trace
+//            StackTraceElement[] trace = getOurStackTrace();
+//            int m = trace.length - 1;
+//            int n = enclosingTrace.length - 1;
+//            while (m >= 0 && n >=0 && trace[m].equals(enclosingTrace[n])) {
+//                m--; n--;
+//            }
+//            int framesInCommon = trace.length - 1 - m;
+//
+//            // Print our stack trace
+//            s.println(prefix + caption + this);
+//            for (int i = 0; i <= m; i++)
+//                s.println(prefix + "\tat " + trace[i]);
+//            if (framesInCommon != 0)
+//                s.println(prefix + "\t... " + framesInCommon + " more");
+//
+//            // Print suppressed exceptions, if any
 //            for (Throwable se : getSuppressed())
-//                se.printEnclosedStackTrace(s, trace, SUPPRESSED_CAPTION, "\t", dejaVu);
-
-            // Print cause, if any
-            Throwable ourCause = getCause();
+//                se.printEnclosedStackTrace(s, trace, SUPPRESSED_CAPTION,
+//                                           prefix +"\t", dejaVu);
+//
+//            // Print cause, if any
+//            Throwable ourCause = getCause();
 //            if (ourCause != null)
-//                ourCause.printEnclosedStackTrace(s, trace, CAUSE_CAPTION, "", dejaVu);
-        }
-    }
-
-    /**
-     * Print our stack trace as an enclosed exception for the specified
-     * stack trace.
-     */
-    private void printEnclosedStackTrace(PrintStreamOrWriter s,
-                                         StackTraceElement[] enclosingTrace,
-                                         String caption,
-                                         String prefix,
-                                         Object dejaVu) {
-        assert Thread.holdsLock(s.lock());
-        {
-            // Compute number of frames in common between this and enclosing trace
-            StackTraceElement[] trace = getOurStackTrace();
-            int m = trace.length - 1;
-            int n = enclosingTrace.length - 1;
-            while (m >= 0 && n >=0 && trace[m].equals(enclosingTrace[n])) {
-                m--; n--;
-            }
-            int framesInCommon = trace.length - 1 - m;
-
-            // Print our stack trace
-            s.println(prefix + caption + this);
-            for (int i = 0; i <= m; i++)
-                s.println(prefix + "\tat " + trace[i]);
-            if (framesInCommon != 0)
-                s.println(prefix + "\t... " + framesInCommon + " more");
-
-            // Print suppressed exceptions, if any
-            for (Throwable se : getSuppressed())
-                se.printEnclosedStackTrace(s, trace, SUPPRESSED_CAPTION,
-                                           prefix +"\t", dejaVu);
-
-            // Print cause, if any
-            Throwable ourCause = getCause();
-            if (ourCause != null)
-                ourCause.printEnclosedStackTrace(s, trace, CAUSE_CAPTION, prefix, dejaVu);
-        }
-    }
-
-    /**
-     * Prints this throwable and its backtrace to the specified
-     * print writer.
-     *
-     * @param s {@code PrintWriter} to use for output
-     * @since   JDK1.1
-     */
-    public void printStackTrace(PrintWriter s) {
-        printStackTrace(new WrappedPrintWriter(s));
-    }
-
-    /**
-     * Wrapper class for PrintStream and PrintWriter to enable a single
-     * implementation of printStackTrace.
-     */
-    private abstract static class PrintStreamOrWriter {
-        /** Returns the object to be locked when using this StreamOrWriter */
-        abstract Object lock();
-
-        /** Prints the specified string as a line on this StreamOrWriter */
-        abstract void println(Object o);
-    }
-
-    private static class WrappedPrintStream extends PrintStreamOrWriter {
-        private final PrintStream printStream;
-
-        WrappedPrintStream(PrintStream printStream) {
-            this.printStream = printStream;
-        }
-
-        Object lock() {
-            return printStream;
-        }
-
-        void println(Object o) {
-            printStream.println(o);
-        }
-    }
-
-    private static class WrappedPrintWriter extends PrintStreamOrWriter {
-        private final PrintWriter printWriter;
-
-        WrappedPrintWriter(PrintWriter printWriter) {
-            this.printWriter = printWriter;
-        }
-
-        Object lock() {
-            return printWriter;
-        }
-
-        void println(Object o) {
-            printWriter.println(o);
-        }
-    }
+//                ourCause.printEnclosedStackTrace(s, trace, CAUSE_CAPTION, prefix, dejaVu);
+//        }
+//    }
+//
+//    /**
+//     * Prints this throwable and its backtrace to the specified
+//     * print writer.
+//     *
+//     * @param s {@code PrintWriter} to use for output
+//     * @since   JDK1.1
+//     */
+//    public void printStackTrace(PrintWriter s) {
+//        printStackTrace(new WrappedPrintWriter(s));
+//    }
+//
+//    /**
+//     * Wrapper class for PrintStream and PrintWriter to enable a single
+//     * implementation of printStackTrace.
+//     */
+//    private abstract static class PrintStreamOrWriter {
+//        /** Returns the object to be locked when using this StreamOrWriter */
+//        abstract Object lock();
+//
+//        /** Prints the specified string as a line on this StreamOrWriter */
+//        abstract void println(Object o);
+//    }
+//
+//    private static class WrappedPrintStream extends PrintStreamOrWriter {
+//        private final PrintStream printStream;
+//
+//        WrappedPrintStream(PrintStream printStream) {
+//            this.printStream = printStream;
+//        }
+//
+//        Object lock() {
+//            return printStream;
+//        }
+//
+//        void println(Object o) {
+//            printStream.println(o);
+//        }
+//    }
+//
+//    private static class WrappedPrintWriter extends PrintStreamOrWriter {
+//        private final PrintWriter printWriter;
+//
+//        WrappedPrintWriter(PrintWriter printWriter) {
+//            this.printWriter = printWriter;
+//        }
+//
+//        Object lock() {
+//            return printWriter;
+//        }
+//
+//        void println(Object o) {
+//            printWriter.println(o);
+//        }
+//    }
 
     /**
      * Fills in the execution stack trace. This method records within this
@@ -966,23 +966,23 @@ public class Throwable implements Serializable {
      * form as a one-element array whose element is equal to {@code
      * new StackTraceElement("", "", null, Integer.MIN_VALUE)}.
      */
-    private synchronized void writeObject(ObjectOutputStream s)
-        throws IOException {
-        // Ensure that the stackTrace field is initialized to a
-        // non-null value, if appropriate.  As of JDK 7, a null stack
-        // trace field is a valid value indicating the stack trace
-        // should not be set.
-        getOurStackTrace();
-
-        StackTraceElement[] oldStackTrace = stackTrace;
-        try {
-            if (stackTrace == null)
-                stackTrace = SentinelHolder.STACK_TRACE_SENTINEL;
-            s.defaultWriteObject();
-        } finally {
-            stackTrace = oldStackTrace;
-        }
-    }
+//    private synchronized void writeObject(ObjectOutputStream s)
+//        throws IOException {
+//        // Ensure that the stackTrace field is initialized to a
+//        // non-null value, if appropriate.  As of JDK 7, a null stack
+//        // trace field is a valid value indicating the stack trace
+//        // should not be set.
+//        getOurStackTrace();
+//
+//        StackTraceElement[] oldStackTrace = stackTrace;
+//        try {
+//            if (stackTrace == null)
+//                stackTrace = SentinelHolder.STACK_TRACE_SENTINEL;
+//            s.defaultWriteObject();
+//        } finally {
+//            stackTrace = oldStackTrace;
+//        }
+//    }
 
     /**
      * Appends the specified exception to the exceptions that were
