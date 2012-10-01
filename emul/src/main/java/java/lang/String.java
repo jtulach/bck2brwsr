@@ -570,7 +570,10 @@ public final class String
      */
     public String(byte bytes[], int offset, int length) {
         checkBounds(bytes, offset, length);
-        char[] v  = StringCoding.decode(bytes, offset, length);
+        char[] v  = new char[length];
+        for (int i = 0; i < length; i++) {
+            v[i] = (char)bytes[offset++];
+        }
         this.offset = 0;
         this.count = v.length;
         this.value = v;
@@ -988,7 +991,12 @@ public final class String
      * @since      JDK1.1
      */
     public byte[] getBytes() {
-        return StringCoding.encode(value, offset, count);
+        byte[] arr = new byte[length()];
+        for (int i = 0; i < arr.length; i++) {
+            final char v = charAt(i);
+            arr[i] = (byte)v;
+        }
+        return arr;
     }
 
     /**
