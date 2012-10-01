@@ -416,22 +416,22 @@ public final class StringBuilder
      *             characters currently stored in the string builder, in which
      *             case extra characters are ignored.
      */
-    private void writeObject(java.io.ObjectOutputStream s)
-        throws java.io.IOException {
-        s.defaultWriteObject();
-        s.writeInt(count);
-        s.writeObject(value);
-    }
+//    private void writeObject(java.io.ObjectOutputStream s)
+//        throws java.io.IOException {
+//        s.defaultWriteObject();
+//        s.writeInt(count);
+//        s.writeObject(value);
+//    }
 
     /**
      * readObject is called to restore the state of the StringBuffer from
      * a stream.
      */
-    private void readObject(java.io.ObjectInputStream s)
-        throws java.io.IOException, ClassNotFoundException {
-        s.defaultReadObject();
-        count = s.readInt();
-        value = (char[]) s.readObject();
-    }
+//    private void readObject(java.io.ObjectInputStream s)
+//        throws java.io.IOException, ClassNotFoundException {
+//        s.defaultReadObject();
+//        count = s.readInt();
+//        value = (char[]) s.readObject();
+//    }
 
 }
