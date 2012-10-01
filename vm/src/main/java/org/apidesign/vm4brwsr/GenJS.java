@@ -56,49 +56,7 @@ final class GenJS {
             }
             InputStream emul = GenJS.class.getResourceAsStream("emulation/" + name.replace('/', '_') + ".js");
             if (emul != null) {
-                try {
-                    int state = 0;
-                    for (;;) {
-                        int ch = emul.read();
-                        if (ch == -1) {
-                            break;
-                        }
-                        if (ch < 0 || ch > 255) {
-                            throw new IOException("Invalid char in emulation " + ch);
-                        }
-                        switch (state) {
-                            case 0: 
-                                if (ch == '/') {
-                                    state = 1;
-                                } else {
-                                    out.append((char)ch);
-                                }
-                                break;
-                            case 1:
-                                if (ch == '*') {
-                                    state = 2;
-                                } else {
-                                    out.append('/').append((char)ch);
-                                    state = 0;
-                                }
-                                break;
-                            case 2:
-                                if (ch == '*') {
-                                    state = 3;
-                                }
-                                break;
-                            case 3:
-                                if (ch == '/') {
-                                    state = 0;
-                                } else {
-                                    state = 2;
-                                }
-                                break;
-                        }
-                    }
-                } finally {
-                    emul.close();
-                }
+                readResource(emul, out);
                 continue;
             }
             
@@ -126,6 +84,51 @@ final class GenJS {
                     );
                 }
             }
+        }
+    }
+    private static void readResource(InputStream emul, Appendable out) throws IOException {
+        try {
+            int state = 0;
+            for (;;) {
+                int ch = emul.read();
+                if (ch == -1) {
+                    break;
+                }
+                if (ch < 0 || ch > 255) {
+                    throw new IOException("Invalid char in emulation " + ch);
+                }
+                switch (state) {
+                    case 0: 
+                        if (ch == '/') {
+                            state = 1;
+                        } else {
+                            out.append((char)ch);
+                        }
+                        break;
+                    case 1:
+                        if (ch == '*') {
+                            state = 2;
+                        } else {
+                            out.append('/').append((char)ch);
+                            state = 0;
+                        }
+                        break;
+                    case 2:
+                        if (ch == '*') {
+                            state = 3;
+                        }
+                        break;
+                    case 3:
+                        if (ch == '/') {
+                            state = 0;
+                        } else {
+                            state = 2;
+                        }
+                        break;
+                }
+            }
+        } finally {
+            emul.close();
         }
     }
     
