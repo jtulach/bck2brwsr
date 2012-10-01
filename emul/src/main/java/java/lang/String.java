@@ -3042,7 +3042,9 @@ public final class String
     static void arraycopy(
         char[] value, int srcBegin, char[] dst, int dstBegin, int count
     ) {
-        System.arraycopy(value, srcBegin, dst, dstBegin, count);
+        while (count-- > 0) {
+            dst[dstBegin++] = value[srcBegin++];
+        }
     }
 
 }
