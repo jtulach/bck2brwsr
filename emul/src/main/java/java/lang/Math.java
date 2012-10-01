@@ -24,7 +24,6 @@
  */
 
 package java.lang;
-import java.util.Random;
 
 
 /**
@@ -680,12 +679,12 @@ public final class Math {
             return 0;
     }
 
-    private static Random randomNumberGenerator;
-
-    private static synchronized Random initRNG() {
-        Random rnd = randomNumberGenerator;
-        return (rnd == null) ? (randomNumberGenerator = new Random()) : rnd;
-    }
+//    private static Random randomNumberGenerator;
+//
+//    private static synchronized Random initRNG() {
+//        Random rnd = randomNumberGenerator;
+//        return (rnd == null) ? (randomNumberGenerator = new Random()) : rnd;
+//    }
 
     /**
      * Returns a {@code double} value with a positive sign, greater
@@ -711,9 +710,7 @@ public final class Math {
      * @see Random#nextDouble()
      */
     public static double random() {
-        Random rnd = randomNumberGenerator;
-        if (rnd == null) rnd = initRNG();
-        return rnd.nextDouble();
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -962,9 +959,9 @@ public final class Math {
      * @author Joseph D. Darcy
      * @since 1.5
      */
-    public static double ulp(double d) {
-        return sun.misc.FpUtils.ulp(d);
-    }
+//    public static double ulp(double d) {
+//        return sun.misc.FpUtils.ulp(d);
+//    }
 
     /**
      * Returns the size of an ulp of the argument.  An ulp of a
@@ -989,9 +986,9 @@ public final class Math {
      * @author Joseph D. Darcy
      * @since 1.5
      */
-    public static float ulp(float f) {
-        return sun.misc.FpUtils.ulp(f);
-    }
+//    public static float ulp(float f) {
+//        return sun.misc.FpUtils.ulp(f);
+//    }
 
     /**
      * Returns the signum function of the argument; zero if the argument
@@ -1010,9 +1007,9 @@ public final class Math {
      * @author Joseph D. Darcy
      * @since 1.5
      */
-    public static double signum(double d) {
-        return sun.misc.FpUtils.signum(d);
-    }
+//    public static double signum(double d) {
+//        return sun.misc.FpUtils.signum(d);
+//    }
 
     /**
      * Returns the signum function of the argument; zero if the argument
@@ -1031,9 +1028,9 @@ public final class Math {
      * @author Joseph D. Darcy
      * @since 1.5
      */
-    public static float signum(float f) {
-        return sun.misc.FpUtils.signum(f);
-    }
+//    public static float signum(float f) {
+//        return sun.misc.FpUtils.signum(f);
+//    }
 
     /**
      * Returns the hyperbolic sine of a {@code double} value.
@@ -1251,9 +1248,9 @@ public final class Math {
      * and the sign of {@code sign}.
      * @since 1.6
      */
-    public static double copySign(double magnitude, double sign) {
-        return sun.misc.FpUtils.rawCopySign(magnitude, sign);
-    }
+//    public static double copySign(double magnitude, double sign) {
+//        return sun.misc.FpUtils.rawCopySign(magnitude, sign);
+//    }
 
     /**
      * Returns the first floating-point argument with the sign of the
@@ -1270,9 +1267,9 @@ public final class Math {
      * and the sign of {@code sign}.
      * @since 1.6
      */
-    public static float copySign(float magnitude, float sign) {
-        return sun.misc.FpUtils.rawCopySign(magnitude, sign);
-    }
+//    public static float copySign(float magnitude, float sign) {
+//        return sun.misc.FpUtils.rawCopySign(magnitude, sign);
+//    }
 
     /**
      * Returns the unbiased exponent used in the representation of a
@@ -1288,9 +1285,9 @@ public final class Math {
      * @return the unbiased exponent of the argument
      * @since 1.6
      */
-    public static int getExponent(float f) {
-        return sun.misc.FpUtils.getExponent(f);
-    }
+//    public static int getExponent(float f) {
+//        return sun.misc.FpUtils.getExponent(f);
+//    }
 
     /**
      * Returns the unbiased exponent used in the representation of a
@@ -1306,9 +1303,9 @@ public final class Math {
      * @return the unbiased exponent of the argument
      * @since 1.6
      */
-    public static int getExponent(double d) {
-        return sun.misc.FpUtils.getExponent(d);
-    }
+//    public static int getExponent(double d) {
+//        return sun.misc.FpUtils.getExponent(d);
+//    }
 
     /**
      * Returns the floating-point number adjacent to the first
@@ -1350,9 +1347,9 @@ public final class Math {
      * direction of {@code direction}.
      * @since 1.6
      */
-    public static double nextAfter(double start, double direction) {
-        return sun.misc.FpUtils.nextAfter(start, direction);
-    }
+//    public static double nextAfter(double start, double direction) {
+//        return sun.misc.FpUtils.nextAfter(start, direction);
+//    }
 
     /**
      * Returns the floating-point number adjacent to the first
@@ -1393,9 +1390,9 @@ public final class Math {
      * direction of {@code direction}.
      * @since 1.6
      */
-    public static float nextAfter(float start, double direction) {
-        return sun.misc.FpUtils.nextAfter(start, direction);
-    }
+//    public static float nextAfter(float start, double direction) {
+//        return sun.misc.FpUtils.nextAfter(start, direction);
+//    }
 
     /**
      * Returns the floating-point value adjacent to {@code d} in
@@ -1422,9 +1419,9 @@ public final class Math {
      * infinity.
      * @since 1.6
      */
-    public static double nextUp(double d) {
-        return sun.misc.FpUtils.nextUp(d);
-    }
+//    public static double nextUp(double d) {
+//        return sun.misc.FpUtils.nextUp(d);
+//    }
 
     /**
      * Returns the floating-point value adjacent to {@code f} in
@@ -1451,9 +1448,9 @@ public final class Math {
      * infinity.
      * @since 1.6
      */
-    public static float nextUp(float f) {
-        return sun.misc.FpUtils.nextUp(f);
-    }
+//    public static float nextUp(float f) {
+//        return sun.misc.FpUtils.nextUp(f);
+//    }
 
 
     /**
@@ -1486,9 +1483,9 @@ public final class Math {
      * @return {@code d} &times; 2<sup>{@code scaleFactor}</sup>
      * @since 1.6
      */
-    public static double scalb(double d, int scaleFactor) {
-        return sun.misc.FpUtils.scalb(d, scaleFactor);
-    }
+//    public static double scalb(double d, int scaleFactor) {
+//        return sun.misc.FpUtils.scalb(d, scaleFactor);
+//    }
 
     /**
      * Return {@code f} &times;
@@ -1520,7 +1517,7 @@ public final class Math {
      * @return {@code f} &times; 2<sup>{@code scaleFactor}</sup>
      * @since 1.6
      */
-    public static float scalb(float f, int scaleFactor) {
-        return sun.misc.FpUtils.scalb(f, scaleFactor);
-    }
+//    public static float scalb(float f, int scaleFactor) {
+//        return sun.misc.FpUtils.scalb(f, scaleFactor);
+//    }
 }

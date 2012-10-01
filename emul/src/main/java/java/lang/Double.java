@@ -25,10 +25,6 @@
 
 package java.lang;
 
-import sun.misc.FloatingDecimal;
-import sun.misc.FpUtils;
-import sun.misc.DoubleConsts;
-
 /**
  * The {@code Double} class wraps a value of the primitive type
  * {@code double} in an object. An object of type
@@ -193,7 +189,7 @@ public final class Double extends Number implements Comparable<Double> {
      * @return a string representation of the argument.
      */
     public static String toString(double d) {
-        return new FloatingDecimal(d).toJavaFormatString();
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -271,61 +267,62 @@ public final class Double extends Number implements Comparable<Double> {
      * @author Joseph D. Darcy
      */
     public static String toHexString(double d) {
-        /*
-         * Modeled after the "a" conversion specifier in C99, section
-         * 7.19.6.1; however, the output of this method is more
-         * tightly specified.
-         */
-        if (!FpUtils.isFinite(d) )
-            // For infinity and NaN, use the decimal output.
-            return Double.toString(d);
-        else {
-            // Initialized to maximum size of output.
-            StringBuffer answer = new StringBuffer(24);
-
-            if (FpUtils.rawCopySign(1.0, d) == -1.0) // value is negative,
-                answer.append("-");                  // so append sign info
-
-            answer.append("0x");
-
-            d = Math.abs(d);
-
-            if(d == 0.0) {
-                answer.append("0.0p0");
-            }
-            else {
-                boolean subnormal = (d < DoubleConsts.MIN_NORMAL);
-
-                // Isolate significand bits and OR in a high-order bit
-                // so that the string representation has a known
-                // length.
-                long signifBits = (Double.doubleToLongBits(d)
-                                   & DoubleConsts.SIGNIF_BIT_MASK) |
-                    0x1000000000000000L;
-
-                // Subnormal values have a 0 implicit bit; normal
-                // values have a 1 implicit bit.
-                answer.append(subnormal ? "0." : "1.");
-
-                // Isolate the low-order 13 digits of the hex
-                // representation.  If all the digits are zero,
-                // replace with a single 0; otherwise, remove all
-                // trailing zeros.
-                String signif = Long.toHexString(signifBits).substring(3,16);
-                answer.append(signif.equals("0000000000000") ? // 13 zeros
-                              "0":
-                              signif.replaceFirst("0{1,12}$", ""));
-
-                // If the value is subnormal, use the E_min exponent
-                // value for double; otherwise, extract and report d's
-                // exponent (the representation of a subnormal uses
-                // E_min -1).
-                answer.append("p" + (subnormal ?
-                               DoubleConsts.MIN_EXPONENT:
-                               FpUtils.getExponent(d) ));
-            }
-            return answer.toString();
-        }
+        throw new UnsupportedOperationException();
+//        /*
+//         * Modeled after the "a" conversion specifier in C99, section
+//         * 7.19.6.1; however, the output of this method is more
+//         * tightly specified.
+//         */
+//        if (!FpUtils.isFinite(d) )
+//            // For infinity and NaN, use the decimal output.
+//            return Double.toString(d);
+//        else {
+//            // Initialized to maximum size of output.
+//            StringBuffer answer = new StringBuffer(24);
+//
+//            if (FpUtils.rawCopySign(1.0, d) == -1.0) // value is negative,
+//                answer.append("-");                  // so append sign info
+//
+//            answer.append("0x");
+//
+//            d = Math.abs(d);
+//
+//            if(d == 0.0) {
+//                answer.append("0.0p0");
+//            }
+//            else {
+//                boolean subnormal = (d < DoubleConsts.MIN_NORMAL);
+//
+//                // Isolate significand bits and OR in a high-order bit
+//                // so that the string representation has a known
+//                // length.
+//                long signifBits = (Double.doubleToLongBits(d)
+//                                   & DoubleConsts.SIGNIF_BIT_MASK) |
+//                    0x1000000000000000L;
+//
+//                // Subnormal values have a 0 implicit bit; normal
+//                // values have a 1 implicit bit.
+//                answer.append(subnormal ? "0." : "1.");
+//
+//                // Isolate the low-order 13 digits of the hex
+//                // representation.  If all the digits are zero,
+//                // replace with a single 0; otherwise, remove all
+//                // trailing zeros.
+//                String signif = Long.toHexString(signifBits).substring(3,16);
+//                answer.append(signif.equals("0000000000000") ? // 13 zeros
+//                              "0":
+//                              signif.replaceFirst("0{1,12}$", ""));
+//
+//                // If the value is subnormal, use the E_min exponent
+//                // value for double; otherwise, extract and report d's
+//                // exponent (the representation of a subnormal uses
+//                // E_min -1).
+//                answer.append("p" + (subnormal ?
+//                               DoubleConsts.MIN_EXPONENT:
+//                               FpUtils.getExponent(d) ));
+//            }
+//            return answer.toString();
+//        }
     }
 
     /**
@@ -501,7 +498,8 @@ public final class Double extends Number implements Comparable<Double> {
      *             parsable number.
      */
     public static Double valueOf(String s) throws NumberFormatException {
-        return new Double(FloatingDecimal.readJavaFormatString(s).doubleValue());
+        throw new UnsupportedOperationException();
+//        return new Double(FloatingDecimal.readJavaFormatString(s).doubleValue());
     }
 
     /**
@@ -537,7 +535,8 @@ public final class Double extends Number implements Comparable<Double> {
      * @since 1.2
      */
     public static double parseDouble(String s) throws NumberFormatException {
-        return FloatingDecimal.readJavaFormatString(s).doubleValue();
+        throw new UnsupportedOperationException();
+//        return FloatingDecimal.readJavaFormatString(s).doubleValue();
     }
 
     /**
@@ -805,14 +804,15 @@ public final class Double extends Number implements Comparable<Double> {
      * @return the bits that represent the floating-point number.
      */
     public static long doubleToLongBits(double value) {
-        long result = doubleToRawLongBits(value);
-        // Check for NaN based on values of bit fields, maximum
-        // exponent and nonzero significand.
-        if ( ((result & DoubleConsts.EXP_BIT_MASK) ==
-              DoubleConsts.EXP_BIT_MASK) &&
-             (result & DoubleConsts.SIGNIF_BIT_MASK) != 0L)
-            result = 0x7ff8000000000000L;
-        return result;
+        throw new UnsupportedOperationException();
+//        long result = doubleToRawLongBits(value);
+//        // Check for NaN based on values of bit fields, maximum
+//        // exponent and nonzero significand.
+//        if ( ((result & DoubleConsts.EXP_BIT_MASK) ==
+//              DoubleConsts.EXP_BIT_MASK) &&
+//             (result & DoubleConsts.SIGNIF_BIT_MASK) != 0L)
+//            result = 0x7ff8000000000000L;
+//        return result;
     }
 
     /**

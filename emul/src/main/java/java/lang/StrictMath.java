@@ -24,9 +24,6 @@
  */
 
 package java.lang;
-import java.util.Random;
-import sun.misc.FpUtils;
-import sun.misc.DoubleConsts;
 
 /**
  * The class {@code StrictMath} contains methods for performing basic
@@ -352,7 +349,7 @@ public final class StrictMath {
                                       double negativeBoundary,
                                       double positiveBoundary,
                                       double sign) {
-        int exponent = Math.getExponent(a);
+        int exponent = getExponent(a);
 
         if (exponent < 0) {
             /*
@@ -373,7 +370,7 @@ public final class StrictMath {
         assert exponent >= 0 && exponent <= 51;
 
         long doppel = Double.doubleToRawLongBits(a);
-        long mask   = DoubleConsts.SIGNIF_BIT_MASK >> exponent;
+        long mask   = 0; // DoubleConsts.SIGNIF_BIT_MASK >> exponent;
 
         if ( (mask & doppel) == 0L )
             return a; // integral value
@@ -402,6 +399,7 @@ public final class StrictMath {
      * @author Joseph D. Darcy
      */
     public static double rint(double a) {
+        throw new UnsupportedOperationException();
         /*
          * If the absolute value of a is not less than 2^52, it
          * is either a finite integer (the double format does not have
@@ -427,15 +425,15 @@ public final class StrictMath {
          * last multiply in the return statement is by plus or minus
          * 1.0, which is exact too.
          */
-        double twoToThe52 = (double)(1L << 52); // 2^52
-        double sign = FpUtils.rawCopySign(1.0, a); // preserve sign info
-        a = Math.abs(a);
-
-        if (a < twoToThe52) { // E_min <= ilogb(a) <= 51
-            a = ((twoToThe52 + a ) - twoToThe52);
-        }
-
-        return sign * a; // restore original sign
+//        double twoToThe52 = (double)(1L << 52); // 2^52
+//        double sign = FpUtils.rawCopySign(1.0, a); // preserve sign info
+//        a = Math.abs(a);
+//
+//        if (a < twoToThe52) { // E_min <= ilogb(a) <= 51
+//            a = ((twoToThe52 + a ) - twoToThe52);
+//        }
+//
+//        return sign * a; // restore original sign
     }
 
     /**
@@ -659,13 +657,6 @@ public final class StrictMath {
         return Math.round(a);
     }
 
-    private static Random randomNumberGenerator;
-
-    private static synchronized Random initRNG() {
-        Random rnd = randomNumberGenerator;
-        return (rnd == null) ? (randomNumberGenerator = new Random()) : rnd;
-    }
-
     /**
      * Returns a {@code double} value with a positive sign, greater
      * than or equal to {@code 0.0} and less than {@code 1.0}.
@@ -690,9 +681,7 @@ public final class StrictMath {
      * @see Random#nextDouble()
      */
     public static double random() {
-        Random rnd = randomNumberGenerator;
-        if (rnd == null) rnd = initRNG();
-        return rnd.nextDouble();
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -955,7 +944,7 @@ public final class StrictMath {
      * @since 1.5
      */
     public static double ulp(double d) {
-        return sun.misc.FpUtils.ulp(d);
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -982,7 +971,7 @@ public final class StrictMath {
      * @since 1.5
      */
     public static float ulp(float f) {
-        return sun.misc.FpUtils.ulp(f);
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -1003,7 +992,7 @@ public final class StrictMath {
      * @since 1.5
      */
     public static double signum(double d) {
-        return sun.misc.FpUtils.signum(d);
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -1024,7 +1013,7 @@ public final class StrictMath {
      * @since 1.5
      */
     public static float signum(float f) {
-        return sun.misc.FpUtils.signum(f);
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -1202,7 +1191,7 @@ public final class StrictMath {
      * @since 1.6
      */
     public static double copySign(double magnitude, double sign) {
-        return sun.misc.FpUtils.copySign(magnitude, sign);
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -1218,7 +1207,7 @@ public final class StrictMath {
      * @since 1.6
      */
     public static float copySign(float magnitude, float sign) {
-        return sun.misc.FpUtils.copySign(magnitude, sign);
+        throw new UnsupportedOperationException();
     }
     /**
      * Returns the unbiased exponent used in the representation of a
@@ -1234,7 +1223,7 @@ public final class StrictMath {
      * @since 1.6
      */
     public static int getExponent(float f) {
-        return sun.misc.FpUtils.getExponent(f);
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -1251,7 +1240,7 @@ public final class StrictMath {
      * @since 1.6
      */
     public static int getExponent(double d) {
-        return sun.misc.FpUtils.getExponent(d);
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -1294,7 +1283,7 @@ public final class StrictMath {
      * @since 1.6
      */
     public static double nextAfter(double start, double direction) {
-        return sun.misc.FpUtils.nextAfter(start, direction);
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -1336,7 +1325,7 @@ public final class StrictMath {
      * @since 1.6
      */
     public static float nextAfter(float start, double direction) {
-        return sun.misc.FpUtils.nextAfter(start, direction);
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -1365,7 +1354,7 @@ public final class StrictMath {
      * @since 1.6
      */
     public static double nextUp(double d) {
-        return sun.misc.FpUtils.nextUp(d);
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -1394,7 +1383,7 @@ public final class StrictMath {
      * @since 1.6
      */
     public static float nextUp(float f) {
-        return sun.misc.FpUtils.nextUp(f);
+        throw new UnsupportedOperationException();
     }
 
 
@@ -1429,7 +1418,7 @@ public final class StrictMath {
      * @since 1.6
      */
     public static double scalb(double d, int scaleFactor) {
-        return sun.misc.FpUtils.scalb(d, scaleFactor);
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -1463,6 +1452,6 @@ public final class StrictMath {
      * @since 1.6
      */
     public static float scalb(float f, int scaleFactor) {
-        return sun.misc.FpUtils.scalb(f, scaleFactor);
+        throw new UnsupportedOperationException();
     }
 }

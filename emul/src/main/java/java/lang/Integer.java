@@ -25,8 +25,6 @@
 
 package java.lang;
 
-import java.util.Properties;
-
 /**
  * The {@code Integer} class wraps a value of the primitive type
  * {@code int} in an object. An object of type {@code Integer}
@@ -602,7 +600,7 @@ public final class Integer extends Number implements Comparable<Integer> {
             // high value may be configured by property
             int h = 127;
             String integerCacheHighPropValue =
-                sun.misc.VM.getSavedProperty("java.lang.Integer.IntegerCache.high");
+                String.getProperty("java.lang.Integer.IntegerCache.high");
             if (integerCacheHighPropValue != null) {
                 int i = parseInt(integerCacheHighPropValue);
                 i = Math.max(i, 127);
@@ -884,7 +882,7 @@ public final class Integer extends Number implements Comparable<Integer> {
     public static Integer getInteger(String nm, Integer val) {
         String v = null;
         try {
-            v = System.getProperty(nm);
+            v = String.getProperty(nm);
         } catch (IllegalArgumentException e) {
         } catch (NullPointerException e) {
         }

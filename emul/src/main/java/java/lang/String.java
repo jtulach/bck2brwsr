@@ -3054,5 +3054,8 @@ public final class String
             dst[dstBegin++] = value[srcBegin++];
         }
     }
-
+    // access system property
+    static String getProperty(String nm) {
+        return null;
+    }
 }

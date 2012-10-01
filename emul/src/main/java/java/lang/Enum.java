@@ -27,9 +27,6 @@ package java.lang;
 
 import java.io.Serializable;
 import java.io.IOException;
-import java.io.InvalidObjectException;
-import java.io.ObjectInputStream;
-import java.io.ObjectStreamException;
 
 /**
  * This is the common base class of all Java language enumeration types.
@@ -228,13 +225,14 @@ public abstract class Enum<E extends Enum<E>>
      */
     public static <T extends Enum<T>> T valueOf(Class<T> enumType,
                                                 String name) {
-        T result = enumType.enumConstantDirectory().get(name);
-        if (result != null)
-            return result;
-        if (name == null)
-            throw new NullPointerException("Name is null");
-        throw new IllegalArgumentException(
-            "No enum constant " + enumType.getCanonicalName() + "." + name);
+        throw new UnsupportedOperationException();
+//        T result = enumType.enumConstantDirectory().get(name);
+//        if (result != null)
+//            return result;
+//        if (name == null)
+//            throw new NullPointerException("Name is null");
+//        throw new IllegalArgumentException(
+//            "No enum constant " + enumType.getCanonicalName() + "." + name);
     }
 
     /**
@@ -245,12 +243,12 @@ public abstract class Enum<E extends Enum<E>>
     /**
      * prevent default deserialization
      */
-    private void readObject(ObjectInputStream in) throws IOException,
-        ClassNotFoundException {
-        throw new InvalidObjectException("can't deserialize enum");
-    }
-
-    private void readObjectNoData() throws ObjectStreamException {
-        throw new InvalidObjectException("can't deserialize enum");
-    }
+//    private void readObject(ObjectInputStream in) throws IOException,
+//        ClassNotFoundException {
+//        throw new InvalidObjectException("can't deserialize enum");
+//    }
+//
+//    private void readObjectNoData() throws ObjectStreamException {
+//        throw new InvalidObjectException("can't deserialize enum");
+//    }
 }
