@@ -709,4 +709,7 @@ public final
         throw new UnsupportedOperationException();
     }
 
+    static Class<?> getPrimitiveClass(String type) {
+        throw new UnsupportedOperationException();
+    }
 }
