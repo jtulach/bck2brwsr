@@ -235,7 +235,7 @@ public final class Boolean implements java.io.Serializable,
     public static boolean getBoolean(String name) {
         boolean result = false;
         try {
-            result = toBoolean(System.getProperty(name));
+            result = toBoolean(String.getProperty(name));
         } catch (IllegalArgumentException e) {
         } catch (NullPointerException e) {
         }
