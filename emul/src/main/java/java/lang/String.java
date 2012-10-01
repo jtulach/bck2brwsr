@@ -811,7 +811,7 @@ public final class String
      * This method doesn't perform any range checking.
      */
     void getChars(char dst[], int dstBegin) {
-        System.arraycopy(value, offset, dst, dstBegin, count);
+        arraycopy(value, offset, dst, dstBegin, count);
     }
 
     /**
@@ -854,7 +854,7 @@ public final class String
         if (srcBegin > srcEnd) {
             throw new StringIndexOutOfBoundsException(srcEnd - srcBegin);
         }
-        System.arraycopy(value, offset + srcBegin, dst, dstBegin,
+        arraycopy(value, offset + srcBegin, dst, dstBegin,
              srcEnd - srcBegin);
     }
 
@@ -2435,7 +2435,7 @@ public final class String
 //                                    * is the write location in result */
 //
 //        /* Just copy the first few lowerCase characters. */
-//        System.arraycopy(value, offset, result, 0, firstUpper);
+//        arraycopy(value, offset, result, 0, firstUpper);
 //
 //        String lang = locale.getLanguage();
 //        boolean localeDependent =
@@ -2481,7 +2481,7 @@ public final class String
 //                int mapLen = lowerCharArray.length;
 //                if (mapLen > srcCount) {
 //                    char[] result2 = new char[result.length + mapLen - srcCount];
-//                    System.arraycopy(result, 0, result2, 0,
+//                    arraycopy(result, 0, result2, 0,
 //                        i + resultOffset);
 //                    result = result2;
 //                }
@@ -2602,7 +2602,7 @@ public final class String
                                     * is the write location in result *
 
         /* Just copy the first few upperCase characters. *
-        System.arraycopy(value, offset, result, 0, firstLower);
+        arraycopy(value, offset, result, 0, firstLower);
 
         String lang = locale.getLanguage();
         boolean localeDependent =
@@ -2645,7 +2645,7 @@ public final class String
                 int mapLen = upperCharArray.length;
                 if (mapLen > srcCount) {
                     char[] result2 = new char[result.length + mapLen - srcCount];
-                    System.arraycopy(result, 0, result2, 0,
+                    arraycopy(result, 0, result2, 0,
                         i + resultOffset);
                     result = result2;
                 }
@@ -3029,15 +3029,20 @@ public final class String
             throw new IllegalArgumentException(from + " > " + to);
         }
         char[] copy = new char[newLength];
-        System.arraycopy(original, from, copy, 0,
+        arraycopy(original, from, copy, 0,
             Math.min(original.length - from, newLength));
         return copy;
     }
     static char[] copyOf(char[] original, int newLength) {
         char[] copy = new char[newLength];
-        System.arraycopy(original, 0, copy, 0,
+        arraycopy(original, 0, copy, 0,
             Math.min(original.length, newLength));
         return copy;
+    }
+    static void arraycopy(
+        char[] value, int srcBegin, char[] dst, int dstBegin, int count
+    ) {
+        System.arraycopy(value, srcBegin, dst, dstBegin, count);
     }
 
 }
