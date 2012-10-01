@@ -433,17 +433,17 @@ public final class String
      *
      * @since  JDK1.1
      */
-    public String(byte bytes[], int offset, int length, String charsetName)
-        throws UnsupportedEncodingException
-    {
-        if (charsetName == null)
-            throw new NullPointerException("charsetName");
-        checkBounds(bytes, offset, length);
-        char[] v = StringCoding.decode(charsetName, bytes, offset, length);
-        this.offset = 0;
-        this.count = v.length;
-        this.value = v;
-    }
+//    public String(byte bytes[], int offset, int length, String charsetName)
+//        throws UnsupportedEncodingException
+//    {
+//        if (charsetName == null)
+//            throw new NullPointerException("charsetName");
+//        checkBounds(bytes, offset, length);
+//        char[] v = StringCoding.decode(charsetName, bytes, offset, length);
+//        this.offset = 0;
+//        this.count = v.length;
+//        this.value = v;
+//    }
 
     /**
      * Constructs a new {@code String} by decoding the specified subarray of
@@ -510,11 +510,11 @@ public final class String
      *
      * @since  JDK1.1
      */
-    public String(byte bytes[], String charsetName)
-        throws UnsupportedEncodingException
-    {
-        this(bytes, 0, bytes.length, charsetName);
-    }
+//    public String(byte bytes[], String charsetName)
+//        throws UnsupportedEncodingException
+//    {
+//        this(bytes, 0, bytes.length, charsetName);
+//    }
 
     /**
      * Constructs a new {@code String} by decoding the specified array of
@@ -942,12 +942,12 @@ public final class String
      *
      * @since  JDK1.1
      */
-    public byte[] getBytes(String charsetName)
-        throws UnsupportedEncodingException
-    {
-        if (charsetName == null) throw new NullPointerException();
-        return StringCoding.encode(charsetName, value, offset, count);
-    }
+//    public byte[] getBytes(String charsetName)
+//        throws UnsupportedEncodingException
+//    {
+//        if (charsetName == null) throw new NullPointerException();
+//        return StringCoding.encode(charsetName, value, offset, count);
+//    }
 
     /**
      * Encodes this {@code String} into a sequence of bytes using the given
