@@ -1,9 +1,12 @@
 package org.apidesign.vm4brwsr;
 
+import org.apidesign.bck2brwsr.core.ExtraJavaScript;
+
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
+@ExtraJavaScript(resource="/org/apidesign/vm4brwsr/emulation/java_lang_String.js")
 public class StringSample {
     public static final String HELLO = "Hello World!";
     private static int counter;

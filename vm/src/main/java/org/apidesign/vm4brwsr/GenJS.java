@@ -48,24 +48,18 @@ final class GenJS {
             }
             if (name.startsWith("java/") 
                 && !name.equals("java/lang/Object")
-                && !name.equals("java/lang/String")
                 && !name.equals("java/lang/StringBuilder")
                 && !name.equals("java/lang/AbstractStringBuilder")
             ) {
                 continue;
             }
-            InputStream emul = GenJS.class.getResourceAsStream("emulation/" + name.replace('/', '_') + ".js");
-            if (emul != null) {
-                readResource(emul, out);
-                continue;
-            }
-            
             InputStream is = GenJS.class.getClassLoader().getResourceAsStream(name + ".class");
             if (is == null) {
                 throw new IOException("Can't find class " + name); 
             }
+            LinkedList<String> scripts = new LinkedList<String>();
             try {
-                ByteCodeToJavaScript.compile(is, out, toProcess);
+                ByteCodeToJavaScript.compile(is, out, toProcess, scripts);
             } catch (RuntimeException ex) {
                 if (out instanceof CharSequence) {
                     CharSequence seq = (CharSequence)out;
@@ -83,6 +77,13 @@ final class GenJS {
                         + out, ex
                     );
                 }
+            }
+            for (String resource : scripts) {
+                InputStream emul = GenJS.class.getResourceAsStream(resource);
+                if (emul == null) {
+                    throw new IOException("Can't find " + resource);
+                }
+                readResource(emul, out);
             }
         }
     }

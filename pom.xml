@@ -9,6 +9,7 @@
   <modules>
       <module>vm</module>
     <module>htmlpage</module>
+    <module>core</module>
   </modules>
   <licenses>
       <license>

@@ -22,6 +22,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.apidesign.bck2brwsr.core.ExtraJavaScript;
+import org.netbeans.modules.classfile.Annotation;
+import org.netbeans.modules.classfile.AnnotationComponent;
 import static org.netbeans.modules.classfile.ByteCodes.*;
 import org.netbeans.modules.classfile.CPClassInfo;
 import org.netbeans.modules.classfile.CPEntry;
@@ -31,8 +34,10 @@ import org.netbeans.modules.classfile.CPStringInfo;
 import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.classfile.ClassName;
 import org.netbeans.modules.classfile.Code;
+import org.netbeans.modules.classfile.ElementValue;
 import org.netbeans.modules.classfile.Method;
 import org.netbeans.modules.classfile.Parameter;
+import org.netbeans.modules.classfile.PrimitiveElementValue;
 import org.netbeans.modules.classfile.Variable;
 
 /** Translator of the code inside class files to JavaScript.
@@ -62,14 +67,29 @@ public final class ByteCodeToJavaScript {
      *   generated JavaScript code works properly. The names are in internal 
      *   JVM form so String is <code>java/lang/String</code>. Can be <code>null</code>
      *   if one is not interested in knowing references
+     * @param scripts write only collection with names of resources to read
+     * 
      * @throws IOException if something goes wrong during read or write or translating
      */
     
     public static void compile(
         InputStream classFile, Appendable out,
-        Collection<? super String> references
+        Collection<? super String> references,
+        Collection<? super String> scripts
     ) throws IOException {
         ClassFile jc = new ClassFile(classFile, true);
+        final ClassName extraAnn = ClassName.getClassName(ExtraJavaScript.class.getName().replace('.', '/'));
+        Annotation a = jc.getAnnotation(extraAnn);
+        if (a != null) {
+            final ElementValue annVal = a.getComponent("resource").getValue();
+            String res = ((PrimitiveElementValue)annVal).getValue().getValue().toString();
+            scripts.add(res);
+            final AnnotationComponent process = a.getComponent("processByteCode");
+            if (process != null && "false".equals(process.getValue().toString())) {
+                return;
+            }
+        }
+        
         ByteCodeToJavaScript compiler = new ByteCodeToJavaScript(
             jc, out, references
         );
