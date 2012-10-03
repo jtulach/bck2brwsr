@@ -86,5 +86,11 @@
       <artifactId>org-netbeans-modules-classfile</artifactId>
       <type>jar</type>
     </dependency>
+    <dependency>
+      <groupId>org.apidesign.bck2brwsr</groupId>
+      <artifactId>core</artifactId>
+      <version>1.0-SNAPSHOT</version>
+      <type>jar</type>
+    </dependency>
   </dependencies>
 </project>

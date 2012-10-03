@@ -10,6 +10,7 @@
       <module>vm</module>
     <module>htmlpage</module>
     <module>emul</module>
+    <module>core</module>
   </modules>
   <licenses>
       <license>

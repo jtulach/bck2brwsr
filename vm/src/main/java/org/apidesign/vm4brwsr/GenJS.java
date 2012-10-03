@@ -43,15 +43,23 @@ final class GenJS {
             }
             String name = toProcess.getFirst();
             processed.add(name);
-            if (name.startsWith("java/") && !name.equals("java/lang/Object")) {
+            if (name.startsWith("sun/")) {
+                continue;
+            }
+            if (name.startsWith("java/") 
+                && !name.equals("java/lang/Object")
+                && !name.equals("java/lang/StringBuilder")
+                && !name.equals("java/lang/AbstractStringBuilder")
+            ) {
                 continue;
             }
             InputStream is = GenJS.class.getClassLoader().getResourceAsStream(name + ".class");
             if (is == null) {
                 throw new IOException("Can't find class " + name); 
             }
+            LinkedList<String> scripts = new LinkedList<String>();
             try {
-                ByteCodeToJavaScript.compile(is, out, toProcess);
+                ByteCodeToJavaScript.compile(is, out, toProcess, scripts);
             } catch (RuntimeException ex) {
                 if (out instanceof CharSequence) {
                     CharSequence seq = (CharSequence)out;
@@ -70,6 +78,58 @@ final class GenJS {
                     );
                 }
             }
+            for (String resource : scripts) {
+                InputStream emul = GenJS.class.getResourceAsStream(resource);
+                if (emul == null) {
+                    throw new IOException("Can't find " + resource);
+                }
+                readResource(emul, out);
+            }
+        }
+    }
+    private static void readResource(InputStream emul, Appendable out) throws IOException {
+        try {
+            int state = 0;
+            for (;;) {
+                int ch = emul.read();
+                if (ch == -1) {
+                    break;
+                }
+                if (ch < 0 || ch > 255) {
+                    throw new IOException("Invalid char in emulation " + ch);
+                }
+                switch (state) {
+                    case 0: 
+                        if (ch == '/') {
+                            state = 1;
+                        } else {
+                            out.append((char)ch);
+                        }
+                        break;
+                    case 1:
+                        if (ch == '*') {
+                            state = 2;
+                        } else {
+                            out.append('/').append((char)ch);
+                            state = 0;
+                        }
+                        break;
+                    case 2:
+                        if (ch == '*') {
+                            state = 3;
+                        }
+                        break;
+                    case 3:
+                        if (ch == '/') {
+                            state = 0;
+                        } else {
+                            state = 2;
+                        }
+                        break;
+                }
+            }
+        } finally {
+            emul.close();
         }
     }
     
