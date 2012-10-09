@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+
 /**
  * A mutable sequence of characters.
  * <p>
@@ -598,6 +600,10 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @param   i   an {@code int}.
      * @return  a reference to this object.
      */
+    @JavaScriptBody(
+        args={ "self", "i" },
+        body="return java_lang_AbstractStringBuilder_appendLjava_lang_AbstractStringBuilderLjava_lang_String(self,i.toString());"
+    )
     public AbstractStringBuilder append(int i) {
         if (i == Integer.MIN_VALUE) {
             append("-2147483648");

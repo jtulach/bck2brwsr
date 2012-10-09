@@ -184,6 +184,15 @@ public class StaticMethodTest {
         );
     }
     
+    @Test public void javaScriptBody() throws Exception {
+        assertExec(
+            "JavaScript string",
+            "org_apidesign_vm4brwsr_StaticMethod_i2sLjava_lang_StringI",
+            "333",
+            333
+        );
+    }
+    
     private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
         StringBuilder sb = new StringBuilder();
         Invocable i = compileClass(sb, "org/apidesign/vm4brwsr/StaticMethod");

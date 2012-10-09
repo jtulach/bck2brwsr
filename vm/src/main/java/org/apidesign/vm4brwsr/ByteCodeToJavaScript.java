@@ -23,8 +23,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.apidesign.bck2brwsr.core.ExtraJavaScript;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.netbeans.modules.classfile.Annotation;
 import org.netbeans.modules.classfile.AnnotationComponent;
+import org.netbeans.modules.classfile.ArrayElementValue;
 import static org.netbeans.modules.classfile.ByteCodes.*;
 import org.netbeans.modules.classfile.CPClassInfo;
 import org.netbeans.modules.classfile.CPEntry;
@@ -135,6 +137,9 @@ public final class ByteCodeToJavaScript {
         }
     }
     private void generateStaticMethod(Method m, List<String> toInitilize) throws IOException {
+        if (javaScriptBody(m, true)) {
+            return;
+        }
         final String mn = findMethodName(m);
         out.append("\nfunction ").append(
             jc.getName().getInternalName().replace('/', '_')
@@ -180,6 +185,9 @@ public final class ByteCodeToJavaScript {
     }
     
     private void generateInstanceMethod(Method m) throws IOException {
+        if (javaScriptBody(m, false)) {
+            return;
+        }
         out.append("\nfunction ").append(
             jc.getName().getInternalName().replace('/', '_')
         ).append('_').append(findMethodName(m));
@@ -899,5 +907,46 @@ public final class ByteCodeToJavaScript {
 
     private String findDescriptor(String d) {
         return d.replace('[', 'A');
+    }
+
+    private boolean javaScriptBody(Method m, boolean isStatic) throws IOException {
+        final ClassName extraAnn = ClassName.getClassName(JavaScriptBody.class.getName().replace('.', '/'));
+        Annotation a = m.getAnnotation(extraAnn);
+        if (a != null) {
+            final ElementValue annVal = a.getComponent("body").getValue();
+            String body = ((PrimitiveElementValue) annVal).getValue().getValue().toString();
+            
+            final ArrayElementValue arrVal = (ArrayElementValue) a.getComponent("args").getValue();
+            final int len = arrVal.getValues().length;
+            String[] names = new String[len];
+            for (int i = 0; i < len; i++) {
+                names[i] = ((PrimitiveElementValue) arrVal.getValues()[i]).getValue().getValue().toString();
+            }
+            out.append("\nfunction ").append(
+                jc.getName().getInternalName().replace('/', '_')).append('_').append(findMethodName(m));
+            out.append("(");
+            String space;
+            int index;
+            if (!isStatic) {                
+                out.append(names[0]);
+                space = ",";
+                index = 1;
+            } else {
+                space = "";
+                index = 0;
+            }
+            List<Parameter> args = m.getParameters();
+            for (int i = 0; i < args.size(); i++) {
+                out.append(space);
+                out.append(names[index]);
+                final String desc = findDescriptor(args.get(i).getDescriptor());
+                index++;
+            }
+            out.append(") {").append("\n");
+            out.append(body);
+            out.append("\n}\n");
+            return true;
+        }
+        return false;
     }
 }

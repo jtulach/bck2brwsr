@@ -17,6 +17,8 @@ If not, see http://opensource.org/licenses/GPL-2.0.
 */
 package org.apidesign.vm4brwsr;
 
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
@@ -90,5 +92,12 @@ public class StaticMethod {
         cnt+=2;
         cnt++;
         return cnt;
+    }
+    
+    @JavaScriptBody(
+        args="i", body="return i.toString();"
+    )
+    public static String i2s(int i) {
+        throw new IllegalStateException();
     }
 }

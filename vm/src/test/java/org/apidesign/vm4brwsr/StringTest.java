@@ -30,8 +30,11 @@ public class StringTest {
         assertExec(
             "Five executions should generate 5Hello World!",
             "org_apidesign_vm4brwsr_StringSample_toStringTestLjava_lang_StringI",
-            "5Hello World!", 5
+            "Hello World!5", 5
         );
+    }
+    @Test public void toStringConcatenationJava() throws Exception {
+        assertEquals("Hello World!5", StringSample.toStringTest(5));
     }
     
     private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
