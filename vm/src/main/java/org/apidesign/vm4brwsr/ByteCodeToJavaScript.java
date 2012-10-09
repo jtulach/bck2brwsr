@@ -85,7 +85,7 @@ public final class ByteCodeToJavaScript {
             String res = ((PrimitiveElementValue)annVal).getValue().getValue().toString();
             scripts.add(res);
             final AnnotationComponent process = a.getComponent("processByteCode");
-            if (process != null && "false".equals(process.getValue().toString())) {
+            if (process != null && "const=0".equals(process.getValue().toString())) {
                 return;
             }
         }
@@ -333,6 +333,24 @@ public final class ByteCodeToJavaScript {
                 case bc_lxor:
                     out.append("stack.push(stack.pop() ^ stack.pop());");
                     break;
+                case bc_ineg:
+                case bc_lneg:
+                case bc_fneg:
+                case bc_dneg:
+                    out.append("stack.push(- stack.pop());");
+                    break;
+                case bc_ishl:
+                case bc_lshl:
+                    out.append("{ var v = stack.pop(); stack.push(stack.pop() << v); }");
+                    break;
+                case bc_ishr:
+                case bc_lshr:
+                    out.append("{ var v = stack.pop(); stack.push(stack.pop() >> v); }");
+                    break;
+                case bc_iushr:
+                case bc_lushr:
+                    out.append("{ var v = stack.pop(); stack.push(stack.pop() >>> v); }");
+                    break;
                 case bc_iinc: {
                     final int varIndx = (byteCodes[++i] + 256) % 256;
                     final int incrBy = (byteCodes[++i] + 256) % 256;
@@ -569,6 +587,11 @@ public final class ByteCodeToJavaScript {
                     out.append("{ var indx = stack.pop(); stack.push(stack.pop()[indx]); }");
                     break;
                 }
+                case bc_pop2:
+                    out.append("stack.pop();");
+                case bc_pop:
+                    out.append("stack.pop();");
+                    break;
                 case bc_dup:
                     out.append("stack.push(stack[stack.length - 1]);");
                     break;
@@ -701,6 +724,7 @@ public final class ByteCodeToJavaScript {
                             sig.insert(firstPos, 'A');
                         }
                     }
+                    array = false;
                     continue;
                 case 'V': 
                     assert !count;
@@ -863,7 +887,9 @@ public final class ByteCodeToJavaScript {
 
     private String encodeConstant(CPEntry entry) {
         final String v;
-        if (entry instanceof CPStringInfo) {
+        if (entry instanceof CPClassInfo) {
+            v = "new java_lang_Class";
+        } else if (entry instanceof CPStringInfo) {
             v = "\"" + entry.getValue().toString().replace("\"", "\\\"") + "\"";
         } else {
             v = entry.getValue().toString();

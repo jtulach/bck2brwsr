@@ -5,7 +5,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.net.URL;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,17 +45,23 @@ final class GenJS {
             }
             String name = toProcess.getFirst();
             processed.add(name);
-            if (name.startsWith("sun/")) {
-                continue;
-            }
-            if (name.startsWith("java/") 
+            if (name.startsWith("java/")
                 && !name.equals("java/lang/Object")
+                && !name.equals("java/lang/Class")
+                && !name.equals("java/lang/Number")
+                && !name.equals("java/lang/Integer")
+                && !name.equals("java/lang/Throwable")
+                && !name.equals("java/lang/Exception")
+                && !name.equals("java/lang/RuntimeException")
+                && !name.equals("java/lang/UnsupportedOperationException")
+                && !name.equals("java/lang/String")
+                && !name.equals("java/lang/String$CaseInsensitiveComparator")
                 && !name.equals("java/lang/StringBuilder")
                 && !name.equals("java/lang/AbstractStringBuilder")
             ) {
                 continue;
-            }
-            InputStream is = GenJS.class.getClassLoader().getResourceAsStream(name + ".class");
+            }            
+            InputStream is = loadClass(name);
             if (is == null) {
                 throw new IOException("Can't find class " + name); 
             }
@@ -131,6 +139,18 @@ final class GenJS {
         } finally {
             emul.close();
         }
+    }
+
+    private static InputStream loadClass(String name) throws IOException {
+        Enumeration<URL> en = ClassLoader.getSystemClassLoader().getResources(name + ".class");
+        URL u = null;
+        while (en.hasMoreElements()) {
+            u = en.nextElement();
+        }
+        if (u == null) {
+            throw new IOException("Can't find " + name);
+        }
+        return u.openStream();
     }
     
 }

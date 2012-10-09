@@ -26,7 +26,7 @@ public class StringTest {
         );
     }
 
-    @Test public void toStringConcatenation() throws Exception {
+    @Test(timeOut=10000) public void toStringConcatenation() throws Exception {
         assertExec(
             "Five executions should generate 5Hello World!",
             "org_apidesign_vm4brwsr_StringSample_toStringTestLjava_lang_StringI",

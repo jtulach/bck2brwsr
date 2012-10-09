@@ -25,7 +25,7 @@
 
 package java.lang;
 
-import java.io.UnsupportedEncodingException;
+import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import java.util.Comparator;
 
 /**
@@ -97,6 +97,10 @@ import java.util.Comparator;
  * @since   JDK1.0
  */
 
+@ExtraJavaScript(
+    resource="/org/apidesign/vm4brwsr/emul/java_lang_String.js",
+    processByteCode=false
+)
 public final class String
     implements java.io.Serializable, Comparable<String>, CharSequence
 {

@@ -710,7 +710,8 @@ public final
     }
 
     static Class getPrimitiveClass(String type) {
-        throw new UnsupportedOperationException();
+        // XXX
+        return Object.class;
     }
 
     public boolean desiredAssertionStatus() {

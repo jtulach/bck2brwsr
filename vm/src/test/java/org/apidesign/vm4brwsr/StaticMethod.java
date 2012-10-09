@@ -61,6 +61,16 @@ public class StaticMethod {
     public static long orOrAnd(boolean doOr, int a, int b) {
         return doOr ? a | b : a & b;
     }
+    public static int shiftLeft(int what, int much) {
+        return what << much;
+    }
+    public static int shiftArithmRight(int what, int much, boolean signed) {
+        if (signed) {
+            return what >> much;
+        } else {
+            return what >>> much;
+        }
+    }
     public static long factRec(int n) {
         if (n <= 1) {
             return 1;
