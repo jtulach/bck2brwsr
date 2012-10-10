@@ -100,4 +100,9 @@ public class StaticMethod {
     public static String i2s(int i) {
         throw new IllegalStateException();
     }
+    
+    static {
+        // check order of initializers
+        StaticUse.NON_NULL.equals(new Object());
+    }
 }

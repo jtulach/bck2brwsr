@@ -70,11 +70,12 @@ public final class ByteCodeToJavaScript {
      *   JVM form so String is <code>java/lang/String</code>. Can be <code>null</code>
      *   if one is not interested in knowing references
      * @param scripts write only collection with names of resources to read
+     * @return the initialization code for this class, if any. Otherwise <code>null</code>
      * 
      * @throws IOException if something goes wrong during read or write or translating
      */
     
-    public static void compile(
+    public static String compile(
         InputStream classFile, Appendable out,
         Collection<? super String> references,
         Collection<? super String> scripts
@@ -88,7 +89,7 @@ public final class ByteCodeToJavaScript {
             scripts.add(res);
             final AnnotationComponent process = a.getComponent("processByteCode");
             if (process != null && "const=0".equals(process.getValue().toString())) {
-                return;
+                return null;
             }
         }
         
@@ -132,9 +133,12 @@ public final class ByteCodeToJavaScript {
         for (ClassName superInterface : jc.getInterfaces()) {
             out.append("\n" + className + ".prototype.$instOf_").append(superInterface.getInternalName().replace('/', '_')).append(" = true;");
         }
+        
+        StringBuilder sb = new StringBuilder();
         for (String init : toInitilize) {
-            out.append("\n").append(init).append("();");
+            sb.append("\n").append(init).append("();");
         }
+        return sb.toString();
     }
     private void generateStaticMethod(Method m, List<String> toInitilize) throws IOException {
         if (javaScriptBody(m, true)) {

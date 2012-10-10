@@ -7,11 +7,13 @@ import java.io.InputStream;
 import java.io.Writer;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 /** Generator of JavaScript from bytecode of classes on classpath of the VM.
  *
@@ -36,64 +38,85 @@ final class GenJS {
         compile(out, Arrays.asList(names));
     }
     static void compile(Appendable out, List<String> names) throws IOException {
-        Set<String> processed = new HashSet<String>();
-        LinkedList<String> toProcess = new LinkedList<String>(names);
-        for (;;) {
-            toProcess.removeAll(processed);
-            if (toProcess.isEmpty()) {
-                break;
-            }
-            String name = toProcess.getFirst();
-            processed.add(name);
-            if (name.startsWith("java/")
-                && !name.equals("java/lang/Object")
-                && !name.equals("java/lang/Class")
-                && !name.equals("java/lang/Number")
-                && !name.equals("java/lang/Integer")
-                && !name.equals("java/lang/Throwable")
-                && !name.equals("java/lang/Exception")
-                && !name.equals("java/lang/RuntimeException")
-                && !name.equals("java/lang/UnsupportedOperationException")
-                && !name.equals("java/lang/String")
-                && !name.equals("java/lang/String$CaseInsensitiveComparator")
-                && !name.equals("java/lang/StringBuilder")
-                && !name.equals("java/lang/AbstractStringBuilder")
-            ) {
-                continue;
-            }            
-            InputStream is = loadClass(name);
-            if (is == null) {
-                throw new IOException("Can't find class " + name); 
-            }
-            LinkedList<String> scripts = new LinkedList<String>();
-            try {
-                ByteCodeToJavaScript.compile(is, out, toProcess, scripts);
-            } catch (RuntimeException ex) {
-                if (out instanceof CharSequence) {
-                    CharSequence seq = (CharSequence)out;
-                    int lastBlock = seq.length();
-                    while (lastBlock-- >= 0) {
-                        if (seq.charAt(lastBlock) == '{') {
-                            break;
-                        }
+        for (String baseClass : names) {
+            Map<String,String> processed = new HashMap<String, String>();
+            LinkedList<String> toProcess = new LinkedList<String>();
+            toProcess.add(baseClass);
+            for (;;) {
+                String name = null;
+                Iterator<String> it = toProcess.iterator();
+                while (it.hasNext() && name == null) {
+                    String n = it.next();
+                    if (processed.get(n) != null) {
+                        continue;
                     }
-                    throw new IOException("Error while compiling " + name + "\n" 
-                        + seq.subSequence(lastBlock + 1, seq.length()), ex
-                    );
-                } else {
-                    throw new IOException("Error while compiling " + name + "\n" 
-                        + out, ex
-                    );
+                    name = n;
+                }
+                if (name == null) {
+                    break;
+                }
+                if (name.startsWith("java/")
+                    && !name.equals("java/lang/Object")
+                    && !name.equals("java/lang/Class")
+                    && !name.equals("java/lang/Number")
+                    && !name.equals("java/lang/Integer")
+                    && !name.equals("java/lang/Throwable")
+                    && !name.equals("java/lang/Exception")
+                    && !name.equals("java/lang/RuntimeException")
+                    && !name.equals("java/lang/UnsupportedOperationException")
+                    && !name.equals("java/lang/String")
+                    && !name.equals("java/lang/String$CaseInsensitiveComparator")
+                    && !name.equals("java/lang/StringBuilder")
+                    && !name.equals("java/lang/AbstractStringBuilder")
+                ) {
+                    processed.put(name, "");
+                    continue;
+                }            
+                InputStream is = loadClass(name);
+                if (is == null) {
+                    throw new IOException("Can't find class " + name); 
+                }
+                LinkedList<String> scripts = new LinkedList<String>();
+                try {
+                    String initCode = ByteCodeToJavaScript.compile(is, out, toProcess, scripts);
+                    processed.put(name, initCode == null ? "" : initCode);
+                } catch (RuntimeException ex) {
+                    if (out instanceof CharSequence) {
+                        CharSequence seq = (CharSequence)out;
+                        int lastBlock = seq.length();
+                        while (lastBlock-- >= 0) {
+                            if (seq.charAt(lastBlock) == '{') {
+                                break;
+                            }
+                        }
+                        throw new IOException("Error while compiling " + name + "\n" 
+                            + seq.subSequence(lastBlock + 1, seq.length()), ex
+                        );
+                    } else {
+                        throw new IOException("Error while compiling " + name + "\n" 
+                            + out, ex
+                        );
+                    }
+                }
+                for (String resource : scripts) {
+                    InputStream emul = GenJS.class.getResourceAsStream(resource);
+                    if (emul == null) {
+                        throw new IOException("Can't find " + resource);
+                    }
+                    readResource(emul, out);
                 }
             }
-            for (String resource : scripts) {
-                InputStream emul = GenJS.class.getResourceAsStream(resource);
-                if (emul == null) {
-                    throw new IOException("Can't find " + resource);
+            
+            Collections.reverse(toProcess);
+
+            for (String clazz : toProcess) {
+                String initCode = processed.remove(clazz);
+                if (initCode != null) {
+                    out.append(initCode).append("\n");
                 }
-                readResource(emul, out);
             }
         }
+        
     }
     private static void readResource(InputStream emul, Appendable out) throws IOException {
         try {
