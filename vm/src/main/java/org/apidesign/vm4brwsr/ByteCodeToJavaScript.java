@@ -212,9 +212,7 @@ public final class ByteCodeToJavaScript {
                 out.append("  var ");
                 out.append("arg").append(String.valueOf(i + 1)).append(";\n");
             }
-            out.append(";\n  var stack = new Array(");
-            out.append(Integer.toString(code.getMaxStack()));
-            out.append(");\n");
+            out.append(";\n  var stack = new Array();\n");
             produceCode(code.getByteCodes());
         } else {
             out.append("  /* no code found for ").append(m.getTypeSignature()).append(" */\n");
