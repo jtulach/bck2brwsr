@@ -102,11 +102,15 @@ public class InstanceTest {
         );
     }
     
-    private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
+    protected String startCompilationWith() {
+        return "org/apidesign/vm4brwsr/Instance";
+    }
+    
+    private void assertExec(
+        String msg, String methodName, Object expRes, Object... args
+    ) throws Exception {
         StringBuilder sb = new StringBuilder();
-        Invocable i = StaticMethodTest.compileClass(sb, 
-            "org/apidesign/vm4brwsr/Instance"
-        );
+        Invocable i = StaticMethodTest.compileClass(sb, startCompilationWith());
         
         Object ret = null;
         try {

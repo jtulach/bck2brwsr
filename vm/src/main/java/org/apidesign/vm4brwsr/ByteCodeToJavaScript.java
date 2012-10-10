@@ -118,22 +118,29 @@ public final class ByteCodeToJavaScript {
                 out.append("\n  this." + v.getName() + " = 0;");
             }
         }
-        out.append("\n}");
+        out.append("\n}\n\nfunction ").append(className).append("_proto() {");
+        out.append("\n  if (").append(className).
+            append(".prototype.$instOf_").append(className).append(") {");
+        out.append("\n    return ").append(className).append(".prototype;");
+        out.append("\n  }");
         ClassName sc = jc.getSuperClass();
         if (sc != null) {
-            out.append("\n").append(className)
+            out.append("\n  ").append(sc.getInternalName().replace('/', '_')).append("_proto();");
+            out.append("\n  ").append(className)
                .append(".prototype = new ").append(sc.getInternalName().replace('/', '_')).append(';');
         }
         for (Method m : jc.getMethods()) {
             if (!m.isStatic() && !m.isPrivate() && !m.getName().contains("<init>")) {
-                compiler.generateMethodReference("\n" + className + ".prototype.", m);
+                compiler.generateMethodReference("\n  " + className + ".prototype.", m);
             }
         }
-        out.append("\n" + className + ".prototype.$instOf_").append(className).append(" = true;");
+        out.append("\n  " + className + ".prototype.$instOf_").append(className).append(" = true;");
         for (ClassName superInterface : jc.getInterfaces()) {
-            out.append("\n" + className + ".prototype.$instOf_").append(superInterface.getInternalName().replace('/', '_')).append(" = true;");
+            out.append("\n  " + className + ".prototype.$instOf_").append(superInterface.getInternalName().replace('/', '_')).append(" = true;");
         }
-        
+        out.append("\n  return ").append(className).append(".prototype;");
+        out.append("\n}");
+        out.append("\n").append(className).append("_proto();");
         StringBuilder sb = new StringBuilder();
         for (String init : toInitilize) {
             sb.append("\n").append(init).append("();");
