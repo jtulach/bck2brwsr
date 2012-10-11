@@ -29,4 +29,8 @@ public class Title extends Element {
     @Override
     void dontSubclass() {
     }
+    
+    public final void setText(String text) {
+        Element.setAttribute(this, "innerHTML", text);
+    }
 }

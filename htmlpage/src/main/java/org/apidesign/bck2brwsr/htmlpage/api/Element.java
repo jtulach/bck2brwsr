@@ -17,6 +17,8 @@
  */
 package org.apidesign.bck2brwsr.htmlpage.api;
 
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+
 /** Represents a generic HTML element.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
@@ -30,7 +32,21 @@ public abstract class Element {
     
     abstract void dontSubclass();
     
+    @JavaScriptBody(
+        args={"el", "property", "value"},
+        body="var e = window.document.getElementById(el.id);\n"
+           + "e[property] = value;\n"
+    )
     static void setAttribute(Element el, String property, Object value) {
+        throw new UnsupportedOperationException("Needs JavaScript!");
+    }
+
+    @JavaScriptBody(
+        args={"el", "property"},
+        body="var e = window.document.getElementById(el.id);\n"
+           + "return e[property];\n"
+    )
+    static Object getAttribute(Element el, String property) {
         throw new UnsupportedOperationException("Needs JavaScript!");
     }
     
@@ -38,6 +54,11 @@ public abstract class Element {
      * element.
      * @param r the runnable to execute, never null
      */
+    @JavaScriptBody(
+        args={"el", "r"},
+        body="var e = window.document.getElementById(el.id);\n"
+           + "e.onclick = function() { r.runV(); };\n"
+    )
     public final void addOnClick(Runnable r) {
         throw new UnsupportedOperationException("Needs JavaScript!");
     }

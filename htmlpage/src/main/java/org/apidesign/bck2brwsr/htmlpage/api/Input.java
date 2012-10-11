@@ -31,6 +31,10 @@ public final class Input extends Element {
     }
     
     public void setAutocomplete(boolean state) {
-        setAttribute(this, "autocomplete", state);
+        Element.setAttribute(this, "autocomplete", state);
+    }
+    
+    public final String getValue() {
+        return (String)Element.getAttribute(this, "value");
     }
 }

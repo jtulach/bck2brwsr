@@ -32,7 +32,7 @@ import java.lang.annotation.Target;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @Retention(RetentionPolicy.SOURCE)
-@Target(ElementType.PACKAGE)
+@Target(ElementType.TYPE)
 public @interface Page {
     /** Path to the XHTML page to read in */
     String xhtml();
