@@ -4,6 +4,7 @@ import javax.script.Invocable;
 import javax.script.ScriptException;
 import org.testng.annotations.Test;
 import static org.testng.Assert.*;
+import org.testng.annotations.BeforeClass;
 
 /**
  *
@@ -36,21 +37,27 @@ public class StringTest {
     @Test public void toStringConcatenationJava() throws Exception {
         assertEquals("Hello World!5", StringSample.toStringTest(5));
     }
+    private static CharSequence codeSeq;
+    private static Invocable code;
     
-    private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
+    @BeforeClass 
+    public void compileTheCode() throws Exception {
         StringBuilder sb = new StringBuilder();
-        Invocable i = StaticMethodTest.compileClass(sb, 
+        code = StaticMethodTest.compileClass(sb, 
             "org/apidesign/vm4brwsr/StringSample",
             "java/lang/String"
         );
-        
+        codeSeq = sb;
+    }
+    
+    private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
         Object ret = null;
         try {
-            ret = i.invokeFunction(methodName, args);
+            ret = code.invokeFunction(methodName, args);
         } catch (ScriptException ex) {
-            fail("Execution failed in " + sb, ex);
+            fail("Execution failed in\n" + codeSeq, ex);
         } catch (NoSuchMethodException ex) {
-            fail("Cannot find method in " + sb, ex);
+            fail("Cannot find method in\n" + codeSeq, ex);
         }
         if (ret == null && expRes == null) {
             return;
@@ -58,7 +65,7 @@ public class StringTest {
         if (expRes.equals(ret)) {
             return;
         }
-        assertEquals(ret, expRes, msg + "was: " + ret + "\n" + sb);
+        assertEquals(ret, expRes, msg + "was: " + ret + "\n" + codeSeq);
         
     }
     

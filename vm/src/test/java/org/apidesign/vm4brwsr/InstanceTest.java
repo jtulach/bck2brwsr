@@ -21,6 +21,8 @@ import javax.script.Invocable;
 import javax.script.ScriptException;
 import org.testng.annotations.Test;
 import static org.testng.Assert.*;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeTest;
 
 /**
  *
@@ -113,19 +115,29 @@ public class InstanceTest {
         return "org/apidesign/vm4brwsr/Instance";
     }
     
+    private static CharSequence codeSeq;
+    private static Invocable code;
+    
+    @BeforeTest 
+    public void compileTheCode() throws Exception {
+        if (codeSeq == null) {
+            StringBuilder sb = new StringBuilder();
+            code = StaticMethodTest.compileClass(sb, startCompilationWith());
+            codeSeq = sb;
+        }
+    }
+    
     private void assertExec(
         String msg, String methodName, Object expRes, Object... args
     ) throws Exception {
-        StringBuilder sb = new StringBuilder();
-        Invocable i = StaticMethodTest.compileClass(sb, startCompilationWith());
-        
+
         Object ret = null;
         try {
-            ret = i.invokeFunction(methodName, args);
+            ret = code.invokeFunction(methodName, args);
         } catch (ScriptException ex) {
-            fail("Execution failed in " + sb, ex);
+            fail("Execution failed in\n" + codeSeq, ex);
         } catch (NoSuchMethodException ex) {
-            fail("Cannot find method in " + sb, ex);
+            fail("Cannot find method in\n" + codeSeq, ex);
         }
         if (ret == null && expRes == null) {
             return;
@@ -133,7 +145,7 @@ public class InstanceTest {
         if (expRes.equals(ret)) {
             return;
         }
-        assertEquals(ret, expRes, msg + "was: " + ret + "\n" + sb);
+        assertEquals(ret, expRes, msg + "was: " + ret + "\n" + codeSeq);
         
     }
     

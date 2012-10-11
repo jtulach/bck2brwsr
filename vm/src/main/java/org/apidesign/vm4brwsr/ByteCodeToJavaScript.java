@@ -886,7 +886,8 @@ public final class ByteCodeToJavaScript {
         return i;
     }
     
-    private void addReference(String cn) {
+    private void addReference(String cn) throws IOException {
+        out.append(" /* needs ").append(cn).append(" */");
         if (references != null) {
             references.add(cn);
         }
