@@ -143,6 +143,56 @@ public class StaticMethodTest {
         );
     }
     
+    @Test public void shiftLeftInJava() throws Exception {
+        int res = StaticMethod.shiftLeft(1, 8);
+        assertEquals(res, 256);
+    }
+
+    @Test public void shiftLeftInJS() throws Exception {
+        assertExec(
+            "Setting 9th bit",
+            "org_apidesign_vm4brwsr_StaticMethod_shiftLeftIII",
+            Double.valueOf(256),
+            1, 8
+        );
+    }
+
+    @Test public void shiftRightInJava() throws Exception {
+        int res = StaticMethod.shiftArithmRight(-8, 3, true);
+        assertEquals(res, -1);
+    }
+
+    @Test public void shiftRightInJS() throws Exception {
+        assertExec(
+            "Get -1",
+            "org_apidesign_vm4brwsr_StaticMethod_shiftArithmRightIIIZ",
+            Double.valueOf(-1),
+            -8, 3, true
+        );
+    }
+    @Test public void unsignedShiftRightInJava() throws Exception {
+        int res = StaticMethod.shiftArithmRight(8, 3, false);
+        assertEquals(res, 1);
+    }
+
+    @Test public void unsignedShiftRightInJS() throws Exception {
+        assertExec(
+            "Get -1",
+            "org_apidesign_vm4brwsr_StaticMethod_shiftArithmRightIIIZ",
+            Double.valueOf(1),
+            8, 3, false
+        );
+    }
+    
+    @Test public void javaScriptBody() throws Exception {
+        assertExec(
+            "JavaScript string",
+            "org_apidesign_vm4brwsr_StaticMethod_i2sLjava_lang_StringII",
+            "333",
+            330, 3
+        );
+    }
+    
     private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
         StringBuilder sb = new StringBuilder();
         Invocable i = compileClass(sb, "org/apidesign/vm4brwsr/StaticMethod");

@@ -19,17 +19,20 @@ package org.apidesign.bck2brwsr.htmlpage;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.util.Set;
+import javax.script.Invocable;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 import org.testng.annotations.Test;
 import static org.testng.Assert.*;
-
-import org.apidesign.bck2brwsr.htmlpage.api.*;
 
 public class ProcessPageTest {
     
     
     @Test public void findsThreeIds() throws IOException {
-        InputStream is = ProcessPageTest.class.getResourceAsStream("TestPage.xhtml");
+        InputStream is = ProcessPageTest.class.getResourceAsStream("TestPage.html");
         assertNotNull(is, "Sample HTML page found");
         ProcessPage res = ProcessPage.readPage(is);
         final Set<String> ids = res.ids();
@@ -40,16 +43,67 @@ public class ProcessPageTest {
         assertEquals(res.tagNameForId("pg.text"), "input");
     }
     
-    void testWhetherWeCanCallTheGeneratedIdFields() {
-        Title t = TestPage.PG_TITLE;
+    @Test public void testCompileAndRunPageController() throws Exception {
+        StringBuilder sb = new StringBuilder();
+        sb.append(
+              "var window = new Object();\n"
+            + "var doc = new Object();\n"
+            + "doc.button = new Object();\n"
+            + "doc.title = new Object();\n"
+            + "doc.title.innerHTML = 'nothing';\n"
+            + "doc.text = new Object();\n"
+            + "doc.text.value = 'something';\n"
+            + "doc.getElementById = function(id) {\n"
+            + "    switch(id) {\n"
+            + "      case 'pg.button': return doc.button;\n"
+            + "      case 'pg.title': return doc.title;\n"
+            + "      case 'pg.text': return doc.text;\n"
+            + "    }\n"
+            + "    throw id;\n"
+            + "  }\n"
+            + "\n"
+            + "function clickAndCheck() {\n"
+            + "  doc.button.onclick();\n"
+            + "  return doc.title.innerHTML.toString();\n"
+            + "};\n"
+            + "\n"
+            + "window.document = doc;\n"
+        );
+        Invocable i = compileClass(sb, "org/apidesign/bck2brwsr/htmlpage/PageController");
+
+        Object ret = null;
+        try {
+            ret = i.invokeFunction("clickAndCheck");
+        } catch (ScriptException ex) {
+            fail("Execution failed in " + sb, ex);
+        } catch (NoSuchMethodException ex) {
+            fail("Cannot find method in " + sb, ex);
+        }
+        assertEquals(ret, "something", "We expect that the JavaCode performs all the wiring");
     }
-    
-    @OnClick(id="pg.button")
-    static void handleButtonClick() {
-        
-    }
-    
-    @Test public void testOnclickHandlerGenerated() {
-        
+
+    static Invocable compileClass(StringBuilder sb, String... names) throws ScriptException, IOException {
+        if (sb == null) {
+            sb = new StringBuilder();
+        }
+        try {
+            Method m;
+            Class<?> genJS = Class.forName("org.apidesign.vm4brwsr.GenJS");
+            m = genJS.getDeclaredMethod("compile", Appendable.class, String[].class);
+            m.setAccessible(true);
+            m.invoke(null, sb, names);
+        } catch (Exception exception) {
+            throw new IOException(exception);
+        }
+        ScriptEngineManager sem = new ScriptEngineManager();
+        ScriptEngine js = sem.getEngineByExtension("js");
+        try {
+            Object res = js.eval(sb.toString());
+            assertTrue(js instanceof Invocable, "It is invocable object: " + res);
+            return (Invocable) js;
+        } catch (ScriptException ex) {
+            fail("Could not compile:\n" + sb, ex);
+            return null;
+        }
     }
 }

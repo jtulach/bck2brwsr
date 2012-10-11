@@ -22,6 +22,11 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.apidesign.bck2brwsr.core.ExtraJavaScript;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+import org.netbeans.modules.classfile.Annotation;
+import org.netbeans.modules.classfile.AnnotationComponent;
+import org.netbeans.modules.classfile.ArrayElementValue;
 import static org.netbeans.modules.classfile.ByteCodes.*;
 import org.netbeans.modules.classfile.CPClassInfo;
 import org.netbeans.modules.classfile.CPEntry;
@@ -31,8 +36,10 @@ import org.netbeans.modules.classfile.CPStringInfo;
 import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.classfile.ClassName;
 import org.netbeans.modules.classfile.Code;
+import org.netbeans.modules.classfile.ElementValue;
 import org.netbeans.modules.classfile.Method;
 import org.netbeans.modules.classfile.Parameter;
+import org.netbeans.modules.classfile.PrimitiveElementValue;
 import org.netbeans.modules.classfile.Variable;
 
 /** Translator of the code inside class files to JavaScript.
@@ -62,14 +69,30 @@ public final class ByteCodeToJavaScript {
      *   generated JavaScript code works properly. The names are in internal 
      *   JVM form so String is <code>java/lang/String</code>. Can be <code>null</code>
      *   if one is not interested in knowing references
+     * @param scripts write only collection with names of resources to read
+     * @return the initialization code for this class, if any. Otherwise <code>null</code>
+     * 
      * @throws IOException if something goes wrong during read or write or translating
      */
     
-    public static void compile(
+    public static String compile(
         InputStream classFile, Appendable out,
-        Collection<? super String> references
+        Collection<? super String> references,
+        Collection<? super String> scripts
     ) throws IOException {
         ClassFile jc = new ClassFile(classFile, true);
+        final ClassName extraAnn = ClassName.getClassName(ExtraJavaScript.class.getName().replace('.', '/'));
+        Annotation a = jc.getAnnotation(extraAnn);
+        if (a != null) {
+            final ElementValue annVal = a.getComponent("resource").getValue();
+            String res = ((PrimitiveElementValue)annVal).getValue().getValue().toString();
+            scripts.add(res);
+            final AnnotationComponent process = a.getComponent("processByteCode");
+            if (process != null && "const=0".equals(process.getValue().toString())) {
+                return null;
+            }
+        }
+        
         ByteCodeToJavaScript compiler = new ByteCodeToJavaScript(
             jc, out, references
         );
@@ -95,26 +118,39 @@ public final class ByteCodeToJavaScript {
                 out.append("\n  this." + v.getName() + " = 0;");
             }
         }
-        out.append("\n}");
+        out.append("\n}\n\nfunction ").append(className).append("_proto() {");
+        out.append("\n  if (").append(className).
+            append(".prototype.$instOf_").append(className).append(") {");
+        out.append("\n    return ").append(className).append(".prototype;");
+        out.append("\n  }");
         ClassName sc = jc.getSuperClass();
         if (sc != null) {
-            out.append("\n").append(className)
+            out.append("\n  ").append(sc.getInternalName().replace('/', '_')).append("_proto();");
+            out.append("\n  ").append(className)
                .append(".prototype = new ").append(sc.getInternalName().replace('/', '_')).append(';');
         }
         for (Method m : jc.getMethods()) {
             if (!m.isStatic() && !m.isPrivate() && !m.getName().contains("<init>")) {
-                compiler.generateMethodReference("\n" + className + ".prototype.", m);
+                compiler.generateMethodReference("\n  " + className + ".prototype.", m);
             }
         }
-        out.append("\n" + className + ".prototype.$instOf_").append(className).append(" = true;");
+        out.append("\n  " + className + ".prototype.$instOf_").append(className).append(" = true;");
         for (ClassName superInterface : jc.getInterfaces()) {
-            out.append("\n" + className + ".prototype.$instOf_").append(superInterface.getInternalName().replace('/', '_')).append(" = true;");
+            out.append("\n  " + className + ".prototype.$instOf_").append(superInterface.getInternalName().replace('/', '_')).append(" = true;");
         }
+        out.append("\n  return ").append(className).append(".prototype;");
+        out.append("\n}");
+        out.append("\n").append(className).append("_proto();");
+        StringBuilder sb = new StringBuilder();
         for (String init : toInitilize) {
-            out.append("\n").append(init).append("();");
+            sb.append("\n").append(init).append("();");
         }
+        return sb.toString();
     }
     private void generateStaticMethod(Method m, List<String> toInitilize) throws IOException {
+        if (javaScriptBody(m, true)) {
+            return;
+        }
         final String mn = findMethodName(m);
         out.append("\nfunction ").append(
             jc.getName().getInternalName().replace('/', '_')
@@ -160,6 +196,9 @@ public final class ByteCodeToJavaScript {
     }
     
     private void generateInstanceMethod(Method m) throws IOException {
+        if (javaScriptBody(m, false)) {
+            return;
+        }
         out.append("\nfunction ").append(
             jc.getName().getInternalName().replace('/', '_')
         ).append('_').append(findMethodName(m));
@@ -184,9 +223,7 @@ public final class ByteCodeToJavaScript {
                 out.append("  var ");
                 out.append("arg").append(String.valueOf(i + 1)).append(";\n");
             }
-            out.append(";\n  var stack = new Array(");
-            out.append(Integer.toString(code.getMaxStack()));
-            out.append(");\n");
+            out.append(";\n  var stack = new Array();\n");
             produceCode(code.getByteCodes());
         } else {
             out.append("  /* no code found for ").append(m.getTypeSignature()).append(" */\n");
@@ -312,6 +349,24 @@ public final class ByteCodeToJavaScript {
                 case bc_ixor:
                 case bc_lxor:
                     out.append("stack.push(stack.pop() ^ stack.pop());");
+                    break;
+                case bc_ineg:
+                case bc_lneg:
+                case bc_fneg:
+                case bc_dneg:
+                    out.append("stack.push(- stack.pop());");
+                    break;
+                case bc_ishl:
+                case bc_lshl:
+                    out.append("{ var v = stack.pop(); stack.push(stack.pop() << v); }");
+                    break;
+                case bc_ishr:
+                case bc_lshr:
+                    out.append("{ var v = stack.pop(); stack.push(stack.pop() >> v); }");
+                    break;
+                case bc_iushr:
+                case bc_lushr:
+                    out.append("{ var v = stack.pop(); stack.push(stack.pop() >>> v); }");
                     break;
                 case bc_iinc: {
                     final int varIndx = (byteCodes[++i] + 256) % 256;
@@ -549,6 +604,11 @@ public final class ByteCodeToJavaScript {
                     out.append("{ var indx = stack.pop(); stack.push(stack.pop()[indx]); }");
                     break;
                 }
+                case bc_pop2:
+                    out.append("stack.pop();");
+                case bc_pop:
+                    out.append("stack.pop();");
+                    break;
                 case bc_dup:
                     out.append("stack.push(stack[stack.length - 1]);");
                     break;
@@ -681,6 +741,7 @@ public final class ByteCodeToJavaScript {
                             sig.insert(firstPos, 'A');
                         }
                     }
+                    array = false;
                     continue;
                 case 'V': 
                     assert !count;
@@ -843,7 +904,9 @@ public final class ByteCodeToJavaScript {
 
     private String encodeConstant(CPEntry entry) {
         final String v;
-        if (entry instanceof CPStringInfo) {
+        if (entry instanceof CPClassInfo) {
+            v = "new java_lang_Class";
+        } else if (entry instanceof CPStringInfo) {
             v = "\"" + entry.getValue().toString().replace("\"", "\\\"") + "\"";
         } else {
             v = entry.getValue().toString();
@@ -853,5 +916,47 @@ public final class ByteCodeToJavaScript {
 
     private String findDescriptor(String d) {
         return d.replace('[', 'A');
+    }
+
+    private boolean javaScriptBody(Method m, boolean isStatic) throws IOException {
+        final ClassName extraAnn = ClassName.getClassName(JavaScriptBody.class.getName().replace('.', '/'));
+        Annotation a = m.getAnnotation(extraAnn);
+        if (a != null) {
+            final ElementValue annVal = a.getComponent("body").getValue();
+            String body = ((PrimitiveElementValue) annVal).getValue().getValue().toString();
+            
+            final ArrayElementValue arrVal = (ArrayElementValue) a.getComponent("args").getValue();
+            final int len = arrVal.getValues().length;
+            String[] names = new String[len];
+            for (int i = 0; i < len; i++) {
+                names[i] = ((PrimitiveElementValue) arrVal.getValues()[i]).getValue().getValue().toString();
+            }
+            out.append("\nfunction ").append(
+                jc.getName().getInternalName().replace('/', '_')).append('_').append(findMethodName(m));
+            out.append("(");
+            String space;
+            int index;
+            if (!isStatic) {                
+                out.append(names[0]);
+                space = ",";
+                index = 1;
+            } else {
+                space = "";
+                index = 0;
+            }
+            List<Parameter> args = m.getParameters();
+            for (int i = 0; i < args.size(); i++) {
+                out.append(space);
+                out.append(names[index]);
+                final String desc = findDescriptor(args.get(i).getDescriptor());
+                index++;
+                space = ",";
+            }
+            out.append(") {").append("\n");
+            out.append(body);
+            out.append("\n}\n");
+            return true;
+        }
+        return false;
     }
 }

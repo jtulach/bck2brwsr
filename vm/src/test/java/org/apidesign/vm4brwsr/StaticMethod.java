@@ -17,6 +17,8 @@ If not, see http://opensource.org/licenses/GPL-2.0.
 */
 package org.apidesign.vm4brwsr;
 
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
@@ -61,6 +63,16 @@ public class StaticMethod {
     public static long orOrAnd(boolean doOr, int a, int b) {
         return doOr ? a | b : a & b;
     }
+    public static int shiftLeft(int what, int much) {
+        return what << much;
+    }
+    public static int shiftArithmRight(int what, int much, boolean signed) {
+        if (signed) {
+            return what >> much;
+        } else {
+            return what >>> much;
+        }
+    }
     public static long factRec(int n) {
         if (n <= 1) {
             return 1;
@@ -80,5 +92,17 @@ public class StaticMethod {
         cnt+=2;
         cnt++;
         return cnt;
+    }
+    
+    @JavaScriptBody(
+        args={"i","j"}, body="return (i + j).toString();"
+    )
+    public static String i2s(int i, int j) {
+        throw new IllegalStateException();
+    }
+    
+    static {
+        // check order of initializers
+        StaticUse.NON_NULL.equals(new Object());
     }
 }

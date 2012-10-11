@@ -55,7 +55,7 @@ public final class PageProcessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         for (Element e : roundEnv.getElementsAnnotatedWith(Page.class)) {
             Page p = e.getAnnotation(Page.class);
-            PackageElement pe = (PackageElement)e;
+            PackageElement pe = (PackageElement)e.getEnclosingElement();
             String pkg = pe.getQualifiedName().toString();
             
             ProcessPage pp;
