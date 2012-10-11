@@ -34,6 +34,13 @@ public class InstanceTest {
             Double.valueOf(0)
         );
     }
+    @Test public void verifyStaticMethodCall() throws Exception {
+        assertExec(
+            "Will be zero",
+            "org_apidesign_vm4brwsr_InstanceSub_recallDblD",
+            Double.valueOf(0)
+        );
+    }
     @Test public void verifyAssignedByteValue() throws Exception {
         assertExec(
             "Will one thirty one",

@@ -30,4 +30,8 @@ public class InstanceSub extends Instance implements GetByte {
     public void setByte(byte b) {
         super.setByte((byte) (b + 1));
     }
+    
+    public static double recallDbl() {
+        return defaultDblValue();
+    }
 }

@@ -130,7 +130,7 @@ public final class ByteCodeToJavaScript {
                .append(".prototype = new ").append(sc.getInternalName().replace('/', '_')).append(';');
         }
         for (Method m : jc.getMethods()) {
-            if (!m.isStatic() && !m.isPrivate() && !m.getName().contains("<init>")) {
+            if (!m.getName().contains("<init>") && !m.getName().contains("<cinit>")) {
                 compiler.generateMethodReference("\n  " + className + ".prototype.", m);
             }
         }
@@ -828,7 +828,11 @@ public final class ByteCodeToJavaScript {
         }
         final String in = mi.getClassName().getInternalName();
         out.append(in.replace('/', '_'));
-        out.append('_');
+        if (isStatic) {
+            out.append(".prototype.");
+        } else {
+            out.append('_');
+        }
         out.append(mn);
         out.append('(');
         String sep = "";

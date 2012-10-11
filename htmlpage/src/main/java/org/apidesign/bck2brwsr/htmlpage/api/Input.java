@@ -31,10 +31,10 @@ public final class Input extends Element {
     }
     
     public void setAutocomplete(boolean state) {
-        Element.setAttribute(this, "autocomplete", state);
+        setAttribute(this, "autocomplete", state);
     }
     
     public final String getValue() {
-        return (String)Element.getAttribute(this, "value");
+        return (String)getAttribute(this, "value");
     }
 }

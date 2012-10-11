@@ -31,6 +31,6 @@ public class Title extends Element {
     }
     
     public final void setText(String text) {
-        Element.setAttribute(this, "innerHTML", text);
+        setAttribute(this, "innerHTML", text);
     }
 }
