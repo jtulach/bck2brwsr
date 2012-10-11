@@ -187,9 +187,9 @@ public class StaticMethodTest {
     @Test public void javaScriptBody() throws Exception {
         assertExec(
             "JavaScript string",
-            "org_apidesign_vm4brwsr_StaticMethod_i2sLjava_lang_StringI",
+            "org_apidesign_vm4brwsr_StaticMethod_i2sLjava_lang_StringII",
             "333",
-            333
+            330, 3
         );
     }
     

@@ -950,6 +950,7 @@ public final class ByteCodeToJavaScript {
                 out.append(names[index]);
                 final String desc = findDescriptor(args.get(i).getDescriptor());
                 index++;
+                space = ",";
             }
             out.append(") {").append("\n");
             out.append(body);
