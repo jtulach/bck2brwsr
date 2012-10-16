@@ -55,6 +55,9 @@ final class GenJS {
         compile(out, Arrays.asList(names));
     }
     static void compile(Appendable out, List<String> names) throws IOException {
+        compile(GenJS.class.getClassLoader(), out, names);
+    }
+    static void compile(ClassLoader l, Appendable out, List<String> names) throws IOException {
         for (String baseClass : names) {
             Map<String,String> processed = new HashMap<String, String>();
             LinkedList<String> toProcess = new LinkedList<String>();
@@ -92,7 +95,7 @@ final class GenJS {
                     processed.put(name, "");
                     continue;
                 }            
-                InputStream is = loadClass(name);
+                InputStream is = loadClass(l, name);
                 if (is == null) {
                     throw new IOException("Can't find class " + name); 
                 }
@@ -119,7 +122,10 @@ final class GenJS {
                     }
                 }
                 for (String resource : scripts) {
-                    InputStream emul = GenJS.class.getResourceAsStream(resource);
+                    while (resource.startsWith("/")) {
+                        resource = resource.substring(1);
+                    }
+                    InputStream emul = l.getResourceAsStream(resource);
                     if (emul == null) {
                         throw new IOException("Can't find " + resource);
                     }
@@ -183,12 +189,13 @@ final class GenJS {
         }
     }
 
-    private static InputStream loadClass(String name) throws IOException {
-        Enumeration<URL> en = ClassLoader.getSystemClassLoader().getResources(name + ".class");
+    private static InputStream loadClass(ClassLoader l, String name) throws IOException {
+        Enumeration<URL> en = l.getResources(name + ".class");
         URL u = null;
         while (en.hasMoreElements()) {
             u = en.nextElement();
         }
+        System.err.println("loader: " + l + " url : " + u);
         if (u == null) {
             throw new IOException("Can't find " + name);
         }
