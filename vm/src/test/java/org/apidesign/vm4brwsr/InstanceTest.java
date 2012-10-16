@@ -22,7 +22,6 @@ import javax.script.ScriptException;
 import org.testng.annotations.Test;
 import static org.testng.Assert.*;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeTest;
 
 /**
  *
@@ -118,7 +117,7 @@ public class InstanceTest {
     private static CharSequence codeSeq;
     private static Invocable code;
     
-    @BeforeTest 
+    @BeforeClass
     public void compileTheCode() throws Exception {
         if (codeSeq == null) {
             StringBuilder sb = new StringBuilder();
