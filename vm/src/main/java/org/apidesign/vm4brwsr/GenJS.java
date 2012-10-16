@@ -80,6 +80,8 @@ final class GenJS {
                     && !name.equals("java/lang/Class")
                     && !name.equals("java/lang/Math")
                     && !name.equals("java/lang/Number")
+                    && !name.equals("java/lang/NumberFormatException")
+                    && !name.equals("java/lang/IllegalArgumentException")
                     && !name.equals("java/lang/Integer")
                     && !name.equals("java/lang/Float")
                     && !name.equals("java/lang/Double")
