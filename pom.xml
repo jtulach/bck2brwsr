@@ -43,6 +43,34 @@
           </releases>
       </pluginRepository>
   </pluginRepositories>
+  <build>
+      <plugins>
+         <plugin>
+              <inherited>false</inherited>
+              <groupId>com.mycila.maven-license-plugin</groupId>
+              <artifactId>maven-license-plugin</artifactId>
+              <version>1.9.0</version>
+              <executions>
+                  <execution>
+                      <id>blah</id>
+                      <goals>
+                          <goal>check</goal>
+                      </goals>
+                  </execution>
+              </executions>
+              <configuration>
+                  <aggregate>true</aggregate>
+                  <basedir>${basedir}</basedir>
+                  <header>COPYING</header>
+                  <strictCheck>true</strictCheck>
+                  <excludes>
+                       <exclude>emul/**</exclude>
+                       <exclude>*</exclude>
+                  </excludes>
+              </configuration>
+          </plugin>
+      </plugins>
+  </build>
   <dependencyManagement>
       <dependencies>
         <dependency>

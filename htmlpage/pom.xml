@@ -51,16 +51,4 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>com.mycila.maven-license-plugin</groupId>
-                <artifactId>maven-license-plugin</artifactId>
-                <version>1.9.0</version>
-                <configuration>
-                    <header>../vm/src/header.txt</header>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>
