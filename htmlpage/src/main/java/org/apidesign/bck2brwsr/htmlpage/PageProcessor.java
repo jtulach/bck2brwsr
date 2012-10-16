@@ -100,9 +100,9 @@ public final class PageProcessor extends AbstractProcessor {
     }
 
     private InputStream openStream(String pkg, String name) throws IOException {
-        FileObject fo = processingEnv.getFiler().getResource(
-            StandardLocation.SOURCE_PATH, pkg, name);
         try {
+            FileObject fo = processingEnv.getFiler().getResource(
+                StandardLocation.SOURCE_PATH, pkg, name);
             return fo.openInputStream();
         } catch (IOException ex) {
             return processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, pkg, name).openInputStream();
