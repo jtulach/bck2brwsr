@@ -35,5 +35,5 @@ public @interface Page {
     /** Name of a Java class to generate. It will contain constants for all
      * found elements with IDs.
      */
-    String name();
+    String className() default "";
 }

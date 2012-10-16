@@ -40,7 +40,7 @@ import org.apidesign.bck2brwsr.htmlpage.api.Page;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@Page(xhtml="TestPage.html", name="TestPage")
+@Page(xhtml="TestPage.html")
 public class PageController {
     @OnClick(id="pg.button")
     static void updateTitle() {

@@ -68,13 +68,18 @@ public final class PageProcessor extends AbstractProcessor {
                 return false;
             }
             Writer w;
+            String className = p.className();
+            if (className.isEmpty()) {
+                int indx = p.xhtml().indexOf('.');
+                className = p.xhtml().substring(0, indx);
+            }
             try {
-                FileObject java = processingEnv.getFiler().createSourceFile(pkg + '.' + p.name(), e);
+                FileObject java = processingEnv.getFiler().createSourceFile(pkg + '.' + className, e);
                 w = new OutputStreamWriter(java.openOutputStream());
                 try {
                     w.append("package " + pkg + ";\n");
                     w.append("import org.apidesign.bck2brwsr.htmlpage.api.*;\n");
-                    w.append("class ").append(p.name()).append(" {\n");
+                    w.append("class ").append(className).append(" {\n");
                     for (String id : pp.ids()) {
                         String tag = pp.tagNameForId(id);
                         String type = type(tag);
@@ -92,7 +97,7 @@ public final class PageProcessor extends AbstractProcessor {
                     w.close();
                 }
             } catch (IOException ex) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Can't create " + p.name() + ".java", e);
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Can't create " + className + ".java", e);
                 return false;
             }
         }
