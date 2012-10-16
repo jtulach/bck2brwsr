@@ -27,6 +27,6 @@ import org.apidesign.bck2brwsr.htmlpage.api.Page;
 public class PageController {
     @OnClick(id="pg.button")
     static void updateTitle() {
-        TestPage.PG_TITLE.setText(TestPage.PG_TEXT.getValue());
+        TestPage.PG_TITLE.setText("You want this window to be named " + TestPage.PG_TEXT.getValue());
     }
 }

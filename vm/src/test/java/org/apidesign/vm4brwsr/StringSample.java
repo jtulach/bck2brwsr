@@ -24,11 +24,16 @@ public class StringSample {
     }
     
     public static String toStringTest(int howMuch) {
+        counter = 0;
         StringSample ss = null;
         for (int i = 0; i < howMuch; i++) {
             ss = new StringSample();
         }
         return ss.toString().toString();
+    }
+    
+    public static String concatStrings() {
+        return (toStringTest(1) + "Ahoj").toString();
     }
 
     @Override

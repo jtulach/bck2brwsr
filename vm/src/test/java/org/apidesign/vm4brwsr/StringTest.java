@@ -37,6 +37,15 @@ public class StringTest {
     @Test public void toStringConcatenationJava() throws Exception {
         assertEquals("Hello World!5", StringSample.toStringTest(5));
     }
+    
+    @Test(timeOut=10000) public void stringStringConcat() throws Exception {
+        assertExec(
+            "Composes strings OK",
+            "org_apidesign_vm4brwsr_StringSample_concatStringsLjava_lang_String",
+            "Hello World!1Ahoj"
+        );
+    }
+    
     private static CharSequence codeSeq;
     private static Invocable code;
     

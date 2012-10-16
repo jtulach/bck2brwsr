@@ -80,4 +80,16 @@ public class Array {
         }
         return sum;
     }
+    
+    static void arraycopy(char[] value, int srcBegin, char[] dst, int dstBegin, int count) {
+        while (count-- > 0) {
+            dst[dstBegin++] = value[srcBegin++];
+        }
+    }
+
+    public static char copyArray() {
+        char[] arr = { '0' };
+        arraycopy(arr()[0].chars, 0, arr, 0, 1);
+        return arr[0];
+    }
 }

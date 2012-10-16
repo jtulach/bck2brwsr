@@ -164,7 +164,7 @@ public final class String
             // String itself.  Perhaps this constructor is being called
             // in order to trim the baggage, so make a copy of the array.
             int off = original.offset;
-            v = copyOfRange(originalValue, off, off+size);
+            v = AbstractStringBuilder.copyOfRange(originalValue, off, off+size);
         } else {
             // The array representing the String is the same
             // size as the String, so no point in making a copy.
@@ -188,7 +188,7 @@ public final class String
         int size = value.length;
         this.offset = 0;
         this.count = size;
-        this.value = copyOf(value, size);
+        this.value = AbstractStringBuilder.copyOf(value, size);
     }
 
     /**
@@ -225,7 +225,7 @@ public final class String
         }
         this.offset = 0;
         this.count = count;
-        this.value = copyOfRange(value, offset, offset+count);
+        this.value = AbstractStringBuilder.copyOfRange(value, offset, offset+count);
     }
 
     /**
@@ -818,7 +818,7 @@ public final class String
      * This method doesn't perform any range checking.
      */
     void getChars(char dst[], int dstBegin) {
-        arraycopy(value, offset, dst, dstBegin, count);
+        AbstractStringBuilder.arraycopy(value, offset, dst, dstBegin, count);
     }
 
     /**
@@ -861,7 +861,7 @@ public final class String
         if (srcBegin > srcEnd) {
             throw new StringIndexOutOfBoundsException(srcEnd - srcBegin);
         }
-        arraycopy(value, offset + srcBegin, dst, dstBegin,
+        AbstractStringBuilder.arraycopy(value, offset + srcBegin, dst, dstBegin,
              srcEnd - srcBegin);
     }
 
@@ -3034,32 +3034,4 @@ public final class String
      *          guaranteed to be from a pool of unique strings.
      */
     public native String intern();
-
-    static char[] copyOfRange(char[] original, int from, int to) {
-        int newLength = to - from;
-        if (newLength < 0) {
-            throw new IllegalArgumentException(from + " > " + to);
-        }
-        char[] copy = new char[newLength];
-        arraycopy(original, from, copy, 0,
-            Math.min(original.length - from, newLength));
-        return copy;
-    }
-    static char[] copyOf(char[] original, int newLength) {
-        char[] copy = new char[newLength];
-        arraycopy(original, 0, copy, 0,
-            Math.min(original.length, newLength));
-        return copy;
-    }
-    static void arraycopy(
-        char[] value, int srcBegin, char[] dst, int dstBegin, int count
-    ) {
-        while (count-- > 0) {
-            dst[dstBegin++] = value[srcBegin++];
-        }
-    }
-    // access system property
-    static String getProperty(String nm) {
-        return null;
-    }
 }

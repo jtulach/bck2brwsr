@@ -39,6 +39,10 @@ public class ArrayTest {
         );
     }
     
+    @Test public void doesCopyArrayWork() throws Exception {
+        assertExec("Returns 'a'", "org_apidesign_vm4brwsr_Array_copyArrayC", Double.valueOf('a'));
+    }
+    
     private static CharSequence codeSeq;
     private static Invocable code;
     

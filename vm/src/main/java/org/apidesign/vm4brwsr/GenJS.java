@@ -58,8 +58,11 @@ final class GenJS {
                 if (name.startsWith("java/")
                     && !name.equals("java/lang/Object")
                     && !name.equals("java/lang/Class")
+                    && !name.equals("java/lang/Math")
                     && !name.equals("java/lang/Number")
                     && !name.equals("java/lang/Integer")
+                    && !name.equals("java/lang/Float")
+                    && !name.equals("java/lang/Double")
                     && !name.equals("java/lang/Throwable")
                     && !name.equals("java/lang/Exception")
                     && !name.equals("java/lang/RuntimeException")
@@ -116,7 +119,6 @@ final class GenJS {
                 }
             }
         }
-        
     }
     private static void readResource(InputStream emul, Appendable out) throws IOException {
         try {

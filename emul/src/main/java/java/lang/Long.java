@@ -923,7 +923,7 @@ public final class Long extends Number implements Comparable<Long> {
     public static Long getLong(String nm, Long val) {
         String v = null;
         try {
-            v = String.getProperty(nm);
+            v = AbstractStringBuilder.getProperty(nm);
         } catch (IllegalArgumentException e) {
         } catch (NullPointerException e) {
         }

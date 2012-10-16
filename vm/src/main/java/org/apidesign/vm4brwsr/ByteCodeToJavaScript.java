@@ -370,7 +370,7 @@ public final class ByteCodeToJavaScript {
                     break;
                 case bc_iinc: {
                     final int varIndx = (byteCodes[++i] + 256) % 256;
-                    final int incrBy = (byteCodes[++i] + 256) % 256;
+                    final int incrBy = byteCodes[++i];
                     if (incrBy == 1) {
                         out.append("arg" + varIndx).append("++;");
                     } else {
@@ -465,6 +465,12 @@ public final class ByteCodeToJavaScript {
                     out.append("{ var delta = stack.pop() - stack.pop(); stack.push(delta < 0 ?-1 : (delta == 0 ? 0 : 1)); }");
                     break;
                 }
+                case bc_if_acmpeq:
+                    i = generateIf(byteCodes, i, "===");
+                    break;
+                case bc_if_acmpne:
+                    i = generateIf(byteCodes, i, "!=");
+                    break;
                 case bc_if_icmpeq: {
                     i = generateIf(byteCodes, i, "==");
                     break;
@@ -675,6 +681,13 @@ public final class ByteCodeToJavaScript {
                        .append(" ? 1 : 0);");
                     i += 2;
                     break;
+                }
+                case bc_athrow: {
+                    out.append("{ var t = stack.pop(); stack = new Array(1); stack[0] = t; throw t; }");
+                    break;
+                }
+                default: {
+                    out.append("throw 'unknown bytecode " + c + "';");
                 }
                     
             }

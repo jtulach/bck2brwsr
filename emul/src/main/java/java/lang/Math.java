@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+
 
 /**
  * The class {@code Math} contains methods for performing basic
@@ -813,9 +815,6 @@ public final class Math {
         return (a >= b) ? a : b;
     }
 
-    private static long negativeZeroFloatBits = Float.floatToIntBits(-0.0f);
-    private static long negativeZeroDoubleBits = Double.doubleToLongBits(-0.0d);
-
     /**
      * Returns the greater of two {@code float} values.  That is,
      * the result is the argument closer to positive infinity. If the
@@ -830,13 +829,11 @@ public final class Math {
      * @param   b   another argument.
      * @return  the larger of {@code a} and {@code b}.
      */
+    @JavaScriptBody(args={"a", "b"},
+        body="return Math.max(a,b);"
+    )
     public static float max(float a, float b) {
-        if (a != a) return a;   // a is NaN
-        if ((a == 0.0f) && (b == 0.0f)
-            && (Float.floatToIntBits(a) == negativeZeroFloatBits)) {
-            return b;
-        }
-        return (a >= b) ? a : b;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -853,13 +850,11 @@ public final class Math {
      * @param   b   another argument.
      * @return  the larger of {@code a} and {@code b}.
      */
+    @JavaScriptBody(args={"a", "b"},
+        body="return Math.max(a,b);"
+    )
     public static double max(double a, double b) {
-        if (a != a) return a;   // a is NaN
-        if ((a == 0.0d) && (b == 0.0d)
-            && (Double.doubleToLongBits(a) == negativeZeroDoubleBits)) {
-            return b;
-        }
-        return (a >= b) ? a : b;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -904,13 +899,11 @@ public final class Math {
      * @param   b   another argument.
      * @return  the smaller of {@code a} and {@code b}.
      */
+    @JavaScriptBody(args={"a", "b"},
+        body="return Math.min(a,b);"
+    )
     public static float min(float a, float b) {
-        if (a != a) return a;   // a is NaN
-        if ((a == 0.0f) && (b == 0.0f)
-            && (Float.floatToIntBits(b) == negativeZeroFloatBits)) {
-            return b;
-        }
-        return (a <= b) ? a : b;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -927,13 +920,11 @@ public final class Math {
      * @param   b   another argument.
      * @return  the smaller of {@code a} and {@code b}.
      */
+    @JavaScriptBody(args={"a", "b"},
+        body="return Math.min(a,b);"
+    )
     public static double min(double a, double b) {
-        if (a != a) return a;   // a is NaN
-        if ((a == 0.0d) && (b == 0.0d)
-            && (Double.doubleToLongBits(b) == negativeZeroDoubleBits)) {
-            return b;
-        }
-        return (a <= b) ? a : b;
+        throw new UnsupportedOperationException();
     }
 
     /**

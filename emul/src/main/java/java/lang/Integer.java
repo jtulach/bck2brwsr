@@ -600,7 +600,7 @@ public final class Integer extends Number implements Comparable<Integer> {
             // high value may be configured by property
             int h = 127;
             String integerCacheHighPropValue =
-                String.getProperty("java.lang.Integer.IntegerCache.high");
+                AbstractStringBuilder.getProperty("java.lang.Integer.IntegerCache.high");
             if (integerCacheHighPropValue != null) {
                 int i = parseInt(integerCacheHighPropValue);
                 i = Math.max(i, 127);
@@ -882,7 +882,7 @@ public final class Integer extends Number implements Comparable<Integer> {
     public static Integer getInteger(String nm, Integer val) {
         String v = null;
         try {
-            v = String.getProperty(nm);
+            v = AbstractStringBuilder.getProperty(nm);
         } catch (IllegalArgumentException e) {
         } catch (NullPointerException e) {
         }

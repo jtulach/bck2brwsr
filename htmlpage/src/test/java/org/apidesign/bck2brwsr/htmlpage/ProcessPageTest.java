@@ -79,7 +79,7 @@ public class ProcessPageTest {
         } catch (NoSuchMethodException ex) {
             fail("Cannot find method in " + sb, ex);
         }
-        assertEquals(ret, "something", "We expect that the JavaCode performs all the wiring");
+        assertEquals(ret, "You want this window to be named something", "We expect that the JavaCode performs all the wiring");
     }
 
     static Invocable compileClass(StringBuilder sb, String... names) throws ScriptException, IOException {
