@@ -195,7 +195,6 @@ final class GenJS {
         while (en.hasMoreElements()) {
             u = en.nextElement();
         }
-        System.err.println("loader: " + l + " url : " + u);
         if (u == null) {
             throw new IOException("Can't find " + name);
         }
