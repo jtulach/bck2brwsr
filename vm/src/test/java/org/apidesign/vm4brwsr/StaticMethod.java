@@ -118,6 +118,23 @@ public class StaticMethod {
         throw new IllegalStateException();
     }
     
+    public static String swtch(int what) {
+        switch (what) {
+            case 0: return "Jarda";
+            case 1: return "Darda";
+            case 2: return "Parda";
+            default: return "Marda";
+        }
+    }
+    public static String swtch2(int what) {
+        switch (what) {
+            case 0: return "Jarda";
+            case 11: return "Darda";
+            case 22: return "Parda";
+            default: return "Marda";
+        }
+    }
+    
     static {
         // check order of initializers
         StaticUse.NON_NULL.equals(new Object());

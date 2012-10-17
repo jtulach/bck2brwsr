@@ -211,6 +211,40 @@ public class StaticMethodTest {
         );
     }
     
+    @Test public void switchJarda() throws Exception {
+        assertExec(
+            "The expected value",
+            "org_apidesign_vm4brwsr_StaticMethod_swtchLjava_lang_StringI",
+            "Jarda",
+            0
+        );
+    }
+    
+    @Test public void switchDarda() throws Exception {
+        assertExec(
+            "The expected value",
+            "org_apidesign_vm4brwsr_StaticMethod_swtchLjava_lang_StringI",
+            "Darda",
+            1
+        );
+    }
+    @Test public void switchParda() throws Exception {
+        assertExec(
+            "The expected value",
+            "org_apidesign_vm4brwsr_StaticMethod_swtch2Ljava_lang_StringI",
+            "Parda",
+            22
+        );
+    }
+    @Test public void switchMarda() throws Exception {
+        assertExec(
+            "The expected value",
+            "org_apidesign_vm4brwsr_StaticMethod_swtchLjava_lang_StringI",
+            "Marda",
+            -433
+        );
+    }
+    
     private static CharSequence codeSeq;
     private static Invocable code;
     

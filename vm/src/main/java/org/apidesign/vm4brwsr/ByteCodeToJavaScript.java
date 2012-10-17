@@ -569,6 +569,43 @@ public final class ByteCodeToJavaScript {
                     i += 2;
                     break;
                 }
+                case bc_lookupswitch: {
+                    int table = (i - 1) / 4 * 4 + 4;
+                    int dflt = i + readInt4(byteCodes, table);
+                    table += 4;
+                    int n = readInt4(byteCodes, table);
+                    table += 4;
+                    out.append("switch (stack.pop()) {\n");
+                    while (n-- > 0) {
+                        int cnstnt = readInt4(byteCodes, table);
+                        table += 4;
+                        int offset = i + readInt4(byteCodes, table);
+                        table += 4;
+                        out.append("  case " + cnstnt).append(": gt = " + offset).append("; continue;\n");
+                    }
+                    out.append("  default: gt = " + dflt).append("; continue;\n}");
+                    i = table - 1;
+                    break;
+                }
+                case bc_tableswitch: {
+                    int table = (i - 1) / 4 * 4 + 4;
+                    int dflt = i + readInt4(byteCodes, table);
+                    table += 4;
+                    int low = readInt4(byteCodes, table);
+                    table += 4;
+                    int high = readInt4(byteCodes, table);
+                    table += 4;
+                    out.append("switch (stack.pop()) {\n");
+                    while (low <= high) {
+                        int offset = i + readInt4(byteCodes, table);
+                        table += 4;
+                        out.append("  case " + low).append(": gt = " + offset).append("; continue;\n");
+                        low++;
+                    }
+                    out.append("  default: gt = " + dflt).append("; continue;\n}");
+                    i = table - 1;
+                    break;
+                }
                 case bc_invokeinterface: {
                     i = invokeVirtualMethod(byteCodes, i) + 2;
                     break;
@@ -730,6 +767,13 @@ public final class ByteCodeToJavaScript {
         final int indxHi = byteCodes[offsetInstruction + 1] << 8;
         final int indxLo = byteCodes[offsetInstruction + 2];
         return (indxHi & 0xffffff00) | (indxLo & 0xff);
+    }
+    private int readInt4(byte[] byteCodes, int offsetInstruction) {
+        final int d = byteCodes[offsetInstruction + 0] << 24;
+        final int c = byteCodes[offsetInstruction + 1] << 16;
+        final int b = byteCodes[offsetInstruction + 2] << 8;
+        final int a = byteCodes[offsetInstruction + 3];
+        return (d & 0xff000000) | (c & 0xff0000) | (b & 0xff00) | (a & 0xff);
     }
     
     private static int countArgs(String descriptor, boolean[] hasReturnType, StringBuilder sig) {
