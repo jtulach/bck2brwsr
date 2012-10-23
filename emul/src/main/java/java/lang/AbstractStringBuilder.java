@@ -657,7 +657,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @return  a reference to this object.
      */
     public AbstractStringBuilder append(float f) {
-        throw new UnsupportedOperationException();
+        return append(Float.toString(f));
     }
 
     /**
@@ -673,7 +673,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @return  a reference to this object.
      */
     public AbstractStringBuilder append(double d) {
-        throw new UnsupportedOperationException();
+        return append(Double.toString(d));
     }
 
     /**

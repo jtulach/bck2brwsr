@@ -35,6 +35,10 @@ public class StringSample {
         return HELLO.charAt(indx);
     }
     
+    public static boolean equalToHello(int from, int to) {
+        return "Hello".equals(HELLO.substring(from, to));
+    }
+    
     public static String fromChars(char a, char b, char c) {
         char[] arr = { a, b, c };
         return new String(arr).toString();

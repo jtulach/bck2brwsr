@@ -37,4 +37,8 @@ public final class Input extends Element {
     public final String getValue() {
         return (String)getAttribute(this, "value");
     }
+    
+    public final void setValue(String txt) {
+        setAttribute(this, "value", txt);
+    }
 }

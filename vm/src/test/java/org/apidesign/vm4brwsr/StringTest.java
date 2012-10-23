@@ -62,6 +62,14 @@ public class StringTest {
             "Hello World!1Ahoj"
         );
     }
+
+    public void equalsAndSubstring() throws Exception {
+        assertExec(
+            "Composes are OK",
+            "org_apidesign_vm4brwsr_StringSample_equalToHelloZII",
+            Double.valueOf(1), 0, 5
+        );
+    }
     
     private static CharSequence codeSeq;
     private static Invocable code;
