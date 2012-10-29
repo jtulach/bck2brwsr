@@ -21,12 +21,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.Completion;
+import javax.annotation.processing.Completions;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -166,5 +172,48 @@ public final class PageProcessor extends AbstractProcessor {
             }
         }
         return true;
+    }
+
+    @Override
+    public Iterable<? extends Completion> getCompletions(
+        Element element, AnnotationMirror annotation, 
+        ExecutableElement member, String userText
+    ) {
+        if (!userText.startsWith("\"")) {
+            return Collections.emptyList();
+        }
+        
+        Element cls = findClass(element);
+        Page p = cls.getAnnotation(Page.class);
+        PackageElement pe = (PackageElement) cls.getEnclosingElement();
+        String pkg = pe.getQualifiedName().toString();
+        ProcessPage pp;
+        try {
+            InputStream is = openStream(pkg, p.xhtml());
+            pp = ProcessPage.readPage(is);
+            is.close();
+        } catch (IOException iOException) {
+            return Collections.emptyList();
+        }
+        
+        List<Completion> cc = new ArrayList<Completion>();
+        userText = userText.substring(1);
+        for (String id : pp.ids()) {
+            if (id.startsWith(userText)) {
+                cc.add(Completions.of("\"" + id + "\"", id));
+            }
+        }
+        return cc;
+    }
+    
+    private static Element findClass(Element e) {
+        if (e == null) {
+            return null;
+        }
+        Page p = e.getAnnotation(Page.class);
+        if (p != null) {
+            return e;
+        }
+        return e.getEnclosingElement();
     }
 }
