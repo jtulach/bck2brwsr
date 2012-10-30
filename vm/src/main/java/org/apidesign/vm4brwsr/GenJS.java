@@ -23,11 +23,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -59,8 +61,16 @@ final class GenJS {
     }
     static void compile(ClassLoader l, Appendable out, List<String> names) throws IOException {
         for (String baseClass : names) {
-            Map<String,String> processed = new HashMap<String, String>();
-            LinkedList<String> toProcess = new LinkedList<String>();
+            final Map<String,String> processed = new HashMap<String, String>();
+            LinkedHashSet<String> toProcess = new LinkedHashSet<String>() {
+                @Override
+                public boolean add(String e) {
+                    if (processed.containsKey(e)) {
+                        return false;
+                    }
+                    return super.add(e);
+                }
+            };
             toProcess.add(baseClass);
             for (;;) {
                 String name = null;
@@ -75,25 +85,7 @@ final class GenJS {
                 if (name == null) {
                     break;
                 }
-                if (name.startsWith("java/")
-                    && !name.equals("java/lang/Object")
-                    && !name.equals("java/lang/Class")
-                    && !name.equals("java/lang/Math")
-                    && !name.equals("java/lang/Number")
-                    && !name.equals("java/lang/NumberFormatException")
-                    && !name.equals("java/lang/IllegalArgumentException")
-                    && !name.equals("java/lang/Integer")
-                    && !name.equals("java/lang/Float")
-                    && !name.equals("java/lang/Double")
-                    && !name.equals("java/lang/Throwable")
-                    && !name.equals("java/lang/Exception")
-                    && !name.equals("java/lang/RuntimeException")
-                    && !name.equals("java/lang/UnsupportedOperationException")
-                    && !name.equals("java/lang/String")
-                    && !name.equals("java/lang/String$CaseInsensitiveComparator")
-                    && !name.equals("java/lang/StringBuilder")
-                    && !name.equals("java/lang/AbstractStringBuilder")
-                ) {
+                if (name.startsWith("sun/")) {
                     processed.put(name, "");
                     continue;
                 }            
@@ -134,10 +126,11 @@ final class GenJS {
                     readResource(emul, out);
                 }
             }
-            
-            Collections.reverse(toProcess);
 
-            for (String clazz : toProcess) {
+            List<String> toInit = new ArrayList<String>(toProcess);
+            Collections.reverse(toInit);
+
+            for (String clazz : toInit) {
                 String initCode = processed.remove(clazz);
                 if (initCode != null) {
                     out.append(initCode).append("\n");
