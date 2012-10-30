@@ -81,6 +81,45 @@ public class ProcessPageTest {
         }
         assertEquals(ret, "You want this window to be named something", "We expect that the JavaCode performs all the wiring");
     }
+    
+    @Test public void clickWithArgumentCalled() throws Exception {
+        StringBuilder sb = new StringBuilder();
+        sb.append(
+              "var window = new Object();\n"
+            + "var doc = new Object();\n"
+            + "doc.button = new Object();\n"
+            + "doc.title = new Object();\n"
+            + "doc.title.innerHTML = 'nothing';\n"
+            + "doc.text = new Object();\n"
+            + "doc.text.value = 'something';\n"
+            + "doc.getElementById = function(id) {\n"
+            + "    switch(id) {\n"
+            + "      case 'pg.button': return doc.button;\n"
+            + "      case 'pg.title': return doc.title;\n"
+            + "      case 'pg.text': return doc.text;\n"
+            + "    }\n"
+            + "    throw id;\n"
+            + "  }\n"
+            + "\n"
+            + "function clickAndCheck() {\n"
+            + "  doc.title.onclick();\n"
+            + "  return doc.title.innerHTML.toString();\n"
+            + "};\n"
+            + "\n"
+            + "window.document = doc;\n"
+        );
+        Invocable i = compileClass(sb, "org/apidesign/bck2brwsr/htmlpage/PageController");
+
+        Object ret = null;
+        try {
+            ret = i.invokeFunction("clickAndCheck");
+        } catch (ScriptException ex) {
+            fail("Execution failed in " + sb, ex);
+        } catch (NoSuchMethodException ex) {
+            fail("Cannot find method in " + sb, ex);
+        }
+        assertEquals(ret, "pg.title", "Title has been passed to the method argument");
+    }
 
     static Invocable compileClass(StringBuilder sb, String... names) throws ScriptException, IOException {
         if (sb == null) {

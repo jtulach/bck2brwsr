@@ -39,6 +39,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
@@ -138,6 +139,7 @@ public final class PageProcessor extends AbstractProcessor {
     }
 
     private boolean initializeOnClick(PackageElement pe, Writer w, ProcessPage pp) throws IOException {
+        TypeMirror stringType = processingEnv.getElementUtils().getTypeElement("java.lang.String").asType();
         for (Element clazz : pe.getEnclosedElements()) {
             if (clazz.getKind() != ElementKind.CLASS) {
                 continue;
@@ -146,28 +148,40 @@ public final class PageProcessor extends AbstractProcessor {
             for (Element method : clazz.getEnclosedElements()) {
                 OnClick oc = method.getAnnotation(OnClick.class);
                 if (oc != null) {
-                    if (pp.tagNameForId(oc.id()) == null) {
-                        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "id = " + oc.id() + " does not exist in the HTML page. Found only " + pp.ids(), method);
-                        return false;
-                    }
-                    ExecutableElement ee = (ExecutableElement)method;
-                    if (!ee.getParameters().isEmpty()) {
-                        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@OnClose method can't take arguments", ee);
-                        return false;
-                    }
-                    if (!ee.getModifiers().contains(Modifier.STATIC)) {
-                        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@OnClose method has to be static", ee);
-                        return false;
-                    }
-                    if (ee.getModifiers().contains(Modifier.PRIVATE)) {
-                        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@OnClose method can't be private", ee);
-                        return false;
-                    }
-                    w.append("  ").append(cnstnt(oc.id())).
-                        append(".addOnClick(new Runnable() { public void run() {\n");
-                    w.append("    ").append(type.getSimpleName().toString()).
-                        append('.').append(ee.getSimpleName()).append("();\n");
-                    w.append("  }});\n");
+                    for (String id : oc.id()) {
+                        if (pp.tagNameForId(id) == null) {
+                            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "id = " + oc.id() + " does not exist in the HTML page. Found only " + pp.ids(), method);
+                            return false;
+                        }
+                        ExecutableElement ee = (ExecutableElement)method;
+                        boolean hasParam;
+                        if (ee.getParameters().isEmpty()) {
+                            hasParam = false;
+                        } else {
+                            if (ee.getParameters().size() != 1 || ee.getParameters().get(0).asType() != stringType) {
+                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@OnClick method should either have no arguments or one String argument", ee);
+                                return false;
+                            }
+                            hasParam = true;
+                        }
+                        if (!ee.getModifiers().contains(Modifier.STATIC)) {
+                            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@OnClick method has to be static", ee);
+                            return false;
+                        }
+                        if (ee.getModifiers().contains(Modifier.PRIVATE)) {
+                            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@OnClick method can't be private", ee);
+                            return false;
+                        }
+                        w.append("  ").append(cnstnt(id)).
+                            append(".addOnClick(new Runnable() { public void run() {\n");
+                        w.append("    ").append(type.getSimpleName().toString()).
+                            append('.').append(ee.getSimpleName()).append("(");
+                        if (hasParam) {
+                            w.append("\"").append(id).append("\"");
+                        }
+                        w.append(");\n");
+                        w.append("  }});\n");
+                    }           
                 }
             }
         }

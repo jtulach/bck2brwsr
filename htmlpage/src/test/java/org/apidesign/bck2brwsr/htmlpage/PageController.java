@@ -46,4 +46,12 @@ public class PageController {
     static void updateTitle() {
         TestPage.PG_TITLE.setText("You want this window to be named " + TestPage.PG_TEXT.getValue());
     }
+    
+    @OnClick(id={ "pg.title", "pg.text" })
+    static void click(String id) {
+        if (!id.equals("pg.title")) {
+            throw new IllegalStateException();
+        }
+        TestPage.PG_TITLE.setText(id);
+    }
 }
