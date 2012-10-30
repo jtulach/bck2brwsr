@@ -118,8 +118,9 @@ public final class Math {
      * @param   a   an angle, in radians.
      * @return  the sine of the argument.
      */
+    @JavaScriptBody(args="a", body="return Math.sin(a);")
     public static double sin(double a) {
-        return StrictMath.sin(a); // default impl. delegates to StrictMath
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -133,8 +134,9 @@ public final class Math {
      * @param   a   an angle, in radians.
      * @return  the cosine of the argument.
      */
+    @JavaScriptBody(args="a", body="return Math.cos(a);")
     public static double cos(double a) {
-        return StrictMath.cos(a); // default impl. delegates to StrictMath
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -150,8 +152,9 @@ public final class Math {
      * @param   a   an angle, in radians.
      * @return  the tangent of the argument.
      */
+    @JavaScriptBody(args="a", body="return Math.tan(a);")
     public static double tan(double a) {
-        return StrictMath.tan(a); // default impl. delegates to StrictMath
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -168,8 +171,9 @@ public final class Math {
      * @param   a   the value whose arc sine is to be returned.
      * @return  the arc sine of the argument.
      */
+    @JavaScriptBody(args="a", body="return Math.asin(a);")
     public static double asin(double a) {
-        return StrictMath.asin(a); // default impl. delegates to StrictMath
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -184,8 +188,9 @@ public final class Math {
      * @param   a   the value whose arc cosine is to be returned.
      * @return  the arc cosine of the argument.
      */
+    @JavaScriptBody(args="a", body="return Math.acos(a);")
     public static double acos(double a) {
-        return StrictMath.acos(a); // default impl. delegates to StrictMath
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -201,8 +206,9 @@ public final class Math {
      * @param   a   the value whose arc tangent is to be returned.
      * @return  the arc tangent of the argument.
      */
+    @JavaScriptBody(args="a", body="return Math.atan(a);")
     public static double atan(double a) {
-        return StrictMath.atan(a); // default impl. delegates to StrictMath
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -251,8 +257,9 @@ public final class Math {
      * @return  the value <i>e</i><sup>{@code a}</sup>,
      *          where <i>e</i> is the base of the natural logarithms.
      */
+    @JavaScriptBody(args="a", body="return Math.exp(a);")
     public static double exp(double a) {
-        return StrictMath.exp(a); // default impl. delegates to StrictMath
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -272,8 +279,9 @@ public final class Math {
      * @return  the value ln&nbsp;{@code a}, the natural logarithm of
      *          {@code a}.
      */
+    @JavaScriptBody(args="a", body="return Math.log(a);")
     public static double log(double a) {
-        return StrictMath.log(a); // default impl. delegates to StrictMath
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -297,8 +305,9 @@ public final class Math {
      * @return  the base 10 logarithm of  {@code a}.
      * @since 1.5
      */
+    @JavaScriptBody(args="a", body="return Math.log(a) / Math.LN10;")
     public static double log10(double a) {
-        return StrictMath.log10(a); // default impl. delegates to StrictMath
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -318,69 +327,9 @@ public final class Math {
      * @return  the positive square root of {@code a}.
      *          If the argument is NaN or less than zero, the result is NaN.
      */
+    @JavaScriptBody(args="a", body="return Math.sqrt(a);")
     public static double sqrt(double a) {
-        return StrictMath.sqrt(a); // default impl. delegates to StrictMath
-                                   // Note that hardware sqrt instructions
-                                   // frequently can be directly used by JITs
-                                   // and should be much faster than doing
-                                   // Math.sqrt in software.
-    }
-
-
-    /**
-     * Returns the cube root of a {@code double} value.  For
-     * positive finite {@code x}, {@code cbrt(-x) ==
-     * -cbrt(x)}; that is, the cube root of a negative value is
-     * the negative of the cube root of that value's magnitude.
-     *
-     * Special cases:
-     *
-     * <ul>
-     *
-     * <li>If the argument is NaN, then the result is NaN.
-     *
-     * <li>If the argument is infinite, then the result is an infinity
-     * with the same sign as the argument.
-     *
-     * <li>If the argument is zero, then the result is a zero with the
-     * same sign as the argument.
-     *
-     * </ul>
-     *
-     * <p>The computed result must be within 1 ulp of the exact result.
-     *
-     * @param   a   a value.
-     * @return  the cube root of {@code a}.
-     * @since 1.5
-     */
-    public static double cbrt(double a) {
-        return StrictMath.cbrt(a);
-    }
-
-    /**
-     * Computes the remainder operation on two arguments as prescribed
-     * by the IEEE 754 standard.
-     * The remainder value is mathematically equal to
-     * <code>f1&nbsp;-&nbsp;f2</code>&nbsp;&times;&nbsp;<i>n</i>,
-     * where <i>n</i> is the mathematical integer closest to the exact
-     * mathematical value of the quotient {@code f1/f2}, and if two
-     * mathematical integers are equally close to {@code f1/f2},
-     * then <i>n</i> is the integer that is even. If the remainder is
-     * zero, its sign is the same as the sign of the first argument.
-     * Special cases:
-     * <ul><li>If either argument is NaN, or the first argument is infinite,
-     * or the second argument is positive zero or negative zero, then the
-     * result is NaN.
-     * <li>If the first argument is finite and the second argument is
-     * infinite, then the result is the same as the first argument.</ul>
-     *
-     * @param   f1   the dividend.
-     * @param   f2   the divisor.
-     * @return  the remainder when {@code f1} is divided by
-     *          {@code f2}.
-     */
-    public static double IEEEremainder(double f1, double f2) {
-        return StrictMath.IEEEremainder(f1, f2); // delegate to StrictMath
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -402,8 +351,9 @@ public final class Math {
      *          floating-point value that is greater than or equal to
      *          the argument and is equal to a mathematical integer.
      */
+    @JavaScriptBody(args="a", body="return Math.ceil(a);")
     public static double ceil(double a) {
-        return StrictMath.ceil(a); // default impl. delegates to StrictMath
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -421,27 +371,9 @@ public final class Math {
      *          floating-point value that less than or equal to the argument
      *          and is equal to a mathematical integer.
      */
+    @JavaScriptBody(args="a", body="return Math.floor(a);")
     public static double floor(double a) {
-        return StrictMath.floor(a); // default impl. delegates to StrictMath
-    }
-
-    /**
-     * Returns the {@code double} value that is closest in value
-     * to the argument and is equal to a mathematical integer. If two
-     * {@code double} values that are mathematical integers are
-     * equally close, the result is the integer value that is
-     * even. Special cases:
-     * <ul><li>If the argument value is already equal to a mathematical
-     * integer, then the result is the same as the argument.
-     * <li>If the argument is NaN or an infinity or positive zero or negative
-     * zero, then the result is the same as the argument.</ul>
-     *
-     * @param   a   a {@code double} value.
-     * @return  the closest floating-point value to {@code a} that is
-     *          equal to a mathematical integer.
-     */
-    public static double rint(double a) {
-        return StrictMath.rint(a); // default impl. delegates to StrictMath
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -496,8 +428,9 @@ public final class Math {
      *          in polar coordinates that corresponds to the point
      *          (<i>x</i>,&nbsp;<i>y</i>) in Cartesian coordinates.
      */
+    @JavaScriptBody(args={"y", "x"}, body="return Math.atan2(y, x);")
     public static double atan2(double y, double x) {
-        return StrictMath.atan2(y, x); // default impl. delegates to StrictMath
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -623,8 +556,9 @@ public final class Math {
      * @param   b   the exponent.
      * @return  the value {@code a}<sup>{@code b}</sup>.
      */
+    @JavaScriptBody(args={"a", "b"}, body="return Math.pow(a, b);")
     public static double pow(double a, double b) {
-        return StrictMath.pow(a, b); // default impl. delegates to StrictMath
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -647,11 +581,9 @@ public final class Math {
      * @see     java.lang.Integer#MAX_VALUE
      * @see     java.lang.Integer#MIN_VALUE
      */
+    @JavaScriptBody(args="a", body="return Math.round(a);")
     public static int round(float a) {
-        if (a != 0x1.fffffep-2f) // greatest float value less than 0.5
-            return (int)floor(a + 0.5f);
-        else
-            return 0;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -674,11 +606,9 @@ public final class Math {
      * @see     java.lang.Long#MAX_VALUE
      * @see     java.lang.Long#MIN_VALUE
      */
+    @JavaScriptBody(args="a", body="return Math.round(a);")
     public static long round(double a) {
-        if (a != 0x1.fffffffffffffp-2) // greatest double value less than 0.5
-            return (long)floor(a + 0.5d);
-        else
-            return 0;
+        throw new UnsupportedOperationException();
     }
 
 //    private static Random randomNumberGenerator;
@@ -1022,207 +952,6 @@ public final class Math {
 //    public static float signum(float f) {
 //        return sun.misc.FpUtils.signum(f);
 //    }
-
-    /**
-     * Returns the hyperbolic sine of a {@code double} value.
-     * The hyperbolic sine of <i>x</i> is defined to be
-     * (<i>e<sup>x</sup>&nbsp;-&nbsp;e<sup>-x</sup></i>)/2
-     * where <i>e</i> is {@linkplain Math#E Euler's number}.
-     *
-     * <p>Special cases:
-     * <ul>
-     *
-     * <li>If the argument is NaN, then the result is NaN.
-     *
-     * <li>If the argument is infinite, then the result is an infinity
-     * with the same sign as the argument.
-     *
-     * <li>If the argument is zero, then the result is a zero with the
-     * same sign as the argument.
-     *
-     * </ul>
-     *
-     * <p>The computed result must be within 2.5 ulps of the exact result.
-     *
-     * @param   x The number whose hyperbolic sine is to be returned.
-     * @return  The hyperbolic sine of {@code x}.
-     * @since 1.5
-     */
-    public static double sinh(double x) {
-        return StrictMath.sinh(x);
-    }
-
-    /**
-     * Returns the hyperbolic cosine of a {@code double} value.
-     * The hyperbolic cosine of <i>x</i> is defined to be
-     * (<i>e<sup>x</sup>&nbsp;+&nbsp;e<sup>-x</sup></i>)/2
-     * where <i>e</i> is {@linkplain Math#E Euler's number}.
-     *
-     * <p>Special cases:
-     * <ul>
-     *
-     * <li>If the argument is NaN, then the result is NaN.
-     *
-     * <li>If the argument is infinite, then the result is positive
-     * infinity.
-     *
-     * <li>If the argument is zero, then the result is {@code 1.0}.
-     *
-     * </ul>
-     *
-     * <p>The computed result must be within 2.5 ulps of the exact result.
-     *
-     * @param   x The number whose hyperbolic cosine is to be returned.
-     * @return  The hyperbolic cosine of {@code x}.
-     * @since 1.5
-     */
-    public static double cosh(double x) {
-        return StrictMath.cosh(x);
-    }
-
-    /**
-     * Returns the hyperbolic tangent of a {@code double} value.
-     * The hyperbolic tangent of <i>x</i> is defined to be
-     * (<i>e<sup>x</sup>&nbsp;-&nbsp;e<sup>-x</sup></i>)/(<i>e<sup>x</sup>&nbsp;+&nbsp;e<sup>-x</sup></i>),
-     * in other words, {@linkplain Math#sinh
-     * sinh(<i>x</i>)}/{@linkplain Math#cosh cosh(<i>x</i>)}.  Note
-     * that the absolute value of the exact tanh is always less than
-     * 1.
-     *
-     * <p>Special cases:
-     * <ul>
-     *
-     * <li>If the argument is NaN, then the result is NaN.
-     *
-     * <li>If the argument is zero, then the result is a zero with the
-     * same sign as the argument.
-     *
-     * <li>If the argument is positive infinity, then the result is
-     * {@code +1.0}.
-     *
-     * <li>If the argument is negative infinity, then the result is
-     * {@code -1.0}.
-     *
-     * </ul>
-     *
-     * <p>The computed result must be within 2.5 ulps of the exact result.
-     * The result of {@code tanh} for any finite input must have
-     * an absolute value less than or equal to 1.  Note that once the
-     * exact result of tanh is within 1/2 of an ulp of the limit value
-     * of &plusmn;1, correctly signed &plusmn;{@code 1.0} should
-     * be returned.
-     *
-     * @param   x The number whose hyperbolic tangent is to be returned.
-     * @return  The hyperbolic tangent of {@code x}.
-     * @since 1.5
-     */
-    public static double tanh(double x) {
-        return StrictMath.tanh(x);
-    }
-
-    /**
-     * Returns sqrt(<i>x</i><sup>2</sup>&nbsp;+<i>y</i><sup>2</sup>)
-     * without intermediate overflow or underflow.
-     *
-     * <p>Special cases:
-     * <ul>
-     *
-     * <li> If either argument is infinite, then the result
-     * is positive infinity.
-     *
-     * <li> If either argument is NaN and neither argument is infinite,
-     * then the result is NaN.
-     *
-     * </ul>
-     *
-     * <p>The computed result must be within 1 ulp of the exact
-     * result.  If one parameter is held constant, the results must be
-     * semi-monotonic in the other parameter.
-     *
-     * @param x a value
-     * @param y a value
-     * @return sqrt(<i>x</i><sup>2</sup>&nbsp;+<i>y</i><sup>2</sup>)
-     * without intermediate overflow or underflow
-     * @since 1.5
-     */
-    public static double hypot(double x, double y) {
-        return StrictMath.hypot(x, y);
-    }
-
-    /**
-     * Returns <i>e</i><sup>x</sup>&nbsp;-1.  Note that for values of
-     * <i>x</i> near 0, the exact sum of
-     * {@code expm1(x)}&nbsp;+&nbsp;1 is much closer to the true
-     * result of <i>e</i><sup>x</sup> than {@code exp(x)}.
-     *
-     * <p>Special cases:
-     * <ul>
-     * <li>If the argument is NaN, the result is NaN.
-     *
-     * <li>If the argument is positive infinity, then the result is
-     * positive infinity.
-     *
-     * <li>If the argument is negative infinity, then the result is
-     * -1.0.
-     *
-     * <li>If the argument is zero, then the result is a zero with the
-     * same sign as the argument.
-     *
-     * </ul>
-     *
-     * <p>The computed result must be within 1 ulp of the exact result.
-     * Results must be semi-monotonic.  The result of
-     * {@code expm1} for any finite input must be greater than or
-     * equal to {@code -1.0}.  Note that once the exact result of
-     * <i>e</i><sup>{@code x}</sup>&nbsp;-&nbsp;1 is within 1/2
-     * ulp of the limit value -1, {@code -1.0} should be
-     * returned.
-     *
-     * @param   x   the exponent to raise <i>e</i> to in the computation of
-     *              <i>e</i><sup>{@code x}</sup>&nbsp;-1.
-     * @return  the value <i>e</i><sup>{@code x}</sup>&nbsp;-&nbsp;1.
-     * @since 1.5
-     */
-    public static double expm1(double x) {
-        return StrictMath.expm1(x);
-    }
-
-    /**
-     * Returns the natural logarithm of the sum of the argument and 1.
-     * Note that for small values {@code x}, the result of
-     * {@code log1p(x)} is much closer to the true result of ln(1
-     * + {@code x}) than the floating-point evaluation of
-     * {@code log(1.0+x)}.
-     *
-     * <p>Special cases:
-     *
-     * <ul>
-     *
-     * <li>If the argument is NaN or less than -1, then the result is
-     * NaN.
-     *
-     * <li>If the argument is positive infinity, then the result is
-     * positive infinity.
-     *
-     * <li>If the argument is negative one, then the result is
-     * negative infinity.
-     *
-     * <li>If the argument is zero, then the result is a zero with the
-     * same sign as the argument.
-     *
-     * </ul>
-     *
-     * <p>The computed result must be within 1 ulp of the exact result.
-     * Results must be semi-monotonic.
-     *
-     * @param   x   a value
-     * @return the value ln({@code x}&nbsp;+&nbsp;1), the natural
-     * log of {@code x}&nbsp;+&nbsp;1
-     * @since 1.5
-     */
-    public static double log1p(double x) {
-        return StrictMath.log1p(x);
-    }
 
     /**
      * Returns the first floating-point argument with the sign of the

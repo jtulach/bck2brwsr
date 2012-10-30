@@ -19,8 +19,8 @@ package org.apidesign.vm4brwsr;
 
 import javax.script.Invocable;
 import javax.script.ScriptException;
-import org.testng.annotations.BeforeClass;
 import static org.testng.Assert.*;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
@@ -43,6 +43,16 @@ public class NumberTest {
     @Test public void autoboxDouble() throws Exception {
         assertExec("Autoboxing of doubles is OK", "org_apidesign_vm4brwsr_Numbers_autoboxDblToStringLjava_lang_String",
             "3.3"
+        );
+    }
+    
+    @Test public void javalog1000() throws Exception {
+        assertEquals(3.0, Math.log10(1000.0), 0.00003, "log_10(1000) == 3");
+    }
+
+    @Test public void jslog1000() throws Exception {
+        assertExec("log_10(1000) == 3", "java_lang_Math_log10DD", 
+            Double.valueOf(3.0), 1000.0
         );
     }
 
@@ -74,6 +84,12 @@ public class NumberTest {
             return;
         }
         if (expRes.equals(ret)) {
+            return;
+        }
+        if (expRes instanceof Double && ret instanceof Double) {
+            double expD = ((Double)expRes).doubleValue();
+            double retD = ((Double)ret).doubleValue();
+            assertEquals(retD, expD, 0.000004, msg + " was " + ret + "\n" + codeSeq);
             return;
         }
         assertEquals(ret, expRes, msg + "was: " + ret + "\n" + codeSeq);
