@@ -53,8 +53,12 @@ public class Array {
     
     private static final Array[] ARR = { new Array(), new Array(), new Array() };
     
-    private static Array[] arr() {
-        return ARR;
+    private static Array[][] arr() {
+        Array[][] matrix = new Array[3][3];
+        for (int i = 0; i < ARR.length; i++) {
+            matrix[i][i] = ARR[i];
+        }
+        return matrix;
     }
     private static <T> T[] filter(T[] in) {
         return in;
@@ -62,12 +66,19 @@ public class Array {
     
     public static double sum() {
         double sum = 0.0;
-        for (int i = 0; i < arr().length; i++) {
-            sum += arr()[i].bytes();
-            sum += arr()[i].shorts();
-            sum += arr()[i].ints()[2];
-            sum += arr()[i].floats();
-            sum += filter(arr())[i].doubles();
+        for (Array[] row : arr()) {
+            int indx = -1;
+            for (Array a : row) {
+                indx++;
+                if (a == null) {
+                    continue;
+                }
+                sum += a.bytes();
+                sum += a.shorts();
+                sum += a.ints()[2];
+                sum += a.floats();
+                sum += filter(row)[indx].doubles();
+            }
         }
         return sum;
     }
@@ -75,8 +86,8 @@ public class Array {
         int[] arr = { 0, 1, 2, 3, 4, 5 };
         
         int sum = 0;
-        for (int i = 0; i < arr.length; i++) {
-            sum += arr[i];
+        for (int a : arr) {
+            sum += a;
         }
         return sum;
     }
@@ -89,7 +100,7 @@ public class Array {
 
     public static char copyArray() {
         char[] arr = { '0' };
-        arraycopy(arr()[0].chars, 0, arr, 0, 1);
+        arraycopy(arr()[0][0].chars, 0, arr, 0, 1);
         return arr[0];
     }
 }

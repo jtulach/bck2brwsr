@@ -36,9 +36,9 @@ package org.apidesign.vm4brwsr;
 
 import javax.script.Invocable;
 import javax.script.ScriptException;
-import org.testng.annotations.Test;
 import static org.testng.Assert.*;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 /**
  *
@@ -50,6 +50,11 @@ public class ArrayTest {
             Double.valueOf(15)
         );
     }
+    
+    @Test public void realOperationOnArrays() throws Exception {
+        assertEquals(Array.sum(), 105.0, "Computes to 105");
+    }
+    
     @Test public void verifyOperationsOnArrays() throws Exception {
         assertExec("The sum is 105", "org_apidesign_vm4brwsr_Array_sumD", 
             Double.valueOf(105)

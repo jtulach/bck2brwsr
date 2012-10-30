@@ -236,7 +236,7 @@ public final class ByteCodeToJavaScript {
         for (int i = 0; i < byteCodes.length; i++) {
             int prev = i;
             out.append("    case " + i).append(": ");
-            final int c = (byteCodes[i] + 256) % 256;
+            final int c = readByte(byteCodes, i);
             switch (c) {
                 case bc_aload_0:
                 case bc_iload_0:
@@ -271,7 +271,7 @@ public final class ByteCodeToJavaScript {
                 case bc_fload:
                 case bc_dload:
                 case bc_aload: {
-                    final int indx = (byteCodes[++i] + 256) % 256;
+                    final int indx = readByte(byteCodes, ++i);
                     out.append("stack.push(arg").append(indx + ");");
                     break;
                 }
@@ -280,7 +280,7 @@ public final class ByteCodeToJavaScript {
                 case bc_fstore:
                 case bc_dstore:
                 case bc_astore: {
-                    final int indx = (byteCodes[++i] + 256) % 256;
+                    final int indx = readByte(byteCodes, ++i);
                     out.append("arg" + indx).append(" = stack.pop()");
                     break;
                 }
@@ -369,7 +369,7 @@ public final class ByteCodeToJavaScript {
                     out.append("{ var v = stack.pop(); stack.push(stack.pop() >>> v); }");
                     break;
                 case bc_iinc: {
-                    final int varIndx = (byteCodes[++i] + 256) % 256;
+                    final int varIndx = readByte(byteCodes, ++i);
                     final int incrBy = byteCodes[++i];
                     if (incrBy == 1) {
                         out.append("arg" + varIndx).append("++;");
@@ -442,7 +442,7 @@ public final class ByteCodeToJavaScript {
                     out.append("stack.push(5);");
                     break;
                 case bc_ldc: {
-                    int indx = byteCodes[++i];
+                    int indx = readByte(byteCodes, ++i);
                     CPEntry entry = jc.getConstantPool().get(indx);
                     String v = encodeConstant(entry);
                     out.append("stack.push(").append(v).append(");");
@@ -553,7 +553,7 @@ public final class ByteCodeToJavaScript {
                     break;
                 }
                 case bc_lookupswitch: {
-                    int table = (i - 1) / 4 * 4 + 4;
+                    int table = i / 4 * 4 + 4;
                     int dflt = i + readInt4(byteCodes, table);
                     table += 4;
                     int n = readInt4(byteCodes, table);
@@ -571,7 +571,7 @@ public final class ByteCodeToJavaScript {
                     break;
                 }
                 case bc_tableswitch: {
-                    int table = (i - 1) / 4 * 4 + 4;
+                    int table = i / 4 * 4 + 4;
                     int dflt = i + readInt4(byteCodes, table);
                     table += 4;
                     int low = readInt4(byteCodes, table);
@@ -620,6 +620,26 @@ public final class ByteCodeToJavaScript {
                 case bc_anewarray: {
                     i += 2; // skip type of array
                     out.append("stack.push(new Array(stack.pop()));");
+                    break;
+                }
+                case bc_multianewarray: {
+                    i += 2;
+                    int dim = readByte(byteCodes, ++i);
+                    out.append("{ var a0 = new Array(stack.pop());");
+                    for (int d = 1; d < dim; d++) {
+                        out.append("\n  var l" + d).append(" = stack.pop();");
+                        out.append("\n  for (var i" + d).append (" = 0; i" + d).
+                            append(" < a" + (d - 1)).
+                            append(".length; i" + d).append("++) {");
+                        out.append("\n    var a" + d).
+                            append (" = new Array(l" + d).append(");");
+                        out.append("\n    a" + (d - 1)).append("[i" + d).append("] = a" + d).
+                            append(";");
+                    }
+                    for (int d = 1; d < dim; d++) {
+                        out.append("\n  }");
+                    }
+                    out.append("\nstack.push(a0); }");
                     break;
                 }
                 case bc_arraylength:
@@ -731,7 +751,7 @@ public final class ByteCodeToJavaScript {
             out.append(" //");
             for (int j = prev; j <= i; j++) {
                 out.append(" ");
-                final int cc = (byteCodes[j] + 256) % 256;
+                final int cc = readByte(byteCodes, j);
                 out.append(Integer.toString(cc));
             }
             out.append("\n");
@@ -757,6 +777,9 @@ public final class ByteCodeToJavaScript {
         final int b = byteCodes[offsetInstruction + 2] << 8;
         final int a = byteCodes[offsetInstruction + 3];
         return (d & 0xff000000) | (c & 0xff0000) | (b & 0xff00) | (a & 0xff);
+    }
+    private int readByte(byte[] byteCodes, int offsetInstruction) {
+        return (byteCodes[offsetInstruction] + 256) % 256;
     }
     
     private static int countArgs(String descriptor, boolean[] hasReturnType, StringBuilder sig) {
