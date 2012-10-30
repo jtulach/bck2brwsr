@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 
 /**
@@ -552,15 +553,15 @@ public final
      * @throws  NullPointerException If {@code name} is {@code null}
      * @since  JDK1.1
      */
-//     public InputStream getResourceAsStream(String name) {
-//        name = resolveName(name);
-//        ClassLoader cl = getClassLoader0();
-//        if (cl==null) {
-//            // A system class.
-//            return ClassLoader.getSystemResourceAsStream(name);
-//        }
-//        return cl.getResourceAsStream(name);
-//    }
+     public InputStream getResourceAsStream(String name) {
+        name = resolveName(name);
+        ClassLoader cl = getClassLoader0();
+        if (cl==null) {
+            // A system class.
+            return ClassLoader.getSystemResourceAsStream(name);
+        }
+        return cl.getResourceAsStream(name);
+    }
 
     /**
      * Finds a resource with a given name.  The rules for searching resources
@@ -596,18 +597,86 @@ public final
      *              resource with this name is found
      * @since  JDK1.1
      */
-//    public java.net.URL getResource(String name) {
-//        name = resolveName(name);
-//        ClassLoader cl = getClassLoader0();
-//        if (cl==null) {
-//            // A system class.
-//            return ClassLoader.getSystemResource(name);
-//        }
-//        return cl.getResource(name);
-//    }
+    public java.net.URL getResource(String name) {
+        name = resolveName(name);
+        ClassLoader cl = getClassLoader0();
+        if (cl==null) {
+            // A system class.
+            return ClassLoader.getSystemResource(name);
+        }
+        return cl.getResource(name);
+    }
 
 
+   /**
+     * Add a package name prefix if the name is not absolute Remove leading "/"
+     * if name is absolute
+     */
+    private String resolveName(String name) {
+        if (name == null) {
+            return name;
+        }
+        if (!name.startsWith("/")) {
+            Class<?> c = this;
+            while (c.isArray()) {
+                c = c.getComponentType();
+            }
+            String baseName = c.getName();
+            int index = baseName.lastIndexOf('.');
+            if (index != -1) {
+                name = baseName.substring(0, index).replace('.', '/')
+                    +"/"+name;
+            }
+        } else {
+            name = name.substring(1);
+        }
+        return name;
+    }
+    
+    /**
+     * Returns the class loader for the class.  Some implementations may use
+     * null to represent the bootstrap class loader. This method will return
+     * null in such implementations if this class was loaded by the bootstrap
+     * class loader.
+     *
+     * <p> If a security manager is present, and the caller's class loader is
+     * not null and the caller's class loader is not the same as or an ancestor of
+     * the class loader for the class whose class loader is requested, then
+     * this method calls the security manager's {@code checkPermission}
+     * method with a {@code RuntimePermission("getClassLoader")}
+     * permission to ensure it's ok to access the class loader for the class.
+     *
+     * <p>If this object
+     * represents a primitive type or void, null is returned.
+     *
+     * @return  the class loader that loaded the class or interface
+     *          represented by this object.
+     * @throws SecurityException
+     *    if a security manager exists and its
+     *    {@code checkPermission} method denies
+     *    access to the class loader for the class.
+     * @see java.lang.ClassLoader
+     * @see SecurityManager#checkPermission
+     * @see java.lang.RuntimePermission
+     */
+    public ClassLoader getClassLoader() {
+        throw new SecurityException();
+    }
+    
+    // Package-private to allow ClassLoader access
+    native ClassLoader getClassLoader0();    
 
+    /**
+     * Returns the {@code Class} representing the component type of an
+     * array.  If this class does not represent an array class this method
+     * returns null.
+     *
+     * @return the {@code Class} representing the component type of this
+     * class if this class is an array
+     * @see     java.lang.reflect.Array
+     * @since JDK1.1
+     */
+    public native Class<?> getComponentType();
 
     /**
      * Returns true if and only if this class was declared as an enum in the
