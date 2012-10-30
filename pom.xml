@@ -67,6 +67,7 @@
                   <excludes>
                        <exclude>emul/**</exclude>
                        <exclude>*</exclude>
+                       <exclude>.*/**</exclude>
                   </excludes>
               </configuration>
           </plugin>
