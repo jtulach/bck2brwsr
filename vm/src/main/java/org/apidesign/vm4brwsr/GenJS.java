@@ -60,8 +60,8 @@ final class GenJS {
         compile(GenJS.class.getClassLoader(), out, names);
     }
     static void compile(ClassLoader l, Appendable out, List<String> names) throws IOException {
+        final Map<String,String> processed = new HashMap<String, String>();
         for (String baseClass : names) {
-            final Map<String,String> processed = new HashMap<String, String>();
             LinkedHashSet<String> toProcess = new LinkedHashSet<String>() {
                 @Override
                 public boolean add(String e) {
@@ -131,11 +131,13 @@ final class GenJS {
             Collections.reverse(toInit);
 
             for (String clazz : toInit) {
-                String initCode = processed.remove(clazz);
-                if (initCode != null) {
+                String initCode = processed.get(clazz);
+                if (initCode != null && !initCode.isEmpty()) {
                     out.append(initCode).append("\n");
+                    processed.put(clazz, "");
                 }
             }
+
         }
     }
     private static void readResource(InputStream emul, Appendable out) throws IOException {
