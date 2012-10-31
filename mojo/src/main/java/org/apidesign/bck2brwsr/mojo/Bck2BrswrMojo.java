@@ -64,9 +64,11 @@ public class Bck2BrswrMojo extends AbstractMojo {
         }
 
         List<String> arr = new ArrayList<String>();
-        collectAllClasses("", classes, arr);
+        long newest = collectAllClasses("", classes, arr);
         
-        
+        if (javascript.lastModified() > newest) {
+            return;
+        }
 
         try {
             URLClassLoader url = buildClassLoader(classes, prj.getDependencyArtifacts());
@@ -93,14 +95,22 @@ public class Bck2BrswrMojo extends AbstractMojo {
         return dir;
     }
 
-    private static void collectAllClasses(String prefix, File toCheck, List<String> arr) {
+    private static long collectAllClasses(String prefix, File toCheck, List<String> arr) {
         File[] files = toCheck.listFiles();
         if (files != null) {
+            long newest = 0L;
             for (File f : files) {
-                collectAllClasses(prefix + f.getName() + "/", f, arr);
+                long lastModified = collectAllClasses(prefix + f.getName() + "/", f, arr);
+                if (newest < lastModified) {
+                    newest = lastModified;
+                }
             }
+            return newest;
         } else if (toCheck.getName().endsWith(".class")) {
             arr.add(prefix.substring(0, prefix.length() - 7));
+            return toCheck.lastModified();
+        } else {
+            return 0L;
         }
     }
 
