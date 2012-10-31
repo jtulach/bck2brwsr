@@ -129,7 +129,7 @@ public final class ByteCodeToJavaScript {
                .append(".prototype = ").
                 append(sc.getInternalName().replace('/', '_')).append("_proto();");
         } else {
-            out.append("\n  var p = ").append(className).append(".prototype");
+            out.append("\n  var p = ").append(className).append(".prototype;");
         }
         for (Method m : jc.getMethods()) {
             if (!m.getName().contains("<init>") && !m.getName().contains("<cinit>")) {
