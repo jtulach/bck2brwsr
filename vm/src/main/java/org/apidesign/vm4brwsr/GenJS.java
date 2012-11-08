@@ -17,11 +17,8 @@
  */
 package org.apidesign.vm4brwsr;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Writer;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,18 +37,6 @@ import java.util.Map;
  */
 final class GenJS {
     private GenJS() {}
-    
-    public static void main(String... args) throws IOException {
-        if (args.length < 2) {
-            System.err.println("Usage: java -cp ... -jar ... <file_to_generate_js_code_to> java/lang/Class org/your/App ...");
-            return;
-        }
-        
-        Writer w = new BufferedWriter(new FileWriter(args[0]));
-        List<String> classes = Arrays.asList(args).subList(1, args.length);
-        compile(w, classes);
-        w.close();
-    }
     
     static void compile(Appendable out, String... names) throws IOException {
         compile(out, Arrays.asList(names));
@@ -197,5 +182,10 @@ final class GenJS {
         }
         return u.openStream();
     }
-    
+
+    static String toString(String name) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        compile(sb, name);
+        return sb.toString().toString();
+    }
 }
