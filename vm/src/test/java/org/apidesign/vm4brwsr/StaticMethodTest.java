@@ -17,6 +17,8 @@
  */
 package org.apidesign.vm4brwsr;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
@@ -271,7 +273,15 @@ public class StaticMethodTest {
             Object res = js.eval(sb.toString());
             assertTrue(js instanceof Invocable, "It is invocable object: " + res);
             return (Invocable)js;
-        } catch (ScriptException ex) {
+        } catch (Exception ex) {
+            if (sb.length() > 2000) {
+                File f = File.createTempFile("execution", ".js");
+                FileWriter w = new FileWriter(f);
+                w.append(sb);
+                w.close();
+                sb.setLength(0);
+                sb.append(f.getPath());
+            }
             fail("Could not compile:\n" + sb, ex);
             return null;
         }

@@ -59,7 +59,7 @@ public class StringTest {
         assertExec(
             "Composes strings OK",
             "org_apidesign_vm4brwsr_StringSample_concatStringsLjava_lang_String",
-            "Hello World!1Ahoj"
+            "Hello World!1" + "\\\n\r\t"
         );
     }
 

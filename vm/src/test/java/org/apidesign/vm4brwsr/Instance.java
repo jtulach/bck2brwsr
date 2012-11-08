@@ -22,7 +22,7 @@ package org.apidesign.vm4brwsr;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class Instance {
-    private int i;
+    private int in;
     protected short s;
     public double d;
     private float f;
@@ -32,7 +32,7 @@ public class Instance {
     }
 
     public Instance(int i, double d) {
-        this.i = i;
+        this.in = i;
         this.d = d;
     }
     public byte getByte() {
@@ -53,7 +53,7 @@ public class Instance {
     public static double magicOne() {
         Instance i = new Instance(10, 3.3d);
         i.b = (byte)0x09;
-        return (i.i - i.b) * i.d;
+        return (i.in - i.b) * i.d;
     }
     public static int virtualBytes() {
         Instance i = new InstanceSub(7, 2.2d);

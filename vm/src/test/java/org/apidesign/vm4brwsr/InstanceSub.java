@@ -22,8 +22,11 @@ package org.apidesign.vm4brwsr;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class InstanceSub extends Instance implements GetByte {
+    private double in;
+    
     public InstanceSub(int i, double d) {
         super(i, d);
+        in = 555.55;
     }
     
     @Override

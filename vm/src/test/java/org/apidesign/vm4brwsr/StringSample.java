@@ -54,7 +54,7 @@ public class StringSample {
     }
     
     public static String concatStrings() {
-        return (toStringTest(1) + "Ahoj").toString();
+        return (toStringTest(1) + "\\\n\r\t").toString();
     }
 
     @Override

@@ -115,7 +115,8 @@ public final class ByteCodeToJavaScript {
         out.append("() {");
         for (Variable v : jc.getVariables()) {
             if (!v.isStatic()) {
-                out.append("\n  this." + v.getName() + " = 0;");
+                out.append("\n  this.fld_").
+                    append(v.getName()).append(" = 0;");
             }
         }
         out.append("\n}\n\nfunction ").append(className).append("_proto() {");
@@ -687,7 +688,8 @@ public final class ByteCodeToJavaScript {
                 case bc_getfield: {
                     int indx = readIntArg(byteCodes, i);
                     CPFieldInfo fi = (CPFieldInfo) jc.getConstantPool().get(indx);
-                    out.append("stack.push(stack.pop().").append(fi.getFieldName()).append(");");
+                    out.append("stack.push(stack.pop().fld_").
+                        append(fi.getFieldName()).append(");");
                     i += 2;
                     break;
                 }
@@ -714,7 +716,7 @@ public final class ByteCodeToJavaScript {
                 case bc_putfield: {
                     int indx = readIntArg(byteCodes, i);
                     CPFieldInfo fi = (CPFieldInfo) jc.getConstantPool().get(indx);
-                    out.append("{ var v = stack.pop(); stack.pop().")
+                    out.append("{ var v = stack.pop(); stack.pop().fld_")
                        .append(fi.getFieldName()).append(" = v; }");
                     i += 2;
                     break;
@@ -995,7 +997,13 @@ public final class ByteCodeToJavaScript {
         if (entry instanceof CPClassInfo) {
             v = "new java_lang_Class";
         } else if (entry instanceof CPStringInfo) {
-            v = "\"" + entry.getValue().toString().replace("\"", "\\\"") + "\"";
+            v = "\"" + entry.getValue().toString().
+                replace("\\", "\\\\").
+                replace("\n", "\\n").
+                replace("\r", "\\r").
+                replace("\t", "\\t").
+                replace("\"", "\\\"")
+                + "\"";
         } else {
             v = entry.getValue().toString();
         }
