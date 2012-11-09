@@ -13,5 +13,6 @@
   <name>JavaQuery API and Demo</name>
     <modules>
         <module>api</module>
+        <module>demo-calculator</module>
     </modules>
 </project>
