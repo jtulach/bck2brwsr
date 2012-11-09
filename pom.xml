@@ -12,6 +12,7 @@
     <module>core</module>
     <module>mojo</module>
     <module>javaquery</module>
+    <module>javap</module>
   </modules>
   <licenses>
       <license>
