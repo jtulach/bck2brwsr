@@ -54,7 +54,7 @@
               <configuration>
                   <archive>
                       <manifest>
-                          <mainClass>org.apidesign.vm4brwsr.GenJS</mainClass>
+                          <mainClass>org.apidesign.vm4brwsr.Main</mainClass>
                       </manifest>
                   </archive>
               </configuration>
