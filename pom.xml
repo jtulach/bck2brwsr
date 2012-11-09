@@ -7,11 +7,11 @@
   <packaging>pom</packaging>
   <name>Back 2 Browser</name>
   <modules>
-      <module>vm</module>
-    <module>htmlpage</module>
+    <module>vm</module>
     <module>emul</module>
     <module>core</module>
     <module>mojo</module>
+    <module>javaquery</module>
   </modules>
   <licenses>
       <license>
