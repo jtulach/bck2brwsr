@@ -34,7 +34,7 @@ public abstract class Element {
     
     @JavaScriptBody(
         args={"el", "property", "value"},
-        body="var e = window.document.getElementById(el.id);\n"
+        body="var e = window.document.getElementById(el.fld_id);\n"
            + "e[property] = value;\n"
     )
     static void setAttribute(Element el, String property, Object value) {
@@ -43,7 +43,7 @@ public abstract class Element {
 
     @JavaScriptBody(
         args={"el", "property"},
-        body="var e = window.document.getElementById(el.id);\n"
+        body="var e = window.document.getElementById(el.fld_id);\n"
            + "return e[property];\n"
     )
     static Object getAttribute(Element el, String property) {
@@ -56,7 +56,7 @@ public abstract class Element {
      */
     @JavaScriptBody(
         args={"el", "r"},
-        body="var e = window.document.getElementById(el.id);\n"
+        body="var e = window.document.getElementById(el.fld_id);\n"
            + "e.onclick = function() { r.runV(); };\n"
     )
     public final void addOnClick(Runnable r) {
