@@ -26,10 +26,6 @@
 
 package sun.tools.javap;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Hashtable;
-import java.util.Vector;
 
 
 public class Tables implements Constants {

@@ -65,18 +65,8 @@ public class ClassData implements RuntimeConstants {
     /**
      * Read classfile to disassemble.
      */
-    public ClassData(InputStream infile){
-        try{
-            this.read(new DataInputStream(infile));
-        }catch (FileNotFoundException ee) {
-            error("cant read file");
-        }catch (Error ee) {
-            ee.printStackTrace();
-            error("fatal error");
-        } catch (Exception ee) {
-            ee.printStackTrace();
-            error("fatal exception");
-        }
+    public ClassData(InputStream infile) throws IOException {
+        this.read(new DataInputStream(infile));
     }
 
     /**
@@ -269,10 +259,6 @@ public class ClassData implements RuntimeConstants {
             if ((val>>(width-1)*4)!=0) break;
         }
         return toHex(val, width);
-    }
-
-    public void error(String msg) {
-        System.err.println("ERROR:" +msg);
     }
 
     /**
@@ -571,9 +557,9 @@ public class ClassData implements RuntimeConstants {
             for (int k=0; k<len; k += Character.charCount(cp)) {
                 cp=name.codePointAt(k);
                 if (cc=='/') {
-                    if (!Character.isJavaIdentifierStart(cp)) break fullname;
+                    if (!isJavaIdentifierStart(cp)) break fullname;
                 } else if (cp!='/') {
-                    if (!Character.isJavaIdentifierPart(cp)) break fullname;
+                    if (!isJavaIdentifierPart(cp)) break fullname;
                 }
                 cc=cp;
             }
@@ -659,5 +645,13 @@ public class ClassData implements RuntimeConstants {
      */
     public int getMajor_version(){
         return major_version;
+    }
+
+    private boolean isJavaIdentifierStart(int cp) {
+        return ('a' <= cp && cp <= 'z') || ('A' <= cp && cp <= 'Z');
+    }
+
+    private boolean isJavaIdentifierPart(int cp) {
+        return isJavaIdentifierStart(cp) || ('0' <= cp && cp <= '9');
     }
 }

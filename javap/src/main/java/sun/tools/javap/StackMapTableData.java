@@ -26,7 +26,6 @@
 
 package sun.tools.javap;
 
-import java.util.*;
 import java.io.*;
 
 import static sun.tools.javap.RuntimeConstants.*;
@@ -41,23 +40,10 @@ class StackMapTableData {
         this.frameType = frameType;
     }
 
-    void print(JavapPrinter p) {
-        p.out.print("   frame_type = " + frameType);
-    }
-
     static class SameFrame extends StackMapTableData {
         SameFrame(int frameType, int offsetDelta) {
             super(frameType);
             this.offsetDelta = offsetDelta;
-        }
-        void print(JavapPrinter p) {
-            super.print(p);
-            if (frameType < SAME_FRAME_BOUND) {
-                p.out.println(" /* same */");
-            } else {
-                p.out.println(" /* same_frame_extended */");
-                p.out.println("     offset_delta = " + offsetDelta);
-            }
         }
     }
 
@@ -68,27 +54,12 @@ class StackMapTableData {
             this.offsetDelta = offsetDelta;
             this.stack = stack;
         }
-        void print(JavapPrinter p) {
-            super.print(p);
-            if (frameType == SAME_LOCALS_1_STACK_ITEM_EXTENDED) {
-                p.out.println(" /* same_locals_1_stack_item_frame_extended */");
-                p.out.println("     offset_delta = " + offsetDelta);
-            } else {
-                p.out.println(" /* same_locals_1_stack_item */");
-            }
-            p.printMap("     stack = [", stack);
-        }
     }
 
     static class ChopFrame extends StackMapTableData {
         ChopFrame(int frameType, int offsetDelta) {
             super(frameType);
             this.offsetDelta = offsetDelta;
-        }
-        void print(JavapPrinter p) {
-            super.print(p);
-            p.out.println(" /* chop */");
-            p.out.println("     offset_delta = " + offsetDelta);
         }
     }
 
@@ -98,12 +69,6 @@ class StackMapTableData {
             super(frameType);
             this.offsetDelta = offsetDelta;
             this.locals = locals;
-        }
-        void print(JavapPrinter p) {
-            super.print(p);
-            p.out.println(" /* append */");
-            p.out.println("     offset_delta = " + offsetDelta);
-            p.printMap("     locals = [", locals);
         }
     }
 
@@ -115,13 +80,6 @@ class StackMapTableData {
             this.offsetDelta = offsetDelta;
             this.locals = locals;
             this.stack = stack;
-        }
-        void print(JavapPrinter p) {
-            super.print(p);
-            p.out.println(" /* full_frame */");
-            p.out.println("     offset_delta = " + offsetDelta);
-            p.printMap("     locals = [", locals);
-            p.printMap("     stack = [", stack);
         }
     }
 

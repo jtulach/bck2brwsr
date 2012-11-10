@@ -68,9 +68,4 @@ class StackMapData {
         return type;
     }
 
-    void print(JavapPrinter p) {
-        p.out.println("   " + offset + ":");
-        p.printMap("    locals = [", locals);
-        p.printMap("    stack = [", stack);
-    }
 }
