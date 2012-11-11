@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
+import sun.tools.javap.AnnotationParser;
 import sun.tools.javap.ClassData;
 import sun.tools.javap.FieldData;
 import sun.tools.javap.MethodData;
@@ -68,19 +69,14 @@ public final class ByteCodeToJavaScript {
         Collection<? super String> scripts
     ) throws IOException {
         ClassData jc = new ClassData(classFile);
-        /*
-        final ClassName extraAnn = ClassName.getClassName(ExtraJavaScript.class.getName().replace('.', '/'));
-        Annotation a = jc.getAnnotation(extraAnn);
-        if (a != null) {
-            final ElementValue annVal = a.getComponent("resource").getValue();
-            String res = ((PrimitiveElementValue)annVal).getValue().getValue().toString();
-            scripts.add(res);
-            final AnnotationComponent process = a.getComponent("processByteCode");
-            if (process != null && "const=0".equals(process.getValue().toString())) {
+        byte[] arrData = jc.findAnnotationData(true);
+        String[] arr = findAnnotation(arrData, jc, ExtraJavaScript.class.getName(), "resource", "processByteCode");
+        if (arr != null) {
+            scripts.add(arr[0]);
+            if ("0".equals(arr[1])) {
                 return null;
             }
         }
-        */
         ByteCodeToJavaScript compiler = new ByteCodeToJavaScript(
             jc, out, references
         );
@@ -989,51 +985,89 @@ public final class ByteCodeToJavaScript {
     }
 
     private boolean javaScriptBody(MethodData m, boolean isStatic) throws IOException {
-        return false;
-        /*
-        final ClassName extraAnn = ClassName.getClassName(JavaScriptBody.class.getName().replace('.', '/'));
-        Annotation a = m.getAnnotation(extraAnn);
-        if (a != null) {
-            final ElementValue annVal = a.getComponent("body").getValue();
-            String body = ((PrimitiveElementValue) annVal).getValue().getValue().toString();
-            
-            final ArrayElementValue arrVal = (ArrayElementValue) a.getComponent("args").getValue();
-            final int len = arrVal.getValues().length;
-            String[] names = new String[len];
-            for (int i = 0; i < len; i++) {
-                names[i] = ((PrimitiveElementValue) arrVal.getValues()[i]).getValue().getValue().toString();
-            }
-            out.append("\nfunction ").append(
-                jc.getName().getInternalName().replace('/', '_')).append('_').append(findMethodName(m));
-            out.append("(");
-            String space;
-            int index;
-            if (!isStatic) {                
-                out.append(names[0]);
-                space = ",";
-                index = 1;
-            } else {
-                space = "";
-                index = 0;
-            }
-            List<Parameter> args = m.getParameters();
-            for (int i = 0; i < args.size(); i++) {
-                out.append(space);
-                out.append(names[index]);
-                final String desc = findDescriptor(args.get(i).getDescriptor());
-                index++;
-                space = ",";
-            }
-            out.append(") {").append("\n");
-            out.append(body);
-            out.append("\n}\n");
-            return true;
+        byte[] arr = m.findAnnotationData(true);
+        if (arr == null) {
+            return false;
         }
-        return false;
-        */
+        final String jvmType = "L" + JavaScriptBody.class.getName().replace('.', '/') + ";";
+        class P extends AnnotationParser {
+            int cnt;
+            String[] args = new String[30];
+            String body;
+            
+            @Override
+            protected void visitAttr(String type, String attr, String value) {
+                if (type.equals(jvmType)) {
+                    if ("body".equals(attr)) {
+                        body = value;
+                    } else if ("args".equals(attr)) {
+                        args[cnt++] = value;
+                    } else {
+                        throw new IllegalArgumentException(attr);
+                    }
+                }
+            }
+        }
+        P p = new P();
+        p.parse(arr, jc);
+        if (p.body == null) {
+            return false;
+        }
+        int argsCnt[] = { -1 };
+        out.append("\nfunction ").append(className(jc)).append('_').
+            append(findMethodName(m, argsCnt));
+        out.append("(");
+        String space;
+        int index;
+        if (!isStatic) {                
+            out.append(p.args[0]);
+            space = ",";
+            index = 1;
+        } else {
+            space = "";
+            index = 0;
+        }
+        for (int i = 0; i < argsCnt[0]; i++) {
+            out.append(space);
+            out.append(p.args[index]);
+            index++;
+            space = ",";
+        }
+        out.append(") {").append("\n");
+        out.append(p.body);
+        out.append("\n}\n");
+        return true;
     }
     private static String className(ClassData jc) {
         //return jc.getName().getInternalName().replace('/', '_');
         return jc.getClassName().replace('/', '_');
+    }
+    
+    private static String[] findAnnotation(
+        byte[] arr, ClassData cd, final String className, 
+        final String... attrNames
+    ) throws IOException {
+        if (arr == null) {
+            return null;
+        }
+        final String[] values = new String[attrNames.length];
+        final boolean[] found = { false };
+        final String jvmType = "L" + className.replace('.', '/') + ";";
+        AnnotationParser ap = new AnnotationParser() {
+            @Override
+            protected void visitAttr(String type, String attr, String value) {
+                if (type.equals(jvmType)) {
+                    found[0] = true;
+                    for (int i = 0; i < attrNames.length; i++) {
+                        if (attrNames[i].equals(attr)) {
+                            values[i] = value;
+                        }
+                    }
+                }
+            }
+            
+        };
+        ap.parse(arr, cd);
+        return found[0] ? values : null;
     }
 }

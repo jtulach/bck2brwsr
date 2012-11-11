@@ -25,8 +25,8 @@
 
 package sun.tools.javap;
 
-import java.util.*;
 import java.io.*;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 import static sun.tools.javap.RuntimeConstants.*;
 
@@ -412,5 +412,14 @@ public class MethodData {
      */
     public boolean isDeprecated(){
         return isDeprecated;
+    }
+
+    public byte[] findAnnotationData(boolean classRetention) {
+        String n = classRetention ?
+            "RuntimeInvisibleAnnotations" : // NOI18N
+            "RuntimeVisibleAnnotations"; // NOI18N
+        AttrData[] arr = new AttrData[attrs.size()];
+        attrs.copyInto(arr);
+        return ClassData.findAttr(n, arr);
     }
 }

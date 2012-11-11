@@ -23,7 +23,7 @@
               <version>2.5.1</version>
               <configuration>
                   <compilerArguments>
-                      <bootclasspath>non-existing</bootclasspath>
+                      <!--<bootclasspath>non-existing</bootclasspath>-->
                   </compilerArguments>
                  <source>1.6</source>
                  <target>1.6</target>

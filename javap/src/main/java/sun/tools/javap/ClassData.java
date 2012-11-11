@@ -373,8 +373,15 @@ public final class ClassData implements RuntimeConstants {
     /**
      * Returns list of attributes.
      */
-    public AttrData[] getAttributes(){
+    final AttrData[] getAttributes(){
         return attrs;
+    }
+    
+    public byte[] findAnnotationData(boolean classRetention) {
+        String n = classRetention ?
+            "RuntimeInvisibleAnnotations" : // NOI18N
+            "RuntimeVisibleAnnotations"; // NOI18N
+        return findAttr(n, attrs);
     }
 
     /**
@@ -694,5 +701,14 @@ public final class ClassData implements RuntimeConstants {
         String[] arr = new String[3];
         arr[0] = getClassName(c2.cpx1);
         return getNameAndType(c2.cpx2, 1, arr);
+    }
+
+    static byte[] findAttr(String n, AttrData[] attrs) {
+        for (AttrData ad : attrs) {
+            if (n.equals(ad.getAttrName())) {
+                return ad.getData();
+            }
+        }
+        return null;
     }
 }

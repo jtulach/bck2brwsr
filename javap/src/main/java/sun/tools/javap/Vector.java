@@ -31,8 +31,14 @@ final class Vector {
         return arr == null ? 0 : arr.length;
     }
 
-    void copyInto(Object[] accflags) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    void copyInto(Object[] newArr) {
+        if (arr == null) {
+            return;
+        }
+        int min = Math.min(newArr.length, arr.length);
+        for (int i = 0; i < min; i++) {
+            newArr[i] = arr[i];
+        }
     }
 
     Object elementAt(int index) {
@@ -40,16 +46,9 @@ final class Vector {
     }
 
     void setSize(int len) {
-        if (arr == null) {
-            arr = new Object[len];
-        } else {
-            Object[] newArr = new Object[len];
-            int min = Math.min(len, arr.length);
-            for (int i = 0; i < min; i++) {
-                newArr[i] = arr[i];
-            }
-            arr = newArr;
-        }
+        Object[] newArr = new Object[len];
+        copyInto(newArr);
+        arr = newArr;
     }
 
     void setElementAt(Object val, int index) {
