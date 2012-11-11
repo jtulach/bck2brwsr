@@ -86,7 +86,7 @@ final class GenJS {
                     if (out instanceof CharSequence) {
                         CharSequence seq = (CharSequence)out;
                         int lastBlock = seq.length();
-                        while (lastBlock-- >= 0) {
+                        while (lastBlock-- > 0) {
                             if (seq.charAt(lastBlock) == '{') {
                                 break;
                             }

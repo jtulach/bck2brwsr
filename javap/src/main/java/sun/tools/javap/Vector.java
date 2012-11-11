@@ -22,8 +22,9 @@ final class Vector {
         addElement(objectType);
     }
     void addElement(Object obj) {
-        setSize(size() + 1);
-        setElementAt(obj, size());
+        final int s = size();
+        setSize(s + 1);
+        setElementAt(obj, s);
     }
 
     int size() {

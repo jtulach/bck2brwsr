@@ -95,6 +95,10 @@ public class FieldData implements RuntimeConstants  {
 
     }  // end read
 
+    public boolean isStatic() {
+        return (access & ACC_STATIC) != 0;
+    }
+    
     /**
      * Returns access of a field.
      */

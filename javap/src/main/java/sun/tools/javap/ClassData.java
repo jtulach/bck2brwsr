@@ -26,7 +26,6 @@
 
 package sun.tools.javap;
 
-import java.util.*;
 import java.io.*;
 
 /**
@@ -35,7 +34,7 @@ import java.io.*;
  *
  * @author  Sucheta Dambalkar (Adopted code from jdis)
  */
-public class ClassData implements RuntimeConstants {
+public final class ClassData implements RuntimeConstants {
 
     private int magic;
     private int minor_version;
@@ -220,7 +219,11 @@ public class ClassData implements RuntimeConstants {
      * get a string
      */
     public String getString(int n) {
-        return (n == 0) ? null : (String)cpool[n];
+        if (n == 0) {
+            return null; 
+        } else {
+            return (String)cpool[n];
+        }
     }
 
     /**
@@ -481,6 +484,9 @@ public class ClassData implements RuntimeConstants {
      * Returns string at that index.
      */
     public String StringValue(int cpx) {
+        return stringValue(cpx, false);
+    }
+    public String stringValue(int cpx, boolean textual) {
         if (cpx==0) return "#0";
         int tag;
         Object x;
@@ -512,15 +518,24 @@ public class ClassData implements RuntimeConstants {
         case CONSTANT_DOUBLE: {
             Double d=(Double)x;
             String sd=d.toString();
+            if (textual) {
+                return sd;
+            }
             return sd+"d";
         }
         case CONSTANT_FLOAT: {
             Float f=(Float)x;
             String sf=(f).toString();
+            if (textual) {
+                return sf;
+            }
             return sf+"f";
         }
         case CONSTANT_LONG: {
             Long ln = (Long)x;
+            if (textual) {
+                return ln.toString();
+            }
             return ln.toString()+'l';
         }
         case CONSTANT_INTEGER: {
@@ -528,9 +543,17 @@ public class ClassData implements RuntimeConstants {
             return in.toString();
         }
         case CONSTANT_CLASS:
+            if (textual) {
+                return "new java_lang_Class"; // XXX temporary JS
+            }
             return javaName(getClassName(cpx));
         case CONSTANT_STRING:
-            return StringValue(((CPX)x).cpx);
+            String sv = StringValue(((CPX)x).cpx);
+            if (textual) {
+                return '"' + sv + '"';
+            } else {
+                return sv;
+            }
         case CONSTANT_FIELD:
         case CONSTANT_METHOD:
         case CONSTANT_INTERFACEMETHOD:
@@ -653,5 +676,23 @@ public class ClassData implements RuntimeConstants {
 
     private boolean isJavaIdentifierPart(int cp) {
         return isJavaIdentifierStart(cp) || ('0' <= cp && cp <= '9');
+    }
+
+    public String[] getNameAndType(int indx) {
+        return getNameAndType(indx, 0, new String[2]);
+    }
+    
+    private String[] getNameAndType(int indx, int at, String[] arr) {
+        CPX2 c2 = getCpoolEntry(indx);
+        arr[at] = StringValue(c2.cpx1);
+        arr[at + 1] = StringValue(c2.cpx2);
+        return arr;
+    }
+
+    public String[] getFieldInfoName(int indx) {
+        CPX2 c2 = getCpoolEntry(indx);
+        String[] arr = new String[3];
+        arr[0] = getClassName(c2.cpx1);
+        return getNameAndType(c2.cpx2, 1, arr);
     }
 }
