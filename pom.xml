@@ -67,6 +67,7 @@
                   <strictCheck>true</strictCheck>
                   <excludes>
                        <exclude>emul/**</exclude>
+                       <exclude>javap/**</exclude>
                        <exclude>*</exclude>
                        <exclude>.*/**</exclude>
                   </excludes>
