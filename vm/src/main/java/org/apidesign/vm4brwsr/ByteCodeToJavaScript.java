@@ -139,7 +139,7 @@ public final class ByteCodeToJavaScript {
         if (javaScriptBody(m, true)) {
             return;
         }
-        int[] argsCnt = { -1 };
+        StringBuilder argsCnt = new StringBuilder();
         final String mn = findMethodName(m, argsCnt);
         out.append("\nfunction ").append(
             className(jc)
@@ -149,12 +149,12 @@ public final class ByteCodeToJavaScript {
         }
         out.append('(');
         String space = "";
-        for (int index = 0, i = 0; i < argsCnt[0]; i++) {
+        for (int index = 0, i = 0; i < argsCnt.length(); i++) {
             out.append(space);
             out.append("arg").append(String.valueOf(index));
             space = ",";
             final String desc = null;// XXX findDescriptor(args.get(i).getDescriptor());
-            if ("D".equals(desc) || "J".equals(desc)) {
+            if (argsCnt.charAt(i) == '1') {
                 index += 2;
             } else {
                 index++;
@@ -164,7 +164,7 @@ public final class ByteCodeToJavaScript {
         final byte[] code = m.getCode();
         if (code != null) {
             int len = m.getMaxLocals();
-            for (int index = argsCnt[0], i = argsCnt[0]; i < len; i++) {
+            for (int index = argsCnt.length(), i = argsCnt.length(); i < len; i++) {
                 out.append("  var ");
                 out.append("arg").append(String.valueOf(i)).append(";\n");
             }
@@ -177,7 +177,7 @@ public final class ByteCodeToJavaScript {
     }
     
     private void generateMethodReference(String prefix, MethodData m) throws IOException {
-        final String name = findMethodName(m, null);
+        final String name = findMethodName(m, new StringBuilder());
         out.append(prefix).append(name).append(" = ")
            .append(className(jc))
            .append('_').append(name).append(";");
@@ -187,17 +187,16 @@ public final class ByteCodeToJavaScript {
         if (javaScriptBody(m, false)) {
             return;
         }
-        int[] argsCnt = { -1 };
+        StringBuilder argsCnt = new StringBuilder();
         out.append("\nfunction ").append(
             className(jc)
         ).append('_').append(findMethodName(m, argsCnt));
         out.append("(arg0");
         String space = ",";
-        for (int index = 1, i = 0; i < argsCnt[0]; i++) {
+        for (int index = 1, i = 0; i < argsCnt.length(); i++) {
             out.append(space);
             out.append("arg").append(String.valueOf(index));
-            final String desc = null;// XXX findDescriptor(args.get(i).getDescriptor());
-            if ("D".equals(desc) || "J".equals(desc)) {
+            if (argsCnt.charAt(i) == '1') {
                 index += 2;
             } else {
                 index++;
@@ -207,7 +206,7 @@ public final class ByteCodeToJavaScript {
         final byte[] code = m.getCode();
         if (code != null) {
             int len = m.getMaxLocals();
-            for (int index = argsCnt[0], i = argsCnt[0]; i < len; i++) {
+            for (int index = argsCnt.length(), i = argsCnt.length(); i < len; i++) {
                 out.append("  var ");
                 out.append("arg").append(String.valueOf(i + 1)).append(";\n");
             }
@@ -766,8 +765,7 @@ public final class ByteCodeToJavaScript {
         return (byteCodes[offsetInstruction] + 256) % 256;
     }
     
-    private static int countArgs(String descriptor, boolean[] hasReturnType, StringBuilder sig) {
-        int cnt = 0;
+    private static void countArgs(String descriptor, boolean[] hasReturnType, StringBuilder sig, StringBuilder cnt) {
         int i = 0;
         Boolean count = null;
         boolean array = false;
@@ -793,11 +791,15 @@ public final class ByteCodeToJavaScript {
                 case 'S': 
                 case 'Z': 
                     if (count) {
-                        cnt++;
                         if (array) {
                             sig.append('A');
                         }
                         sig.append(ch);
+                        if (ch == 'J' || ch == 'D') {
+                            cnt.append('1');
+                        } else {
+                            cnt.append('0');
+                        }
                     } else {
                         hasReturnType[0] = true;
                         sig.insert(firstPos, ch);
@@ -815,12 +817,12 @@ public final class ByteCodeToJavaScript {
                 case 'L':
                     int next = descriptor.indexOf(';', i);
                     if (count) {
-                        cnt++;
                         if (array) {
                             sig.append('A');
                         }
                         sig.append(ch);
                         sig.append(descriptor.substring(i, next).replace('/', '_'));
+                        cnt.append('0');
                     } else {
                         sig.insert(firstPos, descriptor.substring(i, next).replace('/', '_'));
                         sig.insert(firstPos, ch);
@@ -838,7 +840,6 @@ public final class ByteCodeToJavaScript {
                     break; // invalid character
             }
         }
-        return cnt;
     }
 
     private void generateStaticField(FieldData v) throws IOException {
@@ -847,7 +848,7 @@ public final class ByteCodeToJavaScript {
            .append('_').append(v.getName()).append(" = 0;");
     }
 
-    private String findMethodName(MethodData m, int[] cnt) {
+    private String findMethodName(MethodData m, StringBuilder cnt) {
         StringBuilder name = new StringBuilder();
         if ("<init>".equals(m.getName())) { // NOI18N
             name.append("cons"); // NOI18N
@@ -858,14 +859,11 @@ public final class ByteCodeToJavaScript {
         } 
         
         boolean hasReturn[] = { false };
-        int argsCnt = countArgs(findDescriptor(m.getInternalSig()), hasReturn, name);
-        if (cnt != null) {
-            cnt[0] = argsCnt;
-        }
+        countArgs(findDescriptor(m.getInternalSig()), hasReturn, name, cnt);
         return name.toString();
     }
 
-    private String findMethodName(String[] mi, int[] cnt, boolean[] hasReturn) {
+    private String findMethodName(String[] mi, StringBuilder cnt, boolean[] hasReturn) {
         StringBuilder name = new StringBuilder();
         String descr = mi[2];//mi.getDescriptor();
         String nm= mi[1];
@@ -874,7 +872,7 @@ public final class ByteCodeToJavaScript {
         } else {
             name.append(nm);
         }
-        cnt[0] = countArgs(findDescriptor(descr), hasReturn, name);
+        countArgs(findDescriptor(descr), hasReturn, name, cnt);
         return name.toString();
     }
 
@@ -883,10 +881,10 @@ public final class ByteCodeToJavaScript {
         int methodIndex = readIntArg(byteCodes, i);
         String[] mi = jc.getFieldInfoName(methodIndex);
         boolean[] hasReturn = { false };
-        int[] cnt = { 0 };
+        StringBuilder cnt = new StringBuilder();
         String mn = findMethodName(mi, cnt, hasReturn);
         out.append("{ ");
-        for (int j = cnt[0] - 1; j >= 0; j--) {
+        for (int j = cnt.length() - 1; j >= 0; j--) {
             out.append("var v" + j).append(" = stack.pop(); ");
         }
         
@@ -907,7 +905,7 @@ public final class ByteCodeToJavaScript {
             out.append("stack.pop()");
             sep = ", ";
         }
-        for (int j = 0; j < cnt[0]; j++) {
+        for (int j = 0; j < cnt.length(); j++) {
             out.append(sep);
             out.append("v" + j);
             sep = ", ";
@@ -926,10 +924,10 @@ public final class ByteCodeToJavaScript {
         int methodIndex = readIntArg(byteCodes, i);
         String[] mi = jc.getFieldInfoName(methodIndex);
         boolean[] hasReturn = { false };
-        int[] cnt = { 0 };
+        StringBuilder cnt = new StringBuilder();
         String mn = findMethodName(mi, cnt, hasReturn);
         out.append("{ ");
-        for (int j = cnt[0] - 1; j >= 0; j--) {
+        for (int j = cnt.length() - 1; j >= 0; j--) {
             out.append("var v" + j).append(" = stack.pop(); ");
         }
         out.append("var self = stack.pop(); ");
@@ -940,7 +938,7 @@ public final class ByteCodeToJavaScript {
         out.append(mn);
         out.append('(');
         out.append("self");
-        for (int j = 0; j < cnt[0]; j++) {
+        for (int j = 0; j < cnt.length(); j++) {
             out.append(", ");
             out.append("v" + j);
         }
@@ -1013,9 +1011,9 @@ public final class ByteCodeToJavaScript {
         if (p.body == null) {
             return false;
         }
-        int argsCnt[] = { -1 };
+        StringBuilder cnt = new StringBuilder();
         out.append("\nfunction ").append(className(jc)).append('_').
-            append(findMethodName(m, argsCnt));
+            append(findMethodName(m, cnt));
         out.append("(");
         String space;
         int index;
@@ -1027,7 +1025,7 @@ public final class ByteCodeToJavaScript {
             space = "";
             index = 0;
         }
-        for (int i = 0; i < argsCnt[0]; i++) {
+        for (int i = 0; i < cnt.length(); i++) {
             out.append(space);
             out.append(p.args[index]);
             index++;
