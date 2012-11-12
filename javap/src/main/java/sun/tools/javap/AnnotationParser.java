@@ -68,25 +68,25 @@ public class AnnotationParser {
         String typeName = cd.StringValue(type);
     	int cnt = dis.readUnsignedShort();
     	for (int i = 0; i < cnt; i++) {
-            readCmp(dis, cd, typeName);
+            String attrName = cd.StringValue(dis.readUnsignedShort());
+            readValue(dis, cd, typeName, attrName);
         }
     }
 
-    private void readCmp(DataInputStream dis, ClassData cd, String typeName) 
+    private void readValue(DataInputStream dis, ClassData cd, String typeName, String attrName) 
     throws IOException {
-        String name = cd.StringValue(dis.readUnsignedShort());
         char type = (char)dis.readByte();
         if (type == '@') {
             readAnno(dis, cd);
         } else if ("CFJZsSIDB".indexOf(type) >= 0) { // NOI18N
             int primitive = dis.readUnsignedShort();
-            visitAttr(typeName, name, cd.StringValue(primitive));
+            visitAttr(typeName, attrName, cd.StringValue(primitive));
         } else if (type == 'c') {
             int cls = dis.readUnsignedShort();
         } else if (type == '[') {
             int cnt = dis.readUnsignedShort();
             for (int i = 0; i < cnt; i++) {
-                readCmp(dis, cd, typeName);
+                readValue(dis, cd, typeName, attrName);
             }
         } else if (type == 'e') {
             int enumT = dis.readUnsignedShort();
