@@ -508,11 +508,12 @@ public final class ClassData implements RuntimeConstants {
         if (x==null) return "<NULL>";
         switch (tag) {
         case CONSTANT_UTF8: {
-            StringBuffer sb=new StringBuffer();
+            StringBuilder sb=new StringBuilder();
             String s=(String)x;
             for (int k=0; k<s.length(); k++) {
                 char c=s.charAt(k);
                 switch (c) {
+                case '\\': sb.append('\\').append('\\'); break;
                 case '\t': sb.append('\\').append('t'); break;
                 case '\n': sb.append('\\').append('n'); break;
                 case '\r': sb.append('\\').append('r'); break;
