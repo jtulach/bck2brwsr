@@ -508,6 +508,9 @@ public final class ClassData implements RuntimeConstants {
         if (x==null) return "<NULL>";
         switch (tag) {
         case CONSTANT_UTF8: {
+            if (!textual) {
+                return (String)x;
+            }
             StringBuilder sb=new StringBuilder();
             String s=(String)x;
             for (int k=0; k<s.length(); k++) {
@@ -556,7 +559,7 @@ public final class ClassData implements RuntimeConstants {
             }
             return javaName(getClassName(cpx));
         case CONSTANT_STRING:
-            String sv = StringValue(((CPX)x).cpx);
+            String sv = stringValue(((CPX)x).cpx, textual);
             if (textual) {
                 return '"' + sv + '"';
             } else {

@@ -95,7 +95,7 @@ public class StaticMethod {
     }
     
     @JavaScriptBody(
-        args={"i","j"}, body="return (i + j).toString();"
+        args={"i","j"}, body="\n\r\treturn (i + j).toString();"
     )
     public static String i2s(int i, int j) {
         throw new IllegalStateException();
