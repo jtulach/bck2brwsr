@@ -24,18 +24,37 @@
  */
 
 
-package sun.tools.javap;
+package org.apidesign.javap;
+
+import java.util.*;
+import java.io.*;
 
 /**
- *  Stores constant pool entry information with two fields.
+ * Stores exception table data in code attribute.
  *
  * @author  Sucheta Dambalkar (Adopted code from jdis)
  */
-class CPX2 {
-    int cpx1,cpx2;
+class TrapData {
+    short start_pc, end_pc, handler_pc, catch_cpx;
+  int num;
 
-    CPX2 (int cpx1, int cpx2) {
-        this.cpx1=cpx1;
-        this.cpx2=cpx2;
+
+    /**
+     * Read and store exception table data in code attribute.
+     */
+    public TrapData(DataInputStream in, int num) throws IOException {
+        this.num=num;
+        start_pc = in.readShort();
+        end_pc=in.readShort();
+        handler_pc=in.readShort();
+        catch_cpx=in.readShort();
     }
+
+    /**
+     * returns recommended identifier
+     */
+    public String ident() {
+        return "t"+num;
+    }
+
 }

@@ -21,11 +21,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
-import sun.tools.javap.AnnotationParser;
-import sun.tools.javap.ClassData;
-import sun.tools.javap.FieldData;
-import sun.tools.javap.MethodData;
-import static sun.tools.javap.RuntimeConstants.*;
+import org.apidesign.javap.AnnotationParser;
+import org.apidesign.javap.ClassData;
+import org.apidesign.javap.FieldData;
+import org.apidesign.javap.MethodData;
+import static org.apidesign.javap.RuntimeConstants.*;
 
 /** Translator of the code inside class files to JavaScript.
  *

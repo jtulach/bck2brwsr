@@ -24,11 +24,11 @@
  */
 
 
-package sun.tools.javap;
+package org.apidesign.javap;
 
 import java.io.*;
 
-import static sun.tools.javap.RuntimeConstants.*;
+import static org.apidesign.javap.RuntimeConstants.*;
 
 /* represents one entry of StackMapTable attribute
  */

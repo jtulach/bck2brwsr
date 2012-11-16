@@ -24,54 +24,18 @@
  */
 
 
-
-package sun.tools.javap;
-
-import java.io.*;
+package org.apidesign.javap;
 
 /**
- * Reads and stores attribute information.
+ *  Stores constant pool entry information with two fields.
  *
  * @author  Sucheta Dambalkar (Adopted code from jdis)
  */
-class AttrData {
-    ClassData cls;
-    int name_cpx;
-    int datalen;
-    byte data[];
+class CPX2 {
+    int cpx1,cpx2;
 
-    public AttrData (ClassData cls) {
-        this.cls=cls;
-    }
-
-    /**
-     * Reads unknown attribute.
-     */
-    public void read(int name_cpx, DataInputStream in) throws IOException {
-        this.name_cpx=name_cpx;
-        datalen=in.readInt();
-        data=new byte[datalen];
-        in.readFully(data);
-    }
-
-    /**
-     * Reads just the name of known attribute.
-     */
-    public void read(int name_cpx){
-        this.name_cpx=name_cpx;
-    }
-
-    /**
-     * Returns attribute name.
-     */
-    public String getAttrName(){
-        return cls.getString(name_cpx);
-    }
-
-    /**
-     * Returns attribute data.
-     */
-    public byte[] getData(){
-        return data;
+    CPX2 (int cpx1, int cpx2) {
+        this.cpx1=cpx1;
+        this.cpx2=cpx2;
     }
 }

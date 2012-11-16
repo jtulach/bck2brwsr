@@ -24,37 +24,54 @@
  */
 
 
-package sun.tools.javap;
 
-import java.util.*;
+package org.apidesign.javap;
+
 import java.io.*;
 
 /**
- * Stores exception table data in code attribute.
+ * Reads and stores attribute information.
  *
  * @author  Sucheta Dambalkar (Adopted code from jdis)
  */
-class TrapData {
-    short start_pc, end_pc, handler_pc, catch_cpx;
-  int num;
+class AttrData {
+    ClassData cls;
+    int name_cpx;
+    int datalen;
+    byte data[];
 
-
-    /**
-     * Read and store exception table data in code attribute.
-     */
-    public TrapData(DataInputStream in, int num) throws IOException {
-        this.num=num;
-        start_pc = in.readShort();
-        end_pc=in.readShort();
-        handler_pc=in.readShort();
-        catch_cpx=in.readShort();
+    public AttrData (ClassData cls) {
+        this.cls=cls;
     }
 
     /**
-     * returns recommended identifier
+     * Reads unknown attribute.
      */
-    public String ident() {
-        return "t"+num;
+    public void read(int name_cpx, DataInputStream in) throws IOException {
+        this.name_cpx=name_cpx;
+        datalen=in.readInt();
+        data=new byte[datalen];
+        in.readFully(data);
     }
 
+    /**
+     * Reads just the name of known attribute.
+     */
+    public void read(int name_cpx){
+        this.name_cpx=name_cpx;
+    }
+
+    /**
+     * Returns attribute name.
+     */
+    public String getAttrName(){
+        return cls.getString(name_cpx);
+    }
+
+    /**
+     * Returns attribute data.
+     */
+    public byte[] getData(){
+        return data;
+    }
 }

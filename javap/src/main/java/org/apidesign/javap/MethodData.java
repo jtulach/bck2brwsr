@@ -23,12 +23,12 @@
  * questions.
  */
 
-package sun.tools.javap;
+package org.apidesign.javap;
 
 import java.io.*;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
-import static sun.tools.javap.RuntimeConstants.*;
+import static org.apidesign.javap.RuntimeConstants.*;
 
 /**
  * Strores method data informastion.

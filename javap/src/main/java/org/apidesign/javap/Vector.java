@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package sun.tools.javap;
+package org.apidesign.javap;
 
 /** A JavaScript ready replacement for java.util.Vector
  *

@@ -24,7 +24,7 @@
  */
 
 
-package sun.tools.javap;
+package org.apidesign.javap;
 
 
 

@@ -25,7 +25,7 @@
 
 
 
-package sun.tools.javap;
+package org.apidesign.javap;
 
 /**
  * This interface defines constant that are used
