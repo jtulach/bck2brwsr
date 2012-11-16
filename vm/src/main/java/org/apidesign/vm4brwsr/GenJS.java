@@ -20,49 +20,33 @@ package org.apidesign.vm4brwsr;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 
 /** Generator of JavaScript from bytecode of classes on classpath of the VM.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-final class GenJS {
-    private GenJS() {}
+final class GenJS extends ByteCodeToJavaScript {
+    public GenJS(Appendable out) {
+        super(out);
+    }
     
     static void compile(Appendable out, String... names) throws IOException {
-        compile(out, Arrays.asList(names));
+        compile(out, StringArray.asList(names));
     }
-    static void compile(Appendable out, List<String> names) throws IOException {
+    static void compile(Appendable out, StringArray names) throws IOException {
         compile(GenJS.class.getClassLoader(), out, names);
     }
-    static void compile(ClassLoader l, Appendable out, List<String> names) throws IOException {
-        final Map<String,String> processed = new HashMap<String, String>();
-        for (String baseClass : names) {
-            LinkedHashSet<String> toProcess = new LinkedHashSet<String>() {
-                @Override
-                public boolean add(String e) {
-                    if (processed.containsKey(e)) {
-                        return false;
-                    }
-                    return super.add(e);
-                }
-            };
-            toProcess.add(baseClass);
+    static void compile(ClassLoader l, Appendable out, StringArray names) throws IOException {
+        StringArray processed = new StringArray();
+        StringArray initCode = new StringArray();
+        for (String baseClass : names.toArray()) {
+            GenJS js = new GenJS(out);
+            js.references.add(baseClass);
             for (;;) {
                 String name = null;
-                Iterator<String> it = toProcess.iterator();
-                while (it.hasNext() && name == null) {
-                    String n = it.next();
-                    if (processed.get(n) != null) {
+                for (String n : js.references.toArray()) {
+                    if (processed.contains(n)) {
                         continue;
                     }
                     name = n;
@@ -70,18 +54,14 @@ final class GenJS {
                 if (name == null) {
                     break;
                 }
-                if (name.startsWith("sun/")) {
-                    processed.put(name, "");
-                    continue;
-                }            
                 InputStream is = loadClass(l, name);
                 if (is == null) {
                     throw new IOException("Can't find class " + name); 
                 }
-                LinkedList<String> scripts = new LinkedList<String>();
                 try {
-                    String initCode = ByteCodeToJavaScript.compile(is, out, toProcess, scripts);
-                    processed.put(name, initCode == null ? "" : initCode);
+                    String ic = js.compile(is);
+                    processed.add(name);
+                    initCode.add(ic == null ? "" : ic);
                 } catch (RuntimeException ex) {
                     if (out instanceof CharSequence) {
                         CharSequence seq = (CharSequence)out;
@@ -100,7 +80,7 @@ final class GenJS {
                         );
                     }
                 }
-                for (String resource : scripts) {
+                for (String resource : js.scripts.toArray()) {
                     while (resource.startsWith("/")) {
                         resource = resource.substring(1);
                     }
@@ -112,14 +92,14 @@ final class GenJS {
                 }
             }
 
-            List<String> toInit = new ArrayList<String>(toProcess);
-            Collections.reverse(toInit);
+            StringArray toInit = StringArray.asList(js.references.toArray());
+            toInit.reverse();
 
-            for (String clazz : toInit) {
-                String initCode = processed.get(clazz);
-                if (initCode != null && !initCode.isEmpty()) {
-                    out.append(initCode).append("\n");
-                    processed.put(clazz, "");
+            for (String ic : toInit.toArray()) {
+                int indx = processed.indexOf(ic);
+                if (indx >= 0) {
+                    out.append(initCode.toArray()[indx]).append("\n");
+                    initCode.toArray()[indx] = "";
                 }
             }
 
@@ -180,6 +160,9 @@ final class GenJS {
         if (u == null) {
             throw new IOException("Can't find " + name);
         }
+        if (u.toExternalForm().contains("rt.jar!")) {
+            throw new IOException("No emulation for " + u);
+        }
         return u.openStream();
     }
 
@@ -187,5 +170,22 @@ final class GenJS {
         StringBuilder sb = new StringBuilder();
         compile(sb, name);
         return sb.toString().toString();
+    }
+
+    private StringArray scripts = new StringArray();
+    private StringArray references = new StringArray();
+    
+    @Override
+    protected boolean requireReference(String cn) {
+        if (references.contains(cn)) {
+            return false;
+        }
+        references.add(cn);
+        return true;
+    }
+
+    @Override
+    protected void requireScript(String resourcePath) {
+        scripts.add(resourcePath);
     }
 }

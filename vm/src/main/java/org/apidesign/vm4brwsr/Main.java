@@ -21,8 +21,6 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Arrays;
-import java.util.List;
 
 /** Generator of JavaScript from bytecode of classes on classpath of the VM
  * with a Main method.
@@ -39,7 +37,8 @@ final class Main {
         }
         
         Writer w = new BufferedWriter(new FileWriter(args[0]));
-        List<String> classes = Arrays.asList(args).subList(1, args.length);
+        StringArray classes = StringArray.asList(args);
+        classes.delete(0);
         GenJS.compile(w, classes);
         w.close();
     }

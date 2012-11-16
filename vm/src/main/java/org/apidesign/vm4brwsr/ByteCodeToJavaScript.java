@@ -19,9 +19,6 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import sun.tools.javap.AnnotationParser;
@@ -34,63 +31,57 @@ import static sun.tools.javap.RuntimeConstants.*;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public final class ByteCodeToJavaScript {
-    private final ClassData jc;
+public abstract class ByteCodeToJavaScript {
+    private ClassData jc;
     private final Appendable out;
-    private final Collection<? super String> references;
 
-    private ByteCodeToJavaScript(
-        ClassData jc, Appendable out, Collection<? super String> references
-    ) {
-        this.jc = jc;
+    protected ByteCodeToJavaScript(Appendable out) {
         this.out = out;
-        this.references = references;
     }
+    
+    /* Collects additional required resources.
+     * 
+     * @param internalClassName classes that were referenced and should be loaded in order the
+     *   generated JavaScript code works properly. The names are in internal 
+     *   JVM form so String is <code>java/lang/String</code>. 
+     */
+    protected abstract boolean requireReference(String internalClassName);
+    
+    /*
+     * @param resourcePath name of resources to read
+     */
+    protected abstract void requireScript(String resourcePath);
 
     /**
      * Converts a given class file to a JavaScript version.
      *
      * @param classFile input stream with code of the .class file
-     * @param out a {@link StringBuilder} or similar to generate the output to
-     * @param references a write only collection where the system adds list of
-     *   other classes that were referenced and should be loaded in order the
-     *   generated JavaScript code works properly. The names are in internal 
-     *   JVM form so String is <code>java/lang/String</code>. Can be <code>null</code>
-     *   if one is not interested in knowing references
-     * @param scripts write only collection with names of resources to read
      * @return the initialization code for this class, if any. Otherwise <code>null</code>
      * 
      * @throws IOException if something goes wrong during read or write or translating
      */
     
-    public static String compile(
-        InputStream classFile, Appendable out,
-        Collection<? super String> references,
-        Collection<? super String> scripts
-    ) throws IOException {
-        ClassData jc = new ClassData(classFile);
+    public String compile(InputStream classFile) throws IOException {
+        this.jc = new ClassData(classFile);
         byte[] arrData = jc.findAnnotationData(true);
         String[] arr = findAnnotation(arrData, jc, ExtraJavaScript.class.getName(), "resource", "processByteCode");
         if (arr != null) {
-            scripts.add(arr[0]);
+            requireScript(arr[0]);
             if ("0".equals(arr[1])) {
                 return null;
             }
         }
-        ByteCodeToJavaScript compiler = new ByteCodeToJavaScript(
-            jc, out, references
-        );
-        List<String> toInitilize = new ArrayList<String>();
+        StringArray toInitilize = new StringArray();
         for (MethodData m : jc.getMethods()) {
             if (m.isStatic()) {
-                compiler.generateStaticMethod(m, toInitilize);
+                generateStaticMethod(m, toInitilize);
             } else {
-                compiler.generateInstanceMethod(m);
+                generateInstanceMethod(m);
             }
         }
         for (FieldData v : jc.getFields()) {
             if (v.isStatic()) {
-                compiler.generateStaticField(v);
+                generateStaticField(v);
             }
         }
         
@@ -119,7 +110,7 @@ public final class ByteCodeToJavaScript {
         }
         for (MethodData m : jc.getMethods()) {
             if (!m.getName().contains("<init>") && !m.getName().contains("<cinit>")) {
-                compiler.generateMethodReference("\n  p.", m);
+                generateMethodReference("\n  p.", m);
             }
         }
         out.append("\n  p.$instOf_").append(className).append(" = true;");
@@ -130,12 +121,12 @@ public final class ByteCodeToJavaScript {
         out.append("\n}");
         out.append("\n").append(className).append("_proto();");
         StringBuilder sb = new StringBuilder();
-        for (String init : toInitilize) {
+        for (String init : toInitilize.toArray()) {
             sb.append("\n").append(init).append("();");
         }
         return sb.toString();
     }
-    private void generateStaticMethod(MethodData m, List<String> toInitilize) throws IOException {
+    private void generateStaticMethod(MethodData m, StringArray toInitilize) throws IOException {
         if (javaScriptBody(m, true)) {
             return;
         }
@@ -952,10 +943,8 @@ public final class ByteCodeToJavaScript {
     }
     
     private void addReference(String cn) throws IOException {
-        if (references != null) {
-            if (references.add(cn)) {
-                out.append(" /* needs ").append(cn).append(" */");
-            }
+        if (requireReference(cn)) {
+            out.append(" /* needs ").append(cn).append(" */");
         }
     }
 
