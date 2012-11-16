@@ -2228,29 +2228,10 @@ function java_lang_String_trimLjava_lang_String(arg0) {
 function java_lang_String_toStringLjava_lang_String(arg0) {
     return arg0.toString();
 }
-/*
 function java_lang_String_toCharArrayAC(arg0) {
-  var arg1;
-  var arg2;
-;
-  var stack = new Array(5);
-  var gt = 0;
-  for(;;) switch(gt) {
-    case 0: stack.push(arg0); // 42
-    case 1: stack.push(stack.pop().count); // 180 1 97
-    case 4: stack.push(new Array(stack.pop())); // 188 5
-    case 6: arg1 = stack.pop(); // 76
-    case 7: stack.push(arg0); // 42
-    case 8: stack.push(0); // 3
-    case 9: stack.push(arg0); // 42
-    case 10: stack.push(stack.pop().count); // 180 1 97
-    case 13: stack.push(arg1); // 43
-    case 14: stack.push(0); // 3
-    case 15: { var v3 = stack.pop(); var v2 = stack.pop(); var v1 = stack.pop(); var v0 = stack.pop(); var self = stack.pop(); self.getCharsVIIACAI(self, v0, v1, v2, v3); } // 182 1 138
-    case 18: stack.push(arg1); // 43
-    case 19: return stack.pop(); // 176
-  }
+    return arg0.toString().split('');
 }
+/*
 function java_lang_String_formatLjava_lang_StringLjava_lang_StringLjava_lang_Object(arg0,arg1) {
   var stack = new Array();
   var gt = 0;
@@ -2475,6 +2456,7 @@ String.prototype.toStringLjava_lang_String = java_lang_String_toStringLjava_lang
 String.prototype.substringLjava_lang_StringI = java_lang_String_substringLjava_lang_StringI;
 String.prototype.substringLjava_lang_StringII = java_lang_String_substringLjava_lang_StringII;
 String.prototype.equalsZLjava_lang_Object = java_lang_String_equalsZLjava_lang_Object;
+String.prototype.toCharArrayAC = java_lang_String_toCharArrayAC;
 String.prototype.$instOf_java_lang_String = true;
 String.prototype.$instOf_java_io_Serializable = true;
 String.prototype.$instOf_java_lang_Comparable = true;
@@ -2532,7 +2514,6 @@ String.prototype.$instOf_java_lang_CharSequence = true;
   this.toUpperCaseLjava_lang_String = java_lang_String_toUpperCaseLjava_lang_String;
   this.trimLjava_lang_String = java_lang_String_trimLjava_lang_String;
   this.toStringLjava_lang_String = java_lang_String_toStringLjava_lang_String;
-  this.toCharArrayAC = java_lang_String_toCharArrayAC;
   this.internLjava_lang_String = java_lang_String_internLjava_lang_String;
   this.compareToILjava_lang_Object = java_lang_String_compareToILjava_lang_Object;
  */

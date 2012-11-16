@@ -481,12 +481,6 @@ public final class ClassData implements RuntimeConstants {
         return this_class;
     }
 
-    public String TagString (int tag) {
-        String res=Tables.tagName(tag);
-        if (res==null)  return "BOGUS_TAG:"+tag;
-        return res;
-    }
-
     /**
      * Returns string at that index.
      */
@@ -652,19 +646,6 @@ public final class ClassData implements RuntimeConstants {
      */
     public int getCpoolCount(){
         return cpool_count;
-    }
-
-    public String StringTag(int cpx) {
-        byte tag=0;
-        String str=null;
-        try {
-            if (cpx==0) throw new IndexOutOfBoundsException();
-            tag=tags[cpx];
-            return      TagString(tag);
-        } catch (IndexOutOfBoundsException e) {
-            str="Incorrect CP index:"+cpx;
-        }
-        return str;
     }
 
     /**
