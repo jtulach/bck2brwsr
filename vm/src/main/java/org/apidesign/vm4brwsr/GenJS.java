@@ -34,6 +34,9 @@ final class GenJS extends ByteCodeToJavaScript {
     static void compile(Appendable out, String... names) throws IOException {
         compile(out, StringArray.asList(names));
     }
+    static void compile(ClassLoader l, Appendable out, String... names) throws IOException {
+        compile(l, out, StringArray.asList(names));
+    }
     static void compile(Appendable out, StringArray names) throws IOException {
         compile(GenJS.class.getClassLoader(), out, names);
     }

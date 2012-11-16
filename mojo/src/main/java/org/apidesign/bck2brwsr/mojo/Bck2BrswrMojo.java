@@ -74,10 +74,10 @@ public class Bck2BrswrMojo extends AbstractMojo {
             URLClassLoader url = buildClassLoader(classes, prj.getDependencyArtifacts());
             
             Class<?> c = Class.forName("org.apidesign.vm4brwsr.GenJS");
-            Method m = c.getDeclaredMethod("compile", ClassLoader.class, Appendable.class, List.class);
+            Method m = c.getDeclaredMethod("compile", ClassLoader.class, Appendable.class, String[].class);
             m.setAccessible(true);
             FileWriter w = new FileWriter(javascript);
-            m.invoke(null, url, w, arr);
+            m.invoke(null, url, w, arr.toArray(new String[0]));
             w.close();
         } catch (Exception ex) {
             throw new MojoExecutionException("Can't compile", ex);
