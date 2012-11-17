@@ -48,6 +48,16 @@ public class VMinVMTest {
         } catch (Exception ex) {
             File f = File.createTempFile("execution", ".js");
             FileWriter w = new FileWriter(f);
+            w.append("var byteCode = [\n  ");
+            String sep = "";
+            for (int i = 0; i < arr.length; i++) {
+                w.append(sep).append(Integer.toString((arr[i] + 256) % 256));
+                sep = ", ";
+                if (i % 20 == 0) {
+                    w.append("\n  ");
+                }
+            }
+            w.append("\n];\n");
             w.append(codeSeq);
             w.close();
             throw new Exception(ex.getMessage() + " file: " + f, ex);

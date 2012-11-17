@@ -93,7 +93,7 @@ public abstract class ByteCodeToJavaScript {
         for (FieldData v : jc.getFields()) {
             if (!v.isStatic()) {
                 out.append("\n  this.fld_").
-                    append(v.getName()).append(" = 0;");
+                    append(v.getName()).append(initField(v));
             }
         }
         out.append("\n}\n\nfunction ").append(className).append("_proto() {");
@@ -844,7 +844,7 @@ public abstract class ByteCodeToJavaScript {
     private void generateStaticField(FieldData v) throws IOException {
         out.append("\nvar ")
            .append(className(jc))
-           .append('_').append(v.getName()).append(" = 0;");
+           .append('_').append(v.getName()).append(initField(v));
     }
 
     private String findMethodName(MethodData m, StringBuilder cnt) {
@@ -1064,5 +1064,24 @@ public abstract class ByteCodeToJavaScript {
         };
         ap.parse(arr, cd);
         return found[0] ? values : null;
+    }
+
+    private CharSequence initField(FieldData v) {
+        final String is = v.getInternalSig();
+        if (is.length() == 1) {
+            switch (is.charAt(0)) {
+                case 'S':
+                case 'J':
+                case 'B':
+                case 'Z':
+                case 'C':
+                case 'I': return " = 0;";
+                case 'F': 
+                case 'D': return " = 0.0";
+                default:
+                    throw new IllegalStateException(is);
+            }
+        }
+        return " = null;";
     }
 }

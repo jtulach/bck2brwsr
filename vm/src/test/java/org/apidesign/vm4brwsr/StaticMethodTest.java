@@ -42,6 +42,14 @@ public class StaticMethodTest {
         );
     }
 
+    @Test public void checkReallyInitializedValues() throws Exception {
+        assertExec(
+            "Return true", 
+            "org_apidesign_vm4brwsr_StaticMethod_isNullZ", 
+            Double.valueOf(1)
+        );
+    }
+
     @Test public void powerOfThree() throws Exception {
         assertExec(
             "Should be nine", 
