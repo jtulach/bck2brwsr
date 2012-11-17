@@ -71,11 +71,11 @@ public class StringTest {
         );
     }
 
-    public void equalsAndSubstring() throws Exception {
+    @Test public void equalsAndSubstring() throws Exception {
         assertExec(
             "Composes are OK",
             "org_apidesign_vm4brwsr_StringSample_equalToHelloZII",
-            Double.valueOf(1), 0, 5
+            true, 0, 5
         );
     }
     
