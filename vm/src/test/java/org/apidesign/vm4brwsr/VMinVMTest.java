@@ -17,6 +17,10 @@
  */
 package org.apidesign.vm4brwsr;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
 import static org.testng.Assert.*;
 import javax.script.Invocable;
 import org.testng.annotations.BeforeClass;
@@ -32,24 +36,47 @@ public class VMinVMTest {
     private static Invocable code;
     
     @Test public void compareTheGeneratedCode() throws Exception {
-        StringBuilder hotspot = new StringBuilder();
-        GenJS.compile(hotspot, "org/apidesign/vm4brwsr/Array");
+        byte[] arr = readClass("/org/apidesign/vm4brwsr/Array.class");
+        String ret1 = VMinVM.toJavaScript(arr);
         
-        Object ret = code.invokeFunction(
-            "org_apidesign_vm4brwsr_GenJS_toStringLjava_lang_StringLjava_lang_String",
-            "org/apidesign/vm4brwsr/Array"
-        );
+        Object ret;
+        try {
+            ret = code.invokeFunction(
+                "org_apidesign_vm4brwsr_VMinVM_toJavaScriptLjava_lang_StringAB",
+                arr
+            );
+        } catch (Exception ex) {
+            File f = File.createTempFile("execution", ".js");
+            FileWriter w = new FileWriter(f);
+            w.append(codeSeq);
+            w.close();
+            throw new Exception(ex.getMessage() + " file: " + f, ex);
+        }
+
+        
         assertTrue(ret instanceof String, "It is string: " + ret);
         
-        assertEquals((String)ret, hotspot.toString(), "The code is the same");
+        assertEquals((String)ret, ret1.toString(), "The code is the same");
     }
     
     @BeforeClass
     public void compileTheCode() throws Exception {
         StringBuilder sb = new StringBuilder();
         code = StaticMethodTest.compileClass(sb, 
-            "org/apidesign/vm4brwsr/GenJS"
+            "org/apidesign/vm4brwsr/VMinVM"
         );
         codeSeq = sb;
+    }
+    
+    private static byte[] readClass(String res) throws IOException {
+        InputStream is1 = VMinVMTest.class.getResourceAsStream(res);
+        assertNotNull(is1, "Stream found");
+        byte[] arr = new byte[is1.available()];
+        int len = is1.read(arr);
+        is1.close();
+        if (len != arr.length) {
+            throw new IOException("Wrong len " + len + " for arr: " + arr.length);
+        }
+        return arr;
     }
 }

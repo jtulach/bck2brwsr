@@ -19,7 +19,6 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
-import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.javap.AnnotationParser;
 import org.apidesign.javap.ClassData;
@@ -64,7 +63,10 @@ public abstract class ByteCodeToJavaScript {
     public String compile(InputStream classFile) throws IOException {
         this.jc = new ClassData(classFile);
         byte[] arrData = jc.findAnnotationData(true);
-        String[] arr = findAnnotation(arrData, jc, ExtraJavaScript.class.getName(), "resource", "processByteCode");
+        String[] arr = findAnnotation(arrData, jc, 
+            "org.apidesign.bck2brwsr.core.ExtraJavaScript", 
+            "resource", "processByteCode"
+        );
         if (arr != null) {
             requireScript(arr[0]);
             if ("0".equals(arr[1])) {
@@ -650,6 +652,12 @@ public abstract class ByteCodeToJavaScript {
                     break;
                 case opc_dup:
                     out.append("stack.push(stack[stack.length - 1]);");
+                    break;
+                case opc_dup_x1:
+                    out.append("{ var v1 = stack.pop(); var v2 = stack.pop(); stack.push(v1); stack.push(v2); stack.push(v1); }");
+                    break;
+                case opc_dup_x2:
+                    out.append("{ var v1 = stack.pop(); var v2 = stack.pop(); var v3 = stack.pop(); stack.push(v1); stack.push(v3); stack.push(v2); stack.push(v1); }");
                     break;
                 case opc_bipush:
                     out.append("stack.push(" + byteCodes[++i] + ");");
