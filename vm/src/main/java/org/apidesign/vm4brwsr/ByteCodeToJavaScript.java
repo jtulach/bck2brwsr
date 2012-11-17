@@ -592,25 +592,25 @@ public abstract class ByteCodeToJavaScript {
                 }
                 case opc_newarray: {
                     int type = byteCodes[i++];
-                    out.append("stack.push(new Array(stack.pop()));");
+                    out.append("stack.push(new Array(stack.pop()).fillNulls());");
                     break;
                 }
                 case opc_anewarray: {
                     i += 2; // skip type of array
-                    out.append("stack.push(new Array(stack.pop()));");
+                    out.append("stack.push(new Array(stack.pop()).fillNulls());");
                     break;
                 }
                 case opc_multianewarray: {
                     i += 2;
                     int dim = readByte(byteCodes, ++i);
-                    out.append("{ var a0 = new Array(stack.pop());");
+                    out.append("{ var a0 = new Array(stack.pop()).fillNulls();");
                     for (int d = 1; d < dim; d++) {
                         out.append("\n  var l" + d).append(" = stack.pop();");
                         out.append("\n  for (var i" + d).append (" = 0; i" + d).
                             append(" < a" + (d - 1)).
                             append(".length; i" + d).append("++) {");
                         out.append("\n    var a" + d).
-                            append (" = new Array(l" + d).append(");");
+                            append (" = new Array(l" + d).append(").fillNulls();");
                         out.append("\n    a" + (d - 1)).append("[i" + d).append("] = a" + d).
                             append(";");
                     }

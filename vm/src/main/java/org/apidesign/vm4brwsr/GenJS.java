@@ -41,6 +41,14 @@ final class GenJS extends ByteCodeToJavaScript {
         compile(GenJS.class.getClassLoader(), out, names);
     }
     static void compile(ClassLoader l, Appendable out, StringArray names) throws IOException {
+        out.append("Array.prototype.fillNulls = function() {\n" +
+             "  for(var i = 0; i < this.length; i++) {\n" +
+             "    this[i] = null;\n" +
+             "  }\n" +
+             "  return this;\n" +
+             "};");
+        
+        
         StringArray processed = new StringArray();
         StringArray initCode = new StringArray();
         for (String baseClass : names.toArray()) {
