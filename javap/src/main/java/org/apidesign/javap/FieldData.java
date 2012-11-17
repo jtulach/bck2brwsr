@@ -26,7 +26,6 @@
 
 package org.apidesign.javap;
 
-import java.util.*;
 import java.io.*;
 
 /**
