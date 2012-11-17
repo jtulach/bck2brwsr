@@ -44,6 +44,14 @@ public class StringTest {
         );
     }
 
+    @Test public void concatChars() throws Exception {
+        assertExec(
+            "Composing yields ABC",
+            "org_apidesign_vm4brwsr_StringSample_charsLjava_lang_StringCCC",
+            "ABC", 'A', 'B', 'C'
+        );
+    }
+
     @Test(timeOut=10000) public void toStringConcatenation() throws Exception {
         assertExec(
             "Five executions should generate 5Hello World!",

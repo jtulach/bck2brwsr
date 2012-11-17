@@ -43,6 +43,10 @@ public class StringSample {
         char[] arr = { a, b, c };
         return new String(arr).toString();
     }
+
+    public static String chars(char a, char b, char c) {
+        return ("" + a + b +c).toString();
+    }
     
     public static String toStringTest(int howMuch) {
         counter = 0;

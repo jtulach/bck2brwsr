@@ -497,14 +497,14 @@ public abstract class ByteCodeToJavaScript {
                 }
                 case opc_ifnonnull: {
                     int indx = i + readIntArg(byteCodes, i);
-                    out.append("if (stack.pop()) { gt = " + indx);
+                    out.append("if (stack.pop() !== null) { gt = " + indx);
                     out.append("; continue; }");
                     i += 2;
                     break;
                 }
                 case opc_ifnull: {
                     int indx = i + readIntArg(byteCodes, i);
-                    out.append("if (!stack.pop()) { gt = " + indx);
+                    out.append("if (stack.pop() === null) { gt = " + indx);
                     out.append("; continue; }");
                     i += 2;
                     break;
