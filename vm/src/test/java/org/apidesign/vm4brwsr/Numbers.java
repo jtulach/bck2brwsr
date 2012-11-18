@@ -17,6 +17,10 @@
  */
 package org.apidesign.vm4brwsr;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
@@ -31,4 +35,19 @@ public class Numbers {
     public static int rem(int a, int b) {
         return a % b;
     }
+
+    static float deserFloat() throws IOException {
+        byte[] arr = {(byte) 71, (byte) 84, (byte) 52, (byte) 83};
+        ByteArrayInputStream is = new ByteArrayInputStream(arr);
+        DataInputStream dis = new DataInputStream(is);
+        float r = dis.readFloat();
+        return r;
+    }
+    static int deserInt() throws IOException {
+        byte[] arr = {(byte) 71, (byte) 84, (byte) 52, (byte) 83};
+        ByteArrayInputStream is = new ByteArrayInputStream(arr);
+        DataInputStream dis = new DataInputStream(is);
+        return dis.readInt();
+    }
+    
 }

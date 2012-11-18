@@ -64,6 +64,26 @@ public class NumberTest {
             Double.valueOf(3.0), 303, 10
         );
     }
+    
+    @Test public void deserializeInt() throws Exception {
+        int exp = Numbers.deserInt();
+        assertExec("Should be the same", "org_apidesign_vm4brwsr_Numbers_deserIntI", 
+            Double.valueOf(exp)
+        );
+    }
+    
+    @Test public void deserializeFloatInJava() throws Exception {
+        float f = 54324.32423f;
+        float r = Numbers.deserFloat();
+        assertEquals(r, f, "Floats are the same");
+    }
+    
+    @Test public void deserializeFloatInJS() throws Exception {
+        float f = 54324.32423f;
+        assertExec("Should be the same", "org_apidesign_vm4brwsr_Numbers_deserFloatF", 
+            Double.valueOf(f)
+        );
+    }
 
     
     private static CharSequence codeSeq;
