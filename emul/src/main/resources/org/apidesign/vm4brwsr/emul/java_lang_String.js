@@ -1,22 +1,65 @@
 /* */
 
 
-function java_lang_String_consVAC(arg0,arg1) {
-    arg0.r = arg1.join("");
+function java_lang_String_consVAC(self,charArr) {
+    for (var i = 0; i < charArr.length; i++) {
+        if (typeof charArr[i] === 'number') charArr[i] = String.fromCharCode(charArr[i]);
+    }
+    self.r = charArr.join("");
 }
 
 function java_lang_String_consVACII(self, charArr, off, cnt) {
-    self.r = charArr.slice(off, off + cnt).join("");
+    var up = off + cnt;
+    for (var i = off; i < up; i++) {
+        if (typeof charArr[i] === 'number') charArr[i] = String.fromCharCode(charArr[i]);
+    }
+    self.r = charArr.slice(off, up).join("");
 }
 
 function java_lang_String_charAtCI(arg0,arg1) {
-    return arg0.toString().charAt(arg1);
+    return arg0.toString().charCodeAt(arg1);
 }
 function java_lang_String_lengthI(arg0) {
     return arg0.toString().length;
 }
 function java_lang_String_isEmptyZ(arg0) {
     return arg0.toString().length === 0;
+}
+function java_lang_String_valueOfLjava_lang_StringI(n) {
+    return n.toString();
+}
+
+function java_lang_String_startsWithZLjava_lang_StringI(self,find,from) {
+    find = find.toString();
+    return self.toString().substring(from, find.length) === find;
+}
+function java_lang_String_startsWithZLjava_lang_String(self,find) {
+    find = find.toString();
+    return self.toString().substring(0, find.length) === find;
+}
+function java_lang_String_endsWithZLjava_lang_String(self,find) {
+    self = self.toString();
+    find = find.toString();
+    if (find.length > self.length) {
+        return false;
+    }
+    return self.substring(self.length - find.length) === find;
+}
+
+function java_lang_String_indexOfII(arg0,ch) {
+    if (typeof ch === 'number') ch = String.fromCharCode(ch);
+    return arg0.toString().indexOf(ch);
+}
+function java_lang_String_indexOfIII(arg0,ch,from) {
+    if (typeof ch === 'number') ch = String.fromCharCode(ch);
+    return arg0.toString().indexOf(ch, from);
+}
+
+function java_lang_String_getCharsVACI(self, arr, to) {
+    var s = self.toString();
+    for (var i = 0; i < s.length; i++) {
+        arr[to++] = s[i];
+    }
 }
 
 /*
@@ -860,116 +903,6 @@ function java_lang_String_hashCodeI(arg0) {
     case 63: return stack.pop(); // 172
   }
 }
-function java_lang_String_indexOfII(arg0,arg1) {
-  var arg2;
-;
-  var stack = new Array(3);
-  var gt = 0;
-  for(;;) switch(gt) {
-    case 0: stack.push(arg0); // 42
-    case 1: stack.push(arg1); // 27
-    case 2: stack.push(0); // 3
-    case 3: { var v1 = stack.pop(); var v0 = stack.pop(); var self = stack.pop(); stack.push(self.indexOfIII(self, v0, v1)); } // 182 1 135
-    case 6: return stack.pop(); // 172
-  }
-}
-function java_lang_String_indexOfIII(arg0,arg1,arg2) {
-  var arg3;
-  var arg4;
-  var arg5;
-  var arg6;
-  var arg7;
-;
-  var stack = new Array(3);
-  var gt = 0;
-  for(;;) switch(gt) {
-    case 0: stack.push(arg0); // 42
-    case 1: stack.push(stack.pop().offset); // 180 1 99
-    case 4: stack.push(arg0); // 42
-    case 5: stack.push(stack.pop().count); // 180 1 97
-    case 8: stack.push(stack.pop() + stack.pop()); // 96
-    case 9: arg3 = stack.pop(); // 62
-    case 10: stack.push(arg0); // 42
-    case 11: stack.push(stack.pop().value); // 180 1 100
-    case 14: arg4 = stack.pop() // 58 4
-    case 16: stack.push(arg2); // 28
-    case 17: if (stack.pop() >= 0) { gt = 25; continue; } // 156 0 8
-    case 20: stack.push(0); // 3
-    case 21: arg2 = stack.pop(); // 61
-    case 22: gt = 35; continue; // 167 0 13
-    case 25: stack.push(arg2); // 28
-    case 26: stack.push(arg0); // 42
-    case 27: stack.push(stack.pop().count); // 180 1 97
-    case 30: if (stack.pop() > stack.pop()) { gt = 35; continue; } // 161 0 5
-    case 33:  // 2
-    case 34: return stack.pop(); // 172
-    case 35: stack.push(arg0); // 42
-    case 36: stack.push(stack.pop().offset); // 180 1 99
-    case 39: stack.push(arg2); // 28
-    case 40: stack.push(stack.pop() + stack.pop()); // 96
-    case 41: arg5 = stack.pop() // 54 5
-    case 43: stack.push(arg1); // 27
-    case 44: stack.push(65536); // 18 3
-    case 46: if (stack.pop() <= stack.pop()) { gt = 80; continue; } // 162 0 34
-    case 49: stack.push(arg5); // 21 5
-    case 51: stack.push(arg3); // 29
-    case 52: if (stack.pop() <= stack.pop()) { gt = 78; continue; } // 162 0 26
-    case 55: stack.push(arg4); // 25 4
-    case 57: stack.push(arg5); // 21 5
-    case 59: { var indx = stack.pop(); stack.push(stack.pop()[indx]); } // 52
-    case 60: stack.push(arg1); // 27
-    case 61: if (stack.pop() != stack.pop()) { gt = 72; continue; } // 160 0 11
-    case 64: stack.push(arg5); // 21 5
-    case 66: stack.push(arg0); // 42
-    case 67: stack.push(stack.pop().offset); // 180 1 99
-    case 70: { var tmp = stack.pop(); stack.push(stack.pop() - tmp); } // 100
-    case 71: return stack.pop(); // 172
-    case 72: arg5++; // 132 5 1
-    case 75: gt = 49; continue; // 167 255 230
-    case 78:  // 2
-    case 79: return stack.pop(); // 172
-    case 80: stack.push(arg1); // 27
-    case 81: stack.push(1114111); // 18 4
-    case 83: if (stack.pop() < stack.pop()) { gt = 149; continue; } // 163 0 66
-    case 86: stack.push(arg1); // 27
-    case 87: { var v0 = stack.pop(); stack.push(java_lang_Character_toCharsACI(v0)); } // 184 1 109
-    case 90: arg6 = stack.pop() // 58 6
-    case 92: stack.push(arg5); // 21 5
-    case 94: stack.push(arg3); // 29
-    case 95: if (stack.pop() <= stack.pop()) { gt = 149; continue; } // 162 0 54
-    case 98: stack.push(arg4); // 25 4
-    case 100: stack.push(arg5); // 21 5
-    case 102: { var indx = stack.pop(); stack.push(stack.pop()[indx]); } // 52
-    case 103: stack.push(arg6); // 25 6
-    case 105: stack.push(0); // 3
-    case 106: { var indx = stack.pop(); stack.push(stack.pop()[indx]); } // 52
-    case 107: if (stack.pop() != stack.pop()) { gt = 143; continue; } // 160 0 36
-    case 110: stack.push(arg5); // 21 5
-    case 112: stack.push(1); // 4
-    case 113: stack.push(stack.pop() + stack.pop()); // 96
-    case 114: stack.push(arg3); // 29
-    case 115: if (stack.pop() != stack.pop()) { gt = 121; continue; } // 160 0 6
-    case 118: gt = 149; continue; // 167 0 31
-    case 121: stack.push(arg4); // 25 4
-    case 123: stack.push(arg5); // 21 5
-    case 125: stack.push(1); // 4
-    case 126: stack.push(stack.pop() + stack.pop()); // 96
-    case 127: { var indx = stack.pop(); stack.push(stack.pop()[indx]); } // 52
-    case 128: stack.push(arg6); // 25 6
-    case 130: stack.push(1); // 4
-    case 131: { var indx = stack.pop(); stack.push(stack.pop()[indx]); } // 52
-    case 132: if (stack.pop() != stack.pop()) { gt = 143; continue; } // 160 0 11
-    case 135: stack.push(arg5); // 21 5
-    case 137: stack.push(arg0); // 42
-    case 138: stack.push(stack.pop().offset); // 180 1 99
-    case 141: { var tmp = stack.pop(); stack.push(stack.pop() - tmp); } // 100
-    case 142: return stack.pop(); // 172
-    case 143: arg5++; // 132 5 1
-    case 146: gt = 92; continue; // 167 255 202
-    case 149:  // 2
-    case 150: return stack.pop(); // 172
-  }
-}
 function java_lang_String_lastIndexOfII(arg0,arg1) {
   var arg2;
 ;
@@ -1367,6 +1300,23 @@ function java_lang_String_substringLjava_lang_StringI(arg0,arg1) {
 function java_lang_String_substringLjava_lang_StringII(arg0,arg1,arg2) {
     return arg0.toString().substring(arg1, arg2);
 }
+
+function java_lang_String_replaceLjava_lang_StringCC(arg0,arg1,arg2) {
+    if (typeof arg1 === 'number') arg1 = String.fromCharCode(arg1);
+    if (typeof arg2 === 'number') arg2 = String.fromCharCode(arg2);
+    var s = arg0.toString();
+    for (;;) {
+        var ret = s.replace(arg1, arg2);
+        if (ret === s) {
+            return ret;
+        }
+        s = ret;
+    }
+}
+function java_lang_String_containsZLjava_lang_CharSequence(arg0,arg1) {
+    return arg0.toString().indexOf(arg1.toString()) >= 0;
+}
+
 /*
 function java_lang_String_subSequenceLjava_lang_CharSequenceII(arg0,arg1,arg2) {
   var arg3;
@@ -1428,96 +1378,6 @@ function java_lang_String_concatLjava_lang_StringLjava_lang_String(arg0,arg1) {
     case 57: return stack.pop(); // 176
   }
 }
-function java_lang_String_replaceLjava_lang_StringCC(arg0,arg1,arg2) {
-  var arg3;
-  var arg4;
-  var arg5;
-  var arg6;
-  var arg7;
-  var arg8;
-  var arg9;
-;
-  var stack = new Array(5);
-  var gt = 0;
-  for(;;) switch(gt) {
-    case 0: stack.push(arg1); // 27
-    case 1: stack.push(arg2); // 28
-    case 2: if (stack.pop() == stack.pop()) { gt = 140; continue; } // 159 0 138
-    case 5: stack.push(arg0); // 42
-    case 6: stack.push(stack.pop().count); // 180 1 97
-    case 9: arg3 = stack.pop(); // 62
-    case 10:  // 2
-    case 11: arg4 = stack.pop() // 54 4
-    case 13: stack.push(arg0); // 42
-    case 14: stack.push(stack.pop().value); // 180 1 100
-    case 17: arg5 = stack.pop() // 58 5
-    case 19: stack.push(arg0); // 42
-    case 20: stack.push(stack.pop().offset); // 180 1 99
-    case 23: arg6 = stack.pop() // 54 6
-    case 25: arg4++; // 132 4 1
-    case 28: stack.push(arg4); // 21 4
-    case 30: stack.push(arg3); // 29
-    case 31: if (stack.pop() <= stack.pop()) { gt = 49; continue; } // 162 0 18
-    case 34: stack.push(arg5); // 25 5
-    case 36: stack.push(arg6); // 21 6
-    case 38: stack.push(arg4); // 21 4
-    case 40: stack.push(stack.pop() + stack.pop()); // 96
-    case 41: { var indx = stack.pop(); stack.push(stack.pop()[indx]); } // 52
-    case 42: stack.push(arg1); // 27
-    case 43: if (stack.pop() != stack.pop()) { gt = 25; continue; } // 160 255 238
-    case 46: gt = 49; continue; // 167 0 3
-    case 49: stack.push(arg4); // 21 4
-    case 51: stack.push(arg3); // 29
-    case 52: if (stack.pop() <= stack.pop()) { gt = 140; continue; } // 162 0 88
-    case 55: stack.push(arg3); // 29
-    case 56: stack.push(new Array(stack.pop())); // 188 5
-    case 58: arg7 = stack.pop() // 58 7
-    case 60: stack.push(0); // 3
-    case 61: arg8 = stack.pop() // 54 8
-    case 63: stack.push(arg8); // 21 8
-    case 65: stack.push(arg4); // 21 4
-    case 67: if (stack.pop() <= stack.pop()) { gt = 89; continue; } // 162 0 22
-    case 70: stack.push(arg7); // 25 7
-    case 72: stack.push(arg8); // 21 8
-    case 74: stack.push(arg5); // 25 5
-    case 76: stack.push(arg6); // 21 6
-    case 78: stack.push(arg8); // 21 8
-    case 80: stack.push(stack.pop() + stack.pop()); // 96
-    case 81: { var indx = stack.pop(); stack.push(stack.pop()[indx]); } // 52
-    case 82: { var value = stack.pop(); var indx = stack.pop(); stack.pop()[indx] = value; } // 85
-    case 83: arg8++; // 132 8 1
-    case 86: gt = 63; continue; // 167 255 233
-    case 89: stack.push(arg4); // 21 4
-    case 91: stack.push(arg3); // 29
-    case 92: if (stack.pop() <= stack.pop()) { gt = 128; continue; } // 162 0 36
-    case 95: stack.push(arg5); // 25 5
-    case 97: stack.push(arg6); // 21 6
-    case 99: stack.push(arg4); // 21 4
-    case 101: stack.push(stack.pop() + stack.pop()); // 96
-    case 102: { var indx = stack.pop(); stack.push(stack.pop()[indx]); } // 52
-    case 103: arg8 = stack.pop() // 54 8
-    case 105: stack.push(arg7); // 25 7
-    case 107: stack.push(arg4); // 21 4
-    case 109: stack.push(arg8); // 21 8
-    case 111: stack.push(arg1); // 27
-    case 112: if (stack.pop() != stack.pop()) { gt = 119; continue; } // 160 0 7
-    case 115: stack.push(arg2); // 28
-    case 116: gt = 121; continue; // 167 0 5
-    case 119: stack.push(arg8); // 21 8
-    case 121: { var value = stack.pop(); var indx = stack.pop(); stack.pop()[indx] = value; } // 85
-    case 122: arg4++; // 132 4 1
-    case 125: gt = 89; continue; // 167 255 220
-    case 128: stack.push(new java_lang_String); // 187 0 200
-    case 131: stack.push(stack[stack.length - 1]); // 89
-    case 132: stack.push(0); // 3
-    case 133: stack.push(arg3); // 29
-    case 134: stack.push(arg7); // 25 7
-    case 136: { var v2 = stack.pop(); var v1 = stack.pop(); var v0 = stack.pop(); java_lang_String_consVIIAC(stack.pop(), v0, v1, v2); } // 183 1 137
-    case 139: return stack.pop(); // 176
-    case 140: stack.push(arg0); // 42
-    case 141: return stack.pop(); // 176
-  }
-}
 function java_lang_String_matchesZLjava_lang_String(arg0,arg1) {
   var arg2;
 ;
@@ -1528,24 +1388,6 @@ function java_lang_String_matchesZLjava_lang_String(arg0,arg1) {
     case 1: stack.push(arg0); // 42
     case 2: { var v1 = stack.pop(); var v0 = stack.pop(); stack.push(java_util_regex_Pattern_matchesZLjava_lang_StringLjava_lang_CharSequence(v0, v1)); } // 184 1 183
     case 5: return stack.pop(); // 172
-  }
-}
-function java_lang_String_containsZLjava_lang_CharSequence(arg0,arg1) {
-  var arg2;
-;
-  var stack = new Array(2);
-  var gt = 0;
-  for(;;) switch(gt) {
-    case 0: stack.push(arg0); // 42
-    case 1: stack.push(arg1); // 43
-    case 2: { var self = stack.pop(); stack.push(self.toStringLjava_lang_String(self)); } // 182 1 132
-    case 5: { var v0 = stack.pop(); var self = stack.pop(); stack.push(self.indexOfILjava_lang_String(self, v0)); } // 182 1 149
-    case 8:  // 2
-    case 9: if (stack.pop() >= stack.pop()) { gt = 16; continue; } // 164 0 7
-    case 12: stack.push(1); // 4
-    case 13: gt = 17; continue; // 167 0 4
-    case 16: stack.push(0); // 3
-    case 17: return stack.pop(); // 172
   }
 }
 function java_lang_String_replaceFirstLjava_lang_StringLjava_lang_StringLjava_lang_String(arg0,arg1,arg2) {
@@ -2228,29 +2070,10 @@ function java_lang_String_trimLjava_lang_String(arg0) {
 function java_lang_String_toStringLjava_lang_String(arg0) {
     return arg0.toString();
 }
-/*
 function java_lang_String_toCharArrayAC(arg0) {
-  var arg1;
-  var arg2;
-;
-  var stack = new Array(5);
-  var gt = 0;
-  for(;;) switch(gt) {
-    case 0: stack.push(arg0); // 42
-    case 1: stack.push(stack.pop().count); // 180 1 97
-    case 4: stack.push(new Array(stack.pop())); // 188 5
-    case 6: arg1 = stack.pop(); // 76
-    case 7: stack.push(arg0); // 42
-    case 8: stack.push(0); // 3
-    case 9: stack.push(arg0); // 42
-    case 10: stack.push(stack.pop().count); // 180 1 97
-    case 13: stack.push(arg1); // 43
-    case 14: stack.push(0); // 3
-    case 15: { var v3 = stack.pop(); var v2 = stack.pop(); var v1 = stack.pop(); var v0 = stack.pop(); var self = stack.pop(); self.getCharsVIIACAI(self, v0, v1, v2, v3); } // 182 1 138
-    case 18: stack.push(arg1); // 43
-    case 19: return stack.pop(); // 176
-  }
+    return arg0.toString().split('');
 }
+/*
 function java_lang_String_formatLjava_lang_StringLjava_lang_StringLjava_lang_Object(arg0,arg1) {
   var stack = new Array();
   var gt = 0;
@@ -2375,16 +2198,6 @@ function java_lang_String_valueOfLjava_lang_StringC(arg0) {
     case 18: return stack.pop(); // 176
   }
 }
-function java_lang_String_valueOfLjava_lang_StringI(arg0) {
-  var stack = new Array();
-  var gt = 0;
-  for(;;) switch(gt) {
-    case 0: stack.push(arg0); // 26
-    case 1: stack.push(10); // 16 10
-    case 3: { var v1 = stack.pop(); var v0 = stack.pop(); stack.push(java_lang_Integer_toStringLjava_lang_StringII(v0, v1)); } // 184 1 125
-    case 6: return stack.pop(); // 176
-  }
-}
 function java_lang_String_valueOfLjava_lang_StringJ(arg0) {
   var arg1;
   var stack = new Array();
@@ -2471,10 +2284,21 @@ String.prototype.charAtCI = java_lang_String_charAtCI;
 String.prototype.lengthI = java_lang_String_lengthI;
 String.prototype.isEmptyZ = java_lang_String_isEmptyZ;
 String.prototype.getCharsVIIACI = java_lang_String_getCharsVIIACAI;
+String.prototype.getCharsVACI = java_lang_String_getCharsVACI;
 String.prototype.toStringLjava_lang_String = java_lang_String_toStringLjava_lang_String;
 String.prototype.substringLjava_lang_StringI = java_lang_String_substringLjava_lang_StringI;
 String.prototype.substringLjava_lang_StringII = java_lang_String_substringLjava_lang_StringII;
+String.prototype.replaceLjava_lang_StringCC = java_lang_String_replaceLjava_lang_StringCC;
+String.prototype.containsZLjava_lang_CharSequence = java_lang_String_containsZLjava_lang_CharSequence;
 String.prototype.equalsZLjava_lang_Object = java_lang_String_equalsZLjava_lang_Object;
+String.prototype.toCharArrayAC = java_lang_String_toCharArrayAC;
+String.prototype.valueOfLjava_lang_StringI=java_lang_String_valueOfLjava_lang_StringI;
+String.prototype.startsWithZLjava_lang_StringI = java_lang_String_startsWithZLjava_lang_StringI;
+String.prototype.startsWithZLjava_lang_String=java_lang_String_startsWithZLjava_lang_String;
+String.prototype.endsWithZLjava_lang_String=java_lang_String_endsWithZLjava_lang_String;
+String.prototype.indexOfII=java_lang_String_indexOfII;
+String.prototype.indexOfIII=java_lang_String_indexOfIII;
+
 String.prototype.$instOf_java_lang_String = true;
 String.prototype.$instOf_java_io_Serializable = true;
 String.prototype.$instOf_java_lang_Comparable = true;
@@ -2532,7 +2356,6 @@ String.prototype.$instOf_java_lang_CharSequence = true;
   this.toUpperCaseLjava_lang_String = java_lang_String_toUpperCaseLjava_lang_String;
   this.trimLjava_lang_String = java_lang_String_trimLjava_lang_String;
   this.toStringLjava_lang_String = java_lang_String_toStringLjava_lang_String;
-  this.toCharArrayAC = java_lang_String_toCharArrayAC;
   this.internLjava_lang_String = java_lang_String_internLjava_lang_String;
   this.compareToILjava_lang_Object = java_lang_String_compareToILjava_lang_Object;
  */

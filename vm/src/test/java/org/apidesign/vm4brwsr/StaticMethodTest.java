@@ -42,6 +42,14 @@ public class StaticMethodTest {
         );
     }
 
+    @Test public void checkReallyInitializedValues() throws Exception {
+        assertExec(
+            "Return true", 
+            "org_apidesign_vm4brwsr_StaticMethod_isNullZ", 
+            Double.valueOf(1)
+        );
+    }
+
     @Test public void powerOfThree() throws Exception {
         assertExec(
             "Should be nine", 
@@ -275,15 +283,17 @@ public class StaticMethodTest {
             return (Invocable)js;
         } catch (Exception ex) {
             if (sb.length() > 2000) {
-                File f = File.createTempFile("execution", ".js");
-                FileWriter w = new FileWriter(f);
-                w.append(sb);
-                w.close();
-                sb.setLength(0);
-                sb.append(f.getPath());
+                dumpJS(sb);
             }
             fail("Could not compile:\n" + sb, ex);
             return null;
         }
+    }
+    static String dumpJS(CharSequence sb) throws IOException {
+        File f = File.createTempFile("execution", ".js");
+        FileWriter w = new FileWriter(f);
+        w.append(sb);
+        w.close();
+        return f.getPath();
     }
 }

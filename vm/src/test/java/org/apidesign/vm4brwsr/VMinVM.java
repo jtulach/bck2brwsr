@@ -17,29 +17,30 @@
  */
 package org.apidesign.vm4brwsr;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.Writer;
 
-/** Generator of JavaScript from bytecode of classes on classpath of the VM
- * with a Main method.
+/**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-final class Main {
-    private Main() {}
+class VMinVM extends ByteCodeToJavaScript {
+    private VMinVM(Appendable out) {
+        super(out);
+    }
     
-    public static void main(String... args) throws IOException {
-        if (args.length < 2) {
-            System.err.println("Usage: java -cp ... -jar ... <file_to_generate_js_code_to> java/lang/Class org/your/App ...");
-            return;
-        }
-        
-        Writer w = new BufferedWriter(new FileWriter(args[0]));
-        StringArray classes = StringArray.asList(args);
-        classes.delete(0);
-        GenJS.compile(w, classes);
-        w.close();
+    static String toJavaScript(byte[] is) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        new VMinVM(sb).compile(new ByteArrayInputStream(is));
+        return sb.toString().toString();
+    }
+
+    @Override
+    protected boolean requireReference(String internalClassName) {
+        return false;
+    }
+
+    @Override
+    protected void requireScript(String resourcePath) {
     }
 }

@@ -1417,7 +1417,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
 
     static void arraycopy(char[] value, int srcBegin, char[] dst, int dstBegin, int count) {
         while (count-- > 0) {
-            dst[dstBegin++] = value[srcBegin++];
+            dst[dstBegin + count] = value[srcBegin + count];
         }
     }
 

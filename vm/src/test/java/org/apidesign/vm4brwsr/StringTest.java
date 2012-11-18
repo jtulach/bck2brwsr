@@ -32,7 +32,7 @@ public class StringTest {
         assertExec(
             "First char in Hello is H",
             "org_apidesign_vm4brwsr_StringSample_sayHelloCI",
-            "H", 0
+            72, 0
         );
     }
 
@@ -41,6 +41,30 @@ public class StringTest {
             "First char in Hello is ABC",
             "org_apidesign_vm4brwsr_StringSample_fromCharsLjava_lang_StringCCC",
             "ABC", 'A', 'B', 'C'
+        );
+    }
+
+    @Test public void concatChars() throws Exception {
+        assertExec(
+            "Composing yields ABC",
+            "org_apidesign_vm4brwsr_StringSample_charsLjava_lang_StringCCC",
+            "ABC", 'A', 'B', 'C'
+        );
+    }
+
+    @Test public void concatCharsFromInts() throws Exception {
+        assertExec(
+            "Composing yields ABC",
+            "org_apidesign_vm4brwsr_StringSample_charsFromNumbersLjava_lang_String",
+            "ABC"
+        );
+    }
+
+    @Test public void concatCharsFromChars() throws Exception {
+        assertExec(
+            "Composing yields ABC",
+            "org_apidesign_vm4brwsr_StringSample_charsFromCharsLjava_lang_String",
+            "ABC"
         );
     }
 
@@ -63,12 +87,44 @@ public class StringTest {
         );
     }
 
-    public void equalsAndSubstring() throws Exception {
+    @Test public void equalsAndSubstring() throws Exception {
         assertExec(
             "Composes are OK",
             "org_apidesign_vm4brwsr_StringSample_equalToHelloZII",
-            Double.valueOf(1), 0, 5
+            true, 0, 5
         );
+    }
+    @Test public void replaceChars() throws Exception {
+        assertExec(
+            "Can replace slashes by underscores",
+            "org_apidesign_vm4brwsr_StringSample_replaceLjava_lang_StringLjava_lang_StringCC",
+            "x_y_z", "x/y/z", '/', '_'
+        );
+    }
+    @Test public void replaceIntChars() throws Exception {
+        assertExec(
+            "Can replace slashes by underscores",
+            "org_apidesign_vm4brwsr_StringSample_replaceLjava_lang_StringLjava_lang_StringCC",
+            "x_y_z", "x/y/z", (int)'/', (int)'_'
+        );
+    }
+
+    @Test public void insertBuilder() throws Exception {
+        assertExec(
+            "Can insert something into a buffer?",
+            "org_apidesign_vm4brwsr_StringSample_insertBufferLjava_lang_String",
+            "Ahoj Jardo!"
+        );
+    }
+    
+    @Test public void countAB() throws Exception {
+        assertEquals(StringSample.countAB("Ahoj Bedo!"), 3, "Verify Java code is sane");
+        assertExec(
+            "One A and one B adds to 3",
+            "org_apidesign_vm4brwsr_StringSample_countABILjava_lang_String",
+            Double.valueOf(3), "Ahoj Bedo!"
+        );
+        
     }
     
     private static CharSequence codeSeq;

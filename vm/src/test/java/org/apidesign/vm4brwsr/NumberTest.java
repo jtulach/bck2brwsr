@@ -17,6 +17,11 @@
  */
 package org.apidesign.vm4brwsr;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import javax.script.Invocable;
 import javax.script.ScriptException;
 import static org.testng.Assert.*;
@@ -55,7 +60,94 @@ public class NumberTest {
             Double.valueOf(3.0), 1000.0
         );
     }
+    
+    @Test public void javaRem() {
+        assertEquals(3, Numbers.rem(303, 10));
+    }
+    @Test public void jsRem() throws Exception {
+        assertExec("Should be three", "org_apidesign_vm4brwsr_Numbers_remIII", 
+            Double.valueOf(3.0), 303, 10
+        );
+    }
+    
+    @Test public void deserializeInt() throws Exception {
+        int exp = Numbers.deserInt();
+        assertExec("Should be the same", "org_apidesign_vm4brwsr_Numbers_deserIntI", 
+            Double.valueOf(exp)
+        );
+    }
 
+    @Test public void deserializeSimpleLong() throws Exception {
+        assertExec("Should be 3454", "org_apidesign_vm4brwsr_Numbers_deserLongJAB", 
+            Double.valueOf(3454), 
+            new byte[] { (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)13, (byte)126 }
+        );
+    }
+    /* XXX: JavaScript cannot represent as big longs as Java. 
+    @Test public void deserializeLargeLong() throws Exception {
+        final byte[] arr = new byte[] {
+            (byte)64, (byte)8, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0
+        };
+        long exp = Numbers.deserLong(arr);
+        assertExec("Should be " + exp, "org_apidesign_vm4brwsr_Numbers_deserLongJAB", 
+            Double.valueOf(exp), arr);
+    }
+    */
+    
+    @Test public void deserializeFloatInJava() throws Exception {
+        float f = 54324.32423f;
+        float r = Numbers.deserFloat();
+        assertEquals(r, f, "Floats are the same");
+    }
+    
+    @Test public void deserializeFloatInJS() throws Exception {
+        float f = 54324.32423f;
+        assertExec("Should be the same", "org_apidesign_vm4brwsr_Numbers_deserFloatF", 
+            Double.valueOf(f)
+        );
+    }
+
+    @Test public void deserializeDoubleInJava() throws Exception {
+        double f = 3.0;
+        double r = Numbers.deserDouble();
+        assertEquals(r, f, 0.001, "Doubles are the same");
+    }
+    
+    @Test public void deserializeDoubleInJS() throws Exception {
+        double f = 3.0;
+        assertExec("Should be the same", "org_apidesign_vm4brwsr_Numbers_deserDoubleD", f);
+    }
+    /*
+    @Test public void serDouble() throws IOException {
+        double f = 3.0;
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        DataOutputStream d = new DataOutputStream(os);
+        d.writeLong(3454);
+        d.close();
+        
+        StringBuilder sb = new StringBuilder();
+        byte[] arr = os.toByteArray();
+        for (int i = 0; i < arr.length; i++) {
+            sb.append("(byte)").append(arr[i]).append(", ");
+        }
+        fail("" + sb);
+    }
+*/    
+    @Test public void fiveInStringJS() throws Exception {
+        String s = Numbers.intToString();
+        assertExec("Should be the same: " + s, 
+            "org_apidesign_vm4brwsr_Numbers_intToStringLjava_lang_String", 
+            s
+        );
+    }
+
+    @Test public void sevenInStringJS() throws Exception {
+        String s = Numbers.floatToString();
+        assertExec("Should be the same: " + s, 
+            "org_apidesign_vm4brwsr_Numbers_floatToStringLjava_lang_String", 
+            s
+        );
+    }
     
     private static CharSequence codeSeq;
     private static Invocable code;

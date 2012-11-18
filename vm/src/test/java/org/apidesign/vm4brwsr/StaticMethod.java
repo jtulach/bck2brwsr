@@ -25,6 +25,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  */
 public class StaticMethod {
     private static int cnt;
+    private static Object NULL;
 
     public static int minusOne() {
         return -1;
@@ -40,6 +41,10 @@ public class StaticMethod {
             }
         }
         return toRet;
+    }
+    
+    public static boolean isNull() {
+        return NULL == null;
     }
     
     public static int sum(int x, int y) {
@@ -95,7 +100,7 @@ public class StaticMethod {
     }
     
     @JavaScriptBody(
-        args={"i","j"}, body="return (i + j).toString();"
+        args={"i","j"}, body="\n\r\treturn (i + j).toString();"
     )
     public static String i2s(int i, int j) {
         throw new IllegalStateException();

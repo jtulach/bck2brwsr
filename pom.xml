@@ -12,6 +12,7 @@
     <module>core</module>
     <module>mojo</module>
     <module>javaquery</module>
+    <module>javap</module>
   </modules>
   <licenses>
       <license>
@@ -66,6 +67,7 @@
                   <strictCheck>true</strictCheck>
                   <excludes>
                        <exclude>emul/**</exclude>
+                       <exclude>javap/**</exclude>
                        <exclude>*</exclude>
                        <exclude>.*/**</exclude>
                   </excludes>
