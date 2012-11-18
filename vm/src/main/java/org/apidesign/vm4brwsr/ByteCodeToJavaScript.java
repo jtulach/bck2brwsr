@@ -318,6 +318,12 @@ public abstract class ByteCodeToJavaScript {
                 case opc_ddiv:
                     out.append("{ var tmp = stack.pop(); stack.push(stack.pop() / tmp); }");
                     break;
+                case opc_irem:
+                case opc_lrem:
+                case opc_frem:
+                case opc_drem:
+                    out.append("{ var d = stack.pop(); stack.push(stack.pop() % d); }");
+                    break;
                 case opc_iand:
                 case opc_land:
                     out.append("stack.push(stack.pop() & stack.pop());");

@@ -28,4 +28,7 @@ public class Numbers {
     public static String autoboxDblToString() {
         return autoboxDbl().toString().toString();
     }
+    public static int rem(int a, int b) {
+        return a % b;
+    }
 }

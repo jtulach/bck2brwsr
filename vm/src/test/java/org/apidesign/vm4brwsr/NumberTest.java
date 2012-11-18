@@ -55,6 +55,15 @@ public class NumberTest {
             Double.valueOf(3.0), 1000.0
         );
     }
+    
+    @Test public void javaRem() {
+        assertEquals(3, Numbers.rem(303, 10));
+    }
+    @Test public void jsRem() throws Exception {
+        assertExec("Should be three", "org_apidesign_vm4brwsr_Numbers_remIII", 
+            Double.valueOf(3.0), 303, 10
+        );
+    }
 
     
     private static CharSequence codeSeq;
