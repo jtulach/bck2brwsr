@@ -43,6 +43,14 @@ public class StringSample {
         char[] arr = { a, b, c };
         return new String(arr).toString();
     }
+    
+    public static String charsFromNumbers() {
+        return chars((char)65, (char)66, (char)67);
+    }
+
+    public static String charsFromChars() {
+        return chars('A', 'B', 'C');
+    }
 
     public static String chars(char a, char b, char c) {
         return ("" + a + b +c).toString();

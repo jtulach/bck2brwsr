@@ -1,12 +1,19 @@
 /* */
 
 
-function java_lang_String_consVAC(arg0,arg1) {
-    arg0.r = arg1.join("");
+function java_lang_String_consVAC(self,charArr) {
+    for (var i = 0; i < charArr.length; i++) {
+        if (typeof charArr[i] === 'number') charArr[i] = String.fromCharCode(charArr[i]);
+    }
+    self.r = charArr.join("");
 }
 
 function java_lang_String_consVACII(self, charArr, off, cnt) {
-    self.r = charArr.slice(off, off + cnt).join("");
+    var up = off + cnt;
+    for (var i = off; i < up; i++) {
+        if (typeof charArr[i] === 'number') charArr[i] = String.fromCharCode(charArr[i]);
+    }
+    self.r = charArr.slice(off, up).join("");
 }
 
 function java_lang_String_charAtCI(arg0,arg1) {

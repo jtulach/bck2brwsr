@@ -52,6 +52,22 @@ public class StringTest {
         );
     }
 
+    @Test public void concatCharsFromInts() throws Exception {
+        assertExec(
+            "Composing yields ABC",
+            "org_apidesign_vm4brwsr_StringSample_charsFromNumbersLjava_lang_String",
+            "ABC"
+        );
+    }
+
+    @Test public void concatCharsFromChars() throws Exception {
+        assertExec(
+            "Composing yields ABC",
+            "org_apidesign_vm4brwsr_StringSample_charsFromCharsLjava_lang_String",
+            "ABC"
+        );
+    }
+
     @Test(timeOut=10000) public void toStringConcatenation() throws Exception {
         assertExec(
             "Five executions should generate 5Hello World!",
