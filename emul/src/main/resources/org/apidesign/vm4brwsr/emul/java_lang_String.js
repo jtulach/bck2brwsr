@@ -29,6 +29,23 @@ function java_lang_String_valueOfLjava_lang_StringI(n) {
     return n.toString();
 }
 
+function java_lang_String_startsWithZLjava_lang_StringI(self,find,from) {
+    find = find.toString();
+    return self.toString().substring(from, find.length) === find;
+}
+function java_lang_String_startsWithZLjava_lang_String(self,find) {
+    find = find.toString();
+    return self.toString().substring(0, find.length) === find;
+}
+function java_lang_String_endsWithZLjava_lang_String(self,find) {
+    self = self.toString();
+    find = find.toString();
+    if (find.length > self.length) {
+        return false;
+    }
+    return self.substring(self.length - find.length) === find;
+}
+
 /*
 function java_lang_String_codePointAtII(arg0,arg1) {
   var arg2;
@@ -2360,6 +2377,10 @@ String.prototype.containsZLjava_lang_CharSequence = java_lang_String_containsZLj
 String.prototype.equalsZLjava_lang_Object = java_lang_String_equalsZLjava_lang_Object;
 String.prototype.toCharArrayAC = java_lang_String_toCharArrayAC;
 String.prototype.valueOfLjava_lang_StringI=java_lang_String_valueOfLjava_lang_StringI;
+String.prototype.startsWithZLjava_lang_StringI = java_lang_String_startsWithZLjava_lang_StringI;
+String.prototype.startsWithZLjava_lang_String=java_lang_String_startsWithZLjava_lang_String;
+String.prototype.endsWithZLjava_lang_String=java_lang_String_endsWithZLjava_lang_String;
+
 String.prototype.$instOf_java_lang_String = true;
 String.prototype.$instOf_java_io_Serializable = true;
 String.prototype.$instOf_java_lang_Comparable = true;
