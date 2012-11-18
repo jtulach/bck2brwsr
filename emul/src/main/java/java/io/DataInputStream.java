@@ -25,6 +25,8 @@
 
 package java.io;
 
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+
 /**
  * A data input stream lets an application read primitive Java data
  * types from an underlying input stream in a machine-independent
@@ -465,7 +467,41 @@ class DataInputStream extends FilterInputStream implements DataInput {
      * @see        java.lang.Double#longBitsToDouble(long)
      */
     public final double readDouble() throws IOException {
-        return Double.longBitsToDouble(readLong());
+        int hi = readInt();
+        int low = readInt();
+        return toDouble(hi, low);
+    }
+    
+    @JavaScriptBody(args={ "hi", "low" },
+        body=
+          "if (low == 0) {\n"
+        + "  if (hi === 0x7ff00000) return Number.POSITIVE_INFINITY;\n"
+        + "  if (hi === 0xfff00000) return Number.NEGATIVE_INFINITY;\n"
+        + "}\n"
+        + "if (hi >= 0x7ff00000 && hi <= 0x7fffffff) return Number.NaN;\n"
+        + "if (hi >= 0xfff00000 && hi <= 0xffffffff) return Number.NaN;\n"
+        + "var s = (hi & 0x80000000) === 0 ? 1 : -1;\n"
+        + "var e = (hi >> 20) & 0x7ff;\n"
+        + "var to32 = low >> 0;\n"
+        + "if (e === 0) {\n"
+        + "  if (to32 & 0x80000000) {\n"
+        + "    hi = hi << 1 + 1; low = low << 1;\n"
+        + "  } else {\n"
+        + "    hi = hi << 1; low = low << 1;\n"
+        + "  }\n" 
+        + "} else {\n"
+        + "    hi = (hi & 0xfffff) | 0x100000;\n"
+        + "}\n"
+        + "to32 = low >> 0;\n"
+        + "var m = Math.pow(2.0, 32) * hi + to32;\n"
+        + "var r = s * m * Math.pow(2.0, e - 1075);\n"
+        + "//throw 'exp: ' + e + ' sign: ' + s + ' hi:' + hi + ' low: ' + low + ' m: ' + m + ' r: ' + r;\n"
+        + "return r;\n"
+    )
+    private static double toDouble(int hi, int low) {
+        long both = hi;
+        both = (both << 32) & low;
+        return Double.doubleToLongBits(both);
     }
 
     private char lineBuffer[];

@@ -43,6 +43,17 @@ public class Numbers {
         float r = dis.readFloat();
         return r;
     }
+    static double deserDouble() throws IOException {
+        byte[] arr = {(byte)64, (byte)8, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0};
+        ByteArrayInputStream is = new ByteArrayInputStream(arr);
+        DataInputStream dis = new DataInputStream(is);
+        return dis.readDouble();
+    }
+    static long deserLong(byte[] arr) throws IOException {
+        ByteArrayInputStream is = new ByteArrayInputStream(arr);
+        DataInputStream dis = new DataInputStream(is);
+        return dis.readLong();
+    }
     static int deserInt() throws IOException {
         byte[] arr = {(byte) 71, (byte) 84, (byte) 52, (byte) 83};
         ByteArrayInputStream is = new ByteArrayInputStream(arr);
