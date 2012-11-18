@@ -60,5 +60,8 @@ public class Numbers {
         DataInputStream dis = new DataInputStream(is);
         return dis.readInt();
     }
-    
+
+    static String intToString() {
+        return new Integer(5).toString().toString();
+    }
 }

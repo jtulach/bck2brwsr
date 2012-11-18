@@ -133,6 +133,14 @@ public class NumberTest {
         fail("" + sb);
     }
 */    
+    @Test public void fiveInStringJS() throws Exception {
+        String s = Numbers.intToString();
+        assertExec("Should be the same: " + s, 
+            "org_apidesign_vm4brwsr_Numbers_intToStringLjava_lang_String", 
+            s
+        );
+    }
+    
     private static CharSequence codeSeq;
     private static Invocable code;
 
