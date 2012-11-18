@@ -641,14 +641,6 @@ public final class String
         this.offset = result.offset;
     }
 
-
-    // Package private constructor which shares value array for speed.
-    String(int offset, int count, char value[]) {
-        this.value = value;
-        this.offset = offset;
-        this.count = count;
-    }
-
     /**
      * Returns the length of this string.
      * The length is equal to the number of <a href="Character.html#unicode">Unicode
@@ -1966,7 +1958,7 @@ public final class String
             throw new StringIndexOutOfBoundsException(endIndex - beginIndex);
         }
         return ((beginIndex == 0) && (endIndex == count)) ? this :
-            new String(offset + beginIndex, endIndex - beginIndex, value);
+            new String(value, offset + beginIndex, endIndex - beginIndex);
     }
 
     /**
@@ -2029,7 +2021,7 @@ public final class String
         char buf[] = new char[count + otherLen];
         getChars(0, count, buf, 0);
         str.getChars(0, otherLen, buf, count);
-        return new String(0, count + otherLen, buf);
+        return new String(buf, 0, count + otherLen);
     }
 
     /**
@@ -2083,7 +2075,7 @@ public final class String
                     buf[i] = (c == oldChar) ? newChar : c;
                     i++;
                 }
-                return new String(0, len, buf);
+                return new String(buf, 0, len);
             }
         }
         return this;
@@ -2951,7 +2943,7 @@ public final class String
      */
     public static String valueOf(char c) {
         char data[] = {c};
-        return new String(0, 1, data);
+        return new String(data, 0, 1);
     }
 
     /**
