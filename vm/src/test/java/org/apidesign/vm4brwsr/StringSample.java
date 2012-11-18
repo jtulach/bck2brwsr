@@ -60,6 +60,17 @@ public class StringSample {
         return s.replace(a, b);
     }
     
+    public static int countAB(String txt) {
+        int cnt = 0;
+        for (int i = 0; i < txt.length(); i++) {
+            switch (txt.charAt(i)) {
+                case 'A': cnt++; break;
+                case 'B': cnt += 2; break;
+            }
+        }
+        return cnt;
+    }
+    
     public static String toStringTest(int howMuch) {
         counter = 0;
         StringSample ss = null;

@@ -32,7 +32,7 @@ public class StringTest {
         assertExec(
             "First char in Hello is H",
             "org_apidesign_vm4brwsr_StringSample_sayHelloCI",
-            "H", 0
+            72, 0
         );
     }
 
@@ -107,6 +107,16 @@ public class StringTest {
             "org_apidesign_vm4brwsr_StringSample_replaceLjava_lang_StringLjava_lang_StringCC",
             "x_y_z", "x/y/z", (int)'/', (int)'_'
         );
+    }
+    
+    @Test public void countAB() throws Exception {
+        assertEquals(StringSample.countAB("Ahoj Bedo!"), 3, "Verify Java code is sane");
+        assertExec(
+            "One A and one B adds to 3",
+            "org_apidesign_vm4brwsr_StringSample_countABILjava_lang_String",
+            Double.valueOf(3), "Ahoj Bedo!"
+        );
+        
     }
     
     private static CharSequence codeSeq;
