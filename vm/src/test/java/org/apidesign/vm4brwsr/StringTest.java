@@ -108,6 +108,14 @@ public class StringTest {
             "x_y_z", "x/y/z", (int)'/', (int)'_'
         );
     }
+
+    @Test public void insertBuilder() throws Exception {
+        assertExec(
+            "Can insert something into a buffer?",
+            "org_apidesign_vm4brwsr_StringSample_insertBufferLjava_lang_String",
+            "Ahoj Jardo!"
+        );
+    }
     
     @Test public void countAB() throws Exception {
         assertEquals(StringSample.countAB("Ahoj Bedo!"), 3, "Verify Java code is sane");

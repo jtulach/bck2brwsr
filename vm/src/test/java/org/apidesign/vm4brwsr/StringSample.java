@@ -60,6 +60,13 @@ public class StringSample {
         return s.replace(a, b);
     }
     
+    public static String insertBuffer() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Jardo!");
+        sb.insert(0, "Ahoj ");
+        return sb.toString().toString();
+    }
+    
     public static int countAB(String txt) {
         int cnt = 0;
         for (int i = 0; i < txt.length(); i++) {
