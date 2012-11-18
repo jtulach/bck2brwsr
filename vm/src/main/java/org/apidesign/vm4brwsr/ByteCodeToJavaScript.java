@@ -1083,7 +1083,7 @@ public abstract class ByteCodeToJavaScript {
                 case 'C':
                 case 'I': return " = 0;";
                 case 'F': 
-                case 'D': return " = 0.0";
+                case 'D': return " = 0.0;";
                 default:
                     throw new IllegalStateException(is);
             }
