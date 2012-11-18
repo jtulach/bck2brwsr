@@ -64,4 +64,7 @@ public class Numbers {
     static String intToString() {
         return new Integer(5).toString().toString();
     }
+    static String floatToString() {
+        return new Float(7.0).toString().toString();
+    }
 }

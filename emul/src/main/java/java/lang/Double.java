@@ -190,7 +190,9 @@ public final class Double extends Number implements Comparable<Double> {
      * @param   d   the {@code double} to be converted.
      * @return a string representation of the argument.
      */
-    @JavaScriptBody(args="d", body="return d.toString();")
+    @JavaScriptBody(args="d", body="var r = d.toString();"
+        + "if (r.indexOf('.') === -1) r = r + '.0';"
+        + "return r;")
     public static String toString(double d) {
         throw new UnsupportedOperationException();
     }

@@ -192,10 +192,8 @@ public final class Float extends Number implements Comparable<Float> {
      * @param   f   the float to be converted.
      * @return a string representation of the argument.
      */
-    @JavaScriptBody(args="d", body="return d.toString();")
     public static String toString(float f) {
-        throw new UnsupportedOperationException();
-//        return new FloatingDecimal(f).toJavaFormatString();
+        return Double.toString(f);
     }
 
     /**

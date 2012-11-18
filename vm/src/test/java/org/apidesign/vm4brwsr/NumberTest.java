@@ -140,6 +140,14 @@ public class NumberTest {
             s
         );
     }
+
+    @Test public void sevenInStringJS() throws Exception {
+        String s = Numbers.floatToString();
+        assertExec("Should be the same: " + s, 
+            "org_apidesign_vm4brwsr_Numbers_floatToStringLjava_lang_String", 
+            s
+        );
+    }
     
     private static CharSequence codeSeq;
     private static Invocable code;
