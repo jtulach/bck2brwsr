@@ -56,6 +56,10 @@ public class StringSample {
         return ("" + a + b +c).toString();
     }
     
+    public static String replace(String s, char a, char b) {
+        return s.replace(a, b);
+    }
+    
     public static String toStringTest(int howMuch) {
         counter = 0;
         StringSample ss = null;

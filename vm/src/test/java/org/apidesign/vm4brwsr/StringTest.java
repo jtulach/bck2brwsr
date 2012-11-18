@@ -94,6 +94,20 @@ public class StringTest {
             true, 0, 5
         );
     }
+    @Test public void replaceChars() throws Exception {
+        assertExec(
+            "Can replace slashes by underscores",
+            "org_apidesign_vm4brwsr_StringSample_replaceLjava_lang_StringLjava_lang_StringCC",
+            "x_y_z", "x/y/z", '/', '_'
+        );
+    }
+    @Test public void replaceIntChars() throws Exception {
+        assertExec(
+            "Can replace slashes by underscores",
+            "org_apidesign_vm4brwsr_StringSample_replaceLjava_lang_StringLjava_lang_StringCC",
+            "x_y_z", "x/y/z", (int)'/', (int)'_'
+        );
+    }
     
     private static CharSequence codeSeq;
     private static Invocable code;

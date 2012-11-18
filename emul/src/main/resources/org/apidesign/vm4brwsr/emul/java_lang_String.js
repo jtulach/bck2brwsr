@@ -1396,7 +1396,16 @@ function java_lang_String_substringLjava_lang_StringII(arg0,arg1,arg2) {
 }
 
 function java_lang_String_replaceLjava_lang_StringCC(arg0,arg1,arg2) {
-    return arg0.toString().replace(arg1, arg2);
+    if (typeof arg1 === 'number') arg1 = String.fromCharCode(arg1);
+    if (typeof arg2 === 'number') arg2 = String.fromCharCode(arg2);
+    var s = arg0.toString();
+    for (;;) {
+        var ret = s.replace(arg1, arg2);
+        if (ret === s) {
+            return ret;
+        }
+        s = ret;
+    }
 }
 function java_lang_String_containsZLjava_lang_CharSequence(arg0,arg1) {
     return arg0.toString().indexOf(arg1.toString()) >= 0;
