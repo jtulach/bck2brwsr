@@ -25,6 +25,9 @@ function java_lang_String_lengthI(arg0) {
 function java_lang_String_isEmptyZ(arg0) {
     return arg0.toString().length === 0;
 }
+function java_lang_String_valueOfLjava_lang_StringI(n) {
+    return n.toString();
+}
 
 /*
 function java_lang_String_codePointAtII(arg0,arg1) {
@@ -2263,16 +2266,6 @@ function java_lang_String_valueOfLjava_lang_StringC(arg0) {
     case 18: return stack.pop(); // 176
   }
 }
-function java_lang_String_valueOfLjava_lang_StringI(arg0) {
-  var stack = new Array();
-  var gt = 0;
-  for(;;) switch(gt) {
-    case 0: stack.push(arg0); // 26
-    case 1: stack.push(10); // 16 10
-    case 3: { var v1 = stack.pop(); var v0 = stack.pop(); stack.push(java_lang_Integer_toStringLjava_lang_StringII(v0, v1)); } // 184 1 125
-    case 6: return stack.pop(); // 176
-  }
-}
 function java_lang_String_valueOfLjava_lang_StringJ(arg0) {
   var arg1;
   var stack = new Array();
@@ -2366,6 +2359,7 @@ String.prototype.replaceLjava_lang_StringCC = java_lang_String_replaceLjava_lang
 String.prototype.containsZLjava_lang_CharSequence = java_lang_String_containsZLjava_lang_CharSequence;
 String.prototype.equalsZLjava_lang_Object = java_lang_String_equalsZLjava_lang_Object;
 String.prototype.toCharArrayAC = java_lang_String_toCharArrayAC;
+String.prototype.valueOfLjava_lang_StringI=java_lang_String_valueOfLjava_lang_StringI;
 String.prototype.$instOf_java_lang_String = true;
 String.prototype.$instOf_java_io_Serializable = true;
 String.prototype.$instOf_java_lang_Comparable = true;
