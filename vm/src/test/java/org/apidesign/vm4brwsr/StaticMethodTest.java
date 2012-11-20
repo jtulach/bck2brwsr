@@ -283,17 +283,17 @@ public class StaticMethodTest {
             return (Invocable)js;
         } catch (Exception ex) {
             if (sb.length() > 2000) {
-                dumpJS(sb);
+                sb = dumpJS(sb);
             }
             fail("Could not compile:\n" + sb, ex);
             return null;
         }
     }
-    static String dumpJS(CharSequence sb) throws IOException {
+    static StringBuilder dumpJS(CharSequence sb) throws IOException {
         File f = File.createTempFile("execution", ".js");
         FileWriter w = new FileWriter(f);
         w.append(sb);
         w.close();
-        return f.getPath();
+        return new StringBuilder(f.getPath());
     }
 }

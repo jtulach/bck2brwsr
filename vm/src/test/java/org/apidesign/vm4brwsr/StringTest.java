@@ -145,7 +145,7 @@ public class StringTest {
         try {
             ret = code.invokeFunction(methodName, args);
         } catch (ScriptException ex) {
-            fail("Execution failed in\n" + codeSeq, ex);
+            fail("Execution failed in\n" + StaticMethodTest.dumpJS(codeSeq), ex);
         } catch (NoSuchMethodException ex) {
             fail("Cannot find method in\n" + codeSeq, ex);
         }

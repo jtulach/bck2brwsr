@@ -2280,6 +2280,8 @@ java_lang_String.prototype = new String;
 //java_lang_String_classV();
 
 /* new method for JavaScript String */
+String.prototype.consVAC = java_lang_String_consVAC;
+String.prototype.consVACII = java_lang_String_consVACII;
 String.prototype.charAtCI = java_lang_String_charAtCI;
 String.prototype.lengthI = java_lang_String_lengthI;
 String.prototype.isEmptyZ = java_lang_String_isEmptyZ;

@@ -111,7 +111,7 @@ public abstract class ByteCodeToJavaScript {
             out.append("\n  var p = ").append(className).append(".prototype;");
         }
         for (MethodData m : jc.getMethods()) {
-            if (!m.getName().contains("<init>") && !m.getName().contains("<cinit>")) {
+            if (!m.getName().contains("<cinit>")) {
                 generateMethodReference("\n  p.", m);
             }
         }
@@ -898,11 +898,7 @@ public abstract class ByteCodeToJavaScript {
         }
         final String in = mi[0];
         out.append(in.replace('/', '_'));
-        if (isStatic) {
-            out.append(".prototype.");
-        } else {
-            out.append('_');
-        }
+        out.append(".prototype.");
         out.append(mn);
         out.append('(');
         String sep = "";
