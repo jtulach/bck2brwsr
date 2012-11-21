@@ -2226,17 +2226,9 @@ var java_lang_String_CASE_INSENSITIVE_ORDER = 0;
 function java_lang_String() {
   /** the real value of this 'string' we delegate to */
   this.r = '';
-  
-  var self = this;
-    /*
-  this.value = 0;
-  this.offset = 0;
-  this.count = 0;
-  this.hash = 0;
-  */
-  this.toString = function() { return self.r; };
 }
 java_lang_String.prototype = new String;
+java_lang_String.prototype.toString = function() { return this.r; };;
 //java_lang_String_classV();
 
 /* new method for JavaScript String */
