@@ -113,7 +113,7 @@ public class StringTest {
         assertExec(
             "Can insert something into a buffer?",
             "org_apidesign_vm4brwsr_StringSample_insertBufferLjava_lang_String",
-            "Ahoj Jardo!"
+            "Ahojdo!"
         );
     }
     

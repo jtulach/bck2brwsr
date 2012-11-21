@@ -64,6 +64,7 @@ public class StringSample {
         StringBuilder sb = new StringBuilder();
         sb.append("Jardo!");
         sb.insert(0, "Ahoj ");
+        sb.delete(4, 8);
         return sb.toString().toString();
     }
     
