@@ -344,7 +344,8 @@ function java_lang_String_hashCodeI(self) {
     var h = 0;
     var s = self.toString();
     for (var i = 0; i < s.length; i++) {
-        h = 31 * h + s.charCodeAt(i);
+        var high = (h >> 16) & 0xffff, low = h & 0xffff;
+        h = (((((31 * high) & 0xffff) << 16) >>> 0) + (31 * low) + s.charCodeAt(i)) & 0xffffffff;
     }
     return h;
 }
