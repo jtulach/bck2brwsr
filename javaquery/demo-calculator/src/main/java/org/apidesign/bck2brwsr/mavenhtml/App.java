@@ -22,59 +22,31 @@ import org.apidesign.bck2brwsr.htmlpage.api.Page;
 
 @Page(xhtml="Calculator.xhtml")
 public class App {
-    private static final int OP_PLUS = 1;
-    private static final int OP_MINUS = 2;
-    private static final int OP_MUL = 3;
-    private static final int OP_DIV = 4;
-    
-    static double memory = 0;
-    static int operation = 0;
-    
-    
+    private static double memory;
+    private static String operation;
     
     @OnClick(id="clear")
     static void clear() {
-        setValue(0.0);
+        memory = 0;
+        operation = null;
+        Calculator.DISPLAY.setValue("0");
     }
     
-    private static void setValue(double v) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(v);
-        Calculator.DISPLAY.setValue(sb.toString());
-    }
-    
-    private static double getValue() {
-        return Double.parseDouble(Calculator.DISPLAY.getValue());
-    }
-    
-    @OnClick(id="plus")
-    static void plus() {
+    @OnClick(id= { "plus", "minus", "mul", "div" })
+    static void applyOp(String op) {
         memory = getValue();
-        operation = OP_PLUS;
-        setValue(0.0);
-    }
-    
-    @OnClick(id="minus")
-    static void minus() {
-        memory = getValue();
-        operation = OP_MINUS;
-        setValue(0.0);
-    }
-    
-    @OnClick(id="mul")
-    static void mul() {
-        memory = getValue();
-        operation = OP_MUL;
-        setValue(0.0);
+        operation = op;
+        Calculator.DISPLAY.setValue("0");
     }
     
     @OnClick(id="result")
     static void computeTheValue() {
         switch (operation) {
-            case 0: break;
-            case OP_PLUS: setValue(memory + getValue()); break;
-            case OP_MINUS: setValue(memory - getValue()); break;
-            case OP_MUL: setValue(memory * getValue()); break;
+            case "plus": setValue(memory + getValue()); break;
+            case "minus": setValue(memory - getValue()); break;
+            case "mul": setValue(memory * getValue()); break;
+            case "div": setValue(memory / getValue()); break;
+            default: throw new IllegalStateException(operation);
         }
     }
     
@@ -82,10 +54,25 @@ public class App {
     static void addDigit(String digit) {
         digit = digit.substring(1);
         String v = Calculator.DISPLAY.getValue();
-        if ("0".equals(v) || v == null) {
+        if (getValue() == 0.0) {
             Calculator.DISPLAY.setValue(digit);
         } else {
             Calculator.DISPLAY.setValue(v + digit);
+        }
+    }
+    
+    private static void setValue(double v) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(v);
+        Calculator.DISPLAY.setValue(sb.toString());
+    }
+
+    private static double getValue() {
+        try {
+            return Double.parseDouble(Calculator.DISPLAY.getValue());
+        } catch (NumberFormatException ex) {
+            Calculator.DISPLAY.setValue("err");
+            return 0.0;
         }
     }
 }

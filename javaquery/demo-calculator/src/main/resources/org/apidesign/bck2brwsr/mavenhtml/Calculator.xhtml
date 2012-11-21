@@ -22,12 +22,32 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <title>Simple Calculator in HTML5 and Java</title>
-    </head>
+
+        <style type="text/css">
+        body {color: #ffffff; background-color: #121e31; font-family: Monospaced}
+        pre {color: #ffffff; background-color: #121e31; font-family: Monospaced}
+        table {color: #ffffff; background-color: #121e31; font-family: Monospaced}
+        .string {color: #e2ce00}
+        .ST1 {color: #0000cc; font-family: Monospaced; font-weight: bold}
+        .ST0 {color: #0000ff}
+        .comment {color: #428bdd}
+        .keyword-directive {color: #f8bb00}
+        .tag {color: #f8bb00}
+        .ST0 {color: #628fb5; background-color: #1b3450}
+        .sgml-comment {color: #808080}
+        .value {color: #99006b}
+        .argument {color: #007c00}
+        .sgml-declaration {color: #bf9221}
+        </style>    
+        </head>
     <body>
+        <h1>Java &amp; HTML5</h1>
         <table border="0" cellspacing="2">
             <tbody>
                 <tr>
-                    <td colspan="4"><input id="display" value="0"/></td>
+                    <td colspan="4"><input id="display" value="0" 
+                            style="text-align: right"/>
+                </td>
                 </tr>
                 <tr>
                     <td><button id="n1">1</button></td>
@@ -57,5 +77,12 @@
         </table>
 
         <script src="bootjava.js"/>
+        
+        <hr/>
+        <p>
+        More information at the <a href="http://wiki.apidesign.org/wiki/Bck2Brwsr">
+            Bck2Brwsr
+        </a> project page.
+        </p>
     </body>
 </html>
