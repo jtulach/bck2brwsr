@@ -135,6 +135,27 @@ public class StringTest {
             Double.valueOf(jh), j
         );
     }
+    @Test public void stringSwitch1() throws Exception {
+        assertExec(
+            "Get one",
+            "org_apidesign_vm4brwsr_StringSample_stringSwitchILjava_lang_String",
+            Double.valueOf(1), "jedna"
+        );
+    }
+    @Test public void stringSwitch2() throws Exception {
+        assertExec(
+            "Get two",
+            "org_apidesign_vm4brwsr_StringSample_stringSwitchILjava_lang_String",
+            Double.valueOf(2), "dve"
+        );
+    }
+    @Test public void stringSwitchDefault() throws Exception {
+        assertExec(
+            "Get -1",
+            "org_apidesign_vm4brwsr_StringSample_stringSwitchILjava_lang_String",
+            Double.valueOf(-1), "none"
+        );
+    }
     
     @Test public void countAB() throws Exception {
         assertEquals(StringSample.countAB("Ahoj Bedo!"), 3, "Verify Java code is sane");

@@ -82,6 +82,16 @@ public class StringSample {
         }
         return cnt;
     }
+
+    public static int stringSwitch(String txt) {
+        switch (txt) {
+            case "jedna": return 1;
+            case "dve": return 2;
+            case "tri": return 3;
+            case "ctyri": return 4;
+        }
+        return -1;
+    }
     
     public static String toStringTest(int howMuch) {
         counter = 0;
