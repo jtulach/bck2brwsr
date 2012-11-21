@@ -81,12 +81,6 @@ public abstract class ByteCodeToJavaScript {
                 generateInstanceMethod(m);
             }
         }
-        for (FieldData v : jc.getFields()) {
-            if (v.isStatic()) {
-                generateStaticField(v);
-            }
-        }
-        
         final String className = className(jc);
         out.append("\nfunction ").append(className);
         out.append("() {");
@@ -101,6 +95,11 @@ public abstract class ByteCodeToJavaScript {
             append(".prototype.$instOf_").append(className).append(") {");
         out.append("\n    return new ").append(className).append(";");
         out.append("\n  }");
+        for (FieldData v : jc.getFields()) {
+            if (v.isStatic()) {
+                generateStaticField(v);
+            }
+        }
         // ClassName sc = jc.getSuperClass();
         String sc = jc.getSuperClassName(); // with _
         if (sc != null) {
@@ -684,7 +683,7 @@ public abstract class ByteCodeToJavaScript {
                     int indx = readIntArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
                     out.append("stack.push(").append(fi[0].replace('/', '_'));
-                    out.append('_').append(fi[1]).append(");");
+                    out.append('.').append(fi[1]).append(");");
                     i += 2;
                     addReference(fi[0]);
                     break;
@@ -693,7 +692,7 @@ public abstract class ByteCodeToJavaScript {
                     int indx = readIntArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
                     out.append(fi[0].replace('/', '_'));
-                    out.append('_').append(fi[1]).append(" = stack.pop();");
+                    out.append('.').append(fi[1]).append(" = stack.pop();");
                     i += 2;
                     addReference(fi[0]);
                     break;
@@ -848,9 +847,9 @@ public abstract class ByteCodeToJavaScript {
     }
 
     private void generateStaticField(FieldData v) throws IOException {
-        out.append("\nvar ")
+        out.append("\n  ")
            .append(className(jc))
-           .append('_').append(v.getName()).append(initField(v));
+           .append('.').append(v.getName()).append(initField(v));
     }
 
     private String findMethodName(MethodData m, StringBuilder cnt) {
