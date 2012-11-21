@@ -60,6 +60,10 @@ public class StringSample {
         return s.replace(a, b);
     }
     
+    public static int hashCode(String h) {
+        return h.hashCode();
+    }
+    
     public static String insertBuffer() {
         StringBuilder sb = new StringBuilder();
         sb.append("Jardo!");

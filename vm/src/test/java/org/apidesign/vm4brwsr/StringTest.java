@@ -117,6 +117,25 @@ public class StringTest {
         );
     }
     
+    @Test public void compareHashCodeHi() throws Exception {
+        String j = "Hi";
+        int jh = StringSample.hashCode(j);
+        assertExec(
+            "Hashcode is the same " +jh,
+            "org_apidesign_vm4brwsr_StringSample_hashCodeILjava_lang_String",
+            Double.valueOf(jh), j
+        );
+    }
+    @Test public void compareHashCode1() throws Exception {
+        String j = "Hello Java!";
+        int jh = StringSample.hashCode(j);
+        assertExec(
+            "Hashcode is the same " + jh,
+            "org_apidesign_vm4brwsr_StringSample_hashCodeILjava_lang_String",
+            Double.valueOf(jh), j
+        );
+    }
+    
     @Test public void countAB() throws Exception {
         assertEquals(StringSample.countAB("Ahoj Bedo!"), 3, "Verify Java code is sane");
         assertExec(
@@ -147,7 +166,7 @@ public class StringTest {
         } catch (ScriptException ex) {
             fail("Execution failed in\n" + StaticMethodTest.dumpJS(codeSeq), ex);
         } catch (NoSuchMethodException ex) {
-            fail("Cannot find method in\n" + codeSeq, ex);
+            fail("Cannot find method in\n" + StaticMethodTest.dumpJS(codeSeq), ex);
         }
         if (ret == null && expRes == null) {
             return;
@@ -155,7 +174,7 @@ public class StringTest {
         if (expRes.equals(ret)) {
             return;
         }
-        assertEquals(ret, expRes, msg + "was: " + ret + "\n" + codeSeq);
+        assertEquals(ret, expRes, msg + "was: " + ret + "\n" + StaticMethodTest.dumpJS(codeSeq));
         
     }
     
