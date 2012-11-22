@@ -20,6 +20,12 @@ package org.apidesign.bck2brwsr.mavenhtml;
 import org.apidesign.bck2brwsr.htmlpage.api.OnClick;
 import org.apidesign.bck2brwsr.htmlpage.api.Page;
 
+/** HTML5 & Java demo showing the power of 
+ * <a href="http://wiki.apidesign.org/wiki/AnnotationProcessor">annotation processors</a>
+ * as well as other goodies.
+ * 
+ * @author Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ */
 @Page(xhtml="Calculator.xhtml")
 public class App {
     private static double memory;
