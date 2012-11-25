@@ -36,7 +36,7 @@ public class StaticMethodTest {
     @Test public void threePlusFour() throws Exception {
         assertExec(
             "Should be seven", 
-            "org_apidesign_vm4brwsr_StaticMethod_sumIII", 
+            StaticMethod.class, "sumIII", 
             Double.valueOf(7), 
             3, 4
         );
@@ -45,7 +45,7 @@ public class StaticMethodTest {
     @Test public void checkReallyInitializedValues() throws Exception {
         assertExec(
             "Return true", 
-            "org_apidesign_vm4brwsr_StaticMethod_isNullZ", 
+            StaticMethod.class, "isNullZ", 
             Double.valueOf(1)
         );
     }
@@ -53,7 +53,7 @@ public class StaticMethodTest {
     @Test public void powerOfThree() throws Exception {
         assertExec(
             "Should be nine", 
-            "org_apidesign_vm4brwsr_StaticMethod_powerFF", 
+            StaticMethod.class, "powerFF", 
             Double.valueOf(9),
             3.0f
         );
@@ -62,7 +62,7 @@ public class StaticMethodTest {
     @Test public void minusOne() throws Exception {
         assertExec(
             "Should be minus one", 
-            "org_apidesign_vm4brwsr_StaticMethod_minusOneI", 
+            StaticMethod.class, "minusOneI", 
             Double.valueOf(-1)
         );
     }
@@ -70,7 +70,7 @@ public class StaticMethodTest {
     @Test public void doubleWithoutLong() throws Exception {
         assertExec(
             "Should be two",
-            "org_apidesign_vm4brwsr_StaticMethod_minusDDJ", 
+            StaticMethod.class, "minusDDJ", 
             Double.valueOf(2),
             3.0d, 1l
         );
@@ -79,7 +79,7 @@ public class StaticMethodTest {
     @Test public void divAndRound() throws Exception {
         assertExec(
             "Should be rounded to one",
-            "org_apidesign_vm4brwsr_StaticMethod_divIBD", 
+            StaticMethod.class, "divIBD", 
             Double.valueOf(1),
             3, 3.75
         );
@@ -87,7 +87,7 @@ public class StaticMethodTest {
     @Test public void mixedMethodFourParams() throws Exception {
         assertExec(
             "Should be two",
-            "org_apidesign_vm4brwsr_StaticMethod_mixIIJBD", 
+            StaticMethod.class, "mixIIJBD", 
             Double.valueOf(20),
             2, 10l, 5, 2.0
         );
@@ -95,7 +95,7 @@ public class StaticMethodTest {
     @Test public void factRec() throws Exception {
         assertExec(
             "Factorial of 5 is 120",
-            "org_apidesign_vm4brwsr_StaticMethod_factRecJI", 
+            StaticMethod.class, "factRecJI", 
             Double.valueOf(120),
             5
         );
@@ -103,7 +103,7 @@ public class StaticMethodTest {
     @Test public void factIter() throws Exception {
         assertExec(
             "Factorial of 5 is 120",
-            "org_apidesign_vm4brwsr_StaticMethod_factIterJI", 
+            StaticMethod.class, "factIterJI", 
             Double.valueOf(120),
             5
         );
@@ -112,7 +112,7 @@ public class StaticMethodTest {
     @Test public void xor() throws Exception {
         assertExec(
             "Xor is 4",
-            "org_apidesign_vm4brwsr_StaticMethod_xorJIJ",
+            StaticMethod.class, "xorJIJ",
             Double.valueOf(4),
             7,
             3
@@ -122,7 +122,7 @@ public class StaticMethodTest {
     @Test public void or() throws Exception {
         assertExec(
             "Or will be 7",
-            "org_apidesign_vm4brwsr_StaticMethod_orOrAndJZII",
+            StaticMethod.class, "orOrAndJZII",
             Double.valueOf(7),
             true,
             4,
@@ -132,14 +132,14 @@ public class StaticMethodTest {
     @Test public void nullCheck() throws Exception {
         assertExec(
             "Returns nothing",
-            "org_apidesign_vm4brwsr_StaticMethod_noneLjava_lang_ObjectII",
+            StaticMethod.class, "noneLjava_lang_ObjectII",
             null, 1, 3
         );
     }
     @Test public void and() throws Exception {
         assertExec(
             "And will be 3",
-            "org_apidesign_vm4brwsr_StaticMethod_orOrAndJZII",
+            StaticMethod.class, "orOrAndJZII",
             Double.valueOf(3),
             false,
             7,
@@ -149,7 +149,7 @@ public class StaticMethodTest {
     @Test public void inc4() throws Exception {
         assertExec(
             "It will be 4",
-            "org_apidesign_vm4brwsr_StaticMethod_inc4I",
+            StaticMethod.class, "inc4I",
             Double.valueOf(4)
         );
     }
@@ -162,7 +162,7 @@ public class StaticMethodTest {
     @Test public void shiftLeftInJS() throws Exception {
         assertExec(
             "Setting 9th bit",
-            "org_apidesign_vm4brwsr_StaticMethod_shiftLeftIII",
+            StaticMethod.class, "shiftLeftIII",
             Double.valueOf(256),
             1, 8
         );
@@ -176,7 +176,7 @@ public class StaticMethodTest {
     @Test public void shiftRightInJS() throws Exception {
         assertExec(
             "Get -1",
-            "org_apidesign_vm4brwsr_StaticMethod_shiftArithmRightIIIZ",
+            StaticMethod.class, "shiftArithmRightIIIZ",
             Double.valueOf(-1),
             -8, 3, true
         );
@@ -189,7 +189,7 @@ public class StaticMethodTest {
     @Test public void unsignedShiftRightInJS() throws Exception {
         assertExec(
             "Get -1",
-            "org_apidesign_vm4brwsr_StaticMethod_shiftArithmRightIIIZ",
+            StaticMethod.class, "shiftArithmRightIIIZ",
             Double.valueOf(1),
             8, 3, false
         );
@@ -198,7 +198,7 @@ public class StaticMethodTest {
     @Test public void javaScriptBody() throws Exception {
         assertExec(
             "JavaScript string",
-            "org_apidesign_vm4brwsr_StaticMethod_i2sLjava_lang_StringII",
+            StaticMethod.class, "i2sLjava_lang_StringII",
             "333",
             330, 3
         );
@@ -207,7 +207,7 @@ public class StaticMethodTest {
     @Test public void switchJarda() throws Exception {
         assertExec(
             "The expected value",
-            "org_apidesign_vm4brwsr_StaticMethod_swtchLjava_lang_StringI",
+            StaticMethod.class, "swtchLjava_lang_StringI",
             "Jarda",
             0
         );
@@ -216,7 +216,7 @@ public class StaticMethodTest {
     @Test public void switchDarda() throws Exception {
         assertExec(
             "The expected value",
-            "org_apidesign_vm4brwsr_StaticMethod_swtchLjava_lang_StringI",
+            StaticMethod.class, "swtchLjava_lang_StringI",
             "Darda",
             1
         );
@@ -224,7 +224,7 @@ public class StaticMethodTest {
     @Test public void switchParda() throws Exception {
         assertExec(
             "The expected value",
-            "org_apidesign_vm4brwsr_StaticMethod_swtch2Ljava_lang_StringI",
+            StaticMethod.class, "swtch2Ljava_lang_StringI",
             "Parda",
             22
         );
@@ -232,7 +232,7 @@ public class StaticMethodTest {
     @Test public void switchMarda() throws Exception {
         assertExec(
             "The expected value",
-            "org_apidesign_vm4brwsr_StaticMethod_swtchLjava_lang_StringI",
+            StaticMethod.class, "swtchLjava_lang_StringI",
             "Marda",
             -433
         );
@@ -249,16 +249,25 @@ public class StaticMethodTest {
     }
     
     
-    private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
-        StringBuilder sb = new StringBuilder();
-        
+    private static void assertExec(
+        String msg, Class clazz, String method, 
+        Object expRes, Object... args
+    ) throws Exception {
+        assertExec(code, codeSeq, msg, clazz, method, expRes, args);
+    }
+    static void assertExec(
+        Invocable toRun, CharSequence theCode,
+        String msg, Class clazz, String method, 
+        Object expRes, Object... args
+    ) throws Exception {
         Object ret = null;
         try {
-            ret = code.invokeFunction(methodName, args);
+            ret = toRun.invokeFunction(clazz.getName().replace('.', '_') + "_proto");
+            ret = toRun.invokeMethod(ret, method, args);
         } catch (ScriptException ex) {
-            fail("Execution failed in\n" + codeSeq, ex);
+            fail("Execution failed in\n" + dumpJS(theCode), ex);
         } catch (NoSuchMethodException ex) {
-            fail("Cannot find method in\n" + codeSeq, ex);
+            fail("Cannot find method in\n" + dumpJS(theCode), ex);
         }
         if (ret == null && expRes == null) {
             return;
@@ -266,7 +275,7 @@ public class StaticMethodTest {
         if (expRes != null && expRes.equals(ret)) {
             return;
         }
-        assertEquals(ret, expRes, msg + "was: " + ret + "\n" + codeSeq);
+        assertEquals(ret, expRes, msg + "was: " + ret + "\n" + dumpJS(theCode));
         
     }
 
@@ -293,7 +302,7 @@ public class StaticMethodTest {
             if (sb.length() > 2000) {
                 sb = dumpJS(sb);
             }
-            fail("Could not compile:\n" + sb, ex);
+            fail("Could not evaluate:\n" + sb, ex);
             return null;
         }
     }

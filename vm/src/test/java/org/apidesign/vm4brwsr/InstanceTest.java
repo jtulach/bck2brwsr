@@ -31,42 +31,42 @@ public class InstanceTest {
     @Test public void verifyDefaultDoubleValue() throws Exception {
         assertExec(
             "Will be zero",
-            "org_apidesign_vm4brwsr_Instance_defaultDblValueD",
+            Instance.class, "defaultDblValueD",
             Double.valueOf(0)
         );
     }
     @Test public void verifyStaticMethodCall() throws Exception {
         assertExec(
             "Will be zero",
-            "org_apidesign_vm4brwsr_InstanceSub_recallDblD",
+            InstanceSub.class, "recallDblD",
             Double.valueOf(0)
         );
     }
     @Test public void verifyAssignedByteValue() throws Exception {
         assertExec(
             "Will one thirty one",
-            "org_apidesign_vm4brwsr_Instance_assignedByteValueB",
+            Instance.class, "assignedByteValueB",
             Double.valueOf(31)
         );
     }
     @Test public void verifyMagicOne() throws Exception {
         assertExec(
             "Should be three and something",
-            "org_apidesign_vm4brwsr_Instance_magicOneD",
+            Instance.class, "magicOneD",
             Double.valueOf(3.3)
         );
     }
     @Test public void verifyInstanceMethods() throws Exception {
         assertExec(
             "Should be eleven as we invoke overwritten method, plus 44",
-            "org_apidesign_vm4brwsr_Instance_virtualBytesI",
+            Instance.class, "virtualBytesI",
             Double.valueOf(55)
         );
     }
     @Test public void verifyInterfaceMethods() throws Exception {
         assertExec(
             "Retruns default value",
-            "org_apidesign_vm4brwsr_Instance_interfaceBytesF",
+            Instance.class, "interfaceBytesF",
             Double.valueOf(31)
         );
     }
@@ -74,7 +74,7 @@ public class InstanceTest {
     @Test public void isNull() throws Exception {
         assertExec(
             "Yes, we are instance",
-            "org_apidesign_vm4brwsr_Instance_isNullZ",
+            Instance.class, "isNullZ",
             Double.valueOf(0.0)
         );
     }
@@ -82,7 +82,7 @@ public class InstanceTest {
     @Test public void isInstanceOf() throws Exception {
         assertExec(
             "Yes, we are instance",
-            "org_apidesign_vm4brwsr_Instance_instanceOfZZ",
+            Instance.class, "instanceOfZZ",
             Double.valueOf(1.0), true
         );
     }
@@ -90,7 +90,7 @@ public class InstanceTest {
     @Test public void notInstanceOf() throws Exception {
         assertExec(
             "No, we are not an instance",
-            "org_apidesign_vm4brwsr_Instance_instanceOfZZ",
+            Instance.class, "instanceOfZZ",
             Double.valueOf(0.0), false
         );
     }
@@ -98,14 +98,14 @@ public class InstanceTest {
     @Test public void verifyCastToClass() throws Exception {
         assertExec(
             "Five signals all is good",
-            "org_apidesign_vm4brwsr_Instance_castsWorkIZ",
+            Instance.class, "castsWorkIZ",
             Double.valueOf(5.0), false
         );
     }
     @Test public void verifyCastToInterface() throws Exception {
         assertExec(
             "Five signals all is good",
-            "org_apidesign_vm4brwsr_Instance_castsWorkIZ",
+            Instance.class, "castsWorkIZ",
             Double.valueOf(5.0), true
         );
     }
@@ -127,25 +127,9 @@ public class InstanceTest {
     }
     
     private void assertExec(
-        String msg, String methodName, Object expRes, Object... args
+        String msg, Class clazz, String method, Object expRes, Object... args
     ) throws Exception {
-
-        Object ret = null;
-        try {
-            ret = code.invokeFunction(methodName, args);
-        } catch (ScriptException ex) {
-            fail("Execution failed in\n" + StaticMethodTest.dumpJS(codeSeq), ex);
-        } catch (NoSuchMethodException ex) {
-            fail("Cannot find method in\n" + StaticMethodTest.dumpJS(codeSeq), ex);
-        }
-        if (ret == null && expRes == null) {
-            return;
-        }
-        if (expRes.equals(ret)) {
-            return;
-        }
-        assertEquals(ret, expRes, msg + "was: " + ret + "\n" + StaticMethodTest.dumpJS(codeSeq));
-        
+        StaticMethodTest.assertExec(code, codeSeq, msg, clazz, method, expRes, args);
     }
     
 }

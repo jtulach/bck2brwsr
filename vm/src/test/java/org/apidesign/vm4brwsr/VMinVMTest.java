@@ -41,10 +41,8 @@ public class VMinVMTest {
         
         Object ret;
         try {
-            ret = code.invokeFunction(
-                "org_apidesign_vm4brwsr_VMinVM_toJavaScriptLjava_lang_StringAB",
-                arr
-            );
+            ret = code.invokeFunction(VMinVM.class.getName().replace('.', '_') + "_proto");
+            ret = code.invokeMethod(ret, "toJavaScriptLjava_lang_StringAB", arr);
         } catch (Exception ex) {
             File f = File.createTempFile("execution", ".js");
             FileWriter w = new FileWriter(f);
