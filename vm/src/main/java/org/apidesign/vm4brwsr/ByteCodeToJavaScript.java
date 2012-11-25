@@ -985,7 +985,7 @@ public abstract class ByteCodeToJavaScript {
         if (arr == null) {
             return false;
         }
-        final String jvmType = "L" + JavaScriptBody.class.getName().replace('.', '/') + ";";
+        final String jvmType = "Lorg/apidesign/bck2brwsr/core/JavaScriptBody;";
         class P extends AnnotationParser {
             int cnt;
             String[] args = new String[30];
