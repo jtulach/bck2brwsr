@@ -271,12 +271,20 @@ public class StaticMethodTest {
     }
 
     static Invocable compileClass(StringBuilder sb, String... names) throws ScriptException, IOException {
+        return compileClass(sb, null, names);
+    }
+    static Invocable compileClass(
+        StringBuilder sb, ScriptEngine[] eng, String... names
+    ) throws ScriptException, IOException {
         if (sb == null) {
             sb = new StringBuilder();
         }
         GenJS.compile(sb, names);
         ScriptEngineManager sem = new ScriptEngineManager();
         ScriptEngine js = sem.getEngineByExtension("js");
+        if (eng != null) {
+            eng[0] = js;
+        }
         try {
             Object res = js.eval(sb.toString());
             assertTrue(js instanceof Invocable, "It is invocable object: " + res);
