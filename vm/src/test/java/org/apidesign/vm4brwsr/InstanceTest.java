@@ -134,9 +134,9 @@ public class InstanceTest {
         try {
             ret = code.invokeFunction(methodName, args);
         } catch (ScriptException ex) {
-            fail("Execution failed in\n" + codeSeq, ex);
+            fail("Execution failed in\n" + StaticMethodTest.dumpJS(codeSeq), ex);
         } catch (NoSuchMethodException ex) {
-            fail("Cannot find method in\n" + codeSeq, ex);
+            fail("Cannot find method in\n" + StaticMethodTest.dumpJS(codeSeq), ex);
         }
         if (ret == null && expRes == null) {
             return;
@@ -144,7 +144,7 @@ public class InstanceTest {
         if (expRes.equals(ret)) {
             return;
         }
-        assertEquals(ret, expRes, msg + "was: " + ret + "\n" + codeSeq);
+        assertEquals(ret, expRes, msg + "was: " + ret + "\n" + StaticMethodTest.dumpJS(codeSeq));
         
     }
     
