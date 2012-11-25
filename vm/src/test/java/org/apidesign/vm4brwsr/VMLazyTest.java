@@ -58,10 +58,13 @@ public class VMLazyTest {
         sb.append("\n");
         sb.append("\n  this.constructor.prototype.loadClass = function(res, name) {");
         sb.append("\n    var script = org_apidesign_vm4brwsr_VMLazy_toJavaScriptLjava_lang_StringAB(loader.get(res + '.class'));");
-//        sb.append("\n    throw script.toString();");
-        sb.append("\n    new Function(");
-        sb.append("\n      'arguments[0][arguments[1]]=new lazyVM.prototype.Identity(' + script + ').call'");
-        sb.append("\n    )(self, name);");
+        sb.append("\n    try {");
+        sb.append("\n      new Function(");
+        sb.append("\n        'arguments[0][arguments[1]]=new lazyVM.prototype.Identity(' + script + ').call'");
+        sb.append("\n      )(self, name);");
+        sb.append("\n    } catch (ex) {");
+        sb.append("\n      throw 'Cannot compile ' + res + ' error: ' + ex + ' script:\\n' + script;");
+        sb.append("\n    };");
         sb.append("\n  };");
         sb.append("\n");
         sb.append("\n}\n");
