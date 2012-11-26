@@ -74,16 +74,7 @@ public abstract class ByteCodeToJavaScript {
         }
         StringArray toInitilize = new StringArray();
         final String className = className(jc);
-        out.append("\nfunction ").append(className);
-        out.append("() {");
-        for (FieldData v : jc.getFields()) {
-            if (!v.isStatic()) {
-                out.append("\n  this.fld_").
-                    append(v.getName()).append(initField(v));
-            }
-        }
-        out.append("\n}");
-        out.append("\n\nfunction ").append(className).append("_proto() {");
+        out.append("\n\nfunction ").append(className).append("() {");
         out.append("\n  if (!").append(className).
             append(".prototype.$instOf_").append(className).append(") {");
         for (FieldData v : jc.getFields()) {
@@ -96,7 +87,7 @@ public abstract class ByteCodeToJavaScript {
         if (sc != null) {
             out.append("\n    var p = ").append(className)
                .append(".prototype = ").
-                append(sc.replace('/', '_')).append("_proto();");
+                append(sc.replace('/', '_')).append("(true);");
         } else {
             out.append("\n    var p = ").append(className).append(".prototype;");
         }
@@ -112,9 +103,18 @@ public abstract class ByteCodeToJavaScript {
             out.append("\n    p.$instOf_").append(superInterface.replace('/', '_')).append(" = true;");
         }
         out.append("\n  }");
+        out.append("\n  if (arguments.length === 0) {");
+        for (FieldData v : jc.getFields()) {
+            if (!v.isStatic()) {
+                out.append("\n    this.fld_").
+                    append(v.getName()).append(initField(v));
+            }
+        }
+        out.append("\n    return this;");
+        out.append("\n  }");
         out.append("\n  return new ").append(className).append(";");
         out.append("\n}");
-        out.append("\n").append(className).append("_proto();");
+        out.append("\n").append(className).append("(true);");
         StringBuilder sb = new StringBuilder();
         for (String init : toInitilize.toArray()) {
             sb.append("\n").append(init).append("();");
@@ -129,7 +129,7 @@ public abstract class ByteCodeToJavaScript {
         final String mn = findMethodName(m, argsCnt);
         out.append(prefix).append(mn).append(" = function");
         if (mn.equals("classV")) {
-            toInitilize.add(className(jc) + "_proto()." + mn);
+            toInitilize.add(className(jc) + "(true)." + mn);
         }
         out.append('(');
         String space = "";

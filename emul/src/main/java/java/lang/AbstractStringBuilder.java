@@ -602,7 +602,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      */
     @JavaScriptBody(
         args={ "self", "i" },
-        body="return java_lang_AbstractStringBuilder_proto().appendLjava_lang_AbstractStringBuilderLjava_lang_String(self,i.toString());"
+        body="return java_lang_AbstractStringBuilder(true).appendLjava_lang_AbstractStringBuilderLjava_lang_String(self,i.toString());"
     )
     public AbstractStringBuilder append(int i) {
         if (i == Integer.MIN_VALUE) {
