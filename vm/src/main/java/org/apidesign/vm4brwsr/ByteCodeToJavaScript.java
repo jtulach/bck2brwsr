@@ -84,10 +84,8 @@ public abstract class ByteCodeToJavaScript {
         }
         out.append("\n}");
         out.append("\n\nfunction ").append(className).append("_proto() {");
-        out.append("\n  if (").append(className).
+        out.append("\n  if (!").append(className).
             append(".prototype.$instOf_").append(className).append(") {");
-        out.append("\n    return new ").append(className).append(";");
-        out.append("\n  }");
         for (FieldData v : jc.getFields()) {
             if (v.isStatic()) {
                 generateStaticField(v);
@@ -96,23 +94,24 @@ public abstract class ByteCodeToJavaScript {
         // ClassName sc = jc.getSuperClass();
         String sc = jc.getSuperClassName(); // with _
         if (sc != null) {
-            out.append("\n  var p = ").append(className)
+            out.append("\n    var p = ").append(className)
                .append(".prototype = ").
                 append(sc.replace('/', '_')).append("_proto();");
         } else {
-            out.append("\n  var p = ").append(className).append(".prototype;");
+            out.append("\n    var p = ").append(className).append(".prototype;");
         }
         for (MethodData m : jc.getMethods()) {
             if (m.isStatic()) {
-                generateStaticMethod("\n  p.", m, toInitilize);
+                generateStaticMethod("\n    p.", m, toInitilize);
             } else {
-                generateInstanceMethod("\n  p.", m);
+                generateInstanceMethod("\n    p.", m);
             }
         }
-        out.append("\n  p.$instOf_").append(className).append(" = true;");
+        out.append("\n    p.$instOf_").append(className).append(" = true;");
         for (String superInterface : jc.getSuperInterfaces()) {
-            out.append("\n  p.$instOf_").append(superInterface.replace('/', '_')).append(" = true;");
+            out.append("\n    p.$instOf_").append(superInterface.replace('/', '_')).append(" = true;");
         }
+        out.append("\n  }");
         out.append("\n  return new ").append(className).append(";");
         out.append("\n}");
         out.append("\n").append(className).append("_proto();");
