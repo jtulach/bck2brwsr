@@ -102,6 +102,9 @@ public abstract class ByteCodeToJavaScript {
         for (String superInterface : jc.getSuperInterfaces()) {
             out.append("\n    p.$instOf_").append(superInterface.replace('/', '_')).append(" = true;");
         }
+        out.append("\n      if (arguments.length === 0) {");
+        out.append("\n        return new ").append(className).append("();");
+        out.append("\n      }");
         out.append("\n  }");
         out.append("\n  if (arguments.length === 0) {");
         for (FieldData v : jc.getFields()) {
@@ -114,7 +117,6 @@ public abstract class ByteCodeToJavaScript {
         out.append("\n  }");
         out.append("\n  return new ").append(className).append(";");
         out.append("\n}");
-        out.append("\n").append(className).append("(true);");
         StringBuilder sb = new StringBuilder();
         for (String init : toInitilize.toArray()) {
             sb.append("\n").append(init).append("();");
