@@ -60,11 +60,12 @@ public class VMLazyTest {
         sb.append("\n    var script = org_apidesign_vm4brwsr_VMLazy(true).toJavaScriptLjava_lang_StringAB(loader.get(res + '.class'));");
         sb.append("\n    try {");
         sb.append("\n      new Function(");
-        sb.append("\n        'arguments[0][arguments[1]]=new lazyVM.prototype.Identity(' + script + ').call'");
+        sb.append("\n        'arguments[0][arguments[1]]=' + script + ';'");
         sb.append("\n      )(self, name);");
         sb.append("\n    } catch (ex) {");
         sb.append("\n      throw 'Cannot compile ' + res + ' error: ' + ex + ' script:\\n' + script;");
         sb.append("\n    };");
+        sb.append("\n    return self[name](true);");
         sb.append("\n  };");
         sb.append("\n");
         sb.append("\n}\n");
@@ -79,7 +80,7 @@ public class VMLazyTest {
     
     @Test public void invokeStaticMethod() throws Exception {
         assertExec("Trying to get -1", "test", Double.valueOf(-1),
-            "org/apidesign/vm4brwsr/StaticMethod", "org_apidesign_vm4brwsr_StaticMethod", "minusOne"
+            "org/apidesign/vm4brwsr/StaticMethod", "org_apidesign_vm4brwsr_StaticMethod", "minusOneI"
         );
     }
     

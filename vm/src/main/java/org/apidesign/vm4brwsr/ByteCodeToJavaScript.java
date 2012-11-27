@@ -74,7 +74,8 @@ public abstract class ByteCodeToJavaScript {
         }
         StringArray toInitilize = new StringArray();
         final String className = className(jc);
-        out.append("\n\nfunction ").append(className).append("() {");
+        out.append("\n\n").append(className);
+        out.append(" = function() {");
         out.append("\n  if (!").append(className).
             append(".prototype.$instOf_").append(className).append(") {");
         for (FieldData v : jc.getFields()) {
