@@ -68,6 +68,14 @@ public class StringTest {
         );
     }
 
+    @Test public void instanceOfWorks() throws Exception {
+        assertExec(
+            "It is string",
+            StringSample.class, "isStringInstanceZ",
+            Double.valueOf(1.0)
+        );
+    }
+
     @Test(timeOut=10000) public void toStringConcatenation() throws Exception {
         assertExec(
             "Five executions should generate 5Hello World!",

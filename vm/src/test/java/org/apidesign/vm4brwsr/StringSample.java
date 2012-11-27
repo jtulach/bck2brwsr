@@ -64,6 +64,10 @@ public class StringSample {
         return h.hashCode();
     }
     
+    public static boolean isStringInstance() {
+        return chars('a', (char)30, 'b') instanceof String;
+    }
+    
     public static String insertBuffer() {
         StringBuilder sb = new StringBuilder();
         sb.append("Jardo!");
