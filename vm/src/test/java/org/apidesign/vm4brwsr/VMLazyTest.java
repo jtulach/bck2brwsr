@@ -50,12 +50,6 @@ public class VMLazyTest {
         
         sb.append("\nfunction lazyVM() {");
         sb.append("\n  var self = this;");
-        sb.append("\n  this.constructor.prototype.Identity = function(value) {");
-        sb.append("\n    var self = this;");
-        sb.append("\n    self.value = value;");
-        sb.append("\n    self.call = function() { return self.value; };");
-        sb.append("\n  };");
-        sb.append("\n");
         sb.append("\n  this.constructor.prototype.loadClass = function(res, name) {");
         sb.append("\n    var script = org_apidesign_vm4brwsr_VMLazy(true).toJavaScriptLjava_lang_StringAB(loader.get(res + '.class'));");
         sb.append("\n    try {");
