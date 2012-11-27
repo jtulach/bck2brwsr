@@ -881,7 +881,7 @@ public abstract class ByteCodeToJavaScript {
         }
         final String in = mi[0];
         out.append(in.replace('/', '_'));
-        out.append(".prototype.");
+        out.append("(true).");
         out.append(mn);
         out.append('(');
         String sep = "";

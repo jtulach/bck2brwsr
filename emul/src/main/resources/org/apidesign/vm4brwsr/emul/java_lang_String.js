@@ -399,8 +399,13 @@ var java_lang_String_serialVersionUID = 0;
 var java_lang_String_serialPersistentFields = 0;
 var java_lang_String_CASE_INSENSITIVE_ORDER = 0;
 function java_lang_String() {
-  /** the real value of this 'string' we delegate to */
-  this.r = '';
+    if (arguments.length === 0) {
+        /** the real value of this 'string' we delegate to */
+        this.r = '';
+        return this;
+    } else {
+        return new java_lang_String;
+    }
 }
 java_lang_String.prototype = new String;
 java_lang_String.prototype.toString = function() { return this.r; };;
