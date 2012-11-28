@@ -19,25 +19,42 @@ package org.apidesign.vm4brwsr;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 class VMLazy extends ByteCodeToJavaScript {
-    private VMLazy(Appendable out) {
+    private final Object vm;
+    private final Object global;
+    
+    private VMLazy(Object global, Object vm, Appendable out) {
         super(out);
+        this.vm = vm;
+        this.global = global;
     }
     
-    static String toJavaScript(byte[] is) throws IOException {
+    static String toJavaScript(Object global, Object vm, byte[] is) throws IOException {
         StringBuilder sb = new StringBuilder();
-        new VMLazy(sb).compile(new ByteArrayInputStream(is));
+        new VMLazy(global, vm, sb).compile(new ByteArrayInputStream(is));
         return sb.toString().toString();
     }
 
+    @JavaScriptBody(args = { "self", "n" }, 
+        body=
+          "var cls = n.replaceLjava_lang_StringCC(n,'/','_').toString();"
+        + "var glb = self.fld_global;"
+        + "var vm = self.fld_vm;"
+        + "if (glb[cls]) return false;"
+        + "glb[cls] = function() {"
+        + "  return vm.loadClass(n,cls);"
+        + "};"
+        + "return true;"
+    )
     @Override
     protected boolean requireReference(String internalClassName) {
-        return false;
+        throw new UnsupportedOperationException();
     }
 
     @Override

@@ -409,6 +409,7 @@ function java_lang_String() {
 }
 java_lang_String.prototype = new String;
 java_lang_String.prototype.toString = function() { return this.r; };;
+java_lang_String.prototype.valueOf = function() { return this.toString().valueOf(); };;
 //java_lang_String_classV();
 
 /* new method for JavaScript String */

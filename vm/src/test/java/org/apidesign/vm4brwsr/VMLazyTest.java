@@ -42,16 +42,21 @@ public class VMLazyTest {
         StringBuilder sb = new StringBuilder();
         
         sb.append("\nfunction test(clazz, as, method) {");
-        sb.append("\n  var l = new lazyVM();");
+        sb.append("\n  var l = new lazyVM(this);");
         sb.append("\n  var c = l.loadClass(clazz, as);");
         sb.append("\n  return c[method]();");
         sb.append("\n}");
         
         
-        sb.append("\nfunction lazyVM() {");
+        sb.append("\nfunction lazyVM(global) {");
         sb.append("\n  var self = this;");
-        sb.append("\n  this.constructor.prototype.loadClass = function(res, name) {");
-        sb.append("\n    var script = org_apidesign_vm4brwsr_VMLazy(true).toJavaScriptLjava_lang_StringAB(loader.get(res + '.class'));");
+        sb.append("\n  var glb = global;");
+        sb.append("\n  lazyVM.prototype.loadClass = function(res, name) {");
+        sb.append("\n    var script = org_apidesign_vm4brwsr_VMLazy(true)."
+            + "toJavaScriptLjava_lang_StringLjava_lang_ObjectLjava_lang_ObjectAB("
+            + "  glb, self,"
+            + "  loader.get(res + '.class')"
+            + ");");
         sb.append("\n    try {");
         sb.append("\n      new Function(script)(self, name);");
         sb.append("\n    } catch (ex) {");
@@ -75,7 +80,12 @@ public class VMLazyTest {
             "org/apidesign/vm4brwsr/StaticMethod", "org_apidesign_vm4brwsr_StaticMethod", "minusOneI"
         );
     }
-    
+
+    @Test public void loadDependantClass() throws Exception {
+        assertExec("Trying to get zero", "test", Double.valueOf(0),
+            "org/apidesign/vm4brwsr/InstanceSub", "org_apidesign_vm4brwsr_InstanceSub", "recallDblD"
+        );
+    }
 
     private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
         Object ret = null;
