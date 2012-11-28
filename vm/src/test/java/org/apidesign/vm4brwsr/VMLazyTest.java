@@ -58,11 +58,11 @@ public class VMLazyTest {
             + "  loader.get(res + '.class')"
             + ");");
         sb.append("\n    try {");
-        sb.append("\n      new Function(script)(self, name);");
+        sb.append("\n      new Function(script)(glb, name);");
         sb.append("\n    } catch (ex) {");
         sb.append("\n      throw 'Cannot compile ' + res + ' error: ' + ex + ' script:\\n' + script;");
         sb.append("\n    };");
-        sb.append("\n    return self[name](true);");
+        sb.append("\n    return glb[name](true);");
         sb.append("\n  };");
         sb.append("\n");
         sb.append("\n}\n");
