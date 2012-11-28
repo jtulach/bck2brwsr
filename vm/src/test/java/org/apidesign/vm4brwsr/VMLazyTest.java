@@ -102,7 +102,7 @@ public class VMLazyTest {
         if (expRes.equals(ret)) {
             return;
         }
-        assertEquals(ret, expRes, msg + "was: " + ret + "\n" + codeSeq);
+        assertEquals(ret, expRes, msg + "was: " + ret + "\n" + StaticMethodTest.dumpJS(codeSeq));
     }
 
     public static final class FindBytes {
@@ -116,6 +116,7 @@ public class VMLazyTest {
             if (len != arr.length) {
                 throw new IOException("Read only " + len + " wanting " + arr.length);
             }
+            /*
             System.err.print("loader['" + name + "'] = [");
             for (int i = 0; i < arr.length; i++) {
                 if (i > 0) {
@@ -124,6 +125,7 @@ public class VMLazyTest {
                 System.err.print(arr[i]);
             }
             System.err.println("]");
+            */
             return arr;
         }
     }
