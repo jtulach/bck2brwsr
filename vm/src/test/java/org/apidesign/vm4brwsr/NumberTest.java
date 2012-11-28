@@ -17,11 +17,6 @@
  */
 package org.apidesign.vm4brwsr;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import javax.script.Invocable;
 import javax.script.ScriptException;
 import static org.testng.Assert.*;
@@ -34,19 +29,19 @@ import org.testng.annotations.Test;
  */
 public class NumberTest {
     @Test public void integerFromString() throws Exception {
-        assertExec("Can convert string to integer", "java_lang_Integer_parseIntILjava_lang_String",
+        assertExec("Can convert string to integer", Integer.class, "parseIntILjava_lang_String",
             Double.valueOf(333), "333"
         );
     }
 
     @Test public void doubleFromString() throws Exception {
-        assertExec("Can convert string to double", "java_lang_Double_parseDoubleDLjava_lang_String",
+        assertExec("Can convert string to double", Double.class, "parseDoubleDLjava_lang_String",
             Double.valueOf(33.3), "33.3"
         );
     }
 
     @Test public void autoboxDouble() throws Exception {
-        assertExec("Autoboxing of doubles is OK", "org_apidesign_vm4brwsr_Numbers_autoboxDblToStringLjava_lang_String",
+        assertExec("Autoboxing of doubles is OK", Numbers.class, "autoboxDblToStringLjava_lang_String",
             "3.3"
         );
     }
@@ -56,7 +51,7 @@ public class NumberTest {
     }
 
     @Test public void jslog1000() throws Exception {
-        assertExec("log_10(1000) == 3", "java_lang_Math_log10DD", 
+        assertExec("log_10(1000) == 3", Math.class, "log10DD", 
             Double.valueOf(3.0), 1000.0
         );
     }
@@ -65,20 +60,20 @@ public class NumberTest {
         assertEquals(3, Numbers.rem(303, 10));
     }
     @Test public void jsRem() throws Exception {
-        assertExec("Should be three", "org_apidesign_vm4brwsr_Numbers_remIII", 
+        assertExec("Should be three", Numbers.class, "remIII", 
             Double.valueOf(3.0), 303, 10
         );
     }
     
     @Test public void deserializeInt() throws Exception {
         int exp = Numbers.deserInt();
-        assertExec("Should be the same", "org_apidesign_vm4brwsr_Numbers_deserIntI", 
+        assertExec("Should be the same", Numbers.class, "deserIntI", 
             Double.valueOf(exp)
         );
     }
 
     @Test public void deserializeSimpleLong() throws Exception {
-        assertExec("Should be 3454", "org_apidesign_vm4brwsr_Numbers_deserLongJAB", 
+        assertExec("Should be 3454", Numbers.class, "deserLongJAB", 
             Double.valueOf(3454), 
             new byte[] { (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)13, (byte)126 }
         );
@@ -102,7 +97,7 @@ public class NumberTest {
     
     @Test public void deserializeFloatInJS() throws Exception {
         float f = 54324.32423f;
-        assertExec("Should be the same", "org_apidesign_vm4brwsr_Numbers_deserFloatF", 
+        assertExec("Should be the same", Numbers.class, "deserFloatF", 
             Double.valueOf(f)
         );
     }
@@ -115,7 +110,7 @@ public class NumberTest {
     
     @Test public void deserializeDoubleInJS() throws Exception {
         double f = 3.0;
-        assertExec("Should be the same", "org_apidesign_vm4brwsr_Numbers_deserDoubleD", f);
+        assertExec("Should be the same", Numbers.class, "deserDoubleD", f);
     }
     /*
     @Test public void serDouble() throws IOException {
@@ -136,7 +131,7 @@ public class NumberTest {
     @Test public void fiveInStringJS() throws Exception {
         String s = Numbers.intToString();
         assertExec("Should be the same: " + s, 
-            "org_apidesign_vm4brwsr_Numbers_intToStringLjava_lang_String", 
+            Numbers.class, "intToStringLjava_lang_String", 
             s
         );
     }
@@ -144,7 +139,7 @@ public class NumberTest {
     @Test public void sevenInStringJS() throws Exception {
         String s = Numbers.floatToString();
         assertExec("Should be the same: " + s, 
-            "org_apidesign_vm4brwsr_Numbers_floatToStringLjava_lang_String", 
+            Numbers.class, "floatToStringLjava_lang_String", 
             s
         );
     }
@@ -162,15 +157,16 @@ public class NumberTest {
     }
 
     private static void assertExec(
-        String msg, String methodName, Object expRes, Object... args) throws Exception {
+        String msg, Class<?> clazz, String method, Object expRes, Object... args) throws Exception {
 
         Object ret = null;
         try {
-            ret = code.invokeFunction(methodName, args);
+            ret = code.invokeFunction(clazz.getName().replace('.', '_'), true);
+            ret = code.invokeMethod(ret, method, args);
         } catch (ScriptException ex) {
-            fail("Execution failed in\n" + codeSeq, ex);
+            fail("Execution failed in\n" + StaticMethodTest.dumpJS(codeSeq), ex);
         } catch (NoSuchMethodException ex) {
-            fail("Cannot find method in\n" + codeSeq, ex);
+            fail("Cannot find method in\n" + StaticMethodTest.dumpJS(codeSeq), ex);
         }
         if (ret == null && expRes == null) {
             return;
@@ -181,10 +177,10 @@ public class NumberTest {
         if (expRes instanceof Double && ret instanceof Double) {
             double expD = ((Double)expRes).doubleValue();
             double retD = ((Double)ret).doubleValue();
-            assertEquals(retD, expD, 0.000004, msg + " was " + ret + "\n" + codeSeq);
+            assertEquals(retD, expD, 0.000004, msg + " was " + ret + "\n" + StaticMethodTest.dumpJS(codeSeq));
             return;
         }
-        assertEquals(ret, expRes, msg + "was: " + ret + "\n" + codeSeq);
+        assertEquals(ret, expRes, msg + "was: " + ret + "\n" + StaticMethodTest.dumpJS(codeSeq));
     }
     
 }

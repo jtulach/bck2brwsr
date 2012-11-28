@@ -19,7 +19,6 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
-import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.javap.AnnotationParser;
 import org.apidesign.javap.ClassData;
 import org.apidesign.javap.FieldData;
@@ -50,6 +49,16 @@ public abstract class ByteCodeToJavaScript {
      * @param resourcePath name of resources to read
      */
     protected abstract void requireScript(String resourcePath);
+    
+    /** Allows subclasses to redefine what field a function representing a
+     * class gets assigned. By default it returns the suggested name followed
+     * by <code>" = "</code>;
+     * 
+     * @param className suggested name of the class
+     */
+    protected String assignClass(String className) {
+        return className + " = ";
+    }
 
     /**
      * Converts a given class file to a JavaScript version.
@@ -74,70 +83,64 @@ public abstract class ByteCodeToJavaScript {
             }
         }
         StringArray toInitilize = new StringArray();
-        for (MethodData m : jc.getMethods()) {
-            if (m.isStatic()) {
-                generateStaticMethod(m, toInitilize);
-            } else {
-                generateInstanceMethod(m);
-            }
-        }
         final String className = className(jc);
-        out.append("\nfunction ").append(className);
-        out.append("() {");
-        for (FieldData v : jc.getFields()) {
-            if (!v.isStatic()) {
-                out.append("\n  this.fld_").
-                    append(v.getName()).append(initField(v));
-            }
-        }
-        out.append("\n}\n\nfunction ").append(className).append("_proto() {");
-        out.append("\n  if (").append(className).
-            append(".prototype.$instOf_").append(className).append(") {");
-        out.append("\n    return new ").append(className).append(";");
-        out.append("\n  }");
+        out.append("\n\n").append(assignClass(className));
+        out.append("function CLS() {");
+        out.append("\n  if (!CLS.prototype.$instOf_").append(className).append(") {");
         for (FieldData v : jc.getFields()) {
             if (v.isStatic()) {
-                generateStaticField(v);
+                out.append("\n  CLS.").append(v.getName()).append(initField(v));
             }
         }
         // ClassName sc = jc.getSuperClass();
         String sc = jc.getSuperClassName(); // with _
         if (sc != null) {
-            out.append("\n  var p = ").append(className)
-               .append(".prototype = ").
-                append(sc.replace('/', '_')).append("_proto();");
+            out.append("\n    var p = CLS.prototype = ").
+                append(sc.replace('/', '_')).append("(true);");
         } else {
-            out.append("\n  var p = ").append(className).append(".prototype;");
+            out.append("\n    var p = CLS.prototype;");
         }
         for (MethodData m : jc.getMethods()) {
-            if (!m.getName().contains("<cinit>")) {
-                generateMethodReference("\n  p.", m);
+            if (m.isStatic()) {
+                generateStaticMethod("\n    p.", m, toInitilize);
+            } else {
+                generateInstanceMethod("\n    p.", m);
             }
         }
-        out.append("\n  p.$instOf_").append(className).append(" = true;");
+        out.append("\n    p.$instOf_").append(className).append(" = true;");
         for (String superInterface : jc.getSuperInterfaces()) {
-            out.append("\n  p.$instOf_").append(superInterface.replace('/', '_')).append(" = true;");
+            out.append("\n    p.$instOf_").append(superInterface.replace('/', '_')).append(" = true;");
         }
-        out.append("\n  return new ").append(className).append(";");
+        out.append("\n      if (arguments.length === 0) {");
+        out.append("\n        return new CLS();");
+        out.append("\n      }");
+        out.append("\n  }");
+        out.append("\n  if (arguments.length === 0) {");
+        for (FieldData v : jc.getFields()) {
+            if (!v.isStatic()) {
+                out.append("\n    this.fld_").
+                    append(v.getName()).append(initField(v));
+            }
+        }
+        out.append("\n    return this;");
+        out.append("\n  }");
+        out.append("\n  return new CLS;");
         out.append("\n}");
-        out.append("\n").append(className).append("_proto();");
         StringBuilder sb = new StringBuilder();
         for (String init : toInitilize.toArray()) {
             sb.append("\n").append(init).append("();");
         }
         return sb.toString();
     }
-    private void generateStaticMethod(MethodData m, StringArray toInitilize) throws IOException {
-        if (javaScriptBody(m, true)) {
+    private void generateStaticMethod(String prefix, MethodData m, StringArray toInitilize) throws IOException {
+        if (javaScriptBody(prefix, m, true)) {
             return;
         }
         StringBuilder argsCnt = new StringBuilder();
         final String mn = findMethodName(m, argsCnt);
-        out.append("\nfunction ").append(
-            className(jc)
-        ).append('_').append(mn);
+        out.append(prefix).append(mn).append(" = function");
         if (mn.equals("classV")) {
-            toInitilize.add(className(jc) + '_' + mn);
+            toInitilize.add(className(jc) + "(true)." + mn);
         }
         out.append('(');
         String space = "";
@@ -165,24 +168,16 @@ public abstract class ByteCodeToJavaScript {
         } else {
             out.append("  /* no code found for ").append(m.getInternalSig()).append(" */\n");
         }
-        out.append("}");
+        out.append("};");
     }
     
-    private void generateMethodReference(String prefix, MethodData m) throws IOException {
-        final String name = findMethodName(m, new StringBuilder());
-        out.append(prefix).append(name).append(" = ")
-           .append(className(jc))
-           .append('_').append(name).append(";");
-    }
-    
-    private void generateInstanceMethod(MethodData m) throws IOException {
-        if (javaScriptBody(m, false)) {
+    private void generateInstanceMethod(String prefix, MethodData m) throws IOException {
+        if (javaScriptBody(prefix, m, false)) {
             return;
         }
         StringBuilder argsCnt = new StringBuilder();
-        out.append("\nfunction ").append(
-            className(jc)
-        ).append('_').append(findMethodName(m, argsCnt));
+        final String mn = findMethodName(m, argsCnt);
+        out.append(prefix).append(mn).append(" = function");
         out.append("(arg0");
         String space = ",";
         for (int index = 1, i = 0; i < argsCnt.length(); i++) {
@@ -207,7 +202,7 @@ public abstract class ByteCodeToJavaScript {
         } else {
             out.append("  /* no code found for ").append(m.getInternalSig()).append(" */\n");
         }
-        out.append("}");
+        out.append("};");
     }
 
     private void produceCode(byte[] byteCodes) throws IOException {
@@ -846,12 +841,6 @@ public abstract class ByteCodeToJavaScript {
         }
     }
 
-    private void generateStaticField(FieldData v) throws IOException {
-        out.append("\n  ")
-           .append(className(jc))
-           .append('.').append(v.getName()).append(initField(v));
-    }
-
     private String findMethodName(MethodData m, StringBuilder cnt) {
         StringBuilder name = new StringBuilder();
         if ("<init>".equals(m.getName())) { // NOI18N
@@ -897,7 +886,7 @@ public abstract class ByteCodeToJavaScript {
         }
         final String in = mi[0];
         out.append(in.replace('/', '_'));
-        out.append(".prototype.");
+        out.append("(true).");
         out.append(mn);
         out.append('(');
         String sep = "";
@@ -980,7 +969,7 @@ public abstract class ByteCodeToJavaScript {
         return d.replace('[', 'A');
     }
 
-    private boolean javaScriptBody(MethodData m, boolean isStatic) throws IOException {
+    private boolean javaScriptBody(String prefix, MethodData m, boolean isStatic) throws IOException {
         byte[] arr = m.findAnnotationData(true);
         if (arr == null) {
             return false;
@@ -1010,9 +999,8 @@ public abstract class ByteCodeToJavaScript {
             return false;
         }
         StringBuilder cnt = new StringBuilder();
-        out.append("\nfunction ").append(className(jc)).append('_').
-            append(findMethodName(m, cnt));
-        out.append("(");
+        out.append(prefix).append(findMethodName(m, cnt));
+        out.append(" = function(");
         String space;
         int index;
         if (!isStatic) {                

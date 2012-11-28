@@ -29,7 +29,7 @@ import org.testng.annotations.Test;
  */
 public class ArrayTest {
     @Test public void verifySimpleIntOperation() throws Exception {
-            assertExec("CheckTheSum", "org_apidesign_vm4brwsr_Array_simpleI", 
+            assertExec("CheckTheSum", Array.class, "simpleI", 
             Double.valueOf(15)
         );
     }
@@ -39,13 +39,13 @@ public class ArrayTest {
     }
     
     @Test public void verifyOperationsOnArrays() throws Exception {
-        assertExec("The sum is 105", "org_apidesign_vm4brwsr_Array_sumD", 
+        assertExec("The sum is 105", Array.class, "sumD", 
             Double.valueOf(105)
         );
     }
     
     @Test public void doesCopyArrayWork() throws Exception {
-        assertExec("Returns 'a'", "org_apidesign_vm4brwsr_Array_copyArrayC", Double.valueOf('a'));
+        assertExec("Returns 'a'", Array.class, "copyArrayC", Double.valueOf('a'));
     }
     
     private static CharSequence codeSeq;
@@ -59,21 +59,7 @@ public class ArrayTest {
         );
         codeSeq = sb;
     }
-    private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
-        Object ret = null;
-        try {
-            ret = code.invokeFunction(methodName, args);
-        } catch (ScriptException ex) {
-            fail("Execution failed in\n" + StaticMethodTest.dumpJS(codeSeq), ex);
-        } catch (NoSuchMethodException ex) {
-            fail("Cannot find method in\n" + StaticMethodTest.dumpJS(codeSeq), ex);
-        }
-        if (ret == null && expRes == null) {
-            return;
-        }
-        if (expRes.equals(ret)) {
-            return;
-        }
-        assertEquals(ret, expRes, msg + "was: " + ret + "\n" + codeSeq);
+    private static void assertExec(String msg, Class clazz, String method, Object expRes, Object... args) throws Exception {
+        StaticMethodTest.assertExec(code, codeSeq, msg, clazz, method, expRes, args);
     }
 }
