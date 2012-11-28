@@ -43,4 +43,9 @@ class VMLazy extends ByteCodeToJavaScript {
     @Override
     protected void requireScript(String resourcePath) {
     }
+
+    @Override
+    protected String assignClass(String className) {
+        return "arguments[0][arguments[1]]=";
+    }
 }

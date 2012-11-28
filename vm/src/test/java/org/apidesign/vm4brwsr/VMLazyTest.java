@@ -53,9 +53,7 @@ public class VMLazyTest {
         sb.append("\n  this.constructor.prototype.loadClass = function(res, name) {");
         sb.append("\n    var script = org_apidesign_vm4brwsr_VMLazy(true).toJavaScriptLjava_lang_StringAB(loader.get(res + '.class'));");
         sb.append("\n    try {");
-        sb.append("\n      new Function(");
-        sb.append("\n        'arguments[0][arguments[1]]=' + script + ';'");
-        sb.append("\n      )(self, name);");
+        sb.append("\n      new Function(script)(self, name);");
         sb.append("\n    } catch (ex) {");
         sb.append("\n      throw 'Cannot compile ' + res + ' error: ' + ex + ' script:\\n' + script;");
         sb.append("\n    };");

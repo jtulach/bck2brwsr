@@ -49,6 +49,16 @@ public abstract class ByteCodeToJavaScript {
      * @param resourcePath name of resources to read
      */
     protected abstract void requireScript(String resourcePath);
+    
+    /** Allows subclasses to redefine what field a function representing a
+     * class gets assigned. By default it returns the suggested name followed
+     * by <code>" = "</code>;
+     * 
+     * @param className suggested name of the class
+     */
+    protected String assignClass(String className) {
+        return className + " = ";
+    }
 
     /**
      * Converts a given class file to a JavaScript version.
@@ -74,23 +84,21 @@ public abstract class ByteCodeToJavaScript {
         }
         StringArray toInitilize = new StringArray();
         final String className = className(jc);
-        out.append("\n\n").append(className);
-        out.append(" = function() {");
-        out.append("\n  if (!").append(className).
-            append(".prototype.$instOf_").append(className).append(") {");
+        out.append("\n\n").append(assignClass(className));
+        out.append("function CLS() {");
+        out.append("\n  if (!CLS.prototype.$instOf_").append(className).append(") {");
         for (FieldData v : jc.getFields()) {
             if (v.isStatic()) {
-                generateStaticField(v);
+                out.append("\n  CLS.").append(v.getName()).append(initField(v));
             }
         }
         // ClassName sc = jc.getSuperClass();
         String sc = jc.getSuperClassName(); // with _
         if (sc != null) {
-            out.append("\n    var p = ").append(className)
-               .append(".prototype = ").
+            out.append("\n    var p = CLS.prototype = ").
                 append(sc.replace('/', '_')).append("(true);");
         } else {
-            out.append("\n    var p = ").append(className).append(".prototype;");
+            out.append("\n    var p = CLS.prototype;");
         }
         for (MethodData m : jc.getMethods()) {
             if (m.isStatic()) {
@@ -104,7 +112,7 @@ public abstract class ByteCodeToJavaScript {
             out.append("\n    p.$instOf_").append(superInterface.replace('/', '_')).append(" = true;");
         }
         out.append("\n      if (arguments.length === 0) {");
-        out.append("\n        return new ").append(className).append("();");
+        out.append("\n        return new CLS();");
         out.append("\n      }");
         out.append("\n  }");
         out.append("\n  if (arguments.length === 0) {");
@@ -116,7 +124,7 @@ public abstract class ByteCodeToJavaScript {
         }
         out.append("\n    return this;");
         out.append("\n  }");
-        out.append("\n  return new ").append(className).append(";");
+        out.append("\n  return new CLS;");
         out.append("\n}");
         StringBuilder sb = new StringBuilder();
         for (String init : toInitilize.toArray()) {
@@ -831,12 +839,6 @@ public abstract class ByteCodeToJavaScript {
                     break; // invalid character
             }
         }
-    }
-
-    private void generateStaticField(FieldData v) throws IOException {
-        out.append("\n  ")
-           .append(className(jc))
-           .append('.').append(v.getName()).append(initField(v));
     }
 
     private String findMethodName(MethodData m, StringBuilder cnt) {
