@@ -4,12 +4,12 @@
   <parent>
     <groupId>org.apidesign</groupId>
     <artifactId>bck2brwsr</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.3-SNAPSHOT</version>
   </parent>
 
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>vm4brwsr</artifactId>
-  <version>0.1-SNAPSHOT</version>
+  <version>0.3-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>Java VM for Browser</name>
@@ -83,21 +83,21 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.apidesign.bck2brwsr</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>core</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>0.3-SNAPSHOT</version>
       <type>jar</type>
     </dependency>
     <dependency>
-      <groupId>org.apidesign.bck2brwsr</groupId>
+      <groupId>${project.groupId}</groupId>
       <artifactId>emul</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>0.3-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>javap</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>0.3-SNAPSHOT</version>
     </dependency>
   </dependencies>
 </project>
