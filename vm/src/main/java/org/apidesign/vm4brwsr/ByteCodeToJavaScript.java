@@ -163,7 +163,7 @@ public abstract class ByteCodeToJavaScript {
                 out.append("  var ");
                 out.append("arg").append(String.valueOf(i)).append(";\n");
             }
-            out.append("  var stack = new Array();\n");
+            out.append("  var s = new Array();\n");
             produceCode(code);
         } else {
             out.append("  /* no code found for ").append(m.getInternalSig()).append(" */\n");
@@ -197,7 +197,7 @@ public abstract class ByteCodeToJavaScript {
                 out.append("  var ");
                 out.append("arg").append(String.valueOf(i + 1)).append(";\n");
             }
-            out.append(";\n  var stack = new Array();\n");
+            out.append(";\n  var s = new Array();\n");
             produceCode(code);
         } else {
             out.append("  /* no code found for ").append(m.getInternalSig()).append(" */\n");
@@ -217,28 +217,28 @@ public abstract class ByteCodeToJavaScript {
                 case opc_lload_0:
                 case opc_fload_0:
                 case opc_dload_0:
-                    out.append("stack.push(arg0);");
+                    out.append("s.push(arg0);");
                     break;
                 case opc_aload_1:
                 case opc_iload_1:
                 case opc_lload_1:
                 case opc_fload_1:
                 case opc_dload_1:
-                    out.append("stack.push(arg1);");
+                    out.append("s.push(arg1);");
                     break;
                 case opc_aload_2:
                 case opc_iload_2:
                 case opc_lload_2:
                 case opc_fload_2:
                 case opc_dload_2:
-                    out.append("stack.push(arg2);");
+                    out.append("s.push(arg2);");
                     break;
                 case opc_aload_3:
                 case opc_iload_3:
                 case opc_lload_3:
                 case opc_fload_3:
                 case opc_dload_3:
-                    out.append("stack.push(arg3);");
+                    out.append("s.push(arg3);");
                     break;
                 case opc_iload:
                 case opc_lload:
@@ -246,7 +246,7 @@ public abstract class ByteCodeToJavaScript {
                 case opc_dload:
                 case opc_aload: {
                     final int indx = readByte(byteCodes, ++i);
-                    out.append("stack.push(arg").append(indx + ");");
+                    out.append("s.push(arg").append(indx + ");");
                     break;
                 }
                 case opc_istore:
@@ -255,7 +255,7 @@ public abstract class ByteCodeToJavaScript {
                 case opc_dstore:
                 case opc_astore: {
                     final int indx = readByte(byteCodes, ++i);
-                    out.append("arg" + indx).append(" = stack.pop();");
+                    out.append("arg" + indx).append(" = s.pop();");
                     break;
                 }
                 case opc_astore_0:
@@ -263,90 +263,90 @@ public abstract class ByteCodeToJavaScript {
                 case opc_lstore_0:
                 case opc_fstore_0:
                 case opc_dstore_0:
-                    out.append("arg0 = stack.pop();");
+                    out.append("arg0 = s.pop();");
                     break;
                 case opc_astore_1:
                 case opc_istore_1:
                 case opc_lstore_1:
                 case opc_fstore_1:
                 case opc_dstore_1:
-                    out.append("arg1 = stack.pop();");
+                    out.append("arg1 = s.pop();");
                     break;
                 case opc_astore_2:
                 case opc_istore_2:
                 case opc_lstore_2:
                 case opc_fstore_2:
                 case opc_dstore_2:
-                    out.append("arg2 = stack.pop();");
+                    out.append("arg2 = s.pop();");
                     break;
                 case opc_astore_3:
                 case opc_istore_3:
                 case opc_lstore_3:
                 case opc_fstore_3:
                 case opc_dstore_3:
-                    out.append("arg3 = stack.pop();");
+                    out.append("arg3 = s.pop();");
                     break;
                 case opc_iadd:
                 case opc_ladd:
                 case opc_fadd:
                 case opc_dadd:
-                    out.append("stack.push(stack.pop() + stack.pop());");
+                    out.append("s.push(s.pop() + s.pop());");
                     break;
                 case opc_isub:
                 case opc_lsub:
                 case opc_fsub:
                 case opc_dsub:
-                    out.append("{ var tmp = stack.pop(); stack.push(stack.pop() - tmp); }");
+                    out.append("{ var tmp = s.pop(); s.push(s.pop() - tmp); }");
                     break;
                 case opc_imul:
                 case opc_lmul:
                 case opc_fmul:
                 case opc_dmul:
-                    out.append("stack.push(stack.pop() * stack.pop());");
+                    out.append("s.push(s.pop() * s.pop());");
                     break;
                 case opc_idiv:
                 case opc_ldiv:
-                    out.append("{ var tmp = stack.pop(); stack.push(Math.floor(stack.pop() / tmp)); }");
+                    out.append("{ var tmp = s.pop(); s.push(Math.floor(s.pop() / tmp)); }");
                     break;
                 case opc_fdiv:
                 case opc_ddiv:
-                    out.append("{ var tmp = stack.pop(); stack.push(stack.pop() / tmp); }");
+                    out.append("{ var tmp = s.pop(); s.push(s.pop() / tmp); }");
                     break;
                 case opc_irem:
                 case opc_lrem:
                 case opc_frem:
                 case opc_drem:
-                    out.append("{ var d = stack.pop(); stack.push(stack.pop() % d); }");
+                    out.append("{ var d = s.pop(); s.push(s.pop() % d); }");
                     break;
                 case opc_iand:
                 case opc_land:
-                    out.append("stack.push(stack.pop() & stack.pop());");
+                    out.append("s.push(s.pop() & s.pop());");
                     break;
                 case opc_ior:
                 case opc_lor:
-                    out.append("stack.push(stack.pop() | stack.pop());");
+                    out.append("s.push(s.pop() | s.pop());");
                     break;
                 case opc_ixor:
                 case opc_lxor:
-                    out.append("stack.push(stack.pop() ^ stack.pop());");
+                    out.append("s.push(s.pop() ^ s.pop());");
                     break;
                 case opc_ineg:
                 case opc_lneg:
                 case opc_fneg:
                 case opc_dneg:
-                    out.append("stack.push(- stack.pop());");
+                    out.append("s.push(- s.pop());");
                     break;
                 case opc_ishl:
                 case opc_lshl:
-                    out.append("{ var v = stack.pop(); stack.push(stack.pop() << v); }");
+                    out.append("{ var v = s.pop(); s.push(s.pop() << v); }");
                     break;
                 case opc_ishr:
                 case opc_lshr:
-                    out.append("{ var v = stack.pop(); stack.push(stack.pop() >> v); }");
+                    out.append("{ var v = s.pop(); s.push(s.pop() >> v); }");
                     break;
                 case opc_iushr:
                 case opc_lushr:
-                    out.append("{ var v = stack.pop(); stack.push(stack.pop() >>> v); }");
+                    out.append("{ var v = s.pop(); s.push(s.pop() >>> v); }");
                     break;
                 case opc_iinc: {
                     final int varIndx = readByte(byteCodes, ++i);
@@ -366,7 +366,7 @@ public abstract class ByteCodeToJavaScript {
                 case opc_freturn:
                 case opc_dreturn:
                 case opc_areturn:
-                    out.append("return stack.pop();");
+                    out.append("return s.pop();");
                     break;
                 case opc_i2l:
                 case opc_i2f:
@@ -383,7 +383,7 @@ public abstract class ByteCodeToJavaScript {
                 case opc_f2l:
                 case opc_d2i:
                 case opc_d2l:
-                    out.append("stack.push(Math.floor(stack.pop()));");
+                    out.append("s.push(Math.floor(s.pop()));");
                     break;
                 case opc_i2b:
                 case opc_i2c:
@@ -391,40 +391,40 @@ public abstract class ByteCodeToJavaScript {
                     out.append("/* number conversion */");
                     break;
                 case opc_aconst_null:
-                    out.append("stack.push(null);");
+                    out.append("s.push(null);");
                     break;
                 case opc_iconst_m1:
-                    out.append("stack.push(-1);");
+                    out.append("s.push(-1);");
                     break;
                 case opc_iconst_0:
                 case opc_dconst_0:
                 case opc_lconst_0:
                 case opc_fconst_0:
-                    out.append("stack.push(0);");
+                    out.append("s.push(0);");
                     break;
                 case opc_iconst_1:
                 case opc_lconst_1:
                 case opc_fconst_1:
                 case opc_dconst_1:
-                    out.append("stack.push(1);");
+                    out.append("s.push(1);");
                     break;
                 case opc_iconst_2:
                 case opc_fconst_2:
-                    out.append("stack.push(2);");
+                    out.append("s.push(2);");
                     break;
                 case opc_iconst_3:
-                    out.append("stack.push(3);");
+                    out.append("s.push(3);");
                     break;
                 case opc_iconst_4:
-                    out.append("stack.push(4);");
+                    out.append("s.push(4);");
                     break;
                 case opc_iconst_5:
-                    out.append("stack.push(5);");
+                    out.append("s.push(5);");
                     break;
                 case opc_ldc: {
                     int indx = readByte(byteCodes, ++i);
                     String v = encodeConstant(indx);
-                    out.append("stack.push(").append(v).append(");");
+                    out.append("s.push(").append(v).append(");");
                     break;
                 }
                 case opc_ldc_w:
@@ -432,7 +432,7 @@ public abstract class ByteCodeToJavaScript {
                     int indx = readIntArg(byteCodes, i);
                     i += 2;
                     String v = encodeConstant(indx);
-                    out.append("stack.push(").append(v).append(");");
+                    out.append("s.push(").append(v).append(");");
                     break;
                 }
                 case opc_lcmp:
@@ -440,7 +440,7 @@ public abstract class ByteCodeToJavaScript {
                 case opc_fcmpg:
                 case opc_dcmpl:
                 case opc_dcmpg: {
-                    out.append("{ var delta = stack.pop() - stack.pop(); stack.push(delta < 0 ?-1 : (delta == 0 ? 0 : 1)); }");
+                    out.append("{ var delta = s.pop() - s.pop(); s.push(delta < 0 ?-1 : (delta == 0 ? 0 : 1)); }");
                     break;
                 }
                 case opc_if_acmpeq:
@@ -455,56 +455,56 @@ public abstract class ByteCodeToJavaScript {
                 }
                 case opc_ifeq: {
                     int indx = i + readIntArg(byteCodes, i);
-                    out.append("if (stack.pop() == 0) { gt = " + indx);
+                    out.append("if (s.pop() == 0) { gt = " + indx);
                     out.append("; continue; }");
                     i += 2;
                     break;
                 }
                 case opc_ifne: {
                     int indx = i + readIntArg(byteCodes, i);
-                    out.append("if (stack.pop() != 0) { gt = " + indx);
+                    out.append("if (s.pop() != 0) { gt = " + indx);
                     out.append("; continue; }");
                     i += 2;
                     break;
                 }
                 case opc_iflt: {
                     int indx = i + readIntArg(byteCodes, i);
-                    out.append("if (stack.pop() < 0) { gt = " + indx);
+                    out.append("if (s.pop() < 0) { gt = " + indx);
                     out.append("; continue; }");
                     i += 2;
                     break;
                 }
                 case opc_ifle: {
                     int indx = i + readIntArg(byteCodes, i);
-                    out.append("if (stack.pop() <= 0) { gt = " + indx);
+                    out.append("if (s.pop() <= 0) { gt = " + indx);
                     out.append("; continue; }");
                     i += 2;
                     break;
                 }
                 case opc_ifgt: {
                     int indx = i + readIntArg(byteCodes, i);
-                    out.append("if (stack.pop() > 0) { gt = " + indx);
+                    out.append("if (s.pop() > 0) { gt = " + indx);
                     out.append("; continue; }");
                     i += 2;
                     break;
                 }
                 case opc_ifge: {
                     int indx = i + readIntArg(byteCodes, i);
-                    out.append("if (stack.pop() >= 0) { gt = " + indx);
+                    out.append("if (s.pop() >= 0) { gt = " + indx);
                     out.append("; continue; }");
                     i += 2;
                     break;
                 }
                 case opc_ifnonnull: {
                     int indx = i + readIntArg(byteCodes, i);
-                    out.append("if (stack.pop() !== null) { gt = " + indx);
+                    out.append("if (s.pop() !== null) { gt = " + indx);
                     out.append("; continue; }");
                     i += 2;
                     break;
                 }
                 case opc_ifnull: {
                     int indx = i + readIntArg(byteCodes, i);
-                    out.append("if (stack.pop() === null) { gt = " + indx);
+                    out.append("if (s.pop() === null) { gt = " + indx);
                     out.append("; continue; }");
                     i += 2;
                     break;
@@ -536,7 +536,7 @@ public abstract class ByteCodeToJavaScript {
                     table += 4;
                     int n = readInt4(byteCodes, table);
                     table += 4;
-                    out.append("switch (stack.pop()) {\n");
+                    out.append("switch (s.pop()) {\n");
                     while (n-- > 0) {
                         int cnstnt = readInt4(byteCodes, table);
                         table += 4;
@@ -556,7 +556,7 @@ public abstract class ByteCodeToJavaScript {
                     table += 4;
                     int high = readInt4(byteCodes, table);
                     table += 4;
-                    out.append("switch (stack.pop()) {\n");
+                    out.append("switch (s.pop()) {\n");
                     while (low <= high) {
                         int offset = i + readInt4(byteCodes, table);
                         table += 4;
@@ -583,7 +583,7 @@ public abstract class ByteCodeToJavaScript {
                 case opc_new: {
                     int indx = readIntArg(byteCodes, i);
                     String ci = jc.getClassName(indx);
-                    out.append("stack.push(");
+                    out.append("s.push(");
                     out.append("new ").append(ci.replace('/','_'));
                     out.append(");");
                     addReference(ci);
@@ -592,20 +592,20 @@ public abstract class ByteCodeToJavaScript {
                 }
                 case opc_newarray: {
                     int type = byteCodes[i++];
-                    out.append("stack.push(new Array(stack.pop()).fillNulls());");
+                    out.append("s.push(new Array(s.pop()).fillNulls());");
                     break;
                 }
                 case opc_anewarray: {
                     i += 2; // skip type of array
-                    out.append("stack.push(new Array(stack.pop()).fillNulls());");
+                    out.append("s.push(new Array(s.pop()).fillNulls());");
                     break;
                 }
                 case opc_multianewarray: {
                     i += 2;
                     int dim = readByte(byteCodes, ++i);
-                    out.append("{ var a0 = new Array(stack.pop()).fillNulls();");
+                    out.append("{ var a0 = new Array(s.pop()).fillNulls();");
                     for (int d = 1; d < dim; d++) {
-                        out.append("\n  var l" + d).append(" = stack.pop();");
+                        out.append("\n  var l" + d).append(" = s.pop();");
                         out.append("\n  for (var i" + d).append (" = 0; i" + d).
                             append(" < a" + (d - 1)).
                             append(".length; i" + d).append("++) {");
@@ -617,11 +617,11 @@ public abstract class ByteCodeToJavaScript {
                     for (int d = 1; d < dim; d++) {
                         out.append("\n  }");
                     }
-                    out.append("\nstack.push(a0); }");
+                    out.append("\ns.push(a0); }");
                     break;
                 }
                 case opc_arraylength:
-                    out.append("stack.push(stack.pop().length);");
+                    out.append("s.push(s.pop().length);");
                     break;
                 case opc_iastore:
                 case opc_lastore:
@@ -631,7 +631,7 @@ public abstract class ByteCodeToJavaScript {
                 case opc_bastore:
                 case opc_castore:
                 case opc_sastore: {
-                    out.append("{ var value = stack.pop(); var indx = stack.pop(); stack.pop()[indx] = value; }");
+                    out.append("{ var value = s.pop(); var indx = s.pop(); s.pop()[indx] = value; }");
                     break;
                 }
                 case opc_iaload:
@@ -642,34 +642,34 @@ public abstract class ByteCodeToJavaScript {
                 case opc_baload:
                 case opc_caload:
                 case opc_saload: {
-                    out.append("{ var indx = stack.pop(); stack.push(stack.pop()[indx]); }");
+                    out.append("{ var indx = s.pop(); s.push(s.pop()[indx]); }");
                     break;
                 }
                 case opc_pop2:
-                    out.append("stack.pop();");
+                    out.append("s.pop();");
                 case opc_pop:
-                    out.append("stack.pop();");
+                    out.append("s.pop();");
                     break;
                 case opc_dup:
-                    out.append("stack.push(stack[stack.length - 1]);");
+                    out.append("s.push(s[s.length - 1]);");
                     break;
                 case opc_dup_x1:
-                    out.append("{ var v1 = stack.pop(); var v2 = stack.pop(); stack.push(v1); stack.push(v2); stack.push(v1); }");
+                    out.append("{ var v1 = s.pop(); var v2 = s.pop(); s.push(v1); s.push(v2); s.push(v1); }");
                     break;
                 case opc_dup_x2:
-                    out.append("{ var v1 = stack.pop(); var v2 = stack.pop(); var v3 = stack.pop(); stack.push(v1); stack.push(v3); stack.push(v2); stack.push(v1); }");
+                    out.append("{ var v1 = s.pop(); var v2 = s.pop(); var v3 = s.pop(); s.push(v1); s.push(v3); s.push(v2); s.push(v1); }");
                     break;
                 case opc_bipush:
-                    out.append("stack.push(" + byteCodes[++i] + ");");
+                    out.append("s.push(" + byteCodes[++i] + ");");
                     break;
                 case opc_sipush:
-                    out.append("stack.push(" + readIntArg(byteCodes, i) + ");");
+                    out.append("s.push(" + readIntArg(byteCodes, i) + ");");
                     i += 2;
                     break;
                 case opc_getfield: {
                     int indx = readIntArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
-                    out.append("stack.push(stack.pop().fld_").
+                    out.append("s.push(s.pop().fld_").
                         append(fi[1]).append(");");
                     i += 2;
                     break;
@@ -677,7 +677,7 @@ public abstract class ByteCodeToJavaScript {
                 case opc_getstatic: {
                     int indx = readIntArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
-                    out.append("stack.push(").append(fi[0].replace('/', '_'));
+                    out.append("s.push(").append(fi[0].replace('/', '_'));
                     out.append('.').append(fi[1]).append(");");
                     i += 2;
                     addReference(fi[0]);
@@ -687,7 +687,7 @@ public abstract class ByteCodeToJavaScript {
                     int indx = readIntArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
                     out.append(fi[0].replace('/', '_'));
-                    out.append('.').append(fi[1]).append(" = stack.pop();");
+                    out.append('.').append(fi[1]).append(" = s.pop();");
                     i += 2;
                     addReference(fi[0]);
                     break;
@@ -695,7 +695,7 @@ public abstract class ByteCodeToJavaScript {
                 case opc_putfield: {
                     int indx = readIntArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
-                    out.append("{ var v = stack.pop(); stack.pop().fld_")
+                    out.append("{ var v = s.pop(); s.pop().fld_")
                        .append(fi[1]).append(" = v; }");
                     i += 2;
                     break;
@@ -705,7 +705,7 @@ public abstract class ByteCodeToJavaScript {
                     final String type = jc.getClassName(indx);
                     if (!type.startsWith("[")) {
                         // no way to check arrays right now
-                        out.append("if(stack[stack.length - 1].$instOf_")
+                        out.append("if(s[s.length - 1].$instOf_")
                            .append(type.replace('/', '_'))
                            .append(" != 1) throw {};"); // XXX proper exception
                     }
@@ -715,14 +715,14 @@ public abstract class ByteCodeToJavaScript {
                 case opc_instanceof: {
                     int indx = readIntArg(byteCodes, i);
                     final String type = jc.getClassName(indx);
-                    out.append("stack.push(stack.pop().$instOf_")
+                    out.append("s.push(s.pop().$instOf_")
                        .append(type.replace('/', '_'))
                        .append(" ? 1 : 0);");
                     i += 2;
                     break;
                 }
                 case opc_athrow: {
-                    out.append("{ var t = stack.pop(); stack = new Array(1); stack[0] = t; throw t; }");
+                    out.append("{ var t = s.pop(); s = new Array(1); s[0] = t; throw t; }");
                     break;
                 }
                 default: {
@@ -743,7 +743,7 @@ public abstract class ByteCodeToJavaScript {
 
     private int generateIf(byte[] byteCodes, int i, final String test) throws IOException {
         int indx = i + readIntArg(byteCodes, i);
-        out.append("if (stack.pop() ").append(test).append(" stack.pop()) { gt = " + indx);
+        out.append("if (s.pop() ").append(test).append(" s.pop()) { gt = " + indx);
         out.append("; continue; }");
         return i + 2;
     }
@@ -878,11 +878,11 @@ public abstract class ByteCodeToJavaScript {
         String mn = findMethodName(mi, cnt, hasReturn);
         out.append("{ ");
         for (int j = cnt.length() - 1; j >= 0; j--) {
-            out.append("var v" + j).append(" = stack.pop(); ");
+            out.append("var v" + j).append(" = s.pop(); ");
         }
         
         if (hasReturn[0]) {
-            out.append("stack.push(");
+            out.append("s.push(");
         }
         final String in = mi[0];
         out.append(in.replace('/', '_'));
@@ -891,7 +891,7 @@ public abstract class ByteCodeToJavaScript {
         out.append('(');
         String sep = "";
         if (!isStatic) {
-            out.append("stack.pop()");
+            out.append("s.pop()");
             sep = ", ";
         }
         for (int j = 0; j < cnt.length(); j++) {
@@ -917,11 +917,11 @@ public abstract class ByteCodeToJavaScript {
         String mn = findMethodName(mi, cnt, hasReturn);
         out.append("{ ");
         for (int j = cnt.length() - 1; j >= 0; j--) {
-            out.append("var v" + j).append(" = stack.pop(); ");
+            out.append("var v" + j).append(" = s.pop(); ");
         }
-        out.append("var self = stack.pop(); ");
+        out.append("var self = s.pop(); ");
         if (hasReturn[0]) {
-            out.append("stack.push(");
+            out.append("s.push(");
         }
         out.append("self.");
         out.append(mn);
