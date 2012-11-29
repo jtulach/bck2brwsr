@@ -124,7 +124,7 @@ public abstract class ByteCodeToJavaScript {
         }
         out.append("\n    return this;");
         out.append("\n  }");
-        out.append("\n  return new CLS;");
+        out.append("\n  return arguments[0] ? new CLS() : CLS.prototype;");
         out.append("\n}");
         StringBuilder sb = new StringBuilder();
         for (String init : toInitilize.toArray()) {
@@ -140,7 +140,7 @@ public abstract class ByteCodeToJavaScript {
         final String mn = findMethodName(m, argsCnt);
         out.append(prefix).append(mn).append(" = function");
         if (mn.equals("classV")) {
-            toInitilize.add(className(jc) + "(true)." + mn);
+            toInitilize.add(className(jc) + "(false)." + mn);
         }
         out.append('(');
         String space = "";
@@ -886,7 +886,7 @@ public abstract class ByteCodeToJavaScript {
         }
         final String in = mi[0];
         out.append(in.replace('/', '_'));
-        out.append("(true).");
+        out.append("(false).");
         out.append(mn);
         out.append('(');
         String sep = "";
