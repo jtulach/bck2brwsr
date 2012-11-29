@@ -43,6 +43,25 @@ public class ClassTest {
     @Test public void jsClassesAreDifferent() throws Exception {
         assertExec("Classes are not equal", Classes.class, "differenceInClassesZ", Double.valueOf(1.0));
     }
+
+    @Test public void javaName() throws Exception {
+        assertEquals(Classes.name(), "java.io.IOException");
+    }
+    @Test public void jsName() throws Exception {
+        assertExec("I/O name", Classes.class, "nameLjava_lang_String", "java.io.IOException");
+    }
+    @Test public void javaSimpleName() throws Exception {
+        assertEquals(Classes.simpleName(), "IOException");
+    }
+    @Test public void jsGetsSimpleName() throws Exception {
+        assertExec("I/O simple name", Classes.class, "simpleNameLjava_lang_String", "IOException");
+    }
+    @Test public void javaCanonicalName() {
+        assertEquals(Classes.canonicalName(), "java.io.IOException");
+    }
+    @Test public void jsCanonicalName() throws Exception {
+        assertExec("I/O simple name", Classes.class, "canonicalNameLjava_lang_String", "java.io.IOException");
+    }
     
     private static CharSequence codeSeq;
     private static Invocable code;

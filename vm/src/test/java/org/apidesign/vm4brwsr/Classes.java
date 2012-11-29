@@ -35,7 +35,7 @@ public class Classes {
     }
     
     public static String name() {
-        return IOException.class.getName();
+        return IOException.class.getName().toString();
     }
     public static String simpleName() {
         return IOException.class.getSimpleName();
