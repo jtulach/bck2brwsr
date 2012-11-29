@@ -335,6 +335,10 @@ public class MethodData {
         return stackMapTable;
     }
 
+    public StackMapIterator createStackMapIterator() {
+        return new StackMapIterator(stackMapTable);
+    }
+
     /**
      * Return number of arguments of that method.
      */

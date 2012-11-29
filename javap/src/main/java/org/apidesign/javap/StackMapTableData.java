@@ -32,7 +32,7 @@ import static org.apidesign.javap.RuntimeConstants.*;
 
 /* represents one entry of StackMapTable attribute
  */
-class StackMapTableData {
+abstract class StackMapTableData {
     final int frameType;
     int offsetDelta;
 
@@ -40,10 +40,25 @@ class StackMapTableData {
         this.frameType = frameType;
     }
 
+    abstract int getStackItemsCount();
+
     static class SameFrame extends StackMapTableData {
         SameFrame(int frameType, int offsetDelta) {
             super(frameType);
             this.offsetDelta = offsetDelta;
+        }
+
+        @Override
+        int getStackItemsCount() {
+            return 0;
+        }
+
+        @Override
+        public String toString() {
+            return "SAME"
+                       + ((frameType == SAME_FRAME_EXTENDED)
+                              ? "_FRAME_EXTENDED" : "")
+                       + "(" + offsetDelta + ")";
         }
     }
 
@@ -54,12 +69,35 @@ class StackMapTableData {
             this.offsetDelta = offsetDelta;
             this.stack = stack;
         }
+
+        @Override
+        int getStackItemsCount() {
+            return 1;
+        }
+
+        @Override
+        public String toString() {
+            return "SAME_LOCALS_1_STACK_ITEM"
+                       + ((frameType == SAME_LOCALS_1_STACK_ITEM_EXTENDED)
+                              ? "_EXTENDED" : "")
+                       + "(" + offsetDelta + ")";
+        }
     }
 
     static class ChopFrame extends StackMapTableData {
         ChopFrame(int frameType, int offsetDelta) {
             super(frameType);
             this.offsetDelta = offsetDelta;
+        }
+
+        @Override
+        int getStackItemsCount() {
+            return 0;
+        }
+
+        @Override
+        public String toString() {
+            return "CHOP(" + offsetDelta + ")";
         }
     }
 
@@ -69,6 +107,16 @@ class StackMapTableData {
             super(frameType);
             this.offsetDelta = offsetDelta;
             this.locals = locals;
+        }
+
+        @Override
+        int getStackItemsCount() {
+            return 0;
+        }
+
+        @Override
+        public String toString() {
+            return "APPEND(" + offsetDelta + ")";
         }
     }
 
@@ -80,6 +128,16 @@ class StackMapTableData {
             this.offsetDelta = offsetDelta;
             this.locals = locals;
             this.stack = stack;
+        }
+
+        @Override
+        int getStackItemsCount() {
+            return stack.length;
+        }
+
+        @Override
+        public String toString() {
+            return "FULL(" + offsetDelta + ")";
         }
     }
 
