@@ -101,6 +101,7 @@ final class GenJS extends ByteCodeToJavaScript {
                     }
                     readResource(emul, out);
                 }
+                js.scripts = new StringArray();
             }
 
             StringArray toInit = StringArray.asList(js.references.toArray());
