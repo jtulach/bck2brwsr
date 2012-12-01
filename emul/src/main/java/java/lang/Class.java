@@ -191,10 +191,15 @@ public final
      *             </ul>
      *
      */
+    @JavaScriptBody(args = "self", body =
+          "var inst = self.cnstr();"
+        + "inst.consV(inst);"
+        + "return inst;"
+    )
     public T newInstance()
         throws InstantiationException, IllegalAccessException
     {
-        throw new UnsupportedOperationException("Should be somehow supported");
+        throw new UnsupportedOperationException();
     }
 
     /**

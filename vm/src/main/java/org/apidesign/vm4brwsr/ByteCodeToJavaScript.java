@@ -118,6 +118,7 @@ public abstract class ByteCodeToJavaScript {
         out.append("\n    CLS.$class = java_lang_Class(true);");
         out.append("\n    CLS.$class.jvmName = '").append(jc.getClassName()).append("';");
         out.append("\n    CLS.$class.superclass = sprcls;");
+        out.append("\n    CLS.$class.cnstr = CLS;");
         out.append("\n  }");
         out.append("\n  if (arguments.length === 0) {");
         out.append("\n    if (!(this instanceof CLS)) {");

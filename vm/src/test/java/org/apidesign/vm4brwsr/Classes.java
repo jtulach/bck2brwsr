@@ -47,7 +47,11 @@ public class Classes {
     public static String canonicalName() {
         return IOException.class.getCanonicalName();
     }
-    public static IOException newInstance() throws InstantiationException, IllegalAccessException {
-        return IOException.class.newInstance();
+    public static boolean newInstance() throws Exception {
+        IOException ioe = IOException.class.newInstance();
+        if (ioe instanceof IOException) {
+            return ioe.getClass() == IOException.class;
+        }
+        throw new IllegalStateException("Not a subtype: " + ioe);
     }
 }

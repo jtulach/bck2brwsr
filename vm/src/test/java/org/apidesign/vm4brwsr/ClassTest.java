@@ -68,6 +68,12 @@ public class ClassTest {
     @Test public void jsCanonicalName() throws Exception {
         assertExec("I/O simple name", Classes.class, "canonicalNameLjava_lang_String", "java.io.IOException");
     }
+    @Test public void javaNewInstance() throws Exception {
+        assertTrue(Classes.newInstance());
+    }
+    @Test public void jsNewInstance() throws Exception {
+        assertExec("Check new instance", Classes.class, "newInstanceZ", Double.valueOf(1));
+    }
     
     private static CharSequence codeSeq;
     private static Invocable code;
