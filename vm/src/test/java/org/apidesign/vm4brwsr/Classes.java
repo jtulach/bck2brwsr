@@ -34,6 +34,10 @@ public class Classes {
         return c1 != c2;
     }
     
+    public static String classForInstance() {
+        return new IOException().getClass().getName().toString();
+    }
+    
     public static String name() {
         return IOException.class.getName().toString();
     }

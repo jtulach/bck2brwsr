@@ -548,10 +548,11 @@ public final class ClassData implements RuntimeConstants {
             return in.toString();
         }
         case CONSTANT_CLASS:
+            String jn = javaName(getClassName(cpx));
             if (textual) {
-                return "new java_lang_Class"; // XXX temporary JS
+                return jn.replace('/', '_') + ".$class";
             }
-            return javaName(getClassName(cpx));
+            return jn;
         case CONSTANT_STRING:
             String sv = stringValue(((CPX)x).cpx, textual);
             if (textual) {

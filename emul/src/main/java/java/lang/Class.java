@@ -27,6 +27,7 @@ package java.lang;
 
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
  * Instances of the class {@code Class} represent classes and
@@ -382,12 +383,11 @@ public final
      *          represented by this object.
      */
     public String getName() {
-        throw new UnsupportedOperationException();
-//        String name = this.name;
-//        if (name == null)
-//            this.name = name = getName0();
-//        return name;
+        return jvmName().replace('/', '.');
     }
+
+    @JavaScriptBody(args = "self", body = "return self.jvmName;")
+    private native String jvmName();
 
     /**
      * Returns the {@code Class} representing the superclass of the entity

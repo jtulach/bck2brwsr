@@ -44,6 +44,12 @@ public class ClassTest {
         assertExec("Classes are not equal", Classes.class, "differenceInClassesZ", Double.valueOf(1.0));
     }
 
+    @Test public void javaInstanceName() throws Exception {
+        assertEquals(Classes.classForInstance(), "java.io.IOException");
+    }
+    @Test public void jsInstanceName() throws Exception {
+        assertExec("I/O name", Classes.class, "classForInstanceLjava_lang_String", "java.io.IOException");
+    }
     @Test public void javaName() throws Exception {
         assertEquals(Classes.name(), "java.io.IOException");
     }

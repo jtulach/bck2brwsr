@@ -111,6 +111,8 @@ public abstract class ByteCodeToJavaScript {
         for (String superInterface : jc.getSuperInterfaces()) {
             out.append("\n    p.$instOf_").append(superInterface.replace('/', '_')).append(" = true;");
         }
+        out.append("\n    CLS.$class = java_lang_Class(true);");
+        out.append("\n    CLS.$class.jvmName = '").append(jc.getClassName()).append("';");
         out.append("\n      if (arguments.length === 0) {");
         out.append("\n        return new CLS();");
         out.append("\n      }");

@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+
 /**
  * Class {@code Object} is the root of the class hierarchy.
  * Every class has {@code Object} as a superclass. All objects,
@@ -61,6 +63,7 @@ public class Object {
      * @see    Class Literals, section 15.8.2 of
      *         <cite>The Java&trade; Language Specification</cite>.
      */
+    @JavaScriptBody(args="self", body="return self.constructor.$class;")
     public final native Class<?> getClass();
 
     /**
