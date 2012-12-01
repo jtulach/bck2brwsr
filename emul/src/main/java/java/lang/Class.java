@@ -402,6 +402,7 @@ public final
      *
      * @return the superclass of the class represented by this object.
      */
+    @JavaScriptBody(args = "self", body = "return self.superclass;")
     public native Class<? super T> getSuperclass();
 
     /**

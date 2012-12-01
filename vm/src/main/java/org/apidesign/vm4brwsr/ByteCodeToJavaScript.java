@@ -95,10 +95,13 @@ public abstract class ByteCodeToJavaScript {
         // ClassName sc = jc.getSuperClass();
         String sc = jc.getSuperClassName(); // with _
         if (sc != null) {
-            out.append("\n    var p = CLS.prototype = ").
+            out.append("\n    var pp = ").
                 append(sc.replace('/', '_')).append("(true);");
+            out.append("\n    var p = CLS.prototype = pp;");
+            out.append("\n    var sprcls = pp.constructor.$class;");
         } else {
             out.append("\n    var p = CLS.prototype;");
+            out.append("\n    var sprcls = null;");
         }
         for (MethodData m : jc.getMethods()) {
             if (m.isStatic()) {
@@ -114,6 +117,7 @@ public abstract class ByteCodeToJavaScript {
         }
         out.append("\n    CLS.$class = java_lang_Class(true);");
         out.append("\n    CLS.$class.jvmName = '").append(jc.getClassName()).append("';");
+        out.append("\n    CLS.$class.superclass = sprcls;");
         out.append("\n  }");
         out.append("\n  if (arguments.length === 0) {");
         out.append("\n    if (!(this instanceof CLS)) {");
@@ -963,8 +967,12 @@ public abstract class ByteCodeToJavaScript {
         }
     }
 
-    private String encodeConstant(int entryIndex) {
-        String s = jc.stringValue(entryIndex, true);
+    private String encodeConstant(int entryIndex) throws IOException {
+        String[] classRef = { null };
+        String s = jc.stringValue(entryIndex, classRef);
+        if (classRef[0] != null) {
+            addReference(classRef[0]);
+        }
         return s;
     }
 
