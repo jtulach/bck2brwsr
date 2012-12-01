@@ -550,7 +550,7 @@ public final class ClassData implements RuntimeConstants {
         case CONSTANT_CLASS:
             String jn = javaName(getClassName(cpx));
             if (textual) {
-                return jn.replace('/', '_') + ".$class";
+                return jn.replace('/', '_') + "(false).constructor.$class";
             }
             return jn;
         case CONSTANT_STRING:

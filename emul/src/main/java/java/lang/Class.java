@@ -274,7 +274,9 @@ public final
      *          {@code false} otherwise.
      * @since   JDK1.1
      */
-    public native boolean isArray();
+    public boolean isArray() {
+        return false;
+    }
 
 
     /**
@@ -497,25 +499,25 @@ public final
      * @since 1.5
      */
     public String getCanonicalName() {
-        throw new UnsupportedOperationException();
-//        if (isArray()) {
-//            String canonicalName = getComponentType().getCanonicalName();
-//            if (canonicalName != null)
-//                return canonicalName + "[]";
-//            else
-//                return null;
-//        }
+        if (isArray()) {
+            String canonicalName = getComponentType().getCanonicalName();
+            if (canonicalName != null)
+                return canonicalName + "[]";
+            else
+                return null;
+        }
 //        if (isLocalOrAnonymousClass())
 //            return null;
 //        Class<?> enclosingClass = getEnclosingClass();
-//        if (enclosingClass == null) { // top level class
-//            return getName();
-//        } else {
-//            String enclosingName = enclosingClass.getCanonicalName();
-//            if (enclosingName == null)
-//                return null;
-//            return enclosingName + "." + getSimpleName();
-//        }
+        Class<?> enclosingClass = null;
+        if (enclosingClass == null) { // top level class
+            return getName();
+        } else {
+            String enclosingName = enclosingClass.getCanonicalName();
+            if (enclosingName == null)
+                return null;
+            return enclosingName + "." + getSimpleName();
+        }
     }
 
     /**
@@ -676,7 +678,9 @@ public final
      * @see     java.lang.reflect.Array
      * @since JDK1.1
      */
-    public native Class<?> getComponentType();
+    public Class<?> getComponentType() {
+        return null;
+    }
 
     /**
      * Returns true if and only if this class was declared as an enum in the
