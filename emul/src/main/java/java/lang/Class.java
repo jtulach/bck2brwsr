@@ -447,39 +447,56 @@ public final
      * @since 1.5
      */
     public String getSimpleName() {
-        throw new UnsupportedOperationException();
-////        if (isArray())
-////            return getComponentType().getSimpleName()+"[]";
-////
-////        String simpleName = getSimpleBinaryName();
-////        if (simpleName == null) { // top level class
-////            simpleName = getName();
-////            return simpleName.substring(simpleName.lastIndexOf(".")+1); // strip the package name
-////        }
-////        // According to JLS3 "Binary Compatibility" (13.1) the binary
-////        // name of non-package classes (not top level) is the binary
-////        // name of the immediately enclosing class followed by a '$' followed by:
-////        // (for nested and inner classes): the simple name.
-////        // (for local classes): 1 or more digits followed by the simple name.
-////        // (for anonymous classes): 1 or more digits.
-////
-////        // Since getSimpleBinaryName() will strip the binary name of
-////        // the immediatly enclosing class, we are now looking at a
-////        // string that matches the regular expression "\$[0-9]*"
-////        // followed by a simple name (considering the simple of an
-////        // anonymous class to be the empty string).
-////
-////        // Remove leading "\$[0-9]*" from the name
-////        int length = simpleName.length();
-////        if (length < 1 || simpleName.charAt(0) != '$')
-////            throw new InternalError("Malformed class name");
-////        int index = 1;
-////        while (index < length && isAsciiDigit(simpleName.charAt(index)))
-////            index++;
-////        // Eventually, this is the empty string iff this is an anonymous class
-////        return simpleName.substring(index);
+        if (isArray())
+            return getComponentType().getSimpleName()+"[]";
+
+        String simpleName = getSimpleBinaryName();
+        if (simpleName == null) { // top level class
+            simpleName = getName();
+            return simpleName.substring(simpleName.lastIndexOf(".")+1); // strip the package name
+        }
+        // According to JLS3 "Binary Compatibility" (13.1) the binary
+        // name of non-package classes (not top level) is the binary
+        // name of the immediately enclosing class followed by a '$' followed by:
+        // (for nested and inner classes): the simple name.
+        // (for local classes): 1 or more digits followed by the simple name.
+        // (for anonymous classes): 1 or more digits.
+
+        // Since getSimpleBinaryName() will strip the binary name of
+        // the immediatly enclosing class, we are now looking at a
+        // string that matches the regular expression "\$[0-9]*"
+        // followed by a simple name (considering the simple of an
+        // anonymous class to be the empty string).
+
+        // Remove leading "\$[0-9]*" from the name
+        int length = simpleName.length();
+        if (length < 1 || simpleName.charAt(0) != '$')
+            throw new IllegalStateException("Malformed class name");
+        int index = 1;
+        while (index < length && isAsciiDigit(simpleName.charAt(index)))
+            index++;
+        // Eventually, this is the empty string iff this is an anonymous class
+        return simpleName.substring(index);
     }
 
+    /**
+     * Returns the "simple binary name" of the underlying class, i.e.,
+     * the binary name without the leading enclosing class name.
+     * Returns {@code null} if the underlying class is a top level
+     * class.
+     */
+    private String getSimpleBinaryName() {
+        Class<?> enclosingClass = null; // XXX getEnclosingClass();
+        if (enclosingClass == null) // top level class
+            return null;
+        // Otherwise, strip the enclosing class' name
+        try {
+            return getName().substring(enclosingClass.getName().length());
+        } catch (IndexOutOfBoundsException ex) {
+            throw new IllegalStateException("Malformed class name");
+        }
+    }
+    
     /**
      * Character.isDigit answers {@code true} to some non-ascii
      * digits.  This one does not.

@@ -71,6 +71,22 @@ function java_lang_String_indexOfIII(arg0,ch,from) {
     return arg0.toString().indexOf(ch, from);
 }
 
+function java_lang_String_lastIndexOfII(arg0,ch) {
+    if (typeof ch === 'number') ch = String.fromCharCode(ch);
+    return arg0.toString().lastIndexOf(ch);
+}
+function java_lang_String_lastIndexOfIII(arg0,ch,from) {
+    if (typeof ch === 'number') ch = String.fromCharCode(ch);
+    return arg0.toString().lastIndexOf(ch, from);
+}
+function java_lang_String_lastIndexOfILjava_lang_String(arg0,s) {
+    return arg0.toString().lastIndexOf(s.toString());
+}
+function java_lang_String_lastIndexOfILjava_lang_StringI(arg0,s,from) {
+    return arg0.toString().lastIndexOf(s.toString(), from);
+}
+
+
 function java_lang_String_getCharsVACI(self, arr, to) {
     var s = self.toString();
     for (var i = 0; i < s.length; i++) {
@@ -434,6 +450,10 @@ String.prototype.startsWithZLjava_lang_String=java_lang_String_startsWithZLjava_
 String.prototype.endsWithZLjava_lang_String=java_lang_String_endsWithZLjava_lang_String;
 String.prototype.indexOfII=java_lang_String_indexOfII;
 String.prototype.indexOfIII=java_lang_String_indexOfIII;
+String.prototype.lastIndexOfII=java_lang_String_lastIndexOfII;
+String.prototype.lastIndexOfIII=java_lang_String_lastIndexOfIII;
+String.prototype.lastIndexOfILjava_lang_String=java_lang_String_lastIndexOfILjava_lang_String;
+String.prototype.lastIndexOfILjava_lang_StringI=java_lang_String_lastIndexOfILjava_lang_StringI;
 
 String.prototype.$instOf_java_lang_String = true;
 String.prototype.$instOf_java_io_Serializable = true;
@@ -1893,121 +1913,6 @@ function java_lang_String_endsWithZLjava_lang_String(arg0,arg1) {
     case 14: return stack.pop(); // 172
   }
 }
-function java_lang_String_lastIndexOfII(arg0,arg1) {
-  var arg2;
-;
-  var stack = new Array(4);
-  var gt = 0;
-  for(;;) switch(gt) {
-    case 0: stack.push(arg0); // 42
-    case 1: stack.push(arg1); // 27
-    case 2: stack.push(arg0); // 42
-    case 3: stack.push(stack.pop().count); // 180 1 97
-    case 6: stack.push(1); // 4
-    case 7: { var tmp = stack.pop(); stack.push(stack.pop() - tmp); } // 100
-    case 8: { var v1 = stack.pop(); var v0 = stack.pop(); var self = stack.pop(); stack.push(self.lastIndexOfIII(self, v0, v1)); } // 182 1 136
-    case 11: return stack.pop(); // 172
-  }
-}
-function java_lang_String_lastIndexOfIII(arg0,arg1,arg2) {
-  var arg3;
-  var arg4;
-  var arg5;
-  var arg6;
-  var arg7;
-  var arg8;
-;
-  var stack = new Array(3);
-  var gt = 0;
-  for(;;) switch(gt) {
-    case 0: stack.push(arg0); // 42
-    case 1: stack.push(stack.pop().offset); // 180 1 99
-    case 4: arg3 = stack.pop(); // 62
-    case 5: stack.push(arg0); // 42
-    case 6: stack.push(stack.pop().value); // 180 1 100
-    case 9: arg4 = stack.pop() // 58 4
-    case 11: stack.push(arg0); // 42
-    case 12: stack.push(stack.pop().offset); // 180 1 99
-    case 15: stack.push(arg2); // 28
-    case 16: stack.push(arg0); // 42
-    case 17: stack.push(stack.pop().count); // 180 1 97
-    case 20: if (stack.pop() > stack.pop()) { gt = 32; continue; } // 161 0 12
-    case 23: stack.push(arg0); // 42
-    case 24: stack.push(stack.pop().count); // 180 1 97
-    case 27: stack.push(1); // 4
-    case 28: { var tmp = stack.pop(); stack.push(stack.pop() - tmp); } // 100
-    case 29: gt = 33; continue; // 167 0 4
-    case 32: stack.push(arg2); // 28
-    case 33: stack.push(stack.pop() + stack.pop()); // 96
-    case 34: arg5 = stack.pop() // 54 5
-    case 36: stack.push(arg1); // 27
-    case 37: stack.push(65536); // 18 3
-    case 39: if (stack.pop() <= stack.pop()) { gt = 73; continue; } // 162 0 34
-    case 42: stack.push(arg5); // 21 5
-    case 44: stack.push(arg3); // 29
-    case 45: if (stack.pop() > stack.pop()) { gt = 71; continue; } // 161 0 26
-    case 48: stack.push(arg4); // 25 4
-    case 50: stack.push(arg5); // 21 5
-    case 52: { var indx = stack.pop(); stack.push(stack.pop()[indx]); } // 52
-    case 53: stack.push(arg1); // 27
-    case 54: if (stack.pop() != stack.pop()) { gt = 65; continue; } // 160 0 11
-    case 57: stack.push(arg5); // 21 5
-    case 59: stack.push(arg0); // 42
-    case 60: stack.push(stack.pop().offset); // 180 1 99
-    case 63: { var tmp = stack.pop(); stack.push(stack.pop() - tmp); } // 100
-    case 64: return stack.pop(); // 172
-    case 65: arg5 += 255; // 132 5 255
-    case 68: gt = 42; continue; // 167 255 230
-    case 71:  // 2
-    case 72: return stack.pop(); // 172
-    case 73: stack.push(arg0); // 42
-    case 74: stack.push(stack.pop().offset); // 180 1 99
-    case 77: stack.push(arg0); // 42
-    case 78: stack.push(stack.pop().count); // 180 1 97
-    case 81: stack.push(stack.pop() + stack.pop()); // 96
-    case 82: arg6 = stack.pop() // 54 6
-    case 84: stack.push(arg1); // 27
-    case 85: stack.push(1114111); // 18 4
-    case 87: if (stack.pop() < stack.pop()) { gt = 154; continue; } // 163 0 67
-    case 90: stack.push(arg1); // 27
-    case 91: { var v0 = stack.pop(); stack.push(java_lang_Character_toCharsACI(v0)); } // 184 1 109
-    case 94: arg7 = stack.pop() // 58 7
-    case 96: stack.push(arg5); // 21 5
-    case 98: stack.push(arg3); // 29
-    case 99: if (stack.pop() > stack.pop()) { gt = 154; continue; } // 161 0 55
-    case 102: stack.push(arg4); // 25 4
-    case 104: stack.push(arg5); // 21 5
-    case 106: { var indx = stack.pop(); stack.push(stack.pop()[indx]); } // 52
-    case 107: stack.push(arg7); // 25 7
-    case 109: stack.push(0); // 3
-    case 110: { var indx = stack.pop(); stack.push(stack.pop()[indx]); } // 52
-    case 111: if (stack.pop() != stack.pop()) { gt = 148; continue; } // 160 0 37
-    case 114: stack.push(arg5); // 21 5
-    case 116: stack.push(1); // 4
-    case 117: stack.push(stack.pop() + stack.pop()); // 96
-    case 118: stack.push(arg6); // 21 6
-    case 120: if (stack.pop() != stack.pop()) { gt = 126; continue; } // 160 0 6
-    case 123: gt = 154; continue; // 167 0 31
-    case 126: stack.push(arg4); // 25 4
-    case 128: stack.push(arg5); // 21 5
-    case 130: stack.push(1); // 4
-    case 131: stack.push(stack.pop() + stack.pop()); // 96
-    case 132: { var indx = stack.pop(); stack.push(stack.pop()[indx]); } // 52
-    case 133: stack.push(arg7); // 25 7
-    case 135: stack.push(1); // 4
-    case 136: { var indx = stack.pop(); stack.push(stack.pop()[indx]); } // 52
-    case 137: if (stack.pop() != stack.pop()) { gt = 148; continue; } // 160 0 11
-    case 140: stack.push(arg5); // 21 5
-    case 142: stack.push(arg0); // 42
-    case 143: stack.push(stack.pop().offset); // 180 1 99
-    case 146: { var tmp = stack.pop(); stack.push(stack.pop() - tmp); } // 100
-    case 147: return stack.pop(); // 172
-    case 148: arg5 += 255; // 132 5 255
-    case 151: gt = 96; continue; // 167 255 201
-    case 154:  // 2
-    case 155: return stack.pop(); // 172
-  }
-}
 function java_lang_String_indexOfILjava_lang_String(arg0,arg1) {
   var arg2;
 ;
@@ -2144,43 +2049,6 @@ function java_lang_String_indexOfIACIIACIII(arg0,arg1,arg2,arg3,arg4,arg5,arg6) 
     case 161: gt = 53; continue; // 167 255 148
     case 164:  // 2
     case 165: return stack.pop(); // 172
-  }
-}
-function java_lang_String_lastIndexOfILjava_lang_String(arg0,arg1) {
-  var arg2;
-;
-  var stack = new Array(3);
-  var gt = 0;
-  for(;;) switch(gt) {
-    case 0: stack.push(arg0); // 42
-    case 1: stack.push(arg1); // 43
-    case 2: stack.push(arg0); // 42
-    case 3: stack.push(stack.pop().count); // 180 1 97
-    case 6: { var v1 = stack.pop(); var v0 = stack.pop(); var self = stack.pop(); stack.push(self.lastIndexOfILjava_lang_StringI(self, v0, v1)); } // 182 1 151
-    case 9: return stack.pop(); // 172
-  }
-}
-function java_lang_String_lastIndexOfILjava_lang_StringI(arg0,arg1,arg2) {
-  var arg3;
-;
-  var stack = new Array(7);
-  var gt = 0;
-  for(;;) switch(gt) {
-    case 0: stack.push(arg0); // 42
-    case 1: stack.push(stack.pop().value); // 180 1 100
-    case 4: stack.push(arg0); // 42
-    case 5: stack.push(stack.pop().offset); // 180 1 99
-    case 8: stack.push(arg0); // 42
-    case 9: stack.push(stack.pop().count); // 180 1 97
-    case 12: stack.push(arg1); // 43
-    case 13: stack.push(stack.pop().value); // 180 1 100
-    case 16: stack.push(arg1); // 43
-    case 17: stack.push(stack.pop().offset); // 180 1 99
-    case 20: stack.push(arg1); // 43
-    case 21: stack.push(stack.pop().count); // 180 1 97
-    case 24: stack.push(arg2); // 28
-    case 25: { var v6 = stack.pop(); var v5 = stack.pop(); var v4 = stack.pop(); var v3 = stack.pop(); var v2 = stack.pop(); var v1 = stack.pop(); var v0 = stack.pop(); stack.push(java_lang_String_lastIndexOfAIACAIAIACAIAIAI(v0, v1, v2, v3, v4, v5, v6)); } // 184 1 145
-    case 28: return stack.pop(); // 172
   }
 }
 function java_lang_String_lastIndexOfIACIIACIII(arg0,arg1,arg2,arg3,arg4,arg5,arg6) {
