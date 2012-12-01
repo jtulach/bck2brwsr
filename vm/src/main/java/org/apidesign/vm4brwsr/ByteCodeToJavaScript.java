@@ -107,17 +107,18 @@ public abstract class ByteCodeToJavaScript {
                 generateInstanceMethod("\n    p.", m);
             }
         }
+        out.append("\n    p.constructor = CLS;");
         out.append("\n    p.$instOf_").append(className).append(" = true;");
         for (String superInterface : jc.getSuperInterfaces()) {
             out.append("\n    p.$instOf_").append(superInterface.replace('/', '_')).append(" = true;");
         }
         out.append("\n    CLS.$class = java_lang_Class(true);");
         out.append("\n    CLS.$class.jvmName = '").append(jc.getClassName()).append("';");
-        out.append("\n      if (arguments.length === 0) {");
-        out.append("\n        return new CLS();");
-        out.append("\n      }");
         out.append("\n  }");
         out.append("\n  if (arguments.length === 0) {");
+        out.append("\n    if (!(this instanceof CLS)) {");
+        out.append("\n      return new CLS();");
+        out.append("\n    }");
         for (FieldData v : jc.getFields()) {
             if (!v.isStatic()) {
                 out.append("\n    this.fld_").
@@ -126,7 +127,7 @@ public abstract class ByteCodeToJavaScript {
         }
         out.append("\n    return this;");
         out.append("\n  }");
-        out.append("\n  return new CLS;");
+        out.append("\n  return arguments[0] ? new CLS() : CLS.prototype;");
         out.append("\n}");
         StringBuilder sb = new StringBuilder();
         for (String init : toInitilize.toArray()) {
@@ -142,7 +143,7 @@ public abstract class ByteCodeToJavaScript {
         final String mn = findMethodName(m, argsCnt);
         out.append(prefix).append(mn).append(" = function");
         if (mn.equals("classV")) {
-            toInitilize.add(className(jc) + "(true)." + mn);
+            toInitilize.add(className(jc) + "(false)." + mn);
         }
         out.append('(');
         String space = "";
@@ -585,9 +586,9 @@ public abstract class ByteCodeToJavaScript {
                 case opc_new: {
                     int indx = readIntArg(byteCodes, i);
                     String ci = jc.getClassName(indx);
-                    out.append("s.push(");
-                    out.append("new ").append(ci.replace('/','_'));
-                    out.append(");");
+                    out.append("s.push(new ");
+                    out.append(ci.replace('/','_'));
+                    out.append("());");
                     addReference(ci);
                     i += 2;
                     break;
@@ -888,7 +889,7 @@ public abstract class ByteCodeToJavaScript {
         }
         final String in = mi[0];
         out.append(in.replace('/', '_'));
-        out.append("(true).");
+        out.append("(false).");
         out.append(mn);
         out.append('(');
         String sep = "";

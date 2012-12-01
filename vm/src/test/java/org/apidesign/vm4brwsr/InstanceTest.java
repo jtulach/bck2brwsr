@@ -18,9 +18,7 @@
 package org.apidesign.vm4brwsr;
 
 import javax.script.Invocable;
-import javax.script.ScriptException;
 import org.testng.annotations.Test;
-import static org.testng.Assert.*;
 import org.testng.annotations.BeforeClass;
 
 /**
@@ -107,6 +105,22 @@ public class InstanceTest {
             "Five signals all is good",
             Instance.class, "castsWorkIZ",
             Double.valueOf(5.0), true
+        );
+    }
+    
+    @Test public void sharedConstructor() throws Exception {
+        assertExec(
+            "Constructor of first and 2nd instance should be the same",
+            Instance.class, "sharedConstructorZ",
+            Double.valueOf(1.0)
+        );
+    }
+
+    @Test public void differentConstructor() throws Exception {
+        assertExec(
+            "Constructor of X and Y should be the different",
+            Instance.class, "differentConstructorZ",
+            Double.valueOf(0)
         );
     }
     
