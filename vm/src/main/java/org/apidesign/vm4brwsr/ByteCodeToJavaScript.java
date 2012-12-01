@@ -107,15 +107,16 @@ public abstract class ByteCodeToJavaScript {
                 generateInstanceMethod("\n    p.", m);
             }
         }
+        out.append("\n    p.constructor = CLS;");
         out.append("\n    p.$instOf_").append(className).append(" = true;");
         for (String superInterface : jc.getSuperInterfaces()) {
             out.append("\n    p.$instOf_").append(superInterface.replace('/', '_')).append(" = true;");
         }
-        out.append("\n      if (arguments.length === 0) {");
-        out.append("\n        return new CLS();");
-        out.append("\n      }");
         out.append("\n  }");
         out.append("\n  if (arguments.length === 0) {");
+        out.append("\n    if (!(this instanceof CLS)) {");
+        out.append("\n      return new CLS();");
+        out.append("\n    }");
         for (FieldData v : jc.getFields()) {
             if (!v.isStatic()) {
                 out.append("\n    this.fld_").
@@ -583,9 +584,9 @@ public abstract class ByteCodeToJavaScript {
                 case opc_new: {
                     int indx = readIntArg(byteCodes, i);
                     String ci = jc.getClassName(indx);
-                    out.append("s.push(");
-                    out.append("new ").append(ci.replace('/','_'));
-                    out.append(");");
+                    out.append("s.push(new ");
+                    out.append(ci.replace('/','_'));
+                    out.append("());");
                     addReference(ci);
                     i += 2;
                     break;
