@@ -30,4 +30,29 @@ final class AnnotationImpl implements Annotation {
     static <T extends Annotation> T create(Class<T> annoClass, Object values) {
         return create(new AnnotationImpl(), annoClass.getName().replace('.', '_'), values);
     }
+
+    static Annotation[] create(Object anno) {
+        String[] names = findNames(anno);
+        Annotation[] ret = new Annotation[names.length];
+        for (int i = 0; i < names.length; i++) {
+            String n = names[i].substring(1, names[i].length() - 1).replace('/', '_');
+            ret[i] = create(new AnnotationImpl(), n, findData(anno, names[i]));
+        }
+        return ret;
+    }
+    @JavaScriptBody(args = "anno", body =
+          "var arr = new Array();"
+        + "for (p in anno) {"
+        + "  arr.push(p);"
+        + "}"
+        + "return arr;"
+    )
+    private static String[] findNames(Object anno) {
+        throw new UnsupportedOperationException();
+    }
+
+    @JavaScriptBody(args={ "anno", "p"}, body="return anno[p];")
+    private static Object findData(Object anno, String p) {
+        throw new UnsupportedOperationException();
+    }
 }

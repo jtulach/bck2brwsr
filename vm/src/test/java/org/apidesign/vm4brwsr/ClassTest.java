@@ -80,6 +80,9 @@ public class ClassTest {
     @Test public void jsStringAnnotation() throws Exception {
         assertExec("Check class annotation", Classes.class, "getNamerLjava_lang_StringZ", "my text", true);
     }
+    @Test public void jsStringAnnotationFromArray() throws Exception {
+        assertExec("Check class annotation", Classes.class, "getNamerLjava_lang_StringZ", "my text", false);
+    }
     
     private static CharSequence codeSeq;
     private static Invocable code;

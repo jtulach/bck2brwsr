@@ -804,12 +804,17 @@ public final
         return getAnnotation(annotationClass) != null;
     }
 
+    @JavaScriptBody(args = "self", body = "return self.anno;")
+    private Object getAnnotationData() {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * @since 1.5
      */
     public Annotation[] getAnnotations() {
-        throw new UnsupportedOperationException();
+        Object data = getAnnotationData();
+        return data == null ? new Annotation[0] : AnnotationImpl.create(data);
     }
 
     /**
