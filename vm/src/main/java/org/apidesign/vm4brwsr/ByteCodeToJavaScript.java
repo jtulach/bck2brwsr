@@ -174,7 +174,7 @@ public abstract class ByteCodeToJavaScript {
             out.append("  var s = new Array();\n");
             produceCode(code);
         } else {
-            out.append("  /* no code found for ").append(m.getInternalSig()).append(" */\n");
+            out.append("  throw 'no code found for ").append(m.getInternalSig()).append("';\n");
         }
         out.append("};");
     }
@@ -208,7 +208,7 @@ public abstract class ByteCodeToJavaScript {
             out.append(";\n  var s = new Array();\n");
             produceCode(code);
         } else {
-            out.append("  /* no code found for ").append(m.getInternalSig()).append(" */\n");
+            out.append("  throw 'no code found for ").append(m.getInternalSig()).append("';\n");
         }
         out.append("};");
     }

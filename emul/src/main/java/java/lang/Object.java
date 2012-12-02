@@ -38,6 +38,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  */
 public class Object {
 
+    @JavaScriptBody(args = {}, body = "")
     private static native void registerNatives();
     static {
         registerNatives();
