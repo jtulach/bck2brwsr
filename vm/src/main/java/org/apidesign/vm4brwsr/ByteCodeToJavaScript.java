@@ -102,10 +102,22 @@ public abstract class ByteCodeToJavaScript {
                 append(sc.replace('/', '_')).append("(true);");
             out.append("\n    var c = p;");
         } else {
-            out.append("\n    var p = ").append(proto[1]).append(";");
+            out.append("\n    var p = CLS.prototype = ").append(proto[1]).append(";");
             out.append("\n    var c = ").append(proto[0]).append(";");
         }
         for (MethodData m : jc.getMethods()) {
+            byte[] onlyArr = m.findAnnotationData(true);
+            String[] only = findAnnotation(onlyArr, jc, 
+                "org.apidesign.bck2brwsr.core.JavaScriptOnly", 
+                "name", "value"
+            );
+            if (only != null) {
+                if (only[0] != null && only[1] != null) {
+                    out.append("\n    p.").append(only[0]).append(" = ")
+                        .append(only[1]).append(";");
+                }
+                continue;
+            }
             if (m.isStatic()) {
                 generateStaticMethod("\n    c.", m, toInitilize);
             } else {
@@ -123,6 +135,18 @@ public abstract class ByteCodeToJavaScript {
         out.append("\n      return new CLS();");
         out.append("\n    }");
         for (FieldData v : jc.getFields()) {
+            byte[] onlyArr = v.findAnnotationData(true);
+            String[] only = findAnnotation(onlyArr, jc, 
+                "org.apidesign.bck2brwsr.core.JavaScriptOnly", 
+                "name", "value"
+            );
+            if (only != null) {
+                if (only[0] != null && only[1] != null) {
+                    out.append("\n    p.").append(only[0]).append(" = ")
+                        .append(only[1]).append(";");
+                }
+                continue;
+            }
             if (!v.isStatic()) {
                 out.append("\n    this.fld_").
                     append(v.getName()).append(initField(v));

@@ -25,8 +25,11 @@
 
 package java.lang;
 
-import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import java.util.Comparator;
+import org.apidesign.bck2brwsr.core.ExtraJavaScript;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+import org.apidesign.bck2brwsr.core.JavaScriptOnly;
+import org.apidesign.bck2brwsr.core.JavaScriptPrototype;
 
 /**
  * The <code>String</code> class represents character strings. All
@@ -99,25 +102,41 @@ import java.util.Comparator;
 
 @ExtraJavaScript(
     resource="/org/apidesign/vm4brwsr/emul/java_lang_String.js",
-    processByteCode=false
+    processByteCode=true
 )
+@JavaScriptPrototype(container = "String.prototype", prototype = "new String")
 public final class String
     implements java.io.Serializable, Comparable<String>, CharSequence
 {
+    @JavaScriptOnly
     /** The value is used for character storage. */
     private final char value[];
 
+    @JavaScriptOnly
     /** The offset is the first index of the storage that is used. */
     private final int offset;
 
+    @JavaScriptOnly
     /** The count is the number of characters in the String. */
     private final int count;
 
+    @JavaScriptOnly
     /** Cache the hash code for the string */
     private int hash; // Default to 0
+    
+    /** real string to delegate to */
+    private Object r;
 
     /** use serialVersionUID from JDK 1.0.2 for interoperability */
     private static final long serialVersionUID = -6849794470754667710L;
+    
+    @JavaScriptOnly(name="toString", value="function() { return this.fld_r; }")
+    private static void jsToString() {
+    }
+    
+    @JavaScriptOnly(name="valueOf", value="function() { return this.toString().valueOf(); }")
+    private static void jsValudOf() {
+    }
 
     /**
      * Class String is special cased within the Serialization Stream Protocol.
@@ -139,6 +158,7 @@ public final class String
      * an empty character sequence.  Note that use of this constructor is
      * unnecessary since Strings are immutable.
      */
+    @JavaScriptBody(args = "self", body = "self.fld_r = '';")
     public String() {
         this.offset = 0;
         this.count = 0;
@@ -155,6 +175,7 @@ public final class String
      * @param  original
      *         A {@code String}
      */
+    @JavaScriptBody(args = {"self", "original"}, body = "self.fld_r = original.toString();")
     public String(String original) {
         int size = original.count;
         char[] originalValue = original.value;
@@ -184,6 +205,12 @@ public final class String
      * @param  value
      *         The initial value of the string
      */
+    @JavaScriptBody(args = { "self", "charArr" }, body=
+        "for (var i = 0; i < charArr.length; i++) {\n"
+      + "  if (typeof charArr[i] === 'number') charArr[i] = String.fromCharCode(charArr[i]);\n"
+      + "}\n"
+      + "self.fld_r = charArr.join('');\n"
+    )
     public String(char value[]) {
         int size = value.length;
         this.offset = 0;
@@ -212,6 +239,13 @@ public final class String
      *          If the {@code offset} and {@code count} arguments index
      *          characters outside the bounds of the {@code value} array
      */
+    @JavaScriptBody(args = { "self", "charArr", "off", "cnt" }, body =
+        "var up = off + cnt;\n" +
+        "for (var i = off; i < up; i++) {\n" +
+        "  if (typeof charArr[i] === 'number') charArr[i] = String.fromCharCode(charArr[i]);\n" +
+        "}\n" +
+        "self.fld_r = charArr.slice(off, up).join(\"\");\n"
+    )
     public String(char value[], int offset, int count) {
         if (offset < 0) {
             throw new StringIndexOutOfBoundsException(offset);
@@ -613,10 +647,10 @@ public final class String
      *         A {@code StringBuffer}
      */
     public String(StringBuffer buffer) {
-        String result = buffer.toString();
-        this.value = result.value;
-        this.count = result.count;
-        this.offset = result.offset;
+        r = buffer.toString();
+        this.value = null;
+        this.count = 0;
+        this.offset = -1;
     }
 
     /**
@@ -635,10 +669,10 @@ public final class String
      * @since  1.5
      */
     public String(StringBuilder builder) {
-        String result = builder.toString();
-        this.value = result.value;
-        this.count = result.count;
-        this.offset = result.offset;
+        r = builder.toString();
+        this.value = null;
+        this.count = 0;
+        this.offset = -1;
     }
 
     /**
@@ -649,6 +683,7 @@ public final class String
      * @return  the length of the sequence of characters represented by this
      *          object.
      */
+    @JavaScriptBody(args = "self", body = "return self.toString().length;")
     public int length() {
         return count;
     }
@@ -661,6 +696,7 @@ public final class String
      *
      * @since 1.6
      */
+    @JavaScriptBody(args = "self", body="return self.toString().length === 0;")
     public boolean isEmpty() {
         return count == 0;
     }
@@ -683,6 +719,9 @@ public final class String
      *             argument is negative or not less than the length of this
      *             string.
      */
+    @JavaScriptBody(args = { "self", "index" }, 
+        body = "return self.toString().charCodeAt(index);"
+    )
     public char charAt(int index) {
         if ((index < 0) || (index >= count)) {
             throw new StringIndexOutOfBoundsException(index);
@@ -809,6 +848,12 @@ public final class String
      * Copy characters from this string into dst starting at dstBegin.
      * This method doesn't perform any range checking.
      */
+    @JavaScriptBody(args = { "self", "arr", "to" }, body = 
+        "var s = self.toString();\n" +
+        "for (var i = 0; i < s.length; i++) {\n" +
+        "   arr[to++] = s[i];\n" +
+        "}"
+    )
     void getChars(char dst[], int dstBegin) {
         AbstractStringBuilder.arraycopy(value, offset, dst, dstBegin, count);
     }
@@ -843,6 +888,12 @@ public final class String
      *            <li><code>dstBegin+(srcEnd-srcBegin)</code> is larger than
      *                <code>dst.length</code></ul>
      */
+    @JavaScriptBody(args = { "self", "beg", "end", "arr", "dst" }, body=
+        "var s = self.toString();\n" +
+        "while (beg < end) {\n" +
+        "  arr[dst++] = s[beg++];\n" +
+        "}\n"
+    )
     public void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin) {
         if (srcBegin < 0) {
             throw new StringIndexOutOfBoundsException(srcBegin);
@@ -1010,6 +1061,10 @@ public final class String
      * @see  #compareTo(String)
      * @see  #equalsIgnoreCase(String)
      */
+    @JavaScriptBody(args = { "self", "obj" }, body = 
+        "return obj.$instOf_java_lang_String && "
+        + "self.toString() === obj.toString();"
+    )
     public boolean equals(Object anObject) {
         if (this == anObject) {
             return true;
@@ -1428,6 +1483,10 @@ public final class String
      *          this.substring(toffset).startsWith(prefix)
      *          </pre>
      */
+    @JavaScriptBody(args = { "self", "find", "from" }, body=
+        "find = find.toString();\n" +
+        "return self.toString().substring(from, find.length) === find;\n"
+    )
     public boolean startsWith(String prefix, int toffset) {
         char ta[] = value;
         int to = offset + toffset;
@@ -1491,6 +1550,15 @@ public final class String
      *
      * @return  a hash code value for this object.
      */
+    @JavaScriptBody(args = "self", body = 
+        "var h = 0;\n" +
+        "var s = self.toString();\n" +
+        "for (var i = 0; i < s.length; i++) {\n" +
+        "  var high = (h >> 16) & 0xffff, low = h & 0xffff;\n" +
+        "  h = (((((31 * high) & 0xffff) << 16) >>> 0) + (31 * low) + s.charCodeAt(i)) & 0xffffffff;\n" +
+        "}\n" +
+        "return h;\n"
+    )
     public int hashCode() {
         int h = hash;
         if (h == 0 && count > 0) {
@@ -1573,6 +1641,10 @@ public final class String
      *          than or equal to <code>fromIndex</code>, or <code>-1</code>
      *          if the character does not occur.
      */
+    @JavaScriptBody(args = { "self", "ch", "from" }, body = 
+        "if (typeof ch === 'number') ch = String.fromCharCode(ch);\n" +
+        "return self.toString().indexOf(ch, from);\n"
+    )
     public int indexOf(int ch, int fromIndex) {
         if (fromIndex < 0) {
             fromIndex = 0;
@@ -1749,6 +1821,9 @@ public final class String
      *          starting at the specified index,
      *          or {@code -1} if there is no such occurrence.
      */
+    @JavaScriptBody(args = { "self", "str", "fromIndex" }, body =
+        "return self.toString().indexOf(str.toString(), fromIndex) >= 0;"
+    )
     public int indexOf(String str, int fromIndex) {
         return indexOf(value, offset, count,
                        str.value, str.offset, str.count, fromIndex);
@@ -1947,6 +2022,9 @@ public final class String
      *             <code>beginIndex</code> is larger than
      *             <code>endIndex</code>.
      */
+    @JavaScriptBody(args = { "self", "beginIndex", "endIndex" }, body = 
+        "return self.toString().substring(beginIndex, endIndex);"
+    )
     public String substring(int beginIndex, int endIndex) {
         if (beginIndex < 0) {
             throw new StringIndexOutOfBoundsException(beginIndex);
@@ -2053,6 +2131,18 @@ public final class String
      * @return  a string derived from this string by replacing every
      *          occurrence of <code>oldChar</code> with <code>newChar</code>.
      */
+    @JavaScriptBody(args = { "self", "arg1", "arg2" }, body =
+        "if (typeof arg1 === 'number') arg1 = String.fromCharCode(arg1);\n" +
+        "if (typeof arg2 === 'number') arg2 = String.fromCharCode(arg2);\n" +
+        "var s = self.toString();\n" +
+        "for (;;) {\n" +
+        "  var ret = s.replace(arg1, arg2);\n" +
+        "  if (ret === s) {\n" +
+        "    return ret;\n" +
+        "  }\n" +
+        "  s = ret;\n" +
+        "}"
+    )
     public String replace(char oldChar, char newChar) {
         if (oldChar != newChar) {
             int len = count;
@@ -2739,6 +2829,7 @@ public final class String
      *
      * @return  the string itself.
      */
+    @JavaScriptBody(args = "self", body = "return self.toString();")
     public String toString() {
         return this;
     }
@@ -2750,6 +2841,7 @@ public final class String
      *          of this string and whose contents are initialized to contain
      *          the character sequence represented by this string.
      */
+    @JavaScriptBody(args = "self", body = "return self.toString().split('');")
     public char[] toCharArray() {
         char result[] = new char[count];
         getChars(0, count, result, 0);

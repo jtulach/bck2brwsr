@@ -163,4 +163,13 @@ public class FieldData implements RuntimeConstants  {
     public Vector getAttributes(){
         return attrs;
     }
+
+    public byte[] findAnnotationData(boolean classRetention) {
+        String n = classRetention ?
+            "RuntimeInvisibleAnnotations" : // NOI18N
+            "RuntimeVisibleAnnotations"; // NOI18N
+        AttrData[] arr = new AttrData[attrs.size()];
+        attrs.copyInto(arr);
+        return ClassData.findAttr(n, arr);
+    }
 }
