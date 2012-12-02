@@ -24,6 +24,7 @@ import java.net.MalformedURLException;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
+@ClassesMarker(number = 10)
 public class Classes {
     public static boolean equalsClassesOfExceptions() {
         return MalformedURLException.class.getSuperclass() == IOException.class;
@@ -53,5 +54,12 @@ public class Classes {
             return ioe.getClass() == IOException.class;
         }
         throw new IllegalStateException("Not a subtype: " + ioe);
+    }
+    public static int getMarker() {
+        if (!Classes.class.isAnnotationPresent(ClassesMarker.class)) {
+            return -2;
+        }
+        ClassesMarker cm = Classes.class.getAnnotation(ClassesMarker.class);
+        return cm == null ? -1 : cm.number();
     }
 }

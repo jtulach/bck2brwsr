@@ -37,7 +37,15 @@ public class AnnotationParser {
     protected AnnotationParser() {
     }
 
-    protected void visitAttr(String type, String attr, String value) {
+    protected void visitAnnotationStart(String type) throws IOException {
+    }
+
+    protected void visitAnnotationEnd(String type) throws IOException {
+    }
+    
+    protected void visitAttr(
+        String type, String attr, String value
+    ) throws IOException {
     }
     
     /** Initialize the parsing with constant pool from <code>cd</code>.
@@ -66,11 +74,13 @@ public class AnnotationParser {
     private void readAnno(DataInputStream dis, ClassData cd) throws IOException {
         int type = dis.readUnsignedShort();
         String typeName = cd.StringValue(type);
+        visitAnnotationStart(typeName);
     	int cnt = dis.readUnsignedShort();
     	for (int i = 0; i < cnt; i++) {
             String attrName = cd.StringValue(dis.readUnsignedShort());
             readValue(dis, cd, typeName, attrName);
         }
+        visitAnnotationEnd(typeName);
     }
 
     private void readValue(DataInputStream dis, ClassData cd, String typeName, String attrName) 

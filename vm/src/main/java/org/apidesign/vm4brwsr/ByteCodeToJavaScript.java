@@ -119,6 +119,12 @@ public abstract class ByteCodeToJavaScript {
         out.append("\n    CLS.$class.jvmName = '").append(jc.getClassName()).append("';");
         out.append("\n    CLS.$class.superclass = sprcls;");
         out.append("\n    CLS.$class.cnstr = CLS;");
+        byte[] classAnno = jc.findAnnotationData(false);
+        if (classAnno != null) {
+            out.append("\n    CLS.$class.anno = {");
+            generateAnno(jc, out, classAnno);
+            out.append("\n    };");
+        }
         out.append("\n  }");
         out.append("\n  if (arguments.length === 0) {");
         out.append("\n    if (!(this instanceof CLS)) {");
@@ -1084,5 +1090,32 @@ public abstract class ByteCodeToJavaScript {
             }
         }
         return " = null;";
+    }
+
+    private static void generateAnno(ClassData cd, final Appendable out, byte[] data) throws IOException {
+        AnnotationParser ap = new AnnotationParser() {
+            int cnt;
+            
+            @Override
+            protected void visitAnnotationStart(String type) throws IOException {
+                out.append('"').append(type).append("\" : {\n");
+                cnt = 0;
+            }
+
+            @Override
+            protected void visitAnnotationEnd(String type) throws IOException {
+                out.append("\n}\n");
+            }
+            
+            @Override
+            protected void visitAttr(String type, String attr, String value) 
+            throws IOException {
+                if (cnt++ > 0) {
+                    out.append(",\n");
+                }
+                out.append(attr).append(" : ").append(value);
+            }
+        };
+        ap.parse(data, cd);
     }
 }

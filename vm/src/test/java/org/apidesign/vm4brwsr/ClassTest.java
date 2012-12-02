@@ -74,6 +74,9 @@ public class ClassTest {
     @Test public void jsNewInstance() throws Exception {
         assertExec("Check new instance", Classes.class, "newInstanceZ", Double.valueOf(1));
     }
+    @Test public void jsAnnotation() throws Exception {
+        assertExec("Check class annotation", Classes.class, "getMarkerI", Double.valueOf(10));
+    }
     
     private static CharSequence codeSeq;
     private static Invocable code;

@@ -774,14 +774,28 @@ public final
      * @throws NullPointerException {@inheritDoc}
      * @since 1.5
      */
-    public <A extends Annotation> A getAnnotation(Class<A> annotationClass) {
+    @JavaScriptBody(args = { "self", "ac" }, 
+        body = 
+          "if (self.anno) {"
+        + "  return self.anno['L' + ac.jvmName + ';'];"
+        + "}"
+    )
+    private Object getAnnotationData(Class<?> annotationClass) {
         throw new UnsupportedOperationException();
+    }
+    public <A extends Annotation> A getAnnotation(Class<A> annotationClass) {
+        Object data = getAnnotationData(annotationClass);
+        return data == null ? null : AnnotationImpl.create(annotationClass, data);
     }
 
     /**
      * @throws NullPointerException {@inheritDoc}
      * @since 1.5
      */
+    @JavaScriptBody(args = { "self", "ac" }, 
+        body = "if (self.anno && self.anno['L' + ac.jvmName + ';']) { return true; }"
+        + "else return false;"
+    )
     public boolean isAnnotationPresent(
         Class<? extends Annotation> annotationClass) {
         if (annotationClass == null)
