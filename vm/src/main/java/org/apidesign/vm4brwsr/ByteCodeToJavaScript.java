@@ -999,7 +999,7 @@ public abstract class ByteCodeToJavaScript {
             String body;
             
             @Override
-            protected void visitAttr(String type, String attr, String value) {
+            protected void visitAttr(String type, String attr, String at, String value) {
                 if (type.equals(jvmType)) {
                     if ("body".equals(attr)) {
                         body = value;
@@ -1057,7 +1057,7 @@ public abstract class ByteCodeToJavaScript {
         final String jvmType = "L" + className.replace('.', '/') + ";";
         AnnotationParser ap = new AnnotationParser() {
             @Override
-            protected void visitAttr(String type, String attr, String value) {
+            protected void visitAttr(String type, String attr, String at, String value) {
                 if (type.equals(jvmType)) {
                     found[0] = true;
                     for (int i = 0; i < attrNames.length; i++) {
@@ -1108,12 +1108,12 @@ public abstract class ByteCodeToJavaScript {
             }
             
             @Override
-            protected void visitAttr(String type, String attr, String value) 
+            protected void visitAttr(String type, String attr, String attrType, String value) 
             throws IOException {
                 if (cnt++ > 0) {
                     out.append(",\n");
                 }
-                out.append(attr).append(" : ").append(value);
+                out.append(attr).append(attrType).append(" : ").append(value);
             }
         };
         ap.parse(data, cd);

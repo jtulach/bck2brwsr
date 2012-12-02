@@ -44,7 +44,7 @@ public class AnnotationParser {
     }
     
     protected void visitAttr(
-        String type, String attr, String value
+        String annoType, String attr, String attrType, String value
     ) throws IOException {
     }
     
@@ -90,7 +90,13 @@ public class AnnotationParser {
             readAnno(dis, cd);
         } else if ("CFJZsSIDB".indexOf(type) >= 0) { // NOI18N
             int primitive = dis.readUnsignedShort();
-            visitAttr(typeName, attrName, cd.StringValue(primitive));
+            String attrType;
+            if (type == 's') {
+                attrType = "Ljava_lang_String";
+            } else {
+                attrType = "" + type;
+            }
+            visitAttr(typeName, attrName, attrType, cd.StringValue(primitive));
         } else if (type == 'c') {
             int cls = dis.readUnsignedShort();
         } else if (type == '[') {

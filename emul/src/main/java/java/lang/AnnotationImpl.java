@@ -19,7 +19,7 @@ final class AnnotationImpl implements Annotation {
     @JavaScriptBody(args = { "a", "n", "values" }, body =
           "var v = values;"
         + "for (p in values) {"
-        + "  a[p + 'I'] = function() { return v[p]; }"
+        + "  a[p] = function() { return v[p]; }"
         + "}"
         + "a['$instOf_' + n] = true;"
         + "return a;"
