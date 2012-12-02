@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+
 /**
  * Class {@code Object} is the root of the class hierarchy.
  * Every class has {@code Object} as a superclass. All objects,
@@ -36,6 +38,7 @@ package java.lang;
  */
 public class Object {
 
+    @JavaScriptBody(args = {}, body = "")
     private static native void registerNatives();
     static {
         registerNatives();
