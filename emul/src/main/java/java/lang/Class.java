@@ -770,10 +770,6 @@ public final
             throw new ClassCastException(this.toString());
     }
 
-    /**
-     * @throws NullPointerException {@inheritDoc}
-     * @since 1.5
-     */
     @JavaScriptBody(args = { "self", "ac" }, 
         body = 
           "if (self.anno) {"
@@ -783,6 +779,10 @@ public final
     private Object getAnnotationData(Class<?> annotationClass) {
         throw new UnsupportedOperationException();
     }
+    /**
+     * @throws NullPointerException {@inheritDoc}
+     * @since 1.5
+     */
     public <A extends Annotation> A getAnnotation(Class<A> annotationClass) {
         Object data = getAnnotationData(annotationClass);
         return data == null ? null : AnnotationImpl.create(annotationClass, data);

@@ -994,6 +994,10 @@ public abstract class ByteCodeToJavaScript {
         }
         final String jvmType = "Lorg/apidesign/bck2brwsr/core/JavaScriptBody;";
         class P extends AnnotationParser {
+            public P() {
+                super(false);
+            }
+            
             int cnt;
             String[] args = new String[30];
             String body;
@@ -1055,7 +1059,7 @@ public abstract class ByteCodeToJavaScript {
         final String[] values = new String[attrNames.length];
         final boolean[] found = { false };
         final String jvmType = "L" + className.replace('.', '/') + ";";
-        AnnotationParser ap = new AnnotationParser() {
+        AnnotationParser ap = new AnnotationParser(false) {
             @Override
             protected void visitAttr(String type, String attr, String at, String value) {
                 if (type.equals(jvmType)) {
@@ -1093,11 +1097,15 @@ public abstract class ByteCodeToJavaScript {
     }
 
     private static void generateAnno(ClassData cd, final Appendable out, byte[] data) throws IOException {
-        AnnotationParser ap = new AnnotationParser() {
+        AnnotationParser ap = new AnnotationParser(true) {
+            int anno;
             int cnt;
             
             @Override
             protected void visitAnnotationStart(String type) throws IOException {
+                if (anno++ > 0) {
+                    out.append(",");
+                }
                 out.append('"').append(type).append("\" : {\n");
                 cnt = 0;
             }

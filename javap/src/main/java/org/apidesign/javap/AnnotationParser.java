@@ -34,7 +34,10 @@ import java.io.IOException;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class AnnotationParser {
-    protected AnnotationParser() {
+    private final boolean textual;
+    
+    protected AnnotationParser(boolean textual) {
+        this.textual = textual;
     }
 
     protected void visitAnnotationStart(String type) throws IOException {
@@ -90,13 +93,17 @@ public class AnnotationParser {
             readAnno(dis, cd);
         } else if ("CFJZsSIDB".indexOf(type) >= 0) { // NOI18N
             int primitive = dis.readUnsignedShort();
+            String val = cd.stringValue(primitive, textual);
             String attrType;
             if (type == 's') {
                 attrType = "Ljava_lang_String";
+                if (textual) {
+                    val = '"' + val + '"';
+                }
             } else {
                 attrType = "" + type;
             }
-            visitAttr(typeName, attrName, attrType, cd.StringValue(primitive));
+            visitAttr(typeName, attrName, attrType, val);
         } else if (type == 'c') {
             int cls = dis.readUnsignedShort();
         } else if (type == '[') {

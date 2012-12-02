@@ -18,6 +18,7 @@
 package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.net.MalformedURLException;
 
 /**
@@ -25,6 +26,7 @@ import java.net.MalformedURLException;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @ClassesMarker(number = 10)
+@ClassesNamer(name = "my text")
 public class Classes {
     public static boolean equalsClassesOfExceptions() {
         return MalformedURLException.class.getSuperclass() == IOException.class;
@@ -61,5 +63,17 @@ public class Classes {
         }
         ClassesMarker cm = Classes.class.getAnnotation(ClassesMarker.class);
         return cm == null ? -1 : cm.number();
+    }
+    public static String getNamer(boolean direct) {
+        if (direct) {
+            ClassesNamer cm = Classes.class.getAnnotation(ClassesNamer.class);
+            return cm == null ? null : cm.name();
+        }
+        for (Annotation a : Classes.class.getAnnotations()) {
+            if (a instanceof ClassesNamer) {
+                return ((ClassesNamer)a).name();
+            }
+        }
+        return null;
     }
 }

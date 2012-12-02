@@ -77,6 +77,9 @@ public class ClassTest {
     @Test public void jsAnnotation() throws Exception {
         assertExec("Check class annotation", Classes.class, "getMarkerI", Double.valueOf(10));
     }
+    @Test public void jsStringAnnotation() throws Exception {
+        assertExec("Check class annotation", Classes.class, "getNamerLjava_lang_StringZ", "my text", true);
+    }
     
     private static CharSequence codeSeq;
     private static Invocable code;
