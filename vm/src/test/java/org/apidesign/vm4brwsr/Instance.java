@@ -117,4 +117,12 @@ public class Instance {
         
         return constructor(x) == constructor(y);
     }
+    @JavaScriptBody(args = {}, body = "return {};")
+    private static Object jsObj() {
+        return null;
+    }
+    
+    public static boolean iofObject() {
+        return jsObj() instanceof Object;
+    }
 }

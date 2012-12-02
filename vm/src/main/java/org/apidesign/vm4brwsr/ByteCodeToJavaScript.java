@@ -82,6 +82,10 @@ public abstract class ByteCodeToJavaScript {
                 return null;
             }
         }
+        String[] proto = findAnnotation(arrData, jc, 
+            "org.apidesign.bck2brwsr.core.JavaScriptPrototype", 
+            "container", "prototype"
+        );
         StringArray toInitilize = new StringArray();
         final String className = className(jc);
         out.append("\n\n").append(assignClass(className));
@@ -92,25 +96,26 @@ public abstract class ByteCodeToJavaScript {
                 out.append("\n  CLS.").append(v.getName()).append(initField(v));
             }
         }
-        // ClassName sc = jc.getSuperClass();
-        String sc = jc.getSuperClassName(); // with _
-        if (sc != null) {
+        if (proto == null) {
+            String sc = jc.getSuperClassName(); // with _
             out.append("\n    var p = CLS.prototype = ").
                 append(sc.replace('/', '_')).append("(true);");
+            out.append("\n    var c = p;");
         } else {
-            out.append("\n    var p = CLS.prototype;");
+            out.append("\n    var p = ").append(proto[1]).append(";");
+            out.append("\n    var c = ").append(proto[0]).append(";");
         }
         for (MethodData m : jc.getMethods()) {
             if (m.isStatic()) {
-                generateStaticMethod("\n    p.", m, toInitilize);
+                generateStaticMethod("\n    c.", m, toInitilize);
             } else {
-                generateInstanceMethod("\n    p.", m);
+                generateInstanceMethod("\n    c.", m);
             }
         }
-        out.append("\n    p.constructor = CLS;");
-        out.append("\n    p.$instOf_").append(className).append(" = true;");
+        out.append("\n    c.constructor = CLS;");
+        out.append("\n    c.$instOf_").append(className).append(" = true;");
         for (String superInterface : jc.getSuperInterfaces()) {
-            out.append("\n    p.$instOf_").append(superInterface.replace('/', '_')).append(" = true;");
+            out.append("\n    c.$instOf_").append(superInterface.replace('/', '_')).append(" = true;");
         }
         out.append("\n  }");
         out.append("\n  if (arguments.length === 0) {");

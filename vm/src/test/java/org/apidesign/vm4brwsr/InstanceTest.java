@@ -123,6 +123,14 @@ public class InstanceTest {
             Double.valueOf(0)
         );
     }
+
+    @Test public void jsObjectIsLikeJavaObject() throws Exception {
+        assertExec(
+            "JavaScript object is instance of Java Object",
+            Instance.class, "iofObjectZ",
+            Double.valueOf(1)
+        );
+    }
     
     protected String startCompilationWith() {
         return "org/apidesign/vm4brwsr/Instance";

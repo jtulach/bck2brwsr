@@ -26,6 +26,7 @@
 package java.lang;
 
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
+import org.apidesign.bck2brwsr.core.JavaScriptPrototype;
 
 /**
  * Class {@code Object} is the root of the class hierarchy.
@@ -36,6 +37,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  * @see     java.lang.Class
  * @since   JDK1.0
  */
+@JavaScriptPrototype(container = "Object.prototype", prototype = "new Object")
 public class Object {
 
     @JavaScriptBody(args = {}, body = "")
