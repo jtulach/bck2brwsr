@@ -268,24 +268,6 @@ public class MethodData {
     }
 
     /**
-     * Return java return type signature of method.
-     */
-    public String getReturnType(){
-
-        String rttype = (new TypeSignature(getInternalSig())).getReturnType();
-        return rttype;
-    }
-
-    /**
-     * Return java type parameter signature.
-     */
-    public String getParameters(){
-        String ptype = (new TypeSignature(getInternalSig())).getParameters();
-
-        return ptype;
-    }
-
-    /**
      * Return code attribute data of a method.
      */
     public byte[] getCode(){
@@ -333,13 +315,6 @@ public class MethodData {
      */
     public StackMapTableData[] getStackMapTable() {
         return stackMapTable;
-    }
-
-    /**
-     * Return number of arguments of that method.
-     */
-    public int getArgumentlength(){
-        return new TypeSignature(getInternalSig()).getArgumentlength();
     }
 
     /**
