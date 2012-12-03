@@ -71,6 +71,9 @@ public class AnnotationParser {
             String attrName = cd.StringValue(dis.readUnsignedShort());
             readValue(dis, cd, typeName, attrName);
         }
+        if (cnt == 0) {
+            visitAttr(typeName, null, null);
+        }
     }
 
     private void readValue(DataInputStream dis, ClassData cd, String typeName, String attrName) 

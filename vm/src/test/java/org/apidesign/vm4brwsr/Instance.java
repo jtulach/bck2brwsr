@@ -17,6 +17,8 @@
  */
 package org.apidesign.vm4brwsr;
 
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
@@ -88,5 +90,39 @@ public class Instance {
     }
     private static boolean isNull() {
         return createInstance(true) == null;
+    }
+    
+    @JavaScriptBody(args = "obj", body = "return obj.constructor;")
+    static Object constructor(Object obj) {
+        return obj;
+    }
+    
+    public static boolean sharedConstructor() {
+        class X {
+        }
+        
+        X x1 = new X();
+        X x2 = new X();
+        
+        return constructor(x1) == constructor(x2);
+    }
+    public static boolean differentConstructor() {
+        class X {
+        }
+        class Y {
+        }
+        
+        X x = new X();
+        Y y = new Y();
+        
+        return constructor(x) == constructor(y);
+    }
+    @JavaScriptBody(args = {}, body = "return {};")
+    private static Object jsObj() {
+        return null;
+    }
+    
+    public static boolean iofObject() {
+        return jsObj() instanceof Object;
     }
 }

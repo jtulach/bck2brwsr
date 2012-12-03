@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.NoSuchElementException;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
  * A class loader is an object that is responsible for loading classes. The
@@ -147,6 +148,7 @@ import java.util.NoSuchElementException;
  */
 public abstract class ClassLoader {
 
+    @JavaScriptBody(args = {}, body = "")
     private static native void registerNatives();
     static {
         registerNatives();
