@@ -73,16 +73,16 @@ class StringArray {
     }
 
     void delete(int indx) {
-        if (arr == null) {
+        if (arr == null || indx < 0 || indx >= arr.length) {
             return;
         }
         String[] tmp = new String[arr.length - 1];
         for (int i = 0, j = 0; i < arr.length; i++) {
-            tmp[j] = arr[i];
-            if (j == indx) {
-                continue;
+            if (i != indx) {
+                tmp[j++] = arr[i];
             }
         }
+        arr = tmp;
     }
 
     int indexOf(String ic) {
