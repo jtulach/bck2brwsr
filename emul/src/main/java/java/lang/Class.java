@@ -193,7 +193,7 @@ public final
      */
     @JavaScriptBody(args = "self", body =
           "var inst = self.cnstr();"
-        + "inst.consV(inst);"
+        + "inst.cons__V(inst);"
         + "return inst;"
     )
     public T newInstance()
