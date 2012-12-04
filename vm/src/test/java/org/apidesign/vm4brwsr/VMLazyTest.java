@@ -53,7 +53,7 @@ public class VMLazyTest {
         sb.append("\n  var glb = global;");
         sb.append("\n  lazyVM.prototype.loadClass = function(res, name) {");
         sb.append("\n    var script = org_apidesign_vm4brwsr_VMLazy(true)."
-            + "toJavaScriptLjava_lang_StringLjava_lang_ObjectLjava_lang_ObjectAB("
+            + "toJavaScript__Ljava_lang_String_2Ljava_lang_Object_2Ljava_lang_Object_2_3B("
             + "  glb, self,"
             + "  loader.get(res + '.class')"
             + ");");
@@ -77,13 +77,13 @@ public class VMLazyTest {
     
     @Test public void invokeStaticMethod() throws Exception {
         assertExec("Trying to get -1", "test", Double.valueOf(-1),
-            "org/apidesign/vm4brwsr/StaticMethod", "org_apidesign_vm4brwsr_StaticMethod", "minusOneI"
+            "org/apidesign/vm4brwsr/StaticMethod", "org_apidesign_vm4brwsr_StaticMethod", "minusOne__I"
         );
     }
 
     @Test public void loadDependantClass() throws Exception {
         assertExec("Trying to get zero", "test", Double.valueOf(0),
-            "org/apidesign/vm4brwsr/InstanceSub", "org_apidesign_vm4brwsr_InstanceSub", "recallDblD"
+            "org/apidesign/vm4brwsr/InstanceSub", "org_apidesign_vm4brwsr_InstanceSub", "recallDbl__D"
         );
     }
 

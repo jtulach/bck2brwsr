@@ -84,6 +84,9 @@ public class AnnotationParser {
             readValue(dis, cd, typeName, attrName);
         }
         visitAnnotationEnd(typeName);
+        if (cnt == 0) {
+            visitAttr(typeName, null, null, null);
+        }
     }
 
     private void readValue(DataInputStream dis, ClassData cd, String typeName, String attrName) 

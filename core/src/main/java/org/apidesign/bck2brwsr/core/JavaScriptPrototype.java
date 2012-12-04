@@ -22,12 +22,20 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Don't include given field or method in generated JavaScript.
- *
+/** Controls how JavaScript inheritance should be handled.
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @Retention(RetentionPolicy.CLASS)
-@Target({ ElementType.METHOD, ElementType.FIELD })
-public @interface NoJavaScript {
-    
+@Target({ ElementType.TYPE })
+public @interface JavaScriptPrototype {
+    /** Expression that identifies the function where all methods
+     * should be added into.
+     * @return name of function to contain methods found in given class
+     */
+    String container();
+    /** Expression that defines the way to construct prototype for this
+     * class.
+     * @return expression to construct prototype
+     */
+    String prototype();
 }

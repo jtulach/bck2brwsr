@@ -29,7 +29,7 @@ import org.testng.annotations.Test;
  */
 public class ArrayTest {
     @Test public void verifySimpleIntOperation() throws Exception {
-            assertExec("CheckTheSum", Array.class, "simpleI", 
+            assertExec("CheckTheSum", Array.class, "simple__I", 
             Double.valueOf(15)
         );
     }
@@ -39,13 +39,13 @@ public class ArrayTest {
     }
     
     @Test public void verifyOperationsOnArrays() throws Exception {
-        assertExec("The sum is 105", Array.class, "sumD", 
+        assertExec("The sum is 105", Array.class, "sum__D", 
             Double.valueOf(105)
         );
     }
     
     @Test public void doesCopyArrayWork() throws Exception {
-        assertExec("Returns 'a'", Array.class, "copyArrayC", Double.valueOf('a'));
+        assertExec("Returns 'a'", Array.class, "copyArray__C", Double.valueOf('a'));
     }
     
     private static CharSequence codeSeq;

@@ -82,6 +82,10 @@ public abstract class ByteCodeToJavaScript {
                 return null;
             }
         }
+        String[] proto = findAnnotation(arrData, jc, 
+            "org.apidesign.bck2brwsr.core.JavaScriptPrototype", 
+            "container", "prototype"
+        );
         StringArray toInitilize = new StringArray();
         final String className = className(jc);
         out.append("\n\n").append(assignClass(className));
@@ -92,28 +96,41 @@ public abstract class ByteCodeToJavaScript {
                 out.append("\n  CLS.").append(v.getName()).append(initField(v));
             }
         }
-        // ClassName sc = jc.getSuperClass();
-        String sc = jc.getSuperClassName(); // with _
-        if (sc != null) {
+        if (proto == null) {
+            String sc = jc.getSuperClassName(); // with _
             out.append("\n    var pp = ").
                 append(sc.replace('/', '_')).append("(true);");
             out.append("\n    var p = CLS.prototype = pp;");
+            out.append("\n    var c = p;");
             out.append("\n    var sprcls = pp.constructor.$class;");
         } else {
-            out.append("\n    var p = CLS.prototype;");
+            out.append("\n    var p = CLS.prototype = ").append(proto[1]).append(";");
+            out.append("\n    var c = ").append(proto[0]).append(";");
             out.append("\n    var sprcls = null;");
         }
         for (MethodData m : jc.getMethods()) {
+            byte[] onlyArr = m.findAnnotationData(true);
+            String[] only = findAnnotation(onlyArr, jc, 
+                "org.apidesign.bck2brwsr.core.JavaScriptOnly", 
+                "name", "value"
+            );
+            if (only != null) {
+                if (only[0] != null && only[1] != null) {
+                    out.append("\n    p.").append(only[0]).append(" = ")
+                        .append(only[1]).append(";");
+                }
+                continue;
+            }
             if (m.isStatic()) {
-                generateStaticMethod("\n    p.", m, toInitilize);
+                generateStaticMethod("\n    c.", m, toInitilize);
             } else {
-                generateInstanceMethod("\n    p.", m);
+                generateInstanceMethod("\n    c.", m);
             }
         }
-        out.append("\n    p.constructor = CLS;");
-        out.append("\n    p.$instOf_").append(className).append(" = true;");
+        out.append("\n    c.constructor = CLS;");
+        out.append("\n    c.$instOf_").append(className).append(" = true;");
         for (String superInterface : jc.getSuperInterfaces()) {
-            out.append("\n    p.$instOf_").append(superInterface.replace('/', '_')).append(" = true;");
+            out.append("\n    c.$instOf_").append(superInterface.replace('/', '_')).append(" = true;");
         }
         out.append("\n    CLS.$class = java_lang_Class(true);");
         out.append("\n    CLS.$class.jvmName = '").append(jc.getClassName()).append("';");
@@ -131,6 +148,18 @@ public abstract class ByteCodeToJavaScript {
         out.append("\n      return new CLS();");
         out.append("\n    }");
         for (FieldData v : jc.getFields()) {
+            byte[] onlyArr = v.findAnnotationData(true);
+            String[] only = findAnnotation(onlyArr, jc, 
+                "org.apidesign.bck2brwsr.core.JavaScriptOnly", 
+                "name", "value"
+            );
+            if (only != null) {
+                if (only[0] != null && only[1] != null) {
+                    out.append("\n    p.").append(only[0]).append(" = ")
+                        .append(only[1]).append(";");
+                }
+                continue;
+            }
             if (!v.isStatic()) {
                 out.append("\n    this.fld_").
                     append(v.getName()).append(initField(v));
@@ -153,7 +182,7 @@ public abstract class ByteCodeToJavaScript {
         StringBuilder argsCnt = new StringBuilder();
         final String mn = findMethodName(m, argsCnt);
         out.append(prefix).append(mn).append(" = function");
-        if (mn.equals("classV")) {
+        if (mn.equals("class__V")) {
             toInitilize.add(className(jc) + "(false)." + mn);
         }
         out.append('(');
@@ -782,6 +811,7 @@ public abstract class ByteCodeToJavaScript {
         int i = 0;
         Boolean count = null;
         boolean array = false;
+        sig.append("__");
         int firstPos = sig.length();
         while (i < descriptor.length()) {
             char ch = descriptor.charAt(i++);
@@ -792,9 +822,6 @@ public abstract class ByteCodeToJavaScript {
                 case ')':
                     count = false;
                     continue;
-                case 'A':
-                    array = true;
-                    break;
                 case 'B': 
                 case 'C': 
                 case 'D': 
@@ -805,7 +832,7 @@ public abstract class ByteCodeToJavaScript {
                 case 'Z': 
                     if (count) {
                         if (array) {
-                            sig.append('A');
+                            sig.append("_3");
                         }
                         sig.append(ch);
                         if (ch == 'J' || ch == 'D') {
@@ -817,7 +844,7 @@ public abstract class ByteCodeToJavaScript {
                         hasReturnType[0] = true;
                         sig.insert(firstPos, ch);
                         if (array) {
-                            sig.insert(firstPos, 'A');
+                            sig.insert(firstPos, "_3");
                         }
                     }
                     array = false;
@@ -829,33 +856,47 @@ public abstract class ByteCodeToJavaScript {
                     continue;
                 case 'L':
                     int next = descriptor.indexOf(';', i);
+                    String realSig = mangleSig(descriptor, i - 1, next + 1);
                     if (count) {
                         if (array) {
-                            sig.append('A');
+                            sig.append("_3");
                         }
-                        sig.append(ch);
-                        sig.append(descriptor.substring(i, next).replace('/', '_'));
+                        sig.append(realSig);
                         cnt.append('0');
                     } else {
-                        sig.insert(firstPos, descriptor.substring(i, next).replace('/', '_'));
-                        sig.insert(firstPos, ch);
+                        sig.insert(firstPos, realSig);
                         if (array) {
-                            sig.insert(firstPos, 'A');
+                            sig.insert(firstPos, "_3");
                         }
                         hasReturnType[0] = true;
                     }
                     i = next + 1;
                     continue;
                 case '[':
-                    //arrays++;
+                    array = true;
                     continue;
                 default:
-                    break; // invalid character
+                    throw new IllegalStateException("Invalid char: " + ch);
             }
         }
     }
+    
+    private static String mangleSig(String txt, int first, int last) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = first; i < last; i++) {
+            final char ch = txt.charAt(i);
+            switch (ch) {
+                case '/': sb.append('_'); break;
+                case '_': sb.append("_1"); break;
+                case ';': sb.append("_2"); break;
+                case '[': sb.append("_3"); break;
+                default: sb.append(ch); break;
+            }
+        }
+        return sb.toString();
+    }
 
-    private String findMethodName(MethodData m, StringBuilder cnt) {
+    private static String findMethodName(MethodData m, StringBuilder cnt) {
         StringBuilder name = new StringBuilder();
         if ("<init>".equals(m.getName())) { // NOI18N
             name.append("cons"); // NOI18N
@@ -866,11 +907,11 @@ public abstract class ByteCodeToJavaScript {
         } 
         
         boolean hasReturn[] = { false };
-        countArgs(findDescriptor(m.getInternalSig()), hasReturn, name, cnt);
+        countArgs(m.getInternalSig(), hasReturn, name, cnt);
         return name.toString();
     }
 
-    private String findMethodName(String[] mi, StringBuilder cnt, boolean[] hasReturn) {
+    static String findMethodName(String[] mi, StringBuilder cnt, boolean[] hasReturn) {
         StringBuilder name = new StringBuilder();
         String descr = mi[2];//mi.getDescriptor();
         String nm= mi[1];
@@ -879,7 +920,7 @@ public abstract class ByteCodeToJavaScript {
         } else {
             name.append(nm);
         }
-        countArgs(findDescriptor(descr), hasReturn, name, cnt);
+        countArgs(descr, hasReturn, name, cnt);
         return name.toString();
     }
 
@@ -981,10 +1022,6 @@ public abstract class ByteCodeToJavaScript {
             addReference(classRef[0]);
         }
         return s;
-    }
-
-    private String findDescriptor(String d) {
-        return d.replace('[', 'A');
     }
 
     private boolean javaScriptBody(String prefix, MethodData m, boolean isStatic) throws IOException {

@@ -57,7 +57,7 @@ public abstract class Element {
     @JavaScriptBody(
         args={"el", "r"},
         body="var e = window.document.getElementById(el.fld_id);\n"
-           + "e.onclick = function() { r.runV(); };\n"
+           + "e.onclick = function() { r.run__V(); };\n"
     )
     public final void addOnClick(Runnable r) {
         throw new UnsupportedOperationException("Needs JavaScript!");

@@ -43,7 +43,7 @@ class VMLazy extends ByteCodeToJavaScript {
 
     @JavaScriptBody(args = { "self", "n" }, 
         body=
-          "var cls = n.replaceLjava_lang_StringCC(n,'/','_').toString();"
+          "var cls = n.replace__Ljava_lang_String_2CC(n,'/','_').toString();"
         + "var glb = self.fld_global;"
         + "var vm = self.fld_vm;"
         + "if (glb[cls]) return false;"

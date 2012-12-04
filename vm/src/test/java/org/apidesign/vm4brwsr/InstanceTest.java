@@ -29,42 +29,42 @@ public class InstanceTest {
     @Test public void verifyDefaultDoubleValue() throws Exception {
         assertExec(
             "Will be zero",
-            Instance.class, "defaultDblValueD",
+            Instance.class, "defaultDblValue__D",
             Double.valueOf(0)
         );
     }
     @Test public void verifyStaticMethodCall() throws Exception {
         assertExec(
             "Will be zero",
-            InstanceSub.class, "recallDblD",
+            InstanceSub.class, "recallDbl__D",
             Double.valueOf(0)
         );
     }
     @Test public void verifyAssignedByteValue() throws Exception {
         assertExec(
             "Will one thirty one",
-            Instance.class, "assignedByteValueB",
+            Instance.class, "assignedByteValue__B",
             Double.valueOf(31)
         );
     }
     @Test public void verifyMagicOne() throws Exception {
         assertExec(
             "Should be three and something",
-            Instance.class, "magicOneD",
+            Instance.class, "magicOne__D",
             Double.valueOf(3.3)
         );
     }
     @Test public void verifyInstanceMethods() throws Exception {
         assertExec(
             "Should be eleven as we invoke overwritten method, plus 44",
-            Instance.class, "virtualBytesI",
+            Instance.class, "virtualBytes__I",
             Double.valueOf(55)
         );
     }
     @Test public void verifyInterfaceMethods() throws Exception {
         assertExec(
             "Retruns default value",
-            Instance.class, "interfaceBytesF",
+            Instance.class, "interfaceBytes__F",
             Double.valueOf(31)
         );
     }
@@ -72,7 +72,7 @@ public class InstanceTest {
     @Test public void isNull() throws Exception {
         assertExec(
             "Yes, we are instance",
-            Instance.class, "isNullZ",
+            Instance.class, "isNull__Z",
             Double.valueOf(0.0)
         );
     }
@@ -80,7 +80,7 @@ public class InstanceTest {
     @Test public void isInstanceOf() throws Exception {
         assertExec(
             "Yes, we are instance",
-            Instance.class, "instanceOfZZ",
+            Instance.class, "instanceOf__ZZ",
             Double.valueOf(1.0), true
         );
     }
@@ -88,7 +88,7 @@ public class InstanceTest {
     @Test public void notInstanceOf() throws Exception {
         assertExec(
             "No, we are not an instance",
-            Instance.class, "instanceOfZZ",
+            Instance.class, "instanceOf__ZZ",
             Double.valueOf(0.0), false
         );
     }
@@ -96,14 +96,14 @@ public class InstanceTest {
     @Test public void verifyCastToClass() throws Exception {
         assertExec(
             "Five signals all is good",
-            Instance.class, "castsWorkIZ",
+            Instance.class, "castsWork__IZ",
             Double.valueOf(5.0), false
         );
     }
     @Test public void verifyCastToInterface() throws Exception {
         assertExec(
             "Five signals all is good",
-            Instance.class, "castsWorkIZ",
+            Instance.class, "castsWork__IZ",
             Double.valueOf(5.0), true
         );
     }
@@ -111,7 +111,7 @@ public class InstanceTest {
     @Test public void sharedConstructor() throws Exception {
         assertExec(
             "Constructor of first and 2nd instance should be the same",
-            Instance.class, "sharedConstructorZ",
+            Instance.class, "sharedConstructor__Z",
             Double.valueOf(1.0)
         );
     }
@@ -119,8 +119,16 @@ public class InstanceTest {
     @Test public void differentConstructor() throws Exception {
         assertExec(
             "Constructor of X and Y should be the different",
-            Instance.class, "differentConstructorZ",
+            Instance.class, "differentConstructor__Z",
             Double.valueOf(0)
+        );
+    }
+
+    @Test public void jsObjectIsLikeJavaObject() throws Exception {
+        assertExec(
+            "JavaScript object is instance of Java Object",
+            Instance.class, "iofObject__Z",
+            Double.valueOf(1)
         );
     }
     
