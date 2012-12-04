@@ -19,6 +19,7 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 
 /**
@@ -41,6 +42,7 @@ public class Classes {
         return new IOException().getClass().getName().toString();
     }
     
+    @ClassesMarker(number = 1)
     public static String name() {
         return IOException.class.getName().toString();
     }
@@ -75,5 +77,22 @@ public class Classes {
             }
         }
         return null;
+    }
+    
+    public static Object reflectiveMethodCall(boolean direct) throws Exception {
+        Method m;
+        /*
+        if (!direct) {
+            final Class<? extends Annotation> v = ClassesMarker.class;
+            for (Method single : Classes.class.getMethods()) {
+                if (single.getAnnotation(v)) {
+                    m = single;
+                    break;
+                }
+            }
+        } else*/ {
+            m = Classes.class.getMethod("name");
+        }
+        return m.invoke(null);
     }
 }

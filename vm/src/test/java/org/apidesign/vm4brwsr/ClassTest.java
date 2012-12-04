@@ -83,6 +83,15 @@ public class ClassTest {
     @Test public void jsStringAnnotationFromArray() throws Exception {
         assertExec("Check class annotation", Classes.class, "getNamer__Ljava_lang_String_2Z", "my text", false);
     }
+    @Test public void javaInvokeMethod() throws Exception {
+        assertEquals(Classes.reflectiveMethodCall(true), "java.io.IOException", "Calls the name() method via reflection");
+    }
+    @Test public void jsInvokeMethod() throws Exception {
+        assertExec("Calls the name() method via reflection", Classes.class, 
+            "reflectiveMethodCall__Ljava_lang_Object_2Z", 
+            "java.io.IOException"
+        );
+    }
     
     private static CharSequence codeSeq;
     private static Invocable code;

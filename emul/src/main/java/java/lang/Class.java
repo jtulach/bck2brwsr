@@ -27,6 +27,8 @@ package java.lang;
 
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.TypeVariable;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
@@ -523,7 +525,231 @@ public final
             throw new IllegalStateException("Malformed class name");
         }
     }
+
+    /**
+     * Returns an array containing {@code Field} objects reflecting all
+     * the accessible public fields of the class or interface represented by
+     * this {@code Class} object.  The elements in the array returned are
+     * not sorted and are not in any particular order.  This method returns an
+     * array of length 0 if the class or interface has no accessible public
+     * fields, or if it represents an array class, a primitive type, or void.
+     *
+     * <p> Specifically, if this {@code Class} object represents a class,
+     * this method returns the public fields of this class and of all its
+     * superclasses.  If this {@code Class} object represents an
+     * interface, this method returns the fields of this interface and of all
+     * its superinterfaces.
+     *
+     * <p> The implicit length field for array class is not reflected by this
+     * method. User code should use the methods of class {@code Array} to
+     * manipulate arrays.
+     *
+     * <p> See <em>The Java Language Specification</em>, sections 8.2 and 8.3.
+     *
+     * @return the array of {@code Field} objects representing the
+     * public fields
+     * @exception  SecurityException
+     *             If a security manager, <i>s</i>, is present and any of the
+     *             following conditions is met:
+     *
+     *             <ul>
+     *
+     *             <li> invocation of
+     *             {@link SecurityManager#checkMemberAccess
+     *             s.checkMemberAccess(this, Member.PUBLIC)} denies
+     *             access to the fields within this class
+     *
+     *             <li> the caller's class loader is not the same as or an
+     *             ancestor of the class loader for the current class and
+     *             invocation of {@link SecurityManager#checkPackageAccess
+     *             s.checkPackageAccess()} denies access to the package
+     *             of this class
+     *
+     *             </ul>
+     *
+     * @since JDK1.1
+     */
+    public Field[] getFields() throws SecurityException {
+        throw new SecurityException();
+    }
+
+    /**
+     * Returns an array containing {@code Method} objects reflecting all
+     * the public <em>member</em> methods of the class or interface represented
+     * by this {@code Class} object, including those declared by the class
+     * or interface and those inherited from superclasses and
+     * superinterfaces.  Array classes return all the (public) member methods
+     * inherited from the {@code Object} class.  The elements in the array
+     * returned are not sorted and are not in any particular order.  This
+     * method returns an array of length 0 if this {@code Class} object
+     * represents a class or interface that has no public member methods, or if
+     * this {@code Class} object represents a primitive type or void.
+     *
+     * <p> The class initialization method {@code <clinit>} is not
+     * included in the returned array. If the class declares multiple public
+     * member methods with the same parameter types, they are all included in
+     * the returned array.
+     *
+     * <p> See <em>The Java Language Specification</em>, sections 8.2 and 8.4.
+     *
+     * @return the array of {@code Method} objects representing the
+     * public methods of this class
+     * @exception  SecurityException
+     *             If a security manager, <i>s</i>, is present and any of the
+     *             following conditions is met:
+     *
+     *             <ul>
+     *
+     *             <li> invocation of
+     *             {@link SecurityManager#checkMemberAccess
+     *             s.checkMemberAccess(this, Member.PUBLIC)} denies
+     *             access to the methods within this class
+     *
+     *             <li> the caller's class loader is not the same as or an
+     *             ancestor of the class loader for the current class and
+     *             invocation of {@link SecurityManager#checkPackageAccess
+     *             s.checkPackageAccess()} denies access to the package
+     *             of this class
+     *
+     *             </ul>
+     *
+     * @since JDK1.1
+     */
+    public Method[] getMethods() throws SecurityException {
+        throw new SecurityException();
+    }
+
+    /**
+     * Returns a {@code Field} object that reflects the specified public
+     * member field of the class or interface represented by this
+     * {@code Class} object. The {@code name} parameter is a
+     * {@code String} specifying the simple name of the desired field.
+     *
+     * <p> The field to be reflected is determined by the algorithm that
+     * follows.  Let C be the class represented by this object:
+     * <OL>
+     * <LI> If C declares a public field with the name specified, that is the
+     *      field to be reflected.</LI>
+     * <LI> If no field was found in step 1 above, this algorithm is applied
+     *      recursively to each direct superinterface of C. The direct
+     *      superinterfaces are searched in the order they were declared.</LI>
+     * <LI> If no field was found in steps 1 and 2 above, and C has a
+     *      superclass S, then this algorithm is invoked recursively upon S.
+     *      If C has no superclass, then a {@code NoSuchFieldException}
+     *      is thrown.</LI>
+     * </OL>
+     *
+     * <p> See <em>The Java Language Specification</em>, sections 8.2 and 8.3.
+     *
+     * @param name the field name
+     * @return  the {@code Field} object of this class specified by
+     * {@code name}
+     * @exception NoSuchFieldException if a field with the specified name is
+     *              not found.
+     * @exception NullPointerException if {@code name} is {@code null}
+     * @exception  SecurityException
+     *             If a security manager, <i>s</i>, is present and any of the
+     *             following conditions is met:
+     *
+     *             <ul>
+     *
+     *             <li> invocation of
+     *             {@link SecurityManager#checkMemberAccess
+     *             s.checkMemberAccess(this, Member.PUBLIC)} denies
+     *             access to the field
+     *
+     *             <li> the caller's class loader is not the same as or an
+     *             ancestor of the class loader for the current class and
+     *             invocation of {@link SecurityManager#checkPackageAccess
+     *             s.checkPackageAccess()} denies access to the package
+     *             of this class
+     *
+     *             </ul>
+     *
+     * @since JDK1.1
+     */
+    public Field getField(String name)
+        throws SecurityException {
+        throw new SecurityException();
+    }
     
+    
+    /**
+     * Returns a {@code Method} object that reflects the specified public
+     * member method of the class or interface represented by this
+     * {@code Class} object. The {@code name} parameter is a
+     * {@code String} specifying the simple name of the desired method. The
+     * {@code parameterTypes} parameter is an array of {@code Class}
+     * objects that identify the method's formal parameter types, in declared
+     * order. If {@code parameterTypes} is {@code null}, it is
+     * treated as if it were an empty array.
+     *
+     * <p> If the {@code name} is "{@code <init>};"or "{@code <clinit>}" a
+     * {@code NoSuchMethodException} is raised. Otherwise, the method to
+     * be reflected is determined by the algorithm that follows.  Let C be the
+     * class represented by this object:
+     * <OL>
+     * <LI> C is searched for any <I>matching methods</I>. If no matching
+     *      method is found, the algorithm of step 1 is invoked recursively on
+     *      the superclass of C.</LI>
+     * <LI> If no method was found in step 1 above, the superinterfaces of C
+     *      are searched for a matching method. If any such method is found, it
+     *      is reflected.</LI>
+     * </OL>
+     *
+     * To find a matching method in a class C:&nbsp; If C declares exactly one
+     * public method with the specified name and exactly the same formal
+     * parameter types, that is the method reflected. If more than one such
+     * method is found in C, and one of these methods has a return type that is
+     * more specific than any of the others, that method is reflected;
+     * otherwise one of the methods is chosen arbitrarily.
+     *
+     * <p>Note that there may be more than one matching method in a
+     * class because while the Java language forbids a class to
+     * declare multiple methods with the same signature but different
+     * return types, the Java virtual machine does not.  This
+     * increased flexibility in the virtual machine can be used to
+     * implement various language features.  For example, covariant
+     * returns can be implemented with {@linkplain
+     * java.lang.reflect.Method#isBridge bridge methods}; the bridge
+     * method and the method being overridden would have the same
+     * signature but different return types.
+     *
+     * <p> See <em>The Java Language Specification</em>, sections 8.2 and 8.4.
+     *
+     * @param name the name of the method
+     * @param parameterTypes the list of parameters
+     * @return the {@code Method} object that matches the specified
+     * {@code name} and {@code parameterTypes}
+     * @exception NoSuchMethodException if a matching method is not found
+     *            or if the name is "&lt;init&gt;"or "&lt;clinit&gt;".
+     * @exception NullPointerException if {@code name} is {@code null}
+     * @exception  SecurityException
+     *             If a security manager, <i>s</i>, is present and any of the
+     *             following conditions is met:
+     *
+     *             <ul>
+     *
+     *             <li> invocation of
+     *             {@link SecurityManager#checkMemberAccess
+     *             s.checkMemberAccess(this, Member.PUBLIC)} denies
+     *             access to the method
+     *
+     *             <li> the caller's class loader is not the same as or an
+     *             ancestor of the class loader for the current class and
+     *             invocation of {@link SecurityManager#checkPackageAccess
+     *             s.checkPackageAccess()} denies access to the package
+     *             of this class
+     *
+     *             </ul>
+     *
+     * @since JDK1.1
+     */
+    public Method getMethod(String name, Class<?>... parameterTypes)
+        throws SecurityException {
+        throw new SecurityException();
+    }
+
     /**
      * Character.isDigit answers {@code true} to some non-ascii
      * digits.  This one does not.
