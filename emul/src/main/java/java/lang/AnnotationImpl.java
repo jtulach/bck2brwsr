@@ -50,7 +50,9 @@ final class AnnotationImpl implements Annotation {
     }
     @JavaScriptBody(args = "anno", body =
           "var arr = new Array();"
-        + "for (p in anno) {"
+        + "var props = Object.getOwnPropertyNames(anno);\n"
+        + "for (var i = 0; i < props.length; i++) {\n"
+        + "  var p = props[i];\n"
         + "  arr.push(p);"
         + "}"
         + "return arr;"
