@@ -99,7 +99,7 @@ public class AnnotationParser {
             String val = cd.stringValue(primitive, textual);
             String attrType;
             if (type == 's') {
-                attrType = "Ljava_lang_String";
+                attrType = "Ljava_lang_String_2";
                 if (textual) {
                     val = '"' + val + '"';
                 }
