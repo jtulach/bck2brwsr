@@ -1158,7 +1158,7 @@ public abstract class ByteCodeToJavaScript {
                 if (cnt++ > 0) {
                     out.append(",\n");
                 }
-                out.append(attr).append(attrType).append(" : ").append(value);
+                out.append(attr).append("__").append(attrType).append(" : ").append(value);
             }
         };
         ap.parse(data, cd);

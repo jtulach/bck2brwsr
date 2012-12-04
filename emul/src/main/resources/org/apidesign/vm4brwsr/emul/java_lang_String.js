@@ -1,2 +1,2 @@
 // initialize methods on String constants
-java_lang_Object(false);
+java_lang_String(false);

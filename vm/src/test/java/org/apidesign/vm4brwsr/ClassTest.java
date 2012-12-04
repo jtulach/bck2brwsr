@@ -33,7 +33,7 @@ public class ClassTest {
     }
 
     @Test public void jsSuperClassEqualsGetSuperclass() throws Exception {
-        assertExec("Classes are equal", Classes.class, "equalsClassesOfExceptionsZ", Double.valueOf(1.0));
+        assertExec("Classes are equal", Classes.class, "equalsClassesOfExceptions__Z", Double.valueOf(1.0));
     }
 
     @Test public void classesAreDifferent() {
@@ -41,47 +41,47 @@ public class ClassTest {
     }
 
     @Test public void jsClassesAreDifferent() throws Exception {
-        assertExec("Classes are not equal", Classes.class, "differenceInClassesZ", Double.valueOf(1.0));
+        assertExec("Classes are not equal", Classes.class, "differenceInClasses__Z", Double.valueOf(1.0));
     }
 
     @Test public void javaInstanceName() throws Exception {
         assertEquals(Classes.classForInstance(), "java.io.IOException");
     }
     @Test public void jsInstanceName() throws Exception {
-        assertExec("I/O name", Classes.class, "classForInstanceLjava_lang_String", "java.io.IOException");
+        assertExec("I/O name", Classes.class, "classForInstance__Ljava_lang_String_2", "java.io.IOException");
     }
     @Test public void javaName() throws Exception {
         assertEquals(Classes.name(), "java.io.IOException");
     }
     @Test public void jsName() throws Exception {
-        assertExec("I/O name", Classes.class, "nameLjava_lang_String", "java.io.IOException");
+        assertExec("I/O name", Classes.class, "name__Ljava_lang_String_2", "java.io.IOException");
     }
     @Test public void javaSimpleName() throws Exception {
         assertEquals(Classes.simpleName(), "IOException");
     }
     @Test public void jsGetsSimpleName() throws Exception {
-        assertExec("I/O simple name", Classes.class, "simpleNameLjava_lang_String", "IOException");
+        assertExec("I/O simple name", Classes.class, "simpleName__Ljava_lang_String_2", "IOException");
     }
     @Test public void javaCanonicalName() {
         assertEquals(Classes.canonicalName(), "java.io.IOException");
     }
     @Test public void jsCanonicalName() throws Exception {
-        assertExec("I/O simple name", Classes.class, "canonicalNameLjava_lang_String", "java.io.IOException");
+        assertExec("I/O simple name", Classes.class, "canonicalName__Ljava_lang_String_2", "java.io.IOException");
     }
     @Test public void javaNewInstance() throws Exception {
         assertTrue(Classes.newInstance());
     }
     @Test public void jsNewInstance() throws Exception {
-        assertExec("Check new instance", Classes.class, "newInstanceZ", Double.valueOf(1));
+        assertExec("Check new instance", Classes.class, "newInstance__Z", Double.valueOf(1));
     }
     @Test public void jsAnnotation() throws Exception {
-        assertExec("Check class annotation", Classes.class, "getMarkerI", Double.valueOf(10));
+        assertExec("Check class annotation", Classes.class, "getMarker__I", Double.valueOf(10));
     }
     @Test public void jsStringAnnotation() throws Exception {
-        assertExec("Check class annotation", Classes.class, "getNamerLjava_lang_StringZ", "my text", true);
+        assertExec("Check class annotation", Classes.class, "getNamer__Ljava_lang_String_2Z", "my text", true);
     }
     @Test public void jsStringAnnotationFromArray() throws Exception {
-        assertExec("Check class annotation", Classes.class, "getNamerLjava_lang_StringZ", "my text", false);
+        assertExec("Check class annotation", Classes.class, "getNamer__Ljava_lang_String_2Z", "my text", false);
     }
     
     private static CharSequence codeSeq;
