@@ -747,7 +747,11 @@ public final
      */
     public Method getMethod(String name, Class<?>... parameterTypes)
         throws SecurityException {
-        throw new SecurityException();
+        Method m = Method.findMethod(this, name, parameterTypes);
+        if (m == null) {
+            throw new SecurityException(); // XXX: NoSuchMethodException
+        }
+        return m;
     }
 
     /**

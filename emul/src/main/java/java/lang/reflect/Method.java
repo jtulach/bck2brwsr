@@ -26,6 +26,7 @@
 package java.lang.reflect;
 
 import java.lang.annotation.Annotation;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
  * A {@code Method} provides information about, and access to, a single method
@@ -50,28 +51,14 @@ import java.lang.annotation.Annotation;
 public final
     class Method extends AccessibleObject implements GenericDeclaration,
                                                      Member {
-    private Class<?>            clazz;
-    private int                 slot;
-    // This is guaranteed to be interned by the VM in the 1.4
-    // reflection implementation
-    private String              name;
-    private Class<?>            returnType;
-    private Class<?>[]          parameterTypes;
-    private Class<?>[]          exceptionTypes;
-    private int                 modifiers;
-    // Generics and annotations support
-    private transient String              signature;
-    private byte[]              annotations;
-    private byte[]              parameterAnnotations;
-    private byte[]              annotationDefault;
-    // For sharing of MethodAccessors. This branching structure is
-    // currently only two levels deep (i.e., one root Method and
-    // potentially many Method objects pointing to it.)
-    private Method              root;
+    private final Class<?> clazz;
+    private final String name;
+    private final Object data;
+    private int modifiers;
 
    // Generics infrastructure
 
-    private String getGenericSignature() {return signature;}
+    private String getGenericSignature() {return null;}
 
     /**
      * Package-private constructor used by ReflectAccess to enable
@@ -79,28 +66,11 @@ public final
      * package via sun.reflect.LangReflectAccess.
      */
     Method(Class<?> declaringClass,
-           String name,
-           Class<?>[] parameterTypes,
-           Class<?> returnType,
-           Class<?>[] checkedExceptions,
-           int modifiers,
-           int slot,
-           String signature,
-           byte[] annotations,
-           byte[] parameterAnnotations,
-           byte[] annotationDefault)
+           String name, Object data)
     {
         this.clazz = declaringClass;
         this.name = name;
-        this.parameterTypes = parameterTypes;
-        this.returnType = returnType;
-        this.exceptionTypes = checkedExceptions;
-        this.modifiers = modifiers;
-        this.slot = slot;
-        this.signature = signature;
-        this.annotations = annotations;
-        this.parameterAnnotations = parameterAnnotations;
-        this.annotationDefault = annotationDefault;
+        this.data = data;
     }
 
     /**
@@ -109,18 +79,7 @@ public final
      * "root" field points to this Method.
      */
     Method copy() {
-        // This routine enables sharing of MethodAccessor objects
-        // among Method objects which refer to the same underlying
-        // method in the VM. (All of this contortion is only necessary
-        // because of the "accessibility" bit in AccessibleObject,
-        // which implicitly requires that new java.lang.reflect
-        // objects be fabricated for each reflective call on Class
-        // objects.)
-        Method res = new Method(clazz, name, parameterTypes, returnType,
-                                exceptionTypes, modifiers, slot, signature,
-                                annotations, parameterAnnotations, annotationDefault);
-        res.root = this;
-        return res;
+        return this;
     }
 
     /**
@@ -176,7 +135,7 @@ public final
      * @return the return type for the method this object represents
      */
     public Class<?> getReturnType() {
-        return returnType;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -218,7 +177,8 @@ public final
      * represents
      */
     public Class<?>[] getParameterTypes() {
-        return (Class<?>[]) parameterTypes.clone();
+        throw new UnsupportedOperationException();
+        //return (Class<?>[]) parameterTypes.clone();
     }
 
     /**
@@ -264,7 +224,8 @@ public final
      * method this object represents
      */
     public Class<?>[] getExceptionTypes() {
-        return (Class<?>[]) exceptionTypes.clone();
+        throw new UnsupportedOperationException();
+        //return (Class<?>[]) exceptionTypes.clone();
     }
 
     /**
@@ -302,21 +263,7 @@ public final
     public boolean equals(Object obj) {
         if (obj != null && obj instanceof Method) {
             Method other = (Method)obj;
-            if ((getDeclaringClass() == other.getDeclaringClass())
-                && (getName() == other.getName())) {
-                if (!returnType.equals(other.getReturnType()))
-                    return false;
-                /* Avoid unnecessary cloning */
-                Class<?>[] params1 = parameterTypes;
-                Class<?>[] params2 = other.parameterTypes;
-                if (params1.length == params2.length) {
-                    for (int i = 0; i < params1.length; i++) {
-                        if (params1[i] != params2[i])
-                            return false;
-                    }
-                    return true;
-                }
-            }
+            return data == other.data;
         }
         return false;
     }
@@ -362,6 +309,7 @@ public final
             sb.append(Field.getTypeName(getReturnType())).append(' ');
             sb.append(Field.getTypeName(getDeclaringClass())).append('.');
             sb.append(getName()).append('(');
+            /*
             Class<?>[] params = parameterTypes; // avoid clone
             for (int j = 0; j < params.length; j++) {
                 sb.append(Field.getTypeName(params[j]));
@@ -378,6 +326,7 @@ public final
                         sb.append(',');
                 }
             }
+            */
             return sb.toString();
         } catch (Exception e) {
             return "<" + e + ">";
@@ -537,6 +486,10 @@ public final
      * @exception ExceptionInInitializerError if the initialization
      * provoked by this method fails.
      */
+    @JavaScriptBody(args = { "method", "self", "args" }, body =
+          "if (args.length > 0) throw 'unsupported now';"
+        + "return method.fld_data(self);"
+    )
     public Object invoke(Object obj, Object... args)
         throws IllegalAccessException, IllegalArgumentException,
            InvocationTargetException
@@ -614,8 +567,6 @@ public final
      * @since  1.5
      */
     public Object getDefaultValue() {
-        if  (annotationDefault == null)
-            return null;
         throw new UnsupportedOperationException();
     }
 
@@ -636,10 +587,36 @@ public final
      * @since 1.5
      */
     public Annotation[][] getParameterAnnotations() {
-        int numParameters = parameterTypes.length;
-        if (parameterAnnotations == null)
-            return new Annotation[numParameters][0];
-
         throw new UnsupportedOperationException();
+    }
+    
+    //
+    // bck2brwsr implementation
+    //
+
+    @JavaScriptBody(args = { "clazz", "name", "params" },
+        body = "if (params.length > 0) return null;\n"
+        + "var c = clazz.cnstr.prototype;"
+        + "var prefix = name + '__';\n"
+        + "for (m in c) {\n"
+        + "  if (m.indexOf(prefix) === 0) {"
+        + "     return c[m];\n"
+        + "  }"
+        + "}\n"
+        + "return null;"
+    )
+    private static native Object findMethodData(
+        Class<?> clazz, String name, Class<?>... parameterTypes
+    );
+    
+    // XXX should not be public
+    public static Method findMethod(
+        Class<?> clazz, String name, Class<?>... parameterTypes
+    ) {
+        Object data = findMethodData(clazz, name, parameterTypes);
+        if (data == null) {
+            return null;
+        }
+        return new Method(clazz, name, data);
     }
 }
