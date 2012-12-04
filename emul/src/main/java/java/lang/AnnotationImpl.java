@@ -16,12 +16,20 @@ final class AnnotationImpl implements Annotation {
         return getClass();
     }
 
-    @JavaScriptBody(args = { "a", "n", "values" }, body =
-          "var v = values;"
-        + "for (p in values) {"
-        + "  a[p] = function() { return v[p]; }"
-        + "}"
-        + "a['$instOf_' + n] = true;"
+    @JavaScriptBody(args = { "a", "n", "values" }, body = ""
+        + "function f(v, p) {\n"
+        + "  var val = v;\n"
+        + "  var prop = p;\n"
+        + "  return function() {\n"
+        + "    return val[prop];\n"
+        + "  };\n"
+        + "}\n"
+        + "var props = Object.getOwnPropertyNames(values);\n"
+        + "for (var i = 0; i < props.length; i++) {\n"
+        + "  var p = props[i];\n"
+        + "  a[p] = new f(values, p);\n"
+        + "}\n"
+        + "a['$instOf_' + n] = true;\n"
         + "return a;"
     )
     private static <T extends Annotation> T create(AnnotationImpl a, String n, Object values) {
