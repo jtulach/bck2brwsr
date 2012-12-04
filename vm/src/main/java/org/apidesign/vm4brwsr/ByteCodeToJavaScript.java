@@ -169,7 +169,7 @@ public abstract class ByteCodeToJavaScript {
         StringBuilder argsCnt = new StringBuilder();
         final String mn = findMethodName(m, argsCnt);
         out.append(prefix).append(mn).append(" = function");
-        if (mn.equals("classV")) {
+        if (mn.equals("class__V")) {
             toInitilize.add(className(jc) + "(false)." + mn);
         }
         out.append('(');
@@ -798,6 +798,7 @@ public abstract class ByteCodeToJavaScript {
         int i = 0;
         Boolean count = null;
         boolean array = false;
+        sig.append("__");
         int firstPos = sig.length();
         while (i < descriptor.length()) {
             char ch = descriptor.charAt(i++);
@@ -808,9 +809,6 @@ public abstract class ByteCodeToJavaScript {
                 case ')':
                     count = false;
                     continue;
-                case 'A':
-                    array = true;
-                    break;
                 case 'B': 
                 case 'C': 
                 case 'D': 
@@ -821,7 +819,7 @@ public abstract class ByteCodeToJavaScript {
                 case 'Z': 
                     if (count) {
                         if (array) {
-                            sig.append('A');
+                            sig.append("_3");
                         }
                         sig.append(ch);
                         if (ch == 'J' || ch == 'D') {
@@ -833,7 +831,7 @@ public abstract class ByteCodeToJavaScript {
                         hasReturnType[0] = true;
                         sig.insert(firstPos, ch);
                         if (array) {
-                            sig.insert(firstPos, 'A');
+                            sig.insert(firstPos, "_3");
                         }
                     }
                     array = false;
@@ -845,33 +843,47 @@ public abstract class ByteCodeToJavaScript {
                     continue;
                 case 'L':
                     int next = descriptor.indexOf(';', i);
+                    String realSig = mangleSig(descriptor, i - 1, next + 1);
                     if (count) {
                         if (array) {
-                            sig.append('A');
+                            sig.append("_3");
                         }
-                        sig.append(ch);
-                        sig.append(descriptor.substring(i, next).replace('/', '_'));
+                        sig.append(realSig);
                         cnt.append('0');
                     } else {
-                        sig.insert(firstPos, descriptor.substring(i, next).replace('/', '_'));
-                        sig.insert(firstPos, ch);
+                        sig.insert(firstPos, realSig);
                         if (array) {
-                            sig.insert(firstPos, 'A');
+                            sig.insert(firstPos, "_3");
                         }
                         hasReturnType[0] = true;
                     }
                     i = next + 1;
                     continue;
                 case '[':
-                    //arrays++;
+                    array = true;
                     continue;
                 default:
-                    break; // invalid character
+                    throw new IllegalStateException("Invalid char: " + ch);
             }
         }
     }
+    
+    private static String mangleSig(String txt, int first, int last) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = first; i < last; i++) {
+            final char ch = txt.charAt(i);
+            switch (ch) {
+                case '/': sb.append('_'); break;
+                case '_': sb.append("_1"); break;
+                case ';': sb.append("_2"); break;
+                case '[': sb.append("_3"); break;
+                default: sb.append(ch); break;
+            }
+        }
+        return sb.toString();
+    }
 
-    private String findMethodName(MethodData m, StringBuilder cnt) {
+    private static String findMethodName(MethodData m, StringBuilder cnt) {
         StringBuilder name = new StringBuilder();
         if ("<init>".equals(m.getName())) { // NOI18N
             name.append("cons"); // NOI18N
@@ -882,11 +894,11 @@ public abstract class ByteCodeToJavaScript {
         } 
         
         boolean hasReturn[] = { false };
-        countArgs(findDescriptor(m.getInternalSig()), hasReturn, name, cnt);
+        countArgs(m.getInternalSig(), hasReturn, name, cnt);
         return name.toString();
     }
 
-    private String findMethodName(String[] mi, StringBuilder cnt, boolean[] hasReturn) {
+    static String findMethodName(String[] mi, StringBuilder cnt, boolean[] hasReturn) {
         StringBuilder name = new StringBuilder();
         String descr = mi[2];//mi.getDescriptor();
         String nm= mi[1];
@@ -895,7 +907,7 @@ public abstract class ByteCodeToJavaScript {
         } else {
             name.append(nm);
         }
-        countArgs(findDescriptor(descr), hasReturn, name, cnt);
+        countArgs(descr, hasReturn, name, cnt);
         return name.toString();
     }
 
@@ -993,10 +1005,6 @@ public abstract class ByteCodeToJavaScript {
     private String encodeConstant(int entryIndex) {
         String s = jc.stringValue(entryIndex, true);
         return s;
-    }
-
-    private String findDescriptor(String d) {
-        return d.replace('[', 'A');
     }
 
     private boolean javaScriptBody(String prefix, MethodData m, boolean isStatic) throws IOException {

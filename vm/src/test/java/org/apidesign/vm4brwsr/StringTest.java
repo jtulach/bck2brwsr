@@ -18,7 +18,6 @@
 package org.apidesign.vm4brwsr;
 
 import javax.script.Invocable;
-import javax.script.ScriptException;
 import org.testng.annotations.Test;
 import static org.testng.Assert.*;
 import org.testng.annotations.BeforeClass;
@@ -31,7 +30,7 @@ public class StringTest {
     @Test public void firstChar() throws Exception {
         assertExec(
             "First char in Hello is H",
-            StringSample.class, "sayHelloCI",
+            StringSample.class, "sayHello__CI",
             72, 0
         );
     }
@@ -39,7 +38,7 @@ public class StringTest {
     @Test public void fromChars() throws Exception {
         assertExec(
             "First char in Hello is ABC",
-            StringSample.class, "fromCharsLjava_lang_StringCCC",
+            StringSample.class, "fromChars__Ljava_lang_String_2CCC",
             "ABC", 'A', 'B', 'C'
         );
     }
@@ -47,7 +46,7 @@ public class StringTest {
     @Test public void concatChars() throws Exception {
         assertExec(
             "Composing yields ABC",
-            StringSample.class, "charsLjava_lang_StringCCC",
+            StringSample.class, "chars__Ljava_lang_String_2CCC",
             "ABC", 'A', 'B', 'C'
         );
     }
@@ -55,7 +54,7 @@ public class StringTest {
     @Test public void concatCharsFromInts() throws Exception {
         assertExec(
             "Composing yields ABC",
-            StringSample.class, "charsFromNumbersLjava_lang_String",
+            StringSample.class, "charsFromNumbers__Ljava_lang_String_2",
             "ABC"
         );
     }
@@ -63,7 +62,7 @@ public class StringTest {
     @Test public void concatCharsFromChars() throws Exception {
         assertExec(
             "Composing yields ABC",
-            StringSample.class, "charsFromCharsLjava_lang_String",
+            StringSample.class, "charsFromChars__Ljava_lang_String_2",
             "ABC"
         );
     }
@@ -71,7 +70,7 @@ public class StringTest {
     @Test public void instanceOfWorks() throws Exception {
         assertExec(
             "It is string",
-            StringSample.class, "isStringInstanceZ",
+            StringSample.class, "isStringInstance__Z",
             Double.valueOf(1.0)
         );
     }
@@ -79,7 +78,7 @@ public class StringTest {
     @Test(timeOut=10000) public void toStringConcatenation() throws Exception {
         assertExec(
             "Five executions should generate 5Hello World!",
-            StringSample.class, "toStringTestLjava_lang_StringI",
+            StringSample.class, "toStringTest__Ljava_lang_String_2I",
             "Hello World!5", 5
         );
     }
@@ -90,7 +89,7 @@ public class StringTest {
     @Test(timeOut=10000) public void stringStringConcat() throws Exception {
         assertExec(
             "Composes strings OK",
-            StringSample.class, "concatStringsLjava_lang_String",
+            StringSample.class, "concatStrings__Ljava_lang_String_2",
             "Hello World!1" + "\\\n\r\t"
         );
     }
@@ -98,21 +97,21 @@ public class StringTest {
     @Test public void equalsAndSubstring() throws Exception {
         assertExec(
             "Composes are OK",
-            StringSample.class, "equalToHelloZII",
+            StringSample.class, "equalToHello__ZII",
             true, 0, 5
         );
     }
     @Test public void replaceChars() throws Exception {
         assertExec(
             "Can replace slashes by underscores",
-            StringSample.class, "replaceLjava_lang_StringLjava_lang_StringCC",
+            StringSample.class, "replace__Ljava_lang_String_2Ljava_lang_String_2CC",
             "x_y_z", "x/y/z", '/', '_'
         );
     }
     @Test public void replaceIntChars() throws Exception {
         assertExec(
             "Can replace slashes by underscores",
-            StringSample.class, "replaceLjava_lang_StringLjava_lang_StringCC",
+            StringSample.class, "replace__Ljava_lang_String_2Ljava_lang_String_2CC",
             "x_y_z", "x/y/z", (int)'/', (int)'_'
         );
     }
@@ -120,7 +119,7 @@ public class StringTest {
     @Test public void insertBuilder() throws Exception {
         assertExec(
             "Can insert something into a buffer?",
-            StringSample.class, "insertBufferLjava_lang_String",
+            StringSample.class, "insertBuffer__Ljava_lang_String_2",
             "Ahojdo!"
         );
     }
@@ -130,7 +129,7 @@ public class StringTest {
         int jh = StringSample.hashCode(j);
         assertExec(
             "Hashcode is the same " +jh,
-            StringSample.class, "hashCodeILjava_lang_String",
+            StringSample.class, "hashCode__ILjava_lang_String_2",
             Double.valueOf(jh), j
         );
     }
@@ -139,28 +138,28 @@ public class StringTest {
         int jh = StringSample.hashCode(j);
         assertExec(
             "Hashcode is the same " + jh,
-            StringSample.class, "hashCodeILjava_lang_String",
+            StringSample.class, "hashCode__ILjava_lang_String_2",
             Double.valueOf(jh), j
         );
     }
     @Test public void stringSwitch1() throws Exception {
         assertExec(
             "Get one",
-            StringSample.class, "stringSwitchILjava_lang_String",
+            StringSample.class, "stringSwitch__ILjava_lang_String_2",
             Double.valueOf(1), "jedna"
         );
     }
     @Test public void stringSwitch2() throws Exception {
         assertExec(
             "Get two",
-            StringSample.class, "stringSwitchILjava_lang_String",
+            StringSample.class, "stringSwitch__ILjava_lang_String_2",
             Double.valueOf(2), "dve"
         );
     }
     @Test public void stringSwitchDefault() throws Exception {
         assertExec(
             "Get -1",
-            StringSample.class, "stringSwitchILjava_lang_String",
+            StringSample.class, "stringSwitch__ILjava_lang_String_2",
             Double.valueOf(-1), "none"
         );
     }
@@ -169,7 +168,7 @@ public class StringTest {
         assertEquals(StringSample.countAB("Ahoj Bedo!"), 3, "Verify Java code is sane");
         assertExec(
             "One A and one B adds to 3",
-            StringSample.class, "countABILjava_lang_String",
+            StringSample.class, "countAB__ILjava_lang_String_2",
             Double.valueOf(3), "Ahoj Bedo!"
         );
         

@@ -29,19 +29,19 @@ import org.testng.annotations.Test;
  */
 public class NumberTest {
     @Test public void integerFromString() throws Exception {
-        assertExec("Can convert string to integer", Integer.class, "parseIntILjava_lang_String",
+        assertExec("Can convert string to integer", Integer.class, "parseInt__ILjava_lang_String_2",
             Double.valueOf(333), "333"
         );
     }
 
     @Test public void doubleFromString() throws Exception {
-        assertExec("Can convert string to double", Double.class, "parseDoubleDLjava_lang_String",
+        assertExec("Can convert string to double", Double.class, "parseDouble__DLjava_lang_String_2",
             Double.valueOf(33.3), "33.3"
         );
     }
 
     @Test public void autoboxDouble() throws Exception {
-        assertExec("Autoboxing of doubles is OK", Numbers.class, "autoboxDblToStringLjava_lang_String",
+        assertExec("Autoboxing of doubles is OK", Numbers.class, "autoboxDblToString__Ljava_lang_String_2",
             "3.3"
         );
     }
@@ -51,7 +51,7 @@ public class NumberTest {
     }
 
     @Test public void jslog1000() throws Exception {
-        assertExec("log_10(1000) == 3", Math.class, "log10DD", 
+        assertExec("log_10(1000) == 3", Math.class, "log10__DD", 
             Double.valueOf(3.0), 1000.0
         );
     }
@@ -60,20 +60,20 @@ public class NumberTest {
         assertEquals(3, Numbers.rem(303, 10));
     }
     @Test public void jsRem() throws Exception {
-        assertExec("Should be three", Numbers.class, "remIII", 
+        assertExec("Should be three", Numbers.class, "rem__III", 
             Double.valueOf(3.0), 303, 10
         );
     }
     
     @Test public void deserializeInt() throws Exception {
         int exp = Numbers.deserInt();
-        assertExec("Should be the same", Numbers.class, "deserIntI", 
+        assertExec("Should be the same", Numbers.class, "deserInt__I", 
             Double.valueOf(exp)
         );
     }
 
     @Test public void deserializeSimpleLong() throws Exception {
-        assertExec("Should be 3454", Numbers.class, "deserLongJAB", 
+        assertExec("Should be 3454", Numbers.class, "deserLong__J_3B", 
             Double.valueOf(3454), 
             new byte[] { (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)13, (byte)126 }
         );
@@ -84,7 +84,7 @@ public class NumberTest {
             (byte)64, (byte)8, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0
         };
         long exp = Numbers.deserLong(arr);
-        assertExec("Should be " + exp, "org_apidesign_vm4brwsr_Numbers_deserLongJAB", 
+        assertExec("Should be " + exp, "org_apidesign_vm4brwsr_Numbers_deserLong__JAB", 
             Double.valueOf(exp), arr);
     }
     */
@@ -97,7 +97,7 @@ public class NumberTest {
     
     @Test public void deserializeFloatInJS() throws Exception {
         float f = 54324.32423f;
-        assertExec("Should be the same", Numbers.class, "deserFloatF", 
+        assertExec("Should be the same", Numbers.class, "deserFloat__F", 
             Double.valueOf(f)
         );
     }
@@ -110,7 +110,7 @@ public class NumberTest {
     
     @Test public void deserializeDoubleInJS() throws Exception {
         double f = 3.0;
-        assertExec("Should be the same", Numbers.class, "deserDoubleD", f);
+        assertExec("Should be the same", Numbers.class, "deserDouble__D", f);
     }
     /*
     @Test public void serDouble() throws IOException {
@@ -131,7 +131,7 @@ public class NumberTest {
     @Test public void fiveInStringJS() throws Exception {
         String s = Numbers.intToString();
         assertExec("Should be the same: " + s, 
-            Numbers.class, "intToStringLjava_lang_String", 
+            Numbers.class, "intToString__Ljava_lang_String_2", 
             s
         );
     }
@@ -139,7 +139,7 @@ public class NumberTest {
     @Test public void sevenInStringJS() throws Exception {
         String s = Numbers.floatToString();
         assertExec("Should be the same: " + s, 
-            Numbers.class, "floatToStringLjava_lang_String", 
+            Numbers.class, "floatToString__Ljava_lang_String_2", 
             s
         );
     }
