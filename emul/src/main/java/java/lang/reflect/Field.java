@@ -25,15 +25,7 @@
 
 package java.lang.reflect;
 
-import sun.reflect.FieldAccessor;
-import sun.reflect.Reflection;
-import sun.reflect.generics.repository.FieldRepository;
-import sun.reflect.generics.factory.CoreReflectionFactory;
-import sun.reflect.generics.factory.GenericsFactory;
-import sun.reflect.generics.scope.ClassScope;
 import java.lang.annotation.Annotation;
-import java.util.Map;
-import sun.reflect.annotation.AnnotationParser;
 
 
 /**
@@ -67,13 +59,7 @@ class Field extends AccessibleObject implements Member {
     private int                 modifiers;
     // Generics and annotations support
     private transient String    signature;
-    // generic info repository; lazily initialized
-    private transient FieldRepository genericInfo;
     private byte[]              annotations;
-    // Cached field accessor created without override
-    private FieldAccessor fieldAccessor;
-    // Cached field accessor created with override
-    private FieldAccessor overrideFieldAccessor;
     // For sharing of FieldAccessors. This branching structure is
     // currently only two levels deep (i.e., one root Field and
     // potentially many Field objects pointing to it.)
@@ -82,24 +68,6 @@ class Field extends AccessibleObject implements Member {
     // Generics infrastructure
 
     private String getGenericSignature() {return signature;}
-
-    // Accessor for factory
-    private GenericsFactory getFactory() {
-        Class<?> c = getDeclaringClass();
-        // create scope and factory
-        return CoreReflectionFactory.make(c, ClassScope.make(c));
-    }
-
-    // Accessor for generic info repository
-    private FieldRepository getGenericInfo() {
-        // lazily initialize repository if necessary
-        if (genericInfo == null) {
-            // create and cache generic info repository
-            genericInfo = FieldRepository.make(getGenericSignature(),
-                                               getFactory());
-        }
-        return genericInfo; //return cached repository
-    }
 
 
     /**
@@ -139,9 +107,6 @@ class Field extends AccessibleObject implements Member {
         // objects.)
         Field res = new Field(clazz, name, type, modifiers, slot, signature, annotations);
         res.root = this;
-        // Might as well eagerly propagate this if already present
-        res.fieldAccessor = fieldAccessor;
-        res.overrideFieldAccessor = overrideFieldAccessor;
         return res;
     }
 
@@ -232,10 +197,7 @@ class Field extends AccessibleObject implements Member {
      * @since 1.5
      */
     public Type getGenericType() {
-        if (getGenericSignature() != null)
-            return getGenericInfo().getGenericType();
-        else
-            return getType();
+        throw new UnsupportedOperationException();
     }
 
 
@@ -924,65 +886,28 @@ class Field extends AccessibleObject implements Member {
     private FieldAccessor getFieldAccessor(Object obj)
         throws IllegalAccessException
     {
-        doSecurityCheck(obj);
-        boolean ov = override;
-        FieldAccessor a = (ov)? overrideFieldAccessor : fieldAccessor;
-        return (a != null)? a : acquireFieldAccessor(ov);
+        throw new SecurityException();
     }
-
-    // NOTE that there is no synchronization used here. It is correct
-    // (though not efficient) to generate more than one FieldAccessor
-    // for a given Field. However, avoiding synchronization will
-    // probably make the implementation more scalable.
-    private FieldAccessor acquireFieldAccessor(boolean overrideFinalCheck) {
-        // First check to see if one has been created yet, and take it
-        // if so
-        FieldAccessor tmp = null;
-        if (root != null) tmp = root.getFieldAccessor(overrideFinalCheck);
-        if (tmp != null) {
-            if (overrideFinalCheck)
-                overrideFieldAccessor = tmp;
-            else
-                fieldAccessor = tmp;
-        } else {
-            // Otherwise fabricate one and propagate it up to the root
-            tmp = reflectionFactory.newFieldAccessor(this, overrideFinalCheck);
-            setFieldAccessor(tmp, overrideFinalCheck);
-        }
-
-        return tmp;
-    }
-
-    // Returns FieldAccessor for this Field object, not looking up
-    // the chain to the root
-    private FieldAccessor getFieldAccessor(boolean overrideFinalCheck) {
-        return (overrideFinalCheck)? overrideFieldAccessor : fieldAccessor;
-    }
-
-    // Sets the FieldAccessor for this Field object and
-    // (recursively) its root
-    private void setFieldAccessor(FieldAccessor accessor, boolean overrideFinalCheck) {
-        if (overrideFinalCheck)
-            overrideFieldAccessor = accessor;
-        else
-            fieldAccessor = accessor;
-        // Propagate up
-        if (root != null) {
-            root.setFieldAccessor(accessor, overrideFinalCheck);
-        }
-    }
-
-    // NOTE: be very careful if you change the stack depth of this
-    // routine. The depth of the "getCallerClass" call is hardwired so
-    // that the compiler can have an easier time if this gets inlined.
-    private void doSecurityCheck(Object obj) throws IllegalAccessException {
-        if (!override) {
-            if (!Reflection.quickCheckMemberAccess(clazz, modifiers)) {
-                Class<?> caller = Reflection.getCallerClass(4);
-
-                checkAccess(caller, clazz, obj, modifiers);
-            }
-        }
+    
+    private static abstract class FieldAccessor {
+        abstract void setShort(Object obj, short s);
+        abstract void setInt(Object obj, int i);
+        abstract void setChar(Object obj, char c);
+        abstract void setByte(Object obj, byte b);
+        abstract void setBoolean(Object obj, boolean z);
+        abstract void set(Object obj, Object value);
+        abstract double getDouble(Object obj);
+        abstract void setLong(Object obj, long l);
+        abstract void setFloat(Object obj, float f);
+        abstract void setDouble(Object obj, double d);
+        abstract long getLong(Object obj);
+        abstract int getInt(Object obj);
+        abstract short getShort(Object obj);
+        abstract char getChar(Object obj);
+        abstract byte getByte(Object obj);
+        abstract boolean getBoolean(Object obj);
+        abstract Object get(Object obj);
+        abstract float getFloat(Object obj);
     }
 
     /*
@@ -1016,25 +941,13 @@ class Field extends AccessibleObject implements Member {
         if (annotationClass == null)
             throw new NullPointerException();
 
-        return (T) declaredAnnotations().get(annotationClass);
+        throw new UnsupportedOperationException();
     }
 
     /**
      * @since 1.5
      */
     public Annotation[] getDeclaredAnnotations()  {
-        return AnnotationParser.toArray(declaredAnnotations());
-    }
-
-    private transient Map<Class<? extends Annotation>, Annotation> declaredAnnotations;
-
-    private synchronized  Map<Class<? extends Annotation>, Annotation> declaredAnnotations() {
-        if (declaredAnnotations == null) {
-            declaredAnnotations = AnnotationParser.parseAnnotations(
-                annotations, sun.misc.SharedSecrets.getJavaLangAccess().
-                getConstantPool(getDeclaringClass()),
-                getDeclaringClass());
-        }
-        return declaredAnnotations;
+        throw new UnsupportedOperationException();
     }
 }

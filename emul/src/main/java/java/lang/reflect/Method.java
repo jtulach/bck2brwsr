@@ -25,18 +25,7 @@
 
 package java.lang.reflect;
 
-import sun.reflect.MethodAccessor;
-import sun.reflect.Reflection;
-import sun.reflect.generics.repository.MethodRepository;
-import sun.reflect.generics.factory.CoreReflectionFactory;
-import sun.reflect.generics.factory.GenericsFactory;
-import sun.reflect.generics.scope.MethodScope;
-import sun.reflect.annotation.AnnotationType;
-import sun.reflect.annotation.AnnotationParser;
 import java.lang.annotation.Annotation;
-import java.lang.annotation.AnnotationFormatError;
-import java.nio.ByteBuffer;
-import java.util.Map;
 
 /**
  * A {@code Method} provides information about, and access to, a single method
@@ -72,12 +61,9 @@ public final
     private int                 modifiers;
     // Generics and annotations support
     private transient String              signature;
-    // generic info repository; lazily initialized
-    private transient MethodRepository genericInfo;
     private byte[]              annotations;
     private byte[]              parameterAnnotations;
     private byte[]              annotationDefault;
-    private volatile MethodAccessor methodAccessor;
     // For sharing of MethodAccessors. This branching structure is
     // currently only two levels deep (i.e., one root Method and
     // potentially many Method objects pointing to it.)
@@ -86,23 +72,6 @@ public final
    // Generics infrastructure
 
     private String getGenericSignature() {return signature;}
-
-    // Accessor for factory
-    private GenericsFactory getFactory() {
-        // create scope and factory
-        return CoreReflectionFactory.make(this, MethodScope.make(this));
-    }
-
-    // Accessor for generic info repository
-    private MethodRepository getGenericInfo() {
-        // lazily initialize repository if necessary
-        if (genericInfo == null) {
-            // create and cache generic info repository
-            genericInfo = MethodRepository.make(getGenericSignature(),
-                                                getFactory());
-        }
-        return genericInfo; //return cached repository
-    }
 
     /**
      * Package-private constructor used by ReflectAccess to enable
@@ -151,8 +120,6 @@ public final
                                 exceptionTypes, modifiers, slot, signature,
                                 annotations, parameterAnnotations, annotationDefault);
         res.root = this;
-        // Might as well eagerly propagate this if already present
-        res.methodAccessor = methodAccessor;
         return res;
     }
 
@@ -199,10 +166,7 @@ public final
      * @since 1.5
      */
     public TypeVariable<Method>[] getTypeParameters() {
-        if (getGenericSignature() != null)
-            return (TypeVariable<Method>[])getGenericInfo().getTypeParameters();
-        else
-            return (TypeVariable<Method>[])new TypeVariable[0];
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -240,9 +204,7 @@ public final
      * @since 1.5
      */
     public Type getGenericReturnType() {
-      if (getGenericSignature() != null) {
-        return getGenericInfo().getReturnType();
-      } else { return getReturnType();}
+        throw new UnsupportedOperationException();
     }
 
 
@@ -287,10 +249,7 @@ public final
      * @since 1.5
      */
     public Type[] getGenericParameterTypes() {
-        if (getGenericSignature() != null)
-            return getGenericInfo().getParameterTypes();
-        else
-            return getParameterTypes();
+        throw new UnsupportedOperationException();
     }
 
 
@@ -331,12 +290,7 @@ public final
      * @since 1.5
      */
       public Type[] getGenericExceptionTypes() {
-          Type[] result;
-          if (getGenericSignature() != null &&
-              ((result = getGenericInfo().getExceptionTypes()).length > 0))
-              return result;
-          else
-              return getExceptionTypes();
+        throw new UnsupportedOperationException();
       }
 
     /**
@@ -587,18 +541,7 @@ public final
         throws IllegalAccessException, IllegalArgumentException,
            InvocationTargetException
     {
-        if (!override) {
-            if (!Reflection.quickCheckMemberAccess(clazz, modifiers)) {
-                Class<?> caller = Reflection.getCallerClass(1);
-
-                checkAccess(caller, clazz, obj, modifiers);
-            }
-        }
-        MethodAccessor ma = methodAccessor;             // read volatile
-        if (ma == null) {
-            ma = acquireMethodAccessor();
-        }
-        return ma.invoke(obj, args);
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -638,42 +581,6 @@ public final
         return Modifier.isSynthetic(getModifiers());
     }
 
-    // NOTE that there is no synchronization used here. It is correct
-    // (though not efficient) to generate more than one MethodAccessor
-    // for a given Method. However, avoiding synchronization will
-    // probably make the implementation more scalable.
-    private MethodAccessor acquireMethodAccessor() {
-        // First check to see if one has been created yet, and take it
-        // if so
-        MethodAccessor tmp = null;
-        if (root != null) tmp = root.getMethodAccessor();
-        if (tmp != null) {
-            methodAccessor = tmp;
-        } else {
-            // Otherwise fabricate one and propagate it up to the root
-            tmp = reflectionFactory.newMethodAccessor(this);
-            setMethodAccessor(tmp);
-        }
-
-        return tmp;
-    }
-
-    // Returns MethodAccessor for this Method object, not looking up
-    // the chain to the root
-    MethodAccessor getMethodAccessor() {
-        return methodAccessor;
-    }
-
-    // Sets the MethodAccessor for this Method object and
-    // (recursively) its root
-    void setMethodAccessor(MethodAccessor accessor) {
-        methodAccessor = accessor;
-        // Propagate up
-        if (root != null) {
-            root.setMethodAccessor(accessor);
-        }
-    }
-
     /**
      * @throws NullPointerException {@inheritDoc}
      * @since 1.5
@@ -682,26 +589,14 @@ public final
         if (annotationClass == null)
             throw new NullPointerException();
 
-        return (T) declaredAnnotations().get(annotationClass);
+        throw new UnsupportedOperationException();
     }
 
     /**
      * @since 1.5
      */
     public Annotation[] getDeclaredAnnotations()  {
-        return AnnotationParser.toArray(declaredAnnotations());
-    }
-
-    private transient Map<Class<? extends Annotation>, Annotation> declaredAnnotations;
-
-    private synchronized  Map<Class<? extends Annotation>, Annotation> declaredAnnotations() {
-        if (declaredAnnotations == null) {
-            declaredAnnotations = AnnotationParser.parseAnnotations(
-                annotations, sun.misc.SharedSecrets.getJavaLangAccess().
-                getConstantPool(getDeclaringClass()),
-                getDeclaringClass());
-        }
-        return declaredAnnotations;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -721,16 +616,7 @@ public final
     public Object getDefaultValue() {
         if  (annotationDefault == null)
             return null;
-        Class<?> memberType = AnnotationType.invocationHandlerReturnType(
-            getReturnType());
-        Object result = AnnotationParser.parseMemberValue(
-            memberType, ByteBuffer.wrap(annotationDefault),
-            sun.misc.SharedSecrets.getJavaLangAccess().
-                getConstantPool(getDeclaringClass()),
-            getDeclaringClass());
-        if (result instanceof sun.reflect.annotation.ExceptionProxy)
-            throw new AnnotationFormatError("Invalid default: " + this);
-        return result;
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -754,14 +640,6 @@ public final
         if (parameterAnnotations == null)
             return new Annotation[numParameters][0];
 
-        Annotation[][] result = AnnotationParser.parseParameterAnnotations(
-            parameterAnnotations,
-            sun.misc.SharedSecrets.getJavaLangAccess().
-                getConstantPool(getDeclaringClass()),
-            getDeclaringClass());
-        if (result.length != numParameters)
-            throw new java.lang.annotation.AnnotationFormatError(
-                "Parameter annotations don't match number of parameters");
-        return result;
+        throw new UnsupportedOperationException();
     }
 }

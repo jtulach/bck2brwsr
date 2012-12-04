@@ -27,6 +27,7 @@ package java.lang;
 
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.TypeVariable;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
@@ -75,10 +76,10 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  * @since   JDK1.0
  */
 public final
-    class Class<T> implements java.io.Serializable {
-//                              java.lang.reflect.GenericDeclaration,
-//                              java.lang.reflect.Type,
-//                              java.lang.reflect.AnnotatedElement {
+    class Class<T> implements java.io.Serializable,
+                              java.lang.reflect.GenericDeclaration,
+                              java.lang.reflect.Type,
+                              java.lang.reflect.AnnotatedElement {
     private static final int ANNOTATION= 0x00002000;
     private static final int ENUM      = 0x00004000;
     private static final int SYNTHETIC = 0x00001000;
@@ -396,6 +397,26 @@ public final
     @JavaScriptBody(args = "self", body = "return self.jvmName;")
     private native String jvmName();
 
+    
+    /**
+     * Returns an array of {@code TypeVariable} objects that represent the
+     * type variables declared by the generic declaration represented by this
+     * {@code GenericDeclaration} object, in declaration order.  Returns an
+     * array of length 0 if the underlying generic declaration declares no type
+     * variables.
+     *
+     * @return an array of {@code TypeVariable} objects that represent
+     *     the type variables declared by this generic declaration
+     * @throws java.lang.reflect.GenericSignatureFormatError if the generic
+     *     signature of this generic declaration does not conform to
+     *     the format specified in
+     *     <cite>The Java&trade; Virtual Machine Specification</cite>
+     * @since 1.5
+     */
+    public TypeVariable<Class<T>>[] getTypeParameters() {
+        throw new UnsupportedOperationException();
+    }
+ 
     /**
      * Returns the {@code Class} representing the superclass of the entity
      * (class, interface, primitive type or void) represented by this
