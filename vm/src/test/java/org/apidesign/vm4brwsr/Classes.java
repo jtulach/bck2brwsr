@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
  *
@@ -79,20 +80,32 @@ public class Classes {
         return null;
     }
     
+    @JavaScriptBody(args = "msg", body = "throw msg;")
+    private static native void thrw(String msg);
+    
     public static Object reflectiveMethodCall(boolean direct) throws Exception {
-        Method m;
-        /*
+        Method find = null;
+        StringBuilder sb = new StringBuilder();
         if (!direct) {
             final Class<? extends Annotation> v = ClassesMarker.class;
-            for (Method single : Classes.class.getMethods()) {
-                if (single.getAnnotation(v)) {
-                    m = single;
+            for (Method m : Classes.class.getMethods()) {
+                sb.append("\n").append(m.getName());
+                if (m.getName().equals("name")) {
+                    find = m;
                     break;
                 }
+//                if (single.getAnnotation(v) != null) {
+//                    m = single;
+//                    break;
+//                }
             }
-        } else*/ {
-            m = Classes.class.getMethod("name");
+        } else {
+            find = Classes.class.getMethod("name");
         }
-        return m.invoke(null);
+        if (find == null) {
+            thrw(sb.toString());
+            throw new NullPointerException(sb.toString());
+        }
+        return find.invoke(null);
     }
 }

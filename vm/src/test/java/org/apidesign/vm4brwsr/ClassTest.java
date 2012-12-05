@@ -89,7 +89,16 @@ public class ClassTest {
     @Test public void jsInvokeMethod() throws Exception {
         assertExec("Calls the name() method via reflection", Classes.class, 
             "reflectiveMethodCall__Ljava_lang_Object_2Z", 
-            "java.io.IOException"
+            "java.io.IOException", true
+        );
+    }
+    @Test public void javaFindMethod() throws Exception {
+        assertEquals(Classes.reflectiveMethodCall(false), "java.io.IOException", "Calls the name() method via reflection");
+    }
+    @Test public void jsFindMethod() throws Exception {
+        assertExec("Calls the name() method via reflection", Classes.class, 
+            "reflectiveMethodCall__Ljava_lang_Object_2Z", 
+            "java.io.IOException", false
         );
     }
     

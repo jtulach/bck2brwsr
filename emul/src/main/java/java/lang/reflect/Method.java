@@ -54,6 +54,7 @@ public final
     private final Class<?> clazz;
     private final String name;
     private final Object data;
+    private final String sig;
     private int modifiers;
 
    // Generics infrastructure
@@ -65,12 +66,12 @@ public final
      * instantiation of these objects in Java code from the java.lang
      * package via sun.reflect.LangReflectAccess.
      */
-    Method(Class<?> declaringClass,
-           String name, Object data)
+    Method(Class<?> declaringClass, String name, Object data, String sig)
     {
         this.clazz = declaringClass;
         this.name = name;
         this.data = data;
+        this.sig = sig;
     }
 
     /**
@@ -594,29 +595,52 @@ public final
     // bck2brwsr implementation
     //
 
-    @JavaScriptBody(args = { "clazz", "name", "params" },
-        body = "if (params.length > 0) return null;\n"
+    @JavaScriptBody(args = { "clazz", "prefix" },
+        body = ""
         + "var c = clazz.cnstr.prototype;"
-        + "var prefix = name + '__';\n"
+        + "var arr = new Array();\n"
         + "for (m in c) {\n"
-        + "  if (m.indexOf(prefix) === 0) {"
-        + "     return c[m];\n"
+        + "  if (m.indexOf(prefix) === 0) {\n"
+        + "     arr.push(m);\n"
+        + "     arr.push(c[m]);\n"
         + "  }"
         + "}\n"
-        + "return null;"
+        + "return arr;"
     )
-    private static native Object findMethodData(
-        Class<?> clazz, String name, Class<?>... parameterTypes
+    private static native Object[] findMethodData(
+        Class<?> clazz, String prefix
     );
-    
+
     // XXX should not be public
     public static Method findMethod(
         Class<?> clazz, String name, Class<?>... parameterTypes
     ) {
-        Object data = findMethodData(clazz, name, parameterTypes);
-        if (data == null) {
+        Object[] data = findMethodData(clazz, name + "__");
+        if (data.length == 0) {
             return null;
         }
-        return new Method(clazz, name, data);
+        String sig = ((String)data[0]).substring(name.length() + 2);
+        return new Method(clazz, name, data[1], sig);
+    }
+    
+    public static Method[] findMethods(Class<?> clazz) {
+        Object[] namesAndData = findMethodData(clazz, "");
+        int cnt = 0;
+        for (int i = 0; i < namesAndData.length; i += 2) {
+            String sig = (String) namesAndData[i];
+            Object data = namesAndData[i + 1];
+            int middle = sig.indexOf("__");
+            if (middle == -1) {
+                continue;
+            }
+            String name = sig.substring(0, middle);
+            sig = sig.substring(middle + 2);
+            namesAndData[cnt++] = new Method(clazz, name, data, sig);
+        }
+        Method[] arr = new Method[cnt];
+        for (int i = 0; i < cnt; i++) {
+            arr[i] = (Method)namesAndData[i];
+        }
+        return arr;
     }
 }

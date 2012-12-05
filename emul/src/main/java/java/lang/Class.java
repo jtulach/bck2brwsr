@@ -616,7 +616,7 @@ public final
      * @since JDK1.1
      */
     public Method[] getMethods() throws SecurityException {
-        throw new SecurityException();
+        return Method.findMethods(this);
     }
 
     /**

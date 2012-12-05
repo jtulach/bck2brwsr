@@ -1767,7 +1767,7 @@ public final class String
      *          or {@code -1} if there is no such occurrence.
      */
     @JavaScriptBody(args = { "self", "str", "fromIndex" }, body =
-        "return self.toString().indexOf(str.toString(), fromIndex) >= 0;"
+        "return self.toString().indexOf(str.toString(), fromIndex);"
     )
     public int indexOf(String str, int fromIndex) {
         return indexOf(toCharArray(), offset(), length(), str.toCharArray(), str.offset(), str.length(), fromIndex);
