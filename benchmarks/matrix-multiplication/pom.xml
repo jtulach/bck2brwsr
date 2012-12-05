@@ -58,6 +58,7 @@
                 <tests>all</tests>
                 <config>jsTestDriver.conf</config>
                 <reset>true</reset>
+                <testOutput>testOutput</testOutput>
             </configuration>
             <executions>
                 <execution>
