@@ -98,12 +98,15 @@ public abstract class ByteCodeToJavaScript {
         }
         if (proto == null) {
             String sc = jc.getSuperClassName(); // with _
-            out.append("\n    var p = CLS.prototype = ").
+            out.append("\n    var pp = ").
                 append(sc.replace('/', '_')).append("(true);");
+            out.append("\n    var p = CLS.prototype = pp;");
             out.append("\n    var c = p;");
+            out.append("\n    var sprcls = pp.constructor.$class;");
         } else {
             out.append("\n    var p = CLS.prototype = ").append(proto[1]).append(";");
             out.append("\n    var c = ").append(proto[0]).append(";");
+            out.append("\n    var sprcls = null;");
         }
         for (MethodData m : jc.getMethods()) {
             byte[] onlyArr = m.findAnnotationData(true);
@@ -118,16 +121,33 @@ public abstract class ByteCodeToJavaScript {
                 }
                 continue;
             }
+            String mn;
             if (m.isStatic()) {
-                generateStaticMethod("\n    c.", m, toInitilize);
+                mn = generateStaticMethod("\n    c.", m, toInitilize);
             } else {
-                generateInstanceMethod("\n    c.", m);
+                mn = generateInstanceMethod("\n    c.", m);
+            }
+            byte[] runAnno = m.findAnnotationData(false);
+            if (runAnno != null) {
+                out.append("\n    c.").append(mn).append(".anno = {");
+                generateAnno(jc, out, runAnno);
+                out.append("\n    };");
             }
         }
         out.append("\n    c.constructor = CLS;");
         out.append("\n    c.$instOf_").append(className).append(" = true;");
         for (String superInterface : jc.getSuperInterfaces()) {
             out.append("\n    c.$instOf_").append(superInterface.replace('/', '_')).append(" = true;");
+        }
+        out.append("\n    CLS.$class = java_lang_Class(true);");
+        out.append("\n    CLS.$class.jvmName = '").append(jc.getClassName()).append("';");
+        out.append("\n    CLS.$class.superclass = sprcls;");
+        out.append("\n    CLS.$class.cnstr = CLS;");
+        byte[] classAnno = jc.findAnnotationData(false);
+        if (classAnno != null) {
+            out.append("\n    CLS.$class.anno = {");
+            generateAnno(jc, out, classAnno);
+            out.append("\n    };");
         }
         out.append("\n  }");
         out.append("\n  if (arguments.length === 0) {");
@@ -162,9 +182,10 @@ public abstract class ByteCodeToJavaScript {
         }
         return sb.toString();
     }
-    private void generateStaticMethod(String prefix, MethodData m, StringArray toInitilize) throws IOException {
-        if (javaScriptBody(prefix, m, true)) {
-            return;
+    private String generateStaticMethod(String prefix, MethodData m, StringArray toInitilize) throws IOException {
+        String jsb = javaScriptBody(prefix, m, true);
+        if (jsb != null) {
+            return jsb;
         }
         StringBuilder argsCnt = new StringBuilder();
         final String mn = findMethodName(m, argsCnt);
@@ -199,11 +220,13 @@ public abstract class ByteCodeToJavaScript {
             out.append("  throw 'no code found for ").append(m.getInternalSig()).append("';\n");
         }
         out.append("};");
+        return mn;
     }
     
-    private void generateInstanceMethod(String prefix, MethodData m) throws IOException {
-        if (javaScriptBody(prefix, m, false)) {
-            return;
+    private String generateInstanceMethod(String prefix, MethodData m) throws IOException {
+        String jsb = javaScriptBody(prefix, m, false);
+        if (jsb != null) {
+            return jsb;
         }
         StringBuilder argsCnt = new StringBuilder();
         final String mn = findMethodName(m, argsCnt);
@@ -233,6 +256,7 @@ public abstract class ByteCodeToJavaScript {
             out.append("  throw 'no code found for ").append(m.getInternalSig()).append("';\n");
         }
         out.append("};");
+        return mn;
     }
 
     private void produceCode(byte[] byteCodes) throws IOException {
@@ -1002,24 +1026,32 @@ public abstract class ByteCodeToJavaScript {
         }
     }
 
-    private String encodeConstant(int entryIndex) {
-        String s = jc.stringValue(entryIndex, true);
+    private String encodeConstant(int entryIndex) throws IOException {
+        String[] classRef = { null };
+        String s = jc.stringValue(entryIndex, classRef);
+        if (classRef[0] != null) {
+            addReference(classRef[0]);
+        }
         return s;
     }
 
-    private boolean javaScriptBody(String prefix, MethodData m, boolean isStatic) throws IOException {
+    private String javaScriptBody(String prefix, MethodData m, boolean isStatic) throws IOException {
         byte[] arr = m.findAnnotationData(true);
         if (arr == null) {
-            return false;
+            return null;
         }
         final String jvmType = "Lorg/apidesign/bck2brwsr/core/JavaScriptBody;";
         class P extends AnnotationParser {
+            public P() {
+                super(false);
+            }
+            
             int cnt;
             String[] args = new String[30];
             String body;
             
             @Override
-            protected void visitAttr(String type, String attr, String value) {
+            protected void visitAttr(String type, String attr, String at, String value) {
                 if (type.equals(jvmType)) {
                     if ("body".equals(attr)) {
                         body = value;
@@ -1034,10 +1066,11 @@ public abstract class ByteCodeToJavaScript {
         P p = new P();
         p.parse(arr, jc);
         if (p.body == null) {
-            return false;
+            return null;
         }
         StringBuilder cnt = new StringBuilder();
-        out.append(prefix).append(findMethodName(m, cnt));
+        final String mn = findMethodName(m, cnt);
+        out.append(prefix).append(mn);
         out.append(" = function(");
         String space;
         int index;
@@ -1058,7 +1091,7 @@ public abstract class ByteCodeToJavaScript {
         out.append(") {").append("\n");
         out.append(p.body);
         out.append("\n}\n");
-        return true;
+        return mn;
     }
     private static String className(ClassData jc) {
         //return jc.getName().getInternalName().replace('/', '_');
@@ -1075,9 +1108,9 @@ public abstract class ByteCodeToJavaScript {
         final String[] values = new String[attrNames.length];
         final boolean[] found = { false };
         final String jvmType = "L" + className.replace('.', '/') + ";";
-        AnnotationParser ap = new AnnotationParser() {
+        AnnotationParser ap = new AnnotationParser(false) {
             @Override
-            protected void visitAttr(String type, String attr, String value) {
+            protected void visitAttr(String type, String attr, String at, String value) {
                 if (type.equals(jvmType)) {
                     found[0] = true;
                     for (int i = 0; i < attrNames.length; i++) {
@@ -1110,5 +1143,39 @@ public abstract class ByteCodeToJavaScript {
             }
         }
         return " = null;";
+    }
+
+    private static void generateAnno(ClassData cd, final Appendable out, byte[] data) throws IOException {
+        AnnotationParser ap = new AnnotationParser(true) {
+            int anno;
+            int cnt;
+            
+            @Override
+            protected void visitAnnotationStart(String type) throws IOException {
+                if (anno++ > 0) {
+                    out.append(",");
+                }
+                out.append('"').append(type).append("\" : {\n");
+                cnt = 0;
+            }
+
+            @Override
+            protected void visitAnnotationEnd(String type) throws IOException {
+                out.append("\n}\n");
+            }
+            
+            @Override
+            protected void visitAttr(String type, String attr, String attrType, String value) 
+            throws IOException {
+                if (attr == null) {
+                    return;
+                }
+                if (cnt++ > 0) {
+                    out.append(",\n");
+                }
+                out.append(attr).append("__").append(attrType).append(" : ").append(value);
+            }
+        };
+        ap.parse(data, cd);
     }
 }

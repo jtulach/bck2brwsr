@@ -34,10 +34,21 @@ import java.io.IOException;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class AnnotationParser {
-    protected AnnotationParser() {
+    private final boolean textual;
+    
+    protected AnnotationParser(boolean textual) {
+        this.textual = textual;
     }
 
-    protected void visitAttr(String type, String attr, String value) {
+    protected void visitAnnotationStart(String type) throws IOException {
+    }
+
+    protected void visitAnnotationEnd(String type) throws IOException {
+    }
+    
+    protected void visitAttr(
+        String annoType, String attr, String attrType, String value
+    ) throws IOException {
     }
     
     /** Initialize the parsing with constant pool from <code>cd</code>.
@@ -66,13 +77,15 @@ public class AnnotationParser {
     private void readAnno(DataInputStream dis, ClassData cd) throws IOException {
         int type = dis.readUnsignedShort();
         String typeName = cd.StringValue(type);
+        visitAnnotationStart(typeName);
     	int cnt = dis.readUnsignedShort();
     	for (int i = 0; i < cnt; i++) {
             String attrName = cd.StringValue(dis.readUnsignedShort());
             readValue(dis, cd, typeName, attrName);
         }
+        visitAnnotationEnd(typeName);
         if (cnt == 0) {
-            visitAttr(typeName, null, null);
+            visitAttr(typeName, null, null, null);
         }
     }
 
@@ -83,7 +96,17 @@ public class AnnotationParser {
             readAnno(dis, cd);
         } else if ("CFJZsSIDB".indexOf(type) >= 0) { // NOI18N
             int primitive = dis.readUnsignedShort();
-            visitAttr(typeName, attrName, cd.StringValue(primitive));
+            String val = cd.stringValue(primitive, textual);
+            String attrType;
+            if (type == 's') {
+                attrType = "Ljava_lang_String_2";
+                if (textual) {
+                    val = '"' + val + '"';
+                }
+            } else {
+                attrType = "" + type;
+            }
+            visitAttr(typeName, attrName, attrType, val);
         } else if (type == 'c') {
             int cls = dis.readUnsignedShort();
         } else if (type == '[') {

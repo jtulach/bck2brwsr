@@ -1691,6 +1691,10 @@ public final class String
      *          than or equal to <code>fromIndex</code>, or <code>-1</code>
      *          if the character does not occur before that point.
      */
+    @JavaScriptBody(args = { "self", "ch", "from" }, body = 
+        "if (typeof ch === 'number') ch = String.fromCharCode(ch);\n" +
+        "return self.toString().lastIndexOf(ch, from);"
+    )
     public int lastIndexOf(int ch, int fromIndex) {
         if (ch < Character.MIN_SUPPLEMENTARY_CODE_POINT) {
             // handle most cases here (ch is a BMP code point or a
@@ -1763,7 +1767,7 @@ public final class String
      *          or {@code -1} if there is no such occurrence.
      */
     @JavaScriptBody(args = { "self", "str", "fromIndex" }, body =
-        "return self.toString().indexOf(str.toString(), fromIndex) >= 0;"
+        "return self.toString().indexOf(str.toString(), fromIndex);"
     )
     public int indexOf(String str, int fromIndex) {
         return indexOf(toCharArray(), offset(), length(), str.toCharArray(), str.offset(), str.length(), fromIndex);
@@ -1855,6 +1859,9 @@ public final class String
      *          searching backward from the specified index,
      *          or {@code -1} if there is no such occurrence.
      */
+    @JavaScriptBody(args = { "self", "s", "from" }, body = 
+        "return self.toString().lastIndexOf(s.toString(), from);"
+    )
     public int lastIndexOf(String str, int fromIndex) {
         return lastIndexOf(toCharArray(), offset(), length(), str.toCharArray(), str.offset(), str.length(), fromIndex);
     }

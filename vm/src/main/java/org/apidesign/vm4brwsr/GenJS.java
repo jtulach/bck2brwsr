@@ -91,19 +91,20 @@ final class GenJS extends ByteCodeToJavaScript {
                         );
                     }
                 }
-                for (String resource : js.scripts.toArray()) {
-                    while (resource.startsWith("/")) {
-                        resource = resource.substring(1);
-                    }
-                    InputStream emul = l.getResourceAsStream(resource);
-                    if (emul == null) {
-                        throw new IOException("Can't find " + resource);
-                    }
-                    readResource(emul, out);
-                }
-                js.scripts = new StringArray();
             }
 
+            for (String resource : js.scripts.toArray()) {
+                while (resource.startsWith("/")) {
+                    resource = resource.substring(1);
+                }
+                InputStream emul = l.getResourceAsStream(resource);
+                if (emul == null) {
+                    throw new IOException("Can't find " + resource);
+                }
+                readResource(emul, out);
+            }
+            js.scripts = new StringArray();
+            
             StringArray toInit = StringArray.asList(js.references.toArray());
             toInit.reverse();
 

@@ -66,6 +66,7 @@ public class Object {
      * @see    Class Literals, section 15.8.2 of
      *         <cite>The Java&trade; Language Specification</cite>.
      */
+    @JavaScriptBody(args="self", body="return self.constructor.$class;")
     public final native Class<?> getClass();
 
     /**

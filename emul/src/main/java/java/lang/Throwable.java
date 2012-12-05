@@ -25,6 +25,7 @@
 
 package java.lang;
 import  java.io.*;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
  * The {@code Throwable} class is the superclass of all errors and
@@ -782,6 +783,7 @@ public class Throwable implements Serializable {
         return this;
     }
 
+    @JavaScriptBody(args = { "self", "dummy" }, body = "")
     private native Throwable fillInStackTrace(int dummy);
 
     /**
