@@ -83,24 +83,27 @@ public class Classes {
     @JavaScriptBody(args = "msg", body = "throw msg;")
     private static native void thrw(String msg);
     
-    public static Object reflectiveMethodCall(boolean direct) throws Exception {
+    public static Object reflectiveMethodCall(boolean direct, String mn) throws Exception {
         Method find = null;
         StringBuilder sb = new StringBuilder();
         if (!direct) {
             final Class<? extends Annotation> v = ClassesMarker.class;
             for (Method m : Classes.class.getMethods()) {
                 sb.append("\n").append(m.getName());
-                if (m.getName().equals("name")) {
-                    find = m;
-                    break;
+                if (mn != null) {
+                    if (m.getName().equals(mn)) {
+                        find = m;
+                        break;
+                    }
+                } else {
+                    if (m.getAnnotation(v) != null) {
+                        find = m;
+                        break;
+                    }
                 }
-//                if (single.getAnnotation(v) != null) {
-//                    m = single;
-//                    break;
-//                }
             }
         } else {
-            find = Classes.class.getMethod("name");
+            find = Classes.class.getMethod(mn);
         }
         if (find == null) {
             thrw(sb.toString());
