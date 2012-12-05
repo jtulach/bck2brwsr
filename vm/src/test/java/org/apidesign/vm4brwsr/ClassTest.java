@@ -101,6 +101,15 @@ public class ClassTest {
             "java.io.IOException", false, "name"
         );
     }
+    @Test public void javaAnnotatedMethod() throws Exception {
+        assertEquals(Classes.reflectiveMethodCall(false, null), "java.io.IOException", "Calls the name() method via reflection");
+    }
+    @Test public void jsAnnotatedMethod() throws Exception {
+        assertExec("Calls the name() method via reflection", Classes.class, 
+            "reflectiveMethodCall__Ljava_lang_Object_2ZLjava_lang_String_2", 
+            "java.io.IOException", false, null
+        );
+    }
     
     private static CharSequence codeSeq;
     private static Invocable code;

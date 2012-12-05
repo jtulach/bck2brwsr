@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import org.apidesign.bck2brwsr.emul.AnnotationImpl;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -1025,7 +1026,7 @@ public final
         body = 
           "if (self.anno) {"
         + "  return self.anno['L' + ac.jvmName + ';'];"
-        + "}"
+        + "} else return null;"
     )
     private Object getAnnotationData(Class<?> annotationClass) {
         throw new UnsupportedOperationException();

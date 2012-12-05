@@ -27,6 +27,7 @@ package java.lang.reflect;
 
 import java.lang.annotation.Annotation;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
+import org.apidesign.bck2brwsr.emul.AnnotationImpl;
 
 /**
  * A {@code Method} provides information about, and access to, a single method
@@ -535,15 +536,23 @@ public final
         return Modifier.isSynthetic(getModifiers());
     }
 
+    @JavaScriptBody(args = { "self", "ac" }, 
+        body = 
+          "if (self.fld_data.anno) {"
+        + "  return self.fld_data.anno['L' + ac.jvmName + ';'];"
+        + "} else return null;"
+    )
+    private Object getAnnotationData(Class<?> annotationClass) {
+        throw new UnsupportedOperationException();
+    }
+    
     /**
      * @throws NullPointerException {@inheritDoc}
      * @since 1.5
      */
     public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
-        if (annotationClass == null)
-            throw new NullPointerException();
-
-        throw new UnsupportedOperationException();
+        Object data = getAnnotationData(annotationClass);
+        return data == null ? null : AnnotationImpl.create(annotationClass, data);
     }
 
     /**
