@@ -26,7 +26,7 @@ import java.util.Enumeration;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-final class GenJS extends ByteCodeToJavaScript {
+class GenJS extends ByteCodeToJavaScript {
     public GenJS(Appendable out) {
         super(out);
     }
@@ -41,22 +41,16 @@ final class GenJS extends ByteCodeToJavaScript {
         compile(GenJS.class.getClassLoader(), out, names);
     }
     static void compile(ClassLoader l, Appendable out, StringArray names) throws IOException {
-        out.append("Array.prototype.fillNulls = function() {\n" +
-             "  for(var i = 0; i < this.length; i++) {\n" +
-             "    this[i] = null;\n" +
-             "  }\n" +
-             "  return this;\n" +
-             "};");
-        
-        
+        new GenJS(out).doCompile(l, names);
+    }
+    protected void doCompile(ClassLoader l, StringArray names) throws IOException {
         StringArray processed = new StringArray();
         StringArray initCode = new StringArray();
         for (String baseClass : names.toArray()) {
-            GenJS js = new GenJS(out);
-            js.references.add(baseClass);
+            references.add(baseClass);
             for (;;) {
                 String name = null;
-                for (String n : js.references.toArray()) {
+                for (String n : references.toArray()) {
                     if (processed.contains(n)) {
                         continue;
                     }
@@ -70,7 +64,7 @@ final class GenJS extends ByteCodeToJavaScript {
                     throw new IOException("Can't find class " + name); 
                 }
                 try {
-                    String ic = js.compile(is);
+                    String ic = compile(is);
                     processed.add(name);
                     initCode.add(ic == null ? "" : ic);
                 } catch (RuntimeException ex) {
@@ -93,7 +87,7 @@ final class GenJS extends ByteCodeToJavaScript {
                 }
             }
 
-            for (String resource : js.scripts.toArray()) {
+            for (String resource : scripts.toArray()) {
                 while (resource.startsWith("/")) {
                     resource = resource.substring(1);
                 }
@@ -103,9 +97,9 @@ final class GenJS extends ByteCodeToJavaScript {
                 }
                 readResource(emul, out);
             }
-            js.scripts = new StringArray();
+            scripts = new StringArray();
             
-            StringArray toInit = StringArray.asList(js.references.toArray());
+            StringArray toInit = StringArray.asList(references.toArray());
             toInit.reverse();
 
             for (String ic : toInit.toArray()) {

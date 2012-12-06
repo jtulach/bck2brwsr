@@ -31,7 +31,7 @@ import static org.apidesign.javap.RuntimeConstants.*;
  */
 public abstract class ByteCodeToJavaScript {
     private ClassData jc;
-    private final Appendable out;
+    final Appendable out;
 
     protected ByteCodeToJavaScript(Appendable out) {
         this.out = out;
