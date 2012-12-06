@@ -58,7 +58,7 @@
                 <tests>all</tests>
                 <config>jsTestDriver.conf</config>
                 <reset>true</reset>
-                <testOutput>testOutput</testOutput>
+                <testOutput>${basedir}/target/testOutput</testOutput>
             </configuration>
             <executions>
                 <execution>
