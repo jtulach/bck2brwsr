@@ -114,7 +114,7 @@ class GenJS extends ByteCodeToJavaScript {
         }
         out.append(
               "  global.bck2brwsr = function() { return {\n"
-            + "    loadClass : function(name) { return vm[name](true); }\n"
+            + "    loadClass : function(name) { return vm[name.replace__Ljava_lang_String_2CC(name, '.','_')](true); }\n"
             + "  };\n};\n");
         out.append("}(this));");
     }

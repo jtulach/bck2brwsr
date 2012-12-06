@@ -127,7 +127,7 @@ public final class CompareVMs implements ITest {
                 try {
                     compileTheCode(m.getDeclaringClass());
                     Object vm = code.invokeFunction("bck2brwsr");
-                    Object inst = code.invokeMethod(vm, "loadClass", m.getDeclaringClass().getName().replace('.', '_'));
+                    Object inst = code.invokeMethod(vm, "loadClass", m.getDeclaringClass().getName());
                     value = code.invokeMethod(inst, m.getName() + "__I");
                 } catch (Exception ex) {
                     throw new AssertionError(StaticMethodTest.dumpJS(codeSeq)).initCause(ex);
