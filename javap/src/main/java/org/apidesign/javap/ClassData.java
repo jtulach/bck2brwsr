@@ -559,7 +559,7 @@ public final class ClassData implements RuntimeConstants {
                 if (refs != null) {
                     refs[0] = jn;
                 }
-                return jn.replace('/', '_') + "(false).constructor.$class";
+                return jn;
             }
             return jn;
         case CONSTANT_STRING:

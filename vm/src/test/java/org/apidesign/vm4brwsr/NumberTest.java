@@ -161,7 +161,8 @@ public class NumberTest {
 
         Object ret = null;
         try {
-            ret = code.invokeFunction(clazz.getName().replace('.', '_'), true);
+            ret = code.invokeFunction("bck2brwsr");
+            ret = code.invokeMethod(ret, "loadClass", clazz.getName().replace('.', '_'));
             ret = code.invokeMethod(ret, method, args);
         } catch (ScriptException ex) {
             fail("Execution failed in\n" + StaticMethodTest.dumpJS(codeSeq), ex);

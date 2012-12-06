@@ -262,7 +262,8 @@ public class StaticMethodTest {
     ) throws Exception {
         Object ret = null;
         try {
-            ret = toRun.invokeFunction(clazz.getName().replace('.', '_'), true);
+            ret = toRun.invokeFunction("bck2brwsr");
+            ret = toRun.invokeMethod(ret, "loadClass", clazz.getName().replace('.', '_'));
             ret = toRun.invokeMethod(ret, method, args);
         } catch (ScriptException ex) {
             fail("Execution failed in\n" + dumpJS(theCode), ex);

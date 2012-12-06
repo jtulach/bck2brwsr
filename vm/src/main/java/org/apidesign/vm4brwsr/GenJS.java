@@ -44,6 +44,8 @@ class GenJS extends ByteCodeToJavaScript {
         new GenJS(out).doCompile(l, names);
     }
     protected void doCompile(ClassLoader l, StringArray names) throws IOException {
+        out.append("(function VM(global) {");
+        out.append("\n  var vm = {};");
         StringArray processed = new StringArray();
         StringArray initCode = new StringArray();
         for (String baseClass : names.toArray()) {
@@ -109,8 +111,12 @@ class GenJS extends ByteCodeToJavaScript {
                     initCode.toArray()[indx] = "";
                 }
             }
-
         }
+        out.append(
+              "  global.bck2brwsr = function() { return {\n"
+            + "    loadClass : function(name) { return vm[name](true); }\n"
+            + "  };\n};\n");
+        out.append("}(this));");
     }
     private static void readResource(InputStream emul, Appendable out) throws IOException {
         try {
@@ -194,5 +200,15 @@ class GenJS extends ByteCodeToJavaScript {
     @Override
     protected void requireScript(String resourcePath) {
         scripts.add(resourcePath);
+    }
+
+    @Override
+    String assignClass(String className) {
+        return "vm." + className + " = ";
+    }
+    
+    @Override
+    String accessClass(String className) {
+        return "vm." + className;
     }
 }
