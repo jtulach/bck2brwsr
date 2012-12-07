@@ -39,7 +39,10 @@ final class Main {
         Writer w = new BufferedWriter(new FileWriter(args[0]));
         StringArray classes = StringArray.asList(args);
         classes.delete(0);
-        GenJS.compile(w, classes);
-        w.close();
+        try {
+            GenJS.compile(w, classes);
+        } finally {
+            w.close();
+        }
     }
 }

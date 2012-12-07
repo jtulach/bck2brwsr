@@ -241,12 +241,15 @@ public abstract class ByteCodeToJavaScript {
         // so this might generate more stack variables than we need
         final int maxStack = m.getMaxStack();
         if (maxStack > 0) {
-            out.append("\n  var ").append(mapper.constructVariableName(0));
-            for (int i = 1; i < maxStack; ++i) {
-                out.append(", ");
-                out.append(mapper.constructVariableName(i));
+            // TODO: generate only used stack variables
+            for (int j = 0; j <= Variable.LAST_TYPE; ++j) {
+                out.append("\n  var ").append(Variable.getStackVariable(j, 0));
+                for (int i = 1; i < maxStack; ++i) {
+                    out.append(", ");
+                    out.append(Variable.getStackVariable(j, i));
+                }
+                out.append(';');
             }
-            out.append(';');
         }
 
         int lastStackFrame = -1;
@@ -257,7 +260,7 @@ public abstract class ByteCodeToJavaScript {
             stackMapIterator.advanceTo(i);
             if (lastStackFrame != stackMapIterator.getFrameIndex()) {
                 lastStackFrame = stackMapIterator.getFrameIndex();
-                mapper.reset(stackMapIterator.getFrameStackItemsCount());
+                mapper.syncWithFrameStack(stackMapIterator.getFrameStack());
                 out.append("    case " + i).append(": ");
             } else {
                 out.append("    /* " + i).append(" */ ");
@@ -265,162 +268,330 @@ public abstract class ByteCodeToJavaScript {
             final int c = readByte(byteCodes, i);
             switch (c) {
                 case opc_aload_0:
+                    out.append(mapper.pushA()).append(" = arg0;");
+                    break;
                 case opc_iload_0:
+                    out.append(mapper.pushI()).append(" = arg0;");
+                    break;
                 case opc_lload_0:
+                    out.append(mapper.pushL()).append(" = arg0;");
+                    break;
                 case opc_fload_0:
+                    out.append(mapper.pushF()).append(" = arg0;");
+                    break;
                 case opc_dload_0:
-                    out.append(mapper.push()).append(" = arg0;");
+                    out.append(mapper.pushD()).append(" = arg0;");
                     break;
                 case opc_aload_1:
+                    out.append(mapper.pushA()).append(" = arg1;");
+                    break;
                 case opc_iload_1:
+                    out.append(mapper.pushI()).append(" = arg1;");
+                    break;
                 case opc_lload_1:
+                    out.append(mapper.pushL()).append(" = arg1;");
+                    break;
                 case opc_fload_1:
+                    out.append(mapper.pushF()).append(" = arg1;");
+                    break;
                 case opc_dload_1:
-                    out.append(mapper.push()).append(" = arg1;");
+                    out.append(mapper.pushD()).append(" = arg1;");
                     break;
                 case opc_aload_2:
+                    out.append(mapper.pushA()).append(" = arg2;");
+                    break;
                 case opc_iload_2:
+                    out.append(mapper.pushI()).append(" = arg2;");
+                    break;
                 case opc_lload_2:
+                    out.append(mapper.pushL()).append(" = arg2;");
+                    break;
                 case opc_fload_2:
+                    out.append(mapper.pushF()).append(" = arg2;");
+                    break;
                 case opc_dload_2:
-                    out.append(mapper.push()).append(" = arg2;");
+                    out.append(mapper.pushD()).append(" = arg2;");
                     break;
                 case opc_aload_3:
-                case opc_iload_3:
-                case opc_lload_3:
-                case opc_fload_3:
-                case opc_dload_3:
-                    out.append(mapper.push()).append(" = arg3;");
+                    out.append(mapper.pushA()).append(" = arg3;");
                     break;
-                case opc_iload:
-                case opc_lload:
-                case opc_fload:
-                case opc_dload:
-                case opc_aload: {
+                case opc_iload_3:
+                    out.append(mapper.pushI()).append(" = arg3;");
+                    break;
+                case opc_lload_3:
+                    out.append(mapper.pushL()).append(" = arg3;");
+                    break;
+                case opc_fload_3:
+                    out.append(mapper.pushF()).append(" = arg3;");
+                    break;
+                case opc_dload_3:
+                    out.append(mapper.pushD()).append(" = arg3;");
+                    break;
+                case opc_iload: {
                     final int indx = readByte(byteCodes, ++i);
-                    out.append(mapper.push())
-                       .append(" = arg")
-                       .append(indx + ";");
+                    out.append(mapper.pushI()).append(" = ")
+                       .append("arg").append(indx + ";");
                     break;
                 }
-                case opc_istore:
-                case opc_lstore:
-                case opc_fstore:
-                case opc_dstore:
+                case opc_lload: {
+                    final int indx = readByte(byteCodes, ++i);
+                    out.append(mapper.pushL()).append(" = ")
+                       .append("arg").append(indx + ";");
+                    break;
+                }
+                case opc_fload: {
+                    final int indx = readByte(byteCodes, ++i);
+                    out.append(mapper.pushF()).append(" = ")
+                       .append("arg").append(indx + ";");
+                    break;
+                }
+                case opc_dload: {
+                    final int indx = readByte(byteCodes, ++i);
+                    out.append(mapper.pushD()).append(" = ")
+                       .append("arg").append(indx + ";");
+                    break;
+                }
+                case opc_aload: {
+                    final int indx = readByte(byteCodes, ++i);
+                    out.append(mapper.pushA()).append(" = ")
+                       .append("arg").append(indx + ";");
+                    break;
+                }
+                case opc_istore: {
+                    final int indx = readByte(byteCodes, ++i);
+                    out.append("arg" + indx).append(" = ")
+                       .append(mapper.popI()).append(';');
+                    break;
+                }
+                case opc_lstore: {
+                    final int indx = readByte(byteCodes, ++i);
+                    out.append("arg" + indx).append(" = ")
+                       .append(mapper.popL()).append(';');
+                    break;
+                }
+                case opc_fstore: {
+                    final int indx = readByte(byteCodes, ++i);
+                    out.append("arg" + indx).append(" = ")
+                       .append(mapper.popF()).append(';');
+                    break;
+                }
+                case opc_dstore: {
+                    final int indx = readByte(byteCodes, ++i);
+                    out.append("arg" + indx).append(" = ")
+                       .append(mapper.popD()).append(';');
+                    break;
+                }
                 case opc_astore: {
                     final int indx = readByte(byteCodes, ++i);
-                    out.append("arg" + indx)
-                       .append(" = ")
-                       .append(mapper.pop())
-                       .append(';');
+                    out.append("arg" + indx).append(" = ")
+                       .append(mapper.popA()).append(';');
                     break;
                 }
                 case opc_astore_0:
+                    out.append("arg0 = ").append(mapper.popA()).append(';');
+                    break;
                 case opc_istore_0:
+                    out.append("arg0 = ").append(mapper.popI()).append(';');
+                    break;
                 case opc_lstore_0:
+                    out.append("arg0 = ").append(mapper.popL()).append(';');
+                    break;
                 case opc_fstore_0:
+                    out.append("arg0 = ").append(mapper.popF()).append(';');
+                    break;
                 case opc_dstore_0:
-                    out.append("arg0 = ").append(mapper.pop()).append(';');
+                    out.append("arg0 = ").append(mapper.popD()).append(';');
                     break;
                 case opc_astore_1:
+                    out.append("arg1 = ").append(mapper.popA()).append(';');
+                    break;
                 case opc_istore_1:
+                    out.append("arg1 = ").append(mapper.popI()).append(';');
+                    break;
                 case opc_lstore_1:
+                    out.append("arg1 = ").append(mapper.popL()).append(';');
+                    break;
                 case opc_fstore_1:
+                    out.append("arg1 = ").append(mapper.popF()).append(';');
+                    break;
                 case opc_dstore_1:
-                    out.append("arg1 = ").append(mapper.pop()).append(';');
+                    out.append("arg1 = ").append(mapper.popD()).append(';');
                     break;
                 case opc_astore_2:
+                    out.append("arg2 = ").append(mapper.popA()).append(';');
+                    break;
                 case opc_istore_2:
+                    out.append("arg2 = ").append(mapper.popI()).append(';');
+                    break;
                 case opc_lstore_2:
+                    out.append("arg2 = ").append(mapper.popL()).append(';');
+                    break;
                 case opc_fstore_2:
+                    out.append("arg2 = ").append(mapper.popF()).append(';');
+                    break;
                 case opc_dstore_2:
-                    out.append("arg2 = ").append(mapper.pop()).append(';');
+                    out.append("arg2 = ").append(mapper.popD()).append(';');
                     break;
                 case opc_astore_3:
+                    out.append("arg3 = ").append(mapper.popA()).append(';');
+                    break;
                 case opc_istore_3:
+                    out.append("arg3 = ").append(mapper.popI()).append(';');
+                    break;
                 case opc_lstore_3:
+                    out.append("arg3 = ").append(mapper.popL()).append(';');
+                    break;
                 case opc_fstore_3:
+                    out.append("arg3 = ").append(mapper.popF()).append(';');
+                    break;
                 case opc_dstore_3:
-                    out.append("arg3 = ").append(mapper.pop()).append(';');
+                    out.append("arg3 = ").append(mapper.popD()).append(';');
                     break;
                 case opc_iadd:
+                    out.append(mapper.getI(1)).append(" += ")
+                       .append(mapper.popI()).append(';');
+                    break;
                 case opc_ladd:
+                    out.append(mapper.getL(1)).append(" += ")
+                       .append(mapper.popL()).append(';');
+                    break;
                 case opc_fadd:
+                    out.append(mapper.getF(1)).append(" += ")
+                       .append(mapper.popF()).append(';');
+                    break;
                 case opc_dadd:
-                    out.append(mapper.get(1)).append(" += ")
-                       .append(mapper.pop()).append(';');
+                    out.append(mapper.getD(1)).append(" += ")
+                       .append(mapper.popD()).append(';');
                     break;
                 case opc_isub:
+                    out.append(mapper.getI(1)).append(" -= ")
+                       .append(mapper.popI()).append(';');
+                    break;
                 case opc_lsub:
+                    out.append(mapper.getL(1)).append(" -= ")
+                       .append(mapper.popL()).append(';');
+                    break;
                 case opc_fsub:
+                    out.append(mapper.getF(1)).append(" -= ")
+                       .append(mapper.popF()).append(';');
+                    break;
                 case opc_dsub:
-                    out.append(mapper.get(1)).append(" -= ")
-                       .append(mapper.pop()).append(';');
+                    out.append(mapper.getD(1)).append(" -= ")
+                       .append(mapper.popD()).append(';');
                     break;
                 case opc_imul:
+                    out.append(mapper.getI(1)).append(" *= ")
+                       .append(mapper.popI()).append(';');
+                    break;
                 case opc_lmul:
+                    out.append(mapper.getL(1)).append(" *= ")
+                       .append(mapper.popL()).append(';');
+                    break;
                 case opc_fmul:
+                    out.append(mapper.getF(1)).append(" *= ")
+                       .append(mapper.popF()).append(';');
+                    break;
                 case opc_dmul:
-                    out.append(mapper.get(1)).append(" *= ")
-                       .append(mapper.pop()).append(';');
+                    out.append(mapper.getD(1)).append(" *= ")
+                       .append(mapper.popD()).append(';');
                     break;
                 case opc_idiv:
+                    out.append(mapper.getI(1)).append(" = ")
+                       .append("Math.floor(").append(mapper.getI(1))
+                       .append(" / ").append(mapper.popI()).append(");");
+                    break;
                 case opc_ldiv:
-                    out.append(mapper.get(1))
-                       .append(" = Math.floor(")
-                       .append(mapper.get(1))
-                       .append(" / ")
-                       .append(mapper.pop())
-                       .append(");");
+                    out.append(mapper.getL(1)).append(" = ")
+                       .append("Math.floor(").append(mapper.getL(1))
+                       .append(" / ").append(mapper.popL()).append(");");
                     break;
                 case opc_fdiv:
+                    out.append(mapper.getF(1)).append(" /= ")
+                       .append(mapper.popF()).append(';');
+                    break;
                 case opc_ddiv:
-                    out.append(mapper.get(1)).append(" /= ")
-                       .append(mapper.pop()).append(';');
+                    out.append(mapper.getD(1)).append(" /= ")
+                       .append(mapper.popD()).append(';');
                     break;
                 case opc_irem:
+                    out.append(mapper.getI(1)).append(" %= ")
+                       .append(mapper.popI()).append(';');
+                    break;
                 case opc_lrem:
+                    out.append(mapper.getL(1)).append(" %= ")
+                       .append(mapper.popL()).append(';');
+                    break;
                 case opc_frem:
+                    out.append(mapper.getF(1)).append(" %= ")
+                       .append(mapper.popF()).append(';');
+                    break;
                 case opc_drem:
-                    out.append(mapper.get(1)).append(" %= ")
-                       .append(mapper.pop()).append(';');
+                    out.append(mapper.getD(1)).append(" %= ")
+                       .append(mapper.popD()).append(';');
                     break;
                 case opc_iand:
+                    out.append(mapper.getI(1)).append(" &= ")
+                       .append(mapper.popI()).append(';');
+                    break;
                 case opc_land:
-                    out.append(mapper.get(1)).append(" &= ")
-                       .append(mapper.pop()).append(';');
+                    out.append(mapper.getL(1)).append(" &= ")
+                       .append(mapper.popL()).append(';');
                     break;
                 case opc_ior:
+                    out.append(mapper.getI(1)).append(" |= ")
+                       .append(mapper.popI()).append(';');
+                    break;
                 case opc_lor:
-                    out.append(mapper.get(1)).append(" |= ")
-                       .append(mapper.pop()).append(';');
+                    out.append(mapper.getL(1)).append(" |= ")
+                       .append(mapper.popL()).append(';');
                     break;
                 case opc_ixor:
+                    out.append(mapper.getI(1)).append(" ^= ")
+                       .append(mapper.popI()).append(';');
+                    break;
                 case opc_lxor:
-                    out.append(mapper.get(1)).append(" ^= ")
-                       .append(mapper.pop()).append(';');
+                    out.append(mapper.getL(1)).append(" ^= ")
+                       .append(mapper.popL()).append(';');
                     break;
                 case opc_ineg:
+                    out.append(mapper.getI(0)).append(" = -")
+                       .append(mapper.getI(0)).append(';');
+                    break;
                 case opc_lneg:
+                    out.append(mapper.getL(0)).append(" = -")
+                       .append(mapper.getL(0)).append(';');
+                    break;
                 case opc_fneg:
+                    out.append(mapper.getF(0)).append(" = -")
+                       .append(mapper.getF(0)).append(';');
+                    break;
                 case opc_dneg:
-                    out.append(mapper.get(0)).append(" = -")
-                       .append(mapper.get(0)).append(';');
+                    out.append(mapper.getD(0)).append(" = -")
+                       .append(mapper.getD(0)).append(';');
                     break;
                 case opc_ishl:
+                    out.append(mapper.getI(1)).append(" <<= ")
+                       .append(mapper.popI()).append(';');
+                    break;
                 case opc_lshl:
-                    out.append(mapper.get(1)).append(" <<= ")
-                       .append(mapper.pop()).append(';');
+                    out.append(mapper.getL(1)).append(" <<= ")
+                       .append(mapper.popI()).append(';');
                     break;
                 case opc_ishr:
+                    out.append(mapper.getI(1)).append(" >>= ")
+                       .append(mapper.popI()).append(';');
+                    break;
                 case opc_lshr:
-                    out.append(mapper.get(1)).append(" >>= ")
-                       .append(mapper.pop()).append(';');
+                    out.append(mapper.getL(1)).append(" >>= ")
+                       .append(mapper.popI()).append(';');
                     break;
                 case opc_iushr:
+                    out.append(mapper.getI(1)).append(" >>>= ")
+                       .append(mapper.popI()).append(';');
+                    break;
                 case opc_lushr:
-                    out.append(mapper.get(1)).append(" >>>= ")
-                       .append(mapper.pop()).append(';');
+                    out.append(mapper.getL(1)).append(" >>>= ")
+                       .append(mapper.popI()).append(';');
                     break;
                 case opc_iinc: {
                     final int varIndx = readByte(byteCodes, ++i);
@@ -436,75 +607,149 @@ public abstract class ByteCodeToJavaScript {
                     out.append("return;");
                     break;
                 case opc_ireturn:
+                    out.append("return ").append(mapper.popI()).append(';');
+                    break;
                 case opc_lreturn:
+                    out.append("return ").append(mapper.popL()).append(';');
+                    break;
                 case opc_freturn:
+                    out.append("return ").append(mapper.popF()).append(';');
+                    break;
                 case opc_dreturn:
+                    out.append("return ").append(mapper.popD()).append(';');
+                    break;
                 case opc_areturn:
-                    out.append("return ").append(mapper.pop()).append(';');
+                    out.append("return ").append(mapper.popA()).append(';');
                     break;
-                case opc_i2l:
-                case opc_i2f:
-                case opc_i2d:
-                case opc_l2i:
+                case opc_i2l: {
+                    final Variable v = mapper.popI();
+                    out.append(mapper.pushL()).append(" = ")
+                       .append(v).append(';');
+                    break;
+                }
+                case opc_i2f: {
+                    final Variable v = mapper.popI();
+                    out.append(mapper.pushF()).append(" = ")
+                       .append(v).append(';');
+                    break;
+                }
+                case opc_i2d: {
+                    final Variable v = mapper.popI();
+                    out.append(mapper.pushD()).append(" = ")
+                       .append(v).append(';');
+                    break;
+                }
+                case opc_l2i: {
+                    final Variable v = mapper.popL();
+                    out.append(mapper.pushI()).append(" = ")
+                       .append(v).append(';');
+                    break;
+                }
                     // max int check?
-                case opc_l2f:
-                case opc_l2d:
-                case opc_f2d:
-                case opc_d2f:
-                    out.append("/* number conversion */");
+                case opc_l2f: {
+                    final Variable v = mapper.popL();
+                    out.append(mapper.pushF()).append(" = ")
+                       .append(v).append(';');
                     break;
-                case opc_f2i:
-                case opc_f2l:
-                case opc_d2i:
-                case opc_d2l:
-                    out.append(mapper.get(0))
-                       .append(" = Math.floor(")
-                       .append(mapper.get(0))
-                       .append(");");
+                }
+                case opc_l2d: {
+                    final Variable v = mapper.popL();
+                    out.append(mapper.pushD()).append(" = ")
+                       .append(v).append(';');
                     break;
+                }
+                case opc_f2d: {
+                    final Variable v = mapper.popF();
+                    out.append(mapper.pushD()).append(" = ")
+                       .append(v).append(';');
+                    break;
+                }
+                case opc_d2f: {
+                    final Variable v = mapper.popD();
+                    out.append(mapper.pushF()).append(" = ")
+                       .append(v).append(';');
+                    break;
+                }
+                case opc_f2i: {
+                    final Variable v = mapper.popF();
+                    out.append(mapper.pushI()).append(" = ")
+                       .append("Math.floor(").append(v).append(");");
+                    break;
+                }
+                case opc_f2l: {
+                    final Variable v = mapper.popF();
+                    out.append(mapper.pushL()).append(" = ")
+                       .append("Math.floor(").append(v).append(");");
+                    break;
+                }
+                case opc_d2i: {
+                    final Variable v = mapper.popD();
+                    out.append(mapper.pushI()).append(" = ")
+                       .append("Math.floor(").append(v).append(");");
+                    break;
+                }
+                case opc_d2l: {
+                    final Variable v = mapper.popD();
+                    out.append(mapper.pushL()).append(" = ")
+                       .append("Math.floor(").append(v).append(");");
+                    break;
+                }
                 case opc_i2b:
                 case opc_i2c:
                 case opc_i2s:
                     out.append("/* number conversion */");
                     break;
                 case opc_aconst_null:
-                    out.append(mapper.push()).append(" = null;");
+                    out.append(mapper.pushA()).append(" = null;");
                     break;
                 case opc_iconst_m1:
-                    out.append(mapper.push()).append(" = -1;");
+                    out.append(mapper.pushI()).append(" = -1;");
                     break;
                 case opc_iconst_0:
+                    out.append(mapper.pushI()).append(" = 0;");
+                    break;
                 case opc_dconst_0:
+                    out.append(mapper.pushD()).append(" = 0;");
+                    break;
                 case opc_lconst_0:
+                    out.append(mapper.pushL()).append(" = 0;");
+                    break;
                 case opc_fconst_0:
-                    out.append(mapper.push()).append(" = 0;");
+                    out.append(mapper.pushF()).append(" = 0;");
                     break;
                 case opc_iconst_1:
+                    out.append(mapper.pushI()).append(" = 1;");
+                    break;
                 case opc_lconst_1:
+                    out.append(mapper.pushL()).append(" = 1;");
+                    break;
                 case opc_fconst_1:
+                    out.append(mapper.pushF()).append(" = 1;");
+                    break;
                 case opc_dconst_1:
-                    out.append(mapper.push()).append(" = 1;");
+                    out.append(mapper.pushD()).append(" = 1;");
                     break;
                 case opc_iconst_2:
+                    out.append(mapper.pushI()).append(" = 2;");
+                    break;
                 case opc_fconst_2:
-                    out.append(mapper.push()).append(" = 2;");
+                    out.append(mapper.pushF()).append(" = 2;");
                     break;
                 case opc_iconst_3:
-                    out.append(mapper.push()).append(" = 3;");
+                    out.append(mapper.pushI()).append(" = 3;");
                     break;
                 case opc_iconst_4:
-                    out.append(mapper.push()).append(" = 4;");
+                    out.append(mapper.pushI()).append(" = 4;");
                     break;
                 case opc_iconst_5:
-                    out.append(mapper.push()).append(" = 5;");
+                    out.append(mapper.pushI()).append(" = 5;");
                     break;
                 case opc_ldc: {
                     int indx = readByte(byteCodes, ++i);
                     String v = encodeConstant(indx);
-                    out.append(mapper.push())
-                       .append(" = ")
-                       .append(v)
-                       .append(';');
+                    int type = constantToVariableType(jc.getTag(indx));
+                    out.append(mapper.pushT(type)).append(" = ")
+                       .append(v).append(';');
                     break;
                 }
                 case opc_ldc_w:
@@ -512,44 +757,38 @@ public abstract class ByteCodeToJavaScript {
                     int indx = readIntArg(byteCodes, i);
                     i += 2;
                     String v = encodeConstant(indx);
-                    out.append(mapper.push())
-                       .append(" = ")
-                       .append(v)
-                       .append(';');
+                    int type = constantToVariableType(jc.getTag(indx));
+                    out.append(mapper.pushT(type)).append(" = ")
+                       .append(v).append(';');
                     break;
                 }
                 case opc_lcmp:
+                    generateCmp(mapper.popL(), mapper.popL(), mapper.pushI());
+                    break;
                 case opc_fcmpl:
                 case opc_fcmpg:
-                case opc_dcmpl:
-                case opc_dcmpg: {
-                    out.append(mapper.get(1))
-                       .append(" = (")
-                       .append(mapper.get(1))
-                       .append(" == ")
-                       .append(mapper.get(0))
-                       .append(") ? 0 : ((")
-                       .append(mapper.get(1))
-                       .append(" < ")
-                       .append(mapper.get(0))
-                       .append(") ? -1 : 1);");
-
-                    mapper.pop(1);
+                    generateCmp(mapper.popF(), mapper.popF(), mapper.pushI());
                     break;
-                }
+                case opc_dcmpl:
+                case opc_dcmpg:
+                    generateCmp(mapper.popD(), mapper.popD(), mapper.pushI());
+                    break;
                 case opc_if_acmpeq:
-                    i = generateIf(byteCodes, i, mapper, "===");
+                    i = generateIf(byteCodes, i, mapper.popA(), mapper.popA(),
+                                   "===");
                     break;
                 case opc_if_acmpne:
-                    i = generateIf(byteCodes, i, mapper, "!=");
+                    i = generateIf(byteCodes, i, mapper.popA(), mapper.popA(),
+                                   "!=");
                     break;
                 case opc_if_icmpeq: {
-                    i = generateIf(byteCodes, i, mapper, "==");
+                    i = generateIf(byteCodes, i, mapper.popI(), mapper.popI(),
+                                   "==");
                     break;
                 }
                 case opc_ifeq: {
                     int indx = i + readIntArg(byteCodes, i);
-                    out.append("if (").append(mapper.pop())
+                    out.append("if (").append(mapper.popI())
                                       .append(" == 0) { gt = " + indx);
                     out.append("; continue; }");
                     i += 2;
@@ -557,7 +796,7 @@ public abstract class ByteCodeToJavaScript {
                 }
                 case opc_ifne: {
                     int indx = i + readIntArg(byteCodes, i);
-                    out.append("if (").append(mapper.pop())
+                    out.append("if (").append(mapper.popI())
                                       .append(" != 0) { gt = " + indx);
                     out.append("; continue; }");
                     i += 2;
@@ -565,7 +804,7 @@ public abstract class ByteCodeToJavaScript {
                 }
                 case opc_iflt: {
                     int indx = i + readIntArg(byteCodes, i);
-                    out.append("if (").append(mapper.pop())
+                    out.append("if (").append(mapper.popI())
                                       .append(" < 0) { gt = " + indx);
                     out.append("; continue; }");
                     i += 2;
@@ -573,7 +812,7 @@ public abstract class ByteCodeToJavaScript {
                 }
                 case opc_ifle: {
                     int indx = i + readIntArg(byteCodes, i);
-                    out.append("if (").append(mapper.pop())
+                    out.append("if (").append(mapper.popI())
                                       .append(" <= 0) { gt = " + indx);
                     out.append("; continue; }");
                     i += 2;
@@ -581,7 +820,7 @@ public abstract class ByteCodeToJavaScript {
                 }
                 case opc_ifgt: {
                     int indx = i + readIntArg(byteCodes, i);
-                    out.append("if (").append(mapper.pop())
+                    out.append("if (").append(mapper.popI())
                                       .append(" > 0) { gt = " + indx);
                     out.append("; continue; }");
                     i += 2;
@@ -589,7 +828,7 @@ public abstract class ByteCodeToJavaScript {
                 }
                 case opc_ifge: {
                     int indx = i + readIntArg(byteCodes, i);
-                    out.append("if (").append(mapper.pop())
+                    out.append("if (").append(mapper.popI())
                                       .append(" >= 0) { gt = " + indx);
                     out.append("; continue; }");
                     i += 2;
@@ -597,7 +836,7 @@ public abstract class ByteCodeToJavaScript {
                 }
                 case opc_ifnonnull: {
                     int indx = i + readIntArg(byteCodes, i);
-                    out.append("if (").append(mapper.pop())
+                    out.append("if (").append(mapper.popA())
                                       .append(" !== null) { gt = " + indx);
                     out.append("; continue; }");
                     i += 2;
@@ -605,26 +844,31 @@ public abstract class ByteCodeToJavaScript {
                 }
                 case opc_ifnull: {
                     int indx = i + readIntArg(byteCodes, i);
-                    out.append("if (").append(mapper.pop())
+                    out.append("if (").append(mapper.popA())
                                       .append(" === null) { gt = " + indx);
                     out.append("; continue; }");
                     i += 2;
                     break;
                 }
                 case opc_if_icmpne:
-                    i = generateIf(byteCodes, i, mapper, "!=");
+                    i = generateIf(byteCodes, i, mapper.popI(), mapper.popI(),
+                                   "!=");
                     break;
                 case opc_if_icmplt:
-                    i = generateIf(byteCodes, i, mapper, "<");
+                    i = generateIf(byteCodes, i, mapper.popI(), mapper.popI(),
+                                   "<");
                     break;
                 case opc_if_icmple:
-                    i = generateIf(byteCodes, i, mapper, "<=");
+                    i = generateIf(byteCodes, i, mapper.popI(), mapper.popI(),
+                                   "<=");
                     break;
                 case opc_if_icmpgt:
-                    i = generateIf(byteCodes, i, mapper, ">");
+                    i = generateIf(byteCodes, i, mapper.popI(), mapper.popI(),
+                                   ">");
                     break;
                 case opc_if_icmpge:
-                    i = generateIf(byteCodes, i, mapper, ">=");
+                    i = generateIf(byteCodes, i, mapper.popI(), mapper.popI(),
+                                   ">=");
                     break;
                 case opc_goto: {
                     int indx = i + readIntArg(byteCodes, i);
@@ -638,7 +882,7 @@ public abstract class ByteCodeToJavaScript {
                     table += 4;
                     int n = readInt4(byteCodes, table);
                     table += 4;
-                    out.append("switch (").append(mapper.pop()).append(") {\n");
+                    out.append("switch (").append(mapper.popI()).append(") {\n");
                     while (n-- > 0) {
                         int cnstnt = readInt4(byteCodes, table);
                         table += 4;
@@ -658,7 +902,7 @@ public abstract class ByteCodeToJavaScript {
                     table += 4;
                     int high = readInt4(byteCodes, table);
                     table += 4;
-                    out.append("switch (").append(mapper.pop()).append(") {\n");
+                    out.append("switch (").append(mapper.popI()).append(") {\n");
                     while (low <= high) {
                         int offset = i + readInt4(byteCodes, table);
                         table += 4;
@@ -685,7 +929,7 @@ public abstract class ByteCodeToJavaScript {
                 case opc_new: {
                     int indx = readIntArg(byteCodes, i);
                     String ci = jc.getClassName(indx);
-                    out.append(mapper.push()).append(" = ");
+                    out.append(mapper.pushA()).append(" = ");
                     out.append("new ").append(ci.replace('/','_'));
                     out.append(';');
                     addReference(ci);
@@ -694,28 +938,26 @@ public abstract class ByteCodeToJavaScript {
                 }
                 case opc_newarray: {
                     ++i; // skip type of array
-                    out.append(mapper.get(0))
-                       .append(" = new Array(")
-                       .append(mapper.get(0))
-                       .append(").fillNulls();");
+                    final Variable v = mapper.popI();
+                    out.append(mapper.pushA()).append(" = ")
+                       .append("new Array(").append(v).append(").fillNulls();");
                     break;
                 }
                 case opc_anewarray: {
                     i += 2; // skip type of array
-                    out.append(mapper.get(0))
-                       .append(" = new Array(")
-                       .append(mapper.get(0))
-                       .append(").fillNulls();");
+                    final Variable v = mapper.popI();
+                    out.append(mapper.pushA()).append(" = ")
+                       .append("new Array(").append(v).append(").fillNulls();");
                     break;
                 }
                 case opc_multianewarray: {
                     i += 2;
                     int dim = readByte(byteCodes, ++i);
-                    out.append("{ var a0 = new Array(").append(mapper.pop())
+                    out.append("{ var a0 = new Array(").append(mapper.popI())
                        .append(").fillNulls();");
                     for (int d = 1; d < dim; d++) {
                         out.append("\n  var l" + d).append(" = ")
-                           .append(mapper.pop()).append(';');
+                           .append(mapper.popI()).append(';');
                         out.append("\n  for (var i" + d).append (" = 0; i" + d).
                             append(" < a" + (d - 1)).
                             append(".length; i" + d).append("++) {");
@@ -727,41 +969,94 @@ public abstract class ByteCodeToJavaScript {
                     for (int d = 1; d < dim; d++) {
                         out.append("\n  }");
                     }
-                    out.append("\n").append(mapper.push()).append(" = a0; }");
+                    out.append("\n").append(mapper.pushA()).append(" = a0; }");
                     break;
                 }
-                case opc_arraylength:
-                    out.append(mapper.get(0)).append(" = ")
-                       .append(mapper.get(0)).append(".length;");
+                case opc_arraylength: {
+                    final Variable v = mapper.popA();
+                    out.append(mapper.pushI()).append(" = ")
+                       .append(v).append(".length;");
                     break;
-                case opc_iastore:
-                case opc_lastore:
-                case opc_fastore:
-                case opc_dastore:
-                case opc_aastore:
-                case opc_bastore:
-                case opc_castore:
-                case opc_sastore: {
-                    out.append(mapper.get(2))
-                       .append('[').append(mapper.get(1)).append(']')
-                       .append(" = ")
-                       .append(mapper.get(0))
-                       .append(';');
+                }
+                case opc_lastore: {
+                    out.append(mapper.getA(2)).append('[')
+                                              .append(mapper.getI(1))
+                                              .append(']')
+                       .append(" = ").append(mapper.getL(0)).append(';');
                     mapper.pop(3);
                     break;
                 }
+                case opc_fastore: {
+                    out.append(mapper.getA(2)).append('[')
+                                              .append(mapper.getI(1))
+                                              .append(']')
+                       .append(" = ").append(mapper.getF(0)).append(';');
+                    mapper.pop(3);
+                    break;
+                }
+                case opc_dastore: {
+                    out.append(mapper.getA(2)).append('[')
+                                              .append(mapper.getI(1))
+                                              .append(']')
+                       .append(" = ").append(mapper.getD(0)).append(';');
+                    mapper.pop(3);
+                    break;
+                }
+                case opc_aastore: {
+                    out.append(mapper.getA(2)).append('[')
+                                              .append(mapper.getI(1))
+                                              .append(']')
+                       .append(" = ").append(mapper.getA(0)).append(';');
+                    mapper.pop(3);
+                    break;
+                }
+                case opc_iastore:
+                case opc_bastore:
+                case opc_castore:
+                case opc_sastore: {
+                    out.append(mapper.getA(2)).append('[')
+                                              .append(mapper.getI(1))
+                                              .append(']')
+                       .append(" = ").append(mapper.getI(0)).append(';');
+                    mapper.pop(3);
+                    break;
+                }
+                case opc_laload: {
+                    final Variable vidx = mapper.popI();
+                    final Variable varr = mapper.popA();
+                    out.append(mapper.pushL()).append(" = ")
+                       .append(varr).append('[').append(vidx).append("];");
+                    break;
+                }
+                case opc_faload: {
+                    final Variable vidx = mapper.popI();
+                    final Variable varr = mapper.popA();
+                    out.append(mapper.pushF()).append(" = ")
+                       .append(varr).append('[').append(vidx).append("];");
+                    break;
+                }
+                case opc_daload: {
+                    final Variable vidx = mapper.popI();
+                    final Variable varr = mapper.popA();
+                    out.append(mapper.pushD()).append(" = ")
+                       .append(varr).append('[').append(vidx).append("];");
+                    break;
+                }
+                case opc_aaload: {
+                    final Variable vidx = mapper.popI();
+                    final Variable varr = mapper.popA();
+                    out.append(mapper.pushA()).append(" = ")
+                       .append(varr).append('[').append(vidx).append("];");
+                    break;
+                }
                 case opc_iaload:
-                case opc_laload:
-                case opc_faload:
-                case opc_daload:
-                case opc_aaload:
                 case opc_baload:
                 case opc_caload:
                 case opc_saload: {
-                    out.append(mapper.get(1))
-                       .append(" = ")
-                       .append(mapper.get(1))
-                       .append('[').append(mapper.pop()).append("];");
+                    final Variable vidx = mapper.popI();
+                    final Variable varr = mapper.popA();
+                    out.append(mapper.pushI()).append(" = ")
+                       .append(varr).append('[').append(vidx).append("];");
                     break;
                 }
                 case opc_pop:
@@ -769,38 +1064,80 @@ public abstract class ByteCodeToJavaScript {
                     mapper.pop(1);
                     out.append("/* pop */");
                     break;
-                case opc_dup:
-                    out.append(mapper.push()).append(" = ")
-                       .append(mapper.get(1)).append(';');
+                case opc_dup: {
+                    final Variable v = mapper.get(0);
+                    out.append(mapper.pushT(v.getType())).append(" = ")
+                       .append(v).append(';');
                     break;
-                case opc_dup_x1:
+                }
+                case opc_dup2: {
+                    if (mapper.get(0).isCategory2()) {
+                        final Variable v = mapper.get(0);
+                        out.append(mapper.pushT(v.getType())).append(" = ")
+                           .append(v).append(';');
+                    } else {
+                        final Variable v1 = mapper.get(0);
+                        final Variable v2 = mapper.get(1);
+                        out.append("{ ");
+                        out.append(mapper.pushT(v2.getType())).append(" = ")
+                           .append(v2).append("; ");
+                        out.append(mapper.pushT(v1.getType())).append(" = ")
+                           .append(v1).append("; ");
+                        out.append('}');
+                    }
+                    break;
+                }
+                case opc_dup_x1: {
+                    final Variable vi1 = mapper.pop();
+                    final Variable vi2 = mapper.pop();
+                    final Variable vo3 = mapper.pushT(vi1.getType());
+                    final Variable vo2 = mapper.pushT(vi2.getType());
+                    final Variable vo1 = mapper.pushT(vi1.getType());
+
                     out.append("{ ");
-                    out.append(mapper.push()).append(" = ")
-                       .append(mapper.get(1)).append("; ");
-                    out.append(mapper.get(1)).append(" = ")
-                       .append(mapper.get(2)).append("; ");
-                    out.append(mapper.get(2)).append(" = ")
-                       .append(mapper.get(0)).append("; ");
+                    out.append(vo1).append(" = ").append(vi1).append("; ");
+                    out.append(vo2).append(" = ").append(vi2).append("; ");
+                    out.append(vo3).append(" = ").append(vo1).append("; ");
                     out.append('}');
                     break;
-                case opc_dup_x2:
-                    out.append("{ ");
-                    out.append(mapper.push()).append(" = ")
-                       .append(mapper.get(1)).append("; ");
-                    out.append(mapper.get(1)).append(" = ")
-                       .append(mapper.get(2)).append("; ");
-                    out.append(mapper.get(2)).append(" = ")
-                       .append(mapper.get(3)).append("; ");
-                    out.append(mapper.get(3)).append(" = ")
-                       .append(mapper.get(0)).append("; ");
-                    out.append('}');
+                }
+                case opc_dup_x2: {
+                    if (mapper.get(1).isCategory2()) {
+                        final Variable vi1 = mapper.pop();
+                        final Variable vi2 = mapper.pop();
+                        final Variable vo3 = mapper.pushT(vi1.getType());
+                        final Variable vo2 = mapper.pushT(vi2.getType());
+                        final Variable vo1 = mapper.pushT(vi1.getType());
+
+                        out.append("{ ");
+                        out.append(vo1).append(" = ").append(vi1).append("; ");
+                        out.append(vo2).append(" = ").append(vi2).append("; ");
+                        out.append(vo3).append(" = ").append(vo1).append("; ");
+                        out.append('}');
+                    } else {
+                        final Variable vi1 = mapper.pop();
+                        final Variable vi2 = mapper.pop();
+                        final Variable vi3 = mapper.pop();
+                        final Variable vo4 = mapper.pushT(vi1.getType());
+                        final Variable vo3 = mapper.pushT(vi3.getType());
+                        final Variable vo2 = mapper.pushT(vi2.getType());
+                        final Variable vo1 = mapper.pushT(vi1.getType());
+
+                        out.append("{ ");
+                        out.append(vo1).append(" = ").append(vi1).append("; ");
+                        out.append(vo2).append(" = ").append(vi2).append("; ");
+                        out.append(vo3).append(" = ").append(vi3).append("; ");
+                        out.append(vo4).append(" = ").append(vo1).append("; ");
+                        out.append('}');
+                    }
                     break;
+                }
                 case opc_bipush:
-                    out.append(mapper.push()).append(" = ")
+                    out.append(mapper.pushI()).append(" = ")
                        .append(Integer.toString(byteCodes[++i])).append(';');
                     break;
                 case opc_sipush:
-                    out.append(mapper.push()).append(" = ")
+                    out.append(mapper.pushI()).append(" = ")
                        .append(Integer.toString(readIntArg(byteCodes, i)))
                        .append(';');
                     i += 2;
@@ -808,28 +1145,20 @@ public abstract class ByteCodeToJavaScript {
                 case opc_getfield: {
                     int indx = readIntArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
-                    out.append(mapper.get(0)).append(" = ")
-                       .append(mapper.get(0)).append(".fld_")
-                       .append(fi[1]).append(';');
+                    final int type = fieldToVariableType(fi[2].charAt(0));
+                    final Variable v = mapper.popA();
+                    out.append(mapper.pushT(type)).append(" = ")
+                       .append(v).append(".fld_").append(fi[1]).append(';');
                     i += 2;
                     break;
                 }
                 case opc_getstatic: {
                     int indx = readIntArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
-                    out.append(mapper.push()).append(" = ")
+                    final int type = fieldToVariableType(fi[2].charAt(0));
+                    out.append(mapper.pushT(type)).append(" = ")
                        .append(fi[0].replace('/', '_'))
                        .append('.').append(fi[1]).append(';');
-                    i += 2;
-                    addReference(fi[0]);
-                    break;
-                }
-                case opc_putstatic: {
-                    int indx = readIntArg(byteCodes, i);
-                    String[] fi = jc.getFieldInfoName(indx);
-                    out.append(fi[0].replace('/', '_'));
-                    out.append('.').append(fi[1]).append(" = ")
-                       .append(mapper.pop()).append(';');
                     i += 2;
                     addReference(fi[0]);
                     break;
@@ -837,11 +1166,22 @@ public abstract class ByteCodeToJavaScript {
                 case opc_putfield: {
                     int indx = readIntArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
-                    out.append(mapper.get(1)).append(".fld_").append(fi[1])
-                       .append(" = ")
-                       .append(mapper.get(0)).append(';');
-                    mapper.pop(2);
+                    final int type = fieldToVariableType(fi[2].charAt(0));
+                    final Variable v = mapper.popT(type);
+                    out.append(mapper.popA()).append(".fld_").append(fi[1])
+                       .append(" = ").append(v).append(';');
                     i += 2;
+                    break;
+                }
+                case opc_putstatic: {
+                    int indx = readIntArg(byteCodes, i);
+                    String[] fi = jc.getFieldInfoName(indx);
+                    final int type = fieldToVariableType(fi[2].charAt(0));
+                    out.append(fi[0].replace('/', '_'));
+                    out.append('.').append(fi[1]).append(" = ")
+                       .append(mapper.popT(type)).append(';');
+                    i += 2;
+                    addReference(fi[0]);
                     break;
                 }
                 case opc_checkcast: {
@@ -849,7 +1189,7 @@ public abstract class ByteCodeToJavaScript {
                     final String type = jc.getClassName(indx);
                     if (!type.startsWith("[")) {
                         // no way to check arrays right now
-                        out.append("if (").append(mapper.get(0))
+                        out.append("if (").append(mapper.getA(0))
                            .append(".$instOf_").append(type.replace('/', '_'))
                            .append(" != 1) throw {};"); // XXX proper exception
                     }
@@ -859,33 +1199,36 @@ public abstract class ByteCodeToJavaScript {
                 case opc_instanceof: {
                     int indx = readIntArg(byteCodes, i);
                     final String type = jc.getClassName(indx);
-                    out.append(mapper.get(0)).append(" = ")
-                       .append(mapper.get(0)).append(".$instOf_")
-                       .append(type.replace('/', '_'))
+                    final Variable v = mapper.popA();
+                    out.append(mapper.pushI()).append(" = ")
+                       .append(v).append(".$instOf_")
+                                 .append(type.replace('/', '_'))
                        .append(" ? 1 : 0;");
                     i += 2;
                     break;
                 }
                 case opc_athrow: {
+                    final Variable v = mapper.popA();
+                    mapper.clear();
+
                     out.append("{ ");
-                    out.append(mapper.bottom()).append(" = ")
-                       .append(mapper.top()).append("; ");
-                    out.append("throw ").append(mapper.bottom()).append("; ");
+                    out.append(mapper.pushA()).append(" = ")
+                       .append(v).append("; ");
+                    out.append("throw ").append(v).append("; ");
                     out.append('}');
 
-                    mapper.reset(1);
                     break;
                 }
 
                 case opc_monitorenter: {
                     out.append("/* monitor enter */");
-                    mapper.pop(1);
+                    mapper.popA();
                     break;
                 }
 
                 case opc_monitorexit: {
                     out.append("/* monitor exit */");
-                    mapper.pop(1);
+                    mapper.popA();
                     break;
                 }
 
@@ -903,20 +1246,26 @@ public abstract class ByteCodeToJavaScript {
             out.append("\n");
         }
         out.append("  }\n");
-
-        if (mapper.getMaxStackSize() > maxStack) {
-            throw new IllegalStateException("Incorrect stack usage");
-        }
     }
 
-    private int generateIf(byte[] byteCodes, int i, final StackToVariableMapper mapper, final String test) throws IOException {
+    private int generateIf(byte[] byteCodes, int i,
+                           final Variable v2, final Variable v1,
+                           final String test) throws IOException {
         int indx = i + readIntArg(byteCodes, i);
-        out.append("if (").append(mapper.get(1))
+        out.append("if (").append(v1)
            .append(' ').append(test).append(' ')
-           .append(mapper.get(0)).append(") { gt = " + indx)
+           .append(v2).append(") { gt = " + indx)
            .append("; continue; }");
-        mapper.pop(2);
         return i + 2;
+    }
+
+    private void generateCmp(Variable v2, Variable v1, Variable vr)
+            throws IOException {
+        out.append(vr).append(" = ")
+           .append('(').append(v1).append(" == ").append(v2).append(')')
+           .append(" ? 0")
+           .append(" : ((").append(v1).append(" < ").append(v2).append(')')
+           .append(" ? -1 : 1);");
     }
 
     private int readIntArg(byte[] byteCodes, int offsetInstruction) {
@@ -935,7 +1284,7 @@ public abstract class ByteCodeToJavaScript {
         return byteCodes[offsetInstruction] & 0xff;
     }
     
-    private static void countArgs(String descriptor, boolean[] hasReturnType, StringBuilder sig, StringBuilder cnt) {
+    private static void countArgs(String descriptor, char[] returnType, StringBuilder sig, StringBuilder cnt) {
         int i = 0;
         Boolean count = null;
         boolean array = false;
@@ -971,17 +1320,19 @@ public abstract class ByteCodeToJavaScript {
                             cnt.append('0');
                         }
                     } else {
-                        hasReturnType[0] = true;
                         sig.insert(firstPos, ch);
                         if (array) {
+                            returnType[0] = '[';
                             sig.insert(firstPos, 'A');
+                        } else {
+                            returnType[0] = ch;
                         }
                     }
                     array = false;
                     continue;
                 case 'V': 
                     assert !count;
-                    hasReturnType[0] = false;
+                    returnType[0] = 'V';
                     sig.insert(firstPos, 'V');
                     continue;
                 case 'L':
@@ -999,7 +1350,7 @@ public abstract class ByteCodeToJavaScript {
                         if (array) {
                             sig.insert(firstPos, 'A');
                         }
-                        hasReturnType[0] = true;
+                        returnType[0] = 'L';
                     }
                     i = next + 1;
                     continue;
@@ -1022,12 +1373,11 @@ public abstract class ByteCodeToJavaScript {
             name.append(m.getName());
         } 
         
-        boolean hasReturn[] = { false };
-        countArgs(findDescriptor(m.getInternalSig()), hasReturn, name, cnt);
+        countArgs(findDescriptor(m.getInternalSig()), new char[1], name, cnt);
         return name.toString();
     }
 
-    private String findMethodName(String[] mi, StringBuilder cnt, boolean[] hasReturn) {
+    private String findMethodName(String[] mi, StringBuilder cnt, char[] returnType) {
         StringBuilder name = new StringBuilder();
         String descr = mi[2];//mi.getDescriptor();
         String nm= mi[1];
@@ -1036,7 +1386,7 @@ public abstract class ByteCodeToJavaScript {
         } else {
             name.append(nm);
         }
-        countArgs(findDescriptor(descr), hasReturn, name, cnt);
+        countArgs(findDescriptor(descr), returnType, name, cnt);
         return name.toString();
     }
 
@@ -1044,15 +1394,20 @@ public abstract class ByteCodeToJavaScript {
     throws IOException {
         int methodIndex = readIntArg(byteCodes, i);
         String[] mi = jc.getFieldInfoName(methodIndex);
-        boolean[] hasReturn = { false };
+        char[] returnType = { 'V' };
         StringBuilder cnt = new StringBuilder();
-        String mn = findMethodName(mi, cnt, hasReturn);
+        String mn = findMethodName(mi, cnt, returnType);
 
         final int numArguments = isStatic ? cnt.length() : cnt.length() + 1;
+        final Variable[] vars = new Variable[numArguments];
 
-        if (hasReturn[0]) {
-            out.append((numArguments > 0) ? mapper.get(numArguments - 1)
-                                          : mapper.push()).append(" = ");
+        for (int j = numArguments - 1; j >= 0; --j) {
+            vars[j] = mapper.pop();
+        }
+
+        if (returnType[0] != 'V') {
+            out.append(mapper.pushT(fieldToVariableType(returnType[0])))
+               .append(" = ");
         }
 
         final String in = mi[0];
@@ -1061,16 +1416,13 @@ public abstract class ByteCodeToJavaScript {
         out.append(mn);
         out.append('(');
         if (numArguments > 0) {
-            out.append(mapper.get(numArguments - 1));
-            for (int j = numArguments - 2; j >= 0; --j) {
+            out.append(vars[0]);
+            for (int j = 1; j < numArguments; ++j) {
                 out.append(", ");
-                out.append(mapper.get(j));
+                out.append(vars[j]);
             }
         }
         out.append(");");
-        if (numArguments > 0) {
-            mapper.pop(hasReturn[0] ? numArguments - 1 : numArguments);
-        }
         i += 2;
         addReference(in);
         return i;
@@ -1079,26 +1431,31 @@ public abstract class ByteCodeToJavaScript {
     throws IOException {
         int methodIndex = readIntArg(byteCodes, i);
         String[] mi = jc.getFieldInfoName(methodIndex);
-        boolean[] hasReturn = { false };
+        char[] returnType = { 'V' };
         StringBuilder cnt = new StringBuilder();
-        String mn = findMethodName(mi, cnt, hasReturn);
+        String mn = findMethodName(mi, cnt, returnType);
 
-        final int numArguments = cnt.length();
+        final int numArguments = cnt.length() + 1;
+        final Variable[] vars = new Variable[numArguments];
 
-        if (hasReturn[0]) {
-            out.append(mapper.get(numArguments)).append(" = ");
+        for (int j = numArguments - 1; j >= 0; --j) {
+            vars[j] = mapper.pop();
         }
 
-        out.append(mapper.get(numArguments)).append('.');
+        if (returnType[0] != 'V') {
+            out.append(mapper.pushT(fieldToVariableType(returnType[0])))
+               .append(" = ");
+        }
+
+        out.append(vars[0]).append('.');
         out.append(mn);
         out.append('(');
-        out.append(mapper.get(numArguments));
-        for (int j = numArguments - 1; j >= 0; --j) {
+        out.append(vars[0]);
+        for (int j = 1; j < numArguments; ++j) {
             out.append(", ");
-            out.append(mapper.get(j));
+            out.append(vars[j]);
         }
         out.append(");");
-        mapper.pop(hasReturn[0] ? numArguments : numArguments + 1);
         i += 2;
         return i;
     }
@@ -1235,5 +1592,55 @@ public abstract class ByteCodeToJavaScript {
             }
         }
         return " = null;";
+    }
+
+    private static int constantToVariableType(final byte constantTag) {
+        switch (constantTag) {
+            case CONSTANT_INTEGER:
+                return Variable.TYPE_INT;
+            case CONSTANT_FLOAT:
+                return Variable.TYPE_FLOAT;
+            case CONSTANT_LONG:
+                return Variable.TYPE_LONG;
+            case CONSTANT_DOUBLE:
+                return Variable.TYPE_DOUBLE;
+
+            case CONSTANT_CLASS:
+            case CONSTANT_UTF8:
+            case CONSTANT_UNICODE:
+            case CONSTANT_STRING:
+                return Variable.TYPE_REF;
+
+            case CONSTANT_FIELD:
+            case CONSTANT_METHOD:
+            case CONSTANT_INTERFACEMETHOD:
+            case CONSTANT_NAMEANDTYPE:
+                /* unclear how to handle for now */
+            default:
+                throw new IllegalStateException("Unhandled constant tag");
+        }
+    }
+
+    private static int fieldToVariableType(final char fieldType) {
+        switch (fieldType) {
+            case 'B':
+            case 'C':
+            case 'S':
+            case 'Z':
+            case 'I':
+                return Variable.TYPE_INT;
+            case 'J':
+                return Variable.TYPE_LONG;
+            case 'F':
+                return Variable.TYPE_FLOAT;
+            case 'D':
+                return Variable.TYPE_DOUBLE;
+            case 'L':
+            case '[':
+                return Variable.TYPE_REF;
+
+            default:
+                throw new IllegalStateException("Unhandled field type");
+        }
     }
 }

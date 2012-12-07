@@ -29,17 +29,21 @@ public final class StackMapIterator {
     private static final StackMapTableData INITIAL_FRAME =
             new StackMapTableData(-1) {
                 @Override
-                int getStackItemsCount() {
-                    return 0;
+                void applyTo(TypeArray localTypes, TypeArray stackTypes) {
+                    localTypes.clear();
+                    stackTypes.clear();
                 }
 
                 @Override
                 public String toString() {
-                    return "INITIAL(0)";
+                    return toString("INITIAL", 0, null, null);
                 }
+
             };
 
     private final StackMapTableData[] stackMapTable;
+    private final TypeArray localTypes;
+    private final TypeArray stackTypes;
 
     private int nextFrameIndex;
     private int lastFrameByteCodeOffset;
@@ -50,7 +54,10 @@ public final class StackMapIterator {
         this.stackMapTable = (stackMapTable != null)
                                  ? stackMapTable
                                  : new StackMapTableData[0];
-        this.lastFrameByteCodeOffset = -1;
+
+        localTypes = new TypeArray();
+        stackTypes = new TypeArray();
+        lastFrameByteCodeOffset = -1;
         advanceBy(0);
     }
 
@@ -62,8 +69,8 @@ public final class StackMapIterator {
         return nextFrameIndex;
     }
 
-    public int getFrameStackItemsCount() {
-        return getCurrentFrame().getStackItemsCount();
+    public TypeArray getFrameStack() {
+        return stackTypes;
     }
 
     public void advanceBy(final int numByteCodes) {
@@ -76,8 +83,11 @@ public final class StackMapIterator {
                     && ((byteCodeOffset - lastFrameByteCodeOffset)
                             >= (stackMapTable[nextFrameIndex].offsetDelta
                                     + 1))) {
-            lastFrameByteCodeOffset +=
-                    stackMapTable[nextFrameIndex].offsetDelta + 1;
+            final StackMapTableData nextFrame = stackMapTable[nextFrameIndex];
+
+            lastFrameByteCodeOffset += nextFrame.offsetDelta + 1;
+            nextFrame.applyTo(localTypes, stackTypes);
+
             ++nextFrameIndex;
         }
     }

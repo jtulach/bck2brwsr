@@ -40,7 +40,75 @@ abstract class StackMapTableData {
         this.frameType = frameType;
     }
 
-    abstract int getStackItemsCount();
+    abstract void applyTo(TypeArray localTypes, TypeArray stackTypes);
+
+    protected static String toString(
+            final String frameType,
+            final int offset,
+            final int[] localTypes,
+            final int[] stackTypes) {
+        final StringBuilder sb = new StringBuilder(frameType);
+
+        sb.append("(off: +").append(offset);
+        if (localTypes != null) {
+            sb.append(", locals: ");
+            appendTypes(sb, localTypes);
+        }
+        if (stackTypes != null) {
+            sb.append(", stack: ");
+            appendTypes(sb, stackTypes);
+        }
+        sb.append(')');
+
+        return sb.toString();
+    }
+
+    private static void appendTypes(final StringBuilder sb, final int[] types) {
+        sb.append('[');
+        if (types.length > 0) {
+            appendType(sb, types[0]);
+            for (int i = 1; i < types.length; ++i) {
+                sb.append(", ");
+                appendType(sb, types[i]);
+            }
+        }
+        sb.append(']');
+    }
+
+    private static void appendType(final StringBuilder sb, final int type) {
+        switch (type & 0xff) {
+            case ITEM_Bogus:
+                sb.append("_top_");
+                break;
+            case ITEM_Integer:
+                sb.append("_int_");
+                break;
+            case ITEM_Float:
+                sb.append("_float_");
+                break;
+            case ITEM_Double:
+                sb.append("_double_");
+                break;
+            case ITEM_Long:
+                sb.append("_long_");
+                break;
+            case ITEM_Null:
+                sb.append("_null_");
+                break;
+            case ITEM_InitObject: // UninitializedThis
+                sb.append("_init_");
+                break;
+            case ITEM_Object:
+                sb.append("_object_");
+                break;
+            case ITEM_NewObject: // Uninitialized
+                sb.append("_new_");
+                break;
+            default:
+                sb.append("_unknown_");
+                break;
+        }
+    }
 
     static class SameFrame extends StackMapTableData {
         SameFrame(int frameType, int offsetDelta) {
@@ -49,16 +117,16 @@ abstract class StackMapTableData {
         }
 
         @Override
-        int getStackItemsCount() {
-            return 0;
+        void applyTo(TypeArray localTypes, TypeArray stackTypes) {
+            stackTypes.clear();
         }
 
         @Override
         public String toString() {
-            return "SAME"
-                       + ((frameType == SAME_FRAME_EXTENDED)
-                              ? "_FRAME_EXTENDED" : "")
-                       + "(" + offsetDelta + ")";
+            return toString("SAME" + ((frameType == SAME_FRAME_EXTENDED)
+                                          ? "_FRAME_EXTENDED" : ""),
+                            offsetDelta,
+                            null, null);
         }
     }
 
@@ -71,16 +139,18 @@ abstract class StackMapTableData {
         }
 
         @Override
-        int getStackItemsCount() {
-            return 1;
+        void applyTo(TypeArray localTypes, TypeArray stackTypes) {
+            stackTypes.setAll(stack);
         }
 
         @Override
         public String toString() {
-            return "SAME_LOCALS_1_STACK_ITEM"
-                       + ((frameType == SAME_LOCALS_1_STACK_ITEM_EXTENDED)
-                              ? "_EXTENDED" : "")
-                       + "(" + offsetDelta + ")";
+            return toString(
+                       "SAME_LOCALS_1_STACK_ITEM"
+                           + ((frameType == SAME_LOCALS_1_STACK_ITEM_EXTENDED)
+                                  ? "_EXTENDED" : ""),
+                       offsetDelta,
+                       null, stack);
         }
     }
 
@@ -91,13 +161,15 @@ abstract class StackMapTableData {
         }
 
         @Override
-        int getStackItemsCount() {
-            return 0;
+        void applyTo(TypeArray localTypes, TypeArray stackTypes) {
+            localTypes.setSize(localTypes.getSize()
+                                   - (SAME_FRAME_EXTENDED - frameType));
+            stackTypes.clear();
         }
 
         @Override
         public String toString() {
-            return "CHOP(" + offsetDelta + ")";
+            return toString("CHOP", offsetDelta, null, null);
         }
     }
 
@@ -110,13 +182,14 @@ abstract class StackMapTableData {
         }
 
         @Override
-        int getStackItemsCount() {
-            return 0;
+        void applyTo(TypeArray localTypes, TypeArray stackTypes) {
+            localTypes.addAll(locals);
+            stackTypes.clear();
         }
 
         @Override
         public String toString() {
-            return "APPEND(" + offsetDelta + ")";
+            return toString("APPEND", offsetDelta, locals, null);
         }
     }
 
@@ -131,13 +204,14 @@ abstract class StackMapTableData {
         }
 
         @Override
-        int getStackItemsCount() {
-            return stack.length;
+        void applyTo(TypeArray localTypes, TypeArray stackTypes) {
+            localTypes.setAll(locals);
+            stackTypes.setAll(stack);
         }
 
         @Override
         public String toString() {
-            return "FULL(" + offsetDelta + ")";
+            return toString("FULL", offsetDelta, locals, stack);
         }
     }
 
