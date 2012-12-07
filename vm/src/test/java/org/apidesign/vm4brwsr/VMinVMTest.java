@@ -41,7 +41,8 @@ public class VMinVMTest {
         
         Object ret;
         try {
-            ret = code.invokeFunction(VMinVM.class.getName().replace('.', '_'), true);
+            ret = code.invokeFunction("bck2brwsr");
+            ret = code.invokeMethod(ret, "loadClass", VMinVM.class.getName());
             ret = code.invokeMethod(ret, "toJavaScript__Ljava_lang_String_2_3B", arr);
         } catch (Exception ex) {
             File f = File.createTempFile("execution", ".js");
