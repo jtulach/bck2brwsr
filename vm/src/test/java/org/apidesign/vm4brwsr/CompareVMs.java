@@ -36,61 +36,14 @@ import org.testng.annotations.Test;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public final class CompareVMs implements ITest {
+    private final Run first, second;
     private final Method m;
-    private final boolean js;
-    private final CompareVMs first, second;
-    private Object value;
-    private static Invocable code;
-    private static CharSequence codeSeq;
     
-    private CompareVMs(Method m, boolean js) {
-        this.m = m;
-        this.js = js;
-        this.first = null;
-        this.second = null;
-    }
-
-    private CompareVMs(Method m, CompareVMs first, CompareVMs second) {
+    private CompareVMs(Method m, Run first, Run second) {
         this.first = first;
         this.second = second;
         this.m = m;
-        this.js = false;
     }
-    
-    private static void compileTheCode(Class<?> clazz) throws Exception {
-        if (code != null) {
-            return;
-        }
-        StringBuilder sb = new StringBuilder();
-        class SkipMe extends GenJS {
-            public SkipMe(Appendable out) {
-                super(out);
-            }
-
-            @Override
-            protected boolean requireReference(String cn) {
-                if (cn.contains("CompareVMs")) {
-                    return true;
-                }
-                return super.requireReference(cn);
-            }
-            
-            
-        }
-        SkipMe sm = new SkipMe(sb);
-        sm.doCompile(CompareVMs.class.getClassLoader(), StringArray.asList(
-            clazz.getName().replace('.', '/')
-        ));
-        
-        ScriptEngineManager sem = new ScriptEngineManager();
-        ScriptEngine js = sem.getEngineByExtension("js");
-        
-        Object res = js.eval(sb.toString());
-        Assert.assertTrue(js instanceof Invocable, "It is invocable object: " + res);
-        code = (Invocable)js;
-        codeSeq = sb;
-    }
-    
 
     public static Object[] create(Class<?> clazz) {
         Method[] arr = clazz.getMethods();
@@ -101,8 +54,8 @@ public final class CompareVMs implements ITest {
             if (c == null) {
                 continue;
             }
-            final CompareVMs real = new CompareVMs(m, false);
-            final CompareVMs js = new CompareVMs(m, true);
+            final Run real = new Run(m, false);
+            final Run js = new Run(m, true);
             ret[cnt++] = real;
             ret[cnt++] = js;
             ret[cnt++] = new CompareVMs(m, real, js);
@@ -114,15 +67,65 @@ public final class CompareVMs implements ITest {
         return r;
     }
     
-    @Test public void runTest() throws Throwable {
-        if (first != null) {
-            Object v1 = first.value;
-            Object v2 = second.value;
-            if (v1 instanceof Number) {
-                v1 = ((Number)v1).doubleValue();
+    @Test(dependsOnGroups = "run") public void compareResults() throws Throwable {
+        Object v1 = first.value;
+        Object v2 = second.value;
+        if (v1 instanceof Number) {
+            v1 = ((Number)v1).doubleValue();
+        }
+        Assert.assertEquals(v1, v2, "Comparing results");
+    }
+    
+    @Override
+    public String getTestName() {
+        return m.getName() + "[Compare]";
+    }
+    
+    public static final class Run implements ITest {
+        private final Method m;
+        private final boolean js;
+        Object value;
+        private static Invocable code;
+        private static CharSequence codeSeq;
+
+        private Run(Method m, boolean js) {
+            this.m = m;
+            this.js = js;
+        }
+
+        private static void compileTheCode(Class<?> clazz) throws Exception {
+            if (code != null) {
+                return;
             }
-            Assert.assertEquals(v1, v2, "Comparing results");
-        } else {
+            StringBuilder sb = new StringBuilder();
+            class SkipMe extends GenJS {
+
+                public SkipMe(Appendable out) {
+                    super(out);
+                }
+
+                @Override
+                protected boolean requireReference(String cn) {
+                    if (cn.contains("CompareVMs")) {
+                        return true;
+                    }
+                    return super.requireReference(cn);
+                }
+            }
+            SkipMe sm = new SkipMe(sb);
+            sm.doCompile(CompareVMs.class.getClassLoader(), StringArray.asList(
+                clazz.getName().replace('.', '/')));
+
+            ScriptEngineManager sem = new ScriptEngineManager();
+            ScriptEngine js = sem.getEngineByExtension("js");
+
+            Object res = js.eval(sb.toString());
+            Assert.assertTrue(js instanceof Invocable, "It is invocable object: " + res);
+            code = (Invocable) js;
+            codeSeq = sb;
+        }
+
+        @Test(groups = "run") public void executeCode() throws Throwable {
             if (js) {
                 try {
                     compileTheCode(m.getDeclaringClass());
@@ -136,13 +139,9 @@ public final class CompareVMs implements ITest {
                 value = m.invoke(m.getDeclaringClass().newInstance());
             }
         }
-    }
-    
-    @Override
-    public String getTestName() {
-        if (first != null) {
-            return m.getName() + "[Compare]";
+        @Override
+        public String getTestName() {
+            return m.getName() + (js ? "[JavaScript]" : "[Java]");
         }
-        return m.getName() + (js ? "[JavaScript]" : "[Java]");
     }
 }
