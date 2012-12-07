@@ -31,6 +31,11 @@ class GenJS extends ByteCodeToJavaScript {
         super(out);
     }
     
+    static {
+        // uses VMLazy to load dynamic classes
+        VMLazy.init();
+    }
+    
     static void compile(Appendable out, String... names) throws IOException {
         compile(out, StringArray.asList(names));
     }
@@ -113,9 +118,19 @@ class GenJS extends ByteCodeToJavaScript {
             }
         }
         out.append(
-              "  global.bck2brwsr = function() { return {\n"
-            + "    loadClass : function(name) { return vm[name.replace__Ljava_lang_String_2CC(name, '.','_')](true); }\n"
-            + "  };\n};\n");
+              "  global.bck2brwsr = function() {\n"
+            + "    var args = arguments;\n"
+            + "    var loader = {};\n"
+            + "    loader.vm = vm;\n"
+            + "    loader.loadClass = function(name) {\n"
+            + "      var attr = name.replace__Ljava_lang_String_2CC(name, '.','_');\n"
+            + "      var fn = vm[attr];\n"
+            + "      if (fn) return fn(false);\n"
+            + "      return vm.org_apidesign_vm4brwsr_VMLazy(false).\n"
+            + "        load___3Ljava_lang_Object_2Ljava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2(loader, name, args);\n"
+            + "    }\n"
+            + "    return loader;\n"
+            + "  };\n");
         out.append("}(this));");
     }
     private static void readResource(InputStream emul, Appendable out) throws IOException {

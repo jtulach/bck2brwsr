@@ -19,6 +19,8 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Set;
+import java.util.TreeSet;
 import javax.script.Invocable;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
@@ -40,36 +42,18 @@ public class VMLazyTest {
     @BeforeClass
     public void compileTheCode() throws Exception {
         StringBuilder sb = new StringBuilder();
-        
-        sb.append("\nfunction test(clazz, as, method) {");
-        sb.append("\n  var l = new lazyVM(this);");
-        sb.append("\n  var c = l.loadClass(clazz, as);");
+        sb.append("\nvar data = {};");
+        sb.append("\nfunction test(clazz, method) {");
+        sb.append("\n  if (!data.bck2brwsr) data.bck2brwsr = bck2brwsr(function(name) { return loader.get(name); });");
+        sb.append("\n  var c = data.bck2brwsr.loadClass(clazz);");
         sb.append("\n  return c[method]();");
         sb.append("\n}");
         
         
-        sb.append("\nfunction lazyVM(global) {");
-        sb.append("\n  var self = this;");
-        sb.append("\n  var glb = global;");
-        sb.append("\n  lazyVM.prototype.loadClass = function(res, name) {");
-        sb.append("\n    var script = org_apidesign_vm4brwsr_VMLazy(true)."
-            + "toJavaScript__Ljava_lang_String_2Ljava_lang_Object_2Ljava_lang_Object_2_3B("
-            + "  glb, self,"
-            + "  loader.get(res + '.class')"
-            + ");");
-        sb.append("\n    try {");
-        sb.append("\n      new Function(script)(glb, name);");
-        sb.append("\n    } catch (ex) {");
-        sb.append("\n      throw 'Cannot compile ' + res + ' error: ' + ex + ' script:\\n' + script;");
-        sb.append("\n    };");
-        sb.append("\n    return glb[name](true);");
-        sb.append("\n  };");
-        sb.append("\n");
-        sb.append("\n}\n");
-        
+       
         ScriptEngine[] arr = { null };
         code = StaticMethodTest.compileClass(sb, arr,
-            "org/apidesign/vm4brwsr/VMLazy"
+            "org/apidesign/vm4brwsr/GenJS"
         );
         arr[0].getContext().setAttribute("loader", new FindBytes(), ScriptContext.ENGINE_SCOPE);
         codeSeq = sb;
@@ -77,13 +61,13 @@ public class VMLazyTest {
     
     @Test public void invokeStaticMethod() throws Exception {
         assertExec("Trying to get -1", "test", Double.valueOf(-1),
-            "org/apidesign/vm4brwsr/StaticMethod", "org_apidesign_vm4brwsr_StaticMethod", "minusOne__I"
+            StaticMethod.class.getName(), "minusOne__I"
         );
     }
 
     @Test public void loadDependantClass() throws Exception {
-        assertExec("Trying to get zero", "test", Double.valueOf(0),
-            "org/apidesign/vm4brwsr/InstanceSub", "org_apidesign_vm4brwsr_InstanceSub", "recallDbl__D"
+        assertExec("Expecting zero", "test", Double.valueOf(0),
+            InstanceSub.class.getName(), "recallDbl__D"
         );
     }
 
@@ -106,7 +90,13 @@ public class VMLazyTest {
     }
 
     public static final class FindBytes {
+        private static Set<String> requested = new TreeSet<String>();
+        
         public byte[] get(String name) throws IOException {
+            if (!requested.add(name)) {
+                throw new IllegalStateException("Requested for second time: " + name);
+            }
+            
             InputStream is = VMLazyTest.class.getClassLoader().getResourceAsStream(name);
             if (is == null) {
                 throw new IOException("Can't find " + name);
