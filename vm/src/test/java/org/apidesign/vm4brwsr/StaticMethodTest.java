@@ -36,7 +36,7 @@ public class StaticMethodTest {
     @Test public void threePlusFour() throws Exception {
         assertExec(
             "Should be seven", 
-            StaticMethod.class, "sumIII", 
+            StaticMethod.class, "sum__III", 
             Double.valueOf(7), 
             3, 4
         );
@@ -45,7 +45,7 @@ public class StaticMethodTest {
     @Test public void checkReallyInitializedValues() throws Exception {
         assertExec(
             "Return true", 
-            StaticMethod.class, "isNullZ", 
+            StaticMethod.class, "isNull__Z", 
             Double.valueOf(1)
         );
     }
@@ -53,7 +53,7 @@ public class StaticMethodTest {
     @Test public void powerOfThree() throws Exception {
         assertExec(
             "Should be nine", 
-            StaticMethod.class, "powerFF", 
+            StaticMethod.class, "power__FF", 
             Double.valueOf(9),
             3.0f
         );
@@ -62,7 +62,7 @@ public class StaticMethodTest {
     @Test public void minusOne() throws Exception {
         assertExec(
             "Should be minus one", 
-            StaticMethod.class, "minusOneI", 
+            StaticMethod.class, "minusOne__I", 
             Double.valueOf(-1)
         );
     }
@@ -70,7 +70,7 @@ public class StaticMethodTest {
     @Test public void doubleWithoutLong() throws Exception {
         assertExec(
             "Should be two",
-            StaticMethod.class, "minusDDJ", 
+            StaticMethod.class, "minus__DDJ", 
             Double.valueOf(2),
             3.0d, 1l
         );
@@ -79,7 +79,7 @@ public class StaticMethodTest {
     @Test public void divAndRound() throws Exception {
         assertExec(
             "Should be rounded to one",
-            StaticMethod.class, "divIBD", 
+            StaticMethod.class, "div__IBD", 
             Double.valueOf(1),
             3, 3.75
         );
@@ -87,7 +87,7 @@ public class StaticMethodTest {
     @Test public void mixedMethodFourParams() throws Exception {
         assertExec(
             "Should be two",
-            StaticMethod.class, "mixIIJBD", 
+            StaticMethod.class, "mix__IIJBD", 
             Double.valueOf(20),
             2, 10l, 5, 2.0
         );
@@ -95,7 +95,7 @@ public class StaticMethodTest {
     @Test public void factRec() throws Exception {
         assertExec(
             "Factorial of 5 is 120",
-            StaticMethod.class, "factRecJI", 
+            StaticMethod.class, "factRec__JI", 
             Double.valueOf(120),
             5
         );
@@ -103,7 +103,7 @@ public class StaticMethodTest {
     @Test public void factIter() throws Exception {
         assertExec(
             "Factorial of 5 is 120",
-            StaticMethod.class, "factIterJI", 
+            StaticMethod.class, "factIter__JI", 
             Double.valueOf(120),
             5
         );
@@ -112,7 +112,7 @@ public class StaticMethodTest {
     @Test public void xor() throws Exception {
         assertExec(
             "Xor is 4",
-            StaticMethod.class, "xorJIJ",
+            StaticMethod.class, "xor__JIJ",
             Double.valueOf(4),
             7,
             3
@@ -122,7 +122,7 @@ public class StaticMethodTest {
     @Test public void or() throws Exception {
         assertExec(
             "Or will be 7",
-            StaticMethod.class, "orOrAndJZII",
+            StaticMethod.class, "orOrAnd__JZII",
             Double.valueOf(7),
             true,
             4,
@@ -132,14 +132,14 @@ public class StaticMethodTest {
     @Test public void nullCheck() throws Exception {
         assertExec(
             "Returns nothing",
-            StaticMethod.class, "noneLjava_lang_ObjectII",
+            StaticMethod.class, "none__Ljava_lang_Object_2II",
             null, 1, 3
         );
     }
     @Test public void and() throws Exception {
         assertExec(
             "And will be 3",
-            StaticMethod.class, "orOrAndJZII",
+            StaticMethod.class, "orOrAnd__JZII",
             Double.valueOf(3),
             false,
             7,
@@ -149,7 +149,7 @@ public class StaticMethodTest {
     @Test public void inc4() throws Exception {
         assertExec(
             "It will be 4",
-            StaticMethod.class, "inc4I",
+            StaticMethod.class, "inc4__I",
             Double.valueOf(4)
         );
     }
@@ -162,7 +162,7 @@ public class StaticMethodTest {
     @Test public void shiftLeftInJS() throws Exception {
         assertExec(
             "Setting 9th bit",
-            StaticMethod.class, "shiftLeftIII",
+            StaticMethod.class, "shiftLeft__III",
             Double.valueOf(256),
             1, 8
         );
@@ -176,7 +176,7 @@ public class StaticMethodTest {
     @Test public void shiftRightInJS() throws Exception {
         assertExec(
             "Get -1",
-            StaticMethod.class, "shiftArithmRightIIIZ",
+            StaticMethod.class, "shiftArithmRight__IIIZ",
             Double.valueOf(-1),
             -8, 3, true
         );
@@ -189,7 +189,7 @@ public class StaticMethodTest {
     @Test public void unsignedShiftRightInJS() throws Exception {
         assertExec(
             "Get -1",
-            StaticMethod.class, "shiftArithmRightIIIZ",
+            StaticMethod.class, "shiftArithmRight__IIIZ",
             Double.valueOf(1),
             8, 3, false
         );
@@ -198,7 +198,7 @@ public class StaticMethodTest {
     @Test public void javaScriptBody() throws Exception {
         assertExec(
             "JavaScript string",
-            StaticMethod.class, "i2sLjava_lang_StringII",
+            StaticMethod.class, "i2s__Ljava_lang_String_2II",
             "333",
             330, 3
         );
@@ -207,7 +207,7 @@ public class StaticMethodTest {
     @Test public void switchJarda() throws Exception {
         assertExec(
             "The expected value",
-            StaticMethod.class, "swtchLjava_lang_StringI",
+            StaticMethod.class, "swtch__Ljava_lang_String_2I",
             "Jarda",
             0
         );
@@ -216,7 +216,7 @@ public class StaticMethodTest {
     @Test public void switchDarda() throws Exception {
         assertExec(
             "The expected value",
-            StaticMethod.class, "swtchLjava_lang_StringI",
+            StaticMethod.class, "swtch__Ljava_lang_String_2I",
             "Darda",
             1
         );
@@ -224,7 +224,7 @@ public class StaticMethodTest {
     @Test public void switchParda() throws Exception {
         assertExec(
             "The expected value",
-            StaticMethod.class, "swtch2Ljava_lang_StringI",
+            StaticMethod.class, "swtch2__Ljava_lang_String_2I",
             "Parda",
             22
         );
@@ -232,7 +232,7 @@ public class StaticMethodTest {
     @Test public void switchMarda() throws Exception {
         assertExec(
             "The expected value",
-            StaticMethod.class, "swtchLjava_lang_StringI",
+            StaticMethod.class, "swtch__Ljava_lang_String_2I",
             "Marda",
             -433
         );
