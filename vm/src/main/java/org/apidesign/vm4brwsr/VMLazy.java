@@ -25,31 +25,57 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-class VMLazy extends ByteCodeToJavaScript {
+final class VMLazy {
     private final Object loader;
+    private final Object[] args;
     
-    private VMLazy(Object loader, Appendable out) {
-        super(out);
+    private VMLazy(Object loader, Object[] args) {
         this.loader = loader;
+        this.args = args;
     }
     
     static void init() {
     }
     
-    @JavaScriptBody(args={"res", "args" }, body = "return args[0](res.toString());")
-    private static native byte[] read(String res, Object[] args);
+    @JavaScriptBody(args={"l", "res", "args" }, body = ""
+        + "try {"
+        + "  return args[0](res.toString());"
+        + "} catch (x) {"
+        + "  throw Object.getOwnPropertyNames(l.vm).toString() + x.toString();"
+        + "}")
+    private static native byte[] read(Object l, String res, Object[] args);
     
     static Object load(Object loader, String name, Object[] arguments) 
     throws IOException, ClassNotFoundException {
+        return new VMLazy(loader, arguments).load(name);
+    }
+    
+    private Object load(String name)
+    throws IOException, ClassNotFoundException {
         String res = name.replace('.', '/') + ".class";
-        byte[] arr = read(res, arguments);
+        byte[] arr = read(loader, res, args);
         if (arr == null) {
             throw new ClassNotFoundException(name);
         }
-        String code = toJavaScript(loader, arr);
-        return applyCode(loader, name, code);
+//        beingDefined(loader, name);
+        StringBuilder out = new StringBuilder();
+        out.append("var loader = arguments[0];\n");
+        out.append("var vm = loader.vm;\n");
+        new Gen(this, out).compile(new ByteArrayInputStream(arr));
+        String code = out.toString().toString();
+        String under = name.replace('.', '_');
+        return applyCode(loader, under, code);
     }
+
+/* possibly not needed:
+    @JavaScriptBody(args = {"loader", "n" }, body =
+        "var cls = n.replace__Ljava_lang_String_2CC(n, '.','_').toString();" +
+        "loader.vm[cls] = true;\n"
+    )
+    private static native void beingDefined(Object loader, String name);
+*/
     
+
     @JavaScriptBody(args = {"loader", "name", "script" }, body =
         "try {\n" +
         "  new Function(script)(loader, name);\n" +
@@ -60,41 +86,44 @@ class VMLazy extends ByteCodeToJavaScript {
     )
     private static native Object applyCode(Object loader, String name, String script);
     
-    private static String toJavaScript(Object loader, byte[] is) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        sb.append("var loader = arguments[0];\n");
-        sb.append("var vm = loader.vm;\n");
-        new VMLazy(loader, sb).compile(new ByteArrayInputStream(is));
-        return sb.toString().toString();
-    }
+    
+    private static final class Gen extends ByteCodeToJavaScript {
+        private final VMLazy lazy;
 
-    @JavaScriptBody(args = { "self", "n" }, 
-        body=
-          "var cls = n.replace__Ljava_lang_String_2CC(n,'/','_').toString();"
-        + "var loader = self.fld_loader;"
-        + "var vm = loader.vm;"
-        + "if (vm[cls]) return false;"
-        + "vm[cls] = function() {"
-        + "  return loader.loadClass(n,cls);"
-        + "};"
-        + "return true;"
-    )
-    @Override
-    protected boolean requireReference(String internalClassName) {
-        throw new UnsupportedOperationException();
-    }
+        public Gen(VMLazy vm, Appendable out) {
+            super(out);
+            this.lazy = vm;
+        }
+        
+        @JavaScriptBody(args = {"self", "n"},
+        body =
+        "var cls = n.replace__Ljava_lang_String_2CC(n, '/','_').toString();"
+        + "\nvar dot = n.replace__Ljava_lang_String_2CC(n,'/','.').toString();"
+        + "\nvar lazy = self.fld_lazy;"
+        + "\nvar loader = lazy.fld_loader;"
+        + "\nvar vm = loader.vm;"
+        + "\nif (vm[cls]) return false;"
+        + "\nvm[cls] = function() {"
+        + "\n  return lazy.load__Ljava_lang_Object_2Ljava_lang_String_2(lazy, dot);"
+        + "\n};"
+        + "\nreturn true;")
+        @Override
+        protected boolean requireReference(String internalClassName) {
+            throw new UnsupportedOperationException();
+        }
 
-    @Override
-    protected void requireScript(String resourcePath) {
-    }
+        @Override
+        protected void requireScript(String resourcePath) {
+        }
 
-    @Override
-    String assignClass(String className) {
-        return "vm[arguments[1]]=";
-    }
+        @Override
+        String assignClass(String className) {
+            return "vm[arguments[1]]=";
+        }
 
-    @Override
-    String accessClass(String classOperation) {
-        return "vm." + classOperation;
+        @Override
+        String accessClass(String classOperation) {
+            return "vm." + classOperation;
+        }
     }
 }
