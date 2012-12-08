@@ -24,6 +24,8 @@ import org.apidesign.javap.ClassData;
 import org.apidesign.javap.FieldData;
 import org.apidesign.javap.MethodData;
 import static org.apidesign.javap.RuntimeConstants.*;
+import org.apidesign.javap.TrapData;
+import org.apidesign.javap.Vector;
 
 /** Translator of the code inside class files to JavaScript.
  *
@@ -215,7 +217,7 @@ public abstract class ByteCodeToJavaScript {
                 out.append("arg").append(String.valueOf(i)).append(";\n");
             }
             out.append("  var s = new Array();\n");
-            produceCode(code);
+            produceCode(code, m.getexception_table());
         } else {
             out.append("  throw 'no code found for ").append(m.getInternalSig()).append("';\n");
         }
@@ -251,7 +253,7 @@ public abstract class ByteCodeToJavaScript {
                 out.append("arg").append(String.valueOf(i + 1)).append(";\n");
             }
             out.append(";\n  var s = new Array();\n");
-            produceCode(code);
+            produceCode(code, m.getexception_table());
         } else {
             out.append("  throw 'no code found for ").append(m.getInternalSig()).append("';\n");
         }
@@ -259,11 +261,35 @@ public abstract class ByteCodeToJavaScript {
         return mn;
     }
 
-    private void produceCode(byte[] byteCodes) throws IOException {
+    private void produceCode(byte[] byteCodes, Vector exceptionTable) throws IOException {
+
+        final java.util.Map<Short, TrapData> exStart = new java.util.HashMap<Short, TrapData>();
+        final java.util.Map<Short, TrapData> exStop = new java.util.HashMap<Short, TrapData>();
+        for (int i=0 ; i < exceptionTable.size(); i++) {
+            final TrapData td = (TrapData)exceptionTable.elementAt(i);
+            exStart.put(td.start_pc, td);
+            exStop.put(td.end_pc, td);
+        }
+        final java.util.Deque<TrapData> current = new java.util.ArrayDeque<TrapData>();
         out.append("\n  var gt = 0;\n  for(;;) switch(gt) {\n");
+
         for (int i = 0; i < byteCodes.length; i++) {
+
+            {
+                TrapData e = exStart.get((short)i);
+                if (e != null) {
+                    current.addFirst(e);
+                }
+                e = exStop.get((short)i);
+                if (e != null) {
+                    current.remove(e);
+                }
+            }
             int prev = i;
-            out.append("    case " + i).append(": ");
+            out.append("    case " + i).append(": ");            
+            if (!current.isEmpty()) {
+                out.append("try {");
+            }
             final int c = readByte(byteCodes, i);
             switch (c) {
                 case opc_aload_0:
@@ -784,13 +810,29 @@ public abstract class ByteCodeToJavaScript {
                 }
                     
             }
+            if (!current.isEmpty()) {
+                out.append("} catch (e) {");
+                for (TrapData e : current) {
+                    if (e.catch_cpx != 0) { //not finally
+                        final String classInternalName = jc.getClassName(e.catch_cpx);
+                        addReference(classInternalName);
+                        out.append("if (e.$instOf_"+classInternalName.replace('/', '_')+") {");
+                        out.append("gt="+e.handler_pc+"; continue;");
+                        out.append("} ");
+                    } else {
+                        //finally - todo
+                    }
+                }
+                out.append("throw e;");
+                out.append("}");
+            }
             out.append(" //");
             for (int j = prev; j <= i; j++) {
                 out.append(" ");
                 final int cc = readByte(byteCodes, j);
                 out.append(Integer.toString(cc));
             }
-            out.append("\n");
+            out.append("\n");            
         }
         out.append("  }\n");
     }

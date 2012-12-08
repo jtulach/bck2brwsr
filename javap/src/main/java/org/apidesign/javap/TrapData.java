@@ -34,9 +34,12 @@ import java.io.*;
  *
  * @author  Sucheta Dambalkar (Adopted code from jdis)
  */
-class TrapData {
-    short start_pc, end_pc, handler_pc, catch_cpx;
-  int num;
+public class TrapData {
+  public final short start_pc;
+  public final short end_pc;
+  public final short handler_pc;
+  public final short catch_cpx;
+  final int num;
 
 
     /**
