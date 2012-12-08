@@ -54,7 +54,7 @@ public class ExceptionsTest {
     @Test
     public void verifyMethodWithTryCatchThrow() throws Exception {
             assertExec("MethodWithTryCatch", "org_apidesign_vm4brwsr_Exceptions_methodWithTryCatchThrowI",
-            new Double(1.0));
+            new Double(2.0));
     }
     
     private static CharSequence codeSeq;
