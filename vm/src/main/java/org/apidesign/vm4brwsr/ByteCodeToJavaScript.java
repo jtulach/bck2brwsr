@@ -36,9 +36,13 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Deque;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.netbeans.modules.classfile.Annotation;
@@ -54,6 +58,7 @@ import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.classfile.ClassName;
 import org.netbeans.modules.classfile.Code;
 import org.netbeans.modules.classfile.ElementValue;
+import org.netbeans.modules.classfile.ExceptionTableEntry;
 import org.netbeans.modules.classfile.Method;
 import org.netbeans.modules.classfile.Parameter;
 import org.netbeans.modules.classfile.PrimitiveElementValue;
@@ -198,7 +203,7 @@ public final class ByteCodeToJavaScript {
                 out.append("arg").append(String.valueOf(i)).append(";\n");
             }
             out.append("  var stack = new Array();\n");
-            produceCode(code.getByteCodes());
+            produceCode(code.getByteCodes(), code.getExceptionTable());
         } else {
             out.append("  /* no code found for ").append(m.getTypeSignature()).append(" */\n");
         }
@@ -241,18 +246,38 @@ public final class ByteCodeToJavaScript {
                 out.append("arg").append(String.valueOf(i + 1)).append(";\n");
             }
             out.append(";\n  var stack = new Array();\n");
-            produceCode(code.getByteCodes());
+            produceCode(code.getByteCodes(), code.getExceptionTable());
         } else {
             out.append("  /* no code found for ").append(m.getTypeSignature()).append(" */\n");
         }
         out.append("}");
     }
 
-    private void produceCode(byte[] byteCodes) throws IOException {
+    private void produceCode(byte[] byteCodes, ExceptionTableEntry[] exceptionTable) throws IOException {
+        final Map<Integer, ExceptionTableEntry> exStart = new HashMap<Integer, ExceptionTableEntry>();
+        final Map<Integer, ExceptionTableEntry> exStop = new HashMap<Integer, ExceptionTableEntry>();
+        for (ExceptionTableEntry e : exceptionTable) {
+            exStart.put(e.getStartPC(), e);
+            exStop.put(e.getEndPC(), e);
+        }
+        final Deque<ExceptionTableEntry> current = new ArrayDeque<ExceptionTableEntry>();
         out.append("\n  var gt = 0;\n  for(;;) switch(gt) {\n");
         for (int i = 0; i < byteCodes.length; i++) {
+            {
+                ExceptionTableEntry e = exStart.get(i);
+                if (e != null) {
+                    current.addFirst(e);
+                }
+                e = exStop.get(i);
+                if (e != null) {
+                    current.remove(e);
+                }
+            }
             int prev = i;
             out.append("    case " + i).append(": ");
+            if (!current.isEmpty()) {
+                out.append("try {");
+            }
             final int c = (byteCodes[i] + 256) % 256;
             switch (c) {
                 case bc_aload_0:
@@ -708,13 +733,29 @@ public final class ByteCodeToJavaScript {
                 }
                     
             }
+            if (!current.isEmpty()) {
+                out.append("} catch (e) {");
+                for (ExceptionTableEntry e : current) {
+                    if (e.getCatchType() != null) {
+                        final String classInternalName = e.getCatchType().getClassName().getInternalName();
+                        addReference(classInternalName);
+                        out.append("if (e.$instOf_"+classInternalName.replace('/', '_')+") {");
+                        out.append("gt="+e.getHandlerPC()+"; continue;");
+                        out.append("} ");
+                    } else {
+                        //finally - todo
+                    }
+                }
+                out.append("throw e;");
+                out.append("}");
+            }
             out.append(" //");
             for (int j = prev; j <= i; j++) {
                 out.append(" ");
                 final int cc = (byteCodes[j] + 256) % 256;
                 out.append(Integer.toString(cc));
             }
-            out.append("\n");
+            out.append("\n");            
         }
         out.append("  }\n");
     }
