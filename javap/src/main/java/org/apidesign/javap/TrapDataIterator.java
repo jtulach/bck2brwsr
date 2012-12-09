@@ -9,8 +9,8 @@ package org.apidesign.javap;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public final class TrapDataIterator {
-    private final java.util.Map<Short, TrapData> exStart = new java.util.HashMap<Short, TrapData>();
-    private final java.util.Map<Short, TrapData> exStop = new java.util.HashMap<Short, TrapData>();
+    private final Hashtable exStart = new Hashtable();
+    private final Hashtable exStop = new Hashtable();
     private TrapData[] current = new TrapData[10];
     private int currentCount;
     
@@ -23,11 +23,12 @@ public final class TrapDataIterator {
     }
 
     public void advanceTo(int i) {
-        TrapData e = exStart.get((short) i);
+        Short s = Short.valueOf((short)i);
+        TrapData e = (TrapData) exStart.get(s);
         if (e != null) {
             add(e);
         }
-        e = exStop.get((short) i);
+        e = (TrapData) exStop.get(s);
         if (e != null) {
             remove(e);
         }
