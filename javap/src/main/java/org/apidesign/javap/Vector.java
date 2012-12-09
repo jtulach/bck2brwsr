@@ -8,7 +8,7 @@ package org.apidesign.javap;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public final class Vector {
+final class Vector {
     private Object[] arr;
     
     Vector() {
@@ -27,7 +27,7 @@ public final class Vector {
         setElementAt(obj, s);
     }
 
-    public int size() {
+    int size() {
         return arr == null ? 0 : arr.length;
     }
 
@@ -41,7 +41,7 @@ public final class Vector {
         }
     }
 
-    public Object elementAt(int index) {
+    Object elementAt(int index) {
         return arr[index];
     }
 

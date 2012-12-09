@@ -25,7 +25,7 @@ import org.apidesign.javap.FieldData;
 import org.apidesign.javap.MethodData;
 import static org.apidesign.javap.RuntimeConstants.*;
 import org.apidesign.javap.TrapData;
-import org.apidesign.javap.Vector;
+import org.apidesign.javap.TrapDataIterator;
 
 /** Translator of the code inside class files to JavaScript.
  *
@@ -217,7 +217,7 @@ public abstract class ByteCodeToJavaScript {
                 out.append("arg").append(String.valueOf(i)).append(";\n");
             }
             out.append("  var s = new Array();\n");
-            produceCode(code, m.getexception_table());
+            produceCode(m);
         } else {
             out.append("  throw 'no code found for ").append(m.getInternalSig()).append("';\n");
         }
@@ -253,7 +253,7 @@ public abstract class ByteCodeToJavaScript {
                 out.append("arg").append(String.valueOf(i + 1)).append(";\n");
             }
             out.append(";\n  var s = new Array();\n");
-            produceCode(code, m.getexception_table());
+            produceCode(m);
         } else {
             out.append("  throw 'no code found for ").append(m.getInternalSig()).append("';\n");
         }
@@ -261,33 +261,18 @@ public abstract class ByteCodeToJavaScript {
         return mn;
     }
 
-    private void produceCode(byte[] byteCodes, Vector exceptionTable) throws IOException {
-
-        final java.util.Map<Short, TrapData> exStart = new java.util.HashMap<Short, TrapData>();
-        final java.util.Map<Short, TrapData> exStop = new java.util.HashMap<Short, TrapData>();
-        for (int i=0 ; i < exceptionTable.size(); i++) {
-            final TrapData td = (TrapData)exceptionTable.elementAt(i);
-            exStart.put(td.start_pc, td);
-            exStop.put(td.end_pc, td);
-        }
-        final java.util.Deque<TrapData> current = new java.util.ArrayDeque<TrapData>();
+    private void produceCode(MethodData md) throws IOException {
+        byte[] byteCodes = md.getCode();
+        
+        TrapDataIterator trap = md.getTrapDataIterator();
         out.append("\n  var gt = 0;\n  for(;;) switch(gt) {\n");
 
         for (int i = 0; i < byteCodes.length; i++) {
 
-            {
-                TrapData e = exStart.get((short)i);
-                if (e != null) {
-                    current.addFirst(e);
-                }
-                e = exStop.get((short)i);
-                if (e != null) {
-                    current.remove(e);
-                }
-            }
+            trap.advanceTo(i);
             int prev = i;
             out.append("    case " + i).append(": ");            
-            if (!current.isEmpty()) {
+            if (trap.useTry()) {
                 out.append("try {");
             }
             final int c = readByte(byteCodes, i);
@@ -810,9 +795,9 @@ public abstract class ByteCodeToJavaScript {
                 }
                     
             }
-            if (!current.isEmpty()) {
+            if (trap.useTry()) {
                 out.append("} catch (e) {");
-                for (TrapData e : current) {
+                for (TrapData e : trap.current()) {
                     if (e.catch_cpx != 0) { //not finally
                         final String classInternalName = jc.getClassName(e.catch_cpx);
                         addReference(classInternalName);

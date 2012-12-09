@@ -26,7 +26,6 @@
 
 package org.apidesign.javap;
 
-import java.util.*;
 import java.io.*;
 
 /**
@@ -34,7 +33,7 @@ import java.io.*;
  *
  * @author  Sucheta Dambalkar (Adopted code from jdis)
  */
-public class TrapData {
+public final class TrapData {
   public final short start_pc;
   public final short end_pc;
   public final short handler_pc;
@@ -45,7 +44,7 @@ public class TrapData {
     /**
      * Read and store exception table data in code attribute.
      */
-    public TrapData(DataInputStream in, int num) throws IOException {
+    TrapData(DataInputStream in, int num) throws IOException {
         this.num=num;
         start_pc = in.readShort();
         end_pc=in.readShort();
