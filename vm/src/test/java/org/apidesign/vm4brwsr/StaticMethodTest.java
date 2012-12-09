@@ -238,6 +238,13 @@ public class StaticMethodTest {
         );
     }
     
+    @Test public void checkNullCast() throws Exception {
+        assertExec("Null can be cast to any type",
+            StaticMethod.class, "castNull__Ljava_lang_String_2Z", 
+            null, true
+        );
+    }
+    
     private static CharSequence codeSeq;
     private static Invocable code;
     

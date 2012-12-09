@@ -770,9 +770,9 @@ public abstract class ByteCodeToJavaScript {
                     final String type = jc.getClassName(indx);
                     if (!type.startsWith("[")) {
                         // no way to check arrays right now
-                        out.append("if(s[s.length - 1].$instOf_")
+                        out.append("if(s[s.length - 1] !== null && !s[s.length - 1].$instOf_")
                            .append(type.replace('/', '_'))
-                           .append(" != 1) throw {};"); // XXX proper exception
+                           .append(") throw {};"); // XXX proper exception
                     }
                     i += 2;
                     break;
