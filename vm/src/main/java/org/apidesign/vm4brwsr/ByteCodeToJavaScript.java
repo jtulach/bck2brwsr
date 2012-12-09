@@ -798,6 +798,9 @@ public abstract class ByteCodeToJavaScript {
             if (trap.useTry()) {
                 out.append("} catch (e) {");
                 for (TrapData e : trap.current()) {
+                    if (e == null) {
+                        break;
+                    }
                     if (e.catch_cpx != 0) { //not finally
                         final String classInternalName = jc.getClassName(e.catch_cpx);
                         addReference(classInternalName);
