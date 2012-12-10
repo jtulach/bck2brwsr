@@ -54,13 +54,13 @@
             <version>1.3.2.5</version>
             <configuration>
                 <port>9876</port>
-                <browser>/usr/bin/firefox</browser>
+                <browser>${basedir}/../run-firefox.sh</browser>
                 <browserTimeout>720</browserTimeout>
                 <tests>all</tests>
                 <config>jsTestDriver.conf</config>
                 <reset>true</reset>
                 <testOutput>${basedir}/target/testOutput</testOutput>
-                <runnerMode>DEBUG</runnerMode>
+                <!-- runnerMode>DEBUG</runnerMode -->
             </configuration>
             <executions>
                 <execution>
