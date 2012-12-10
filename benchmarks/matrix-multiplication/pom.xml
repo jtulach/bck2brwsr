@@ -60,6 +60,7 @@
                 <config>jsTestDriver.conf</config>
                 <reset>true</reset>
                 <testOutput>${basedir}/target/testOutput</testOutput>
+                <runnerMode>DEBUG</runnerMode>
             </configuration>
             <executions>
                 <execution>
