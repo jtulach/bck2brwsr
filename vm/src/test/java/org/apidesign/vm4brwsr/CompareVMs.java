@@ -18,6 +18,8 @@
 package org.apidesign.vm4brwsr;
 
 import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.WeakHashMap;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -85,16 +87,20 @@ public final class CompareVMs implements ITest {
         private final Method m;
         private final boolean js;
         Object value;
-        private static Invocable code;
-        private static CharSequence codeSeq;
+        private Invocable code;
+        private CharSequence codeSeq;
+        private static final Map<Class,Object[]> compiled = new WeakHashMap<Class,Object[]>();
 
         private Run(Method m, boolean js) {
             this.m = m;
             this.js = js;
         }
 
-        private static void compileTheCode(Class<?> clazz) throws Exception {
-            if (code != null) {
+        private void compileTheCode(Class<?> clazz) throws Exception {
+            final Object[] data = compiled.get(clazz);
+            if (data != null) {
+                code = (Invocable) data[0];
+                codeSeq = (CharSequence) data[1];
                 return;
             }
             StringBuilder sb = new StringBuilder();
@@ -123,6 +129,7 @@ public final class CompareVMs implements ITest {
             Assert.assertTrue(js instanceof Invocable, "It is invocable object: " + res);
             code = (Invocable) js;
             codeSeq = sb;
+            compiled.put(clazz, new Object[] { code, codeSeq });
         }
 
         @Test(groups = "run") public void executeCode() throws Throwable {
