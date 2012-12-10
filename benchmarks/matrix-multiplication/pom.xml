@@ -55,6 +55,7 @@
             <configuration>
                 <port>9876</port>
                 <browser>/usr/bin/firefox</browser>
+                <browserTimeout>720</browserTimeout>
                 <tests>all</tests>
                 <config>jsTestDriver.conf</config>
                 <reset>true</reset>
