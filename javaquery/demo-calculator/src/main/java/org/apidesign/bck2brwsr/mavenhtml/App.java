@@ -70,6 +70,10 @@ public class App {
     private static void setValue(double v) {
         StringBuilder sb = new StringBuilder();
         sb.append(v);
+        if (sb.toString().endsWith(".0")) {
+            final int l = sb.length();
+            sb.delete(l - 2, l);
+        }
         Calculator.DISPLAY.setValue(sb.toString());
     }
 

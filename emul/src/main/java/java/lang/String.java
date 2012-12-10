@@ -1426,7 +1426,7 @@ public final class String
      */
     @JavaScriptBody(args = { "self", "find", "from" }, body=
         "find = find.toString();\n" +
-        "return self.toString().substring(from, find.length) === find;\n"
+        "return self.toString().substring(from, from + find.length) === find;\n"
     )
     public boolean startsWith(String prefix, int toffset) {
         char ta[] = toCharArray();

@@ -73,7 +73,7 @@ public final class CompareVMs implements ITest {
         if (v1 instanceof Number) {
             v1 = ((Number)v1).doubleValue();
         }
-        Assert.assertEquals(v1, v2, "Comparing results");
+        Assert.assertEquals(v2, v1, "Comparing results");
     }
     
     @Override
@@ -130,7 +130,7 @@ public final class CompareVMs implements ITest {
                 try {
                     compileTheCode(m.getDeclaringClass());
                     Object inst = code.invokeFunction(m.getDeclaringClass().getName().replace('.', '_'), false);
-                    value = code.invokeMethod(inst, m.getName() + "__I");
+                    value = code.invokeMethod(inst, m.getName() + "__" + computeSignature(m));
                 } catch (Exception ex) {
                     throw new AssertionError(StaticMethodTest.dumpJS(codeSeq)).initCause(ex);
                 }
@@ -141,6 +141,57 @@ public final class CompareVMs implements ITest {
         @Override
         public String getTestName() {
             return m.getName() + (js ? "[JavaScript]" : "[Java]");
+        }
+        
+        private static String computeSignature(Method m) {
+            StringBuilder sb = new StringBuilder();
+            appendType(sb, m.getReturnType());
+            for (Class<?> c : m.getParameterTypes()) {
+                appendType(sb, c);
+            }
+            return sb.toString();
+        }
+        
+        private static void appendType(StringBuilder sb, Class<?> t) {
+            if (t == null) {
+                sb.append('V');
+                return;
+            }
+            if (t.isPrimitive()) {
+                int ch = -1;
+                if (t == int.class) {
+                    ch = 'I';
+                }
+                if (t == short.class) {
+                    ch = 'S';
+                }
+                if (t == byte.class) {
+                    ch = 'B';
+                }
+                if (t == boolean.class) {
+                    ch = 'Z';
+                }
+                if (t == long.class) {
+                    ch = 'J';
+                }
+                if (t == float.class) {
+                    ch = 'F';
+                }
+                if (t == double.class) {
+                    ch = 'D';
+                }
+                assert ch != -1 : "Unknown primitive type " + t;
+                sb.append((char)ch);
+                return;
+            }
+            if (t.isArray()) {
+                sb.append("_3");
+                appendType(sb, t.getComponentType());
+                return;
+            }
+            sb.append('L');
+            sb.append(t.getName().replace('.', '_'));
+            sb.append("_2");
         }
     }
 }
