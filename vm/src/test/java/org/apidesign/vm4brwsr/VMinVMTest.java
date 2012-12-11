@@ -35,8 +35,33 @@ public class VMinVMTest {
     private static CharSequence codeSeq;
     private static Invocable code;
     
-    @Test public void compareTheGeneratedCode() throws Exception {
-        byte[] arr = readClass("/org/apidesign/vm4brwsr/Array.class");
+    @Test public void compareGeneratedCodeForArrayClass() throws Exception {
+        compareCode("/org/apidesign/vm4brwsr/Array.class");
+    }
+    
+    @BeforeClass
+    public void compileTheCode() throws Exception {
+        StringBuilder sb = new StringBuilder();
+        code = StaticMethodTest.compileClass(sb, 
+            "org/apidesign/vm4brwsr/VMinVM"
+        );
+        codeSeq = sb;
+    }
+    
+    private static byte[] readClass(String res) throws IOException {
+        InputStream is1 = VMinVMTest.class.getResourceAsStream(res);
+        assertNotNull(is1, "Stream found");
+        byte[] arr = new byte[is1.available()];
+        int len = is1.read(arr);
+        is1.close();
+        if (len != arr.length) {
+            throw new IOException("Wrong len " + len + " for arr: " + arr.length);
+        }
+        return arr;
+    }
+
+    private void compareCode(final String nm) throws Exception, IOException {
+        byte[] arr = readClass(nm);
         String ret1 = VMinVM.toJavaScript(arr);
         
         Object ret;
@@ -65,27 +90,11 @@ public class VMinVMTest {
         
         assertTrue(ret instanceof String, "It is string: " + ret);
         
-        assertEquals((String)ret, ret1.toString(), "The code is the same");
-    }
-    
-    @BeforeClass
-    public void compileTheCode() throws Exception {
-        StringBuilder sb = new StringBuilder();
-        code = StaticMethodTest.compileClass(sb, 
-            "org/apidesign/vm4brwsr/VMinVM"
-        );
-        codeSeq = sb;
-    }
-    
-    private static byte[] readClass(String res) throws IOException {
-        InputStream is1 = VMinVMTest.class.getResourceAsStream(res);
-        assertNotNull(is1, "Stream found");
-        byte[] arr = new byte[is1.available()];
-        int len = is1.read(arr);
-        is1.close();
-        if (len != arr.length) {
-            throw new IOException("Wrong len " + len + " for arr: " + arr.length);
+        if (!ret1.toString().equals(ret)) {
+            StringBuilder msg = StaticMethodTest.dumpJS(ret1);
+            msg.append(" is not the same as ");
+            msg.append(StaticMethodTest.dumpJS((CharSequence) ret));
+            fail(msg.toString());
         }
-        return arr;
     }
 }
