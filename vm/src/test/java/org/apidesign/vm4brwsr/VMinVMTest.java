@@ -38,6 +38,10 @@ public class VMinVMTest {
     @Test public void compareGeneratedCodeForArrayClass() throws Exception {
         compareCode("/org/apidesign/vm4brwsr/Array.class");
     }
+
+    @Test public void compareGeneratedCodeForClassesClass() throws Exception {
+        compareCode("/org/apidesign/vm4brwsr/Classes.class");
+    }
     
     @BeforeClass
     public void compileTheCode() throws Exception {
@@ -91,9 +95,12 @@ public class VMinVMTest {
         assertTrue(ret instanceof String, "It is string: " + ret);
         
         if (!ret1.toString().equals(ret)) {
-            StringBuilder msg = StaticMethodTest.dumpJS(ret1);
-            msg.append(" is not the same as ");
+            StringBuilder msg = new StringBuilder("Difference found between ");
+            msg.append(StaticMethodTest.dumpJS(ret1));
+            msg.append(" ");
             msg.append(StaticMethodTest.dumpJS((CharSequence) ret));
+            msg.append(" compiled by ");
+            msg.append(StaticMethodTest.dumpJS(codeSeq));
             fail(msg.toString());
         }
     }

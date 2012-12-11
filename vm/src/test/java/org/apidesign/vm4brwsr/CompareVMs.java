@@ -104,6 +104,12 @@ public final class CompareVMs implements ITest {
             ScriptEngineManager sem = new ScriptEngineManager();
             ScriptEngine js = sem.getEngineByExtension("js");
             js.getContext().setAttribute("loader", new BytesLoader(), ScriptContext.ENGINE_SCOPE);
+            
+            sb.append("\nfunction initVM() {"
+                + "\n  return bck2brwsr("
+                + "\n    function(name) { return loader.get(name);}"
+                + "\n  );"
+                + "\n};");
 
             Object res = js.eval(sb.toString());
             Assert.assertTrue(js instanceof Invocable, "It is invocable object: " + res);
@@ -115,7 +121,7 @@ public final class CompareVMs implements ITest {
             if (js) {
                 try {
                     compileTheCode(m.getDeclaringClass());
-                    Object vm = code.invokeFunction("bck2brwsr");
+                    Object vm = code.invokeFunction("initVM");
                     Object inst = code.invokeMethod(vm, "loadClass", m.getDeclaringClass().getName());
                     value = code.invokeMethod(inst, m.getName() + "__I");
                 } catch (Exception ex) {

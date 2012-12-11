@@ -19,6 +19,7 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.javap.AnnotationParser;
 import org.apidesign.javap.ClassData;
 import org.apidesign.javap.FieldData;

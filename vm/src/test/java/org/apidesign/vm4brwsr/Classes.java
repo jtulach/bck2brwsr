@@ -30,6 +30,14 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
 @ClassesMarker(number = 10)
 @ClassesNamer(name = "my text")
 public class Classes {
+    public static String nameOfIO() {
+        return nameFor(IOException.class);
+    }
+    
+    private static String nameFor(Class<?> c) {
+        return c.getName();
+    }
+    
     public static boolean equalsClassesOfExceptions() {
         return MalformedURLException.class.getSuperclass() == IOException.class;
     }
