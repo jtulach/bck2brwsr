@@ -80,7 +80,7 @@ final class VMLazy {
         "try {\n" +
         "  new Function(script)(loader, name);\n" +
         "} catch (ex) {\n" +
-        "  throw 'Cannot compile ' + ex + ' script:\\\\n' + script;\n" +
+        "  throw 'Cannot compile ' + ex + ' line: ' + ex.lineNumber + ' script:\\n' + script;\n" +
         "}\n" +
         "return vm[name](false);\n"
     )
