@@ -38,11 +38,11 @@ final class VMLazy {
     }
     
     @JavaScriptBody(args={"l", "res", "args" }, body = ""
-        + "try {"
-        + "  return args[0](res.toString());"
-        + "} catch (x) {"
-        + "  throw Object.getOwnPropertyNames(l.vm).toString() + x.toString();"
-        + "}")
+        + "\ntry {"
+        + "\n  return args[0](res.toString());"
+        + "\n} catch (x) {"
+        + "\n  throw Object.getOwnPropertyNames(l.vm).toString() + x.toString();"
+        + "\n}")
     private static native byte[] read(Object l, String res, Object[] args);
     
     static Object load(Object loader, String name, Object[] arguments) 
