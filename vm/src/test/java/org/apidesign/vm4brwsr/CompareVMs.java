@@ -19,6 +19,7 @@ package org.apidesign.vm4brwsr;
 
 import java.lang.reflect.Method;
 import javax.script.Invocable;
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import org.testng.Assert;
@@ -98,26 +99,11 @@ public final class CompareVMs implements ITest {
                 return;
             }
             StringBuilder sb = new StringBuilder();
-            class SkipMe extends GenJS {
-
-                public SkipMe(Appendable out) {
-                    super(out);
-                }
-
-                @Override
-                protected boolean requireReference(String cn) {
-                    if (cn.contains("CompareVMs")) {
-                        return true;
-                    }
-                    return super.requireReference(cn);
-                }
-            }
-            SkipMe sm = new SkipMe(sb);
-            sm.doCompile(CompareVMs.class.getClassLoader(), StringArray.asList(
-                clazz.getName().replace('.', '/')));
+            Bck2Brwsr.generate(sb, CompareVMs.class.getClassLoader());
 
             ScriptEngineManager sem = new ScriptEngineManager();
             ScriptEngine js = sem.getEngineByExtension("js");
+            js.getContext().setAttribute("loader", new BytesLoader(), ScriptContext.ENGINE_SCOPE);
 
             Object res = js.eval(sb.toString());
             Assert.assertTrue(js instanceof Invocable, "It is invocable object: " + res);

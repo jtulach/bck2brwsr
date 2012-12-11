@@ -20,6 +20,9 @@ package org.apidesign.vm4brwsr;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Enumeration;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -289,7 +292,7 @@ public class StaticMethodTest {
         if (sb == null) {
             sb = new StringBuilder();
         }
-        GenJS.compile(sb, names);
+        Bck2Brwsr.generate(sb, new EmulationResources(), names);
         ScriptEngineManager sem = new ScriptEngineManager();
         ScriptEngine js = sem.getEngineByExtension("js");
         if (eng != null) {
@@ -313,5 +316,22 @@ public class StaticMethodTest {
         w.append(sb);
         w.close();
         return new StringBuilder(f.getPath());
+    }
+    private static class EmulationResources implements Bck2Brwsr.Resources {
+        @Override
+        public InputStream get(String name) throws IOException {
+            Enumeration<URL> en = StaticMethodTest.class.getClassLoader().getResources(name);
+            URL u = null;
+            while (en.hasMoreElements()) {
+                u = en.nextElement();
+            }
+            if (u == null) {
+                throw new IOException("Can't find " + name);
+            }
+            if (u.toExternalForm().contains("rt.jar!")) {
+                throw new IOException("No emulation for " + u);
+            }
+            return u.openStream();
+        }
     }
 }

@@ -17,10 +17,6 @@
  */
 package org.apidesign.vm4brwsr;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Set;
-import java.util.TreeSet;
 import javax.script.Invocable;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
@@ -53,9 +49,9 @@ public class VMLazyTest {
        
         ScriptEngine[] arr = { null };
         code = StaticMethodTest.compileClass(sb, arr,
-            "org/apidesign/vm4brwsr/GenJS"
+            "org/apidesign/vm4brwsr/VM"
         );
-        arr[0].getContext().setAttribute("loader", new FindBytes(), ScriptContext.ENGINE_SCOPE);
+        arr[0].getContext().setAttribute("loader", new BytesLoader(), ScriptContext.ENGINE_SCOPE);
         codeSeq = sb;
     }
     
@@ -87,36 +83,5 @@ public class VMLazyTest {
             return;
         }
         assertEquals(ret, expRes, msg + "was: " + ret + "\n" + StaticMethodTest.dumpJS(codeSeq));
-    }
-
-    public static final class FindBytes {
-        private static Set<String> requested = new TreeSet<String>();
-        
-        public byte[] get(String name) throws IOException {
-            if (!requested.add(name)) {
-                throw new IllegalStateException("Requested for second time: " + name);
-            }
-            
-            InputStream is = VMLazyTest.class.getClassLoader().getResourceAsStream(name);
-            if (is == null) {
-                throw new IOException("Can't find " + name);
-            }
-            byte[] arr = new byte[is.available()];
-            int len = is.read(arr);
-            if (len != arr.length) {
-                throw new IOException("Read only " + len + " wanting " + arr.length);
-            }
-            /*
-            System.err.print("loader['" + name + "'] = [");
-            for (int i = 0; i < arr.length; i++) {
-                if (i > 0) {
-                    System.err.print(", ");
-                }
-                System.err.print(arr[i]);
-            }
-            System.err.println("]");
-            */
-            return arr;
-        }
     }
 }

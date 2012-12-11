@@ -29,7 +29,7 @@ import static org.apidesign.javap.RuntimeConstants.*;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public abstract class ByteCodeToJavaScript {
+abstract class ByteCodeToJavaScript {
     private ClassData jc;
     final Appendable out;
 
