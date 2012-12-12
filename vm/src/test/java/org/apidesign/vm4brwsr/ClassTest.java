@@ -110,6 +110,12 @@ public class ClassTest {
             "java.io.IOException", false, null
         );
     }
+    @Test public void jsClassParam() throws Exception {
+        assertExec("Calls the nameOfIO()", Classes.class, 
+            "nameOfIO__Ljava_lang_String_2", 
+            "java.io.IOException"
+        );
+    }
     
     private static CharSequence codeSeq;
     private static Invocable code;

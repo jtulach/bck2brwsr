@@ -19,12 +19,12 @@ package org.apidesign.bck2brwsr.htmlpage;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.util.Set;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import org.apidesign.vm4brwsr.Bck2Brwsr;
 import org.testng.annotations.Test;
 import static org.testng.Assert.*;
 
@@ -125,15 +125,7 @@ public class ProcessPageTest {
         if (sb == null) {
             sb = new StringBuilder();
         }
-        try {
-            Method m;
-            Class<?> genJS = Class.forName("org.apidesign.vm4brwsr.GenJS");
-            m = genJS.getDeclaredMethod("compile", Appendable.class, String[].class);
-            m.setAccessible(true);
-            m.invoke(null, sb, names);
-        } catch (Exception exception) {
-            throw new IOException(exception);
-        }
+        Bck2Brwsr.generate(sb, ProcessPageTest.class.getClassLoader(), names);
         ScriptEngineManager sem = new ScriptEngineManager();
         ScriptEngine js = sem.getEngineByExtension("js");
         try {

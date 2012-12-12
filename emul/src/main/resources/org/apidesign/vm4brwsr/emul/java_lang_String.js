@@ -1,5 +1,5 @@
 // initialize methods on String constants
-java_lang_String(false);
+vm.java_lang_String(false);
 
 // we need initialized arrays
 Array.prototype.fillNulls = function() {

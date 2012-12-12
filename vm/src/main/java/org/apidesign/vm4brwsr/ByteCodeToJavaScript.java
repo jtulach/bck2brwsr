@@ -19,6 +19,7 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.javap.AnnotationParser;
 import org.apidesign.javap.ClassData;
 import org.apidesign.javap.FieldData;
@@ -29,7 +30,7 @@ import static org.apidesign.javap.RuntimeConstants.*;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public abstract class ByteCodeToJavaScript {
+abstract class ByteCodeToJavaScript {
     private ClassData jc;
     final Appendable out;
 
@@ -56,8 +57,11 @@ public abstract class ByteCodeToJavaScript {
      * 
      * @param className suggested name of the class
      */
-    protected String assignClass(String className) {
+    /* protected */ String assignClass(String className) {
         return className + " = ";
+    }
+    /* protected */ String accessClass(String classOperation) {
+        return classOperation;
     }
 
     /**
@@ -99,7 +103,7 @@ public abstract class ByteCodeToJavaScript {
         if (proto == null) {
             String sc = jc.getSuperClassName(); // with _
             out.append("\n    var pp = ").
-                append(sc.replace('/', '_')).append("(true);");
+                append(accessClass(sc.replace('/', '_'))).append("(true);");
             out.append("\n    var p = CLS.prototype = pp;");
             out.append("\n    var c = p;");
             out.append("\n    var sprcls = pp.constructor.$class;");
@@ -139,7 +143,8 @@ public abstract class ByteCodeToJavaScript {
         for (String superInterface : jc.getSuperInterfaces()) {
             out.append("\n    c.$instOf_").append(superInterface.replace('/', '_')).append(" = true;");
         }
-        out.append("\n    CLS.$class = java_lang_Class(true);");
+        out.append("\n    CLS.$class = ");
+        out.append(accessClass("java_lang_Class(true);"));
         out.append("\n    CLS.$class.jvmName = '").append(jc.getClassName()).append("';");
         out.append("\n    CLS.$class.superclass = sprcls;");
         out.append("\n    CLS.$class.cnstr = CLS;");
@@ -191,7 +196,7 @@ public abstract class ByteCodeToJavaScript {
         final String mn = findMethodName(m, argsCnt);
         out.append(prefix).append(mn).append(" = function");
         if (mn.equals("class__V")) {
-            toInitilize.add(className(jc) + "(false)." + mn);
+            toInitilize.add(accessClass(className(jc)) + "(false)." + mn);
         }
         out.append('(');
         String space = "";
@@ -638,7 +643,7 @@ public abstract class ByteCodeToJavaScript {
                     int indx = readIntArg(byteCodes, i);
                     String ci = jc.getClassName(indx);
                     out.append("s.push(new ");
-                    out.append(ci.replace('/','_'));
+                    out.append(accessClass(ci.replace('/','_')));
                     out.append("());");
                     addReference(ci);
                     i += 2;
@@ -731,7 +736,7 @@ public abstract class ByteCodeToJavaScript {
                 case opc_getstatic: {
                     int indx = readIntArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
-                    out.append("s.push(").append(fi[0].replace('/', '_'));
+                    out.append("s.push(").append(accessClass(fi[0].replace('/', '_')));
                     out.append('.').append(fi[1]).append(");");
                     i += 2;
                     addReference(fi[0]);
@@ -740,7 +745,7 @@ public abstract class ByteCodeToJavaScript {
                 case opc_putstatic: {
                     int indx = readIntArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
-                    out.append(fi[0].replace('/', '_'));
+                    out.append(accessClass(fi[0].replace('/', '_')));
                     out.append('.').append(fi[1]).append(" = s.pop();");
                     i += 2;
                     addReference(fi[0]);
@@ -951,7 +956,7 @@ public abstract class ByteCodeToJavaScript {
             out.append("s.push(");
         }
         final String in = mi[0];
-        out.append(in.replace('/', '_'));
+        out.append(accessClass(in.replace('/', '_')));
         out.append("(false).");
         out.append(mn);
         out.append('(');
@@ -1031,6 +1036,7 @@ public abstract class ByteCodeToJavaScript {
         String s = jc.stringValue(entryIndex, classRef);
         if (classRef[0] != null) {
             addReference(classRef[0]);
+            s = accessClass(s.replace('/', '_')) + "(false).constructor.$class";
         }
         return s;
     }
