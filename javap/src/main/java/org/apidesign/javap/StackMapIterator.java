@@ -25,23 +25,15 @@
 
 package org.apidesign.javap;
 
+import static org.apidesign.javap.RuntimeConstants.ITEM_Integer;
+import static org.apidesign.javap.RuntimeConstants.ITEM_Float;
+import static org.apidesign.javap.RuntimeConstants.ITEM_Double;
+import static org.apidesign.javap.RuntimeConstants.ITEM_Long;
+import static org.apidesign.javap.RuntimeConstants.ITEM_Object;
+
 public final class StackMapIterator {
-    private static final StackMapTableData INITIAL_FRAME =
-            new StackMapTableData(-1) {
-                @Override
-                void applyTo(TypeArray localTypes, TypeArray stackTypes) {
-                    localTypes.clear();
-                    stackTypes.clear();
-                }
-
-                @Override
-                public String toString() {
-                    return toString("INITIAL", 0, null, null);
-                }
-
-            };
-
     private final StackMapTableData[] stackMapTable;
+    private final TypeArray argTypes;
     private final TypeArray localTypes;
     private final TypeArray stackTypes;
 
@@ -50,19 +42,33 @@ public final class StackMapIterator {
 
     private int byteCodeOffset;
 
-    StackMapIterator(final StackMapTableData[] stackMapTable) {
+    StackMapIterator(final MethodData methodData) {
+        this(methodData.getStackMapTable(),
+             methodData.getInternalSig(),
+             methodData.isStatic());
+    }
+
+    StackMapIterator(final StackMapTableData[] stackMapTable,
+                     final String methodSignature,
+                     final boolean isStaticMethod) {
         this.stackMapTable = (stackMapTable != null)
                                  ? stackMapTable
                                  : new StackMapTableData[0];
 
+        argTypes = getArgTypes(methodSignature, isStaticMethod);
         localTypes = new TypeArray();
         stackTypes = new TypeArray();
+
+        localTypes.addAll(argTypes);
+
         lastFrameByteCodeOffset = -1;
         advanceBy(0);
     }
 
     public String getFrameAsString() {
-        return getCurrentFrame().toString();
+        return (nextFrameIndex == 0)
+                   ? StackMapTableData.toString("INITIAL", 0, null, null)
+                   : stackMapTable[nextFrameIndex - 1].toString();
     }
 
     public int getFrameIndex() {
@@ -71,6 +77,14 @@ public final class StackMapIterator {
 
     public TypeArray getFrameStack() {
         return stackTypes;
+    }
+
+    public TypeArray getFrameLocals() {
+        return localTypes;
+    }
+
+    public TypeArray getArguments() {
+        return argTypes;
     }
 
     public void advanceBy(final int numByteCodes) {
@@ -96,9 +110,70 @@ public final class StackMapIterator {
         advanceBy(nextByteCodeOffset - byteCodeOffset);
     }
 
-    private StackMapTableData getCurrentFrame() {
-        return (nextFrameIndex == 0)
-                ? INITIAL_FRAME
-                : stackMapTable[nextFrameIndex - 1];
+    private static TypeArray getArgTypes(final String methodSignature,
+                                         final boolean isStaticMethod) {
+        final TypeArray argTypes = new TypeArray();
+
+        if (!isStaticMethod) {
+            argTypes.add(ITEM_Object);
+        }
+
+        if (methodSignature.charAt(0) != '(') {
+            throw new IllegalArgumentException("Invalid method signature");
+        }
+
+        final int length = methodSignature.length();
+        int skipType = 0;
+        int argType;
+        for (int i = 1; i < length; ++i) {
+            switch (methodSignature.charAt(i)) {
+                case 'B':
+                case 'C':
+                case 'S':
+                case 'Z':
+                case 'I':
+                    argType = ITEM_Integer;
+                    break;
+                case 'J':
+                    argType = ITEM_Long;
+                    break;
+                case 'F':
+                    argType = ITEM_Float;
+                    break;
+                case 'D':
+                    argType = ITEM_Double;
+                    break;
+                case 'L': {
+                    i = methodSignature.indexOf(';', i + 1);
+                    if (i == -1) {
+                        throw new IllegalArgumentException(
+                                      "Invalid method signature");
+                    }
+                    argType = ITEM_Object;
+                    break;
+                }
+                case ')':
+                    // not interested in the return value type
+                    return argTypes;
+                case '[':
+                    if (skipType == 0) {
+                        argTypes.add(ITEM_Object);
+                    }
+                    ++skipType;
+                    continue;
+
+                default:
+                    throw new IllegalArgumentException(
+                                  "Invalid method signature");
+            }
+
+            if (skipType == 0) {
+                argTypes.add(argType);
+            } else {
+                --skipType;
+            }
+        }
+
+        return argTypes;
     }
 }

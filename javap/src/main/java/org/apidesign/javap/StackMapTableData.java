@@ -66,48 +66,13 @@ abstract class StackMapTableData {
     private static void appendTypes(final StringBuilder sb, final int[] types) {
         sb.append('[');
         if (types.length > 0) {
-            appendType(sb, types[0]);
+            sb.append(TypeArray.typeString(types[0]));
             for (int i = 1; i < types.length; ++i) {
                 sb.append(", ");
-                appendType(sb, types[i]);
+                sb.append(TypeArray.typeString(types[i]));
             }
         }
         sb.append(']');
-    }
-
-    private static void appendType(final StringBuilder sb, final int type) {
-        switch (type & 0xff) {
-            case ITEM_Bogus:
-                sb.append("_top_");
-                break;
-            case ITEM_Integer:
-                sb.append("_int_");
-                break;
-            case ITEM_Float:
-                sb.append("_float_");
-                break;
-            case ITEM_Double:
-                sb.append("_double_");
-                break;
-            case ITEM_Long:
-                sb.append("_long_");
-                break;
-            case ITEM_Null:
-                sb.append("_null_");
-                break;
-            case ITEM_InitObject: // UninitializedThis
-                sb.append("_init_");
-                break;
-            case ITEM_Object:
-                sb.append("_object_");
-                break;
-            case ITEM_NewObject: // Uninitialized
-                sb.append("_new_");
-                break;
-            default:
-                sb.append("_unknown_");
-                break;
-        }
     }
 
     static class SameFrame extends StackMapTableData {

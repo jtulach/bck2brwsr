@@ -19,29 +19,19 @@ package org.apidesign.vm4brwsr;
 
 import org.apidesign.javap.TypeArray;
 
-import static org.apidesign.javap.RuntimeConstants.ITEM_Bogus;
-import static org.apidesign.javap.RuntimeConstants.ITEM_Integer;
-import static org.apidesign.javap.RuntimeConstants.ITEM_Float;
-import static org.apidesign.javap.RuntimeConstants.ITEM_Double;
-import static org.apidesign.javap.RuntimeConstants.ITEM_Long;
-import static org.apidesign.javap.RuntimeConstants.ITEM_Null;
-import static org.apidesign.javap.RuntimeConstants.ITEM_InitObject;
-import static org.apidesign.javap.RuntimeConstants.ITEM_Object;
-import static org.apidesign.javap.RuntimeConstants.ITEM_NewObject;
-
-public final class StackToVariableMapper {
+public final class StackMapper {
     private final TypeArray stackTypeIndexPairs;
     private int[] typeCounters;
     private int[] typeMaxCounters;
 
-    public StackToVariableMapper() {
+    public StackMapper() {
         stackTypeIndexPairs = new TypeArray();
-        typeCounters = new int[Variable.LAST_TYPE + 1];
-        typeMaxCounters = new int[Variable.LAST_TYPE + 1];
+        typeCounters = new int[VarType.LAST + 1];
+        typeMaxCounters = new int[VarType.LAST + 1];
     }
 
     public void clear() {
-        for (int type = 0; type <= Variable.LAST_TYPE; ++type) {
+        for (int type = 0; type <= VarType.LAST; ++type) {
             typeCounters[type] = 0;
         }
         stackTypeIndexPairs.clear();
@@ -52,54 +42,28 @@ public final class StackToVariableMapper {
 
         final int size = frameStack.getSize();
         for (int i = 0; i < size; ++i) {
-            final int frameStackValue = frameStack.get(i);
-            switch (frameStackValue & 0xff) {
-                case ITEM_Integer:
-                    pushTypeImpl(Variable.TYPE_INT);
-                    break;
-                case ITEM_Float:
-                    pushTypeImpl(Variable.TYPE_FLOAT);
-                    break;
-                case ITEM_Double:
-                    pushTypeImpl(Variable.TYPE_DOUBLE);
-                    break;
-                case ITEM_Long:
-                    pushTypeImpl(Variable.TYPE_LONG);
-                    break;
-                case ITEM_Object:
-                    pushTypeImpl(Variable.TYPE_REF);
-                    break;
-
-                case ITEM_Bogus:
-                case ITEM_Null:
-                case ITEM_InitObject:
-                case ITEM_NewObject:
-                    /* unclear how to handle for now */
-                default:
-                    throw new IllegalStateException(
-                                  "Unhandled frame stack type");
-            }
+            pushTypeImpl(VarType.fromStackMapType(frameStack.get(i)));
         }
     }
 
     public Variable pushI() {
-        return pushT(Variable.TYPE_INT);
+        return pushT(VarType.INTEGER);
     }
 
     public Variable pushL() {
-        return pushT(Variable.TYPE_LONG);
+        return pushT(VarType.LONG);
     }
 
     public Variable pushF() {
-        return pushT(Variable.TYPE_FLOAT);
+        return pushT(VarType.FLOAT);
     }
 
     public Variable pushD() {
-        return pushT(Variable.TYPE_DOUBLE);
+        return pushT(VarType.DOUBLE);
     }
 
     public Variable pushA() {
-        return pushT(Variable.TYPE_REF);
+        return pushT(VarType.REFERENCE);
     }
 
     public Variable pushT(final int type) {
@@ -107,23 +71,23 @@ public final class StackToVariableMapper {
     }
 
     public Variable popI() {
-        return popT(Variable.TYPE_INT);
+        return popT(VarType.INTEGER);
     }
 
     public Variable popL() {
-        return popT(Variable.TYPE_LONG);
+        return popT(VarType.LONG);
     }
 
     public Variable popF() {
-        return popT(Variable.TYPE_FLOAT);
+        return popT(VarType.FLOAT);
     }
 
     public Variable popD() {
-        return popT(Variable.TYPE_DOUBLE);
+        return popT(VarType.DOUBLE);
     }
 
     public Variable popA() {
-        return popT(Variable.TYPE_REF);
+        return popT(VarType.REFERENCE);
     }
 
     public Variable popT(final int type) {
@@ -147,23 +111,23 @@ public final class StackToVariableMapper {
     }
 
     public Variable getI(final int indexFromTop) {
-        return getT(indexFromTop, Variable.TYPE_INT);
+        return getT(indexFromTop, VarType.INTEGER);
     }
 
     public Variable getL(final int indexFromTop) {
-        return getT(indexFromTop, Variable.TYPE_LONG);
+        return getT(indexFromTop, VarType.LONG);
     }
 
     public Variable getF(final int indexFromTop) {
-        return getT(indexFromTop, Variable.TYPE_FLOAT);
+        return getT(indexFromTop, VarType.FLOAT);
     }
 
     public Variable getD(final int indexFromTop) {
-        return getT(indexFromTop, Variable.TYPE_DOUBLE);
+        return getT(indexFromTop, VarType.DOUBLE);
     }
 
     public Variable getA(final int indexFromTop) {
-        return getT(indexFromTop, Variable.TYPE_REF);
+        return getT(indexFromTop, VarType.REFERENCE);
     }
 
     public Variable getT(final int indexFromTop, final int type) {

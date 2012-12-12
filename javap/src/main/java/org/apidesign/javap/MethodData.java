@@ -318,7 +318,7 @@ public class MethodData {
     }
 
     public StackMapIterator createStackMapIterator() {
-        return new StackMapIterator(stackMapTable);
+        return new StackMapIterator(this);
     }
 
     /**

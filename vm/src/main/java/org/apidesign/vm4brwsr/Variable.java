@@ -18,15 +18,8 @@
 package org.apidesign.vm4brwsr;
 
 public final class Variable implements CharSequence {
-    public static final int TYPE_INT = 0;
-    public static final int TYPE_LONG = 1;
-    public static final int TYPE_FLOAT = 2;
-    public static final int TYPE_DOUBLE = 3;
-    public static final int TYPE_REF = 4;
-
-    public static final int LAST_TYPE = TYPE_REF;
-
     private static final String STACK_VAR_PREFIX = "st";
+    private static final String LOCAL_VAR_PREFIX = "lc";
 
     private final String name;
     private final int type;
@@ -46,6 +39,12 @@ public final class Variable implements CharSequence {
         return new Variable(STACK_VAR_PREFIX, type, index);
     }
 
+    public static Variable getLocalVariable(
+            final int type, final int index) {
+        // TODO: precreate frequently used variables
+        return new Variable(LOCAL_VAR_PREFIX, type, index);
+    }
+
     public String getName() {
         return name;
     }
@@ -59,7 +58,7 @@ public final class Variable implements CharSequence {
     }
 
     public boolean isCategory2() {
-        return (type == TYPE_LONG) || (type == TYPE_DOUBLE);
+        return VarType.isCategory2(type);
     }
 
     @Override

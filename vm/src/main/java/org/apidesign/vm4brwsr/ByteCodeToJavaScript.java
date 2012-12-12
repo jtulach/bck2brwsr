@@ -188,85 +188,63 @@ public abstract class ByteCodeToJavaScript {
         if (jsb != null) {
             return jsb;
         }
-        StringBuilder argsCnt = new StringBuilder();
-        final String mn = findMethodName(m, argsCnt);
-        out.append(prefix).append(mn).append(" = function");
+        final String mn = findMethodName(m, new StringBuilder());
         if (mn.equals("class__V")) {
             toInitilize.add(className(jc) + "(false)." + mn);
         }
-        out.append('(');
-        String space = "";
-        for (int index = 0, i = 0; i < argsCnt.length(); i++) {
-            out.append(space);
-            out.append("arg").append(String.valueOf(index));
-            space = ",";
-            final String desc = null;// XXX findDescriptor(args.get(i).getDescriptor());
-            if (argsCnt.charAt(i) == '1') {
-                index += 2;
-            } else {
-                index++;
-            }
-        }
-        out.append(") {").append("\n");
-        if (m.getCode() != null) {
-            int len = m.getMaxLocals();
-            for (int i = argsCnt.length(); i < len; i++) {
-                out.append("  var ");
-                out.append("arg").append(String.valueOf(i)).append(";\n");
-            }
-            produceCode(m);
-        } else {
-            out.append("  throw 'no code found for ").append(m.getInternalSig()).append("';\n");
-        }
-        out.append("};");
+        generateMethod(prefix, mn, m);
         return mn;
     }
-    
+
     private String generateInstanceMethod(String prefix, MethodData m) throws IOException {
         String jsb = javaScriptBody(prefix, m, false);
         if (jsb != null) {
             return jsb;
         }
-        StringBuilder argsCnt = new StringBuilder();
-        final String mn = findMethodName(m, argsCnt);
-        out.append(prefix).append(mn).append(" = function");
-        out.append("(arg0");
-        String space = ",";
-        for (int index = 1, i = 0; i < argsCnt.length(); i++) {
-            out.append(space);
-            out.append("arg").append(String.valueOf(index));
-            if (argsCnt.charAt(i) == '1') {
-                index += 2;
-            } else {
-                index++;
-            }
-        }
-        out.append(") {").append("\n");
-        if (m.getCode() != null) {
-            int len = m.getMaxLocals();
-            for (int i = argsCnt.length(); i < len; i++) {
-                out.append("  var ");
-                out.append("arg").append(String.valueOf(i + 1)).append(";\n");
-            }
-            produceCode(m);
-        } else {
-            out.append("  throw 'no code found for ").append(m.getInternalSig()).append("';\n");
-        }
-        out.append("};");
+        final String mn = findMethodName(m, new StringBuilder());
+        generateMethod(prefix, mn, m);
         return mn;
     }
 
-    private void produceCode(MethodData m) throws IOException {
-        final byte[] byteCodes = m.getCode();
+    private void generateMethod(String prefix, String name, MethodData m)
+            throws IOException {
         final StackMapIterator stackMapIterator = m.createStackMapIterator();
-        final StackToVariableMapper mapper = new StackToVariableMapper();
+        final LocalsMapper lmapper =
+                new LocalsMapper(stackMapIterator.getArguments());
+
+        out.append(prefix).append(name).append(" = function(");
+        lmapper.outputArguments(out);
+        out.append(") {").append("\n");
+
+        final byte[] byteCodes = m.getCode();
+        if (byteCodes == null) {
+            out.append("  throw 'no code found for ")
+               .append(m.getInternalSig()).append("';\n");
+            out.append("};");
+            return;
+        }
+
+        final StackMapper smapper = new StackMapper();
+
+        final int maxLocals = m.getMaxLocals();
+        if (maxLocals > 0) {
+            // TODO: generate only used local variables
+            for (int j = 0; j <= VarType.LAST; ++j) {
+                out.append("\n  var ").append(Variable.getLocalVariable(j, 0));
+                for (int i = 1; i < maxLocals; ++i) {
+                    out.append(", ");
+                    out.append(Variable.getLocalVariable(j, i));
+                }
+                out.append(';');
+            }
+        }
 
         // maxStack includes two stack positions for every pushed long / double
         // so this might generate more stack variables than we need
         final int maxStack = m.getMaxStack();
         if (maxStack > 0) {
             // TODO: generate only used stack variables
-            for (int j = 0; j <= Variable.LAST_TYPE; ++j) {
+            for (int j = 0; j <= VarType.LAST; ++j) {
                 out.append("\n  var ").append(Variable.getStackVariable(j, 0));
                 for (int i = 1; i < maxStack; ++i) {
                     out.append(", ");
@@ -284,7 +262,8 @@ public abstract class ByteCodeToJavaScript {
             stackMapIterator.advanceTo(i);
             if (lastStackFrame != stackMapIterator.getFrameIndex()) {
                 lastStackFrame = stackMapIterator.getFrameIndex();
-                mapper.syncWithFrameStack(stackMapIterator.getFrameStack());
+                lmapper.syncWithFrameLocals(stackMapIterator.getFrameLocals());
+                smapper.syncWithFrameStack(stackMapIterator.getFrameStack());
                 out.append("    case " + i).append(": ");
             } else {
                 out.append("    /* " + i).append(" */ ");
@@ -292,303 +271,293 @@ public abstract class ByteCodeToJavaScript {
             final int c = readByte(byteCodes, i);
             switch (c) {
                 case opc_aload_0:
-                    emit(out, "@1 = arg0;", mapper.pushA());
+                    emit(out, "@1 = @2;", smapper.pushA(), lmapper.getA(0));
                     break;
                 case opc_iload_0:
-                    emit(out, "@1 = arg0;", mapper.pushI());
+                    emit(out, "@1 = @2;", smapper.pushI(), lmapper.getI(0));
                     break;
                 case opc_lload_0:
-                    emit(out, "@1 = arg0;", mapper.pushL());
+                    emit(out, "@1 = @2;", smapper.pushL(), lmapper.getL(0));
                     break;
                 case opc_fload_0:
-                    emit(out, "@1 = arg0;", mapper.pushF());
+                    emit(out, "@1 = @2;", smapper.pushF(), lmapper.getF(0));
                     break;
                 case opc_dload_0:
-                    emit(out, "@1 = arg0;", mapper.pushD());
+                    emit(out, "@1 = @2;", smapper.pushD(), lmapper.getD(0));
                     break;
                 case opc_aload_1:
-                    emit(out, "@1 = arg1;", mapper.pushA());
+                    emit(out, "@1 = @2;", smapper.pushA(), lmapper.getA(1));
                     break;
                 case opc_iload_1:
-                    emit(out, "@1 = arg1;", mapper.pushI());
+                    emit(out, "@1 = @2;", smapper.pushI(), lmapper.getI(1));
                     break;
                 case opc_lload_1:
-                    emit(out, "@1 = arg1;", mapper.pushL());
+                    emit(out, "@1 = @2;", smapper.pushL(), lmapper.getL(1));
                     break;
                 case opc_fload_1:
-                    emit(out, "@1 = arg1;", mapper.pushF());
+                    emit(out, "@1 = @2;", smapper.pushF(), lmapper.getF(1));
                     break;
                 case opc_dload_1:
-                    emit(out, "@1 = arg1;", mapper.pushD());
+                    emit(out, "@1 = @2;", smapper.pushD(), lmapper.getD(1));
                     break;
                 case opc_aload_2:
-                    emit(out, "@1 = arg2;", mapper.pushA());
+                    emit(out, "@1 = @2;", smapper.pushA(), lmapper.getA(2));
                     break;
                 case opc_iload_2:
-                    emit(out, "@1 = arg2;", mapper.pushI());
+                    emit(out, "@1 = @2;", smapper.pushI(), lmapper.getI(2));
                     break;
                 case opc_lload_2:
-                    emit(out, "@1 = arg2;", mapper.pushL());
+                    emit(out, "@1 = @2;", smapper.pushL(), lmapper.getL(2));
                     break;
                 case opc_fload_2:
-                    emit(out, "@1 = arg2;", mapper.pushF());
+                    emit(out, "@1 = @2;", smapper.pushF(), lmapper.getF(2));
                     break;
                 case opc_dload_2:
-                    emit(out, "@1 = arg2;", mapper.pushD());
+                    emit(out, "@1 = @2;", smapper.pushD(), lmapper.getD(2));
                     break;
                 case opc_aload_3:
-                    emit(out, "@1 = arg3;", mapper.pushA());
+                    emit(out, "@1 = @2;", smapper.pushA(), lmapper.getA(3));
                     break;
                 case opc_iload_3:
-                    emit(out, "@1 = arg3;", mapper.pushI());
+                    emit(out, "@1 = @2;", smapper.pushI(), lmapper.getI(3));
                     break;
                 case opc_lload_3:
-                    emit(out, "@1 = arg3;", mapper.pushL());
+                    emit(out, "@1 = @2;", smapper.pushL(), lmapper.getL(3));
                     break;
                 case opc_fload_3:
-                    emit(out, "@1 = arg3;", mapper.pushF());
+                    emit(out, "@1 = @2;", smapper.pushF(), lmapper.getF(3));
                     break;
                 case opc_dload_3:
-                    emit(out, "@1 = arg3;", mapper.pushD());
+                    emit(out, "@1 = @2;", smapper.pushD(), lmapper.getD(3));
                     break;
                 case opc_iload: {
                     final int indx = readByte(byteCodes, ++i);
-                    emit(out, "@1 = arg@2;",
-                         mapper.pushI(), Integer.toString(indx));
+                    emit(out, "@1 = @2;", smapper.pushI(), lmapper.getI(indx));
                     break;
                 }
                 case opc_lload: {
                     final int indx = readByte(byteCodes, ++i);
-                    emit(out, "@1 = arg@2;",
-                         mapper.pushL(), Integer.toString(indx));
+                    emit(out, "@1 = @2;", smapper.pushL(), lmapper.getL(indx));
                     break;
                 }
                 case opc_fload: {
                     final int indx = readByte(byteCodes, ++i);
-                    emit(out, "@1 = arg@2;",
-                         mapper.pushF(), Integer.toString(indx));
+                    emit(out, "@1 = @2;", smapper.pushF(), lmapper.getF(indx));
                     break;
                 }
                 case opc_dload: {
                     final int indx = readByte(byteCodes, ++i);
-                    emit(out, "@1 = arg@2;",
-                         mapper.pushD(), Integer.toString(indx));
+                    emit(out, "@1 = @2;", smapper.pushD(), lmapper.getD(indx));
                     break;
                 }
                 case opc_aload: {
                     final int indx = readByte(byteCodes, ++i);
-                    emit(out, "@1 = arg@2;",
-                         mapper.pushA(), Integer.toString(indx));
+                    emit(out, "@1 = @2;", smapper.pushA(), lmapper.getA(indx));
                     break;
                 }
                 case opc_istore: {
                     final int indx = readByte(byteCodes, ++i);
-                    emit(out, "arg@1 = @2;",
-                         Integer.toString(indx), mapper.popI());
+                    emit(out, "@1 = @2;", lmapper.setI(indx), smapper.popI());
                     break;
                 }
                 case opc_lstore: {
                     final int indx = readByte(byteCodes, ++i);
-                    emit(out, "arg@1 = @2;",
-                         Integer.toString(indx), mapper.popL());
+                    emit(out, "@1 = @2;", lmapper.setL(indx), smapper.popL());
                     break;
                 }
                 case opc_fstore: {
                     final int indx = readByte(byteCodes, ++i);
-                    emit(out, "arg@1 = @2;",
-                         Integer.toString(indx), mapper.popF());
+                    emit(out, "@1 = @2;", lmapper.setF(indx), smapper.popF());
                     break;
                 }
                 case opc_dstore: {
                     final int indx = readByte(byteCodes, ++i);
-                    emit(out, "arg@1 = @2;",
-                         Integer.toString(indx), mapper.popD());
+                    emit(out, "@1 = @2;", lmapper.setD(indx), smapper.popD());
                     break;
                 }
                 case opc_astore: {
                     final int indx = readByte(byteCodes, ++i);
-                    emit(out, "arg@1 = @2;",
-                         Integer.toString(indx), mapper.popA());
+                    emit(out, "@1 = @2;", lmapper.setA(indx), smapper.popA());
                     break;
                 }
                 case opc_astore_0:
-                    emit(out, "arg0 = @1;", mapper.popA());
+                    emit(out, "@1 = @2;", lmapper.setA(0), smapper.popA());
                     break;
                 case opc_istore_0:
-                    emit(out, "arg0 = @1;", mapper.popI());
+                    emit(out, "@1 = @2;", lmapper.setI(0), smapper.popI());
                     break;
                 case opc_lstore_0:
-                    emit(out, "arg0 = @1;", mapper.popL());
+                    emit(out, "@1 = @2;", lmapper.setL(0), smapper.popL());
                     break;
                 case opc_fstore_0:
-                    emit(out, "arg0 = @1;", mapper.popF());
+                    emit(out, "@1 = @2;", lmapper.setF(0), smapper.popF());
                     break;
                 case opc_dstore_0:
-                    emit(out, "arg0 = @1;", mapper.popD());
+                    emit(out, "@1 = @2;", lmapper.setD(0), smapper.popD());
                     break;
                 case opc_astore_1:
-                    emit(out, "arg1 = @1;", mapper.popA());
+                    emit(out, "@1 = @2;", lmapper.setA(1), smapper.popA());
                     break;
                 case opc_istore_1:
-                    emit(out, "arg1 = @1;", mapper.popI());
+                    emit(out, "@1 = @2;", lmapper.setI(1), smapper.popI());
                     break;
                 case opc_lstore_1:
-                    emit(out, "arg1 = @1;", mapper.popL());
+                    emit(out, "@1 = @2;", lmapper.setL(1), smapper.popL());
                     break;
                 case opc_fstore_1:
-                    emit(out, "arg1 = @1;", mapper.popF());
+                    emit(out, "@1 = @2;", lmapper.setF(1), smapper.popF());
                     break;
                 case opc_dstore_1:
-                    emit(out, "arg1 = @1;", mapper.popD());
+                    emit(out, "@1 = @2;", lmapper.setD(1), smapper.popD());
                     break;
                 case opc_astore_2:
-                    emit(out, "arg2 = @1;", mapper.popA());
+                    emit(out, "@1 = @2;", lmapper.setA(2), smapper.popA());
                     break;
                 case opc_istore_2:
-                    emit(out, "arg2 = @1;", mapper.popI());
+                    emit(out, "@1 = @2;", lmapper.setI(2), smapper.popI());
                     break;
                 case opc_lstore_2:
-                    emit(out, "arg2 = @1;", mapper.popL());
+                    emit(out, "@1 = @2;", lmapper.setL(2), smapper.popL());
                     break;
                 case opc_fstore_2:
-                    emit(out, "arg2 = @1;", mapper.popF());
+                    emit(out, "@1 = @2;", lmapper.setF(2), smapper.popF());
                     break;
                 case opc_dstore_2:
-                    emit(out, "arg2 = @1;", mapper.popD());
+                    emit(out, "@1 = @2;", lmapper.setD(2), smapper.popD());
                     break;
                 case opc_astore_3:
-                    emit(out, "arg3 = @1;", mapper.popA());
+                    emit(out, "@1 = @2;", lmapper.setA(3), smapper.popA());
                     break;
                 case opc_istore_3:
-                    emit(out, "arg3 = @1;", mapper.popI());
+                    emit(out, "@1 = @2;", lmapper.setI(3), smapper.popI());
                     break;
                 case opc_lstore_3:
-                    emit(out, "arg3 = @1;", mapper.popL());
+                    emit(out, "@1 = @2;", lmapper.setL(3), smapper.popL());
                     break;
                 case opc_fstore_3:
-                    emit(out, "arg3 = @1;", mapper.popF());
+                    emit(out, "@1 = @2;", lmapper.setF(3), smapper.popF());
                     break;
                 case opc_dstore_3:
-                    emit(out, "arg3 = @1;", mapper.popD());
+                    emit(out, "@1 = @2;", lmapper.setD(3), smapper.popD());
                     break;
                 case opc_iadd:
-                    emit(out, "@1 += @2;", mapper.getI(1), mapper.popI());
+                    emit(out, "@1 += @2;", smapper.getI(1), smapper.popI());
                     break;
                 case opc_ladd:
-                    emit(out, "@1 += @2;", mapper.getL(1), mapper.popL());
+                    emit(out, "@1 += @2;", smapper.getL(1), smapper.popL());
                     break;
                 case opc_fadd:
-                    emit(out, "@1 += @2;", mapper.getF(1), mapper.popF());
+                    emit(out, "@1 += @2;", smapper.getF(1), smapper.popF());
                     break;
                 case opc_dadd:
-                    emit(out, "@1 += @2;", mapper.getD(1), mapper.popD());
+                    emit(out, "@1 += @2;", smapper.getD(1), smapper.popD());
                     break;
                 case opc_isub:
-                    emit(out, "@1 -= @2;", mapper.getI(1), mapper.popI());
+                    emit(out, "@1 -= @2;", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lsub:
-                    emit(out, "@1 -= @2;", mapper.getL(1), mapper.popL());
+                    emit(out, "@1 -= @2;", smapper.getL(1), smapper.popL());
                     break;
                 case opc_fsub:
-                    emit(out, "@1 -= @2;", mapper.getF(1), mapper.popF());
+                    emit(out, "@1 -= @2;", smapper.getF(1), smapper.popF());
                     break;
                 case opc_dsub:
-                    emit(out, "@1 -= @2;", mapper.getD(1), mapper.popD());
+                    emit(out, "@1 -= @2;", smapper.getD(1), smapper.popD());
                     break;
                 case opc_imul:
-                    emit(out, "@1 *= @2;", mapper.getI(1), mapper.popI());
+                    emit(out, "@1 *= @2;", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lmul:
-                    emit(out, "@1 *= @2;", mapper.getL(1), mapper.popL());
+                    emit(out, "@1 *= @2;", smapper.getL(1), smapper.popL());
                     break;
                 case opc_fmul:
-                    emit(out, "@1 *= @2;", mapper.getF(1), mapper.popF());
+                    emit(out, "@1 *= @2;", smapper.getF(1), smapper.popF());
                     break;
                 case opc_dmul:
-                    emit(out, "@1 *= @2;", mapper.getD(1), mapper.popD());
+                    emit(out, "@1 *= @2;", smapper.getD(1), smapper.popD());
                     break;
                 case opc_idiv:
                     emit(out, "@1 = Math.floor(@1 / @2);",
-                         mapper.getI(1), mapper.popI());
+                         smapper.getI(1), smapper.popI());
                     break;
                 case opc_ldiv:
                     emit(out, "@1 = Math.floor(@1 / @2);",
-                         mapper.getL(1), mapper.popL());
+                         smapper.getL(1), smapper.popL());
                     break;
                 case opc_fdiv:
-                    emit(out, "@1 /= @2;", mapper.getF(1), mapper.popF());
+                    emit(out, "@1 /= @2;", smapper.getF(1), smapper.popF());
                     break;
                 case opc_ddiv:
-                    emit(out, "@1 /= @2;", mapper.getD(1), mapper.popD());
+                    emit(out, "@1 /= @2;", smapper.getD(1), smapper.popD());
                     break;
                 case opc_irem:
-                    emit(out, "@1 %= @2;", mapper.getI(1), mapper.popI());
+                    emit(out, "@1 %= @2;", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lrem:
-                    emit(out, "@1 %= @2;", mapper.getL(1), mapper.popL());
+                    emit(out, "@1 %= @2;", smapper.getL(1), smapper.popL());
                     break;
                 case opc_frem:
-                    emit(out, "@1 %= @2;", mapper.getF(1), mapper.popF());
+                    emit(out, "@1 %= @2;", smapper.getF(1), smapper.popF());
                     break;
                 case opc_drem:
-                    emit(out, "@1 %= @2;", mapper.getD(1), mapper.popD());
+                    emit(out, "@1 %= @2;", smapper.getD(1), smapper.popD());
                     break;
                 case opc_iand:
-                    emit(out, "@1 &= @2;", mapper.getI(1), mapper.popI());
+                    emit(out, "@1 &= @2;", smapper.getI(1), smapper.popI());
                     break;
                 case opc_land:
-                    emit(out, "@1 &= @2;", mapper.getL(1), mapper.popL());
+                    emit(out, "@1 &= @2;", smapper.getL(1), smapper.popL());
                     break;
                 case opc_ior:
-                    emit(out, "@1 |= @2;", mapper.getI(1), mapper.popI());
+                    emit(out, "@1 |= @2;", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lor:
-                    emit(out, "@1 |= @2;", mapper.getL(1), mapper.popL());
+                    emit(out, "@1 |= @2;", smapper.getL(1), smapper.popL());
                     break;
                 case opc_ixor:
-                    emit(out, "@1 ^= @2;", mapper.getI(1), mapper.popI());
+                    emit(out, "@1 ^= @2;", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lxor:
-                    emit(out, "@1 ^= @2;", mapper.getL(1), mapper.popL());
+                    emit(out, "@1 ^= @2;", smapper.getL(1), smapper.popL());
                     break;
                 case opc_ineg:
-                    emit(out, "@1 = -@1;", mapper.getI(0));
+                    emit(out, "@1 = -@1;", smapper.getI(0));
                     break;
                 case opc_lneg:
-                    emit(out, "@1 = -@1;", mapper.getL(0));
+                    emit(out, "@1 = -@1;", smapper.getL(0));
                     break;
                 case opc_fneg:
-                    emit(out, "@1 = -@1;", mapper.getF(0));
+                    emit(out, "@1 = -@1;", smapper.getF(0));
                     break;
                 case opc_dneg:
-                    emit(out, "@1 = -@1;", mapper.getD(0));
+                    emit(out, "@1 = -@1;", smapper.getD(0));
                     break;
                 case opc_ishl:
-                    emit(out, "@1 <<= @2;", mapper.getI(1), mapper.popI());
+                    emit(out, "@1 <<= @2;", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lshl:
-                    emit(out, "@1 <<= @2;", mapper.getL(1), mapper.popI());
+                    emit(out, "@1 <<= @2;", smapper.getL(1), smapper.popI());
                     break;
                 case opc_ishr:
-                    emit(out, "@1 >>= @2;", mapper.getI(1), mapper.popI());
+                    emit(out, "@1 >>= @2;", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lshr:
-                    emit(out, "@1 >>= @2;", mapper.getL(1), mapper.popI());
+                    emit(out, "@1 >>= @2;", smapper.getL(1), smapper.popI());
                     break;
                 case opc_iushr:
-                    emit(out, "@1 >>>= @2;", mapper.getI(1), mapper.popI());
+                    emit(out, "@1 >>>= @2;", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lushr:
-                    emit(out, "@1 >>>= @2;", mapper.getL(1), mapper.popI());
+                    emit(out, "@1 >>>= @2;", smapper.getL(1), smapper.popI());
                     break;
                 case opc_iinc: {
                     final int varIndx = readByte(byteCodes, ++i);
                     final int incrBy = byteCodes[++i];
                     if (incrBy == 1) {
-                        emit(out, "arg@1++;", Integer.toString(varIndx));
+                        emit(out, "@1++;", lmapper.getI(varIndx));
                     } else {
-                        emit(out, "arg@1 += @2;",
-                             Integer.toString(varIndx),
+                        emit(out, "@1 += @2;",
+                             lmapper.getI(varIndx),
                              Integer.toString(incrBy));
                     }
                     break;
@@ -597,60 +566,60 @@ public abstract class ByteCodeToJavaScript {
                     emit(out, "return;");
                     break;
                 case opc_ireturn:
-                    emit(out, "return @1;", mapper.popI());
+                    emit(out, "return @1;", smapper.popI());
                     break;
                 case opc_lreturn:
-                    emit(out, "return @1;", mapper.popL());
+                    emit(out, "return @1;", smapper.popL());
                     break;
                 case opc_freturn:
-                    emit(out, "return @1;", mapper.popF());
+                    emit(out, "return @1;", smapper.popF());
                     break;
                 case opc_dreturn:
-                    emit(out, "return @1;", mapper.popD());
+                    emit(out, "return @1;", smapper.popD());
                     break;
                 case opc_areturn:
-                    emit(out, "return @1;", mapper.popA());
+                    emit(out, "return @1;", smapper.popA());
                     break;
                 case opc_i2l:
-                    emit(out, "@2 = @1;", mapper.popI(), mapper.pushL());
+                    emit(out, "@2 = @1;", smapper.popI(), smapper.pushL());
                     break;
                 case opc_i2f:
-                    emit(out, "@2 = @1;", mapper.popI(), mapper.pushF());
+                    emit(out, "@2 = @1;", smapper.popI(), smapper.pushF());
                     break;
                 case opc_i2d:
-                    emit(out, "@2 = @1;", mapper.popI(), mapper.pushD());
+                    emit(out, "@2 = @1;", smapper.popI(), smapper.pushD());
                     break;
                 case opc_l2i:
-                    emit(out, "@2 = @1;", mapper.popL(), mapper.pushI());
+                    emit(out, "@2 = @1;", smapper.popL(), smapper.pushI());
                     break;
                     // max int check?
                 case opc_l2f:
-                    emit(out, "@2 = @1;", mapper.popL(), mapper.pushF());
+                    emit(out, "@2 = @1;", smapper.popL(), smapper.pushF());
                     break;
                 case opc_l2d:
-                    emit(out, "@2 = @1;", mapper.popL(), mapper.pushD());
+                    emit(out, "@2 = @1;", smapper.popL(), smapper.pushD());
                     break;
                 case opc_f2d:
-                    emit(out, "@2 = @1;", mapper.popF(), mapper.pushD());
+                    emit(out, "@2 = @1;", smapper.popF(), smapper.pushD());
                     break;
                 case opc_d2f:
-                    emit(out, "@2 = @1;", mapper.popD(), mapper.pushF());
+                    emit(out, "@2 = @1;", smapper.popD(), smapper.pushF());
                     break;
                 case opc_f2i:
                     emit(out, "@2 = Math.floor(@1);",
-                         mapper.popF(), mapper.pushI());
+                         smapper.popF(), smapper.pushI());
                     break;
                 case opc_f2l:
                     emit(out, "@2 = Math.floor(@1);",
-                         mapper.popF(), mapper.pushL());
+                         smapper.popF(), smapper.pushL());
                     break;
                 case opc_d2i:
                     emit(out, "@2 = Math.floor(@1);",
-                         mapper.popD(), mapper.pushI());
+                         smapper.popD(), smapper.pushI());
                     break;
                 case opc_d2l:
                     emit(out, "@2 = Math.floor(@1);",
-                         mapper.popD(), mapper.pushL());
+                         smapper.popD(), smapper.pushL());
                     break;
                 case opc_i2b:
                 case opc_i2c:
@@ -658,55 +627,55 @@ public abstract class ByteCodeToJavaScript {
                     out.append("/* number conversion */");
                     break;
                 case opc_aconst_null:
-                    emit(out, "@1 = null;", mapper.pushA());
+                    emit(out, "@1 = null;", smapper.pushA());
                     break;
                 case opc_iconst_m1:
-                    emit(out, "@1 = -1;", mapper.pushI());
+                    emit(out, "@1 = -1;", smapper.pushI());
                     break;
                 case opc_iconst_0:
-                    emit(out, "@1 = 0;", mapper.pushI());
+                    emit(out, "@1 = 0;", smapper.pushI());
                     break;
                 case opc_dconst_0:
-                    emit(out, "@1 = 0;", mapper.pushD());
+                    emit(out, "@1 = 0;", smapper.pushD());
                     break;
                 case opc_lconst_0:
-                    emit(out, "@1 = 0;", mapper.pushL());
+                    emit(out, "@1 = 0;", smapper.pushL());
                     break;
                 case opc_fconst_0:
-                    emit(out, "@1 = 0;", mapper.pushF());
+                    emit(out, "@1 = 0;", smapper.pushF());
                     break;
                 case opc_iconst_1:
-                    emit(out, "@1 = 1;", mapper.pushI());
+                    emit(out, "@1 = 1;", smapper.pushI());
                     break;
                 case opc_lconst_1:
-                    emit(out, "@1 = 1;", mapper.pushL());
+                    emit(out, "@1 = 1;", smapper.pushL());
                     break;
                 case opc_fconst_1:
-                    emit(out, "@1 = 1;", mapper.pushF());
+                    emit(out, "@1 = 1;", smapper.pushF());
                     break;
                 case opc_dconst_1:
-                    emit(out, "@1 = 1;", mapper.pushD());
+                    emit(out, "@1 = 1;", smapper.pushD());
                     break;
                 case opc_iconst_2:
-                    emit(out, "@1 = 2;", mapper.pushI());
+                    emit(out, "@1 = 2;", smapper.pushI());
                     break;
                 case opc_fconst_2:
-                    emit(out, "@1 = 2;", mapper.pushF());
+                    emit(out, "@1 = 2;", smapper.pushF());
                     break;
                 case opc_iconst_3:
-                    emit(out, "@1 = 3;", mapper.pushI());
+                    emit(out, "@1 = 3;", smapper.pushI());
                     break;
                 case opc_iconst_4:
-                    emit(out, "@1 = 4;", mapper.pushI());
+                    emit(out, "@1 = 4;", smapper.pushI());
                     break;
                 case opc_iconst_5:
-                    emit(out, "@1 = 5;", mapper.pushI());
+                    emit(out, "@1 = 5;", smapper.pushI());
                     break;
                 case opc_ldc: {
                     int indx = readByte(byteCodes, ++i);
                     String v = encodeConstant(indx);
-                    int type = constantToVariableType(jc.getTag(indx));
-                    emit(out, "@1 = @2;", mapper.pushT(type), v);
+                    int type = VarType.fromConstantType(jc.getTag(indx));
+                    emit(out, "@1 = @2;", smapper.pushT(type), v);
                     break;
                 }
                 case opc_ldc_w:
@@ -714,110 +683,110 @@ public abstract class ByteCodeToJavaScript {
                     int indx = readIntArg(byteCodes, i);
                     i += 2;
                     String v = encodeConstant(indx);
-                    int type = constantToVariableType(jc.getTag(indx));
-                    emit(out, "@1 = @2;", mapper.pushT(type), v);
+                    int type = VarType.fromConstantType(jc.getTag(indx));
+                    emit(out, "@1 = @2;", smapper.pushT(type), v);
                     break;
                 }
                 case opc_lcmp:
                     emit(out, "@3 = (@2 == @1) ? 0 : ((@2 < @1) ? -1 : 1);",
-                         mapper.popL(), mapper.popL(), mapper.pushI());
+                         smapper.popL(), smapper.popL(), smapper.pushI());
                     break;
                 case opc_fcmpl:
                 case opc_fcmpg:
                     emit(out, "@3 = (@2 == @1) ? 0 : ((@2 < @1) ? -1 : 1);",
-                         mapper.popF(), mapper.popF(), mapper.pushI());
+                         smapper.popF(), smapper.popF(), smapper.pushI());
                     break;
                 case opc_dcmpl:
                 case opc_dcmpg:
                     emit(out, "@3 = (@2 == @1) ? 0 : ((@2 < @1) ? -1 : 1);",
-                         mapper.popD(), mapper.popD(), mapper.pushI());
+                         smapper.popD(), smapper.popD(), smapper.pushI());
                     break;
                 case opc_if_acmpeq:
-                    i = generateIf(byteCodes, i, mapper.popA(), mapper.popA(),
+                    i = generateIf(byteCodes, i, smapper.popA(), smapper.popA(),
                                    "===");
                     break;
                 case opc_if_acmpne:
-                    i = generateIf(byteCodes, i, mapper.popA(), mapper.popA(),
+                    i = generateIf(byteCodes, i, smapper.popA(), smapper.popA(),
                                    "!=");
                     break;
                 case opc_if_icmpeq:
-                    i = generateIf(byteCodes, i, mapper.popI(), mapper.popI(),
+                    i = generateIf(byteCodes, i, smapper.popI(), smapper.popI(),
                                    "==");
                     break;
                 case opc_ifeq: {
                     int indx = i + readIntArg(byteCodes, i);
                     emit(out, "if (@1 == 0) { gt = @2; continue; }",
-                         mapper.popI(), Integer.toString(indx));
+                         smapper.popI(), Integer.toString(indx));
                     i += 2;
                     break;
                 }
                 case opc_ifne: {
                     int indx = i + readIntArg(byteCodes, i);
                     emit(out, "if (@1 != 0) { gt = @2; continue; }",
-                         mapper.popI(), Integer.toString(indx));
+                         smapper.popI(), Integer.toString(indx));
                     i += 2;
                     break;
                 }
                 case opc_iflt: {
                     int indx = i + readIntArg(byteCodes, i);
                     emit(out, "if (@1 < 0) { gt = @2; continue; }",
-                         mapper.popI(), Integer.toString(indx));
+                         smapper.popI(), Integer.toString(indx));
                     i += 2;
                     break;
                 }
                 case opc_ifle: {
                     int indx = i + readIntArg(byteCodes, i);
                     emit(out, "if (@1 <= 0) { gt = @2; continue; }",
-                         mapper.popI(), Integer.toString(indx));
+                         smapper.popI(), Integer.toString(indx));
                     i += 2;
                     break;
                 }
                 case opc_ifgt: {
                     int indx = i + readIntArg(byteCodes, i);
                     emit(out, "if (@1 > 0) { gt = @2; continue; }",
-                         mapper.popI(), Integer.toString(indx));
+                         smapper.popI(), Integer.toString(indx));
                     i += 2;
                     break;
                 }
                 case opc_ifge: {
                     int indx = i + readIntArg(byteCodes, i);
                     emit(out, "if (@1 >= 0) { gt = @2; continue; }",
-                         mapper.popI(), Integer.toString(indx));
+                         smapper.popI(), Integer.toString(indx));
                     i += 2;
                     break;
                 }
                 case opc_ifnonnull: {
                     int indx = i + readIntArg(byteCodes, i);
                     emit(out, "if (@1 !== null) { gt = @2; continue; }",
-                         mapper.popA(), Integer.toString(indx));
+                         smapper.popA(), Integer.toString(indx));
                     i += 2;
                     break;
                 }
                 case opc_ifnull: {
                     int indx = i + readIntArg(byteCodes, i);
                     emit(out, "if (@1 === null) { gt = @2; continue; }",
-                         mapper.popA(), Integer.toString(indx));
+                         smapper.popA(), Integer.toString(indx));
                     i += 2;
                     break;
                 }
                 case opc_if_icmpne:
-                    i = generateIf(byteCodes, i, mapper.popI(), mapper.popI(),
+                    i = generateIf(byteCodes, i, smapper.popI(), smapper.popI(),
                                    "!=");
                     break;
                 case opc_if_icmplt:
-                    i = generateIf(byteCodes, i, mapper.popI(), mapper.popI(),
+                    i = generateIf(byteCodes, i, smapper.popI(), smapper.popI(),
                                    "<");
                     break;
                 case opc_if_icmple:
-                    i = generateIf(byteCodes, i, mapper.popI(), mapper.popI(),
+                    i = generateIf(byteCodes, i, smapper.popI(), smapper.popI(),
                                    "<=");
                     break;
                 case opc_if_icmpgt:
-                    i = generateIf(byteCodes, i, mapper.popI(), mapper.popI(),
+                    i = generateIf(byteCodes, i, smapper.popI(), smapper.popI(),
                                    ">");
                     break;
                 case opc_if_icmpge:
-                    i = generateIf(byteCodes, i, mapper.popI(), mapper.popI(),
+                    i = generateIf(byteCodes, i, smapper.popI(), smapper.popI(),
                                    ">=");
                     break;
                 case opc_goto: {
@@ -832,7 +801,7 @@ public abstract class ByteCodeToJavaScript {
                     table += 4;
                     int n = readInt4(byteCodes, table);
                     table += 4;
-                    out.append("switch (").append(mapper.popI()).append(") {\n");
+                    out.append("switch (").append(smapper.popI()).append(") {\n");
                     while (n-- > 0) {
                         int cnstnt = readInt4(byteCodes, table);
                         table += 4;
@@ -852,7 +821,7 @@ public abstract class ByteCodeToJavaScript {
                     table += 4;
                     int high = readInt4(byteCodes, table);
                     table += 4;
-                    out.append("switch (").append(mapper.popI()).append(") {\n");
+                    out.append("switch (").append(smapper.popI()).append(") {\n");
                     while (low <= high) {
                         int offset = i + readInt4(byteCodes, table);
                         table += 4;
@@ -864,23 +833,23 @@ public abstract class ByteCodeToJavaScript {
                     break;
                 }
                 case opc_invokeinterface: {
-                    i = invokeVirtualMethod(byteCodes, i, mapper) + 2;
+                    i = invokeVirtualMethod(byteCodes, i, smapper) + 2;
                     break;
                 }
                 case opc_invokevirtual:
-                    i = invokeVirtualMethod(byteCodes, i, mapper);
+                    i = invokeVirtualMethod(byteCodes, i, smapper);
                     break;
                 case opc_invokespecial:
-                    i = invokeStaticMethod(byteCodes, i, mapper, false);
+                    i = invokeStaticMethod(byteCodes, i, smapper, false);
                     break;
                 case opc_invokestatic:
-                    i = invokeStaticMethod(byteCodes, i, mapper, true);
+                    i = invokeStaticMethod(byteCodes, i, smapper, true);
                     break;
                 case opc_new: {
                     int indx = readIntArg(byteCodes, i);
                     String ci = jc.getClassName(indx);
                     emit(out, "@1 = new @2;",
-                         mapper.pushA(), ci.replace('/', '_'));
+                         smapper.pushA(), ci.replace('/', '_'));
                     addReference(ci);
                     i += 2;
                     break;
@@ -888,21 +857,21 @@ public abstract class ByteCodeToJavaScript {
                 case opc_newarray:
                     ++i; // skip type of array
                     emit(out, "@2 = new Array(@1).fillNulls();",
-                         mapper.popI(), mapper.pushA());
+                         smapper.popI(), smapper.pushA());
                     break;
                 case opc_anewarray:
                     i += 2; // skip type of array
                     emit(out, "@2 = new Array(@1).fillNulls();",
-                         mapper.popI(), mapper.pushA());
+                         smapper.popI(), smapper.pushA());
                     break;
                 case opc_multianewarray: {
                     i += 2;
                     int dim = readByte(byteCodes, ++i);
-                    out.append("{ var a0 = new Array(").append(mapper.popI())
+                    out.append("{ var a0 = new Array(").append(smapper.popI())
                        .append(").fillNulls();");
                     for (int d = 1; d < dim; d++) {
                         out.append("\n  var l" + d).append(" = ")
-                           .append(mapper.popI()).append(';');
+                           .append(smapper.popI()).append(';');
                         out.append("\n  for (var i" + d).append (" = 0; i" + d).
                             append(" < a" + (d - 1)).
                             append(".length; i" + d).append("++) {");
@@ -914,110 +883,110 @@ public abstract class ByteCodeToJavaScript {
                     for (int d = 1; d < dim; d++) {
                         out.append("\n  }");
                     }
-                    out.append("\n").append(mapper.pushA()).append(" = a0; }");
+                    out.append("\n").append(smapper.pushA()).append(" = a0; }");
                     break;
                 }
                 case opc_arraylength:
-                    emit(out, "@2 = @1.length;", mapper.popA(), mapper.pushI());
+                    emit(out, "@2 = @1.length;", smapper.popA(), smapper.pushI());
                     break;
                 case opc_lastore:
                     emit(out, "@3[@2] = @1;",
-                         mapper.popL(), mapper.popI(), mapper.popA());
+                         smapper.popL(), smapper.popI(), smapper.popA());
                     break;
                 case opc_fastore:
                     emit(out, "@3[@2] = @1;",
-                         mapper.popF(), mapper.popI(), mapper.popA());
+                         smapper.popF(), smapper.popI(), smapper.popA());
                     break;
                 case opc_dastore:
                     emit(out, "@3[@2] = @1;",
-                         mapper.popD(), mapper.popI(), mapper.popA());
+                         smapper.popD(), smapper.popI(), smapper.popA());
                     break;
                 case opc_aastore:
                     emit(out, "@3[@2] = @1;",
-                         mapper.popA(), mapper.popI(), mapper.popA());
+                         smapper.popA(), smapper.popI(), smapper.popA());
                     break;
                 case opc_iastore:
                 case opc_bastore:
                 case opc_castore:
                 case opc_sastore:
                     emit(out, "@3[@2] = @1;",
-                         mapper.popI(), mapper.popI(), mapper.popA());
+                         smapper.popI(), smapper.popI(), smapper.popA());
                     break;
                 case opc_laload:
                     emit(out, "@3 = @2[@1];",
-                         mapper.popI(), mapper.popA(), mapper.pushL());
+                         smapper.popI(), smapper.popA(), smapper.pushL());
                     break;
                 case opc_faload:
                     emit(out, "@3 = @2[@1];",
-                         mapper.popI(), mapper.popA(), mapper.pushF());
+                         smapper.popI(), smapper.popA(), smapper.pushF());
                     break;
                 case opc_daload:
                     emit(out, "@3 = @2[@1];",
-                         mapper.popI(), mapper.popA(), mapper.pushD());
+                         smapper.popI(), smapper.popA(), smapper.pushD());
                     break;
                 case opc_aaload:
                     emit(out, "@3 = @2[@1];",
-                         mapper.popI(), mapper.popA(), mapper.pushA());
+                         smapper.popI(), smapper.popA(), smapper.pushA());
                     break;
                 case opc_iaload:
                 case opc_baload:
                 case opc_caload:
                 case opc_saload:
                     emit(out, "@3 = @2[@1];",
-                         mapper.popI(), mapper.popA(), mapper.pushI());
+                         smapper.popI(), smapper.popA(), smapper.pushI());
                     break;
                 case opc_pop:
                 case opc_pop2:
-                    mapper.pop(1);
+                    smapper.pop(1);
                     out.append("/* pop */");
                     break;
                 case opc_dup: {
-                    final Variable v = mapper.get(0);
-                    emit(out, "@1 = @2;", mapper.pushT(v.getType()), v);
+                    final Variable v = smapper.get(0);
+                    emit(out, "@1 = @2;", smapper.pushT(v.getType()), v);
                     break;
                 }
                 case opc_dup2: {
-                    if (mapper.get(0).isCategory2()) {
-                        final Variable v = mapper.get(0);
-                        emit(out, "@1 = @2;", mapper.pushT(v.getType()), v);
+                    if (smapper.get(0).isCategory2()) {
+                        final Variable v = smapper.get(0);
+                        emit(out, "@1 = @2;", smapper.pushT(v.getType()), v);
                     } else {
-                        final Variable v1 = mapper.get(0);
-                        final Variable v2 = mapper.get(1);
+                        final Variable v1 = smapper.get(0);
+                        final Variable v2 = smapper.get(1);
                         emit(out, "{ @1 = @2; @3 = @4; }",
-                             mapper.pushT(v2.getType()), v2,
-                             mapper.pushT(v1.getType()), v1);
+                             smapper.pushT(v2.getType()), v2,
+                             smapper.pushT(v1.getType()), v1);
                     }
                     break;
                 }
                 case opc_dup_x1: {
-                    final Variable vi1 = mapper.pop();
-                    final Variable vi2 = mapper.pop();
-                    final Variable vo3 = mapper.pushT(vi1.getType());
-                    final Variable vo2 = mapper.pushT(vi2.getType());
-                    final Variable vo1 = mapper.pushT(vi1.getType());
+                    final Variable vi1 = smapper.pop();
+                    final Variable vi2 = smapper.pop();
+                    final Variable vo3 = smapper.pushT(vi1.getType());
+                    final Variable vo2 = smapper.pushT(vi2.getType());
+                    final Variable vo1 = smapper.pushT(vi1.getType());
 
                     emit(out, "{ @1 = @2; @3 = @4; @5 = @6; }",
                          vo1, vi1, vo2, vi2, vo3, vo1);
                     break;
                 }
                 case opc_dup_x2: {
-                    if (mapper.get(1).isCategory2()) {
-                        final Variable vi1 = mapper.pop();
-                        final Variable vi2 = mapper.pop();
-                        final Variable vo3 = mapper.pushT(vi1.getType());
-                        final Variable vo2 = mapper.pushT(vi2.getType());
-                        final Variable vo1 = mapper.pushT(vi1.getType());
+                    if (smapper.get(1).isCategory2()) {
+                        final Variable vi1 = smapper.pop();
+                        final Variable vi2 = smapper.pop();
+                        final Variable vo3 = smapper.pushT(vi1.getType());
+                        final Variable vo2 = smapper.pushT(vi2.getType());
+                        final Variable vo1 = smapper.pushT(vi1.getType());
 
                         emit(out, "{ @1 = @2; @3 = @4; @5 = @6; }",
                              vo1, vi1, vo2, vi2, vo3, vo1);
                     } else {
-                        final Variable vi1 = mapper.pop();
-                        final Variable vi2 = mapper.pop();
-                        final Variable vi3 = mapper.pop();
-                        final Variable vo4 = mapper.pushT(vi1.getType());
-                        final Variable vo3 = mapper.pushT(vi3.getType());
-                        final Variable vo2 = mapper.pushT(vi2.getType());
-                        final Variable vo1 = mapper.pushT(vi1.getType());
+                        final Variable vi1 = smapper.pop();
+                        final Variable vi2 = smapper.pop();
+                        final Variable vi3 = smapper.pop();
+                        final Variable vo4 = smapper.pushT(vi1.getType());
+                        final Variable vo3 = smapper.pushT(vi3.getType());
+                        final Variable vo2 = smapper.pushT(vi2.getType());
+                        final Variable vo1 = smapper.pushT(vi1.getType());
 
                         emit(out, "{ @1 = @2; @3 = @4; @5 = @6; @7 = @8; }",
                              vo1, vi1, vo2, vi2, vo3, vi3, vo4, vo1);
@@ -1026,29 +995,29 @@ public abstract class ByteCodeToJavaScript {
                 }
                 case opc_bipush:
                     emit(out, "@1 = @2;",
-                         mapper.pushI(), Integer.toString(byteCodes[++i]));
+                         smapper.pushI(), Integer.toString(byteCodes[++i]));
                     break;
                 case opc_sipush:
                     emit(out, "@1 = @2;",
-                         mapper.pushI(),
+                         smapper.pushI(),
                          Integer.toString(readIntArg(byteCodes, i)));
                     i += 2;
                     break;
                 case opc_getfield: {
                     int indx = readIntArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
-                    final int type = fieldToVariableType(fi[2].charAt(0));
+                    final int type = VarType.fromFieldType(fi[2].charAt(0));
                     emit(out, "@2 = @1.fld_@3;",
-                         mapper.popA(), mapper.pushT(type), fi[1]);
+                         smapper.popA(), smapper.pushT(type), fi[1]);
                     i += 2;
                     break;
                 }
                 case opc_getstatic: {
                     int indx = readIntArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
-                    final int type = fieldToVariableType(fi[2].charAt(0));
+                    final int type = VarType.fromFieldType(fi[2].charAt(0));
                     emit(out, "@1 = @2.@3;",
-                         mapper.pushT(type), fi[0].replace('/', '_'), fi[1]);
+                         smapper.pushT(type), fi[0].replace('/', '_'), fi[1]);
                     i += 2;
                     addReference(fi[0]);
                     break;
@@ -1056,18 +1025,18 @@ public abstract class ByteCodeToJavaScript {
                 case opc_putfield: {
                     int indx = readIntArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
-                    final int type = fieldToVariableType(fi[2].charAt(0));
+                    final int type = VarType.fromFieldType(fi[2].charAt(0));
                     emit(out, "@2.fld_@3 = @1;",
-                         mapper.popT(type), mapper.popA(), fi[1]);
+                         smapper.popT(type), smapper.popA(), fi[1]);
                     i += 2;
                     break;
                 }
                 case opc_putstatic: {
                     int indx = readIntArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
-                    final int type = fieldToVariableType(fi[2].charAt(0));
+                    final int type = VarType.fromFieldType(fi[2].charAt(0));
                     emit(out, "@1.@2 = @3;",
-                         fi[0].replace('/', '_'), fi[1], mapper.popT(type));
+                         fi[0].replace('/', '_'), fi[1], smapper.popT(type));
                     i += 2;
                     addReference(fi[0]);
                     break;
@@ -1079,7 +1048,7 @@ public abstract class ByteCodeToJavaScript {
                         // no way to check arrays right now
                         // XXX proper exception
                         emit(out, "if (@1.$instOf_@2 != 1) throw {};",
-                             mapper.getA(0), type.replace('/', '_'));
+                             smapper.getA(0), type.replace('/', '_'));
                     }
                     i += 2;
                     break;
@@ -1088,28 +1057,28 @@ public abstract class ByteCodeToJavaScript {
                     int indx = readIntArg(byteCodes, i);
                     final String type = jc.getClassName(indx);
                     emit(out, "@2 = @1.$instOf_@3 ? 1 : 0;",
-                         mapper.popA(), mapper.pushI(), type.replace('/', '_'));
+                         smapper.popA(), smapper.pushI(), type.replace('/', '_'));
                     i += 2;
                     break;
                 }
                 case opc_athrow: {
-                    final Variable v = mapper.popA();
-                    mapper.clear();
+                    final Variable v = smapper.popA();
+                    smapper.clear();
 
                     emit(out, "{ @1 = @2; throw @2; }",
-                         mapper.pushA(), v);
+                         smapper.pushA(), v);
                     break;
                 }
 
                 case opc_monitorenter: {
                     out.append("/* monitor enter */");
-                    mapper.popA();
+                    smapper.popA();
                     break;
                 }
 
                 case opc_monitorexit: {
                     out.append("/* monitor exit */");
-                    mapper.popA();
+                    smapper.popA();
                     break;
                 }
 
@@ -1127,6 +1096,7 @@ public abstract class ByteCodeToJavaScript {
             out.append("\n");
         }
         out.append("  }\n");
+        out.append("};");
     }
 
     private int generateIf(byte[] byteCodes, int i,
@@ -1274,7 +1244,7 @@ public abstract class ByteCodeToJavaScript {
         return name.toString();
     }
 
-    private int invokeStaticMethod(byte[] byteCodes, int i, final StackToVariableMapper mapper, boolean isStatic)
+    private int invokeStaticMethod(byte[] byteCodes, int i, final StackMapper mapper, boolean isStatic)
     throws IOException {
         int methodIndex = readIntArg(byteCodes, i);
         String[] mi = jc.getFieldInfoName(methodIndex);
@@ -1290,7 +1260,7 @@ public abstract class ByteCodeToJavaScript {
         }
 
         if (returnType[0] != 'V') {
-            out.append(mapper.pushT(fieldToVariableType(returnType[0])))
+            out.append(mapper.pushT(VarType.fromFieldType(returnType[0])))
                .append(" = ");
         }
 
@@ -1311,7 +1281,7 @@ public abstract class ByteCodeToJavaScript {
         addReference(in);
         return i;
     }
-    private int invokeVirtualMethod(byte[] byteCodes, int i, final StackToVariableMapper mapper)
+    private int invokeVirtualMethod(byte[] byteCodes, int i, final StackMapper mapper)
     throws IOException {
         int methodIndex = readIntArg(byteCodes, i);
         String[] mi = jc.getFieldInfoName(methodIndex);
@@ -1327,7 +1297,7 @@ public abstract class ByteCodeToJavaScript {
         }
 
         if (returnType[0] != 'V') {
-            out.append(mapper.pushT(fieldToVariableType(returnType[0])))
+            out.append(mapper.pushT(VarType.fromFieldType(returnType[0])))
                .append(" = ");
         }
 
@@ -1515,56 +1485,6 @@ public abstract class ByteCodeToJavaScript {
             }
         };
         ap.parse(data, cd);
-    }
-
-    private static int constantToVariableType(final byte constantTag) {
-        switch (constantTag) {
-            case CONSTANT_INTEGER:
-                return Variable.TYPE_INT;
-            case CONSTANT_FLOAT:
-                return Variable.TYPE_FLOAT;
-            case CONSTANT_LONG:
-                return Variable.TYPE_LONG;
-            case CONSTANT_DOUBLE:
-                return Variable.TYPE_DOUBLE;
-
-            case CONSTANT_CLASS:
-            case CONSTANT_UTF8:
-            case CONSTANT_UNICODE:
-            case CONSTANT_STRING:
-                return Variable.TYPE_REF;
-
-            case CONSTANT_FIELD:
-            case CONSTANT_METHOD:
-            case CONSTANT_INTERFACEMETHOD:
-            case CONSTANT_NAMEANDTYPE:
-                /* unclear how to handle for now */
-            default:
-                throw new IllegalStateException("Unhandled constant tag");
-        }
-    }
-
-    private static int fieldToVariableType(final char fieldType) {
-        switch (fieldType) {
-            case 'B':
-            case 'C':
-            case 'S':
-            case 'Z':
-            case 'I':
-                return Variable.TYPE_INT;
-            case 'J':
-                return Variable.TYPE_LONG;
-            case 'F':
-                return Variable.TYPE_FLOAT;
-            case 'D':
-                return Variable.TYPE_DOUBLE;
-            case 'L':
-            case '[':
-                return Variable.TYPE_REF;
-
-            default:
-                throw new IllegalStateException("Unhandled field type");
-        }
     }
 
     private static void emit(final Appendable out,
