@@ -17,7 +17,7 @@
  */
 package org.apidesign.vm4brwsr;
 
-public final class Variable implements CharSequence {
+final class Variable implements CharSequence {
     private static final String STACK_VAR_PREFIX = "st";
     private static final String LOCAL_VAR_PREFIX = "lc";
 

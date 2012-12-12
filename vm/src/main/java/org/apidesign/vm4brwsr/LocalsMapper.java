@@ -21,7 +21,7 @@ import java.io.IOException;
 import org.apidesign.javap.RuntimeConstants;
 import org.apidesign.javap.TypeArray;
 
-public final class LocalsMapper {
+final class LocalsMapper {
     private final TypeArray argTypeRecords;
     private final TypeArray localTypeRecords;
 

@@ -19,7 +19,7 @@ package org.apidesign.vm4brwsr;
 
 import org.apidesign.javap.RuntimeConstants;
 
-public final class VarType {
+final class VarType {
     public static final int INTEGER = 0;
     public static final int LONG = 1;
     public static final int FLOAT = 2;

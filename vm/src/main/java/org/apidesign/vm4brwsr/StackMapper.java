@@ -19,7 +19,7 @@ package org.apidesign.vm4brwsr;
 
 import org.apidesign.javap.TypeArray;
 
-public final class StackMapper {
+final class StackMapper {
     private final TypeArray stackTypeIndexPairs;
     private int[] typeCounters;
     private int[] typeMaxCounters;
