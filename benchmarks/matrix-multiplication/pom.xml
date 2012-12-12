@@ -59,7 +59,7 @@
             <configuration>
                 <port>9876</port>
                 <browser>${bck2brwsr.runBenchmarks.browsers}</browser>
-                <browserTimeout>720</browserTimeout>
+                <browserTimeout>40</browserTimeout>
                 <tests>all</tests>
                 <config>jsTestDriver.conf</config>
                 <reset>true</reset>
