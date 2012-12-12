@@ -488,6 +488,12 @@ public final class ClassData implements RuntimeConstants {
         return stringValue(cpx, false);
     }
     public String stringValue(int cpx, boolean textual) {
+        return stringValue(cpx, textual, null);
+    }
+    public String stringValue(int cpx, String[] classRefs) {
+        return stringValue(cpx, true, classRefs);
+    }
+    private String stringValue(int cpx, boolean textual, String[] refs) {
         if (cpx==0) return "#0";
         int tag;
         Object x;
@@ -548,10 +554,14 @@ public final class ClassData implements RuntimeConstants {
             return in.toString();
         }
         case CONSTANT_CLASS:
+            String jn = getClassName(cpx);
             if (textual) {
-                return "new java_lang_Class"; // XXX temporary JS
+                if (refs != null) {
+                    refs[0] = jn;
+                }
+                return jn;
             }
-            return javaName(getClassName(cpx));
+            return javaName(jn);
         case CONSTANT_STRING:
             String sv = stringValue(((CPX)x).cpx, textual);
             if (textual) {

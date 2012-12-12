@@ -19,44 +19,34 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
-import java.util.Enumeration;
 
 /** Generator of JavaScript from bytecode of classes on classpath of the VM.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-final class GenJS extends ByteCodeToJavaScript {
-    public GenJS(Appendable out) {
+class VM extends ByteCodeToJavaScript {
+    public VM(Appendable out) {
         super(out);
     }
     
-    static void compile(Appendable out, String... names) throws IOException {
-        compile(out, StringArray.asList(names));
+    static {
+        // uses VMLazy to load dynamic classes
+        VMLazy.init();
     }
-    static void compile(ClassLoader l, Appendable out, String... names) throws IOException {
-        compile(l, out, StringArray.asList(names));
+    
+    static void compile(Bck2Brwsr.Resources l, Appendable out, StringArray names) throws IOException {
+        new VM(out).doCompile(l, names);
     }
-    static void compile(Appendable out, StringArray names) throws IOException {
-        compile(GenJS.class.getClassLoader(), out, names);
-    }
-    static void compile(ClassLoader l, Appendable out, StringArray names) throws IOException {
-        out.append("Array.prototype.fillNulls = function() {\n" +
-             "  for(var i = 0; i < this.length; i++) {\n" +
-             "    this[i] = null;\n" +
-             "  }\n" +
-             "  return this;\n" +
-             "};");
-        
-        
+    protected void doCompile(Bck2Brwsr.Resources l, StringArray names) throws IOException {
+        out.append("(function VM(global) {");
+        out.append("\n  var vm = {};");
         StringArray processed = new StringArray();
         StringArray initCode = new StringArray();
         for (String baseClass : names.toArray()) {
-            GenJS js = new GenJS(out);
-            js.references.add(baseClass);
+            references.add(baseClass);
             for (;;) {
                 String name = null;
-                for (String n : js.references.toArray()) {
+                for (String n : references.toArray()) {
                     if (processed.contains(n)) {
                         continue;
                     }
@@ -70,7 +60,7 @@ final class GenJS extends ByteCodeToJavaScript {
                     throw new IOException("Can't find class " + name); 
                 }
                 try {
-                    String ic = js.compile(is);
+                    String ic = compile(is);
                     processed.add(name);
                     initCode.add(ic == null ? "" : ic);
                 } catch (RuntimeException ex) {
@@ -91,20 +81,21 @@ final class GenJS extends ByteCodeToJavaScript {
                         );
                     }
                 }
-                for (String resource : js.scripts.toArray()) {
-                    while (resource.startsWith("/")) {
-                        resource = resource.substring(1);
-                    }
-                    InputStream emul = l.getResourceAsStream(resource);
-                    if (emul == null) {
-                        throw new IOException("Can't find " + resource);
-                    }
-                    readResource(emul, out);
-                }
-                js.scripts = new StringArray();
             }
 
-            StringArray toInit = StringArray.asList(js.references.toArray());
+            for (String resource : scripts.toArray()) {
+                while (resource.startsWith("/")) {
+                    resource = resource.substring(1);
+                }
+                InputStream emul = l.get(resource);
+                if (emul == null) {
+                    throw new IOException("Can't find " + resource);
+                }
+                readResource(emul, out);
+            }
+            scripts = new StringArray();
+            
+            StringArray toInit = StringArray.asList(references.toArray());
             toInit.reverse();
 
             for (String ic : toInit.toArray()) {
@@ -114,8 +105,23 @@ final class GenJS extends ByteCodeToJavaScript {
                     initCode.toArray()[indx] = "";
                 }
             }
-
         }
+        out.append(
+              "  global.bck2brwsr = function() {\n"
+            + "    var args = arguments;\n"
+            + "    var loader = {};\n"
+            + "    loader.vm = vm;\n"
+            + "    loader.loadClass = function(name) {\n"
+            + "      var attr = name.replace__Ljava_lang_String_2CC(name, '.','_');\n"
+            + "      var fn = vm[attr];\n"
+            + "      if (fn) return fn(false);\n"
+            + "      if (!args[0]) throw 'bck2brwsr initialized without loader function, cannot load ' + name;\n"
+            + "      return vm.org_apidesign_vm4brwsr_VMLazy(false).\n"
+            + "        load___3Ljava_lang_Object_2Ljava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2(loader, name, args);\n"
+            + "    }\n"
+            + "    return loader;\n"
+            + "  };\n");
+        out.append("}(this));");
     }
     private static void readResource(InputStream emul, Appendable out) throws IOException {
         try {
@@ -163,24 +169,13 @@ final class GenJS extends ByteCodeToJavaScript {
         }
     }
 
-    private static InputStream loadClass(ClassLoader l, String name) throws IOException {
-        Enumeration<URL> en = l.getResources(name + ".class");
-        URL u = null;
-        while (en.hasMoreElements()) {
-            u = en.nextElement();
-        }
-        if (u == null) {
-            throw new IOException("Can't find " + name);
-        }
-        if (u.toExternalForm().contains("rt.jar!")) {
-            throw new IOException("No emulation for " + u);
-        }
-        return u.openStream();
+    private static InputStream loadClass(Bck2Brwsr.Resources l, String name) throws IOException {
+        return l.get(name + ".class"); // NOI18N
     }
 
     static String toString(String name) throws IOException {
         StringBuilder sb = new StringBuilder();
-        compile(sb, name);
+//        compile(sb, name);
         return sb.toString().toString();
     }
 
@@ -199,5 +194,15 @@ final class GenJS extends ByteCodeToJavaScript {
     @Override
     protected void requireScript(String resourcePath) {
         scripts.add(resourcePath);
+    }
+
+    @Override
+    String assignClass(String className) {
+        return "vm." + className + " = ";
+    }
+    
+    @Override
+    String accessClass(String className) {
+        return "vm." + className;
     }
 }

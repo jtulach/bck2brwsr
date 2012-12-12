@@ -21,7 +21,7 @@ import org.apache.maven.plugin.AbstractMojo;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.lang.reflect.Method;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -34,6 +34,7 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.apidesign.vm4brwsr.Bck2Brwsr;
 
 /** Compiles classes into JavaScript. */
 @Mojo(name="j2js", defaultPhase=LifecyclePhase.PROCESS_CLASSES)
@@ -72,14 +73,10 @@ public class Bck2BrswrMojo extends AbstractMojo {
 
         try {
             URLClassLoader url = buildClassLoader(classes, prj.getDependencyArtifacts());
-            
-            Class<?> c = Class.forName("org.apidesign.vm4brwsr.GenJS");
-            Method m = c.getDeclaredMethod("compile", ClassLoader.class, Appendable.class, String[].class);
-            m.setAccessible(true);
             FileWriter w = new FileWriter(javascript);
-            m.invoke(null, url, w, arr.toArray(new String[0]));
+            Bck2Brwsr.generate(w, url, arr.toArray(new String[0]));
             w.close();
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             throw new MojoExecutionException("Can't compile", ex);
         }
     }

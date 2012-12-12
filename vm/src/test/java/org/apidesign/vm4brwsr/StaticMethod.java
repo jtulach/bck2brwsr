@@ -106,6 +106,11 @@ public class StaticMethod {
         throw new IllegalStateException();
     }
     
+    public static String castNull(boolean n) {
+        Object value = n ? null : "Ahoj";
+        return (String)value;
+    }
+    
     public static String swtch(int what) {
         switch (what) {
             case 0: return "Jarda";

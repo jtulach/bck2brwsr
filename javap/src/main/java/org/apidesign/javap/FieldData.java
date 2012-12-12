@@ -130,13 +130,6 @@ public class FieldData implements RuntimeConstants  {
     }
 
     /**
-     * Returns java type signature of a field.
-     */
-    public String getType(){
-        return new TypeSignature(getInternalSig()).getFieldType();
-    }
-
-    /**
      * Returns true if field is synthetic.
      */
     public boolean isSynthetic(){
