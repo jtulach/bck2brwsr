@@ -71,7 +71,6 @@
                        <exclude>javap/**</exclude>
                        <exclude>*</exclude>
                        <exclude>.*/**</exclude>
-                       <exclude>benchmarks/**</exclude>
                   </excludes>
               </configuration>
           </plugin>
