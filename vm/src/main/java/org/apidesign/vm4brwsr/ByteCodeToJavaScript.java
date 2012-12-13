@@ -109,6 +109,9 @@ abstract class ByteCodeToJavaScript {
             out.append("\n    var sprcls = pp.constructor.$class;");
         } else {
             out.append("\n    var p = CLS.prototype = ").append(proto[1]).append(";");
+            if (proto[0] == null) {
+                proto[0] = "p";
+            }
             out.append("\n    var c = ").append(proto[0]).append(";");
             out.append("\n    var sprcls = null;");
         }
@@ -1081,8 +1084,7 @@ abstract class ByteCodeToJavaScript {
         String space;
         int index;
         if (!isStatic) {                
-            out.append(p.args[0]);
-            space = ",";
+            space = outputArg(out, p.args, 0);
             index = 1;
         } else {
             space = "";
@@ -1090,9 +1092,8 @@ abstract class ByteCodeToJavaScript {
         }
         for (int i = 0; i < cnt.length(); i++) {
             out.append(space);
-            out.append(p.args[index]);
+            space = outputArg(out, p.args, index);
             index++;
-            space = ",";
         }
         out.append(") {").append("\n");
         out.append(p.body);
@@ -1183,5 +1184,17 @@ abstract class ByteCodeToJavaScript {
             }
         };
         ap.parse(data, cd);
+    }
+
+    private static String outputArg(Appendable out, String[] args, int indx) throws IOException {
+        final String name = args[indx];
+        if (name == null) {
+            return "";
+        }
+        if (name.contains(",")) {
+            throw new IOException("Wrong parameter with ',': " + name);
+        }
+        out.append(name);
+        return ",";
     }
 }
