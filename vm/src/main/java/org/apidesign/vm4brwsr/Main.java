@@ -40,7 +40,11 @@ final class Main {
         Writer w = new BufferedWriter(new FileWriter(args[0]));
         StringArray classes = StringArray.asList(args);
         classes.delete(0);
-        Bck2Brwsr.generate(w, Main.class.getClassLoader(), classes.toArray());
-        w.close();
+        try {
+            Bck2Brwsr.generate(w, Main.class.getClassLoader(),
+                               classes.toArray());
+        } finally {
+            w.close();
+        }
     }
 }

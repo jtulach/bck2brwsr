@@ -317,6 +317,10 @@ public class MethodData {
         return stackMapTable;
     }
 
+    public StackMapIterator createStackMapIterator() {
+        return new StackMapIterator(this);
+    }
+
     /**
      * Return true if method is static
      */
