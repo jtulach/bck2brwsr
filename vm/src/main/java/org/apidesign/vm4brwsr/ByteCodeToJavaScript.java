@@ -19,6 +19,7 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.javap.AnnotationParser;
 import org.apidesign.javap.ClassData;
 import org.apidesign.javap.FieldData;
@@ -30,7 +31,7 @@ import static org.apidesign.javap.RuntimeConstants.*;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public abstract class ByteCodeToJavaScript {
+abstract class ByteCodeToJavaScript {
     private ClassData jc;
     final Appendable out;
 
@@ -57,8 +58,11 @@ public abstract class ByteCodeToJavaScript {
      * 
      * @param className suggested name of the class
      */
-    protected String assignClass(String className) {
+    /* protected */ String assignClass(String className) {
         return className + " = ";
+    }
+    /* protected */ String accessClass(String classOperation) {
+        return classOperation;
     }
 
     /**
@@ -100,12 +104,15 @@ public abstract class ByteCodeToJavaScript {
         if (proto == null) {
             String sc = jc.getSuperClassName(); // with _
             out.append("\n    var pp = ").
-                append(sc.replace('/', '_')).append("(true);");
+                append(accessClass(sc.replace('/', '_'))).append("(true);");
             out.append("\n    var p = CLS.prototype = pp;");
             out.append("\n    var c = p;");
             out.append("\n    var sprcls = pp.constructor.$class;");
         } else {
             out.append("\n    var p = CLS.prototype = ").append(proto[1]).append(";");
+            if (proto[0] == null) {
+                proto[0] = "p";
+            }
             out.append("\n    var c = ").append(proto[0]).append(";");
             out.append("\n    var sprcls = null;");
         }
@@ -140,7 +147,8 @@ public abstract class ByteCodeToJavaScript {
         for (String superInterface : jc.getSuperInterfaces()) {
             out.append("\n    c.$instOf_").append(superInterface.replace('/', '_')).append(" = true;");
         }
-        out.append("\n    CLS.$class = java_lang_Class(true);");
+        out.append("\n    CLS.$class = ");
+        out.append(accessClass("java_lang_Class(true);"));
         out.append("\n    CLS.$class.jvmName = '").append(jc.getClassName()).append("';");
         out.append("\n    CLS.$class.superclass = sprcls;");
         out.append("\n    CLS.$class.cnstr = CLS;");
@@ -190,7 +198,7 @@ public abstract class ByteCodeToJavaScript {
         }
         final String mn = findMethodName(m, new StringBuilder());
         if (mn.equals("class__V")) {
-            toInitilize.add(className(jc) + "(false)." + mn);
+            toInitilize.add(accessClass(className(jc)) + "(false)." + mn);
         }
         generateMethod(prefix, mn, m);
         return mn;
@@ -849,7 +857,7 @@ public abstract class ByteCodeToJavaScript {
                     int indx = readIntArg(byteCodes, i);
                     String ci = jc.getClassName(indx);
                     emit(out, "@1 = new @2;",
-                         smapper.pushA(), ci.replace('/', '_'));
+                         smapper.pushA(), accessClass(ci.replace('/', '_')));
                     addReference(ci);
                     i += 2;
                     break;
@@ -1017,7 +1025,8 @@ public abstract class ByteCodeToJavaScript {
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
                     emit(out, "@1 = @2.@3;",
-                         smapper.pushT(type), fi[0].replace('/', '_'), fi[1]);
+                         smapper.pushT(type),
+                         accessClass(fi[0].replace('/', '_')), fi[1]);
                     i += 2;
                     addReference(fi[0]);
                     break;
@@ -1036,7 +1045,8 @@ public abstract class ByteCodeToJavaScript {
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
                     emit(out, "@1.@2 = @3;",
-                         fi[0].replace('/', '_'), fi[1], smapper.popT(type));
+                         accessClass(fi[0].replace('/', '_')), fi[1],
+                         smapper.popT(type));
                     i += 2;
                     addReference(fi[0]);
                     break;
@@ -1047,7 +1057,8 @@ public abstract class ByteCodeToJavaScript {
                     if (!type.startsWith("[")) {
                         // no way to check arrays right now
                         // XXX proper exception
-                        emit(out, "if (@1.$instOf_@2 != 1) throw {};",
+                        emit(out,
+                             "if (@1 !== null && !@1.$instOf_@2) throw {};",
                              smapper.getA(0), type.replace('/', '_'));
                     }
                     i += 2;
@@ -1057,7 +1068,8 @@ public abstract class ByteCodeToJavaScript {
                     int indx = readIntArg(byteCodes, i);
                     final String type = jc.getClassName(indx);
                     emit(out, "@2 = @1.$instOf_@3 ? 1 : 0;",
-                         smapper.popA(), smapper.pushI(), type.replace('/', '_'));
+                         smapper.popA(), smapper.pushI(),
+                         type.replace('/', '_'));
                     i += 2;
                     break;
                 }
@@ -1265,7 +1277,7 @@ public abstract class ByteCodeToJavaScript {
         }
 
         final String in = mi[0];
-        out.append(in.replace('/', '_'));
+        out.append(accessClass(in.replace('/', '_')));
         out.append("(false).");
         out.append(mn);
         out.append('(');
@@ -1339,6 +1351,7 @@ public abstract class ByteCodeToJavaScript {
         String s = jc.stringValue(entryIndex, classRef);
         if (classRef[0] != null) {
             addReference(classRef[0]);
+            s = accessClass(s.replace('/', '_')) + "(false).constructor.$class";
         }
         return s;
     }
@@ -1383,8 +1396,7 @@ public abstract class ByteCodeToJavaScript {
         String space;
         int index;
         if (!isStatic) {                
-            out.append(p.args[0]);
-            space = ",";
+            space = outputArg(out, p.args, 0);
             index = 1;
         } else {
             space = "";
@@ -1392,9 +1404,8 @@ public abstract class ByteCodeToJavaScript {
         }
         for (int i = 0; i < cnt.length(); i++) {
             out.append(space);
-            out.append(p.args[index]);
+            space = outputArg(out, p.args, index);
             index++;
-            space = ",";
         }
         out.append(") {").append("\n");
         out.append(p.body);
@@ -1487,6 +1498,18 @@ public abstract class ByteCodeToJavaScript {
         ap.parse(data, cd);
     }
 
+    private static String outputArg(Appendable out, String[] args, int indx) throws IOException {
+        final String name = args[indx];
+        if (name == null) {
+            return "";
+        }
+        if (name.contains(",")) {
+            throw new IOException("Wrong parameter with ',': " + name);
+        }
+        out.append(name);
+        return ",";
+    }
+
     private static void emit(final Appendable out,
                              final String format,
                              final CharSequence... params) throws IOException {
@@ -1511,5 +1534,4 @@ public abstract class ByteCodeToJavaScript {
 
         out.append(format, processed, length);
     }
-
 }

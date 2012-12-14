@@ -20,6 +20,9 @@ package org.apidesign.vm4brwsr;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Enumeration;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -238,6 +241,13 @@ public class StaticMethodTest {
         );
     }
     
+    @Test public void checkNullCast() throws Exception {
+        assertExec("Null can be cast to any type",
+            StaticMethod.class, "castNull__Ljava_lang_String_2Z", 
+            null, true
+        );
+    }
+    
     private static CharSequence codeSeq;
     private static Invocable code;
     
@@ -262,7 +272,8 @@ public class StaticMethodTest {
     ) throws Exception {
         Object ret = null;
         try {
-            ret = toRun.invokeFunction(clazz.getName().replace('.', '_'), true);
+            ret = toRun.invokeFunction("bck2brwsr");
+            ret = toRun.invokeMethod(ret, "loadClass", clazz.getName());
             ret = toRun.invokeMethod(ret, method, args);
         } catch (ScriptException ex) {
             fail("Execution failed in\n" + dumpJS(theCode), ex);
@@ -288,7 +299,7 @@ public class StaticMethodTest {
         if (sb == null) {
             sb = new StringBuilder();
         }
-        GenJS.compile(sb, names);
+        Bck2Brwsr.generate(sb, new EmulationResources(), names);
         ScriptEngineManager sem = new ScriptEngineManager();
         ScriptEngine js = sem.getEngineByExtension("js");
         if (eng != null) {
@@ -312,5 +323,22 @@ public class StaticMethodTest {
         w.append(sb);
         w.close();
         return new StringBuilder(f.getPath());
+    }
+    private static class EmulationResources implements Bck2Brwsr.Resources {
+        @Override
+        public InputStream get(String name) throws IOException {
+            Enumeration<URL> en = StaticMethodTest.class.getClassLoader().getResources(name);
+            URL u = null;
+            while (en.hasMoreElements()) {
+                u = en.nextElement();
+            }
+            if (u == null) {
+                throw new IOException("Can't find " + name);
+            }
+            if (u.toExternalForm().contains("rt.jar!")) {
+                throw new IOException("No emulation for " + u);
+            }
+            return u.openStream();
+        }
     }
 }

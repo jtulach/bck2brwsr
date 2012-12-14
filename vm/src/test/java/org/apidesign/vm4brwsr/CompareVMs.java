@@ -18,7 +18,10 @@
 package org.apidesign.vm4brwsr;
 
 import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.WeakHashMap;
 import javax.script.Invocable;
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import org.testng.Assert;
@@ -73,7 +76,7 @@ public final class CompareVMs implements ITest {
         if (v1 instanceof Number) {
             v1 = ((Number)v1).doubleValue();
         }
-        Assert.assertEquals(v1, v2, "Comparing results");
+        Assert.assertEquals(v2, v1, "Comparing results");
     }
     
     @Override
@@ -85,52 +88,49 @@ public final class CompareVMs implements ITest {
         private final Method m;
         private final boolean js;
         Object value;
-        private static Invocable code;
-        private static CharSequence codeSeq;
+        private Invocable code;
+        private CharSequence codeSeq;
+        private static final Map<Class,Object[]> compiled = new WeakHashMap<Class,Object[]>();
 
         private Run(Method m, boolean js) {
             this.m = m;
             this.js = js;
         }
 
-        private static void compileTheCode(Class<?> clazz) throws Exception {
-            if (code != null) {
+        private void compileTheCode(Class<?> clazz) throws Exception {
+            final Object[] data = compiled.get(clazz);
+            if (data != null) {
+                code = (Invocable) data[0];
+                codeSeq = (CharSequence) data[1];
                 return;
             }
             StringBuilder sb = new StringBuilder();
-            class SkipMe extends GenJS {
-
-                public SkipMe(Appendable out) {
-                    super(out);
-                }
-
-                @Override
-                protected boolean requireReference(String cn) {
-                    if (cn.contains("CompareVMs")) {
-                        return true;
-                    }
-                    return super.requireReference(cn);
-                }
-            }
-            SkipMe sm = new SkipMe(sb);
-            sm.doCompile(CompareVMs.class.getClassLoader(), StringArray.asList(
-                clazz.getName().replace('.', '/')));
+            Bck2Brwsr.generate(sb, CompareVMs.class.getClassLoader());
 
             ScriptEngineManager sem = new ScriptEngineManager();
             ScriptEngine js = sem.getEngineByExtension("js");
+            js.getContext().setAttribute("loader", new BytesLoader(), ScriptContext.ENGINE_SCOPE);
+            
+            sb.append("\nfunction initVM() {"
+                + "\n  return bck2brwsr("
+                + "\n    function(name) { return loader.get(name);}"
+                + "\n  );"
+                + "\n};");
 
             Object res = js.eval(sb.toString());
             Assert.assertTrue(js instanceof Invocable, "It is invocable object: " + res);
             code = (Invocable) js;
             codeSeq = sb;
+            compiled.put(clazz, new Object[] { code, codeSeq });
         }
 
         @Test(groups = "run") public void executeCode() throws Throwable {
             if (js) {
                 try {
                     compileTheCode(m.getDeclaringClass());
-                    Object inst = code.invokeFunction(m.getDeclaringClass().getName().replace('.', '_'), false);
-                    value = code.invokeMethod(inst, m.getName() + "__I");
+                    Object vm = code.invokeFunction("initVM");
+                    Object inst = code.invokeMethod(vm, "loadClass", m.getDeclaringClass().getName());
+                    value = code.invokeMethod(inst, m.getName() + "__" + computeSignature(m));
                 } catch (Exception ex) {
                     throw new AssertionError(StaticMethodTest.dumpJS(codeSeq)).initCause(ex);
                 }
@@ -141,6 +141,57 @@ public final class CompareVMs implements ITest {
         @Override
         public String getTestName() {
             return m.getName() + (js ? "[JavaScript]" : "[Java]");
+        }
+        
+        private static String computeSignature(Method m) {
+            StringBuilder sb = new StringBuilder();
+            appendType(sb, m.getReturnType());
+            for (Class<?> c : m.getParameterTypes()) {
+                appendType(sb, c);
+            }
+            return sb.toString();
+        }
+        
+        private static void appendType(StringBuilder sb, Class<?> t) {
+            if (t == null) {
+                sb.append('V');
+                return;
+            }
+            if (t.isPrimitive()) {
+                int ch = -1;
+                if (t == int.class) {
+                    ch = 'I';
+                }
+                if (t == short.class) {
+                    ch = 'S';
+                }
+                if (t == byte.class) {
+                    ch = 'B';
+                }
+                if (t == boolean.class) {
+                    ch = 'Z';
+                }
+                if (t == long.class) {
+                    ch = 'J';
+                }
+                if (t == float.class) {
+                    ch = 'F';
+                }
+                if (t == double.class) {
+                    ch = 'D';
+                }
+                assert ch != -1 : "Unknown primitive type " + t;
+                sb.append((char)ch);
+                return;
+            }
+            if (t.isArray()) {
+                sb.append("_3");
+                appendType(sb, t.getComponentType());
+                return;
+            }
+            sb.append('L');
+            sb.append(t.getName().replace('.', '_'));
+            sb.append("_2");
         }
     }
 }

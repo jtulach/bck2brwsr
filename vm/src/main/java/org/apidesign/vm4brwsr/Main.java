@@ -32,6 +32,7 @@ final class Main {
     
     public static void main(String... args) throws IOException {
         if (args.length < 2) {
+            System.err.println("Bck2Brwsr Translator from Java(tm) to JavaScript, (c) Jaroslav Tulach 2012");
             System.err.println("Usage: java -cp ... -jar ... <file_to_generate_js_code_to> java/lang/Class org/your/App ...");
             return;
         }
@@ -40,7 +41,8 @@ final class Main {
         StringArray classes = StringArray.asList(args);
         classes.delete(0);
         try {
-            GenJS.compile(w, classes);
+            Bck2Brwsr.generate(w, Main.class.getClassLoader(),
+                               classes.toArray());
         } finally {
             w.close();
         }

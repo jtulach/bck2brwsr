@@ -13,6 +13,7 @@
     <module>mojo</module>
     <module>javaquery</module>
     <module>javap</module>
+    <module>benchmarks</module>
   </modules>
   <licenses>
       <license>

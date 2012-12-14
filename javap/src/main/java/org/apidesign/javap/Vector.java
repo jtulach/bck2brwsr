@@ -4,10 +4,14 @@
  */
 package org.apidesign.javap;
 
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+import org.apidesign.bck2brwsr.core.JavaScriptPrototype;
+
 /** A JavaScript ready replacement for java.util.Vector
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
+@JavaScriptPrototype(prototype = "new Array" )
 final class Vector {
     private Object[] arr;
     
@@ -15,22 +19,31 @@ final class Vector {
     }
 
     Vector(int i) {
-        this();
     }
 
     void add(Object objectType) {
         addElement(objectType);
     }
+    @JavaScriptBody(args = { "self", "obj" }, body = 
+        "self.push(obj);"
+    )
     void addElement(Object obj) {
         final int s = size();
         setSize(s + 1);
         setElementAt(obj, s);
     }
 
+    @JavaScriptBody(args = { "self" }, body = 
+        "return self.length;"
+    )
     int size() {
         return arr == null ? 0 : arr.length;
     }
 
+    @JavaScriptBody(args = { "self", "newArr" }, body =
+        "for (var i = 0; i < self.length; i++) {\n"
+      + "  newArr[i] = self[i];\n"
+      + "}\n")
     void copyInto(Object[] newArr) {
         if (arr == null) {
             return;
@@ -41,16 +54,22 @@ final class Vector {
         }
     }
 
+    @JavaScriptBody(args = { "self", "index" }, body =
+        "return self[index];"
+    )
     Object elementAt(int index) {
         return arr[index];
     }
 
-    void setSize(int len) {
+    private void setSize(int len) {
         Object[] newArr = new Object[len];
         copyInto(newArr);
         arr = newArr;
     }
 
+    @JavaScriptBody(args = { "self", "val", "index" }, body = 
+        "self[index] = val;"
+    )
     void setElementAt(Object val, int index) {
         arr[index] = val;
     }
