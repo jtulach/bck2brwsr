@@ -18,12 +18,14 @@
 package org.apidesign.bck2brwsr.launcher;
 
 import java.awt.Desktop;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.net.URI;
 import java.net.URL;
 import java.util.Enumeration;
+import static org.apidesign.bck2brwsr.launcher.Bck2BrwsrLauncher.copyStream;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 import org.glassfish.grizzly.PortRange;
 import org.glassfish.grizzly.http.server.HttpHandler;
@@ -42,15 +44,31 @@ public class Bck2BrwsrLauncher {
         final ClassLoader loader = Bck2BrwsrLauncher.class.getClassLoader();
         
         final ServerConfiguration conf = server.getServerConfiguration();
-        conf.addHttpHandler(new Console(), "/console");
+        conf.addHttpHandler(new Console("org.apidesign.bck2brwsr.launcher.Console", "welcome", "false"), "/console");
         conf.addHttpHandler(new VM(loader), "/bck2brwsr.js");
         conf.addHttpHandler(new Classes(loader), "/classes/");
+        conf.addHttpHandler(new HttpHandler() {
+            @Override
+            public void service(Request request, Response response) throws Exception {
+                String clazz = request.getParameter("class");
+                String method = request.getParameter("method");
+                if (clazz == null || method == null) {
+                    response.setError();
+                    response.setDetailMessage("Need two parameters: class and method name!");
+                    return;
+                }
+                response.setContentType("text/html");
+                OutputStream os = response.getOutputStream();
+                InputStream is = Bck2BrwsrLauncher.class.getResourceAsStream("console.xhtml");
+                copyStream(is, os, clazz, method, "true");
+            }
+        }, "/execute");
         
         server.start();
         NetworkListener listener = server.getListeners().iterator().next();
         int port = listener.getPort();
         
-        URI uri = new URI("http://localhost:" + port + "/console");
+        URI uri = new URI("http://localhost:" + port + "/execute?class=org.apidesign.bck2brwsr.launcher.Console&method=welcome");
         try {
             Desktop.getDesktop().browse(uri);
         } catch (UnsupportedOperationException ex) {
@@ -62,9 +80,29 @@ public class Bck2BrwsrLauncher {
         
         System.in.read();
     }
+    
+    static void copyStream(InputStream is, OutputStream os, String... params) throws IOException {
+        for (;;) {
+            int ch = is.read();
+            if (ch == -1) {
+                break;
+            }
+            if (ch == '$') {
+                int cnt = is.read() - '0';
+                if (cnt < params.length) {
+                    os.write(params[cnt].getBytes());
+                }
+            } else {
+                os.write(ch);
+            }
+        }
+    }
 
     private static class Console extends HttpHandler {
-        public Console() {
+        private final String[] args;
+        
+        public Console(String... args) {
+            this.args = args;
         }
 
         @Override
@@ -72,13 +110,7 @@ public class Bck2BrwsrLauncher {
             response.setContentType("text/html");
             OutputStream os = response.getOutputStream();
             InputStream is = Bck2BrwsrLauncher.class.getResourceAsStream("console.xhtml");
-            for (;;) {
-                int ch = is.read();
-                if (ch == -1) {
-                    break;
-                }
-                os.write(ch);
-            }
+            copyStream(is, os, args);
         }
     }
 
