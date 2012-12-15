@@ -76,6 +76,11 @@ abstract class ByteCodeToJavaScript {
     
     public String compile(InputStream classFile) throws IOException {
         this.jc = new ClassData(classFile);
+        if (jc.getMajor_version() < 50) {
+            throw new IOException("Can't compile " + jc.getClassName() + ". Class file version " + jc.getMajor_version() + "."
+                + jc.getMinor_version() + " - recompile with -target 1.6 (at least)."
+            );
+        }
         byte[] arrData = jc.findAnnotationData(true);
         String[] arr = findAnnotation(arrData, jc, 
             "org.apidesign.bck2brwsr.core.ExtraJavaScript", 
