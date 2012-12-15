@@ -42,68 +42,9 @@ public class Bck2BrwsrLauncher {
         final ClassLoader loader = Bck2BrwsrLauncher.class.getClassLoader();
         
         final ServerConfiguration conf = server.getServerConfiguration();
-        conf.addHttpHandler(new HttpHandler() {
-            @Override
-            public void service(Request request, Response response) throws Exception {
-                response.setContentType("text/html");
-                OutputStream os = response.getOutputStream();
-                InputStream is = Bck2BrwsrLauncher.class.getResourceAsStream("console.xhtml");
-                for (;;) {
-                    int ch = is.read();
-                    if (ch == -1) {
-                        break;
-                    }
-                    os.write(ch);
-                }
-            }
-        }, "/console");
-        conf.addHttpHandler(new HttpHandler() {
-            @Override
-            public void service(Request request, Response response) throws Exception {
-                response.setCharacterEncoding("UTF-8");
-                response.setContentType("text/javascript");
-                Bck2Brwsr.generate(response.getWriter(), loader);
-            }
-        }, "/bck2brwsr.js");
-        conf.addHttpHandler(new HttpHandler() {
-            @Override
-            public void service(Request request, Response response) throws Exception {
-                String res = request.getHttpHandlerPath();
-                if (res.startsWith("/")) {
-                    res = res.substring(1);
-                }
-                Enumeration<URL> en = loader.getResources(res);
-                URL u = null;
-                while (en.hasMoreElements()) {
-                    u = en.nextElement();
-                }
-                if (u == null) {
-                    response.setError();
-                    response.setDetailMessage("Can't find resource " + res);
-                }
-                response.setContentType("text/javascript");
-                InputStream is = u.openStream();
-                Writer w = response.getWriter();
-                w.append("[");
-                for (int i = 0;; i++) {
-                    int b = is.read();
-                    if (b == -1) {
-                        break;
-                    }
-                    if (i > 0) {
-                        w.append(", ");
-                    }
-                    if (i % 20 == 0) {
-                        w.write("\n");
-                    }
-                    if (b > 127) {
-                        b = b - 256;
-                    }
-                    w.append(Integer.toString(b));
-                }
-                w.append("\n]");
-            }
-        }, "/classes/");
+        conf.addHttpHandler(new Console(), "/console");
+        conf.addHttpHandler(new VM(loader), "/bck2brwsr.js");
+        conf.addHttpHandler(new Classes(loader), "/classes/");
         
         server.start();
         NetworkListener listener = server.getListeners().iterator().next();
@@ -120,5 +61,85 @@ public class Bck2BrwsrLauncher {
         }
         
         System.in.read();
+    }
+
+    private static class Console extends HttpHandler {
+        public Console() {
+        }
+
+        @Override
+        public void service(Request request, Response response) throws Exception {
+            response.setContentType("text/html");
+            OutputStream os = response.getOutputStream();
+            InputStream is = Bck2BrwsrLauncher.class.getResourceAsStream("console.xhtml");
+            for (;;) {
+                int ch = is.read();
+                if (ch == -1) {
+                    break;
+                }
+                os.write(ch);
+            }
+        }
+    }
+
+    private static class VM extends HttpHandler {
+        private final ClassLoader loader;
+
+        public VM(ClassLoader loader) {
+            this.loader = loader;
+        }
+
+        @Override
+        public void service(Request request, Response response) throws Exception {
+            response.setCharacterEncoding("UTF-8");
+            response.setContentType("text/javascript");
+            Bck2Brwsr.generate(response.getWriter(), loader);
+        }
+    }
+
+    private static class Classes extends HttpHandler {
+        private final ClassLoader loader;
+
+        public Classes(ClassLoader loader) {
+            this.loader = loader;
+        }
+
+        @Override
+        public void service(Request request, Response response) throws Exception {
+            String res = request.getHttpHandlerPath();
+            if (res.startsWith("/")) {
+                res = res.substring(1);
+            }
+            Enumeration<URL> en = loader.getResources(res);
+            URL u = null;
+            while (en.hasMoreElements()) {
+                u = en.nextElement();
+            }
+            if (u == null) {
+                response.setError();
+                response.setDetailMessage("Can't find resource " + res);
+            }
+            response.setContentType("text/javascript");
+            InputStream is = u.openStream();
+            Writer w = response.getWriter();
+            w.append("[");
+            for (int i = 0;; i++) {
+                int b = is.read();
+                if (b == -1) {
+                    break;
+                }
+                if (i > 0) {
+                    w.append(", ");
+                }
+                if (i % 20 == 0) {
+                    w.write("\n");
+                }
+                if (b > 127) {
+                    b = b - 256;
+                }
+                w.append(Integer.toString(b));
+            }
+            w.append("\n]");
+        }
     }
 }
