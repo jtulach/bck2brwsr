@@ -36,6 +36,10 @@ public class CompareStringsTest {
         return sb.toString().toString();
     }
     
+    @Compare public String nameOfStringClass() throws Exception {
+        return Class.forName("java.lang.String").getName();
+    }
+    
     @Factory
     public static Object[] create() {
         return CompareVMs.create(CompareStringsTest.class);

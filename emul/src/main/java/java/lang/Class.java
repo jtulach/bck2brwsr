@@ -144,8 +144,18 @@ public final
      */
     public static Class<?> forName(String className)
                 throws ClassNotFoundException {
-        throw new UnsupportedOperationException();
+        Class<?> c = loadCls(className.replace('.', '_'));
+        if (c == null) {
+            throw new ClassNotFoundException();
+        }
+        return c;
     }
+    
+    @JavaScriptBody(args = "c", body =
+        "if (vm[c]) return vm[c].$class;"
+      + "else return null;"
+    )
+    private static native Class<?> loadCls(String c);
 
 
     /**
