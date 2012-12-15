@@ -144,18 +144,22 @@ public final
      */
     public static Class<?> forName(String className)
                 throws ClassNotFoundException {
-        Class<?> c = loadCls(className.replace('.', '_'));
+        Class<?> c = loadCls(className, className.replace('.', '_'));
         if (c == null) {
             throw new ClassNotFoundException();
         }
         return c;
     }
     
-    @JavaScriptBody(args = "c", body =
-        "if (vm[c]) return vm[c].$class;"
-      + "else return null;"
+    @JavaScriptBody(args = {"n", "c" }, body =
+        "if (vm[c]) return vm[c].$class;\n"
+      + "if (vm.loadClass) {\n"
+      + "  vm.loadClass(n);\n"
+      + "  if (vm[c]) return vm[c].$class;\n"
+      + "}\n"
+      + "return null;"
     )
-    private static native Class<?> loadCls(String c);
+    private static native Class<?> loadCls(String n, String c);
 
 
     /**

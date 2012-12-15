@@ -17,6 +17,7 @@
  */
 package org.apidesign.vm4brwsr.tck;
 
+import java.lang.reflect.Method;
 import org.apidesign.vm4brwsr.Compare;
 import org.apidesign.vm4brwsr.CompareVMs;
 import org.testng.annotations.Factory;
@@ -39,7 +40,10 @@ public class CompareStringsTest {
     @Compare public String nameOfStringClass() throws Exception {
         return Class.forName("java.lang.String").getName();
     }
-    
+    @Compare public String nameOfArrayClass() throws Exception {
+        return Class.forName("org.apidesign.vm4brwsr.Array").getName();
+    }
+        
     @Factory
     public static Object[] create() {
         return CompareVMs.create(CompareStringsTest.class);
