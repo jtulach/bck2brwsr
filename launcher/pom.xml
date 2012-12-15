@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apidesign</groupId>
+    <artifactId>bck2brwsr</artifactId>
+    <version>0.3-SNAPSHOT</version>
+  </parent>
+  <groupId>org.apidesign.bck2brwsr</groupId>
+  <artifactId>launcher</artifactId>
+  <version>0.3-SNAPSHOT</version>
+  <name>Bck2Brwsr Launcher</name>
+  <url>http://maven.apache.org</url>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.grizzly</groupId>
+      <artifactId>grizzly-http-server</artifactId>
+      <version>2.2.19</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>vm4brwsr</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+</project>

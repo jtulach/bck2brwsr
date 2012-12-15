@@ -14,6 +14,7 @@
     <module>javaquery</module>
     <module>javap</module>
     <module>benchmarks</module>
+    <module>launcher</module>
   </modules>
   <licenses>
       <license>
@@ -109,3 +110,4 @@
       <license>COPYING</license>
   </properties>
 </project>
+
