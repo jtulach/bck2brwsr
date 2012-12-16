@@ -2143,6 +2143,12 @@ public final class String
      * @since 1.4
      * @spec JSR-51
      */
+    @JavaScriptBody(args = { "self", "regex" }, body = 
+          "self = self.toString();\n"
+        + "var re = new RegExp(regex.toString());\n"
+        + "var r = re.exec(self);\n"
+        + "return r != null && r.length > 0 && self.length == r[0].length;"
+    )
     public boolean matches(String regex) {
         throw new UnsupportedOperationException();
     }
@@ -2555,6 +2561,7 @@ public final class String
      * @return  the <code>String</code>, converted to lowercase.
      * @see     java.lang.String#toLowerCase(Locale)
      */
+    @JavaScriptBody(args = "self", body = "return self.toLowerCase();")
     public String toLowerCase() {
         throw new UnsupportedOperationException("Should be supported but without connection to locale");
     }
@@ -2720,6 +2727,7 @@ public final class String
      * @return  the <code>String</code>, converted to uppercase.
      * @see     java.lang.String#toUpperCase(Locale)
      */
+    @JavaScriptBody(args = "self", body = "return self.toUpperCase();")
     public String toUpperCase() {
         throw new UnsupportedOperationException();
     }

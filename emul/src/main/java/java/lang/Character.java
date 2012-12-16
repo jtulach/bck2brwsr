@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+
 /**
  * The {@code Character} class wraps a value of the primitive
  * type {@code char} in an object. An object of type
@@ -1525,7 +1527,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * @see     Character#getType(char)
      */
     public static boolean isLowerCase(char ch) {
-        throw new UnsupportedOperationException();
+        return ch == toLowerCase(ch);
     }
 
     /**
@@ -1560,7 +1562,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * @since   1.0
      */
     public static boolean isUpperCase(char ch) {
-        throw new UnsupportedOperationException();
+        return ch == toUpperCase(ch);
     }
 
     /**
@@ -1676,7 +1678,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * @see     Character#getType(char)
      */
     public static boolean isDigit(char ch) {
-        return isDigit((int)ch);
+        return String.valueOf(ch).matches("\\d");
     }
 
     /**
@@ -1710,8 +1712,11 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * @since   1.5
      */
     public static boolean isDigit(int codePoint) {
-        return getType(codePoint) == Character.DECIMAL_DIGIT_NUMBER;
+        return fromCodeChars(codePoint).matches("\\d");
     }
+    
+    @JavaScriptBody(args = "c", body = "return String.fromCharCode(c);")
+    private native static String fromCodeChars(int codePoint);
 
     /**
      * Determines if a character is defined in Unicode.
@@ -1802,7 +1807,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * @see     Character#isUpperCase(char)
      */
     public static boolean isLetter(char ch) {
-        return isLetter((int)ch);
+        return String.valueOf(ch).matches("\\w") && !isDigit(ch);
     }
 
     /**
@@ -1835,12 +1840,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * @since   1.5
      */
     public static boolean isLetter(int codePoint) {
-        return ((((1 << Character.UPPERCASE_LETTER) |
-            (1 << Character.LOWERCASE_LETTER) |
-            (1 << Character.TITLECASE_LETTER) |
-            (1 << Character.MODIFIER_LETTER) |
-            (1 << Character.OTHER_LETTER)) >> getType(codePoint)) & 1)
-            != 0;
+        return fromCodeChars(codePoint).matches("\\w") && !isDigit(codePoint);
     }
 
     /**
@@ -1868,7 +1868,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * @since   1.0.2
      */
     public static boolean isLetterOrDigit(char ch) {
-        return isLetterOrDigit((int)ch);
+        return String.valueOf(ch).matches("\\w");
     }
 
     /**
@@ -1889,13 +1889,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * @since   1.5
      */
     public static boolean isLetterOrDigit(int codePoint) {
-        return ((((1 << Character.UPPERCASE_LETTER) |
-            (1 << Character.LOWERCASE_LETTER) |
-            (1 << Character.TITLECASE_LETTER) |
-            (1 << Character.MODIFIER_LETTER) |
-            (1 << Character.OTHER_LETTER) |
-            (1 << Character.DECIMAL_DIGIT_NUMBER)) >> getType(codePoint)) & 1)
-            != 0;
+        return fromCodeChars(codePoint).matches("\\w");
     }
     
     static int getType(int x) {
@@ -1930,7 +1924,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * @see     String#toLowerCase()
      */
     public static char toLowerCase(char ch) {
-        throw new UnsupportedOperationException();
+        return String.valueOf(ch).toLowerCase().charAt(0);
     }
 
     /**
@@ -1961,7 +1955,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * @see     String#toUpperCase()
      */
     public static char toUpperCase(char ch) {
-        throw new UnsupportedOperationException();
+        return String.valueOf(ch).toUpperCase().charAt(0);
     }
 
     /**
