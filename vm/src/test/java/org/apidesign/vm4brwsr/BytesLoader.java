@@ -38,9 +38,13 @@ public final class BytesLoader {
             throw new IOException("Can't find " + name);
         }
         byte[] arr = new byte[is.available()];
-        int len = is.read(arr);
-        if (len != arr.length) {
-            throw new IOException("Read only " + len + " wanting " + arr.length);
+        int offset = 0;
+        while (offset < arr.length) {
+            int len = is.read(arr, offset, arr.length - offset);
+            if (len == -1) {
+                throw new IOException("Can't read " + name);
+            }
+            offset += len;
         }
         /*
         System.err.print("loader['" + name + "'] = [");
