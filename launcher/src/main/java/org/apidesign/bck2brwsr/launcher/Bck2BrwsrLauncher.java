@@ -44,8 +44,11 @@ public class Bck2BrwsrLauncher {
         final ClassLoader loader = Bck2BrwsrLauncher.class.getClassLoader();
         
         final ServerConfiguration conf = server.getServerConfiguration();
-        conf.addHttpHandler(new Console("org.apidesign.bck2brwsr.launcher.Console", "welcome", "false"), "/console");
+        conf.addHttpHandler(new Page("console.xhtml", 
+            "org.apidesign.bck2brwsr.launcher.Console", "welcome", "false"
+        ), "/console");
         conf.addHttpHandler(new VM(loader), "/bck2brwsr.js");
+        conf.addHttpHandler(new VMInit(), "/vm.js");
         conf.addHttpHandler(new Classes(loader), "/classes/");
         conf.addHttpHandler(new HttpHandler() {
             @Override
@@ -62,13 +65,25 @@ public class Bck2BrwsrLauncher {
                 InputStream is = Bck2BrwsrLauncher.class.getResourceAsStream("console.xhtml");
                 copyStream(is, os, clazz, method, "true");
             }
-        }, "/execute");
+        }, "/");
+        conf.addHttpHandler(new HttpHandler() {
+            int cnt;
+            @Override
+            public void service(Request request, Response response) throws Exception {
+                response.getWriter().write("{"
+                    + "className: 'org.apidesign.bck2brwsr.launcher.Console',"
+                    + "methodName: 'welcome',"
+                    + "request: " + cnt
+                    + "}");
+            }
+        }, "execute/data");
+        conf.addHttpHandler(new Page("harness.xhtml"), "/execute");
         
         server.start();
         NetworkListener listener = server.getListeners().iterator().next();
         int port = listener.getPort();
         
-        URI uri = new URI("http://localhost:" + port + "/execute?class=org.apidesign.bck2brwsr.launcher.Console&method=welcome");
+        URI uri = new URI("http://localhost:" + port + "/execute");
         try {
             Desktop.getDesktop().browse(uri);
         } catch (UnsupportedOperationException ex) {
@@ -98,10 +113,12 @@ public class Bck2BrwsrLauncher {
         }
     }
 
-    private static class Console extends HttpHandler {
+    private static class Page extends HttpHandler {
+        private final String resource;
         private final String[] args;
         
-        public Console(String... args) {
+        public Page(String resource, String... args) {
+            this.resource = resource;
             this.args = args;
         }
 
@@ -109,7 +126,7 @@ public class Bck2BrwsrLauncher {
         public void service(Request request, Response response) throws Exception {
             response.setContentType("text/html");
             OutputStream os = response.getOutputStream();
-            InputStream is = Bck2BrwsrLauncher.class.getResourceAsStream("console.xhtml");
+            InputStream is = Bck2BrwsrLauncher.class.getResourceAsStream(resource);
             copyStream(is, os, args);
         }
     }
@@ -126,6 +143,25 @@ public class Bck2BrwsrLauncher {
             response.setCharacterEncoding("UTF-8");
             response.setContentType("text/javascript");
             Bck2Brwsr.generate(response.getWriter(), loader);
+        }
+    }
+    private static class VMInit extends HttpHandler {
+        public VMInit() {
+        }
+
+        @Override
+        public void service(Request request, Response response) throws Exception {
+            response.setCharacterEncoding("UTF-8");
+            response.setContentType("text/javascript");
+            response.getWriter().append(
+                "function ldCls(res) {\n"
+                + "  var request = new XMLHttpRequest();\n"
+                + "  request.open('GET', 'classes/' + res, false);\n"
+                + "  request.send();\n"
+                + "  var arr = eval('(' + request.responseText + ')');\n"
+                + "  return arr;\n"
+                + "}\n"
+                + "var vm = new bck2brwsr(ldCls);\n");
         }
     }
 

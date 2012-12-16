@@ -17,7 +17,10 @@
  */
 package org.apidesign.bck2brwsr.launcher;
 
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URL;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
@@ -45,7 +48,23 @@ public class Console {
     public static void execute() throws Exception {
         String clazz = (String) getAttr("clazz", "value");
         String method = (String) getAttr("method", "value");
+        Object res = invokeMethod(clazz, method);
+        setAttr("result", "value", res);
+    }
+    
+    public static void harness() {
+        try {
+            URL u = new URL("/execute/data");
+            String data = (String) u.getContent(new Class[] { String.class });
+            setAttr("result", "value", data);
+        } catch (Exception ex) {
+            setAttr("result", "value", ex.getMessage());
+        }
+    }
 
+    private static Object invokeMethod(String clazz, String method) 
+    throws ClassNotFoundException, InvocationTargetException, 
+    SecurityException, IllegalAccessException, IllegalArgumentException {
         Method found = null;
         Class<?> c = Class.forName(clazz);
         for (Method m : c.getMethods()) {
@@ -59,7 +78,6 @@ public class Console {
         } else {
             res = "Can't find method " + method + " in " + clazz;
         }
-        
-        setAttr("result", "value", res);
+        return res;
     }
 }

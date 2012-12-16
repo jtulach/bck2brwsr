@@ -21,32 +21,19 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
-        <title>Bck2Brwsr Launcher</title>
+        <title>Bck2Brwsr Harness</title>
     </head>
     <body>
         <script src="/bck2brwsr.js"></script>
         <script src="/vm.js"></script>
         
-        <h1>Bck2Browser Console Launcher</h1>
+        <h1>Bck2Browser Execution Harness</h1>
         
-        Class Name:
-        <input id="clazz" value="$0"/>
-        <br/>
-        Method Name:
-
-        <input id="method" value="$1"/>
-        <br/>
-        
-        <button onclick="vm.loadClass('org.apidesign.bck2brwsr.launcher.Console').execute__V();">Execute!</button>
-        
-        <hr/>
         <textarea id="result" rows="10" cols="80" disabled="">
         </textarea>
         
         <script type="text/javascript">
-            if ($2) {
-                vm.loadClass('org.apidesign.bck2brwsr.launcher.Console').execute__V();
-            }
+            vm.loadClass('org.apidesign.bck2brwsr.launcher.Console').harness__V();
         </script>
     </body>
 </html>
