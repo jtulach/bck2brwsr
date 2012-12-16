@@ -20,7 +20,6 @@ package org.apidesign.vm4brwsr;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import static org.testng.Assert.*;
 import javax.script.Invocable;
 import org.testng.annotations.BeforeClass;
@@ -36,13 +35,13 @@ public class VMinVMTest {
     private static Invocable code;
     
     @Test public void compareGeneratedCodeForArrayClass() throws Exception {
-        compareCode("/org/apidesign/vm4brwsr/Array.class");
+        compareCode("org/apidesign/vm4brwsr/Array.class");
     }
 
     @Test public void compareGeneratedCodeForClassesClass() throws Exception {
-        compareCode("/org/apidesign/vm4brwsr/Classes.class");
+        compareCode("org/apidesign/vm4brwsr/Classes.class");
     }
-    
+
     @BeforeClass
     public void compileTheCode() throws Exception {
         StringBuilder sb = new StringBuilder();
@@ -52,20 +51,8 @@ public class VMinVMTest {
         codeSeq = sb;
     }
     
-    private static byte[] readClass(String res) throws IOException {
-        InputStream is1 = VMinVMTest.class.getResourceAsStream(res);
-        assertNotNull(is1, "Stream found");
-        byte[] arr = new byte[is1.available()];
-        int len = is1.read(arr);
-        is1.close();
-        if (len != arr.length) {
-            throw new IOException("Wrong len " + len + " for arr: " + arr.length);
-        }
-        return arr;
-    }
-
     private void compareCode(final String nm) throws Exception, IOException {
-        byte[] arr = readClass(nm);
+        byte[] arr = BytesLoader.readClass(nm);
         String ret1 = VMinVM.toJavaScript(arr);
         
         Object ret;

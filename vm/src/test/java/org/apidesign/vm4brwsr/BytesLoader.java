@@ -33,6 +33,21 @@ public final class BytesLoader {
         if (!requested.add(name)) {
             throw new IllegalStateException("Requested for second time: " + name);
         }
+        byte[] arr = readClass(name);
+        /*
+        System.err.print("loader['" + name + "'] = [");
+        for (int i = 0; i < arr.length; i++) {
+        if (i > 0) {
+        System.err.print(", ");
+        }
+        System.err.print(arr[i]);
+        }
+        System.err.println("]");
+         */
+        return arr;
+    }
+
+    static byte[] readClass(String name) throws IOException {
         InputStream is = BytesLoader.class.getClassLoader().getResourceAsStream(name);
         if (is == null) {
             throw new IOException("Can't find " + name);
@@ -46,16 +61,6 @@ public final class BytesLoader {
             }
             offset += len;
         }
-        /*
-        System.err.print("loader['" + name + "'] = [");
-        for (int i = 0; i < arr.length; i++) {
-        if (i > 0) {
-        System.err.print(", ");
-        }
-        System.err.print(arr[i]);
-        }
-        System.err.println("]");
-         */
         return arr;
     }
     
