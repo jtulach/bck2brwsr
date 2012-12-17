@@ -19,7 +19,6 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
-import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.javap.AnnotationParser;
 import org.apidesign.javap.ClassData;
 import org.apidesign.javap.FieldData;
@@ -637,7 +636,7 @@ abstract class ByteCodeToJavaScript {
                 case opc_i2b:
                 case opc_i2c:
                 case opc_i2s:
-                    out.append("/* number conversion */");
+                    out.append("{ /* number conversion */ }");
                     break;
                 case opc_aconst_null:
                     emit(out, "@1 = null;", smapper.pushA());
