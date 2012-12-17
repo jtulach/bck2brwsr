@@ -25,13 +25,6 @@
 
 package java.net;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.File;
-import java.io.OutputStream;
-import java.util.Hashtable;
-import sun.net.util.IPAddressUtil;
-import sun.net.www.ParseUtil;
 
 /**
  * The abstract class <code>URLStreamHandler</code> is the common
@@ -69,7 +62,7 @@ public abstract class URLStreamHandler {
      * @exception  IOException  if an I/O error occurs while opening the
      *               connection.
      */
-    abstract protected URLConnection openConnection(URL u) throws IOException;
+//    abstract protected URLConnection openConnection(URL u) throws IOException;
 
     /**
      * Same as openConnection(URL), except that the connection will be
@@ -93,9 +86,9 @@ public abstract class URLStreamHandler {
      *               implements the protocol doesn't support this method.
      * @since      1.5
      */
-    protected URLConnection openConnection(URL u, Proxy p) throws IOException {
-        throw new UnsupportedOperationException("Method not implemented.");
-    }
+//    protected URLConnection openConnection(URL u, Proxy p) throws IOException {
+//        throw new UnsupportedOperationException("Method not implemented.");
+//    }
 
     /**
      * Parses the string representation of a <code>URL</code> into a
@@ -185,11 +178,11 @@ public abstract class URLStreamHandler {
 
                         String nhost = host ;
                         host = nhost.substring(0,ind+1);
-                        if (!IPAddressUtil.
-                            isIPv6LiteralAddress(host.substring(1, ind))) {
-                            throw new IllegalArgumentException(
-                                "Invalid host: "+ host);
-                        }
+//                        if (!IPAddressUtil.
+//                            isIPv6LiteralAddress(host.substring(1, ind))) {
+//                            throw new IllegalArgumentException(
+//                                "Invalid host: "+ host);
+//                        }
 
                         port = -1 ;
                         if (nhost.length() > ind+1) {
@@ -351,7 +344,7 @@ public abstract class URLStreamHandler {
             h += protocol.hashCode();
 
         // Generate the host part.
-        InetAddress addr = getHostAddress(u);
+        Object addr = getHostAddress(u);
         if (addr != null) {
             h += addr.hashCode();
         } else {
@@ -425,22 +418,7 @@ public abstract class URLStreamHandler {
      * IP address.
      * @since 1.3
      */
-    protected synchronized InetAddress getHostAddress(URL u) {
-        if (u.hostAddress != null)
-            return u.hostAddress;
-
-        String host = u.getHost();
-        if (host == null || host.equals("")) {
-            return null;
-        } else {
-            try {
-                u.hostAddress = InetAddress.getByName(host);
-            } catch (UnknownHostException ex) {
-                return null;
-            } catch (SecurityException se) {
-                return null;
-            }
-        }
+    private synchronized Object getHostAddress(URL u) {
         return u.hostAddress;
     }
 
@@ -453,8 +431,8 @@ public abstract class URLStreamHandler {
      * @since 1.3
      */
     protected boolean hostsEqual(URL u1, URL u2) {
-        InetAddress a1 = getHostAddress(u1);
-        InetAddress a2 = getHostAddress(u2);
+        Object a1 = getHostAddress(u1);
+        Object a2 = getHostAddress(u2);
         // if we have internet address for both, compare them
         if (a1 != null && a2 != null) {
             return a1.equals(a2);

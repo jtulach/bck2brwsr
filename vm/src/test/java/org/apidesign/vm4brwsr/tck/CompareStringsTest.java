@@ -17,6 +17,8 @@
  */
 package org.apidesign.vm4brwsr.tck;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import org.apidesign.vm4brwsr.Compare;
 import org.apidesign.vm4brwsr.CompareVMs;
 import org.testng.annotations.Factory;
@@ -26,6 +28,10 @@ import org.testng.annotations.Factory;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class CompareStringsTest {
+    @Compare public static Object compareURLs() throws MalformedURLException {
+        return new URL("http://apidesign.org:8080/wiki/").toExternalForm().toString();
+    }
+    
     @Compare public String deleteLastTwoCharacters() {
         StringBuilder sb = new StringBuilder();
         sb.append("453.0");

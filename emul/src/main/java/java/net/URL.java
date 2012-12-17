@@ -196,6 +196,17 @@ public final class URL implements java.io.Serializable {
      */
     private String ref;
 
+    /**
+     * The host's IP address, used in equals and hashCode.
+     * Computed on demand. An uninitialized or unknown hostAddress is null.
+     */
+    transient Object hostAddress;
+
+    /**
+     * The URLStreamHandler for this URL.
+     */
+    transient URLStreamHandler handler;
+
     /* Our hash code.
      * @serial
      */
@@ -308,8 +319,47 @@ public final class URL implements java.io.Serializable {
         this(protocol, host, -1, file);
     }
 
-    private URL(String protocol, String host, int port, String file,
-               Object handler) throws MalformedURLException {
+    /**
+     * Creates a <code>URL</code> object from the specified
+     * <code>protocol</code>, <code>host</code>, <code>port</code>
+     * number, <code>file</code>, and <code>handler</code>. Specifying
+     * a <code>port</code> number of <code>-1</code> indicates that
+     * the URL should use the default port for the protocol. Specifying
+     * a <code>handler</code> of <code>null</code> indicates that the URL
+     * should use a default stream handler for the protocol, as outlined
+     * for:
+     *     java.net.URL#URL(java.lang.String, java.lang.String, int,
+     *                      java.lang.String)
+     *
+     * <p>If the handler is not null and there is a security manager,
+     * the security manager's <code>checkPermission</code>
+     * method is called with a
+     * <code>NetPermission("specifyStreamHandler")</code> permission.
+     * This may result in a SecurityException.
+     *
+     * No validation of the inputs is performed by this constructor.
+     *
+     * @param      protocol   the name of the protocol to use.
+     * @param      host       the name of the host.
+     * @param      port       the port number on the host.
+     * @param      file       the file on the host
+     * @param      handler    the stream handler for the URL.
+     * @exception  MalformedURLException  if an unknown protocol is specified.
+     * @exception  SecurityException
+     *        if a security manager exists and its
+     *        <code>checkPermission</code> method doesn't allow
+     *        specifying a stream handler explicitly.
+     * @see        java.lang.System#getProperty(java.lang.String)
+     * @see        java.net.URL#setURLStreamHandlerFactory(
+     *                  java.net.URLStreamHandlerFactory)
+     * @see        java.net.URLStreamHandler
+     * @see        java.net.URLStreamHandlerFactory#createURLStreamHandler(
+     *                  java.lang.String)
+     * @see        SecurityManager#checkPermission
+     * @see        java.net.NetPermission
+     */
+    public URL(String protocol, String host, int port, String file,
+               URLStreamHandler handler) throws MalformedURLException {
         if (handler != null) {
             throw new SecurityException();
         }
@@ -348,10 +398,11 @@ public final class URL implements java.io.Serializable {
 
         // Note: we don't do validation of the URL here. Too risky to change
         // right now, but worth considering for future reference. -br
-//        if (handler == null &&
-//            (handler = getURLStreamHandler(protocol)) == null) {
-//            throw new MalformedURLException("unknown protocol: " + protocol);
-//        }
+        if (handler == null &&
+            (handler = getURLStreamHandler(protocol)) == null) {
+            throw new MalformedURLException("unknown protocol: " + protocol);
+        }
+        this.handler = handler;
     }
 
     /**
@@ -441,7 +492,7 @@ public final class URL implements java.io.Serializable {
      * @see        java.net.URLStreamHandler#parseURL(java.net.URL,
      *                  java.lang.String, int, int)
      */
-    private URL(URL context, String spec, Object handler)
+    public URL(URL context, String spec, URLStreamHandler handler)
         throws MalformedURLException
     {
         String original = spec;
@@ -494,9 +545,9 @@ public final class URL implements java.io.Serializable {
                             newProtocol.equalsIgnoreCase(context.protocol))) {
                 // inherit the protocol handler from the context
                 // if not specified to the constructor
-//                if (handler == null) {
-//                    handler = context.handler;
-//                }
+                if (handler == null) {
+                    handler = context.handler;
+                }
 
                 // If the context is a hierarchical URL scheme and the spec
                 // contains a matching scheme then maintain backwards
@@ -523,15 +574,15 @@ public final class URL implements java.io.Serializable {
 
             // Get the protocol handler if not specified or the protocol
             // of the context could not be used
-//            if (handler == null &&
-//                (handler = getURLStreamHandler(protocol)) == null) {
-//                throw new MalformedURLException("unknown protocol: "+protocol);
-//            }
-
-//            this.handler = handler;
+            if (handler == null &&
+                (handler = getURLStreamHandler(protocol)) == null) {
+                throw new MalformedURLException("unknown protocol: "+protocol);
+            }
+            this.handler = handler;
 
             i = spec.indexOf('#', start);
             if (i >= 0) {
+//thrw(protocol + " hnd: " + handler.getClass().getName() + " i: " + i);
                 ref = spec.substring(i + 1, limit);
                 limit = i;
             }
@@ -547,7 +598,7 @@ public final class URL implements java.io.Serializable {
                 }
             }
 
-//            handler.parseURL(this, spec, start, limit);
+            handler.parseURL(this, spec, start, limit);
 
         } catch(MalformedURLException e) {
             throw e;
@@ -557,7 +608,7 @@ public final class URL implements java.io.Serializable {
             throw exception;
         }
     }
-
+    
     /*
      * Returns true if specified string is a valid protocol name.
      */
@@ -601,6 +652,7 @@ public final class URL implements java.io.Serializable {
             /* This is very important. We must recompute this after the
              * URL has been changed. */
             hashCode = -1;
+            hostAddress = null;
             int q = file.lastIndexOf('?');
             if (q != -1) {
                 query = file.substring(q+1);
@@ -639,6 +691,7 @@ public final class URL implements java.io.Serializable {
             /* This is very important. We must recompute this after the
              * URL has been changed. */
             hashCode = -1;
+            hostAddress = null;
             this.query = query;
             this.authority = authority;
         }
@@ -694,6 +747,19 @@ public final class URL implements java.io.Serializable {
      */
     public int getPort() {
         return port;
+    }
+
+    /**
+     * Gets the default port number of the protocol associated
+     * with this <code>URL</code>. If the URL scheme or the URLStreamHandler
+     * for the URL do not define a default port number,
+     * then -1 is returned.
+     *
+     * @return  the port number
+     * @since 1.4
+     */
+    public int getDefaultPort() {
+        return handler.getDefaultPort();
     }
 
     /**
@@ -773,8 +839,7 @@ public final class URL implements java.io.Serializable {
             return false;
         URL u2 = (URL)obj;
 
-     //   return handler.equals(this, u2);
-        return u2 == this;
+        return handler.equals(this, u2);
     }
 
     /**
@@ -789,7 +854,7 @@ public final class URL implements java.io.Serializable {
         if (hashCode != -1)
             return hashCode;
 
-     //   hashCode = handler.hashCode(this);
+        hashCode = handler.hashCode(this);
         return hashCode;
     }
 
@@ -805,8 +870,7 @@ public final class URL implements java.io.Serializable {
      *          <code>false</code> otherwise.
      */
     public boolean sameFile(URL other) {
-//        return handler.sameFile(this, other);
-        throw new UnsupportedOperationException();
+        return handler.sameFile(this, other);
     }
 
     /**
@@ -834,8 +898,7 @@ public final class URL implements java.io.Serializable {
      * @see     java.net.URLStreamHandler#toExternalForm(java.net.URL)
      */
     public String toExternalForm() {
-        throw new UnsupportedOperationException();
-//        return handler.toExternalForm(this);
+        return handler.toExternalForm(this);
     }
 
     /**
@@ -925,6 +988,11 @@ public final class URL implements java.io.Serializable {
 //        return openConnection().getContent(classes);
     }
 
+    static URLStreamHandler getURLStreamHandler(String protocol) {
+        Class<URLStreamHandler> c = URLStreamHandler.class; // XXX only here to pre-initialize URLStreamHandler
+        URLStreamHandler universal = new URLStreamHandler() {};
+        return universal;
+    }
 
 }
 
