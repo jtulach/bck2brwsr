@@ -15,10 +15,10 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.vm4brwsr.tck;
+package org.apidesign.bck2brwsr.tck;
 
-import org.apidesign.vm4brwsr.Compare;
-import org.apidesign.vm4brwsr.CompareVMs;
+import org.apidesign.bck2brwsr.vmtest.Compare;
+import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
 
 /**
@@ -37,6 +37,6 @@ public class CompareHashTest {
     
     @Factory
     public static Object[] create() {
-        return CompareVMs.create(CompareHashTest.class);
+        return VMTest.create(CompareHashTest.class);
     }
 }

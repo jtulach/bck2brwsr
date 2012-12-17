@@ -15,15 +15,21 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.vm4brwsr;
+package org.apidesign.bck2brwsr.vmtest;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.Enumeration;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.script.Invocable;
-import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import org.apidesign.vm4brwsr.Bck2Brwsr;
 import org.testng.Assert;
 import org.testng.ITest;
 import org.testng.annotations.Factory;
@@ -33,21 +39,28 @@ import org.testng.annotations.Test;
  * in provided class and builds set of tests that compare the computations
  * in real as well as JavaScript virtual machines. Use as:<pre>
  * {@code @}{@link Factory} public static create() {
- *   return @{link CompareVMs}.{@link #create(YourClass.class);
+ *   return @{link VMTest}.{@link #create(YourClass.class);
  * }</pre>
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public final class CompareVMs implements ITest {
+public final class VMTest implements ITest {
     private final Run first, second;
     private final Method m;
     
-    private CompareVMs(Method m, Run first, Run second) {
+    private VMTest(Method m, Run first, Run second) {
         this.first = first;
         this.second = second;
         this.m = m;
     }
 
+    /** Inspects <code>clazz</code> and for each {@lik Compare} method creates
+     * instances of tests. Each insteance runs the test in different virtual
+     * machine and at the end they compare the results.
+     * 
+     * @param clazz the class to inspect
+     * @return the set of created tests
+     */
     public static Object[] create(Class<?> clazz) {
         Method[] arr = clazz.getMethods();
         Object[] ret = new Object[3 * arr.length];
@@ -61,7 +74,7 @@ public final class CompareVMs implements ITest {
             final Run js = new Run(m, true);
             ret[cnt++] = real;
             ret[cnt++] = js;
-            ret[cnt++] = new CompareVMs(m, real, js);
+            ret[cnt++] = new VMTest(m, real, js);
         }
         Object[] r = new Object[cnt];
         for (int i = 0; i < cnt; i++) {
@@ -69,7 +82,10 @@ public final class CompareVMs implements ITest {
         }
         return r;
     }
-    
+
+    /** Test that compares the previous results.
+     * @throws Throwable 
+     */
     @Test(dependsOnGroups = "run") public void compareResults() throws Throwable {
         Object v1 = first.value;
         Object v2 = second.value;
@@ -79,11 +95,45 @@ public final class CompareVMs implements ITest {
         Assert.assertEquals(v2, v1, "Comparing results");
     }
     
+    /** Test name.
+     * @return name of the tested method followed by a suffix
+     */
     @Override
     public String getTestName() {
         return m.getName() + "[Compare]";
     }
-    
+
+    /** Helper method that inspects the classpath and loads given resource
+     * (usually a class file). Used while running tests in Rhino.
+     * 
+     * @param name resource name to find
+     * @return the array of bytes in the given resource
+     * @throws IOException I/O in case something goes wrong
+     */
+    public static byte[] read(String name) throws IOException {
+        URL u = null;
+        Enumeration<URL> en = VMTest.class.getClassLoader().getResources(name);
+        while (en.hasMoreElements()) {
+            u = en.nextElement();
+        }
+        if (u == null) {
+            throw new IOException("Can't find " + name);
+        }
+        try (InputStream is = u.openStream()) {
+            byte[] arr;
+            arr = new byte[is.available()];
+            int offset = 0;
+            while (offset < arr.length) {
+                int len = is.read(arr, offset, arr.length - offset);
+                if (len == -1) {
+                    throw new IOException("Can't read " + name);
+                }
+                offset += len;
+            }
+            return arr;
+        }
+    }
+   
     public static final class Run implements ITest {
         private final Method m;
         private final boolean js;
@@ -105,15 +155,14 @@ public final class CompareVMs implements ITest {
                 return;
             }
             StringBuilder sb = new StringBuilder();
-            Bck2Brwsr.generate(sb, CompareVMs.class.getClassLoader());
+            Bck2Brwsr.generate(sb, VMTest.class.getClassLoader());
 
             ScriptEngineManager sem = new ScriptEngineManager();
             ScriptEngine js = sem.getEngineByExtension("js");
-            js.getContext().setAttribute("loader", new BytesLoader(), ScriptContext.ENGINE_SCOPE);
             
             sb.append("\nfunction initVM() {"
                 + "\n  return bck2brwsr("
-                + "\n    function(name) { return loader.get(name);}"
+                + "\n    function(name) { return org.apidesign.bck2brwsr.vmtest.VMTest.read(name);}"
                 + "\n  );"
                 + "\n};");
 
@@ -132,7 +181,7 @@ public final class CompareVMs implements ITest {
                     Object inst = code.invokeMethod(vm, "loadClass", m.getDeclaringClass().getName());
                     value = code.invokeMethod(inst, m.getName() + "__" + computeSignature(m));
                 } catch (Exception ex) {
-                    throw new AssertionError(StaticMethodTest.dumpJS(codeSeq)).initCause(ex);
+                    throw new AssertionError(dumpJS(codeSeq)).initCause(ex);
                 }
             } else {
                 value = m.invoke(m.getDeclaringClass().newInstance());
@@ -193,5 +242,13 @@ public final class CompareVMs implements ITest {
             sb.append(t.getName().replace('.', '_'));
             sb.append("_2");
         }
+    }
+    
+    static StringBuilder dumpJS(CharSequence sb) throws IOException {
+        File f = File.createTempFile("execution", ".js");
+        FileWriter w = new FileWriter(f);
+        w.append(sb);
+        w.close();
+        return new StringBuilder(f.getPath());
     }
 }

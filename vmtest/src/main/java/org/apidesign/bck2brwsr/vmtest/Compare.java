@@ -15,7 +15,7 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.vm4brwsr;
+package org.apidesign.bck2brwsr.vmtest;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -23,7 +23,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /** Can be applied on a method that yields a return value. 
- * Together with {@link VMCompare#create} it can be used to write
+ * Together with {@link VMTest#create} it can be used to write
  * methods which are executed in real as well as JavaScript VMs and
  * their results are compared.
  *
