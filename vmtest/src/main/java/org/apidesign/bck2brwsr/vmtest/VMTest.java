@@ -55,7 +55,7 @@ public final class VMTest implements ITest {
     }
 
     /** Inspects <code>clazz</code> and for each {@lik Compare} method creates
-     * instances of tests. Each insteance runs the test in different virtual
+     * instances of tests. Each instance runs the test in different virtual
      * machine and at the end they compare the results.
      * 
      * @param clazz the class to inspect
@@ -140,7 +140,7 @@ public final class VMTest implements ITest {
         Object value;
         private Invocable code;
         private CharSequence codeSeq;
-        private static final Map<Class,Object[]> compiled = new WeakHashMap<Class,Object[]>();
+        private static final Map<Class,Object[]> compiled = new WeakHashMap<>();
 
         private Run(Method m, boolean js) {
             this.m = m;
@@ -158,17 +158,16 @@ public final class VMTest implements ITest {
             Bck2Brwsr.generate(sb, VMTest.class.getClassLoader());
 
             ScriptEngineManager sem = new ScriptEngineManager();
-            ScriptEngine js = sem.getEngineByExtension("js");
+            ScriptEngine mach = sem.getEngineByExtension("js");
             
-            sb.append("\nfunction initVM() {"
-                + "\n  return bck2brwsr("
-                + "\n    function(name) { return org.apidesign.bck2brwsr.vmtest.VMTest.read(name);}"
-                + "\n  );"
-                + "\n};");
+            sb.append(
+                  "\nvar vm = bck2brwsr(org.apidesign.bck2brwsr.vmtest.VMTest.read);"
+                + "\nfunction initVM() { return vm; };"
+                + "\n");
 
-            Object res = js.eval(sb.toString());
-            Assert.assertTrue(js instanceof Invocable, "It is invocable object: " + res);
-            code = (Invocable) js;
+            Object res = mach.eval(sb.toString());
+            Assert.assertTrue(mach instanceof Invocable, "It is invocable object: " + res);
+            code = (Invocable) mach;
             codeSeq = sb;
             compiled.put(clazz, new Object[] { code, codeSeq });
         }
@@ -246,9 +245,9 @@ public final class VMTest implements ITest {
     
     static StringBuilder dumpJS(CharSequence sb) throws IOException {
         File f = File.createTempFile("execution", ".js");
-        FileWriter w = new FileWriter(f);
-        w.append(sb);
-        w.close();
+        try (FileWriter w = new FileWriter(f)) {
+            w.append(sb);
+        }
         return new StringBuilder(f.getPath());
     }
 }
