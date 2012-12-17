@@ -989,7 +989,6 @@ public final class URL implements java.io.Serializable {
     }
 
     static URLStreamHandler getURLStreamHandler(String protocol) {
-        Class<URLStreamHandler> c = URLStreamHandler.class; // XXX only here to pre-initialize URLStreamHandler
         URLStreamHandler universal = new URLStreamHandler() {};
         return universal;
     }
