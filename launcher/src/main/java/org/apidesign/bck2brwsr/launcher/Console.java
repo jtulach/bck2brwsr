@@ -42,8 +42,11 @@ public class Console {
         "window.document.getElementById(id)[attr] = value;")
     private static native void setAttr(String id, String attr, Object value);
 
-    private static void addAttr(String id, String attr, String newText) {
+    private static void log(String newText) {
+        String id = "result";
+        String attr = "value";
         setAttr(id, attr, getAttr(id, attr) + "\n" + newText);
+        setAttr(id, "scrollTop", getAttr(id, "scrollHeight"));
     }
     
     public static void execute() throws Exception {
@@ -54,25 +57,25 @@ public class Console {
     }
     
     public static void harness(String url) {
-        setAttr("result", "value", "Connecting to " + url);
+        log("Connecting to " + url);
         try {
             URL u = new URL(url);
             for (;;) {
                 String data = (String) u.getContent(new Class[] { String.class });
-                addAttr("result", "value", data);
+                log(data);
                 if (data.isEmpty()) {
-                    addAttr("result", "value", "No data, exiting");
+                    log("No data, exiting");
                     break;
                 }
                 
                 Case c = Case.parseData(data);
-                addAttr("result", "value", "className: " + c.getClassName());
-                addAttr("result", "value", "methodName: " + c.getMethodName());
-                addAttr("result", "value", "request: " + c.getRequestId());
+                log("className: " + c.getClassName());
+                log("methodName: " + c.getMethodName());
+                log("request: " + c.getRequestId());
 
                 Object result = invokeMethod(c.getClassName(), c.getMethodName());
 
-                addAttr("result", "value", "result: " + result);
+                log("result: " + result);
                 
                 String toSend;
                 if (result == null) {
@@ -81,13 +84,13 @@ public class Console {
                     toSend = result.toString();
                 }
                 
-                addAttr("result", "value", "Sending back: " + url + "?request=" + c.getRequestId() + "&result=" + toSend);
+                log("Sending back: " + url + "?request=" + c.getRequestId() + "&result=" + toSend);
                 u = new URL(url + "?request=" + c.getRequestId() + "&result=" + toSend);
             }
             
             
         } catch (Exception ex) {
-            addAttr("result", "value", ex.getMessage());
+            log(ex.getMessage());
         }
     }
 
