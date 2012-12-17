@@ -86,8 +86,19 @@ public class CompareStringsTest {
         return sb.toString().toString();
     }
         
+    @Compare
+    public String nullFieldInitialized() {
+        NullField nf = new NullField();
+        return ("" + nf.name).toString();
+    }
+
     @Factory
     public static Object[] create() {
         return CompareVMs.create(CompareStringsTest.class);
+    }
+
+    private static final class NullField {
+
+        String name;
     }
 }

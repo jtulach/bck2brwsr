@@ -47,10 +47,10 @@ final class VMLazy {
     
     static Object load(Object loader, String name, Object[] arguments) 
     throws IOException, ClassNotFoundException {
-        return new VMLazy(loader, arguments).load(name);
+        return new VMLazy(loader, arguments).load(name, false);
     }
     
-    private Object load(String name)
+    private Object load(String name, boolean instance)
     throws IOException, ClassNotFoundException {
         String res = name.replace('.', '/') + ".class";
         byte[] arr = read(loader, res, args);
@@ -64,7 +64,7 @@ final class VMLazy {
         new Gen(this, out).compile(new ByteArrayInputStream(arr));
         String code = out.toString().toString();
         String under = name.replace('.', '_');
-        return applyCode(loader, under, code);
+        return applyCode(loader, under, code, instance);
     }
 
 /* possibly not needed:
@@ -76,15 +76,15 @@ final class VMLazy {
 */
     
 
-    @JavaScriptBody(args = {"loader", "name", "script" }, body =
+    @JavaScriptBody(args = {"loader", "name", "script", "instance" }, body =
         "try {\n" +
         "  new Function(script)(loader, name);\n" +
         "} catch (ex) {\n" +
         "  throw 'Cannot compile ' + ex + ' line: ' + ex.lineNumber + ' script:\\n' + script;\n" +
         "}\n" +
-        "return vm[name](false);\n"
+        "return vm[name](instance);\n"
     )
-    private static native Object applyCode(Object loader, String name, String script);
+    private static native Object applyCode(Object loader, String name, String script, boolean instance);
     
     
     private static final class Gen extends ByteCodeToJavaScript {
@@ -104,7 +104,8 @@ final class VMLazy {
         + "\nvar vm = loader.vm;"
         + "\nif (vm[cls]) return false;"
         + "\nvm[cls] = function() {"
-        + "\n  return lazy.load__Ljava_lang_Object_2Ljava_lang_String_2(lazy, dot);"
+        + "\n  var instance = arguments.length == 0 || arguments[0] === true;"
+        + "\n  return lazy.load__Ljava_lang_Object_2Ljava_lang_String_2Z(lazy, dot, instance);"
         + "\n};"
         + "\nreturn true;")
         @Override
