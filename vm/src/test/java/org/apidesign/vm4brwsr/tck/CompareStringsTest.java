@@ -17,7 +17,8 @@
  */
 package org.apidesign.vm4brwsr.tck;
 
-import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
 import org.apidesign.vm4brwsr.Compare;
 import org.apidesign.vm4brwsr.CompareVMs;
 import org.testng.annotations.Factory;
@@ -27,6 +28,10 @@ import org.testng.annotations.Factory;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class CompareStringsTest {
+    @Compare public static Object compareURLs() throws MalformedURLException {
+        return new URL("http://apidesign.org:8080/wiki/").toExternalForm().toString();
+    }
+    
     @Compare public String deleteLastTwoCharacters() {
         StringBuilder sb = new StringBuilder();
         sb.append("453.0");
@@ -43,9 +48,63 @@ public class CompareStringsTest {
     @Compare public String nameOfArrayClass() throws Exception {
         return Class.forName("org.apidesign.vm4brwsr.Array").getName();
     }
+    
+    @Compare public String lowerHello() {
+        return "HeLlO".toLowerCase();
+    }
+    
+    @Compare public String lowerA() {
+        return String.valueOf(Character.toLowerCase('A')).toString();
+    }
+    @Compare public String upperHello() {
+        return "hello".toUpperCase();
+    }
+    
+    @Compare public String upperA() {
+        return String.valueOf(Character.toUpperCase('a')).toString();
+    }
+    
+    @Compare public boolean matchRegExp() throws Exception {
+        return "58038503".matches("\\d*");
+    }
+
+    @Compare public boolean doesNotMatchRegExp() throws Exception {
+        return "58038503GH".matches("\\d*");
+    }
+
+    @Compare public boolean doesNotMatchRegExpFully() throws Exception {
+        return "Hello".matches("Hell");
+    }
+    
+    @Compare public String variousCharacterTests() throws Exception {
+        StringBuilder sb = new StringBuilder();
         
+        sb.append(Character.isUpperCase('a'));
+        sb.append(Character.isUpperCase('A'));
+        sb.append(Character.isLowerCase('a'));
+        sb.append(Character.isLowerCase('A'));
+        
+        sb.append(Character.isLetter('A'));
+        sb.append(Character.isLetterOrDigit('9'));
+        sb.append(Character.isLetterOrDigit('A'));
+        sb.append(Character.isLetter('0'));
+        
+        return sb.toString().toString();
+    }
+        
+    @Compare
+    public String nullFieldInitialized() {
+        NullField nf = new NullField();
+        return ("" + nf.name).toString();
+    }
+
     @Factory
     public static Object[] create() {
         return CompareVMs.create(CompareStringsTest.class);
+    }
+
+    private static final class NullField {
+
+        String name;
     }
 }

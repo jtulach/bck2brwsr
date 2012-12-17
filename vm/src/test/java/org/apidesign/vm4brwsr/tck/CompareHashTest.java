@@ -30,6 +30,11 @@ public class CompareHashTest {
         return "Ahoj".hashCode();
     }
     
+    @Compare public int hashRemainsYieldsZero() {
+        Object o = new Object();
+        return o.hashCode() - o.hashCode();
+    }
+    
     @Factory
     public static Object[] create() {
         return CompareVMs.create(CompareHashTest.class);

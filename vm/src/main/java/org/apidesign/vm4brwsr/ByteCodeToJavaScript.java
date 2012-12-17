@@ -19,7 +19,6 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
-import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.javap.AnnotationParser;
 import org.apidesign.javap.ClassData;
 import org.apidesign.javap.FieldData;
@@ -76,6 +75,11 @@ abstract class ByteCodeToJavaScript {
     
     public String compile(InputStream classFile) throws IOException {
         this.jc = new ClassData(classFile);
+        if (jc.getMajor_version() < 50) {
+            throw new IOException("Can't compile " + jc.getClassName() + ". Class file version " + jc.getMajor_version() + "."
+                + jc.getMinor_version() + " - recompile with -target 1.6 (at least)."
+            );
+        }
         byte[] arrData = jc.findAnnotationData(true);
         String[] arr = findAnnotation(arrData, jc, 
             "org.apidesign.bck2brwsr.core.ExtraJavaScript", 
@@ -632,7 +636,7 @@ abstract class ByteCodeToJavaScript {
                 case opc_i2b:
                 case opc_i2c:
                 case opc_i2s:
-                    out.append("/* number conversion */");
+                    out.append("{ /* number conversion */ }");
                     break;
                 case opc_aconst_null:
                     emit(out, "@1 = null;", smapper.pushA());

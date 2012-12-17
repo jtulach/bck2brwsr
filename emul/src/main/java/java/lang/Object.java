@@ -104,6 +104,11 @@ public class Object {
      * @see     java.lang.Object#equals(java.lang.Object)
      * @see     java.lang.System#identityHashCode
      */
+    @JavaScriptBody(args = "self", body = 
+        "if (self.$hashCode) return self.$hashCode;\n"
+        + "var h = Math.random() * Math.pow(2, 32);\n"
+        + "return self.$hashCode = h & h;"
+    )
     public native int hashCode();
 
     /**
