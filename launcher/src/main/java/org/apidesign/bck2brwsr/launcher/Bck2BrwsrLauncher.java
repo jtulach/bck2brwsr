@@ -25,6 +25,7 @@ import java.io.Writer;
 import java.net.URI;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.concurrent.CountDownLatch;
 import static org.apidesign.bck2brwsr.launcher.Bck2BrwsrLauncher.copyStream;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 import org.glassfish.grizzly.PortRange;
@@ -40,6 +41,12 @@ import org.glassfish.grizzly.http.server.ServerConfiguration;
  */
 public class Bck2BrwsrLauncher {
     public static void main( String[] args ) throws Exception {
+        final Case[] cases = { 
+            new Case("org.apidesign.bck2brwsr.launcher.Console", "welcome"),
+            new Case("org.apidesign.bck2brwsr.launcher.Console", "multiply")
+        };
+        final CountDownLatch wait = new CountDownLatch(1);
+        
         HttpServer server = HttpServer.createSimpleServer(".", new PortRange(8080, 65535));
         final ClassLoader loader = Bck2BrwsrLauncher.class.getClassLoader();
         
@@ -70,13 +77,28 @@ public class Bck2BrwsrLauncher {
             int cnt;
             @Override
             public void service(Request request, Response response) throws Exception {
+                String id = request.getParameter("request");
+                String value = request.getParameter("result");
+                if (id != null && value != null) {
+                    value = value.replace("%20", " ");
+                    cases[Integer.parseInt(id)].result = value;
+                }
+                
+                if (cnt >= cases.length) {
+                    response.getWriter().write("");
+                    wait.countDown();
+                    cnt = 0;
+                    return;
+                }
+                
                 response.getWriter().write("{"
-                    + "className: 'org.apidesign.bck2brwsr.launcher.Console',"
-                    + "methodName: 'welcome',"
+                    + "className: '" + cases[cnt].className + "', "
+                    + "methodName: '" + cases[cnt].methodName + "', "
                     + "request: " + cnt
                     + "}");
+                cnt++;
             }
-        }, "execute/data");
+        }, "/data");
         conf.addHttpHandler(new Page("harness.xhtml"), "/execute");
         
         server.start();
@@ -93,10 +115,14 @@ public class Bck2BrwsrLauncher {
             Runtime.getRuntime().exec(cmd).waitFor();
         }
         
-        System.in.read();
+        wait.await();
+        
+        for (Case c : cases) {
+            System.err.println(c.className + "." + c.methodName + " = " + c.result);
+        }
     }
     
-    static void copyStream(InputStream is, OutputStream os, String... params) throws IOException {
+    static void copyStream(InputStream is, OutputStream os, String baseURL, String... params) throws IOException {
         for (;;) {
             int ch = is.read();
             if (ch == -1) {
@@ -104,6 +130,9 @@ public class Bck2BrwsrLauncher {
             }
             if (ch == '$') {
                 int cnt = is.read() - '0';
+                if (cnt == 'U' - '0') {
+                    os.write(baseURL.getBytes());
+                }
                 if (cnt < params.length) {
                     os.write(params[cnt].getBytes());
                 }
@@ -127,7 +156,7 @@ public class Bck2BrwsrLauncher {
             response.setContentType("text/html");
             OutputStream os = response.getOutputStream();
             InputStream is = Bck2BrwsrLauncher.class.getResourceAsStream(resource);
-            copyStream(is, os, args);
+            copyStream(is, os, request.getRequestURL().toString(), args);
         }
     }
 
@@ -208,6 +237,17 @@ public class Bck2BrwsrLauncher {
                 w.append(Integer.toString(b));
             }
             w.append("\n]");
+        }
+    }
+    
+    private static final class Case {
+        final String className;
+        final String methodName;
+        String result;
+
+        public Case(String className, String methodName) {
+            this.className = className;
+            this.methodName = methodName;
         }
     }
 }
