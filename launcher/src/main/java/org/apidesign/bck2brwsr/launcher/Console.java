@@ -62,20 +62,18 @@ public class Console {
             URL u = new URL(url);
             for (;;) {
                 String data = (String) u.getContent(new Class[] { String.class });
-                log(data);
+                log("\nGot \"" + data + "\"");
                 if (data.isEmpty()) {
                     log("No data, exiting");
                     break;
                 }
                 
                 Case c = Case.parseData(data);
-                log("className: " + c.getClassName());
-                log("methodName: " + c.getMethodName());
-                log("request: " + c.getRequestId());
+                log("Invoking " + c.getClassName() + '.' + c.getMethodName() + " as request: " + c.getRequestId());
 
                 Object result = invokeMethod(c.getClassName(), c.getMethodName());
 
-                log("result: " + result);
+                log("Result: " + result);
                 
                 String toSend;
                 if (result == null) {
