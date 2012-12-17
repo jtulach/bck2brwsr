@@ -19,6 +19,8 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.util.Enumeration;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -48,20 +50,27 @@ public final class BytesLoader {
     }
 
     static byte[] readClass(String name) throws IOException {
-        InputStream is = BytesLoader.class.getClassLoader().getResourceAsStream(name);
-        if (is == null) {
+        URL u = null;
+        Enumeration<URL> en = BytesLoader.class.getClassLoader().getResources(name);
+        while (en.hasMoreElements()) {
+            u = en.nextElement();
+        }
+        if (u == null) {
             throw new IOException("Can't find " + name);
         }
-        byte[] arr = new byte[is.available()];
-        int offset = 0;
-        while (offset < arr.length) {
-            int len = is.read(arr, offset, arr.length - offset);
-            if (len == -1) {
-                throw new IOException("Can't read " + name);
+        try (InputStream is = u.openStream()) {
+            byte[] arr;
+            arr = new byte[is.available()];
+            int offset = 0;
+            while (offset < arr.length) {
+                int len = is.read(arr, offset, arr.length - offset);
+                if (len == -1) {
+                    throw new IOException("Can't read " + name);
+                }
+                offset += len;
             }
-            offset += len;
+            return arr;
         }
-        return arr;
     }
     
 }
