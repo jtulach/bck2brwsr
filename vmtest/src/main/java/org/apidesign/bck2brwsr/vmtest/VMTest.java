@@ -26,6 +26,8 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -33,6 +35,7 @@ import org.apidesign.bck2brwsr.launcher.Bck2BrwsrLauncher;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 import org.testng.Assert;
 import org.testng.ITest;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 
@@ -145,10 +148,16 @@ public final class VMTest implements ITest {
         private Invocable code;
         private CharSequence codeSeq;
         private static final Map<Class,Object[]> compiled = new WeakHashMap<>();
+        private Object inst;
 
         private Run(Method m, int type) {
             this.m = m;
             this.type = type;
+            try {
+                initialize();
+            } catch (Throwable ex) {
+                Logger.getLogger(VMTest.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
 
         private void compileTheCode(Class<?> clazz) throws Exception {
@@ -175,22 +184,27 @@ public final class VMTest implements ITest {
             codeSeq = sb;
             compiled.put(clazz, new Object[] { code, codeSeq });
         }
+        
+        private void initialize() throws Throwable {
+            if (type == 1) {
+                compileTheCode(m.getDeclaringClass());
+                Object vm = code.invokeFunction("initVM");
+                inst = code.invokeMethod(vm, "loadClass", m.getDeclaringClass().getName());
+            } else if (type == 2) {
+                inst = addBrowserMethod(m.getDeclaringClass(), m.getName());
+            }
+        }
 
         @Test(groups = "run") public void executeCode() throws Throwable {
             if (type == 1) {
                 try {
-                    compileTheCode(m.getDeclaringClass());
-                    Object vm = code.invokeFunction("initVM");
-                    Object inst = code.invokeMethod(vm, "loadClass", m.getDeclaringClass().getName());
                     value = code.invokeMethod(inst, m.getName() + "__" + computeSignature(m));
                 } catch (Exception ex) {
                     throw new AssertionError(dumpJS(codeSeq)).initCause(ex);
                 }
             } else if (type == 2) {
-                Bck2BrwsrLauncher l = new Bck2BrwsrLauncher();
-                l.setTimeout(5000);
-                Bck2BrwsrLauncher.MethodInvocation c = l.addMethod(m.getDeclaringClass(), m.getName());
-                l.execute();
+                Bck2BrwsrLauncher.MethodInvocation c = (Bck2BrwsrLauncher.MethodInvocation) inst;
+                execBrowser();
                 value = c.toString();
             } else {
                 value = m.invoke(m.getDeclaringClass().newInstance());
@@ -268,5 +282,29 @@ public final class VMTest implements ITest {
             w.append(sb);
         }
         return new StringBuilder(f.getPath());
+    }
+    
+    private static Bck2BrwsrLauncher launcher;
+
+    private static synchronized Bck2BrwsrLauncher.MethodInvocation addBrowserMethod(
+        Class<?> clazz, String name
+    ) {
+        if (launcher == null) {
+            launcher = new Bck2BrwsrLauncher();
+            launcher.setTimeout(5000);
+        }
+        return launcher.addMethod(clazz, name);
+    }
+    
+    private static void execBrowser() throws Exception {
+        Bck2BrwsrLauncher l = clearBrowser();
+        if (l != null) {
+            l.execute();
+        }
+    }
+    private static synchronized Bck2BrwsrLauncher clearBrowser() {
+        Bck2BrwsrLauncher l = launcher;
+        launcher = null;
+        return l;
     }
 }
