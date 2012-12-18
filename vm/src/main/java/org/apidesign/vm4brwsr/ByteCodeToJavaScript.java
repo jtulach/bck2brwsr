@@ -453,7 +453,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 = @2;", lmapper.setD(3), smapper.popD());
                     break;
                 case opc_iadd:
-                    emit(out, "@1 += @2;", smapper.getI(1), smapper.popI());
+                    emit(out, "@1 = (@1 + @2) | 0;", smapper.getI(1), smapper.popI());
                     break;
                 case opc_ladd:
                     emit(out, "@1 += @2;", smapper.getL(1), smapper.popL());
@@ -465,7 +465,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 += @2;", smapper.getD(1), smapper.popD());
                     break;
                 case opc_isub:
-                    emit(out, "@1 -= @2;", smapper.getI(1), smapper.popI());
+                    emit(out, "@1 = (@1 - @2) | 0;", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lsub:
                     emit(out, "@1 -= @2;", smapper.getL(1), smapper.popL());
@@ -477,7 +477,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 -= @2;", smapper.getD(1), smapper.popD());
                     break;
                 case opc_imul:
-                    emit(out, "@1 *= @2;", smapper.getI(1), smapper.popI());
+                    emit(out, "@1 = (((@1 * (@2 >> 16)) << 16) + @1 * (@2 & 0xFFFF)) | 0;", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lmul:
                     emit(out, "@1 *= @2;", smapper.getL(1), smapper.popL());

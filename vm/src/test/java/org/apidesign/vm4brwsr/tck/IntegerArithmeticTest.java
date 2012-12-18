@@ -17,7 +17,6 @@
  */
 package org.apidesign.vm4brwsr.tck;
 
-import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.vm4brwsr.Compare;
 import org.apidesign.vm4brwsr.CompareVMs;
 import org.testng.annotations.Factory;
@@ -27,30 +26,53 @@ import org.testng.annotations.Factory;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class IntegerArithmeticTest {
-    //@JavaScriptBody(args="msg", body="java.lang.System.out.println(msg.toString());")
-    //private static native void log(String msg);
     
-    @Compare public int overflow() {
-        int v = Integer.MAX_VALUE + 1;
-        return v;
+    private static int add(int x, int y) {
+        return x + y;
     }
     
-    @Compare public int underflow() {
-        int v = Integer.MIN_VALUE - 1;
-        return v;
+    private static int sub(int x, int y) {
+        return x - y;
     }
     
-    /* @Compare public int convertToInt() {
-        long v = Long.MAX_VALUE / 2;
-        log("convert: " + v);
-        return (int) v;
-    } */
-    @Compare public int addAndMaxInt() {
-        return Integer.MAX_VALUE + Integer.MAX_VALUE;
+    private static int mul(int x, int y) {
+        return x * y;
+    }
+    
+    @Compare public int addOverflow() {
+        return add(Integer.MAX_VALUE, 1);
+    }
+    
+    @Compare public int subUnderflow() {
+        return sub(Integer.MIN_VALUE, 1);
+    }
+    
+    @Compare public int addMaxIntAndMaxInt() {
+        return add(Integer.MAX_VALUE, Integer.MAX_VALUE);
+    }
+    
+    @Compare public int subMinIntAndMinInt() {
+        return sub(Integer.MIN_VALUE, Integer.MIN_VALUE);
     }
     
     @Compare public int multiplyMaxInt() {
-        return Integer.MAX_VALUE * Integer.MAX_VALUE;
+        return mul(Integer.MAX_VALUE, 2);
+    }
+    
+    @Compare public int multiplyMaxIntAndMaxInt() {
+        return mul(Integer.MAX_VALUE, Integer.MAX_VALUE);
+    }
+    
+    @Compare public int multiplyMinInt() {
+        return mul(Integer.MIN_VALUE, 2);
+    }
+    
+    @Compare public int multiplyMinIntAndMinInt() {
+        return mul(Integer.MIN_VALUE, Integer.MIN_VALUE);
+    }
+    
+    @Compare public int multiplyPrecision() {
+        return mul(119106029, 1103515245);
     }
     
     @Factory
