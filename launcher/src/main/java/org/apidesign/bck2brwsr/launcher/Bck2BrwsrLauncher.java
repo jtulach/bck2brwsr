@@ -23,8 +23,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import static org.apidesign.bck2brwsr.launcher.Bck2BrwsrLauncher.copyStream;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
@@ -40,39 +45,50 @@ import org.glassfish.grizzly.http.server.ServerConfiguration;
  * Lightweight server to launch Bck2Brwsr applications in real browser.
  */
 public class Bck2BrwsrLauncher {
+    private Set<ClassLoader> loaders = new LinkedHashSet<>();
+    private List<MethodInvocation> methods = new ArrayList<>();
+    
+    
+    public MethodInvocation addMethod(Class<?> clazz, String method) {
+        loaders.add(clazz.getClassLoader());
+        MethodInvocation c = new MethodInvocation(clazz.getName(), method);
+        methods.add(c);
+        return c;
+    }
+    
+    
+    
     public static void main( String[] args ) throws Exception {
-        final Case[] cases = { 
-            new Case("org.apidesign.bck2brwsr.launcher.Console", "welcome"),
-            new Case("org.apidesign.bck2brwsr.launcher.Console", "multiply")
+        Bck2BrwsrLauncher l = new Bck2BrwsrLauncher();
+        
+        final MethodInvocation[] cases = { 
+            l.addMethod(Console.class, "welcome"),
+            l.addMethod(Console.class, "multiply"),
         };
+        
+        l.execute();
+        
+        for (MethodInvocation c : cases) {
+            System.err.println(c.className + "." + c.methodName + " = " + c.result);
+        }
+    }
+
+
+    public void execute() throws URISyntaxException, IOException, InterruptedException {
         final CountDownLatch wait = new CountDownLatch(1);
+        final MethodInvocation[] cases = this.methods.toArray(new MethodInvocation[0]);
         
         HttpServer server = HttpServer.createSimpleServer(".", new PortRange(8080, 65535));
-        final ClassLoader loader = Bck2BrwsrLauncher.class.getClassLoader();
+        
+        Res resources = new Res();
         
         final ServerConfiguration conf = server.getServerConfiguration();
         conf.addHttpHandler(new Page("console.xhtml", 
             "org.apidesign.bck2brwsr.launcher.Console", "welcome", "false"
         ), "/console");
-        conf.addHttpHandler(new VM(loader), "/bck2brwsr.js");
+        conf.addHttpHandler(new VM(resources), "/bck2brwsr.js");
         conf.addHttpHandler(new VMInit(), "/vm.js");
-        conf.addHttpHandler(new Classes(loader), "/classes/");
-        conf.addHttpHandler(new HttpHandler() {
-            @Override
-            public void service(Request request, Response response) throws Exception {
-                String clazz = request.getParameter("class");
-                String method = request.getParameter("method");
-                if (clazz == null || method == null) {
-                    response.setError();
-                    response.setDetailMessage("Need two parameters: class and method name!");
-                    return;
-                }
-                response.setContentType("text/html");
-                OutputStream os = response.getOutputStream();
-                InputStream is = Bck2BrwsrLauncher.class.getResourceAsStream("console.xhtml");
-                copyStream(is, os, clazz, method, "true");
-            }
-        }, "/");
+        conf.addHttpHandler(new Classes(resources), "/classes/");
         conf.addHttpHandler(new HttpHandler() {
             int cnt;
             @Override
@@ -99,7 +115,7 @@ public class Bck2BrwsrLauncher {
                 cnt++;
             }
         }, "/data");
-        conf.addHttpHandler(new Page("harness.xhtml"), "/execute");
+        conf.addHttpHandler(new Page("harness.xhtml"), "/");
         
         server.start();
         NetworkListener listener = server.getListeners().iterator().next();
@@ -116,10 +132,6 @@ public class Bck2BrwsrLauncher {
         }
         
         wait.await();
-        
-        for (Case c : cases) {
-            System.err.println(c.className + "." + c.methodName + " = " + c.result);
-        }
     }
     
     static void copyStream(InputStream is, OutputStream os, String baseURL, String... params) throws IOException {
@@ -139,6 +151,23 @@ public class Bck2BrwsrLauncher {
             } else {
                 os.write(ch);
             }
+        }
+    }
+    
+    private class Res implements Bck2Brwsr.Resources {
+        @Override
+        public InputStream get(String resource) throws IOException {
+            for (ClassLoader l : loaders) {
+                URL u = null;
+                Enumeration<URL> en = l.getResources(resource);
+                while (en.hasMoreElements()) {
+                    u = en.nextElement();
+                }
+                if (u != null) {
+                    return u.openStream();
+                }
+            }
+            throw new IOException("Can't find " + resource);
         }
     }
 
@@ -161,9 +190,9 @@ public class Bck2BrwsrLauncher {
     }
 
     private static class VM extends HttpHandler {
-        private final ClassLoader loader;
+        private final Res loader;
 
-        public VM(ClassLoader loader) {
+        public VM(Res loader) {
             this.loader = loader;
         }
 
@@ -195,9 +224,9 @@ public class Bck2BrwsrLauncher {
     }
 
     private static class Classes extends HttpHandler {
-        private final ClassLoader loader;
+        private final Res loader;
 
-        public Classes(ClassLoader loader) {
+        public Classes(Res loader) {
             this.loader = loader;
         }
 
@@ -207,47 +236,47 @@ public class Bck2BrwsrLauncher {
             if (res.startsWith("/")) {
                 res = res.substring(1);
             }
-            Enumeration<URL> en = loader.getResources(res);
-            URL u = null;
-            while (en.hasMoreElements()) {
-                u = en.nextElement();
-            }
-            if (u == null) {
+            try (InputStream is = loader.get(res)) {
+                response.setContentType("text/javascript");
+                Writer w = response.getWriter();
+                w.append("[");
+                for (int i = 0;; i++) {
+                    int b = is.read();
+                    if (b == -1) {
+                        break;
+                    }
+                    if (i > 0) {
+                        w.append(", ");
+                    }
+                    if (i % 20 == 0) {
+                        w.write("\n");
+                    }
+                    if (b > 127) {
+                        b = b - 256;
+                    }
+                    w.append(Integer.toString(b));
+                }
+                w.append("\n]");
+            } catch (IOException ex) {
                 response.setError();
-                response.setDetailMessage("Can't find resource " + res);
+                response.setDetailMessage(ex.getMessage());
             }
-            response.setContentType("text/javascript");
-            InputStream is = u.openStream();
-            Writer w = response.getWriter();
-            w.append("[");
-            for (int i = 0;; i++) {
-                int b = is.read();
-                if (b == -1) {
-                    break;
-                }
-                if (i > 0) {
-                    w.append(", ");
-                }
-                if (i % 20 == 0) {
-                    w.write("\n");
-                }
-                if (b > 127) {
-                    b = b - 256;
-                }
-                w.append(Integer.toString(b));
-            }
-            w.append("\n]");
         }
     }
     
-    private static final class Case {
+    public static final class MethodInvocation {
         final String className;
         final String methodName;
         String result;
 
-        public Case(String className, String methodName) {
+        MethodInvocation(String className, String methodName) {
             this.className = className;
             this.methodName = methodName;
+        }
+
+        @Override
+        public String toString() {
+            return result;
         }
     }
 }
