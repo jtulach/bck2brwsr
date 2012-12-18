@@ -31,6 +31,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import static org.apidesign.bck2brwsr.launcher.Bck2BrwsrLauncher.copyStream;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 import org.glassfish.grizzly.PortRange;
@@ -47,6 +48,7 @@ import org.glassfish.grizzly.http.server.ServerConfiguration;
 public class Bck2BrwsrLauncher {
     private Set<ClassLoader> loaders = new LinkedHashSet<>();
     private List<MethodInvocation> methods = new ArrayList<>();
+    private long timeOut;
     
     
     public MethodInvocation addMethod(Class<?> clazz, String method) {
@@ -56,7 +58,9 @@ public class Bck2BrwsrLauncher {
         return c;
     }
     
-    
+    public void setTimeout(long ms) {
+        timeOut = ms;
+    }
     
     public static void main( String[] args ) throws Exception {
         Bck2BrwsrLauncher l = new Bck2BrwsrLauncher();
@@ -131,7 +135,8 @@ public class Bck2BrwsrLauncher {
             Runtime.getRuntime().exec(cmd).waitFor();
         }
         
-        wait.await();
+        wait.await(timeOut, TimeUnit.MILLISECONDS);
+        server.stop();
     }
     
     static void copyStream(InputStream is, OutputStream os, String baseURL, String... params) throws IOException {

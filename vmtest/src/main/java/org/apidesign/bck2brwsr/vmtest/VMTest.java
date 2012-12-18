@@ -29,6 +29,7 @@ import java.util.WeakHashMap;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import org.apidesign.bck2brwsr.launcher.Bck2BrwsrLauncher;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 import org.testng.Assert;
 import org.testng.ITest;
@@ -63,18 +64,21 @@ public final class VMTest implements ITest {
      */
     public static Object[] create(Class<?> clazz) {
         Method[] arr = clazz.getMethods();
-        Object[] ret = new Object[3 * arr.length];
+        Object[] ret = new Object[5 * arr.length];
         int cnt = 0;
         for (Method m : arr) {
             Compare c = m.getAnnotation(Compare.class);
             if (c == null) {
                 continue;
             }
-            final Run real = new Run(m, false);
-            final Run js = new Run(m, true);
+            final Run real = new Run(m, 0);
+            final Run js = new Run(m, 1);
+            final Run brwsr = new Run(m, 2);
             ret[cnt++] = real;
             ret[cnt++] = js;
+            ret[cnt++] = brwsr;
             ret[cnt++] = new VMTest(m, real, js);
+            ret[cnt++] = new VMTest(m, real, brwsr);
         }
         Object[] r = new Object[cnt];
         for (int i = 0; i < cnt; i++) {
@@ -100,7 +104,7 @@ public final class VMTest implements ITest {
      */
     @Override
     public String getTestName() {
-        return m.getName() + "[Compare]";
+        return m.getName() + "[Compare " + second.typeName() + "]";
     }
 
     /** Helper method that inspects the classpath and loads given resource
@@ -136,15 +140,15 @@ public final class VMTest implements ITest {
    
     public static final class Run implements ITest {
         private final Method m;
-        private final boolean js;
+        private final int type;
         Object value;
         private Invocable code;
         private CharSequence codeSeq;
         private static final Map<Class,Object[]> compiled = new WeakHashMap<>();
 
-        private Run(Method m, boolean js) {
+        private Run(Method m, int type) {
             this.m = m;
-            this.js = js;
+            this.type = type;
         }
 
         private void compileTheCode(Class<?> clazz) throws Exception {
@@ -173,7 +177,7 @@ public final class VMTest implements ITest {
         }
 
         @Test(groups = "run") public void executeCode() throws Throwable {
-            if (js) {
+            if (type == 1) {
                 try {
                     compileTheCode(m.getDeclaringClass());
                     Object vm = code.invokeFunction("initVM");
@@ -182,13 +186,28 @@ public final class VMTest implements ITest {
                 } catch (Exception ex) {
                     throw new AssertionError(dumpJS(codeSeq)).initCause(ex);
                 }
+            } else if (type == 2) {
+                Bck2BrwsrLauncher l = new Bck2BrwsrLauncher();
+                l.setTimeout(5000);
+                Bck2BrwsrLauncher.MethodInvocation c = l.addMethod(m.getDeclaringClass(), m.getName());
+                l.execute();
+                value = c.toString();
             } else {
                 value = m.invoke(m.getDeclaringClass().newInstance());
             }
         }
         @Override
         public String getTestName() {
-            return m.getName() + (js ? "[JavaScript]" : "[Java]");
+            return m.getName() + "[" + typeName() + "]";
+        }
+        
+        final String typeName() {
+            switch (type) {
+                case 0: return "Java";
+                case 1: return "JavaScript";
+                case 2: return "Browser";
+                default: return "Unknown type " + type;
+            }
         }
         
         private static String computeSignature(Method m) {

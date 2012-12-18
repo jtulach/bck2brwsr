@@ -56,6 +56,11 @@ public class Console {
         setAttr("result", "value", res);
     }
     
+    @JavaScriptBody(args = "o", body = "return '' + o;")
+    private static String tS(Object o) {
+        return o.toString();
+    }
+    
     public static void harness(String url) {
         log("Connecting to " + url);
         try {
@@ -75,12 +80,7 @@ public class Console {
 
                 log("Result: " + result);
                 
-                String toSend;
-                if (result == null) {
-                    toSend = "null";
-                } else {
-                    toSend = result.toString();
-                }
+                String toSend = tS(result);
                 
                 log("Sending back: " + url + "?request=" + c.getRequestId() + "&result=" + toSend);
                 u = new URL(url + "?request=" + c.getRequestId() + "&result=" + toSend);
