@@ -1090,10 +1090,12 @@ public final
         throw new UnsupportedOperationException();
     }
 
-    static Class getPrimitiveClass(String type) {
-        // XXX
-        return Object.class;
-    }
+    @JavaScriptBody(args = "type", body = ""
+        + "var c = vm.java_lang_Class(true);"
+        + "c.jvmName = type;"
+        + "return c;"
+    )
+    native static Class getPrimitiveClass(String type);
 
     public boolean desiredAssertionStatus() {
         return false;

@@ -117,6 +117,13 @@ public class ClassTest {
         );
     }
     
+    @Test public void integerType() throws Exception {
+        assertExec("Computes the type", Classes.class, 
+            "intType__Ljava_lang_String_2", 
+            Classes.intType()
+        );
+    }
+    
     private static CharSequence codeSeq;
     private static Invocable code;
     

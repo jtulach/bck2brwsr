@@ -88,6 +88,10 @@ public class Classes {
         return null;
     }
     
+    public static String intType() {
+        return Integer.TYPE.getName();
+    }
+    
     @JavaScriptBody(args = "msg", body = "throw msg;")
     private static native void thrw(String msg);
     
