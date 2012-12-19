@@ -92,6 +92,14 @@ public class Classes {
         return Integer.TYPE.getName();
     }
     
+    public static int primitive() {
+        return 1;
+    }
+    
+    public static String primitiveType() throws Exception {
+        return reflectiveMethodCall(false, "primitive").getClass().getName();
+    }
+    
     @JavaScriptBody(args = "msg", body = "throw msg;")
     private static native void thrw(String msg);
     

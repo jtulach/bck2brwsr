@@ -330,6 +330,10 @@ public final
      * @see     java.lang.Void#TYPE
      * @since JDK1.1
      */
+    @JavaScriptBody(args = "self", body = 
+           "if (self.primitive) return true;"
+        + "else return false;"
+    )
     public native boolean isPrimitive();
 
     /**
@@ -1093,6 +1097,7 @@ public final
     @JavaScriptBody(args = "type", body = ""
         + "var c = vm.java_lang_Class(true);"
         + "c.jvmName = type;"
+        + "c.primitive = true;"
         + "return c;"
     )
     native static Class getPrimitiveClass(String type);

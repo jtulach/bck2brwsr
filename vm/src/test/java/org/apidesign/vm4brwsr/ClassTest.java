@@ -101,6 +101,12 @@ public class ClassTest {
             "java.io.IOException", false, "name"
         );
     }
+    @Test public void primitiveReturnType() throws Exception {
+        assertExec("Tries to get an integer via reflection", Classes.class, 
+            "primitiveType__Ljava_lang_String_2", 
+            Classes.primitiveType()
+        );
+    }
     @Test public void javaAnnotatedMethod() throws Exception {
         assertEquals(Classes.reflectiveMethodCall(false, null), "java.io.IOException", "Calls the name() method via reflection");
     }
