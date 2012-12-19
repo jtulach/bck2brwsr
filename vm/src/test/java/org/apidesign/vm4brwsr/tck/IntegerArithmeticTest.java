@@ -39,6 +39,14 @@ public class IntegerArithmeticTest {
         return x * y;
     }
     
+    private static int div(int x, int y) {
+        return x / y;
+    }
+    
+    private static int mod(int x, int y) {
+        return x % y;
+    }
+    
     @Compare public int addOverflow() {
         return add(Integer.MAX_VALUE, 1);
     }
@@ -73,6 +81,14 @@ public class IntegerArithmeticTest {
     
     @Compare public int multiplyPrecision() {
         return mul(119106029, 1103515245);
+    }
+    
+    @Compare public int division() {
+        return div(1, 2);
+    }
+    
+    @Compare public int divisionReminder() {
+        return mod(1, 2);
     }
     
     @Factory
