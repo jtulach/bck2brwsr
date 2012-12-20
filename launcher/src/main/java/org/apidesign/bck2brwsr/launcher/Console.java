@@ -56,11 +56,6 @@ public class Console {
         setAttr("result", "value", res);
     }
     
-    @JavaScriptBody(args = "o", body = "return '' + o;")
-    private static String tS(Object o) {
-        return o.toString();
-    }
-    
     public static void harness(String url) {
         log("Connecting to " + url);
         try {
@@ -77,13 +72,10 @@ public class Console {
                 log("Invoking " + c.getClassName() + '.' + c.getMethodName() + " as request: " + c.getRequestId());
 
                 Object result = invokeMethod(c.getClassName(), c.getMethodName());
-
+                
                 log("Result: " + result);
-                
-                String toSend = tS(result);
-                
-                log("Sending back: " + url + "?request=" + c.getRequestId() + "&result=" + toSend);
-                u = new URL(url + "?request=" + c.getRequestId() + "&result=" + toSend);
+                log("Sending back: " + url + "?request=" + c.getRequestId() + "&result=" + result);
+                u = new URL(url + "?request=" + c.getRequestId() + "&result=" + result);
             }
             
             

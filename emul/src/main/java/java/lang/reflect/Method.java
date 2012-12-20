@@ -524,13 +524,34 @@ public final
 
     private static Object fromPrimitive(Class<?> type, Object o) {
         if (type == Integer.TYPE) {
-            return fromInteger(o);
+            return fromRaw(Integer.class, "valueOf__Ljava_lang_Integer_2I", o);
         }
-        return o;
+        if (type == Long.TYPE) {
+            return fromRaw(Long.class, "valueOf__Ljava_lang_Long_2J", o);
+        }
+        if (type == Double.TYPE) {
+            return fromRaw(Double.class, "valueOf__Ljava_lang_Double_2D", o);
+        }
+        if (type == Float.TYPE) {
+            return fromRaw(Float.class, "valueOf__Ljava_lang_Float_2F", o);
+        }
+        if (type == Byte.TYPE) {
+            return fromRaw(Byte.class, "valueOf__Ljava_lang_Byte_2B", o);
+        }
+        if (type == Boolean.TYPE) {
+            return fromRaw(Boolean.class, "valueOf__Ljava_lang_Boolean_2Z", o);
+        }
+        if (type == Short.TYPE) {
+            return fromRaw(Short.class, "valueOf__Ljava_lang_Short_2S", o);
+        }
+//            case 'V': return Void.TYPE;
+        throw new IllegalStateException("Can't convert " + o);
     }
     
-    @JavaScriptBody(args = "o", body = "return vm.java_lang_Integer(false).valueOf__Ljava_lang_Integer_2I(o);")
-    private static native Integer fromInteger(Object o);
+    @JavaScriptBody(args = { "cls", "m", "o" }, 
+        body = "return cls.cnstr(false)[m](o);"
+    )
+    private static native Integer fromRaw(Class<?> cls, String m, Object o);
     
     /**
      * Returns {@code true} if this method is a bridge

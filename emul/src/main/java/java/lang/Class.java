@@ -287,7 +287,12 @@ public final
      * @return  {@code true} if this object represents an interface;
      *          {@code false} otherwise.
      */
-    public native boolean isInterface();
+    public boolean isInterface() {
+        return (getAccess() & 0x200) != 0;
+    }
+    
+    @JavaScriptBody(args = "self", body = "return self.access;")
+    private native int getAccess();
 
 
     /**

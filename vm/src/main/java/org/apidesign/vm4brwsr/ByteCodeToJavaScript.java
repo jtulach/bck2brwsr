@@ -155,6 +155,7 @@ abstract class ByteCodeToJavaScript {
         out.append(accessClass("java_lang_Class(true);"));
         out.append("\n    CLS.$class.jvmName = '").append(jc.getClassName()).append("';");
         out.append("\n    CLS.$class.superclass = sprcls;");
+        out.append("\n    CLS.$class.access = ").append(jc.getAccessFlags()+";");
         out.append("\n    CLS.$class.cnstr = CLS;");
         byte[] classAnno = jc.findAnnotationData(false);
         if (classAnno != null) {
