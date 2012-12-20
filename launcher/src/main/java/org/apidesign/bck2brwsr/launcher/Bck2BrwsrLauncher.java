@@ -20,6 +20,7 @@ package org.apidesign.bck2brwsr.launcher;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.net.URI;
@@ -32,6 +33,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.script.Invocable;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 import static org.apidesign.bck2brwsr.launcher.Bck2BrwsrLauncher.copyStream;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 import org.glassfish.grizzly.PortRange;
@@ -49,6 +56,7 @@ public class Bck2BrwsrLauncher {
     private Set<ClassLoader> loaders = new LinkedHashSet<>();
     private List<MethodInvocation> methods = new ArrayList<>();
     private long timeOut;
+    private String sen;
     
     
     public MethodInvocation addMethod(Class<?> clazz, String method) {
@@ -60,6 +68,10 @@ public class Bck2BrwsrLauncher {
     
     public void setTimeout(long ms) {
         timeOut = ms;
+    }
+    
+    public void setScriptEngineName(String sen) {
+        this.sen = sen;
     }
     
     public static void main( String[] args ) throws Exception {
@@ -78,7 +90,59 @@ public class Bck2BrwsrLauncher {
     }
 
 
-    public void execute() throws URISyntaxException, IOException, InterruptedException {
+    public void execute() throws IOException {
+        try {
+            if (sen != null) {
+                executeRhino();
+            } else {
+                executeInBrowser();
+            }
+        } catch (InterruptedException ex) {
+            final InterruptedIOException iio = new InterruptedIOException(ex.getMessage());
+            iio.initCause(ex);
+            throw iio;
+        } catch (Exception ex) {
+            if (ex instanceof IOException) {
+                throw (IOException)ex;
+            }
+            if (ex instanceof RuntimeException) {
+                throw (RuntimeException)ex;
+            }
+            throw new IOException(ex);
+        }
+    }
+    
+    private void executeRhino() throws IOException, ScriptException, NoSuchMethodException {
+        StringBuilder sb = new StringBuilder();
+        Bck2Brwsr.generate(sb, new Res());
+
+        ScriptEngineManager sem = new ScriptEngineManager();
+        ScriptEngine mach = sem.getEngineByExtension(sen);
+
+        sb.append(
+              "\nvar vm = bck2brwsr(org.apidesign.bck2brwsr.vmtest.VMTest.read);"
+            + "\nfunction initVM() { return vm; };"
+            + "\n");
+
+        Object res = mach.eval(sb.toString());
+        if (!(mach instanceof Invocable)) {
+            throw new IOException("It is invocable object: " + res);
+        }
+        Invocable code = (Invocable) mach;
+        
+        Object vm = code.invokeFunction("initVM");
+        Object console = code.invokeMethod(vm, "loadClass", Console.class.getName());
+
+        final MethodInvocation[] cases = this.methods.toArray(new MethodInvocation[0]);
+        for (MethodInvocation mi : cases) {
+            mi.result = code.invokeMethod(console, 
+                "invoke__Ljava_lang_String_2Ljava_lang_String_2Ljava_lang_String_2", 
+                mi.className, mi.methodName
+            ).toString();
+        }
+    }
+    
+    private void executeInBrowser() throws InterruptedException, URISyntaxException, IOException {
         final CountDownLatch wait = new CountDownLatch(1);
         final MethodInvocation[] cases = this.methods.toArray(new MethodInvocation[0]);
         
@@ -158,7 +222,7 @@ public class Bck2BrwsrLauncher {
             }
         }
     }
-    
+
     private class Res implements Bck2Brwsr.Resources {
         @Override
         public InputStream get(String resource) throws IOException {

@@ -29,13 +29,9 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.script.Invocable;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import org.apidesign.bck2brwsr.launcher.Bck2BrwsrLauncher;
-import org.apidesign.vm4brwsr.Bck2Brwsr;
 import org.testng.Assert;
 import org.testng.ITest;
-import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 
@@ -49,6 +45,9 @@ import org.testng.annotations.Test;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public final class VMTest implements ITest {
+    private static final Launcher JS = new Launcher("js");
+    private static final Launcher BROWSER = new Launcher();
+    
     private final Run first, second;
     private final Method m;
     
@@ -96,8 +95,10 @@ public final class VMTest implements ITest {
     @Test(dependsOnGroups = "run") public void compareResults() throws Throwable {
         Object v1 = first.value;
         Object v2 = second.value;
-        if (v1 instanceof Number) {
-            v1 = ((Number)v1).doubleValue();
+        if (v1 != null) {
+            v1 = v1.toString();
+        } else {
+            v1 = "null";
         }
         Assert.assertEquals(v2, v1, "Comparing results");
     }
@@ -160,51 +161,23 @@ public final class VMTest implements ITest {
             }
         }
 
-        private void compileTheCode(Class<?> clazz) throws Exception {
-            final Object[] data = compiled.get(clazz);
-            if (data != null) {
-                code = (Invocable) data[0];
-                codeSeq = (CharSequence) data[1];
-                return;
-            }
-            StringBuilder sb = new StringBuilder();
-            Bck2Brwsr.generate(sb, VMTest.class.getClassLoader());
-
-            ScriptEngineManager sem = new ScriptEngineManager();
-            ScriptEngine mach = sem.getEngineByExtension("js");
-            
-            sb.append(
-                  "\nvar vm = bck2brwsr(org.apidesign.bck2brwsr.vmtest.VMTest.read);"
-                + "\nfunction initVM() { return vm; };"
-                + "\n");
-
-            Object res = mach.eval(sb.toString());
-            Assert.assertTrue(mach instanceof Invocable, "It is invocable object: " + res);
-            code = (Invocable) mach;
-            codeSeq = sb;
-            compiled.put(clazz, new Object[] { code, codeSeq });
-        }
-        
         private void initialize() throws Throwable {
             if (type == 1) {
-                compileTheCode(m.getDeclaringClass());
-                Object vm = code.invokeFunction("initVM");
-                inst = code.invokeMethod(vm, "loadClass", m.getDeclaringClass().getName());
-            } else if (type == 2) {
-                inst = addBrowserMethod(m.getDeclaringClass(), m.getName());
+                inst = JS.addMethod(m.getDeclaringClass(), m.getName());
+            }
+            if (type == 2) {
+                inst = BROWSER.addMethod(m.getDeclaringClass(), m.getName());
             }
         }
 
         @Test(groups = "run") public void executeCode() throws Throwable {
             if (type == 1) {
-                try {
-                    value = code.invokeMethod(inst, m.getName() + "__" + computeSignature(m));
-                } catch (Exception ex) {
-                    throw new AssertionError(dumpJS(codeSeq)).initCause(ex);
-                }
+                Bck2BrwsrLauncher.MethodInvocation c = (Bck2BrwsrLauncher.MethodInvocation) inst;
+                JS.exec();
+                value = c.toString();
             } else if (type == 2) {
                 Bck2BrwsrLauncher.MethodInvocation c = (Bck2BrwsrLauncher.MethodInvocation) inst;
-                execBrowser();
+                BROWSER.exec();
                 value = c.toString();
             } else {
                 value = m.invoke(m.getDeclaringClass().newInstance());
@@ -282,29 +255,5 @@ public final class VMTest implements ITest {
             w.append(sb);
         }
         return new StringBuilder(f.getPath());
-    }
-    
-    private static Bck2BrwsrLauncher launcher;
-
-    private static synchronized Bck2BrwsrLauncher.MethodInvocation addBrowserMethod(
-        Class<?> clazz, String name
-    ) {
-        if (launcher == null) {
-            launcher = new Bck2BrwsrLauncher();
-            launcher.setTimeout(5000);
-        }
-        return launcher.addMethod(clazz, name);
-    }
-    
-    private static void execBrowser() throws Exception {
-        Bck2BrwsrLauncher l = clearBrowser();
-        if (l != null) {
-            l.execute();
-        }
-    }
-    private static synchronized Bck2BrwsrLauncher clearBrowser() {
-        Bck2BrwsrLauncher l = launcher;
-        launcher = null;
-        return l;
     }
 }

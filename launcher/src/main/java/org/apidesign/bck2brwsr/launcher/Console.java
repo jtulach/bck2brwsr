@@ -83,6 +83,11 @@ public class Console {
             log(ex.getMessage());
         }
     }
+    
+    static String invoke(String clazz, String method) throws ClassNotFoundException, InvocationTargetException, IllegalAccessException {
+        final Object r = invokeMethod(clazz, method);
+        return r == null ? "null" : r.toString().toString();
+    }
 
     private static Object invokeMethod(String clazz, String method) 
     throws ClassNotFoundException, InvocationTargetException, 
