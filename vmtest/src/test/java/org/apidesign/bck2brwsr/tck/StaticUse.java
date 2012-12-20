@@ -17,30 +17,6 @@
  */
 package org.apidesign.bck2brwsr.tck;
 
-import org.apidesign.bck2brwsr.vmtest.Compare;
-import org.apidesign.bck2brwsr.vmtest.VMTest;
-import org.testng.annotations.Factory;
-
-/**
- *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
- */
-public class CompareHashTest {
-    @Compare public int hashOfString() {
-        return "Ahoj".hashCode();
-    }
-    
-    @Compare public int hashRemainsYieldsZero() {
-        Object o = new Object();
-        return o.hashCode() - o.hashCode();
-    }
-    
-    @Compare public int initializeInStatic() {
-        return StaticUse.NON_NULL.hashCode() - StaticUse.NON_NULL.hashCode();
-    }
-    
-    @Factory
-    public static Object[] create() {
-        return VMTest.create(CompareHashTest.class);
-    }
+class StaticUse {
+    public static final Object NON_NULL = new Object();
 }
