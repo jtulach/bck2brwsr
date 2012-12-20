@@ -130,7 +130,7 @@ public class Bck2BrwsrLauncher {
         ScriptEngine mach = sem.getEngineByExtension(sen);
 
         sb.append(
-              "\nvar vm = bck2brwsr(org.apidesign.bck2brwsr.vmtest.VMTest.read);"
+              "\nvar vm = new bck2brwsr(org.apidesign.bck2brwsr.launcher.Console.read);"
             + "\nfunction initVM() { return vm; };"
             + "\n");
 

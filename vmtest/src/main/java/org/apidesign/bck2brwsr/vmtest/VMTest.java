@@ -20,10 +20,7 @@ package org.apidesign.bck2brwsr.vmtest;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.net.URL;
-import java.util.Enumeration;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -111,37 +108,6 @@ public final class VMTest implements ITest {
         return m.getName() + "[Compare " + second.typeName() + "]";
     }
 
-    /** Helper method that inspects the classpath and loads given resource
-     * (usually a class file). Used while running tests in Rhino.
-     * 
-     * @param name resource name to find
-     * @return the array of bytes in the given resource
-     * @throws IOException I/O in case something goes wrong
-     */
-    public static byte[] read(String name) throws IOException {
-        URL u = null;
-        Enumeration<URL> en = VMTest.class.getClassLoader().getResources(name);
-        while (en.hasMoreElements()) {
-            u = en.nextElement();
-        }
-        if (u == null) {
-            throw new IOException("Can't find " + name);
-        }
-        try (InputStream is = u.openStream()) {
-            byte[] arr;
-            arr = new byte[is.available()];
-            int offset = 0;
-            while (offset < arr.length) {
-                int len = is.read(arr, offset, arr.length - offset);
-                if (len == -1) {
-                    throw new IOException("Can't read " + name);
-                }
-                offset += len;
-            }
-            return arr;
-        }
-    }
-   
     public static final class Run implements ITest {
         private final Method m;
         private final int type;
