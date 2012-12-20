@@ -33,8 +33,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -50,13 +48,17 @@ import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.grizzly.http.server.ServerConfiguration;
 
 /**
- * Lightweight server to launch Bck2Brwsr applications in real browser.
+ * Lightweight server to launch Bck2Brwsr applications and tests.
+ * Supports execution in native browser as well as Java's internal 
+ * execution engine.
  */
 public class Bck2BrwsrLauncher {
     private Set<ClassLoader> loaders = new LinkedHashSet<>();
     private List<MethodInvocation> methods = new ArrayList<>();
     private long timeOut;
     private String sen;
+    private String showURL;
+    private final Res resources = new Res();
     
     
     public MethodInvocation addMethod(Class<?> clazz, String method) {
@@ -73,20 +75,24 @@ public class Bck2BrwsrLauncher {
     public void setScriptEngineName(String sen) {
         this.sen = sen;
     }
+
+    public void setStartPage(String startpage) {
+        if (!startpage.startsWith("/")) {
+            startpage = "/" + startpage;
+        }
+        this.showURL = startpage;
+    }
+
+    public void addClassLoader(ClassLoader url) {
+        this.loaders.add(url);
+    }
     
     public static void main( String[] args ) throws Exception {
         Bck2BrwsrLauncher l = new Bck2BrwsrLauncher();
-        
-        final MethodInvocation[] cases = { 
-            l.addMethod(Console.class, "welcome"),
-            l.addMethod(Console.class, "multiply"),
-        };
-        
+        l.setStartPage("org/apidesign/bck2brwsr/launcher/console.xhtml");
+        l.addClassLoader(Bck2BrwsrLauncher.class.getClassLoader());
         l.execute();
-        
-        for (MethodInvocation c : cases) {
-            System.err.println(c.className + "." + c.methodName + " = " + c.result);
-        }
+        System.in.read();
     }
 
 
@@ -94,6 +100,10 @@ public class Bck2BrwsrLauncher {
         try {
             if (sen != null) {
                 executeRhino();
+            } else if (showURL != null) {
+                HttpServer server = initServer();
+                server.getServerConfiguration().addHttpHandler(new Page(resources, null), "/");
+                launchServerAndBrwsr(server, showURL);
             } else {
                 executeInBrowser();
             }
@@ -142,21 +152,29 @@ public class Bck2BrwsrLauncher {
         }
     }
     
-    private void executeInBrowser() throws InterruptedException, URISyntaxException, IOException {
-        final CountDownLatch wait = new CountDownLatch(1);
-        final MethodInvocation[] cases = this.methods.toArray(new MethodInvocation[0]);
-        
+    private HttpServer initServer() {
         HttpServer server = HttpServer.createSimpleServer(".", new PortRange(8080, 65535));
-        
-        Res resources = new Res();
-        
+
         final ServerConfiguration conf = server.getServerConfiguration();
-        conf.addHttpHandler(new Page("console.xhtml", 
+        conf.addHttpHandler(new Page(resources, 
+            "org/apidesign/bck2brwsr/launcher/console.xhtml",
             "org.apidesign.bck2brwsr.launcher.Console", "welcome", "false"
         ), "/console");
         conf.addHttpHandler(new VM(resources), "/bck2brwsr.js");
         conf.addHttpHandler(new VMInit(), "/vm.js");
         conf.addHttpHandler(new Classes(resources), "/classes/");
+        return server;
+    }
+    
+    private void executeInBrowser() throws InterruptedException, URISyntaxException, IOException {
+        final CountDownLatch wait = new CountDownLatch(1);
+        final MethodInvocation[] cases = this.methods.toArray(new MethodInvocation[0]);
+        
+        HttpServer server = initServer();
+        ServerConfiguration conf = server.getServerConfiguration();
+        conf.addHttpHandler(new Page(resources, 
+            "org/apidesign/bck2brwsr/launcher/harness.xhtml"
+        ), "/execute");
         conf.addHttpHandler(new HttpHandler() {
             int cnt;
             @Override
@@ -183,21 +201,8 @@ public class Bck2BrwsrLauncher {
                 cnt++;
             }
         }, "/data");
-        conf.addHttpHandler(new Page("harness.xhtml"), "/");
-        
-        server.start();
-        NetworkListener listener = server.getListeners().iterator().next();
-        int port = listener.getPort();
-        
-        URI uri = new URI("http://localhost:" + port + "/execute");
-        try {
-            Desktop.getDesktop().browse(uri);
-        } catch (UnsupportedOperationException ex) {
-            String[] cmd = { 
-                "xdg-open", uri.toString()
-            };
-            Runtime.getRuntime().exec(cmd).waitFor();
-        }
+
+        launchServerAndBrwsr(server, "/execute");
         
         wait.await(timeOut, TimeUnit.MILLISECONDS);
         server.stop();
@@ -223,6 +228,23 @@ public class Bck2BrwsrLauncher {
         }
     }
 
+    private void launchServerAndBrwsr(HttpServer server, final String page) throws IOException, URISyntaxException, InterruptedException {
+        server.start();
+        NetworkListener listener = server.getListeners().iterator().next();
+        int port = listener.getPort();
+        
+        URI uri = new URI("http://localhost:" + port + page);
+        try {
+            Desktop.getDesktop().browse(uri);
+        } catch (UnsupportedOperationException ex) {
+            String[] cmd = { 
+                "xdg-open", uri.toString()
+            };
+            Runtime.getRuntime().exec(cmd).waitFor();
+        }
+        System.err.println("Showing " + uri);
+    }
+
     private class Res implements Bck2Brwsr.Resources {
         @Override
         public InputStream get(String resource) throws IOException {
@@ -243,18 +265,34 @@ public class Bck2BrwsrLauncher {
     private static class Page extends HttpHandler {
         private final String resource;
         private final String[] args;
+        private final Res res;
         
-        public Page(String resource, String... args) {
+        public Page(Res res, String resource, String... args) {
+            this.res = res;
             this.resource = resource;
             this.args = args;
         }
 
         @Override
         public void service(Request request, Response response) throws Exception {
-            response.setContentType("text/html");
+            String r = resource;
+            if (r == null) {
+                r = request.getHttpHandlerPath();
+                if (r.startsWith("/")) {
+                    r = r.substring(1);
+                }
+            }
+            if (r.endsWith(".html") || r.endsWith(".xhtml")) {
+                response.setContentType("text/html");
+            }
             OutputStream os = response.getOutputStream();
-            InputStream is = Bck2BrwsrLauncher.class.getResourceAsStream(resource);
-            copyStream(is, os, request.getRequestURL().toString(), args);
+            try (InputStream is = res.get(r)) {
+                copyStream(is, os, request.getRequestURL().toString(), args);
+            } catch (IOException ex) {
+                response.setDetailMessage(ex.getLocalizedMessage());
+                response.setError();
+                response.setStatus(404);
+            }
         }
     }
 
@@ -283,7 +321,7 @@ public class Bck2BrwsrLauncher {
             response.getWriter().append(
                 "function ldCls(res) {\n"
                 + "  var request = new XMLHttpRequest();\n"
-                + "  request.open('GET', 'classes/' + res, false);\n"
+                + "  request.open('GET', '/classes/' + res, false);\n"
                 + "  request.send();\n"
                 + "  var arr = eval('(' + request.responseText + ')');\n"
                 + "  return arr;\n"
