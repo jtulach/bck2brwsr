@@ -27,6 +27,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -234,15 +235,34 @@ public class Bck2BrwsrLauncher {
         int port = listener.getPort();
         
         URI uri = new URI("http://localhost:" + port + page);
+        System.err.println("Showing " + uri);
         try {
             Desktop.getDesktop().browse(uri);
         } catch (UnsupportedOperationException ex) {
             String[] cmd = { 
                 "xdg-open", uri.toString()
             };
-            Runtime.getRuntime().exec(cmd).waitFor();
+            System.err.println("Launching " + Arrays.toString(cmd));
+            final Process process = Runtime.getRuntime().exec(cmd);
+            InputStream stdout = process.getInputStream();
+            InputStream stderr = process.getErrorStream();
+            int res = process.waitFor();
+            System.err.println("Exit code: " + res);
+            drain("StdOut", stdout);
+            drain("StdErr", stderr);
         }
-        System.err.println("Showing " + uri);
+    }
+    
+    private static void drain(String name, InputStream is) throws IOException {
+        int av = is.available();
+        if (av > 0) {
+            System.err.println("v== " + name + " ==v");
+            while (av-- > 0) {
+                System.err.write(is.read());
+            }
+            System.err.println();
+            System.err.println("^== " + name + " ==^");
+        }
     }
 
     private class Res implements Bck2Brwsr.Resources {
