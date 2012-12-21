@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -54,6 +56,7 @@ import org.glassfish.grizzly.http.server.ServerConfiguration;
  * execution engine.
  */
 public class Bck2BrwsrLauncher {
+    private static final Logger LOG = Logger.getLogger(Bck2BrwsrLauncher.class.getName());
     private Set<ClassLoader> loaders = new LinkedHashSet<>();
     private List<MethodInvocation> methods = new ArrayList<>();
     private long timeOut;
@@ -235,19 +238,19 @@ public class Bck2BrwsrLauncher {
         int port = listener.getPort();
         
         URI uri = new URI("http://localhost:" + port + page);
-        System.err.println("Showing " + uri);
+        LOG.log(Level.INFO, "Showing {0}", uri);
         try {
             Desktop.getDesktop().browse(uri);
         } catch (UnsupportedOperationException ex) {
             String[] cmd = { 
                 "xdg-open", uri.toString()
             };
-            System.err.println("Launching " + Arrays.toString(cmd));
+            LOG.log(Level.INFO, "Launching {0}", Arrays.toString(cmd));
             final Process process = Runtime.getRuntime().exec(cmd);
             InputStream stdout = process.getInputStream();
             InputStream stderr = process.getErrorStream();
             int res = process.waitFor();
-            System.err.println("Exit code: " + res);
+            LOG.log(Level.INFO, "Exit code: {0}", res);
             drain("StdOut", stdout);
             drain("StdErr", stderr);
         }
@@ -256,12 +259,13 @@ public class Bck2BrwsrLauncher {
     private static void drain(String name, InputStream is) throws IOException {
         int av = is.available();
         if (av > 0) {
-            System.err.println("v== " + name + " ==v");
+            StringBuilder sb = new StringBuilder();
+            sb.append("v== ").append(name).append(" ==v\n");
             while (av-- > 0) {
-                System.err.write(is.read());
+                sb.append((char)is.read());
             }
-            System.err.println();
-            System.err.println("^== " + name + " ==^");
+            sb.append("\n^== ").append(name).append(" ==^");
+            LOG.log(Level.INFO, sb.toString());
         }
     }
 
