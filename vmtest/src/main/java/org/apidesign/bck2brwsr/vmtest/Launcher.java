@@ -43,7 +43,7 @@ final class Launcher {
     synchronized Bck2BrwsrLauncher.MethodInvocation addMethod(Class<?> clazz, String name) {
         if (launcher == null) {
             launcher = new Bck2BrwsrLauncher();
-            launcher.setTimeout(60000);
+            launcher.setTimeout(180000);
             if (sen != null) {
                 launcher.setScriptEngineName(sen);
             }
