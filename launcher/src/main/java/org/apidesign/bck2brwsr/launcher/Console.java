@@ -44,6 +44,9 @@ public class Console {
     @JavaScriptBody(args = {"id", "attr", "value"}, body = 
         "window.document.getElementById(id)[attr] = value;")
     private static native void setAttr(String id, String attr, Object value);
+    
+    @JavaScriptBody(args = {}, body = "window.close();")
+    private static native void closeWindow();
 
     private static void log(String newText) {
         String id = "result";
@@ -68,6 +71,7 @@ public class Console {
                 log("\nGot \"" + data + "\"");
                 if (data.isEmpty()) {
                     log("No data, exiting");
+                    closeWindow();
                     break;
                 }
                 

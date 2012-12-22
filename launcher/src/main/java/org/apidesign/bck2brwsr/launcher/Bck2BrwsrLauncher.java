@@ -289,7 +289,6 @@ public class Bck2BrwsrLauncher {
         InputStream stderr = process.getErrorStream();
         drain("StdOut", stdout);
         drain("StdErr", stderr);
-        Thread.sleep(5000);
         process.destroy();
         int res = process.waitFor();
         LOG.log(Level.INFO, "Exit code: {0}", res);
