@@ -265,10 +265,11 @@ public class Bck2BrwsrLauncher {
         
         URI uri = new URI("http://localhost:" + port + page);
         LOG.log(Level.INFO, "Showing {0}", uri);
-        try {
-            Desktop.getDesktop().browse(uri);
-            return null;
-        } catch (UnsupportedOperationException ex) {
+//        try {
+//            Desktop.getDesktop().browse(uri);
+//            return null;
+//        } catch (UnsupportedOperationException ex)
+        {
             File dir = File.createTempFile("chrome", ".dir");
             dir.delete();
             dir.mkdirs();
