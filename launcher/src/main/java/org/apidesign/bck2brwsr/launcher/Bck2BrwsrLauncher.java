@@ -179,6 +179,7 @@ public class Bck2BrwsrLauncher {
         conf.addHttpHandler(new Page(resources, 
             "org/apidesign/bck2brwsr/launcher/harness.xhtml"
         ), "/execute");
+        final int[] currentTest = { -1 };
         conf.addHttpHandler(new HttpHandler() {
             int cnt;
             @Override
@@ -189,6 +190,7 @@ public class Bck2BrwsrLauncher {
                     value = value.replace("%20", " ");
                     cases[Integer.parseInt(id)].result = value;
                 }
+                currentTest[0] = cnt;
                 
                 if (cnt >= cases.length) {
                     response.getWriter().write("");
@@ -208,7 +210,24 @@ public class Bck2BrwsrLauncher {
 
         launchServerAndBrwsr(server, "/execute");
         
-        wait.await(timeOut, TimeUnit.MILLISECONDS);
+        for (;;) {
+            int prev = currentTest[0];
+            if (wait.await(timeOut, TimeUnit.MILLISECONDS)) {
+                break;
+            }
+            if (prev == currentTest[0]) {
+                LOG.log(
+                    Level.WARNING, 
+                    "Timeout and no test has been executed meanwhile (at {0}). Giving up.", 
+                    currentTest[0]
+                );
+                break;
+            }
+            LOG.log(Level.INFO, 
+                "Timeout, but tests got from {0} to {1}. Trying again.", 
+                new Object[]{prev, currentTest[0]}
+            );
+        }
         server.stop();
     }
     
