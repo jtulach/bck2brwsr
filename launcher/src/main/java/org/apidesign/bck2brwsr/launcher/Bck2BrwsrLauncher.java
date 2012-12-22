@@ -186,7 +186,9 @@ public class Bck2BrwsrLauncher {
             public void service(Request request, Response response) throws Exception {
                 String id = request.getParameter("request");
                 String value = request.getParameter("result");
+                
                 if (id != null && value != null) {
+                    LOG.log(Level.INFO, "Received result for case {0} = {1}", new Object[]{id, value});
                     value = value.replace("%20", " ");
                     cases[Integer.parseInt(id)].result = value;
                 }
@@ -199,9 +201,12 @@ public class Bck2BrwsrLauncher {
                     return;
                 }
                 
+                final String cn = cases[cnt].className;
+                final String mn = cases[cnt].methodName;
+                LOG.log(Level.INFO, "Request for {0} case. Sending {1}.{2}", new Object[]{cnt, cn, mn});
                 response.getWriter().write("{"
-                    + "className: '" + cases[cnt].className + "', "
-                    + "methodName: '" + cases[cnt].methodName + "', "
+                    + "className: '" + cn + "', "
+                    + "methodName: '" + mn + "', "
                     + "request: " + cnt
                     + "}");
                 cnt++;
