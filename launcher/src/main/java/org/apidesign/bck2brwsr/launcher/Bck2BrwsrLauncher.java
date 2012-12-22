@@ -18,6 +18,7 @@
 package org.apidesign.bck2brwsr.launcher;
 
 import java.awt.Desktop;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -26,6 +27,7 @@ import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -213,7 +215,7 @@ public class Bck2BrwsrLauncher {
             }
         }, "/data");
 
-        launchServerAndBrwsr(server, "/execute");
+        Object[] brwsr = launchServerAndBrwsr(server, "/execute");
         
         for (;;) {
             int prev = currentTest[0];
@@ -233,7 +235,7 @@ public class Bck2BrwsrLauncher {
                 new Object[]{prev, currentTest[0]}
             );
         }
-        server.stop();
+        stopServerAndBrwsr(server, brwsr);
     }
     
     static void copyStream(InputStream is, OutputStream os, String baseURL, String... params) throws IOException {
@@ -256,7 +258,7 @@ public class Bck2BrwsrLauncher {
         }
     }
 
-    private void launchServerAndBrwsr(HttpServer server, final String page) throws IOException, URISyntaxException, InterruptedException {
+    private Object[] launchServerAndBrwsr(HttpServer server, final String page) throws IOException, URISyntaxException, InterruptedException {
         server.start();
         NetworkListener listener = server.getListeners().iterator().next();
         int port = listener.getPort();
@@ -265,19 +267,34 @@ public class Bck2BrwsrLauncher {
         LOG.log(Level.INFO, "Showing {0}", uri);
         try {
             Desktop.getDesktop().browse(uri);
+            return null;
         } catch (UnsupportedOperationException ex) {
+            File dir = File.createTempFile("chrome", ".dir");
+            dir.delete();
+            dir.mkdirs();
             String[] cmd = { 
-                "xdg-open", uri.toString()
+                "google-chrome", "--user-data-dir=" + dir, "--app=" + uri.toString()
             };
             LOG.log(Level.INFO, "Launching {0}", Arrays.toString(cmd));
             final Process process = Runtime.getRuntime().exec(cmd);
-            InputStream stdout = process.getInputStream();
-            InputStream stderr = process.getErrorStream();
-            int res = process.waitFor();
-            LOG.log(Level.INFO, "Exit code: {0}", res);
-            drain("StdOut", stdout);
-            drain("StdErr", stderr);
+            return new Object[] { process, dir };
         }
+    }
+    
+    private void stopServerAndBrwsr(HttpServer server, Object[] brwsr) throws IOException, InterruptedException {
+        Process process = (Process)brwsr[0];
+        
+        server.stop();
+        InputStream stdout = process.getInputStream();
+        InputStream stderr = process.getErrorStream();
+        drain("StdOut", stdout);
+        drain("StdErr", stderr);
+        Thread.sleep(5000);
+        process.destroy();
+        int res = process.waitFor();
+        LOG.log(Level.INFO, "Exit code: {0}", res);
+
+        deleteTree((File)brwsr[1]);
     }
     
     private static void drain(String name, InputStream is) throws IOException {
@@ -291,6 +308,16 @@ public class Bck2BrwsrLauncher {
             sb.append("\n^== ").append(name).append(" ==^");
             LOG.log(Level.INFO, sb.toString());
         }
+    }
+
+    private void deleteTree(File file) {
+        File[] arr = file.listFiles();
+        if (arr != null) {
+            for (File s : arr) {
+                deleteTree(s);
+            }
+        }
+        file.delete();
     }
 
     private class Res implements Bck2Brwsr.Resources {
