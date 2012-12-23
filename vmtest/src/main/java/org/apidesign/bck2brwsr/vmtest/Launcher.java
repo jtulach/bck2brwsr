@@ -17,7 +17,10 @@
  */
 package org.apidesign.bck2brwsr.vmtest;
 
+import java.io.IOException;
 import org.apidesign.bck2brwsr.launcher.Bck2BrwsrLauncher;
+import org.apidesign.bck2brwsr.launcher.JSLauncher;
+import org.apidesign.bck2brwsr.launcher.MethodInvocation;
 
 /**
  *
@@ -25,7 +28,7 @@ import org.apidesign.bck2brwsr.launcher.Bck2BrwsrLauncher;
  */
 final class Launcher {
     private final String sen;
-    private Bck2BrwsrLauncher launcher;
+    private Object launcher;
     
     Launcher() {
         this(null);
@@ -34,27 +37,36 @@ final class Launcher {
         this.sen = sen;
     }
 
-    synchronized Bck2BrwsrLauncher clear() {
-        Bck2BrwsrLauncher l = launcher;
+    synchronized Object clear() {
+        Object l = launcher;
         launcher = null;
         return l;
     }
 
-    synchronized Bck2BrwsrLauncher.MethodInvocation addMethod(Class<?> clazz, String name) {
+    synchronized MethodInvocation addMethod(Class<?> clazz, String name) throws IOException {
         if (launcher == null) {
-            launcher = new Bck2BrwsrLauncher();
-            launcher.setTimeout(180000);
             if (sen != null) {
-                launcher.setScriptEngineName(sen);
+                JSLauncher js = new JSLauncher();
+                js.addClassLoader(clazz.getClassLoader());
+                js.initialize();
+                launcher = js;
+            } else {
+                Bck2BrwsrLauncher l = new Bck2BrwsrLauncher();
+                l.setTimeout(180000);
+                launcher = l;
             }
         }
-        return launcher.addMethod(clazz, name);
+        if (launcher instanceof JSLauncher) {
+            return ((JSLauncher)launcher).addMethod(clazz, name);
+        } else {
+            return ((Bck2BrwsrLauncher)launcher).addMethod(clazz, name);
+        }
     }
 
     void exec() throws Exception {
-        Bck2BrwsrLauncher l = clear();
-        if (l != null) {
-            l.execute();
+        Object l = clear();
+        if (l instanceof Bck2BrwsrLauncher) {
+            ((Bck2BrwsrLauncher)l).execute();
         }
     }
     

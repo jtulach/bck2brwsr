@@ -26,7 +26,7 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.script.Invocable;
-import org.apidesign.bck2brwsr.launcher.Bck2BrwsrLauncher;
+import org.apidesign.bck2brwsr.launcher.MethodInvocation;
 import org.testng.Assert;
 import org.testng.ITest;
 import org.testng.annotations.Factory;
@@ -138,11 +138,11 @@ public final class VMTest implements ITest {
 
         @Test(groups = "run") public void executeCode() throws Throwable {
             if (type == 1) {
-                Bck2BrwsrLauncher.MethodInvocation c = (Bck2BrwsrLauncher.MethodInvocation) inst;
+                MethodInvocation c = (MethodInvocation) inst;
                 JS.exec();
                 value = c.toString();
             } else if (type == 2) {
-                Bck2BrwsrLauncher.MethodInvocation c = (Bck2BrwsrLauncher.MethodInvocation) inst;
+                MethodInvocation c = (MethodInvocation) inst;
                 BROWSER.exec();
                 value = c.toString();
             } else {

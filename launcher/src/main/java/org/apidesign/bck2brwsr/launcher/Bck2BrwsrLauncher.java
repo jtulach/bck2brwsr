@@ -17,7 +17,6 @@
  */
 package org.apidesign.bck2brwsr.launcher;
 
-import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,7 +26,6 @@ import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -38,11 +36,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.script.Invocable;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-import static org.apidesign.bck2brwsr.launcher.Bck2BrwsrLauncher.copyStream;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 import org.glassfish.grizzly.PortRange;
 import org.glassfish.grizzly.http.server.HttpHandler;
@@ -62,7 +55,6 @@ public class Bck2BrwsrLauncher {
     private Set<ClassLoader> loaders = new LinkedHashSet<>();
     private List<MethodInvocation> methods = new ArrayList<>();
     private long timeOut;
-    private String sen;
     private String showURL;
     private final Res resources = new Res();
     
@@ -78,10 +70,6 @@ public class Bck2BrwsrLauncher {
         timeOut = ms;
     }
     
-    public void setScriptEngineName(String sen) {
-        this.sen = sen;
-    }
-
     public void setStartPage(String startpage) {
         if (!startpage.startsWith("/")) {
             startpage = "/" + startpage;
@@ -104,9 +92,7 @@ public class Bck2BrwsrLauncher {
 
     public void execute() throws IOException {
         try {
-            if (sen != null) {
-                executeRhino();
-            } else if (showURL != null) {
+            if (showURL != null) {
                 HttpServer server = initServer();
                 server.getServerConfiguration().addHttpHandler(new Page(resources, null), "/");
                 launchServerAndBrwsr(server, showURL);
@@ -125,36 +111,6 @@ public class Bck2BrwsrLauncher {
                 throw (RuntimeException)ex;
             }
             throw new IOException(ex);
-        }
-    }
-    
-    private void executeRhino() throws IOException, ScriptException, NoSuchMethodException {
-        StringBuilder sb = new StringBuilder();
-        Bck2Brwsr.generate(sb, new Res());
-
-        ScriptEngineManager sem = new ScriptEngineManager();
-        ScriptEngine mach = sem.getEngineByExtension(sen);
-
-        sb.append(
-              "\nvar vm = new bck2brwsr(org.apidesign.bck2brwsr.launcher.Console.read);"
-            + "\nfunction initVM() { return vm; };"
-            + "\n");
-
-        Object res = mach.eval(sb.toString());
-        if (!(mach instanceof Invocable)) {
-            throw new IOException("It is invocable object: " + res);
-        }
-        Invocable code = (Invocable) mach;
-        
-        Object vm = code.invokeFunction("initVM");
-        Object console = code.invokeMethod(vm, "loadClass", Console.class.getName());
-
-        final MethodInvocation[] cases = this.methods.toArray(new MethodInvocation[0]);
-        for (MethodInvocation mi : cases) {
-            mi.result = code.invokeMethod(console, 
-                "invoke__Ljava_lang_String_2Ljava_lang_String_2Ljava_lang_String_2", 
-                mi.className, mi.methodName
-            ).toString();
         }
     }
     
@@ -454,22 +410,6 @@ public class Bck2BrwsrLauncher {
                 response.setError();
                 response.setDetailMessage(ex.getMessage());
             }
-        }
-    }
-    
-    public static final class MethodInvocation {
-        final String className;
-        final String methodName;
-        String result;
-
-        MethodInvocation(String className, String methodName) {
-            this.className = className;
-            this.methodName = methodName;
-        }
-
-        @Override
-        public String toString() {
-            return result;
         }
     }
 }
