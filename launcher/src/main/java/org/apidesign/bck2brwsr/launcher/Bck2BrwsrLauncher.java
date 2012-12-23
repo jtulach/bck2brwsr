@@ -54,6 +54,7 @@ import org.glassfish.grizzly.http.server.ServerConfiguration;
  */
 public class Bck2BrwsrLauncher {
     private static final Logger LOG = Logger.getLogger(Bck2BrwsrLauncher.class.getName());
+    private static final MethodInvocation END = new MethodInvocation(null, null);
     private Set<ClassLoader> loaders = new LinkedHashSet<>();
     private BlockingQueue<MethodInvocation> methods = new LinkedBlockingQueue<>();
     private long timeOut;
@@ -153,10 +154,11 @@ public class Bck2BrwsrLauncher {
                 }
                 
                 MethodInvocation mi = methods.take();
-                if (mi == null) {
+                if (mi == END) {
                     response.getWriter().write("");
                     wait.countDown();
                     cnt = 0;
+                    LOG.log(Level.INFO, "End of data reached. Exiting.");
                     return;
                 }
                 
@@ -177,6 +179,7 @@ public class Bck2BrwsrLauncher {
     }
     
     public void shutdown() throws InterruptedException, IOException {
+        methods.offer(END);
         for (;;) {
             int prev = methods.size();
             if (wait.await(timeOut, TimeUnit.MILLISECONDS)) {
