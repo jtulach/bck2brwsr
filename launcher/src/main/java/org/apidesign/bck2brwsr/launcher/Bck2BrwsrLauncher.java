@@ -270,15 +270,23 @@ public class Bck2BrwsrLauncher {
 //            return null;
 //        } catch (UnsupportedOperationException ex)
         {
-            File dir = File.createTempFile("chrome", ".dir");
-            dir.delete();
-            dir.mkdirs();
+//            File dir = File.createTempFile("chrome", ".dir");
+//            dir.delete();
+//            dir.mkdirs();
+//            String[] cmd = { 
+//                "google-chrome", "--user-data-dir=" + dir, "--app=" + uri.toString()
+//            };
+//            LOG.log(Level.INFO, "Launching {0}", Arrays.toString(cmd));
+//            final Process process = Runtime.getRuntime().exec(cmd);
+//            return new Object[] { process, dir };
+        }
+        {
             String[] cmd = { 
-                "google-chrome", "--user-data-dir=" + dir, "--app=" + uri.toString()
+                "xdg-open", uri.toString()
             };
             LOG.log(Level.INFO, "Launching {0}", Arrays.toString(cmd));
             final Process process = Runtime.getRuntime().exec(cmd);
-            return new Object[] { process, dir };
+            return new Object[] { process, null };
         }
     }
     
@@ -311,6 +319,9 @@ public class Bck2BrwsrLauncher {
     }
 
     private void deleteTree(File file) {
+        if (file == null) {
+            return;
+        }
         File[] arr = file.listFiles();
         if (arr != null) {
             for (File s : arr) {
