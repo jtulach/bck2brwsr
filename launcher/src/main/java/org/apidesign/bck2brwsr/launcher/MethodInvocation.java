@@ -17,19 +17,33 @@
  */
 package org.apidesign.bck2brwsr.launcher;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public final class MethodInvocation {
+    final CountDownLatch wait = new CountDownLatch(1);
     final String className;
     final String methodName;
-    String result;
-    Exception exception;
+    private String result;
+    private Exception exception;
 
     MethodInvocation(String className, String methodName) {
         this.className = className;
         this.methodName = methodName;
+    }
+    
+    void await(long timeOut) throws InterruptedException {
+        wait.await(timeOut, TimeUnit.MILLISECONDS);
+    }
+    
+    void result(String r, Exception e) {
+        this.result = r;
+        this.exception = e;
+        wait.countDown();
     }
 
     @Override

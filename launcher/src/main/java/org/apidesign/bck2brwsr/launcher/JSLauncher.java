@@ -45,14 +45,12 @@ public final class JSLauncher {
         loaders.add(clazz.getClassLoader());
         MethodInvocation mi = new MethodInvocation(clazz.getName(), method);
         try {
-            mi.result = code.invokeMethod(
+            mi.result(code.invokeMethod(
                 console,
                 "invoke__Ljava_lang_String_2Ljava_lang_String_2Ljava_lang_String_2",
-                mi.className, mi.methodName).toString();
-        } catch (ScriptException scriptException) {
-            mi.exception = scriptException;
-        } catch (NoSuchMethodException noSuchMethodException) {
-            mi.exception = noSuchMethodException;
+                mi.className, mi.methodName).toString(), null);
+        } catch (ScriptException | NoSuchMethodException ex) {
+            mi.result(null, ex);
         }
         return mi;
     }

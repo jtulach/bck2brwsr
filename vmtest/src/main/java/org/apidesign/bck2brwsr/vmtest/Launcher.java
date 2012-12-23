@@ -52,6 +52,7 @@ final class Launcher {
                 launcher = js;
             } else {
                 Bck2BrwsrLauncher l = new Bck2BrwsrLauncher();
+                l.initialize();
                 l.setTimeout(180000);
                 launcher = l;
             }
@@ -65,9 +66,6 @@ final class Launcher {
 
     void exec() throws Exception {
         Object l = clear();
-        if (l instanceof Bck2BrwsrLauncher) {
-            ((Bck2BrwsrLauncher)l).execute();
-        }
     }
     
 }

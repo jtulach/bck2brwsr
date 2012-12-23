@@ -32,7 +32,9 @@ import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,16 +55,23 @@ import org.glassfish.grizzly.http.server.ServerConfiguration;
 public class Bck2BrwsrLauncher {
     private static final Logger LOG = Logger.getLogger(Bck2BrwsrLauncher.class.getName());
     private Set<ClassLoader> loaders = new LinkedHashSet<>();
-    private List<MethodInvocation> methods = new ArrayList<>();
+    private BlockingQueue<MethodInvocation> methods = new LinkedBlockingQueue<>();
     private long timeOut;
-    private String showURL;
     private final Res resources = new Res();
+    private Object[] brwsr;
+    private HttpServer server;
+    private CountDownLatch wait;
     
     
-    public MethodInvocation addMethod(Class<?> clazz, String method) {
+    public MethodInvocation addMethod(Class<?> clazz, String method) throws IOException {
         loaders.add(clazz.getClassLoader());
         MethodInvocation c = new MethodInvocation(clazz.getName(), method);
         methods.add(c);
+        try {
+            c.await(timeOut);
+        } catch (InterruptedException ex) {
+            throw new IOException(ex);
+        }
         return c;
     }
     
@@ -70,35 +79,29 @@ public class Bck2BrwsrLauncher {
         timeOut = ms;
     }
     
-    public void setStartPage(String startpage) {
-        if (!startpage.startsWith("/")) {
-            startpage = "/" + startpage;
-        }
-        this.showURL = startpage;
-    }
-
     public void addClassLoader(ClassLoader url) {
         this.loaders.add(url);
     }
     
     public static void main( String[] args ) throws Exception {
         Bck2BrwsrLauncher l = new Bck2BrwsrLauncher();
-        l.setStartPage("org/apidesign/bck2brwsr/launcher/console.xhtml");
         l.addClassLoader(Bck2BrwsrLauncher.class.getClassLoader());
-        l.execute();
+        l.showURL("org/apidesign/bck2brwsr/launcher/console.xhtml");
         System.in.read();
     }
 
+    public void showURL(String startpage) throws URISyntaxException, InterruptedException, IOException {
+        if (!startpage.startsWith("/")) {
+            startpage = "/" + startpage;
+        }
+        HttpServer s = initServer();
+        s.getServerConfiguration().addHttpHandler(new Page(resources, null), "/");
+        launchServerAndBrwsr(s, startpage);
+    }
 
-    public void execute() throws IOException {
+    public void initialize() throws IOException {
         try {
-            if (showURL != null) {
-                HttpServer server = initServer();
-                server.getServerConfiguration().addHttpHandler(new Page(resources, null), "/");
-                launchServerAndBrwsr(server, showURL);
-            } else {
-                executeInBrowser();
-            }
+            executeInBrowser();
         } catch (InterruptedException ex) {
             final InterruptedIOException iio = new InterruptedIOException(ex.getMessage());
             iio.initCause(ex);
@@ -115,9 +118,9 @@ public class Bck2BrwsrLauncher {
     }
     
     private HttpServer initServer() {
-        HttpServer server = HttpServer.createSimpleServer(".", new PortRange(8080, 65535));
+        HttpServer s = HttpServer.createSimpleServer(".", new PortRange(8080, 65535));
 
-        final ServerConfiguration conf = server.getServerConfiguration();
+        final ServerConfiguration conf = s.getServerConfiguration();
         conf.addHttpHandler(new Page(resources, 
             "org/apidesign/bck2brwsr/launcher/console.xhtml",
             "org.apidesign.bck2brwsr.launcher.Console", "welcome", "false"
@@ -125,21 +128,19 @@ public class Bck2BrwsrLauncher {
         conf.addHttpHandler(new VM(resources), "/bck2brwsr.js");
         conf.addHttpHandler(new VMInit(), "/vm.js");
         conf.addHttpHandler(new Classes(resources), "/classes/");
-        return server;
+        return s;
     }
     
     private void executeInBrowser() throws InterruptedException, URISyntaxException, IOException {
-        final CountDownLatch wait = new CountDownLatch(1);
-        final MethodInvocation[] cases = this.methods.toArray(new MethodInvocation[0]);
-        
-        HttpServer server = initServer();
+        wait = new CountDownLatch(1);
+        server = initServer();
         ServerConfiguration conf = server.getServerConfiguration();
         conf.addHttpHandler(new Page(resources, 
             "org/apidesign/bck2brwsr/launcher/harness.xhtml"
         ), "/execute");
-        final int[] currentTest = { -1 };
         conf.addHttpHandler(new HttpHandler() {
             int cnt;
+            List<MethodInvocation> cases = new ArrayList<>();
             @Override
             public void service(Request request, Response response) throws Exception {
                 String id = request.getParameter("request");
@@ -148,19 +149,20 @@ public class Bck2BrwsrLauncher {
                 if (id != null && value != null) {
                     LOG.log(Level.INFO, "Received result for case {0} = {1}", new Object[]{id, value});
                     value = value.replace("%20", " ");
-                    cases[Integer.parseInt(id)].result = value;
+                    cases.get(Integer.parseInt(id)).result(value, null);
                 }
-                currentTest[0] = cnt;
                 
-                if (cnt >= cases.length) {
+                MethodInvocation mi = methods.take();
+                if (mi == null) {
                     response.getWriter().write("");
                     wait.countDown();
                     cnt = 0;
                     return;
                 }
                 
-                final String cn = cases[cnt].className;
-                final String mn = cases[cnt].methodName;
+                cases.add(mi);
+                final String cn = mi.className;
+                final String mn = mi.methodName;
                 LOG.log(Level.INFO, "Request for {0} case. Sending {1}.{2}", new Object[]{cnt, cn, mn});
                 response.getWriter().write("{"
                     + "className: '" + cn + "', "
@@ -171,24 +173,26 @@ public class Bck2BrwsrLauncher {
             }
         }, "/data");
 
-        Object[] brwsr = launchServerAndBrwsr(server, "/execute");
-        
+        this.brwsr = launchServerAndBrwsr(server, "/execute");
+    }
+    
+    public void shutdown() throws InterruptedException, IOException {
         for (;;) {
-            int prev = currentTest[0];
+            int prev = methods.size();
             if (wait.await(timeOut, TimeUnit.MILLISECONDS)) {
                 break;
             }
-            if (prev == currentTest[0]) {
+            if (prev == methods.size()) {
                 LOG.log(
                     Level.WARNING, 
                     "Timeout and no test has been executed meanwhile (at {0}). Giving up.", 
-                    currentTest[0]
+                    methods.size()
                 );
                 break;
             }
             LOG.log(Level.INFO, 
                 "Timeout, but tests got from {0} to {1}. Trying again.", 
-                new Object[]{prev, currentTest[0]}
+                new Object[]{prev, methods.size()}
             );
         }
         stopServerAndBrwsr(server, brwsr);
