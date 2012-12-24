@@ -62,7 +62,7 @@ final class Hashtable {
     }
 
     @JavaScriptBody(args = {"self", "key" }, body = 
-        "return self[key];"
+        "var r = self[key]; return r ? r : null;"
     )
     Object get(Object key) {
         return get(key, null);
