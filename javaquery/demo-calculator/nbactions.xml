@@ -23,7 +23,7 @@
             <actionName>run</actionName>
             <goals>
                 <goal>process-classes</goal>
-                <goal>org.apidesign.bck2brwsr:mojo:0.3-SNAPSHOT:brwsr</goal>
+                <goal>org.codehaus.mojo:exec-maven-plugin:1.2.1:exec</goal>
             </goals>
         </action>
     </actions>

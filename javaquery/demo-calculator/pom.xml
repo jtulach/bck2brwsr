@@ -4,11 +4,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.apidesign.bck2brwsr</groupId>
-  <artifactId>demo.calculator</artifactId>
+  <artifactId>demo.static.calculator</artifactId>
   <version>0.3-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>JavaQuery Demo - Calculator</name>
+  <name>JavaQuery Demo - Calculator - Static Compilation</name>
   <url>http://maven.apache.org</url>
 
   <properties>
@@ -16,19 +16,34 @@
   </properties>
   <build>
       <plugins>
+          <plugin>
+              <groupId>org.apidesign.bck2brwsr</groupId>
+              <artifactId>mojo</artifactId>
+              <version>0.3-SNAPSHOT</version>
+              <executions>
+                  <execution>
+                      <goals>
+                          <goal>j2js</goal>
+                      </goals>
+                  </execution>
+              </executions>
+          </plugin>
             <plugin>
-                <groupId>org.apidesign.bck2brwsr</groupId>
-                <artifactId>mojo</artifactId>
-                <version>0.3-SNAPSHOT</version>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.2.1</version>
                 <executions>
                     <execution>
                         <goals>
-                            <goal>brwsr</goal>
+                            <goal>exec</goal>
                         </goals>
                     </execution>
                 </executions>
                 <configuration>
-                    <startpage>org/apidesign/bck2brwsr/mavenhtml/Calculator.xhtml</startpage>
+                    <executable>xdg-open</executable>
+                    <arguments>
+                        <argument>${project.build.directory}/classes/org/apidesign/bck2brwsr/mavenhtml/Calculator.xhtml</argument>
+                    </arguments>
                 </configuration>
             </plugin>
          <plugin>
