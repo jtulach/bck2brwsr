@@ -25,6 +25,8 @@ import org.apidesign.javap.FieldData;
 import org.apidesign.javap.MethodData;
 import org.apidesign.javap.StackMapIterator;
 import static org.apidesign.javap.RuntimeConstants.*;
+import org.apidesign.javap.TrapData;
+import org.apidesign.javap.TrapDataIterator;
 
 /** Translator of the code inside class files to JavaScript.
  *
@@ -222,6 +224,7 @@ abstract class ByteCodeToJavaScript {
     private void generateMethod(String prefix, String name, MethodData m)
             throws IOException {
         final StackMapIterator stackMapIterator = m.createStackMapIterator();
+        TrapDataIterator trap = m.getTrapDataIterator();
         final LocalsMapper lmapper =
                 new LocalsMapper(stackMapIterator.getArguments());
 
@@ -273,13 +276,17 @@ abstract class ByteCodeToJavaScript {
         for (int i = 0; i < byteCodes.length; i++) {
             int prev = i;
             stackMapIterator.advanceTo(i);
+            trap.advanceTo(i);
             if (lastStackFrame != stackMapIterator.getFrameIndex()) {
                 lastStackFrame = stackMapIterator.getFrameIndex();
                 lmapper.syncWithFrameLocals(stackMapIterator.getFrameLocals());
                 smapper.syncWithFrameStack(stackMapIterator.getFrameStack());
-                out.append("    case " + i).append(": ");
+                out.append("    case " + i).append(": ");            
             } else {
                 out.append("    /* " + i).append(" */ ");
+            }
+            if (trap.useTry()) {
+                out.append("try {");
             }
             final int c = readByte(byteCodes, i);
             switch (c) {
@@ -1104,13 +1111,32 @@ abstract class ByteCodeToJavaScript {
                          Integer.toString(c));
                 }
             }
+            if (trap.useTry()) {
+                out.append("} catch (e) {");
+                for (TrapData e : trap.current()) {
+                    if (e == null) {
+                        break;
+                    }
+                    if (e.catch_cpx != 0) { //not finally
+                        final String classInternalName = jc.getClassName(e.catch_cpx);
+                        addReference(classInternalName);
+                        out.append("if (e.$instOf_"+classInternalName.replace('/', '_')+") {");
+                        out.append("gt="+e.handler_pc+"; continue;");
+                        out.append("} ");
+                    } else {
+                        //finally - todo
+                    }
+                }
+                out.append("throw e;");
+                out.append("}");
+            }
             out.append(" //");
             for (int j = prev; j <= i; j++) {
                 out.append(" ");
                 final int cc = readByte(byteCodes, j);
                 out.append(Integer.toString(cc));
             }
-            out.append("\n");
+            out.append("\n");            
         }
         out.append("  }\n");
         out.append("};");

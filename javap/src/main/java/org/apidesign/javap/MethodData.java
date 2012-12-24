@@ -357,10 +357,10 @@ public class MethodData {
     /**
      * Return exception table in code attributre.
      */
-    public Vector getexception_table(){
-        return exception_table;
+    public TrapDataIterator getTrapDataIterator(){
+        return new TrapDataIterator(exception_table);
     }
-
+    
 
     /**
      * Return method attributes.
