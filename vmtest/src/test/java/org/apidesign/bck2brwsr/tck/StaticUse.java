@@ -15,28 +15,8 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.vm4brwsr.tck;
+package org.apidesign.bck2brwsr.tck;
 
-import org.apidesign.vm4brwsr.Compare;
-import org.apidesign.vm4brwsr.CompareVMs;
-import org.testng.annotations.Factory;
-
-/**
- *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
- */
-public class CompareHashTest {
-    @Compare public int hashOfString() {
-        return "Ahoj".hashCode();
-    }
-    
-    @Compare public int hashRemainsYieldsZero() {
-        Object o = new Object();
-        return o.hashCode() - o.hashCode();
-    }
-    
-    @Factory
-    public static Object[] create() {
-        return CompareVMs.create(CompareHashTest.class);
-    }
+class StaticUse {
+    public static final Object NON_NULL = new Object();
 }

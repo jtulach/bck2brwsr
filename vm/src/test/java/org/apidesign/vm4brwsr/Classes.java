@@ -38,6 +38,10 @@ public class Classes {
         return c.getName();
     }
     
+    public static boolean isInterface(String s) throws ClassNotFoundException {
+        return Class.forName(s).isInterface();
+    }
+    
     public static boolean equalsClassesOfExceptions() {
         return MalformedURLException.class.getSuperclass() == IOException.class;
     }
@@ -86,6 +90,21 @@ public class Classes {
             }
         }
         return null;
+    }
+    
+    public static String intType() {
+        return Integer.TYPE.getName();
+    }
+    
+    public static int primitive() {
+        return 1;
+    }
+    public static boolean primitiveB() {
+        return true;
+    }
+    
+    public static String primitiveType(String method) throws Exception {
+        return reflectiveMethodCall(false, method).getClass().getName();
     }
     
     @JavaScriptBody(args = "msg", body = "throw msg;")

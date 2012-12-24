@@ -27,6 +27,7 @@ package java.net;
 
 import java.io.IOException;
 import java.io.InputStream;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
  * Class <code>URL</code> represents a Uniform Resource
@@ -964,9 +965,16 @@ public final class URL implements java.io.Serializable {
      * @see        java.net.URLConnection#getContent()
      */
     public final Object getContent() throws java.io.IOException {
-        throw new IOException();
-//        return openConnection().getContent();
+        return loadText(toExternalForm());
     }
+    
+    @JavaScriptBody(args = "url", body = ""
+        + "var request = new XMLHttpRequest();\n"
+        + "request.open('GET', url, false);\n"
+        + "request.send();\n"
+        + "return request.responseText;\n"
+    )
+    private static native String loadText(String url) throws IOException;
 
     /**
      * Gets the contents of this URL. This method is a shorthand for:
@@ -984,8 +992,12 @@ public final class URL implements java.io.Serializable {
      */
     public final Object getContent(Class[] classes)
     throws java.io.IOException {
-        throw new IOException();
-//        return openConnection().getContent(classes);
+        for (Class<?> c : classes) {
+            if (c == String.class) {
+                return getContent();
+            }
+        }
+        return null;
     }
 
     static URLStreamHandler getURLStreamHandler(String protocol) {

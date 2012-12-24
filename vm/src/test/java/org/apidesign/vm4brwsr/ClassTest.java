@@ -101,6 +101,18 @@ public class ClassTest {
             "java.io.IOException", false, "name"
         );
     }
+    @Test public void primitiveReturnType() throws Exception {
+        assertExec("Tries to get an integer via reflection", Classes.class, 
+            "primitiveType__Ljava_lang_String_2Ljava_lang_String_2", 
+            Classes.primitiveType("primitive"), "primitive"
+        );
+    }
+    @Test public void primitiveBoolReturnType() throws Exception {
+        assertExec("Tries to get an integer via reflection", Classes.class, 
+            "primitiveType__Ljava_lang_String_2Ljava_lang_String_2", 
+            Classes.primitiveType("primitiveB"), "primitiveB"
+        );
+    }
     @Test public void javaAnnotatedMethod() throws Exception {
         assertEquals(Classes.reflectiveMethodCall(false, null), "java.io.IOException", "Calls the name() method via reflection");
     }
@@ -114,6 +126,26 @@ public class ClassTest {
         assertExec("Calls the nameOfIO()", Classes.class, 
             "nameOfIO__Ljava_lang_String_2", 
             "java.io.IOException"
+        );
+    }
+    @Test public void noInterface() throws Exception {
+        assertExec("Calls Class.isInterface", Classes.class, 
+            "isInterface__ZLjava_lang_String_2", 
+            0.0, "java.lang.String"
+        );
+    }
+    /*
+    @Test public void isInterface() throws Exception {
+        assertExec("Calls Class.isInterface", Classes.class, 
+            "isInterface__ZLjava_lang_String_2", 
+            1.0, "java.lang.Runnable"
+        );
+    }
+    */
+    @Test public void integerType() throws Exception {
+        assertExec("Computes the type", Classes.class, 
+            "intType__Ljava_lang_String_2", 
+            Classes.intType()
         );
     }
     

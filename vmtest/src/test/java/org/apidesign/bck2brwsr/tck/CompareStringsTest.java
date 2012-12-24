@@ -15,12 +15,12 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.vm4brwsr.tck;
+package org.apidesign.bck2brwsr.tck;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import org.apidesign.vm4brwsr.Compare;
-import org.apidesign.vm4brwsr.CompareVMs;
+import org.apidesign.bck2brwsr.vmtest.Compare;
+import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
 
 /**
@@ -46,7 +46,7 @@ public class CompareStringsTest {
         return Class.forName("java.lang.String").getName();
     }
     @Compare public String nameOfArrayClass() throws Exception {
-        return Class.forName("org.apidesign.vm4brwsr.Array").getName();
+        return Class.forName("org.apidesign.bck2brwsr.tck.CompareHashTest").getName();
     }
     
     @Compare public String lowerHello() {
@@ -100,7 +100,7 @@ public class CompareStringsTest {
 
     @Factory
     public static Object[] create() {
-        return CompareVMs.create(CompareStringsTest.class);
+        return VMTest.create(CompareStringsTest.class);
     }
 
     private static final class NullField {

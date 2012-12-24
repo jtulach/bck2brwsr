@@ -137,7 +137,24 @@ public final
      * @return the return type for the method this object represents
      */
     public Class<?> getReturnType() {
-        throw new UnsupportedOperationException();
+        switch (sig.charAt(0)) {
+            case 'I': return Integer.TYPE;
+            case 'J': return Long.TYPE;
+            case 'D': return Double.TYPE;
+            case 'F': return Float.TYPE;
+            case 'B': return Byte.TYPE;
+            case 'Z': return Boolean.TYPE;
+            case 'S': return Short.TYPE;
+//            case 'V': return Void.TYPE;
+            case 'L': try {
+                int up = sig.indexOf("_2");
+                String type = sig.substring(1, up);
+                return Class.forName(type);
+            } catch (ClassNotFoundException ex) {
+                // should not happen
+            }
+        }
+        throw new UnsupportedOperationException(sig);
     }
 
     /**
@@ -488,17 +505,54 @@ public final
      * @exception ExceptionInInitializerError if the initialization
      * provoked by this method fails.
      */
-    @JavaScriptBody(args = { "method", "self", "args" }, body =
-          "if (args.length > 0) throw 'unsupported now';"
-        + "return method.fld_data(self);"
-    )
     public Object invoke(Object obj, Object... args)
         throws IllegalAccessException, IllegalArgumentException,
            InvocationTargetException
     {
-        throw new UnsupportedOperationException();
+        Object res = invoke0(this, obj, args);
+        if (getReturnType().isPrimitive()) {
+            res = fromPrimitive(getReturnType(), res);
+        }
+        return res;
     }
+    
+    @JavaScriptBody(args = { "method", "self", "args" }, body =
+          "if (args.length > 0) throw 'unsupported now';"
+        + "return method.fld_data(self);"
+    )
+    private static native Object invoke0(Method m, Object self, Object[] args);
 
+    private static Object fromPrimitive(Class<?> type, Object o) {
+        if (type == Integer.TYPE) {
+            return fromRaw(Integer.class, "valueOf__Ljava_lang_Integer_2I", o);
+        }
+        if (type == Long.TYPE) {
+            return fromRaw(Long.class, "valueOf__Ljava_lang_Long_2J", o);
+        }
+        if (type == Double.TYPE) {
+            return fromRaw(Double.class, "valueOf__Ljava_lang_Double_2D", o);
+        }
+        if (type == Float.TYPE) {
+            return fromRaw(Float.class, "valueOf__Ljava_lang_Float_2F", o);
+        }
+        if (type == Byte.TYPE) {
+            return fromRaw(Byte.class, "valueOf__Ljava_lang_Byte_2B", o);
+        }
+        if (type == Boolean.TYPE) {
+            return fromRaw(Boolean.class, "valueOf__Ljava_lang_Boolean_2Z", o);
+        }
+        if (type == Short.TYPE) {
+            return fromRaw(Short.class, "valueOf__Ljava_lang_Short_2S", o);
+        }
+//            case 'V': return Void.TYPE;
+        throw new IllegalStateException("Can't convert " + o);
+    }
+    
+    @JavaScriptBody(args = { "cls", "m", "o" }, 
+        body = "return cls.cnstr(false)[m](o);"
+    )
+    private static native Integer fromRaw(Class<?> cls, String m, Object o);
+    
     /**
      * Returns {@code true} if this method is a bridge
      * method; returns {@code false} otherwise.

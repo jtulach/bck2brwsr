@@ -287,7 +287,12 @@ public final
      * @return  {@code true} if this object represents an interface;
      *          {@code false} otherwise.
      */
-    public native boolean isInterface();
+    public boolean isInterface() {
+        return (getAccess() & 0x200) != 0;
+    }
+    
+    @JavaScriptBody(args = "self", body = "return self.access;")
+    private native int getAccess();
 
 
     /**
@@ -330,6 +335,10 @@ public final
      * @see     java.lang.Void#TYPE
      * @since JDK1.1
      */
+    @JavaScriptBody(args = "self", body = 
+           "if (self.primitive) return true;"
+        + "else return false;"
+    )
     public native boolean isPrimitive();
 
     /**
@@ -1090,10 +1099,13 @@ public final
         throw new UnsupportedOperationException();
     }
 
-    static Class getPrimitiveClass(String type) {
-        // XXX
-        return Object.class;
-    }
+    @JavaScriptBody(args = "type", body = ""
+        + "var c = vm.java_lang_Class(true);"
+        + "c.jvmName = type;"
+        + "c.primitive = true;"
+        + "return c;"
+    )
+    native static Class getPrimitiveClass(String type);
 
     public boolean desiredAssertionStatus() {
         return false;

@@ -18,12 +18,22 @@
     If not, see http://opensource.org/licenses/GPL-2.0.
 
 -->
-<actions>
-        <action>
-            <actionName>run</actionName>
-            <goals>
-                <goal>process-classes</goal>
-                <goal>org.apidesign.bck2brwsr:mojo:0.3-SNAPSHOT:brwsr</goal>
-            </goals>
-        </action>
-    </actions>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>Bck2Brwsr Harness</title>
+    </head>
+    <body>
+        <script src="/bck2brwsr.js"></script>
+        <script src="/vm.js"></script>
+        
+        <h1>Bck2Browser Execution Harness</h1>
+        
+        <textarea id="result" rows="25" style="width: 100%;" disabled="">
+        </textarea>
+        
+        <script type="text/javascript">
+            vm.loadClass('org.apidesign.bck2brwsr.launcher.Console').harness__VLjava_lang_String_2('$U/../data');
+        </script>
+    </body>
+</html>

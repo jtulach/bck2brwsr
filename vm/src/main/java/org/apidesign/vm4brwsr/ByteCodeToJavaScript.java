@@ -155,6 +155,7 @@ abstract class ByteCodeToJavaScript {
         out.append(accessClass("java_lang_Class(true);"));
         out.append("\n    CLS.$class.jvmName = '").append(jc.getClassName()).append("';");
         out.append("\n    CLS.$class.superclass = sprcls;");
+        out.append("\n    CLS.$class.access = ").append(jc.getAccessFlags()+";");
         out.append("\n    CLS.$class.cnstr = CLS;");
         byte[] classAnno = jc.findAnnotationData(false);
         if (classAnno != null) {
@@ -1028,7 +1029,7 @@ abstract class ByteCodeToJavaScript {
                     int indx = readIntArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
-                    emit(out, "@1 = @2.@3;",
+                    emit(out, "@1 = @2(false).constructor.@3;",
                          smapper.pushT(type),
                          accessClass(fi[0].replace('/', '_')), fi[1]);
                     i += 2;
@@ -1048,7 +1049,7 @@ abstract class ByteCodeToJavaScript {
                     int indx = readIntArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
-                    emit(out, "@1.@2 = @3;",
+                    emit(out, "@1(false).constructor.@2 = @3;",
                          accessClass(fi[0].replace('/', '_')), fi[1],
                          smapper.popT(type));
                     i += 2;
