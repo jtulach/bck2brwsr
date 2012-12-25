@@ -21,6 +21,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.script.Invocable;
+import org.apidesign.bck2brwsr.launcher.Launcher;
 import org.apidesign.bck2brwsr.launcher.MethodInvocation;
 import org.testng.ITest;
 import org.testng.annotations.Test;
@@ -31,7 +32,7 @@ import org.testng.annotations.Test;
  */
 public final class Bck2BrwsrCase implements ITest {
     private final Method m;
-    private final LaunchSetup l;
+    private final Launcher l;
     private final String type;
     Object value;
     private Invocable code;
@@ -39,7 +40,7 @@ public final class Bck2BrwsrCase implements ITest {
     private static final Map<Class, Object[]> compiled = new WeakHashMap<>();
     private Object inst;
 
-    Bck2BrwsrCase(Method m, String type, LaunchSetup l) {
+    Bck2BrwsrCase(Method m, String type, Launcher l) {
         this.l = l;
         this.m = m;
         this.type = type;

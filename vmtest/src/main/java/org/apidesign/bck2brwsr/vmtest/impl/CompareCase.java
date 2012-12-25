@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import org.apidesign.bck2brwsr.launcher.Launcher;
 import org.testng.Assert;
 import org.testng.ITest;
 import org.testng.annotations.Factory;
@@ -59,7 +60,7 @@ public final class CompareCase implements ITest {
         Method[] arr = clazz.getMethods();
         List<Object> ret = new ArrayList<>();
         
-        final LaunchSetup l = LaunchSetup.javaScript();
+        final LaunchSetup l = LaunchSetup.INSTANCE;
         ret.add(l);
         
         String[] brwsr;
@@ -78,13 +79,13 @@ public final class CompareCase implements ITest {
                 continue;
             }
             final Bck2BrwsrCase real = new Bck2BrwsrCase(m, "Java", null);
-            final Bck2BrwsrCase js = new Bck2BrwsrCase(m, "JavaScript", l);
+            final Bck2BrwsrCase js = new Bck2BrwsrCase(m, "JavaScript", l.javaScript());
             ret.add(real);
             ret.add(js);
             ret.add(new CompareCase(m, real, js));
 
             for (String b : brwsr) {
-                final LaunchSetup s = LaunchSetup.brwsr(b);
+                final Launcher s = l.brwsr(b);
                 ret.add(s);
                 final Bck2BrwsrCase cse = new Bck2BrwsrCase(m, b, s);
                 ret.add(cse);

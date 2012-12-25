@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.apidesign.bck2brwsr.launcher.Launcher;
-import org.apidesign.bck2brwsr.launcher.MethodInvocation;
 import org.testng.annotations.AfterGroups;
 import org.testng.annotations.BeforeGroups;
 
@@ -30,39 +29,40 @@ import org.testng.annotations.BeforeGroups;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public final class LaunchSetup {
-    private static final LaunchSetup JS = new LaunchSetup(Launcher.createJavaScript());
-    private static final Map<String,LaunchSetup> BRWSRS = new LinkedHashMap<>();
+    static LaunchSetup INSTANCE = new LaunchSetup();
     
-    private final Launcher launcher;
+    private final Launcher js = Launcher.createJavaScript();
+    private final Map<String,Launcher> brwsrs = new LinkedHashMap<>();
     
-    private LaunchSetup(Launcher l) {
-        launcher = l;
+    private LaunchSetup() {
     }
     
-    public static LaunchSetup javaScript() {
-        return JS;
+    public  Launcher javaScript() {
+        return js;
     } 
     
-    public static synchronized LaunchSetup brwsr(String cmd) {
-        LaunchSetup s = BRWSRS.get(cmd);
+    public synchronized Launcher brwsr(String cmd) {
+        Launcher s = brwsrs.get(cmd);
         if (s == null) {
-            s = new LaunchSetup(Launcher.createBrowser(cmd));
-            BRWSRS.put(cmd, s);
+            s = Launcher.createBrowser(cmd);
+            brwsrs.put(cmd, s);
         }
         return s;
     }
 
     @BeforeGroups("run")
     public void initializeLauncher() throws IOException {
-        launcher.initialize();
+        js.initialize();
+        for (Launcher launcher : brwsrs.values()) {
+            launcher.initialize();
+        }
     }
 
     @AfterGroups("run")
     public void shutDownLauncher() throws IOException, InterruptedException {
-        launcher.shutdown();
-    }
-
-    public MethodInvocation invokeMethod(Class<?> clazz, String name) throws IOException {
-        return launcher.invokeMethod(clazz, name);
+        js.shutdown();
+        for (Launcher launcher : brwsrs.values()) {
+            launcher.shutdown();
+        }
     }
 }
