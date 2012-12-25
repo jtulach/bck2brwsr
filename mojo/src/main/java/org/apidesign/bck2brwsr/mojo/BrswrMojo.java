@@ -17,26 +17,24 @@
  */
 package org.apidesign.bck2brwsr.mojo;
 
+import java.io.Closeable;
 import org.apache.maven.plugin.AbstractMojo;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
-import org.apidesign.bck2brwsr.launcher.Bck2BrwsrLauncher;
+import org.apidesign.bck2brwsr.launcher.Launcher;
 
 /** Executes given HTML page in a browser. */
 @Mojo(name="brwsr", defaultPhase=LifecyclePhase.DEPLOY)
@@ -63,15 +61,14 @@ public class BrswrMojo extends AbstractMojo {
         try {
             URLClassLoader url = buildClassLoader(classes, prj.getDependencyArtifacts());
             
-            Bck2BrwsrLauncher httpServer = new Bck2BrwsrLauncher();
-            httpServer.addClassLoader(url);
+            Closeable httpServer;
             try {
-                httpServer.showURL(startpage);
+                httpServer = Launcher.showURL(url, startpage);
             } catch (Exception ex) {
                 throw new MojoExecutionException("Can't open " + startpage, ex);
             }
-            
             System.in.read();
+            httpServer.close();
         } catch (IOException ex) {
             throw new MojoExecutionException("Can't show the browser", ex);
         }

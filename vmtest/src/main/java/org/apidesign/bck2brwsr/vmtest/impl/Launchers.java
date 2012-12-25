@@ -18,10 +18,8 @@
 package org.apidesign.bck2brwsr.vmtest.impl;
 
 import java.io.IOException;
-import org.apidesign.bck2brwsr.launcher.Bck2BrwsrLauncher;
-import org.apidesign.bck2brwsr.launcher.JSLauncher;
+import org.apidesign.bck2brwsr.launcher.Launcher;
 import org.apidesign.bck2brwsr.launcher.MethodInvocation;
-import org.apidesign.vm4brwsr.Bck2Brwsr;
 import org.testng.annotations.AfterGroups;
 import org.testng.annotations.BeforeGroups;
 
@@ -32,34 +30,32 @@ import org.testng.annotations.BeforeGroups;
 public final class Launchers {
     public static final Launchers INSTANCE = new Launchers();
     
-    private JSLauncher jsl;
-    private Bck2BrwsrLauncher brwsr;
+    private Launcher jsl;
+    private Launcher brwsr;
     
     private Launchers() {
     }
 
     @BeforeGroups("run")
     public void initializeLauncher() throws IOException {
-        jsl = new JSLauncher();
-        jsl.addClassLoader(Bck2Brwsr.class.getClassLoader());
+        jsl = Launcher.createJavaScript();
         jsl.initialize();
-        Bck2BrwsrLauncher l = new Bck2BrwsrLauncher();
-        l.addClassLoader(Bck2Brwsr.class.getClassLoader());
+        Launcher l = Launcher.createBrowser("xdg-open");
         l.initialize();
-        l.setTimeout(180000);
         brwsr = l;
     }
 
     @AfterGroups("run")
     public void shutDownLauncher() throws IOException, InterruptedException {
+        jsl.shutdown();
         brwsr.shutdown();
     }
 
-    public MethodInvocation addMethod(Class<?> clazz, String name, boolean inBrwsr) throws IOException {
+    public MethodInvocation invokeMethod(Class<?> clazz, String name, boolean inBrwsr) throws IOException {
         if (!inBrwsr) {
-            return jsl.addMethod(clazz, name);
+            return jsl.invokeMethod(clazz, name);
         } else {
-            return brwsr.addMethod(clazz, name);
+            return brwsr.invokeMethod(clazz, name);
         }
     }
 }

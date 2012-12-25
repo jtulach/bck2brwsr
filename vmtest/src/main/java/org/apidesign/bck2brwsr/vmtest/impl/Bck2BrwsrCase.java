@@ -48,10 +48,10 @@ public final class Bck2BrwsrCase implements ITest {
     @Test(groups = "run")
     public void executeCode() throws Throwable {
         if (type == 1) {
-            MethodInvocation c = l.addMethod(m.getDeclaringClass(), m.getName(), false);
+            MethodInvocation c = l.invokeMethod(m.getDeclaringClass(), m.getName(), false);
             value = c.toString();
         } else if (type == 2) {
-            MethodInvocation c = l.addMethod(m.getDeclaringClass(), m.getName(), true);
+            MethodInvocation c = l.invokeMethod(m.getDeclaringClass(), m.getName(), true);
             value = c.toString();
         } else {
             value = m.invoke(m.getDeclaringClass().newInstance());

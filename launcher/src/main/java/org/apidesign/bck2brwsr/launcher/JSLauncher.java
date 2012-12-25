@@ -33,7 +33,7 @@ import org.apidesign.vm4brwsr.Bck2Brwsr;
 /**
  * Tests execution in Java's internal scripting engine.
  */
-public final class JSLauncher {
+final class JSLauncher extends Launcher {
     private static final Logger LOG = Logger.getLogger(JSLauncher.class.getName());
     private Set<ClassLoader> loaders = new LinkedHashSet<>();
     private final Res resources = new Res();
@@ -41,6 +41,7 @@ public final class JSLauncher {
     private Object console;
     
     
+    @Override
     public MethodInvocation addMethod(Class<?> clazz, String method) {
         loaders.add(clazz.getClassLoader());
         MethodInvocation mi = new MethodInvocation(clazz.getName(), method);
@@ -59,6 +60,7 @@ public final class JSLauncher {
         this.loaders.add(url);
     }
 
+    @Override
     public void initialize() throws IOException {
         try {
             initRhino();
@@ -93,6 +95,10 @@ public final class JSLauncher {
         
         Object vm = code.invokeFunction("initVM");
         console = code.invokeMethod(vm, "loadClass", Console.class.getName());
+    }
+
+    @Override
+    public void shutdown() throws IOException {
     }
     
     private class Res implements Bck2Brwsr.Resources {

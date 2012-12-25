@@ -17,6 +17,7 @@
  */
 package org.apidesign.bck2brwsr.launcher;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,18 +53,23 @@ import org.glassfish.grizzly.http.server.ServerConfiguration;
  * Supports execution in native browser as well as Java's internal 
  * execution engine.
  */
-public class Bck2BrwsrLauncher {
+final class Bck2BrwsrLauncher extends Launcher implements Closeable {
     private static final Logger LOG = Logger.getLogger(Bck2BrwsrLauncher.class.getName());
     private static final MethodInvocation END = new MethodInvocation(null, null);
     private Set<ClassLoader> loaders = new LinkedHashSet<>();
     private BlockingQueue<MethodInvocation> methods = new LinkedBlockingQueue<>();
     private long timeOut;
     private final Res resources = new Res();
+    private final String cmd;
     private Object[] brwsr;
     private HttpServer server;
     private CountDownLatch wait;
+
+    public Bck2BrwsrLauncher(String cmd) {
+        this.cmd = cmd;
+    }
     
-    
+    @Override
     public MethodInvocation addMethod(Class<?> clazz, String method) throws IOException {
         loaders.add(clazz.getClassLoader());
         MethodInvocation c = new MethodInvocation(clazz.getName(), method);
@@ -83,23 +89,21 @@ public class Bck2BrwsrLauncher {
     public void addClassLoader(ClassLoader url) {
         this.loaders.add(url);
     }
-    
-    public static void main( String[] args ) throws Exception {
-        Bck2BrwsrLauncher l = new Bck2BrwsrLauncher();
-        l.addClassLoader(Bck2BrwsrLauncher.class.getClassLoader());
-        l.showURL("org/apidesign/bck2brwsr/launcher/console.xhtml");
-        System.in.read();
-    }
 
-    public void showURL(String startpage) throws URISyntaxException, InterruptedException, IOException {
+    public void showURL(String startpage) throws IOException {
         if (!startpage.startsWith("/")) {
             startpage = "/" + startpage;
         }
         HttpServer s = initServer();
         s.getServerConfiguration().addHttpHandler(new Page(resources, null), "/");
-        launchServerAndBrwsr(s, startpage);
+        try {
+            launchServerAndBrwsr(s, startpage);
+        } catch (URISyntaxException | InterruptedException ex) {
+            throw new IOException(ex);
+        }
     }
 
+    @Override
     public void initialize() throws IOException {
         try {
             executeInBrowser();
@@ -178,12 +182,17 @@ public class Bck2BrwsrLauncher {
         this.brwsr = launchServerAndBrwsr(server, "/execute");
     }
     
-    public void shutdown() throws InterruptedException, IOException {
+    @Override
+    public void shutdown() throws IOException {
         methods.offer(END);
         for (;;) {
             int prev = methods.size();
-            if (wait.await(timeOut, TimeUnit.MILLISECONDS)) {
-                break;
+            try {
+                if (wait.await(timeOut, TimeUnit.MILLISECONDS)) {
+                    break;
+                }
+            } catch (InterruptedException ex) {
+                throw new IOException(ex);
             }
             if (prev == methods.size()) {
                 LOG.log(
@@ -244,11 +253,12 @@ public class Bck2BrwsrLauncher {
 //            return new Object[] { process, dir };
         }
         {
-            String[] cmd = { 
-                "xdg-open", uri.toString()
+            String cmdName = cmd == null ? "xdg-open" : cmd;
+            String[] cmdArr = { 
+                cmdName, uri.toString()
             };
-            LOG.log(Level.INFO, "Launching {0}", Arrays.toString(cmd));
-            final Process process = Runtime.getRuntime().exec(cmd);
+            LOG.log(Level.INFO, "Launching {0}", Arrays.toString(cmdArr));
+            final Process process = Runtime.getRuntime().exec(cmdArr);
             return new Object[] { process, null };
         }
     }
@@ -264,7 +274,7 @@ public class Bck2BrwsrLauncher {
         }
     }
     
-    private void stopServerAndBrwsr(HttpServer server, Object[] brwsr) throws IOException, InterruptedException {
+    private void stopServerAndBrwsr(HttpServer server, Object[] brwsr) throws IOException {
         Process process = (Process)brwsr[0];
         
         server.stop();
@@ -273,7 +283,12 @@ public class Bck2BrwsrLauncher {
         drain("StdOut", stdout);
         drain("StdErr", stderr);
         process.destroy();
-        int res = process.waitFor();
+        int res;
+        try {
+            res = process.waitFor();
+        } catch (InterruptedException ex) {
+            throw new IOException(ex);
+        }
         LOG.log(Level.INFO, "Exit code: {0}", res);
 
         deleteTree((File)brwsr[1]);
@@ -303,6 +318,11 @@ public class Bck2BrwsrLauncher {
             }
         }
         file.delete();
+    }
+
+    @Override
+    public void close() throws IOException {
+        shutdown();
     }
 
     private class Res implements Bck2Brwsr.Resources {
