@@ -149,7 +149,7 @@ public class Bck2BrwsrLauncher {
                 
                 if (id != null && value != null) {
                     LOG.log(Level.INFO, "Received result for case {0} = {1}", new Object[]{id, value});
-                    value = value.replace("%20", " ");
+                    value = decodeURL(value);
                     cases.get(Integer.parseInt(id)).result(value, null);
                 }
                 
@@ -250,6 +250,17 @@ public class Bck2BrwsrLauncher {
             LOG.log(Level.INFO, "Launching {0}", Arrays.toString(cmd));
             final Process process = Runtime.getRuntime().exec(cmd);
             return new Object[] { process, null };
+        }
+    }
+    
+    private static String decodeURL(String s) {
+        for (;;) {
+            int pos = s.indexOf('%');
+            if (pos == -1) {
+                return s;
+            }
+            int i = Integer.parseInt(s.substring(pos + 1, pos + 2), 16);
+            s = s.substring(0, pos) + (char)i + s.substring(pos + 2);
         }
     }
     

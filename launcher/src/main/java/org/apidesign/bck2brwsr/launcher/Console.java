@@ -22,6 +22,8 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.Enumeration;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
@@ -45,7 +47,7 @@ public class Console {
         "window.document.getElementById(id)[attr] = value;")
     private static native void setAttr(String id, String attr, Object value);
     
-    @JavaScriptBody(args = {}, body = "window.close();")
+    @JavaScriptBody(args = {}, body = "return; window.close();")
     private static native void closeWindow();
 
     private static void log(String newText) {
@@ -81,6 +83,9 @@ public class Console {
                 Object result = invokeMethod(c.getClassName(), c.getMethodName());
                 
                 log("Result: " + result);
+                
+                result = encodeURL("" + result);
+                
                 log("Sending back: " + url + "?request=" + c.getRequestId() + "&result=" + result);
                 u = new URL(url + "?request=" + c.getRequestId() + "&result=" + result);
             }
@@ -89,6 +94,23 @@ public class Console {
         } catch (Exception ex) {
             log(ex.getMessage());
         }
+    }
+    
+    private static String encodeURL(String r) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < r.length(); i++) {
+            int ch = r.charAt(i);
+            if (ch < 32 || ch == '%' || ch == '+') {
+                sb.append("%").append(("0" + Integer.toHexString(ch)).substring(0, 2));
+            } else {
+                if (ch == 32) {
+                    sb.append("+");
+                } else {
+                    sb.append((char)ch);
+                }
+            }
+        }
+        return sb.toString();
     }
     
     static String invoke(String clazz, String method) throws ClassNotFoundException, InvocationTargetException, IllegalAccessException {

@@ -17,26 +17,45 @@
  */
 package org.apidesign.benchmark.matrixmul;
 
-public class Main {
+import java.io.IOException;
+import org.apidesign.bck2brwsr.vmtest.Compare;
+import org.apidesign.bck2brwsr.vmtest.VMTest;
+import org.testng.annotations.Factory;
 
-    public static final int ITERATION_COUNT = 100000;
+/**
+ *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
+ */
+public class MatrixTest {
+    public static final int ITERATION_COUNT = 10;
     
-    public static void main(String[] args) {
+    public MatrixTest() {
+    }
+
+    @Compare public String tenThousandIterations() throws IOException {
+    
         Matrix m1 = new Matrix(5);
         Matrix m2 = new Matrix(5);
         
         m1.generateData();
         m2.generateData();
         
-        //m1.printOn(System.out);
-        //System.out.println("x");
-        //m2.printOn(System.out);
-        
+        Matrix res = null;
         for (int i = 0; i < ITERATION_COUNT; i++) {
-            m1.multiply(m2);
+            Matrix m = m1.multiply(m2);
+            if (res != null && !res.equals(m)) {
+                return "different";
+            }
+            res = m;
         }
         
-        //System.out.println("=");
-        //m1.printOn(System.out);
+        StringBuilder sb = new StringBuilder();
+        res.printOn(sb);
+        return sb.toString();
+    }
+    
+    @Factory
+    public static Object[] create() {
+        return VMTest.create(MatrixTest.class);
     }
 }
