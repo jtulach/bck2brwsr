@@ -23,9 +23,7 @@ import org.apidesign.bck2brwsr.launcher.JSLauncher;
 import org.apidesign.bck2brwsr.launcher.MethodInvocation;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 import org.testng.annotations.AfterGroups;
-import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeGroups;
-import org.testng.annotations.BeforeSuite;
 
 /**
  *
