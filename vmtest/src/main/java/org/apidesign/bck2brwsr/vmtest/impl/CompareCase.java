@@ -59,25 +59,37 @@ public final class CompareCase implements ITest {
         Method[] arr = clazz.getMethods();
         List<Object> ret = new ArrayList<>();
         
-        final Launchers l = Launchers.INSTANCE;
-    
+        final LaunchSetup l = LaunchSetup.javaScript();
         ret.add(l);
+        
+        String[] brwsr;
+        {
+            String p = System.getProperty("vmtest.brwsrs");
+            if (p != null) {
+                brwsr = p.split(",");
+            } else {
+                brwsr = new String[0];
+            }
+        }
         
         for (Method m : arr) {
             Compare c = m.getAnnotation(Compare.class);
             if (c == null) {
                 continue;
             }
-            final Bck2BrwsrCase real = new Bck2BrwsrCase(m, 0, null);
-            final Bck2BrwsrCase js = new Bck2BrwsrCase(m, 1, l);
-            final Bck2BrwsrCase brwsr = new Bck2BrwsrCase(m, 2, l);
-            
+            final Bck2BrwsrCase real = new Bck2BrwsrCase(m, "Java", null);
+            final Bck2BrwsrCase js = new Bck2BrwsrCase(m, "JavaScript", l);
             ret.add(real);
             ret.add(js);
-            ret.add(brwsr);
-            
             ret.add(new CompareCase(m, real, js));
-            ret.add(new CompareCase(m, real, brwsr));
+
+            for (String b : brwsr) {
+                final LaunchSetup s = LaunchSetup.brwsr(b);
+                ret.add(s);
+                final Bck2BrwsrCase cse = new Bck2BrwsrCase(m, b, s);
+                ret.add(cse);
+                ret.add(new CompareCase(m, real, cse));
+            }
         }
         return ret.toArray();
     }

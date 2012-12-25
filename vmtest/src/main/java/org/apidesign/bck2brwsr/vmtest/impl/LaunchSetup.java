@@ -18,6 +18,8 @@
 package org.apidesign.bck2brwsr.vmtest.impl;
 
 import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.apidesign.bck2brwsr.launcher.Launcher;
 import org.apidesign.bck2brwsr.launcher.MethodInvocation;
 import org.testng.annotations.AfterGroups;
@@ -27,35 +29,40 @@ import org.testng.annotations.BeforeGroups;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public final class Launchers {
-    public static final Launchers INSTANCE = new Launchers();
+public final class LaunchSetup {
+    private static final LaunchSetup JS = new LaunchSetup(Launcher.createJavaScript());
+    private static final Map<String,LaunchSetup> BRWSRS = new LinkedHashMap<>();
     
-    private Launcher jsl;
-    private Launcher brwsr;
+    private final Launcher launcher;
     
-    private Launchers() {
+    private LaunchSetup(Launcher l) {
+        launcher = l;
+    }
+    
+    public static LaunchSetup javaScript() {
+        return JS;
+    } 
+    
+    public static synchronized LaunchSetup brwsr(String cmd) {
+        LaunchSetup s = BRWSRS.get(cmd);
+        if (s == null) {
+            s = new LaunchSetup(Launcher.createBrowser(cmd));
+            BRWSRS.put(cmd, s);
+        }
+        return s;
     }
 
     @BeforeGroups("run")
     public void initializeLauncher() throws IOException {
-        jsl = Launcher.createJavaScript();
-        jsl.initialize();
-        Launcher l = Launcher.createBrowser("xdg-open");
-        l.initialize();
-        brwsr = l;
+        launcher.initialize();
     }
 
     @AfterGroups("run")
     public void shutDownLauncher() throws IOException, InterruptedException {
-        jsl.shutdown();
-        brwsr.shutdown();
+        launcher.shutdown();
     }
 
-    public MethodInvocation invokeMethod(Class<?> clazz, String name, boolean inBrwsr) throws IOException {
-        if (!inBrwsr) {
-            return jsl.invokeMethod(clazz, name);
-        } else {
-            return brwsr.invokeMethod(clazz, name);
-        }
+    public MethodInvocation invokeMethod(Class<?> clazz, String name) throws IOException {
+        return launcher.invokeMethod(clazz, name);
     }
 }

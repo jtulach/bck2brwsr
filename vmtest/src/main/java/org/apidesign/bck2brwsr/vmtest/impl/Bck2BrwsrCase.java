@@ -31,15 +31,15 @@ import org.testng.annotations.Test;
  */
 public final class Bck2BrwsrCase implements ITest {
     private final Method m;
-    private final Launchers l;
-    private final int type;
+    private final LaunchSetup l;
+    private final String type;
     Object value;
     private Invocable code;
     private CharSequence codeSeq;
     private static final Map<Class, Object[]> compiled = new WeakHashMap<>();
     private Object inst;
 
-    Bck2BrwsrCase(Method m, int type, Launchers l) {
+    Bck2BrwsrCase(Method m, String type, LaunchSetup l) {
         this.l = l;
         this.m = m;
         this.type = type;
@@ -47,11 +47,8 @@ public final class Bck2BrwsrCase implements ITest {
 
     @Test(groups = "run")
     public void executeCode() throws Throwable {
-        if (type == 1) {
-            MethodInvocation c = l.invokeMethod(m.getDeclaringClass(), m.getName(), false);
-            value = c.toString();
-        } else if (type == 2) {
-            MethodInvocation c = l.invokeMethod(m.getDeclaringClass(), m.getName(), true);
+        if (l != null) {
+            MethodInvocation c = l.invokeMethod(m.getDeclaringClass(), m.getName());
             value = c.toString();
         } else {
             value = m.invoke(m.getDeclaringClass().newInstance());
@@ -64,67 +61,6 @@ public final class Bck2BrwsrCase implements ITest {
     }
 
     final String typeName() {
-        switch (type) {
-            case 0:
-                return "Java";
-            case 1:
-                return "JavaScript";
-            case 2:
-                return "Browser";
-            default:
-                return "Unknown type " + type;
-        }
+        return type;
     }
-
-    private static String computeSignature(Method m) {
-        StringBuilder sb = new StringBuilder();
-        appendType(sb, m.getReturnType());
-        for (Class<?> c : m.getParameterTypes()) {
-            appendType(sb, c);
-        }
-        return sb.toString();
-    }
-
-    private static void appendType(StringBuilder sb, Class<?> t) {
-        if (t == null) {
-            sb.append('V');
-            return;
-        }
-        if (t.isPrimitive()) {
-            int ch = -1;
-            if (t == int.class) {
-                ch = 'I';
-            }
-            if (t == short.class) {
-                ch = 'S';
-            }
-            if (t == byte.class) {
-                ch = 'B';
-            }
-            if (t == boolean.class) {
-                ch = 'Z';
-            }
-            if (t == long.class) {
-                ch = 'J';
-            }
-            if (t == float.class) {
-                ch = 'F';
-            }
-            if (t == double.class) {
-                ch = 'D';
-            }
-            assert ch != -1 : "Unknown primitive type " + t;
-            sb.append((char) ch);
-            return;
-        }
-        if (t.isArray()) {
-            sb.append("_3");
-            appendType(sb, t.getComponentType());
-            return;
-        }
-        sb.append('L');
-        sb.append(t.getName().replace('.', '_'));
-        sb.append("_2");
-    }
-    
 }
