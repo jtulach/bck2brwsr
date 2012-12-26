@@ -29,7 +29,7 @@ public final class MethodInvocation {
     final String className;
     final String methodName;
     private String result;
-    private Exception exception;
+    private Throwable exception;
 
     MethodInvocation(String className, String methodName) {
         this.className = className;
@@ -40,7 +40,7 @@ public final class MethodInvocation {
         wait.await(timeOut, TimeUnit.MILLISECONDS);
     }
     
-    void result(String r, Exception e) {
+    void result(String r, Throwable e) {
         this.result = r;
         this.exception = e;
         wait.countDown();
