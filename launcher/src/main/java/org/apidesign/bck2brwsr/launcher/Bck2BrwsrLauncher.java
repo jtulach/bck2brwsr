@@ -188,7 +188,7 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
         for (;;) {
             int prev = methods.size();
             try {
-                if (wait.await(timeOut, TimeUnit.MILLISECONDS)) {
+                if (wait != null && wait.await(timeOut, TimeUnit.MILLISECONDS)) {
                     break;
                 }
             } catch (InterruptedException ex) {
@@ -275,6 +275,9 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
     }
     
     private void stopServerAndBrwsr(HttpServer server, Object[] brwsr) throws IOException {
+        if (brwsr == null) {
+            return;
+        }
         Process process = (Process)brwsr[0];
         
         server.stop();
