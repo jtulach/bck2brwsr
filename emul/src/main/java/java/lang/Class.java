@@ -641,7 +641,7 @@ public final
      * @since JDK1.1
      */
     public Method[] getMethods() throws SecurityException {
-        return MethodImpl.findMethods(this);
+        return MethodImpl.findMethods(this, 0x01);
     }
 
     /**

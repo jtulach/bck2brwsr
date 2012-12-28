@@ -57,7 +57,6 @@ public final
     private final String name;
     private final Object data;
     private final String sig;
-    private int modifiers;
 
    // Generics infrastructure
 
@@ -109,9 +108,12 @@ public final
      * @see Modifier
      */
     public int getModifiers() {
-        return modifiers;
+        return getAccess(data);
     }
-
+    
+    @JavaScriptBody(args = "self", body = "return self.access;")
+    private static native int getAccess(Object self);
+    
     /**
      * Returns an array of {@code TypeVariable} objects that represent the
      * type variables declared by the generic declaration represented by this

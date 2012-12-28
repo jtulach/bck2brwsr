@@ -17,6 +17,11 @@
  */
 package org.apidesign.bck2brwsr.tck;
 
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
@@ -34,6 +39,25 @@ public class ReflectionTest {
         return long.class.toString();
     }
     
+    @Compare public String namesOfMethods() {
+        StringBuilder sb = new StringBuilder();
+        String[] arr = new String[20];
+        int i = 0;
+        for (Method m : StaticUse.class.getMethods()) {
+            arr[i++] = m.getName();
+        }
+        for (String s : sort(arr, i)) {
+            sb.append(s).append("\n");
+        }
+        return sb.toString();
+    }
+    
+    @JavaScriptBody(args = { "arr", "len" }, body="var a = arr.slice(0, len); a.sort(); return a;")
+    private static String[] sort(String[] arr, int len) {
+        List<String> list = Arrays.asList(arr).subList(0, len);
+        Collections.sort(list);
+        return list.toArray(new String[0]);
+    }
     
     @Factory
     public static Object[] create() {

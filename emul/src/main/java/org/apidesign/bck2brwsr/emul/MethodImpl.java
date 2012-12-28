@@ -62,7 +62,6 @@ public abstract class MethodImpl {
     private static native Object[] findMethodData(
         Class<?> clazz, String prefix);
 
-    // XXX should not be public
     public static Method findMethod(
         Class<?> clazz, String name, Class<?>... parameterTypes) {
         Object[] data = findMethodData(clazz, name + "__");
@@ -73,7 +72,7 @@ public abstract class MethodImpl {
         return INSTANCE.create(clazz, name, data[1], sig);
     }
 
-    public static Method[] findMethods(Class<?> clazz) {
+    public static Method[] findMethods(Class<?> clazz, int mask) {
         Object[] namesAndData = findMethodData(clazz, "");
         int cnt = 0;
         for (int i = 0; i < namesAndData.length; i += 2) {
@@ -85,7 +84,11 @@ public abstract class MethodImpl {
             }
             String name = sig.substring(0, middle);
             sig = sig.substring(middle + 2);
-            namesAndData[cnt++] = INSTANCE.create(clazz, name, data, sig);
+            final Method m = INSTANCE.create(clazz, name, data, sig);
+            if ((m.getModifiers() & mask) == 0) {
+                continue;
+            }
+            namesAndData[cnt++] = m;
         }
         Method[] arr = new Method[cnt];
         for (int i = 0; i < cnt; i++) {

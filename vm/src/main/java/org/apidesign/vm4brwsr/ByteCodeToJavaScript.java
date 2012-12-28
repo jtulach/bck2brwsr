@@ -147,6 +147,7 @@ abstract class ByteCodeToJavaScript {
                 generateAnno(jc, out, runAnno);
                 out.append("\n    };");
             }
+            out.append("\n    c.").append(mn).append(".access = " + m.getAccess()).append(";");
         }
         out.append("\n    c.constructor = CLS;");
         out.append("\n    c.$instOf_").append(className).append(" = true;");

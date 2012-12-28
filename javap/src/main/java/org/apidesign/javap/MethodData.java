@@ -235,22 +235,8 @@ public class MethodData {
     /**
      * Return access of the method.
      */
-    public String[] getAccess(){
-
-        Vector v = new Vector();
-        if ((access & ACC_PUBLIC)   !=0) v.addElement("public");
-        if ((access & ACC_PRIVATE)   !=0) v.addElement("private");
-        if ((access & ACC_PROTECTED)   !=0) v.addElement("protected");
-        if ((access & ACC_STATIC)   !=0) v.addElement("static");
-        if ((access & ACC_FINAL)    !=0) v.addElement("final");
-        if ((access & ACC_SYNCHRONIZED) !=0) v.addElement("synchronized");
-        if ((access & ACC_NATIVE) !=0) v.addElement("native");
-        if ((access & ACC_ABSTRACT) !=0) v.addElement("abstract");
-        if ((access & ACC_STRICT) !=0) v.addElement("strictfp");
-
-        String[] accflags = new String[v.size()];
-        v.copyInto(accflags);
-        return accflags;
+    public int getAccess(){
+        return access;
     }
 
     /**
