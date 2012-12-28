@@ -32,6 +32,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.TypeVariable;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
+import org.apidesign.bck2brwsr.emul.MethodImpl;
 
 /**
  * Instances of the class {@code Class} represent classes and
@@ -640,7 +641,7 @@ public final
      * @since JDK1.1
      */
     public Method[] getMethods() throws SecurityException {
-        return Method.findMethods(this);
+        return MethodImpl.findMethods(this);
     }
 
     /**
@@ -771,7 +772,7 @@ public final
      */
     public Method getMethod(String name, Class<?>... parameterTypes)
         throws SecurityException {
-        Method m = Method.findMethod(this, name, parameterTypes);
+        Method m = MethodImpl.findMethod(this, name, parameterTypes);
         if (m == null) {
             throw new SecurityException(); // XXX: NoSuchMethodException
         }

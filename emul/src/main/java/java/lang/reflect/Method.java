@@ -28,6 +28,7 @@ package java.lang.reflect;
 import java.lang.annotation.Annotation;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.emul.AnnotationImpl;
+import org.apidesign.bck2brwsr.emul.MethodImpl;
 
 /**
  * A {@code Method} provides information about, and access to, a single method
@@ -653,57 +654,12 @@ public final
     public Annotation[][] getParameterAnnotations() {
         throw new UnsupportedOperationException();
     }
-    
-    //
-    // bck2brwsr implementation
-    //
 
-    @JavaScriptBody(args = { "clazz", "prefix" },
-        body = ""
-        + "var c = clazz.cnstr.prototype;"
-        + "var arr = new Array();\n"
-        + "for (m in c) {\n"
-        + "  if (m.indexOf(prefix) === 0) {\n"
-        + "     arr.push(m);\n"
-        + "     arr.push(c[m]);\n"
-        + "  }"
-        + "}\n"
-        + "return arr;"
-    )
-    private static native Object[] findMethodData(
-        Class<?> clazz, String prefix
-    );
-
-    // XXX should not be public
-    public static Method findMethod(
-        Class<?> clazz, String name, Class<?>... parameterTypes
-    ) {
-        Object[] data = findMethodData(clazz, name + "__");
-        if (data.length == 0) {
-            return null;
-        }
-        String sig = ((String)data[0]).substring(name.length() + 2);
-        return new Method(clazz, name, data[1], sig);
-    }
-    
-    public static Method[] findMethods(Class<?> clazz) {
-        Object[] namesAndData = findMethodData(clazz, "");
-        int cnt = 0;
-        for (int i = 0; i < namesAndData.length; i += 2) {
-            String sig = (String) namesAndData[i];
-            Object data = namesAndData[i + 1];
-            int middle = sig.indexOf("__");
-            if (middle == -1) {
-                continue;
+    static {
+        MethodImpl.INSTANCE = new MethodImpl() {
+            protected Method create(Class<?> declaringClass, String name, Object data, String sig) {
+                return new Method(declaringClass, name, data, sig);
             }
-            String name = sig.substring(0, middle);
-            sig = sig.substring(middle + 2);
-            namesAndData[cnt++] = new Method(clazz, name, data, sig);
-        }
-        Method[] arr = new Method[cnt];
-        for (int i = 0; i < cnt; i++) {
-            arr[i] = (Method)namesAndData[i];
-        }
-        return arr;
+        };
     }
 }
