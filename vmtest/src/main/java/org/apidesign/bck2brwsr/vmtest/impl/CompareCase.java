@@ -106,7 +106,14 @@ public final class CompareCase implements ITest {
         } else {
             v1 = "null";
         }
-        Assert.assertEquals(v2, v1, "Comparing results");
+        try {
+            Assert.assertEquals(v2, v1, "Comparing results");
+        } catch (AssertionError e) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(e.getMessage());
+            Bck2BrwsrCase.dumpJS(sb, second);
+            throw new AssertionError(sb.toString());
+        }
     }
     
     /** Test name.
@@ -115,13 +122,5 @@ public final class CompareCase implements ITest {
     @Override
     public String getTestName() {
         return m.getName() + "[Compare " + second.typeName() + "]";
-    }
-    
-    static StringBuilder dumpJS(CharSequence sb) throws IOException {
-        File f = File.createTempFile("execution", ".js");
-        try (FileWriter w = new FileWriter(f)) {
-            w.append(sb);
-        }
-        return new StringBuilder(f.getPath());
     }
 }

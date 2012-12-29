@@ -17,10 +17,12 @@
  */
 package org.apidesign.bck2brwsr.vmtest.impl;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.WeakHashMap;
-import javax.script.Invocable;
 import org.apidesign.bck2brwsr.launcher.Launcher;
 import org.apidesign.bck2brwsr.launcher.MethodInvocation;
 import org.testng.ITest;
@@ -35,8 +37,6 @@ public final class Bck2BrwsrCase implements ITest {
     private final Launcher l;
     private final String type;
     Object value;
-    private Invocable code;
-    private CharSequence codeSeq;
     private static final Map<Class, Object[]> compiled = new WeakHashMap<>();
     private Object inst;
 
@@ -63,5 +63,12 @@ public final class Bck2BrwsrCase implements ITest {
 
     final String typeName() {
         return type;
+    }
+    static void dumpJS(StringBuilder sb, Bck2BrwsrCase c) throws IOException {
+        File f = File.createTempFile(c.m.getName(), ".js");
+        try (final FileWriter w = new FileWriter(f)) {
+            w.append(c.l.toString());
+        }
+        sb.append("Path: ").append(f.getPath());
     }
 }
