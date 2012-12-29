@@ -25,9 +25,9 @@
 
 package org.apidesign.javap;
 
-import java.io.*;
-import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
+import java.io.DataInputStream;
+import java.io.IOException;
 import static org.apidesign.javap.RuntimeConstants.*;
 
 /**
@@ -386,5 +386,9 @@ public class MethodData {
         AttrData[] arr = new AttrData[attrs.size()];
         attrs.copyInto(arr);
         return ClassData.findAttr(n, arr);
+    }
+
+    public boolean isConstructor() {
+        return "<init>".equals(getName());
     }
 }

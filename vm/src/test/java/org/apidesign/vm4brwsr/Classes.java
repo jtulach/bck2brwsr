@@ -72,6 +72,14 @@ public class Classes {
         }
         throw new IllegalStateException("Not a subtype: " + ioe);
     }
+    public static String newInstanceNoPubConstructor() throws Exception {
+        try {
+            Float f = Float.class.newInstance();
+            return "wrong, can't instantiate: " + f;
+        } catch (Exception ex) {
+            return (ex.getClass().getName() + ":" + ex.getMessage()).toString().toString();
+        }
+    }
     public static int getMarker() {
         if (!Classes.class.isAnnotationPresent(ClassesMarker.class)) {
             return -2;

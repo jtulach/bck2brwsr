@@ -74,6 +74,16 @@ public class ClassTest {
     @Test public void jsNewInstance() throws Exception {
         assertExec("Check new instance", Classes.class, "newInstance__Z", Double.valueOf(1));
     }
+    @Test public void javaNoNewInstance() throws Exception {
+        assertEquals("java.lang.InstantiationException:java.lang.Float", 
+            Classes.newInstanceNoPubConstructor()
+        );
+    }
+    @Test public void jsNoNewInstance() throws Exception {
+        assertExec("Check problems with new instance", Classes.class, "newInstanceNoPubConstructor__Ljava_lang_String_2", 
+            "java.lang.InstantiationException:java.lang.Float"
+        );
+    }
     @Test public void jsAnnotation() throws Exception {
         assertExec("Check class annotation", Classes.class, "getMarker__I", Double.valueOf(10));
     }

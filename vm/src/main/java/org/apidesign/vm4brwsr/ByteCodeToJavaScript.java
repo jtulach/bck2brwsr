@@ -135,19 +135,27 @@ abstract class ByteCodeToJavaScript {
                 }
                 continue;
             }
+            String prefix;
             String mn;
             if (m.isStatic()) {
-                mn = generateStaticMethod("\n    c.", m, toInitilize);
+                prefix = "\n    c.";
+                mn = generateStaticMethod(prefix, m, toInitilize);
             } else {
-                mn = generateInstanceMethod("\n    c.", m);
+                if (m.isConstructor()) {
+                    prefix = "\n    CLS.";
+                    mn = generateInstanceMethod(prefix, m);
+                } else {
+                    prefix = "\n    c.";
+                    mn = generateInstanceMethod(prefix, m);
+                }
             }
             byte[] runAnno = m.findAnnotationData(false);
             if (runAnno != null) {
-                out.append("\n    c.").append(mn).append(".anno = {");
+                out.append(prefix).append(mn).append(".anno = {");
                 generateAnno(jc, out, runAnno);
                 out.append("\n    };");
             }
-            out.append("\n    c.").append(mn).append(".access = " + m.getAccess()).append(";");
+            out.append(prefix).append(mn).append(".access = " + m.getAccess()).append(";");
         }
         out.append("\n    c.constructor = CLS;");
         out.append("\n    c.$instOf_").append(className).append(" = true;");
@@ -1122,7 +1130,7 @@ abstract class ByteCodeToJavaScript {
                         final String classInternalName = jc.getClassName(e.catch_cpx);
                         addReference(classInternalName);
                         out.append("if (e.$instOf_"+classInternalName.replace('/', '_')+") {");
-                        out.append("gt="+e.handler_pc+"; continue;");
+                        out.append("gt="+e.handler_pc+"; stA0 = e; continue;");
                         out.append("} ");
                     } else {
                         //finally - todo
@@ -1311,6 +1319,9 @@ abstract class ByteCodeToJavaScript {
         final String in = mi[0];
         out.append(accessClass(in.replace('/', '_')));
         out.append("(false).");
+        if (mn.startsWith("cons_")) {
+            out.append("constructor.");
+        }
         out.append(mn);
         out.append('(');
         if (numArguments > 0) {

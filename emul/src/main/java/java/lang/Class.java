@@ -210,15 +210,32 @@ public final
      *             </ul>
      *
      */
-    @JavaScriptBody(args = "self", body =
-          "var inst = self.cnstr();"
-        + "inst.cons__V(inst);"
-        + "return inst;"
+    @JavaScriptBody(args = { "self", "illegal" }, body =
+          "\nvar c = self.cnstr;"
+        + "\nif (c['cons__V']) {"
+        + "\n  if ((c.cons__V.access & 0x1) != 0) {"
+        + "\n    var inst = c();"
+        + "\n    c.cons__V(inst);"
+        + "\n    return inst;"
+        + "\n  }"
+        + "\n  return illegal;"
+        + "\n}"
+        + "\nreturn null;"
     )
+    private static native Object newInstance0(Class<?> self, Object illegal);
+    
     public T newInstance()
         throws InstantiationException, IllegalAccessException
     {
-        throw new UnsupportedOperationException();
+        Object illegal = new Object();
+        Object inst = newInstance0(this, illegal);
+        if (inst == null) {
+            throw new InstantiationException(getName());
+        }
+        if (inst == illegal) {
+            throw new IllegalAccessException();
+        }
+        return (T)inst;
     }
 
     /**
