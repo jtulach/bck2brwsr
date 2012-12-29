@@ -35,16 +35,20 @@ public final class TrapDataIterator {
         }
     }
 
-    public void advanceTo(int i) {
+    public boolean advanceTo(int i) {
+        boolean change = false;
         Short s = Short.valueOf((short)i);
         TrapData e = (TrapData) exStart.get(s);
         if (e != null) {
             add(e);
+            change = true;
         }
         e = (TrapData) exStop.get(s);
         if (e != null) {
             remove(e);
+            change = true;
         }
+        return change;
     }
 
     public boolean useTry() {

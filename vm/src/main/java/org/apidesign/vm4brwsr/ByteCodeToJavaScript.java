@@ -280,22 +280,31 @@ abstract class ByteCodeToJavaScript {
         }
 
         int lastStackFrame = -1;
-
+        TrapData[] previousTrap = null;
+        
         out.append("\n  var gt = 0;\n  for(;;) switch(gt) {\n");
         for (int i = 0; i < byteCodes.length; i++) {
             int prev = i;
             stackMapIterator.advanceTo(i);
-            trap.advanceTo(i);
+            boolean changeInCatch = trap.advanceTo(i);
+            if (changeInCatch || lastStackFrame != stackMapIterator.getFrameIndex()) {
+                if (previousTrap != null) {
+                    generateCatch(previousTrap);
+                    previousTrap = null;
+                }
+            }
             if (lastStackFrame != stackMapIterator.getFrameIndex()) {
                 lastStackFrame = stackMapIterator.getFrameIndex();
                 lmapper.syncWithFrameLocals(stackMapIterator.getFrameLocals());
                 smapper.syncWithFrameStack(stackMapIterator.getFrameStack());
                 out.append("    case " + i).append(": ");            
+                changeInCatch = true;
             } else {
                 out.append("    /* " + i).append(" */ ");
             }
-            if (trap.useTry()) {
+            if (changeInCatch && trap.useTry()) {
                 out.append("try {");
+                previousTrap = trap.current();
             }
             final int c = readByte(byteCodes, i);
             switch (c) {
@@ -1120,25 +1129,6 @@ abstract class ByteCodeToJavaScript {
                          Integer.toString(c));
                 }
             }
-            if (trap.useTry()) {
-                out.append("} catch (e) {");
-                for (TrapData e : trap.current()) {
-                    if (e == null) {
-                        break;
-                    }
-                    if (e.catch_cpx != 0) { //not finally
-                        final String classInternalName = jc.getClassName(e.catch_cpx);
-                        addReference(classInternalName);
-                        out.append("if (e.$instOf_"+classInternalName.replace('/', '_')+") {");
-                        out.append("gt="+e.handler_pc+"; stA0 = e; continue;");
-                        out.append("} ");
-                    } else {
-                        //finally - todo
-                    }
-                }
-                out.append("throw e;");
-                out.append("}");
-            }
             out.append(" //");
             for (int j = prev; j <= i; j++) {
                 out.append(" ");
@@ -1146,6 +1136,9 @@ abstract class ByteCodeToJavaScript {
                 out.append(Integer.toString(cc));
             }
             out.append("\n");            
+        }
+        if (previousTrap != null) {
+            generateCatch(previousTrap);
         }
         out.append("  }\n");
         out.append("};");
@@ -1576,5 +1569,25 @@ abstract class ByteCodeToJavaScript {
         }
 
         out.append(format, processed, length);
+    }
+
+    private void generateCatch(TrapData[] traps) throws IOException {
+        out.append("} catch (e) {");
+        for (TrapData e : traps) {
+            if (e == null) {
+                break;
+            }
+            if (e.catch_cpx != 0) { //not finally
+                final String classInternalName = jc.getClassName(e.catch_cpx);
+                addReference(classInternalName);
+                out.append("if (e.$instOf_" + classInternalName.replace('/', '_') + ") {");
+                out.append("gt=" + e.handler_pc + "; stA0 = e; continue;");
+                out.append("} ");
+            } else {
+                //finally - todo
+            }
+        }
+        out.append("throw e;");
+        out.append("}");
     }
 }
