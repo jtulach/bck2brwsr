@@ -38,6 +38,7 @@ final class JSLauncher extends Launcher {
     private Set<ClassLoader> loaders = new LinkedHashSet<>();
     private final Res resources = new Res();
     private Invocable code;
+    private StringBuilder codeSeq;
     private Object console;
     
     
@@ -92,6 +93,7 @@ final class JSLauncher extends Launcher {
             throw new IOException("It is invocable object: " + res);
         }
         code = (Invocable) mach;
+        codeSeq = sb;
         
         Object vm = code.invokeFunction("initVM");
         console = code.invokeMethod(vm, "loadClass", Console.class.getName());
@@ -99,6 +101,11 @@ final class JSLauncher extends Launcher {
 
     @Override
     public void shutdown() throws IOException {
+    }
+
+    @Override
+    public String toString() {
+        return codeSeq.toString();
     }
     
     private class Res implements Bck2Brwsr.Resources {
