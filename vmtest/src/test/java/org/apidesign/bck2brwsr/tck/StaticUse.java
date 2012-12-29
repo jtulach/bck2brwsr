@@ -19,4 +19,6 @@ package org.apidesign.bck2brwsr.tck;
 
 class StaticUse {
     public static final Object NON_NULL = new Object();
+    private StaticUse() {
+    }
 }

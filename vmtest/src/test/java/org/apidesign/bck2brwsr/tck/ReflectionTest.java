@@ -21,6 +21,8 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
@@ -50,6 +52,14 @@ public class ReflectionTest {
             sb.append(s).append("\n");
         }
         return sb.toString();
+    }
+    
+    @Compare public String newInstanceFails() throws InstantiationException {
+        try {
+            return "success: " + StaticUse.class.newInstance();
+        } catch (IllegalAccessException ex) {
+            return ex.getClass().getName();
+        }
     }
     
     @JavaScriptBody(args = { "arr", "len" }, body="var a = arr.slice(0, len); a.sort(); return a;")
