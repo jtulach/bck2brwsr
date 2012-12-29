@@ -17,8 +17,6 @@
  */
 package org.apidesign.javap;
 
-import org.apidesign.bck2brwsr.core.JavaScriptBody;
-
 /** A JavaScript optimized replacement for Hashtable.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
@@ -38,9 +36,6 @@ final class Hashtable {
     Hashtable() {
     }
 
-    @JavaScriptBody(args = { "self", "key", "val" }, body = 
-        "self[key] = val;"
-    )
     synchronized void put(Object key, Object val) {
         int[] where = { -1, -1 };
         Object found = get(key, where);
@@ -74,9 +69,6 @@ final class Hashtable {
         }
     }
 
-    @JavaScriptBody(args = {"self", "key" }, body = 
-        "var r = self[key]; return r ? r : null;"
-    )
     Object get(Object key) {
         return get(key, null);
     }
