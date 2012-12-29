@@ -33,6 +33,11 @@ class VM extends ByteCodeToJavaScript {
         // uses VMLazy to load dynamic classes
         VMLazy.init();
     }
+
+    @Override
+    boolean debug(String msg) throws IOException {
+        return false;
+    }
     
     static void compile(Bck2Brwsr.Resources l, Appendable out, StringArray names) throws IOException {
         new VM(out).doCompile(l, names);

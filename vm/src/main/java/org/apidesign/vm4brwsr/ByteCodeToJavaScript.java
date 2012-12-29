@@ -65,6 +65,17 @@ abstract class ByteCodeToJavaScript {
     /* protected */ String accessClass(String classOperation) {
         return classOperation;
     }
+    
+    /** Prints out a debug message. 
+     * 
+     * @param msg the message
+     * @return true if the message has been printed
+     * @throws IOException 
+     */
+    boolean debug(String msg) throws IOException {
+        out.append(msg);
+        return true;
+    }
 
     /**
      * Converts a given class file to a JavaScript version.
@@ -300,7 +311,7 @@ abstract class ByteCodeToJavaScript {
                 out.append("    case " + i).append(": ");            
                 changeInCatch = true;
             } else {
-                out.append("    /* " + i).append(" */ ");
+                debug("    /* " + i + " */ ");
             }
             if (changeInCatch && trap.useTry()) {
                 out.append("try {");
@@ -976,7 +987,7 @@ abstract class ByteCodeToJavaScript {
                 case opc_pop:
                 case opc_pop2:
                     smapper.pop(1);
-                    out.append("/* pop */");
+                    debug("/* pop */");
                     break;
                 case opc_dup: {
                     final Variable v = smapper.get(0);
@@ -1129,11 +1140,12 @@ abstract class ByteCodeToJavaScript {
                          Integer.toString(c));
                 }
             }
-            out.append(" //");
-            for (int j = prev; j <= i; j++) {
-                out.append(" ");
-                final int cc = readByte(byteCodes, j);
-                out.append(Integer.toString(cc));
+            if (debug(" //")) {
+                for (int j = prev; j <= i; j++) {
+                    out.append(" ");
+                    final int cc = readByte(byteCodes, j);
+                    out.append(Integer.toString(cc));
+                }
             }
             out.append("\n");            
         }
@@ -1364,7 +1376,7 @@ abstract class ByteCodeToJavaScript {
 
     private void addReference(String cn) throws IOException {
         if (requireReference(cn)) {
-            out.append(" /* needs ").append(cn).append(" */");
+            debug(" /* needs " + cn + " */");
         }
     }
 
