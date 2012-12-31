@@ -1585,6 +1585,7 @@ abstract class ByteCodeToJavaScript {
 
     private void generateCatch(TrapData[] traps) throws IOException {
         out.append("} catch (e) {\n");
+        int finallyPC = -1;
         for (TrapData e : traps) {
             if (e == null) {
                 break;
@@ -1596,10 +1597,14 @@ abstract class ByteCodeToJavaScript {
                 out.append("gt=" + e.handler_pc + "; stA0 = e; continue;");
                 out.append("}\n");
             } else {
-                //finally - todo
+                finallyPC = e.handler_pc;
             }
         }
-        out.append("throw e;");
+        if (finallyPC == -1) {
+            out.append("throw e;");
+        } else {
+            out.append("gt=" + finallyPC + "; stA0 = e; continue;");
+        }
         out.append("\n}");
     }
 }

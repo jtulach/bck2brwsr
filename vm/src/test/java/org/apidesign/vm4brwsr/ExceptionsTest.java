@@ -70,6 +70,30 @@ public class ExceptionsTest {
         );
     }
     
+    @Test public void testThreeCalls() throws Exception {
+        Object vm = code.invokeFunction("bck2brwsr");
+        Object clazz = code.invokeMethod(vm, "loadClass", Exceptions.class.getName());
+        
+        String method = "readCounter__ILjava_lang_String_2";
+        
+        try {
+            Object ret = code.invokeMethod(clazz, method, "org.apidesign.Unknown");
+            fail("We expect an CNFE!");
+        } catch (ScriptException scriptException) {
+            // script exception should be OK
+        }
+        {
+            // 2nd invocation
+            Object ret = code.invokeMethod(clazz, method, "java.lang.String");
+            assertEquals(ret, Double.valueOf(2));
+        }
+        {
+            // 3rd invocation
+            Object ret = code.invokeMethod(clazz, method, "java.lang.Integer");
+            assertEquals(ret, Double.valueOf(3));
+        }
+    }
+    
     private static CharSequence codeSeq;
     private static Invocable code;
     

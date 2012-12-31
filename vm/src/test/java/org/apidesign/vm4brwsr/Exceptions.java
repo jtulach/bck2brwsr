@@ -61,4 +61,14 @@ public class Exceptions {
             return ex.getMessage();
         }
     }
+    
+    private static int counter;
+    public static int readCounter(String n) throws ClassNotFoundException {
+        try {
+            Class.forName(n);
+        } finally {
+            counter++;
+        }
+        return counter;
+    }
 }
