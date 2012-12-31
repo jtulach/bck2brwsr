@@ -1584,7 +1584,7 @@ abstract class ByteCodeToJavaScript {
     }
 
     private void generateCatch(TrapData[] traps) throws IOException {
-        out.append("} catch (e) {");
+        out.append("} catch (e) {\n");
         for (TrapData e : traps) {
             if (e == null) {
                 break;
@@ -1594,12 +1594,12 @@ abstract class ByteCodeToJavaScript {
                 addReference(classInternalName);
                 out.append("if (e.$instOf_" + classInternalName.replace('/', '_') + ") {");
                 out.append("gt=" + e.handler_pc + "; stA0 = e; continue;");
-                out.append("} ");
+                out.append("}\n");
             } else {
                 //finally - todo
             }
         }
         out.append("throw e;");
-        out.append("}");
+        out.append("\n}");
     }
 }

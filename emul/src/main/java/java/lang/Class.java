@@ -147,7 +147,7 @@ public final
                 throws ClassNotFoundException {
         Class<?> c = loadCls(className, className.replace('.', '_'));
         if (c == null) {
-            throw new ClassNotFoundException();
+            throw new ClassNotFoundException(className);
         }
         return c;
     }

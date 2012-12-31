@@ -30,25 +30,45 @@ public final class TrapDataIterator {
     TrapDataIterator(Vector exceptionTable) {
         for (int i=0 ; i < exceptionTable.size(); i++) {
             final TrapData td = (TrapData)exceptionTable.elementAt(i);
-            exStart.put(td.start_pc, td);
-            exStop.put(td.end_pc, td);
+            put(exStart, td.start_pc, td);
+            put(exStop, td.end_pc, td);
         }
     }
-
-    public boolean advanceTo(int i) {
-        boolean change = false;
-        Short s = Short.valueOf((short)i);
-        TrapData e = (TrapData) exStart.get(s);
-        if (e != null) {
-            add(e);
-            change = true;
+    
+    private static void put(Hashtable h, short key, TrapData td) {
+        Short s = Short.valueOf((short)key);
+        Vector v = (Vector) h.get(s);
+        if (v == null) {
+            v = new Vector(1);
+            h.put(s, v);
         }
-        e = (TrapData) exStop.get(s);
-        if (e != null) {
-            remove(e);
-            change = true;
+        v.add(td);
+    }
+    
+    private boolean processAll(Hashtable h, Short key, boolean add) {
+        boolean change = false;
+        Vector v = (Vector)h.get(key);
+        if (v != null) {
+            int s = v.size();
+            for (int i = 0; i < s; i++) {
+                TrapData td = (TrapData)v.elementAt(i);
+                if (add) {
+                    add(td);
+                    change = true;
+                } else {
+                    remove(td);
+                    change = true;
+                }
+            }
         }
         return change;
+    }
+    
+    public boolean advanceTo(int i) {
+        Short s = Short.valueOf((short)i);
+        boolean ch1 = processAll(exStart, s, true);
+        boolean ch2 = processAll(exStop, s, false);
+        return ch1 || ch2;
     }
 
     public boolean useTry() {
@@ -56,7 +76,11 @@ public final class TrapDataIterator {
     }
 
     public TrapData[] current() {
-        return current;
+        TrapData[] copy = new TrapData[currentCount];
+        for (int i = 0; i < currentCount; i++) {
+            copy[i] = current[i];
+        }
+        return copy;
     }
 
     private void add(TrapData e) {
@@ -71,6 +95,9 @@ public final class TrapDataIterator {
     }
 
     private void remove(TrapData e) {
+        if (currentCount == 0) {
+            return;
+        }
         int from = 0;
         while (from < currentCount) {
             if (e == current[from++]) {

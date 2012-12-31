@@ -46,6 +46,30 @@ public class ExceptionsTest {
                     new Double(2.0));
     }
     
+    @Test public void createObject() throws Exception {
+        assertExec("Object created", Exceptions.class, 
+            "newInstance__Ljava_lang_String_2Ljava_lang_String_2",
+            "java.lang.Object",
+            "java.lang.Object"
+        );
+    }
+
+    @Test public void createFloatFails() throws Exception {
+        assertExec("Float not created", Exceptions.class, 
+            "newInstance__Ljava_lang_String_2Ljava_lang_String_2",
+            "java.lang.Float",
+            "java.lang.Float"
+        );
+    }
+
+    @Test public void createUnknownFails() throws Exception {
+        assertExec("Object created", Exceptions.class, 
+            "newInstance__Ljava_lang_String_2Ljava_lang_String_2",
+            "CNFE:org.apidesign.Unknown",
+            "org.apidesign.Unknown"
+        );
+    }
+    
     private static CharSequence codeSeq;
     private static Invocable code;
     

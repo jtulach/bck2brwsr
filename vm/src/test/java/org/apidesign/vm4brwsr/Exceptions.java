@@ -22,6 +22,8 @@ package org.apidesign.vm4brwsr;
  * @author tom
  */
 public class Exceptions {
+    private Exceptions() {
+    }
 
     public static int methodWithTryCatchNoThrow() {
         int res = 0;
@@ -46,4 +48,17 @@ public class Exceptions {
         return res;
     }
 
+    public static String newInstance(String n) {
+        try {
+            Class c;
+            try {
+                c = Class.forName(n);
+            } catch (ClassNotFoundException ex) {
+                return ("CNFE:" + ex.getMessage()).toString();
+            }
+            return c.newInstance().getClass().getName();
+        } catch (InstantiationException | IllegalAccessException ex) {
+            return ex.getMessage();
+        }
+    }
 }
