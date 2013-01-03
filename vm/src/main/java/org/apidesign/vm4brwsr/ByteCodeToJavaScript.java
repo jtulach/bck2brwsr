@@ -1235,6 +1235,7 @@ abstract class ByteCodeToJavaScript {
                         returnType[0] = 'L';
                     }
                     i = next + 1;
+                    array = false;
                     continue;
                 case '[':
                     array = true;

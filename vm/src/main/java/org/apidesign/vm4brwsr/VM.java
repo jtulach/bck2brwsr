@@ -117,7 +117,7 @@ class VM extends ByteCodeToJavaScript {
             + "      if (fn) return fn(false);\n"
             + "      if (!args[0]) throw 'bck2brwsr initialized without loader function, cannot load ' + name;\n"
             + "      return vm.org_apidesign_vm4brwsr_VMLazy(false).\n"
-            + "        load___3Ljava_lang_Object_2Ljava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2(loader, name, args);\n"
+            + "        load__Ljava_lang_Object_2Ljava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2(loader, name, args);\n"
             + "    }\n"
             + "    if (args[0]) vm.loadClass = loader.loadClass;\n"
             + "    return loader;\n"
