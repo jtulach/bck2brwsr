@@ -102,14 +102,7 @@ public class Matrix {
     public int hashCode() {
         int hash = 3;
         hash = 97 * hash + this.rank;
-            for (int i = 0; i < rank; i++) {
-                for (int j = 0; j < rank; j++) {
-                    final int v = (int)data[i][j];
-                    if (v != 0) {
-                        hash *= v;
-                    }
-                }
-            }
+        hash = 97 * hash + Arrays.deepHashCode(this.data);
         return hash;
     }
 }
