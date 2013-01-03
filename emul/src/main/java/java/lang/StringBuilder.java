@@ -376,8 +376,7 @@ public final class StringBuilder
      * @throws NullPointerException {@inheritDoc}
      */
     public int indexOf(String str, int fromIndex) {
-        return String.indexOf(value, 0, count,
-                              str.toCharArray(), 0, str.length(), fromIndex);
+        return super.indexOf(str, fromIndex);
     }
 
     /**
