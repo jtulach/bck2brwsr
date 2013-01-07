@@ -20,6 +20,7 @@ package org.apidesign.bck2brwsr.vmtest.impl;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -52,7 +53,12 @@ public final class Bck2BrwsrCase implements ITest {
             MethodInvocation c = l.invokeMethod(m.getDeclaringClass(), m.getName());
             value = c.toString();
         } else {
-            value = m.invoke(m.getDeclaringClass().newInstance());
+            try {
+                value = m.invoke(m.getDeclaringClass().newInstance());
+            } catch (InvocationTargetException ex) {
+                Throwable t = ex.getTargetException();
+                value = t.getClass().getName() + ":" + t.getMessage();
+            }
         }
     }
 

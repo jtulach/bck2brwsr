@@ -39,6 +39,10 @@ public class ReflectionTest {
         return Integer.TYPE.toString();
     }
 
+    @Compare public String voidType() throws Exception {
+        return void.class.toString();
+    }
+
     @Compare public String longClass() {
         return long.class.toString();
     }
@@ -54,6 +58,15 @@ public class ReflectionTest {
             sb.append(s).append("\n");
         }
         return sb.toString();
+    }
+    
+    @Compare public String cannotCallNonStaticMethodWithNull() throws Exception {
+        try {
+            StaticUse.class.getMethod("instanceMethod").invoke(null);
+            return "should not happen";
+        } catch (Exception ex) {
+            return ex.getClass().getName() + ":" + ex.getMessage();
+        }
     }
     
     @Compare public String newInstanceFails() throws InstantiationException {

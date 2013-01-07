@@ -512,6 +512,9 @@ public final
         throws IllegalAccessException, IllegalArgumentException,
            InvocationTargetException
     {
+        if ((getModifiers() & Modifier.STATIC) == 0 && obj == null) {
+            throw new NullPointerException();
+        }
         Object res = invoke0(this, obj, args);
         if (getReturnType().isPrimitive()) {
             res = fromPrimitive(getReturnType(), res);
@@ -547,7 +550,9 @@ public final
         if (type == Short.TYPE) {
             return fromRaw(Short.class, "valueOf__Ljava_lang_Short_2S", o);
         }
-//            case 'V': return Void.TYPE;
+        if (type.getName().equals("void")) {
+            return null;
+        }
         throw new IllegalStateException("Can't convert " + o);
     }
     

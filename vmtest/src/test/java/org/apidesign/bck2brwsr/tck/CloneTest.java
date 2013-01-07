@@ -28,12 +28,9 @@ import org.testng.annotations.Factory;
 public class CloneTest {
     private int value;
     
-    @Compare public Object notSupported() {
-        try {
-            return this.clone();
-        } catch (CloneNotSupportedException ex) {
-            return ex.getClass().getName() + ":" + ex.getMessage();
-        }
+    @Compare
+    public Object notSupported() throws CloneNotSupportedException {
+        return this.clone();
     }
 
     @Compare public String sameClass() throws CloneNotSupportedException {

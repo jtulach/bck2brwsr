@@ -21,4 +21,8 @@ class StaticUse {
     public static final Object NON_NULL = new Object();
     private StaticUse() {
     }
+    
+    public int instanceMethod() {
+        return 0;
+    }
 }

@@ -161,10 +161,14 @@ public class Console {
         }
         Object res;
         if (found != null) {
-            if ((found.getModifiers() & Modifier.STATIC) != 0) {
-                res = found.invoke(null);
-            } else {
-                res = found.invoke(c.newInstance());
+            try {
+                if ((found.getModifiers() & Modifier.STATIC) != 0) {
+                    res = found.invoke(null);
+                } else {
+                    res = found.invoke(c.newInstance());
+                }
+            } catch (Exception ex) {
+                res = ex.getClass().getName() + ":" + ex.getMessage();
             }
         } else {
             res = "Can't find method " + method + " in " + clazz;
