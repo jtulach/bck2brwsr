@@ -30,7 +30,7 @@ public class CloneTest {
     
     @Compare public Object notSupported() {
         try {
-            return new CloneTest().clone();
+            return this.clone();
         } catch (CloneNotSupportedException ex) {
             return ex.getClass().getName() + ":" + ex.getMessage();
         }
@@ -46,7 +46,7 @@ public class CloneTest {
     }
 
     @Compare public int sameReference() throws CloneNotSupportedException {
-        CloneTest self = new CloneTest();
+        CloneTest self = this;
         Clnbl orig = new Clnbl();
         self.value = 33;
         orig.ref = self;

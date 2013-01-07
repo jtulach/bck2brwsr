@@ -21,9 +21,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.URL;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.Enumeration;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
@@ -113,7 +112,7 @@ public class Console {
         return sb.toString();
     }
     
-    static String invoke(String clazz, String method) throws ClassNotFoundException, InvocationTargetException, IllegalAccessException {
+    static String invoke(String clazz, String method) throws ClassNotFoundException, InvocationTargetException, IllegalAccessException, InstantiationException {
         final Object r = invokeMethod(clazz, method);
         return r == null ? "null" : r.toString().toString();
     }
@@ -151,7 +150,8 @@ public class Console {
    
     private static Object invokeMethod(String clazz, String method) 
     throws ClassNotFoundException, InvocationTargetException, 
-    SecurityException, IllegalAccessException, IllegalArgumentException {
+    SecurityException, IllegalAccessException, IllegalArgumentException,
+    InstantiationException {
         Method found = null;
         Class<?> c = Class.forName(clazz);
         for (Method m : c.getMethods()) {
@@ -161,7 +161,11 @@ public class Console {
         }
         Object res;
         if (found != null) {
-            res = found.invoke(null);
+            if ((found.getModifiers() & Modifier.STATIC) != 0) {
+                res = found.invoke(null);
+            } else {
+                res = found.invoke(c.newInstance());
+            }
         } else {
             res = "Can't find method " + method + " in " + clazz;
         }
