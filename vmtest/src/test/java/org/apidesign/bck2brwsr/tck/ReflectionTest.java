@@ -61,12 +61,12 @@ public class ReflectionTest {
     }
     
     @Compare public String cannotCallNonStaticMethodWithNull() throws Exception {
-        try {
-            StaticUse.class.getMethod("instanceMethod").invoke(null);
-            return "should not happen";
-        } catch (Exception ex) {
-            return ex.getClass().getName() + ":" + ex.getMessage();
-        }
+        StaticUse.class.getMethod("instanceMethod").invoke(null);
+        return "should not happen";
+    }
+
+    @Compare public Object voidReturnType() throws Exception {
+        return StaticUse.class.getMethod("instanceMethod").getReturnType();
     }
     
     @Compare public String newInstanceFails() throws InstantiationException {

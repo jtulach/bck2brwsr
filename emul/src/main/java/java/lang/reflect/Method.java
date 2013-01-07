@@ -148,7 +148,7 @@ public final
             case 'B': return Byte.TYPE;
             case 'Z': return Boolean.TYPE;
             case 'S': return Short.TYPE;
-//            case 'V': return Void.TYPE;
+            case 'V': return Void.TYPE;
             case 'L': try {
                 int up = sig.indexOf("_2");
                 String type = sig.substring(1, up);

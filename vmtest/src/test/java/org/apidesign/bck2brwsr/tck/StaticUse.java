@@ -22,7 +22,6 @@ class StaticUse {
     private StaticUse() {
     }
     
-    public int instanceMethod() {
-        return 0;
+    public void instanceMethod() {
     }
 }
