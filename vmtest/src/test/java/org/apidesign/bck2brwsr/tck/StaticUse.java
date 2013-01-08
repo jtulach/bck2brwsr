@@ -24,4 +24,8 @@ class StaticUse {
     
     public void instanceMethod() {
     }
+
+    public static int plus(int a, int b) {
+        return a + b;
+    }
 }

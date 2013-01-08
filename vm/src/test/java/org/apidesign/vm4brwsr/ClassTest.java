@@ -102,6 +102,11 @@ public class ClassTest {
             "java.io.IOException", true, "name"
         );
     }
+    @Test public void jsInvokeParamMethod() throws Exception {
+        assertExec("sums two numbers via reflection", Classes.class, 
+            "reflectiveSum__III", Double.valueOf(5), 2, 3
+        );
+    }
     @Test public void javaFindMethod() throws Exception {
         assertEquals(Classes.reflectiveMethodCall(false, "name"), "java.io.IOException", "Calls the name() method via reflection");
     }

@@ -26,6 +26,7 @@
 package java.lang.reflect;
 
 import java.lang.annotation.Annotation;
+import java.util.Enumeration;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.emul.AnnotationImpl;
 import org.apidesign.bck2brwsr.emul.MethodImpl;
@@ -140,24 +141,7 @@ public final
      * @return the return type for the method this object represents
      */
     public Class<?> getReturnType() {
-        switch (sig.charAt(0)) {
-            case 'I': return Integer.TYPE;
-            case 'J': return Long.TYPE;
-            case 'D': return Double.TYPE;
-            case 'F': return Float.TYPE;
-            case 'B': return Byte.TYPE;
-            case 'Z': return Boolean.TYPE;
-            case 'S': return Short.TYPE;
-            case 'V': return Void.TYPE;
-            case 'L': try {
-                int up = sig.indexOf("_2");
-                String type = sig.substring(1, up);
-                return Class.forName(type);
-            } catch (ClassNotFoundException ex) {
-                // should not happen
-            }
-        }
-        throw new UnsupportedOperationException(sig);
+        return MethodImpl.signatureParser(sig).nextElement();
     }
 
     /**
@@ -199,8 +183,13 @@ public final
      * represents
      */
     public Class<?>[] getParameterTypes() {
-        throw new UnsupportedOperationException();
-        //return (Class<?>[]) parameterTypes.clone();
+        Class[] arr = new Class[MethodImpl.signatureElements(sig) - 1];
+        Enumeration<Class> en = MethodImpl.signatureParser(sig);
+        en.nextElement(); // return type
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = en.nextElement();
+        }
+        return arr;
     }
 
     /**
@@ -512,21 +501,41 @@ public final
         throws IllegalAccessException, IllegalArgumentException,
            InvocationTargetException
     {
-        if ((getModifiers() & Modifier.STATIC) == 0 && obj == null) {
+        final boolean isStatic = (getModifiers() & Modifier.STATIC) == 0;
+        if (isStatic && obj == null) {
             throw new NullPointerException();
         }
-        Object res = invoke0(this, obj, args);
+        Class[] types = getParameterTypes();
+        if (types.length != args.length) {
+            throw new IllegalArgumentException("Types len " + types.length + " args: " + args.length);
+        } else {
+            args = args.clone();
+            for (int i = 0; i < types.length; i++) {
+                Class c = types[i];
+                if (c.isPrimitive()) {
+                    args[i] = toPrimitive(c, args[i]);
+                }
+            }
+        }
+        Object res = invoke0(isStatic, this, obj, args);
         if (getReturnType().isPrimitive()) {
             res = fromPrimitive(getReturnType(), res);
         }
         return res;
     }
     
-    @JavaScriptBody(args = { "method", "self", "args" }, body =
-          "if (args.length > 0) throw 'unsupported now';"
-        + "return method.fld_data(self);"
+    @JavaScriptBody(args = { "st", "method", "self", "args" }, body =
+          "var p;\n"
+        + "if (st) {\n"
+        + "  p = new Array(1);\n"
+        + "  p[0] = self;\n"
+        + "  p = p.concat(args);\n"
+        + "} else {\n"
+        + "  p = args;\n"
+        + "}\n"
+        + "return method.fld_data.apply(self, p);\n"
     )
-    private static native Object invoke0(Method m, Object self, Object[] args);
+    private static native Object invoke0(boolean isStatic, Method m, Object self, Object[] args);
 
     private static Object fromPrimitive(Class<?> type, Object o) {
         if (type == Integer.TYPE) {
@@ -560,6 +569,39 @@ public final
         body = "return cls.cnstr(false)[m](o);"
     )
     private static native Integer fromRaw(Class<?> cls, String m, Object o);
+
+    private static Object toPrimitive(Class<?> type, Object o) {
+        if (type == Integer.TYPE) {
+            return toRaw("intValue__I", o);
+        }
+        if (type == Long.TYPE) {
+            return toRaw("longValue__J", o);
+        }
+        if (type == Double.TYPE) {
+            return toRaw("doubleValue__D", o);
+        }
+        if (type == Float.TYPE) {
+            return toRaw("floatValue__F", o);
+        }
+        if (type == Byte.TYPE) {
+            return toRaw("byteValue__B", o);
+        }
+        if (type == Boolean.TYPE) {
+            return toRaw("booleanValue__Z", o);
+        }
+        if (type == Short.TYPE) {
+            return toRaw("shortValue__S", o);
+        }
+        if (type.getName().equals("void")) {
+            return o;
+        }
+        throw new IllegalStateException("Can't convert " + o);
+    }
+    
+    @JavaScriptBody(args = { "m", "o" }, 
+        body = "return o[m](o);"
+    )
+    private static native Object toRaw(String m, Object o);
     
     /**
      * Returns {@code true} if this method is a bridge

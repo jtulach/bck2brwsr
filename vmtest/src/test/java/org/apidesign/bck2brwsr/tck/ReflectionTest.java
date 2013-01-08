@@ -77,6 +77,16 @@ public class ReflectionTest {
         }
     }
     
+    @Compare public String paramTypes() throws Exception {
+        Method plus = StaticUse.class.getMethod("plus", int.class, Integer.TYPE);
+        final Class[] pt = plus.getParameterTypes();
+        return pt[0].getName();
+    }
+    @Compare public int methodWithArgs() throws Exception {
+        Method plus = StaticUse.class.getMethod("plus", int.class, Integer.TYPE);
+        return (Integer)plus.invoke(null, 2, 3);
+    }
+    
     @JavaScriptBody(args = { "arr", "len" }, body="var a = arr.slice(0, len); a.sort(); return a;")
     private static String[] sort(String[] arr, int len) {
         List<String> list = Arrays.asList(arr).subList(0, len);

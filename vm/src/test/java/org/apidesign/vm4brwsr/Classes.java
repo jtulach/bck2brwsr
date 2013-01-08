@@ -146,4 +146,9 @@ public class Classes {
         }
         return find.invoke(null);
     }
+    
+    public static int reflectiveSum(int a, int b) throws Exception {
+        Method m = StaticMethod.class.getMethod("sum", int.class, int.class);
+        return (int) m.invoke(null, a, b);
+    }
 }

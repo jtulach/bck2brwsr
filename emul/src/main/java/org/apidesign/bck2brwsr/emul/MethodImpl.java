@@ -25,6 +25,7 @@
 package org.apidesign.bck2brwsr.emul;
 
 import java.lang.reflect.Method;
+import java.util.Enumeration;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /** Utilities to work on methods.
@@ -96,5 +97,56 @@ public abstract class MethodImpl {
         }
         return arr;
     }
+
+    public static int signatureElements(String sig) {
+        Enumeration<Class> en = signatureParser(sig);
+        int cnt = 0;
+        while (en.hasMoreElements()) {
+            en.nextElement();
+            cnt++;
+        }
+        return cnt;
+    }
     
+    public static Enumeration<Class> signatureParser(final String sig) {
+        class E implements Enumeration<Class> {
+            int pos;
+            
+            public boolean hasMoreElements() {
+                return pos < sig.length();
+            }
+
+            public Class nextElement() {
+                switch (sig.charAt(pos++)) {
+                    case 'I':
+                        return Integer.TYPE;
+                    case 'J':
+                        return Long.TYPE;
+                    case 'D':
+                        return Double.TYPE;
+                    case 'F':
+                        return Float.TYPE;
+                    case 'B':
+                        return Byte.TYPE;
+                    case 'Z':
+                        return Boolean.TYPE;
+                    case 'S':
+                        return Short.TYPE;
+                    case 'V':
+                        return Void.TYPE;
+                    case 'L':
+                        try {
+                            int up = sig.indexOf("_2");
+                            String type = sig.substring(1, up);
+                            pos = up + 2;
+                            return Class.forName(type);
+                        } catch (ClassNotFoundException ex) {
+                            // should not happen
+                        }
+                }
+                throw new UnsupportedOperationException(sig + " at " + pos);
+            }
+        }
+        return new E();
+    }
 }
