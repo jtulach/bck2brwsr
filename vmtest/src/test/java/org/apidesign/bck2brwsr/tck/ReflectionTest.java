@@ -82,6 +82,9 @@ public class ReflectionTest {
         final Class[] pt = plus.getParameterTypes();
         return pt[0].getName();
     }
+    @Compare public String paramTypesNotFound() throws Exception {
+        return StaticUse.class.getMethod("plus", int.class, double.class).toString();
+    }
     @Compare public int methodWithArgs() throws Exception {
         Method plus = StaticUse.class.getMethod("plus", int.class, Integer.TYPE);
         return (Integer)plus.invoke(null, 2, 3);

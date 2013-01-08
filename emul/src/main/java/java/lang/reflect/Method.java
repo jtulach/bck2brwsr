@@ -320,14 +320,14 @@ public final
             sb.append(Field.getTypeName(getReturnType())).append(' ');
             sb.append(Field.getTypeName(getDeclaringClass())).append('.');
             sb.append(getName()).append('(');
-            /*
-            Class<?>[] params = parameterTypes; // avoid clone
+            Class<?>[] params = getParameterTypes(); // avoid clone
             for (int j = 0; j < params.length; j++) {
                 sb.append(Field.getTypeName(params[j]));
                 if (j < (params.length - 1))
                     sb.append(',');
             }
             sb.append(')');
+            /*
             Class<?>[] exceptions = exceptionTypes; // avoid clone
             if (exceptions.length > 0) {
                 sb.append(" throws ");

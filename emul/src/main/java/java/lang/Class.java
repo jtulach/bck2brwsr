@@ -788,10 +788,18 @@ public final
      * @since JDK1.1
      */
     public Method getMethod(String name, Class<?>... parameterTypes)
-        throws SecurityException {
+        throws SecurityException, NoSuchMethodException {
         Method m = MethodImpl.findMethod(this, name, parameterTypes);
         if (m == null) {
-            throw new SecurityException(); // XXX: NoSuchMethodException
+            StringBuilder sb = new StringBuilder();
+            sb.append(getName()).append('.').append(name).append('(');
+            String sep = "";
+            for (int i = 0; i < parameterTypes.length; i++) {
+                sb.append(sep).append(parameterTypes[i].getName());
+                sep = ", ";
+            }
+            sb.append(')');
+            throw new NoSuchMethodException(sb.toString());
         }
         return m;
     }

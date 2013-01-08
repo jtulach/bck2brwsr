@@ -66,11 +66,21 @@ public abstract class MethodImpl {
     public static Method findMethod(
         Class<?> clazz, String name, Class<?>... parameterTypes) {
         Object[] data = findMethodData(clazz, name + "__");
-        if (data.length == 0) {
-            return null;
+        BIG: for (int i = 0; i < data.length; i += 2) {
+            String sig = ((String) data[0]).substring(name.length() + 2);
+            Method tmp = INSTANCE.create(clazz, name, data[1], sig);
+            Class<?>[] tmpParms = tmp.getParameterTypes();
+            if (parameterTypes.length != tmpParms.length) {
+                continue;
+            }
+            for (int j = 0; j < tmpParms.length; j++) {
+                if (!parameterTypes[j].equals(tmpParms[j])) {
+                    continue BIG;
+                }
+            }
+            return tmp;
         }
-        String sig = ((String) data[0]).substring(name.length() + 2);
-        return INSTANCE.create(clazz, name, data[1], sig);
+        return null;
     }
 
     public static Method[] findMethods(Class<?> clazz, int mask) {
