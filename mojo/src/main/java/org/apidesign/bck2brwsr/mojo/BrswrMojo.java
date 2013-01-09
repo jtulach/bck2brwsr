@@ -44,6 +44,9 @@ public class BrswrMojo extends AbstractMojo {
     /** Resource to show as initial page */
     @Parameter
     private String startpage;
+
+    @Parameter
+    private String startpackage;
     
     @Parameter(defaultValue="${project}")
     private MavenProject prj;
@@ -63,9 +66,9 @@ public class BrswrMojo extends AbstractMojo {
             
             Closeable httpServer;
             try {
-                httpServer = Launcher.showURL(url, startpage);
+                httpServer = Launcher.showURL(url, startpage());
             } catch (Exception ex) {
-                throw new MojoExecutionException("Can't open " + startpage, ex);
+                throw new MojoExecutionException("Can't open " + startpage(), ex);
             }
             System.in.read();
             httpServer.close();
@@ -73,34 +76,12 @@ public class BrswrMojo extends AbstractMojo {
             throw new MojoExecutionException("Can't show the browser", ex);
         }
     }
-
-    private static File findNonEmptyFolder(File dir) throws MojoExecutionException {
-        if (!dir.isDirectory()) {
-            throw new MojoExecutionException("Not a directory " + dir);
-        }
-        File[] arr = dir.listFiles();
-        if (arr.length == 1 && arr[0].isDirectory()) {
-            return findNonEmptyFolder(arr[0]);
-        }
-        return dir;
-    }
-
-    private static long collectAllClasses(String prefix, File toCheck, List<String> arr) {
-        File[] files = toCheck.listFiles();
-        if (files != null) {
-            long newest = 0L;
-            for (File f : files) {
-                long lastModified = collectAllClasses(prefix + f.getName() + "/", f, arr);
-                if (newest < lastModified) {
-                    newest = lastModified;
-                }
-            }
-            return newest;
-        } else if (toCheck.getName().endsWith(".class")) {
-            arr.add(prefix.substring(0, prefix.length() - 7));
-            return toCheck.lastModified();
+    
+    private String startpage() {
+        if (startpackage == null) {
+            return startpage;
         } else {
-            return 0L;
+            return startpackage.replace('.', '/') + '/' + startpage;
         }
     }
 
