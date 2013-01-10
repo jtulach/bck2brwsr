@@ -45,9 +45,6 @@ public class BrswrMojo extends AbstractMojo {
     @Parameter
     private String startpage;
 
-    @Parameter
-    private String startpackage;
-    
     @Parameter(defaultValue="${project}")
     private MavenProject prj;
     
@@ -78,11 +75,7 @@ public class BrswrMojo extends AbstractMojo {
     }
     
     private String startpage() {
-        if (startpackage == null) {
-            return startpage;
-        } else {
-            return startpackage.replace('.', '/') + '/' + startpage;
-        }
+        return startpage;
     }
 
     private static URLClassLoader buildClassLoader(File root, Collection<Artifact> deps) throws MalformedURLException {

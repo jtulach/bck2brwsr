@@ -27,8 +27,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <startpackage>${package}</startpackage>
-                    <startpage>index.xhtml</startpage>
+                    <startpage>${package.replace('.','/')}/index.xhtml</startpage>
                 </configuration>
             </plugin>
          <plugin>
