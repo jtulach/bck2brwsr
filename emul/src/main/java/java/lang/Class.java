@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import java.io.ByteArrayInputStream;
 import org.apidesign.bck2brwsr.emul.AnnotationImpl;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
@@ -881,13 +882,14 @@ public final
      */
      public InputStream getResourceAsStream(String name) {
         name = resolveName(name);
-        ClassLoader cl = getClassLoader0();
-        if (cl==null) {
-            // A system class.
-            return ClassLoader.getSystemResourceAsStream(name);
-        }
-        return cl.getResourceAsStream(name);
-    }
+        byte[] arr = getResourceAsStream0(name);
+        return arr == null ? null : new ByteArrayInputStream(arr);
+     }
+     
+     @JavaScriptBody(args = "name", body = 
+         "return (vm.loadBytes) ? vm.loadBytes(name) : null;"
+     )
+     private static native byte[] getResourceAsStream0(String name);
 
     /**
      * Finds a resource with a given name.  The rules for searching resources
@@ -925,7 +927,7 @@ public final
      */
     public java.net.URL getResource(String name) {
         name = resolveName(name);
-        ClassLoader cl = getClassLoader0();
+        ClassLoader cl = null;
         if (cl==null) {
             // A system class.
             return ClassLoader.getSystemResource(name);
@@ -989,9 +991,6 @@ public final
         throw new SecurityException();
     }
     
-    // Package-private to allow ClassLoader access
-    native ClassLoader getClassLoader0();    
-
     /**
      * Returns the {@code Class} representing the component type of an
      * array.  If this class does not represent an array class this method

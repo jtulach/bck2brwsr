@@ -255,7 +255,8 @@ abstract class ByteCodeToJavaScript {
         final byte[] byteCodes = m.getCode();
         if (byteCodes == null) {
             out.append("  throw 'no code found for ")
-               .append(m.getInternalSig()).append("';\n");
+               .append(jc.getClassName()).append('.')
+               .append(m.getName()).append("';\n");
             out.append("};");
             return;
         }
