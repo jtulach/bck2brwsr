@@ -1594,9 +1594,19 @@ abstract class ByteCodeToJavaScript {
             if (e.catch_cpx != 0) { //not finally
                 final String classInternalName = jc.getClassName(e.catch_cpx);
                 addReference(classInternalName);
-                out.append("if (e.$instOf_" + classInternalName.replace('/', '_') + ") {");
-                out.append("gt=" + e.handler_pc + "; stA0 = e; continue;");
-                out.append("}\n");
+                if ("java/lang/Throwable".equals(classInternalName)) {
+                    out.append("if (e.$instOf_java_lang_Throwable) {");
+                    out.append("  stA0 = e;");
+                    out.append("} else {");
+                    out.append("  stA0 = vm.java_lang_Throwable(true);");
+                    out.append("  vm.java_lang_Throwable.cons__VLjava_lang_String_2(stA0, e.toString());");
+                    out.append("}");
+                    out.append("gt=" + e.handler_pc + "; continue;");
+                } else {
+                    out.append("if (e.$instOf_" + classInternalName.replace('/', '_') + ") {");
+                    out.append("gt=" + e.handler_pc + "; stA0 = e; continue;");
+                    out.append("}\n");
+                }
             } else {
                 finallyPC = e.handler_pc;
             }
