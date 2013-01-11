@@ -1491,6 +1491,15 @@ public final class String
      *
      * @return  a hash code value for this object.
      */
+    @JavaScriptBody(args = "self", body = 
+        "var h = 0;\n" +
+        "var s = self.toString();\n" +
+        "for (var i = 0; i < s.length; i++) {\n" +
+        "  var high = (h >> 16) & 0xffff, low = h & 0xffff;\n" +
+        "  h = (((((31 * high) & 0xffff) << 16) >>> 0) + (31 * low) + s.charCodeAt(i)) & 0xffffffff;\n" +
+        "}\n" +
+        "return h;\n"
+    )
     public int hashCode() {
         int h = hash;
         if (h == 0 && length() > 0) {
