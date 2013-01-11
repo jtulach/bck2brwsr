@@ -74,6 +74,7 @@
                        <exclude>*</exclude>
                        <exclude>.*/**</exclude>
                        <exclude>mojo/src/main/resources/archetype-resources/**</exclude>
+                       <exclude>vmtest/src/test/resources/**</exclude>
                   </excludes>
               </configuration>
           </plugin>
