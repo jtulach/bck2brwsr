@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import java.io.ByteArrayInputStream;
 import org.apidesign.bck2brwsr.emul.AnnotationImpl;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
@@ -32,6 +33,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.TypeVariable;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
+import org.apidesign.bck2brwsr.emul.MethodImpl;
 
 /**
  * Instances of the class {@code Class} represent classes and
@@ -146,7 +148,7 @@ public final
                 throws ClassNotFoundException {
         Class<?> c = loadCls(className, className.replace('.', '_'));
         if (c == null) {
-            throw new ClassNotFoundException();
+            throw new ClassNotFoundException(className);
         }
         return c;
     }
@@ -209,15 +211,32 @@ public final
      *             </ul>
      *
      */
-    @JavaScriptBody(args = "self", body =
-          "var inst = self.cnstr();"
-        + "inst.cons__V(inst);"
-        + "return inst;"
+    @JavaScriptBody(args = { "self", "illegal" }, body =
+          "\nvar c = self.cnstr;"
+        + "\nif (c['cons__V']) {"
+        + "\n  if ((c.cons__V.access & 0x1) != 0) {"
+        + "\n    var inst = c();"
+        + "\n    c.cons__V(inst);"
+        + "\n    return inst;"
+        + "\n  }"
+        + "\n  return illegal;"
+        + "\n}"
+        + "\nreturn null;"
     )
+    private static native Object newInstance0(Class<?> self, Object illegal);
+    
     public T newInstance()
         throws InstantiationException, IllegalAccessException
     {
-        throw new UnsupportedOperationException();
+        Object illegal = new Object();
+        Object inst = newInstance0(this, illegal);
+        if (inst == null) {
+            throw new InstantiationException(getName());
+        }
+        if (inst == illegal) {
+            throw new IllegalAccessException();
+        }
+        return (T)inst;
     }
 
     /**
@@ -287,7 +306,12 @@ public final
      * @return  {@code true} if this object represents an interface;
      *          {@code false} otherwise.
      */
-    public native boolean isInterface();
+    public boolean isInterface() {
+        return (getAccess() & 0x200) != 0;
+    }
+    
+    @JavaScriptBody(args = "self", body = "return self.access;")
+    private native int getAccess();
 
 
     /**
@@ -330,6 +354,10 @@ public final
      * @see     java.lang.Void#TYPE
      * @since JDK1.1
      */
+    @JavaScriptBody(args = "self", body = 
+           "if (self.primitive) return true;"
+        + "else return false;"
+    )
     public native boolean isPrimitive();
 
     /**
@@ -631,7 +659,7 @@ public final
      * @since JDK1.1
      */
     public Method[] getMethods() throws SecurityException {
-        return Method.findMethods(this);
+        return MethodImpl.findMethods(this, 0x01);
     }
 
     /**
@@ -761,10 +789,18 @@ public final
      * @since JDK1.1
      */
     public Method getMethod(String name, Class<?>... parameterTypes)
-        throws SecurityException {
-        Method m = Method.findMethod(this, name, parameterTypes);
+        throws SecurityException, NoSuchMethodException {
+        Method m = MethodImpl.findMethod(this, name, parameterTypes);
         if (m == null) {
-            throw new SecurityException(); // XXX: NoSuchMethodException
+            StringBuilder sb = new StringBuilder();
+            sb.append(getName()).append('.').append(name).append('(');
+            String sep = "";
+            for (int i = 0; i < parameterTypes.length; i++) {
+                sb.append(sep).append(parameterTypes[i].getName());
+                sep = ", ";
+            }
+            sb.append(')');
+            throw new NoSuchMethodException(sb.toString());
         }
         return m;
     }
@@ -846,13 +882,14 @@ public final
      */
      public InputStream getResourceAsStream(String name) {
         name = resolveName(name);
-        ClassLoader cl = getClassLoader0();
-        if (cl==null) {
-            // A system class.
-            return ClassLoader.getSystemResourceAsStream(name);
-        }
-        return cl.getResourceAsStream(name);
-    }
+        byte[] arr = getResourceAsStream0(name);
+        return arr == null ? null : new ByteArrayInputStream(arr);
+     }
+     
+     @JavaScriptBody(args = "name", body = 
+         "return (vm.loadBytes) ? vm.loadBytes(name) : null;"
+     )
+     private static native byte[] getResourceAsStream0(String name);
 
     /**
      * Finds a resource with a given name.  The rules for searching resources
@@ -890,7 +927,7 @@ public final
      */
     public java.net.URL getResource(String name) {
         name = resolveName(name);
-        ClassLoader cl = getClassLoader0();
+        ClassLoader cl = null;
         if (cl==null) {
             // A system class.
             return ClassLoader.getSystemResource(name);
@@ -954,9 +991,6 @@ public final
         throw new SecurityException();
     }
     
-    // Package-private to allow ClassLoader access
-    native ClassLoader getClassLoader0();    
-
     /**
      * Returns the {@code Class} representing the component type of an
      * array.  If this class does not represent an array class this method
@@ -1090,10 +1124,13 @@ public final
         throw new UnsupportedOperationException();
     }
 
-    static Class getPrimitiveClass(String type) {
-        // XXX
-        return Object.class;
-    }
+    @JavaScriptBody(args = "type", body = ""
+        + "var c = vm.java_lang_Class(true);"
+        + "c.jvmName = type;"
+        + "c.primitive = true;"
+        + "return c;"
+    )
+    native static Class getPrimitiveClass(String type);
 
     public boolean desiredAssertionStatus() {
         return false;

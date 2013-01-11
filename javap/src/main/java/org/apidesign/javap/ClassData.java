@@ -326,6 +326,10 @@ public final class ClassData implements RuntimeConstants {
             return res; // "#"+cpx+"// ERROR IN DISASSEMBLER";
         }
     }
+    
+    public int getAccessFlags() {
+        return access;
+    }
 
     /**
      * Returns true if it is a class

@@ -18,7 +18,6 @@
 package org.apidesign.vm4brwsr;
 
 import javax.script.Invocable;
-import javax.script.ScriptException;
 import static org.testng.Assert.*;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -29,8 +28,14 @@ import org.testng.annotations.Test;
  */
 public class ArrayTest {
     @Test public void verifySimpleIntOperation() throws Exception {
-            assertExec("CheckTheSum", Array.class, "simple__I", 
-            Double.valueOf(15)
+            assertExec("CheckTheSum", Array.class, "simple__IZ", 
+            Double.valueOf(15), false
+        );
+    }
+    
+    @Test public void cloneOnArray() throws Exception {
+            assertExec("CheckTheSum on clone", Array.class, "simple__IZ", 
+            Double.valueOf(15), true
         );
     }
     

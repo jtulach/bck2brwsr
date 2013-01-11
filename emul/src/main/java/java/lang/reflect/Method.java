@@ -26,8 +26,10 @@
 package java.lang.reflect;
 
 import java.lang.annotation.Annotation;
+import java.util.Enumeration;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.emul.AnnotationImpl;
+import org.apidesign.bck2brwsr.emul.MethodImpl;
 
 /**
  * A {@code Method} provides information about, and access to, a single method
@@ -56,7 +58,6 @@ public final
     private final String name;
     private final Object data;
     private final String sig;
-    private int modifiers;
 
    // Generics infrastructure
 
@@ -108,9 +109,12 @@ public final
      * @see Modifier
      */
     public int getModifiers() {
-        return modifiers;
+        return getAccess(data);
     }
-
+    
+    @JavaScriptBody(args = "self", body = "return self.access;")
+    private static native int getAccess(Object self);
+    
     /**
      * Returns an array of {@code TypeVariable} objects that represent the
      * type variables declared by the generic declaration represented by this
@@ -137,7 +141,7 @@ public final
      * @return the return type for the method this object represents
      */
     public Class<?> getReturnType() {
-        throw new UnsupportedOperationException();
+        return MethodImpl.signatureParser(sig).nextElement();
     }
 
     /**
@@ -179,8 +183,13 @@ public final
      * represents
      */
     public Class<?>[] getParameterTypes() {
-        throw new UnsupportedOperationException();
-        //return (Class<?>[]) parameterTypes.clone();
+        Class[] arr = new Class[MethodImpl.signatureElements(sig) - 1];
+        Enumeration<Class> en = MethodImpl.signatureParser(sig);
+        en.nextElement(); // return type
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = en.nextElement();
+        }
+        return arr;
     }
 
     /**
@@ -311,14 +320,14 @@ public final
             sb.append(Field.getTypeName(getReturnType())).append(' ');
             sb.append(Field.getTypeName(getDeclaringClass())).append('.');
             sb.append(getName()).append('(');
-            /*
-            Class<?>[] params = parameterTypes; // avoid clone
+            Class<?>[] params = getParameterTypes(); // avoid clone
             for (int j = 0; j < params.length; j++) {
                 sb.append(Field.getTypeName(params[j]));
                 if (j < (params.length - 1))
                     sb.append(',');
             }
             sb.append(')');
+            /*
             Class<?>[] exceptions = exceptionTypes; // avoid clone
             if (exceptions.length > 0) {
                 sb.append(" throws ");
@@ -488,17 +497,112 @@ public final
      * @exception ExceptionInInitializerError if the initialization
      * provoked by this method fails.
      */
-    @JavaScriptBody(args = { "method", "self", "args" }, body =
-          "if (args.length > 0) throw 'unsupported now';"
-        + "return method.fld_data(self);"
-    )
     public Object invoke(Object obj, Object... args)
         throws IllegalAccessException, IllegalArgumentException,
            InvocationTargetException
     {
-        throw new UnsupportedOperationException();
+        final boolean isStatic = (getModifiers() & Modifier.STATIC) == 0;
+        if (isStatic && obj == null) {
+            throw new NullPointerException();
+        }
+        Class[] types = getParameterTypes();
+        if (types.length != args.length) {
+            throw new IllegalArgumentException("Types len " + types.length + " args: " + args.length);
+        } else {
+            args = args.clone();
+            for (int i = 0; i < types.length; i++) {
+                Class c = types[i];
+                if (c.isPrimitive()) {
+                    args[i] = toPrimitive(c, args[i]);
+                }
+            }
+        }
+        Object res = invoke0(isStatic, this, obj, args);
+        if (getReturnType().isPrimitive()) {
+            res = fromPrimitive(getReturnType(), res);
+        }
+        return res;
     }
+    
+    @JavaScriptBody(args = { "st", "method", "self", "args" }, body =
+          "var p;\n"
+        + "if (st) {\n"
+        + "  p = new Array(1);\n"
+        + "  p[0] = self;\n"
+        + "  p = p.concat(args);\n"
+        + "} else {\n"
+        + "  p = args;\n"
+        + "}\n"
+        + "return method.fld_data.apply(self, p);\n"
+    )
+    private static native Object invoke0(boolean isStatic, Method m, Object self, Object[] args);
 
+    private static Object fromPrimitive(Class<?> type, Object o) {
+        if (type == Integer.TYPE) {
+            return fromRaw(Integer.class, "valueOf__Ljava_lang_Integer_2I", o);
+        }
+        if (type == Long.TYPE) {
+            return fromRaw(Long.class, "valueOf__Ljava_lang_Long_2J", o);
+        }
+        if (type == Double.TYPE) {
+            return fromRaw(Double.class, "valueOf__Ljava_lang_Double_2D", o);
+        }
+        if (type == Float.TYPE) {
+            return fromRaw(Float.class, "valueOf__Ljava_lang_Float_2F", o);
+        }
+        if (type == Byte.TYPE) {
+            return fromRaw(Byte.class, "valueOf__Ljava_lang_Byte_2B", o);
+        }
+        if (type == Boolean.TYPE) {
+            return fromRaw(Boolean.class, "valueOf__Ljava_lang_Boolean_2Z", o);
+        }
+        if (type == Short.TYPE) {
+            return fromRaw(Short.class, "valueOf__Ljava_lang_Short_2S", o);
+        }
+        if (type.getName().equals("void")) {
+            return null;
+        }
+        throw new IllegalStateException("Can't convert " + o);
+    }
+    
+    @JavaScriptBody(args = { "cls", "m", "o" }, 
+        body = "return cls.cnstr(false)[m](o);"
+    )
+    private static native Integer fromRaw(Class<?> cls, String m, Object o);
+
+    private static Object toPrimitive(Class<?> type, Object o) {
+        if (type == Integer.TYPE) {
+            return toRaw("intValue__I", o);
+        }
+        if (type == Long.TYPE) {
+            return toRaw("longValue__J", o);
+        }
+        if (type == Double.TYPE) {
+            return toRaw("doubleValue__D", o);
+        }
+        if (type == Float.TYPE) {
+            return toRaw("floatValue__F", o);
+        }
+        if (type == Byte.TYPE) {
+            return toRaw("byteValue__B", o);
+        }
+        if (type == Boolean.TYPE) {
+            return toRaw("booleanValue__Z", o);
+        }
+        if (type == Short.TYPE) {
+            return toRaw("shortValue__S", o);
+        }
+        if (type.getName().equals("void")) {
+            return o;
+        }
+        throw new IllegalStateException("Can't convert " + o);
+    }
+    
+    @JavaScriptBody(args = { "m", "o" }, 
+        body = "return o[m](o);"
+    )
+    private static native Object toRaw(String m, Object o);
+    
     /**
      * Returns {@code true} if this method is a bridge
      * method; returns {@code false} otherwise.
@@ -599,57 +703,12 @@ public final
     public Annotation[][] getParameterAnnotations() {
         throw new UnsupportedOperationException();
     }
-    
-    //
-    // bck2brwsr implementation
-    //
 
-    @JavaScriptBody(args = { "clazz", "prefix" },
-        body = ""
-        + "var c = clazz.cnstr.prototype;"
-        + "var arr = new Array();\n"
-        + "for (m in c) {\n"
-        + "  if (m.indexOf(prefix) === 0) {\n"
-        + "     arr.push(m);\n"
-        + "     arr.push(c[m]);\n"
-        + "  }"
-        + "}\n"
-        + "return arr;"
-    )
-    private static native Object[] findMethodData(
-        Class<?> clazz, String prefix
-    );
-
-    // XXX should not be public
-    public static Method findMethod(
-        Class<?> clazz, String name, Class<?>... parameterTypes
-    ) {
-        Object[] data = findMethodData(clazz, name + "__");
-        if (data.length == 0) {
-            return null;
-        }
-        String sig = ((String)data[0]).substring(name.length() + 2);
-        return new Method(clazz, name, data[1], sig);
-    }
-    
-    public static Method[] findMethods(Class<?> clazz) {
-        Object[] namesAndData = findMethodData(clazz, "");
-        int cnt = 0;
-        for (int i = 0; i < namesAndData.length; i += 2) {
-            String sig = (String) namesAndData[i];
-            Object data = namesAndData[i + 1];
-            int middle = sig.indexOf("__");
-            if (middle == -1) {
-                continue;
+    static {
+        MethodImpl.INSTANCE = new MethodImpl() {
+            protected Method create(Class<?> declaringClass, String name, Object data, String sig) {
+                return new Method(declaringClass, name, data, sig);
             }
-            String name = sig.substring(0, middle);
-            sig = sig.substring(middle + 2);
-            namesAndData[cnt++] = new Method(clazz, name, data, sig);
-        }
-        Method[] arr = new Method[cnt];
-        for (int i = 0; i < cnt; i++) {
-            arr[i] = (Method)namesAndData[i];
-        }
-        return arr;
+        };
     }
 }

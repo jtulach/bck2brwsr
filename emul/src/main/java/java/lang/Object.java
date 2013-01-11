@@ -221,7 +221,28 @@ public class Object {
      *               be cloned.
      * @see java.lang.Cloneable
      */
-    protected native Object clone() throws CloneNotSupportedException;
+    protected Object clone() throws CloneNotSupportedException {
+        Object ret = clone(this);
+        if (ret == null) {
+            throw new CloneNotSupportedException(getClass().getName());
+        }
+        return ret;
+    }
+
+    @JavaScriptBody(args = "self", body = 
+          "\nif (!self.$instOf_java_lang_Cloneable) {"
+        + "\n  return null;"
+        + "\n} else {"
+        + "\n  var clone = self.constructor(true);"
+        + "\n  var props = Object.getOwnPropertyNames(self);"
+        + "\n  for (var i = 0; i < props.length; i++) {"
+        + "\n    var p = props[i];"
+        + "\n    clone[p] = self[p];"
+        + "\n  };"
+        + "\n  return clone;"
+        + "\n}"
+    )
+    private static native Object clone(Object self) throws CloneNotSupportedException;
 
     /**
      * Returns a string representation of the object. In general, the

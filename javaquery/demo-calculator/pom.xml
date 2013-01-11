@@ -4,11 +4,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.apidesign.bck2brwsr</groupId>
-  <artifactId>demo.calculator</artifactId>
+  <artifactId>demo.static.calculator</artifactId>
   <version>0.3-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>JavaQuery Demo - Calculator</name>
+  <name>JavaQuery Demo - Calculator - Static Compilation</name>
   <url>http://maven.apache.org</url>
 
   <properties>

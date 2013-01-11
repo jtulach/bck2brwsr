@@ -25,6 +25,8 @@ import org.apidesign.javap.FieldData;
 import org.apidesign.javap.MethodData;
 import org.apidesign.javap.StackMapIterator;
 import static org.apidesign.javap.RuntimeConstants.*;
+import org.apidesign.javap.TrapData;
+import org.apidesign.javap.TrapDataIterator;
 
 /** Translator of the code inside class files to JavaScript.
  *
@@ -62,6 +64,17 @@ abstract class ByteCodeToJavaScript {
     }
     /* protected */ String accessClass(String classOperation) {
         return classOperation;
+    }
+    
+    /** Prints out a debug message. 
+     * 
+     * @param msg the message
+     * @return true if the message has been printed
+     * @throws IOException 
+     */
+    boolean debug(String msg) throws IOException {
+        out.append(msg);
+        return true;
     }
 
     /**
@@ -133,18 +146,27 @@ abstract class ByteCodeToJavaScript {
                 }
                 continue;
             }
+            String prefix;
             String mn;
             if (m.isStatic()) {
-                mn = generateStaticMethod("\n    c.", m, toInitilize);
+                prefix = "\n    c.";
+                mn = generateStaticMethod(prefix, m, toInitilize);
             } else {
-                mn = generateInstanceMethod("\n    c.", m);
+                if (m.isConstructor()) {
+                    prefix = "\n    CLS.";
+                    mn = generateInstanceMethod(prefix, m);
+                } else {
+                    prefix = "\n    c.";
+                    mn = generateInstanceMethod(prefix, m);
+                }
             }
             byte[] runAnno = m.findAnnotationData(false);
             if (runAnno != null) {
-                out.append("\n    c.").append(mn).append(".anno = {");
+                out.append(prefix).append(mn).append(".anno = {");
                 generateAnno(jc, out, runAnno);
                 out.append("\n    };");
             }
+            out.append(prefix).append(mn).append(".access = " + m.getAccess()).append(";");
         }
         out.append("\n    c.constructor = CLS;");
         out.append("\n    c.$instOf_").append(className).append(" = true;");
@@ -155,6 +177,7 @@ abstract class ByteCodeToJavaScript {
         out.append(accessClass("java_lang_Class(true);"));
         out.append("\n    CLS.$class.jvmName = '").append(jc.getClassName()).append("';");
         out.append("\n    CLS.$class.superclass = sprcls;");
+        out.append("\n    CLS.$class.access = ").append(jc.getAccessFlags()+";");
         out.append("\n    CLS.$class.cnstr = CLS;");
         byte[] classAnno = jc.findAnnotationData(false);
         if (classAnno != null) {
@@ -221,6 +244,7 @@ abstract class ByteCodeToJavaScript {
     private void generateMethod(String prefix, String name, MethodData m)
             throws IOException {
         final StackMapIterator stackMapIterator = m.createStackMapIterator();
+        TrapDataIterator trap = m.getTrapDataIterator();
         final LocalsMapper lmapper =
                 new LocalsMapper(stackMapIterator.getArguments());
 
@@ -231,7 +255,8 @@ abstract class ByteCodeToJavaScript {
         final byte[] byteCodes = m.getCode();
         if (byteCodes == null) {
             out.append("  throw 'no code found for ")
-               .append(m.getInternalSig()).append("';\n");
+               .append(jc.getClassName()).append('.')
+               .append(m.getName()).append("';\n");
             out.append("};");
             return;
         }
@@ -267,18 +292,31 @@ abstract class ByteCodeToJavaScript {
         }
 
         int lastStackFrame = -1;
-
+        TrapData[] previousTrap = null;
+        
         out.append("\n  var gt = 0;\n  for(;;) switch(gt) {\n");
         for (int i = 0; i < byteCodes.length; i++) {
             int prev = i;
             stackMapIterator.advanceTo(i);
+            boolean changeInCatch = trap.advanceTo(i);
+            if (changeInCatch || lastStackFrame != stackMapIterator.getFrameIndex()) {
+                if (previousTrap != null) {
+                    generateCatch(previousTrap);
+                    previousTrap = null;
+                }
+            }
             if (lastStackFrame != stackMapIterator.getFrameIndex()) {
                 lastStackFrame = stackMapIterator.getFrameIndex();
                 lmapper.syncWithFrameLocals(stackMapIterator.getFrameLocals());
                 smapper.syncWithFrameStack(stackMapIterator.getFrameStack());
-                out.append("    case " + i).append(": ");
+                out.append("    case " + i).append(": ");            
+                changeInCatch = true;
             } else {
-                out.append("    /* " + i).append(" */ ");
+                debug("    /* " + i + " */ ");
+            }
+            if (changeInCatch && trap.useTry()) {
+                out.append("try {");
+                previousTrap = trap.current();
             }
             final int c = readByte(byteCodes, i);
             switch (c) {
@@ -950,7 +988,7 @@ abstract class ByteCodeToJavaScript {
                 case opc_pop:
                 case opc_pop2:
                     smapper.pop(1);
-                    out.append("/* pop */");
+                    debug("/* pop */");
                     break;
                 case opc_dup: {
                     final Variable v = smapper.get(0);
@@ -1028,7 +1066,7 @@ abstract class ByteCodeToJavaScript {
                     int indx = readIntArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
-                    emit(out, "@1 = @2.@3;",
+                    emit(out, "@1 = @2(false).constructor.@3;",
                          smapper.pushT(type),
                          accessClass(fi[0].replace('/', '_')), fi[1]);
                     i += 2;
@@ -1048,7 +1086,7 @@ abstract class ByteCodeToJavaScript {
                     int indx = readIntArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
-                    emit(out, "@1.@2 = @3;",
+                    emit(out, "@1(false).constructor.@2 = @3;",
                          accessClass(fi[0].replace('/', '_')), fi[1],
                          smapper.popT(type));
                     i += 2;
@@ -1103,13 +1141,17 @@ abstract class ByteCodeToJavaScript {
                          Integer.toString(c));
                 }
             }
-            out.append(" //");
-            for (int j = prev; j <= i; j++) {
-                out.append(" ");
-                final int cc = readByte(byteCodes, j);
-                out.append(Integer.toString(cc));
+            if (debug(" //")) {
+                for (int j = prev; j <= i; j++) {
+                    out.append(" ");
+                    final int cc = readByte(byteCodes, j);
+                    out.append(Integer.toString(cc));
+                }
             }
-            out.append("\n");
+            out.append("\n");            
+        }
+        if (previousTrap != null) {
+            generateCatch(previousTrap);
         }
         out.append("  }\n");
         out.append("};");
@@ -1208,6 +1250,7 @@ abstract class ByteCodeToJavaScript {
                         returnType[0] = 'L';
                     }
                     i = next + 1;
+                    array = false;
                     continue;
                 case '[':
                     array = true;
@@ -1283,6 +1326,9 @@ abstract class ByteCodeToJavaScript {
         final String in = mi[0];
         out.append(accessClass(in.replace('/', '_')));
         out.append("(false).");
+        if (mn.startsWith("cons_")) {
+            out.append("constructor.");
+        }
         out.append(mn);
         out.append('(');
         if (numArguments > 0) {
@@ -1332,7 +1378,7 @@ abstract class ByteCodeToJavaScript {
 
     private void addReference(String cn) throws IOException {
         if (requireReference(cn)) {
-            out.append(" /* needs ").append(cn).append(" */");
+            debug(" /* needs " + cn + " */");
         }
     }
 
@@ -1537,5 +1583,40 @@ abstract class ByteCodeToJavaScript {
         }
 
         out.append(format, processed, length);
+    }
+
+    private void generateCatch(TrapData[] traps) throws IOException {
+        out.append("} catch (e) {\n");
+        int finallyPC = -1;
+        for (TrapData e : traps) {
+            if (e == null) {
+                break;
+            }
+            if (e.catch_cpx != 0) { //not finally
+                final String classInternalName = jc.getClassName(e.catch_cpx);
+                addReference(classInternalName);
+                if ("java/lang/Throwable".equals(classInternalName)) {
+                    out.append("if (e.$instOf_java_lang_Throwable) {");
+                    out.append("  stA0 = e;");
+                    out.append("} else {");
+                    out.append("  stA0 = vm.java_lang_Throwable(true);");
+                    out.append("  vm.java_lang_Throwable.cons__VLjava_lang_String_2(stA0, e.toString());");
+                    out.append("}");
+                    out.append("gt=" + e.handler_pc + "; continue;");
+                } else {
+                    out.append("if (e.$instOf_" + classInternalName.replace('/', '_') + ") {");
+                    out.append("gt=" + e.handler_pc + "; stA0 = e; continue;");
+                    out.append("}\n");
+                }
+            } else {
+                finallyPC = e.handler_pc;
+            }
+        }
+        if (finallyPC == -1) {
+            out.append("throw e;");
+        } else {
+            out.append("gt=" + finallyPC + "; stA0 = e; continue;");
+        }
+        out.append("\n}");
     }
 }

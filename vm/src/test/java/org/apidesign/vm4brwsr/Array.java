@@ -82,11 +82,17 @@ public class Array {
         }
         return sum;
     }
-    public static int simple() {
-        int[] arr = { 0, 1, 2, 3, 4, 5 };
+    private static final int[] arr = { 0, 1, 2, 3, 4, 5 };
+    public static int simple(boolean clone) {
+        int[] ar;
+        if (clone) {
+            ar = arr.clone();
+        } else {
+            ar = arr;
+        }
         
         int sum = 0;
-        for (int a : arr) {
+        for (int a : ar) {
             sum += a;
         }
         return sum;

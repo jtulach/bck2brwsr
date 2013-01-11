@@ -61,10 +61,27 @@ final class VMLazy {
         StringBuilder out = new StringBuilder();
         out.append("var loader = arguments[0];\n");
         out.append("var vm = loader.vm;\n");
-        new Gen(this, out).compile(new ByteArrayInputStream(arr));
+        int prelude = out.length();
+        String initCode = new Gen(this, out).compile(new ByteArrayInputStream(arr));
         String code = out.toString().toString();
+//        dump("Loading " + name);
+        dump(code);
         String under = name.replace('.', '_');
-        return applyCode(loader, under, code, instance);
+        Object fn = applyCode(loader, under, code, instance);
+        
+        if (!initCode.isEmpty()) {
+            out.setLength(prelude);
+            out.append(initCode);
+            code = out.toString().toString();
+            dump(code);
+            applyCode(loader, null, code, false);
+        }            
+        
+        return fn;
+    }
+
+//    @JavaScriptBody(args = "s", body = "java.lang.System.out.println(s.toString());")
+    static void dump(String s) {
     }
 
 /* possibly not needed:
@@ -82,7 +99,7 @@ final class VMLazy {
         "} catch (ex) {\n" +
         "  throw 'Cannot compile ' + ex + ' line: ' + ex.lineNumber + ' script:\\n' + script;\n" +
         "}\n" +
-        "return vm[name](instance);\n"
+        "return name != null ? vm[name](instance) : null;\n"
     )
     private static native Object applyCode(Object loader, String name, String script, boolean instance);
     

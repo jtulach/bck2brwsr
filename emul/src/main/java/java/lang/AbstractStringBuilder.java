@@ -1271,8 +1271,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      *            <code>null</code>.
      */
     public int indexOf(String str, int fromIndex) {
-        return String.indexOf(value, 0, count,
-                              str.toCharArray(), 0, str.length(), fromIndex);
+        return toString().indexOf(str, fromIndex);
     }
 
     /**
