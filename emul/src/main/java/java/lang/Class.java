@@ -269,7 +269,15 @@ public final
      *
      * @since JDK1.1
      */
-    public native boolean isInstance(Object obj);
+    public boolean isInstance(Object obj) {
+        String prop = "$instOf_" + getName().replace('.', '_');
+        return hasProperty(obj, prop);
+    }
+    
+    @JavaScriptBody(args = { "who", "prop" }, body = 
+        "if (who[prop]) return true; else return false;"
+    )
+    private static native boolean hasProperty(Object who, String prop);
 
 
     /**
