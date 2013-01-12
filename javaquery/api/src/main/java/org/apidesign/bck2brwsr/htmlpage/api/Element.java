@@ -37,18 +37,14 @@ public abstract class Element {
         body="var e = window.document.getElementById(el.fld_id);\n"
            + "e[property] = value;\n"
     )
-    static void setAttribute(Element el, String property, Object value) {
-        throw new UnsupportedOperationException("Needs JavaScript!");
-    }
+    static native void setAttribute(Element el, String property, Object value);
 
     @JavaScriptBody(
         args={"el", "property"},
         body="var e = window.document.getElementById(el.fld_id);\n"
            + "return e[property];\n"
     )
-    static Object getAttribute(Element el, String property) {
-        throw new UnsupportedOperationException("Needs JavaScript!");
-    }
+    static native Object getAttribute(Element el, String property);
     
     /** Executes given runnable when user performs a "click" on the given
      * element.
@@ -59,7 +55,12 @@ public abstract class Element {
         body="var e = window.document.getElementById(el.fld_id);\n"
            + "e.onclick = function() { r.run__V(); };\n"
     )
-    public final void addOnClick(Runnable r) {
-        throw new UnsupportedOperationException("Needs JavaScript!");
-    }
+    public final native void addOnClick(Runnable r);
+
+    /** Shows alert message dialog in a browser.
+     * @param msg the message to show
+     */
+    @JavaScriptBody(args = "msg", body = "alert(msg);")
+    public static native void alert(String msg);
+    
 }
