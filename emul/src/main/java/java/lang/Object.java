@@ -106,11 +106,14 @@ public class Object {
      */
     @JavaScriptBody(args = "self", body = 
         "if (self.$hashCode) return self.$hashCode;\n"
-        + "var h = Math.random() * Math.pow(2, 32);\n"
+        + "var h = self.computeHashCode__I(self);\n"
         + "return self.$hashCode = h & h;"
     )
     public native int hashCode();
 
+    @JavaScriptBody(args = "self", body = "Math.random() * Math.pow(2, 32);")
+    native int computeHashCode();
+    
     /**
      * Indicates whether some other object is "equal to" this one.
      * <p>
