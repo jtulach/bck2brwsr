@@ -28,6 +28,10 @@ import org.testng.annotations.Factory;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class CompareStringsTest {
+    @Compare public String firstChar() {
+        return "" + ("Hello".toCharArray()[0]);
+    }
+    
     @Compare public static Object compareURLs() throws MalformedURLException {
         return new URL("http://apidesign.org:8080/wiki/").toExternalForm().toString();
     }

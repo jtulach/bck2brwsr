@@ -559,6 +559,9 @@ public final
         if (type == Short.TYPE) {
             return fromRaw(Short.class, "valueOf__Ljava_lang_Short_2S", o);
         }
+        if (type == Character.TYPE) {
+            return fromRaw(Character.class, "valueOf__Ljava_lang_Character_2C", o);
+        }
         if (type.getName().equals("void")) {
             return null;
         }
@@ -591,6 +594,9 @@ public final
         }
         if (type == Short.TYPE) {
             return toRaw("shortValue__S", o);
+        }
+        if (type == Character.TYPE) {
+            return toRaw("charValue__C", o);
         }
         if (type.getName().equals("void")) {
             return o;
