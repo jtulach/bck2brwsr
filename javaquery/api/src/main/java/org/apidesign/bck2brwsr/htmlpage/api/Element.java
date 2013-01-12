@@ -62,5 +62,20 @@ public abstract class Element {
      */
     @JavaScriptBody(args = "msg", body = "alert(msg);")
     public static native void alert(String msg);
+
+    /** Generic way to query any attribute of this element.
+     * @param property name of the attribute
+     */
+    public final Object getAttribute(String property) {
+        return getAttribute(this, property);
+    }
     
+    /** Generic way to change an attribute of this element.
+     * 
+     * @param property name of the attribute
+     * @param value value to associate with the attribute
+     */
+    public final void setAttribute(String property, Object value) {
+        setAttribute(this, property, value);
+    }
 }
