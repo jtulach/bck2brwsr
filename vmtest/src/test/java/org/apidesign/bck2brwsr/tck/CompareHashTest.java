@@ -39,6 +39,10 @@ public class CompareHashTest {
         return StaticUse.NON_NULL.hashCode() - StaticUse.NON_NULL.hashCode();
     }
     
+    @Compare public int hashOfInt() {
+        return Integer.valueOf(Integer.MAX_VALUE).hashCode();
+    }
+    
     @Factory
     public static Object[] create() {
         return VMTest.create(CompareHashTest.class);
