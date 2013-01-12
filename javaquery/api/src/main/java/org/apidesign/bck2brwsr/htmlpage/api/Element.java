@@ -51,11 +51,11 @@ public abstract class Element {
      * @param r the runnable to execute, never null
      */
     @JavaScriptBody(
-        args={"el", "r"},
-        body="var e = window.document.getElementById(el.fld_id);\n"
-           + "e.onclick = function() { r.run__V(); };\n"
+        args={ "self", "ev", "r" },
+        body="var e = window.document.getElementById(self.fld_id);\n"
+           + "e[ev.fld_id] = function() { r.run__V(r); };\n"
     )
-    public final native void addOnClick(Runnable r);
+    final native void on(OnEvent ev, Runnable r);
 
     /** Shows alert message dialog in a browser.
      * @param msg the message to show

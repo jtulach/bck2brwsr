@@ -1,6 +1,7 @@
 package ${package};
 
-import org.apidesign.bck2brwsr.htmlpage.api.OnClick;
+import org.apidesign.bck2brwsr.htmlpage.api.On;
+import static org.apidesign.bck2brwsr.htmlpage.api.OnEvent.*;
 import org.apidesign.bck2brwsr.htmlpage.api.Page;
 
 /** Edit the index.xhtml file. Use 'id' to name certain HTML elements.
@@ -8,8 +9,9 @@ import org.apidesign.bck2brwsr.htmlpage.api.Page;
  */
 @Page(xhtml="index.xhtml", className="Index")
 public class App {
-    @OnClick(id="hello")
+    @On(event = CLICK, id="hello")
     static void hello() {
         Index.HELLO.setDisabled(true);
+        Element.alert("Hello World!");
     }
 }

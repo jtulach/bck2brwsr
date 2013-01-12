@@ -17,18 +17,27 @@
  */
 package org.apidesign.bck2brwsr.htmlpage.api;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-/** Adds an onClick handler to an element identified by given <em>id</em>.
- * Apply on a <code>public static void</code> method with no arguments.
+/** Controller created via {@link OnEvent#of(org.apidesign.bck2brwsr.htmlpage.api.Element[])}.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@Retention(RetentionPolicy.SOURCE)
-@Target(ElementType.METHOD)
-public @interface OnClick {
-    String[] id();
+public final class OnController {
+    private final Element[] arr;
+    private final OnEvent event;
+    
+    OnController(OnEvent event, Element[] arr) {
+        this.event = event;
+        this.arr = arr;
+    }
+    
+    /** Registers a runnable to be performed on associated {@link OnEvent} 
+     * and {@link Element}.
+     * 
+     * @see OnEvent#of
+     */
+    public void perform(Runnable r) {
+        for (Element e : arr) {
+            e.on(event, r);
+        }
+    }
 }
