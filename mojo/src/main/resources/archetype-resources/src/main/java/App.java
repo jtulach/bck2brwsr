@@ -1,6 +1,6 @@
 package ${package};
 
-import org.apidesign.bck2brwsr.htmlpage.api.On;
+import org.apidesign.bck2brwsr.htmlpage.api.*;
 import static org.apidesign.bck2brwsr.htmlpage.api.OnEvent.*;
 import org.apidesign.bck2brwsr.htmlpage.api.Page;
 
