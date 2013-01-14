@@ -673,8 +673,10 @@ abstract class ByteCodeToJavaScript {
                     break;
                 case opc_i2b:
                 case opc_i2c:
-                case opc_i2s:
                     out.append("{ /* number conversion */ }");
+                    break;
+                case opc_i2s:
+                    emit(out, "@1 = __toInt16(@1);", smapper.getI(0));
                     break;
                 case opc_aconst_null:
                     emit(out, "@1 = null;", smapper.pushA());
