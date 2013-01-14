@@ -2,8 +2,8 @@
 vm.java_lang_String(false);
 
 // we need initialized arrays
-Array.prototype.fillNulls = function() {
-  for(var i = 0; i < this.length; i++) this[i] = null;
+Array.prototype.fillWith = function(value) {
+  for(var i = 0; i < this.length; i++) this[i] = value;
   return this;
 };
 Array.prototype.clone__Ljava_lang_Object_2 = function() {

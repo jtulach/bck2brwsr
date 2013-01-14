@@ -910,19 +910,19 @@ abstract class ByteCodeToJavaScript {
                 }
                 case opc_newarray:
                     ++i; // skip type of array
-                    emit(out, "@2 = new Array(@1).fillNulls();",
+                    emit(out, "@2 = new Array(@1).fillWith(0);",
                          smapper.popI(), smapper.pushA());
                     break;
                 case opc_anewarray:
                     i += 2; // skip type of array
-                    emit(out, "@2 = new Array(@1).fillNulls();",
+                    emit(out, "@2 = new Array(@1).fillWith(null);",
                          smapper.popI(), smapper.pushA());
                     break;
                 case opc_multianewarray: {
                     i += 2;
                     int dim = readByte(byteCodes, ++i);
                     out.append("{ var a0 = new Array(").append(smapper.popI())
-                       .append(").fillNulls();");
+                       .append(").fillWith(null);");
                     for (int d = 1; d < dim; d++) {
                         out.append("\n  var l" + d).append(" = ")
                            .append(smapper.popI()).append(';');
@@ -930,7 +930,7 @@ abstract class ByteCodeToJavaScript {
                             append(" < a" + (d - 1)).
                             append(".length; i" + d).append("++) {");
                         out.append("\n    var a" + d).
-                            append (" = new Array(l" + d).append(").fillNulls();");
+                            append (" = new Array(l" + d).append(").fillWith(null);");
                         out.append("\n    a" + (d - 1)).append("[i" + d).append("] = a" + d).
                             append(";");
                     }
