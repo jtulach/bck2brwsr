@@ -108,10 +108,6 @@ import org.apidesign.bck2brwsr.core.JavaScriptPrototype;
 public final class String
     implements java.io.Serializable, Comparable<String>, CharSequence
 {
-    @JavaScriptOnly
-    /** Cache the hash code for the string */
-    private int hash; // Default to 0
-    
     /** real string to delegate to */
     private Object r;
 
@@ -1491,26 +1487,18 @@ public final class String
      *
      * @return  a hash code value for this object.
      */
-    @JavaScriptBody(args = "self", body = 
-        "var h = 0;\n" +
-        "var s = self.toString();\n" +
-        "for (var i = 0; i < s.length; i++) {\n" +
-        "  var high = (h >> 16) & 0xffff, low = h & 0xffff;\n" +
-        "  h = (((((31 * high) & 0xffff) << 16) >>> 0) + (31 * low) + s.charCodeAt(i)) & 0xffffffff;\n" +
-        "}\n" +
-        "return h;\n"
-    )
     public int hashCode() {
-        int h = hash;
+        return super.hashCode();
+    }
+    int computeHashCode() {
+        int h = 0;
         if (h == 0 && length() > 0) {
             int off = offset();
-            char val[] = toCharArray();
             int len = length();
 
             for (int i = 0; i < len; i++) {
-                h = 31*h + val[off++];
+                h = 31*h + charAt(off++);
             }
-            hash = h;
         }
         return h;
     }
@@ -2742,7 +2730,6 @@ public final class String
      *          of this string and whose contents are initialized to contain
      *          the character sequence represented by this string.
      */
-    @JavaScriptBody(args = "self", body = "return self.toString().split('');")
     public char[] toCharArray() {
         char result[] = new char[length()];
         getChars(0, length(), result, 0);
