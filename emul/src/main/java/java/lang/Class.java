@@ -216,7 +216,7 @@ public final
         + "\nif (c['cons__V']) {"
         + "\n  if ((c.cons__V.access & 0x1) != 0) {"
         + "\n    var inst = c();"
-        + "\n    c.cons__V(inst);"
+        + "\n    c.cons__V.call(inst);"
         + "\n    return inst;"
         + "\n  }"
         + "\n  return illegal;"

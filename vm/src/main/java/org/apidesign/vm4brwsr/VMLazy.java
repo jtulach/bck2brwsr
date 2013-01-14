@@ -114,15 +114,15 @@ final class VMLazy {
         
         @JavaScriptBody(args = {"self", "n"},
         body =
-        "var cls = n.replace__Ljava_lang_String_2CC(n, '/','_').toString();"
-        + "\nvar dot = n.replace__Ljava_lang_String_2CC(n,'/','.').toString();"
+        "var cls = n.replace__Ljava_lang_String_2CC('/','_').toString();"
+        + "\nvar dot = n.replace__Ljava_lang_String_2CC('/','.').toString();"
         + "\nvar lazy = self.fld_lazy;"
         + "\nvar loader = lazy.fld_loader;"
         + "\nvar vm = loader.vm;"
         + "\nif (vm[cls]) return false;"
         + "\nvm[cls] = function() {"
         + "\n  var instance = arguments.length == 0 || arguments[0] === true;"
-        + "\n  return lazy.load__Ljava_lang_Object_2Ljava_lang_String_2Z(lazy, dot, instance);"
+        + "\n  return lazy.load__Ljava_lang_Object_2Ljava_lang_String_2Z(dot, instance);"
         + "\n};"
         + "\nreturn true;")
         @Override

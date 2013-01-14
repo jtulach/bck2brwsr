@@ -131,6 +131,14 @@ public class InstanceTest {
             Double.valueOf(1)
         );
     }
+
+    @Test public void jsCallingConvention() throws Exception {
+        assertExec(
+            "Pointer to 'this' is passed automatically (and not as a first argument)",
+            Instance.class, "jscall__I",
+            Double.valueOf(31)
+        );
+    }
     
     protected String startCompilationWith() {
         return "org/apidesign/vm4brwsr/Instance";
