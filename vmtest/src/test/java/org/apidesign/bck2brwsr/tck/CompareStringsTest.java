@@ -76,6 +76,11 @@ public class CompareStringsTest {
         return "Hello".matches("Hell");
     }
     
+    @Compare public String emptyCharArray() {
+        char[] arr = new char[10];
+        return new String(arr);
+    }
+    
     @Compare public String variousCharacterTests() throws Exception {
         StringBuilder sb = new StringBuilder();
         
