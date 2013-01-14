@@ -249,7 +249,7 @@ abstract class ByteCodeToJavaScript {
                 new LocalsMapper(stackMapIterator.getArguments());
 
         out.append(prefix).append(name).append(" = function(");
-        lmapper.outputArguments(out);
+        lmapper.outputArguments(out, m.isStatic());
         out.append(") {").append("\n");
 
         final byte[] byteCodes = m.getCode();
@@ -274,6 +274,9 @@ abstract class ByteCodeToJavaScript {
                 }
                 out.append(';');
             }
+        }
+        if (!m.isStatic()) {
+            out.append("  var ").append(" lcA0 = this;\n");
         }
 
         // maxStack includes two stack positions for every pushed long / double
@@ -1330,7 +1333,11 @@ abstract class ByteCodeToJavaScript {
             out.append("constructor.");
         }
         out.append(mn);
-        out.append('(');
+        if (isStatic) {
+            out.append('(');
+        } else {
+            out.append(".call(");
+        }
         if (numArguments > 0) {
             out.append(vars[0]);
             for (int j = 1; j < numArguments; ++j) {
@@ -1366,10 +1373,11 @@ abstract class ByteCodeToJavaScript {
         out.append(vars[0]).append('.');
         out.append(mn);
         out.append('(');
-        out.append(vars[0]);
+        String sep = "";
         for (int j = 1; j < numArguments; ++j) {
-            out.append(", ");
+            out.append(sep);
             out.append(vars[j]);
+            sep = ", ";
         }
         out.append(");");
         i += 2;
@@ -1443,15 +1451,8 @@ abstract class ByteCodeToJavaScript {
         final String mn = findMethodName(m, cnt);
         out.append(prefix).append(mn);
         out.append(" = function(");
-        String space;
-        int index;
-        if (!isStatic) {                
-            space = outputArg(out, p.args, 0);
-            index = 1;
-        } else {
-            space = "";
-            index = 0;
-        }
+        String space = "";
+        int index = 0;
         for (int i = 0; i < cnt.length(); i++) {
             out.append(space);
             space = outputArg(out, p.args, index);
@@ -1600,7 +1601,7 @@ abstract class ByteCodeToJavaScript {
                     out.append("  stA0 = e;");
                     out.append("} else {");
                     out.append("  stA0 = vm.java_lang_Throwable(true);");
-                    out.append("  vm.java_lang_Throwable.cons__VLjava_lang_String_2(stA0, e.toString());");
+                    out.append("  vm.java_lang_Throwable.cons__VLjava_lang_String_2.call(stA0, e.toString());");
                     out.append("}");
                     out.append("gt=" + e.handler_pc + "; continue;");
                 } else {

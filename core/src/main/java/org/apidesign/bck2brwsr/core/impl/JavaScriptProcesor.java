@@ -53,7 +53,7 @@ public final class JavaScriptProcesor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         for (Element e : roundEnv.getElementsAnnotatedWith(JavaScriptBody.class)) {
-            if (e.getKind() != ElementKind.METHOD) {
+            if (e.getKind() != ElementKind.METHOD && e.getKind() != ElementKind.CONSTRUCTOR) {
                 continue;
             }
             ExecutableElement ee = (ExecutableElement)e;
@@ -61,13 +61,7 @@ public final class JavaScriptProcesor extends AbstractProcessor {
             
             JavaScriptBody jsb = e.getAnnotation(JavaScriptBody.class);
             String[] arr = jsb.args();
-            int indx;
-            if (!ee.getModifiers().contains(Modifier.STATIC)) {
-                indx = 1;
-            } else {
-                indx = 0;
-            }
-            if (indx + params.size() != arr.length) {
+            if (params.size() != arr.length) {
                 processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Number of args arguments does not match real arguments!", e);
             }
         }
@@ -81,14 +75,8 @@ public final class JavaScriptProcesor extends AbstractProcessor {
         StringBuilder sb = new StringBuilder();
         if (e.getKind() == ElementKind.METHOD && member.getSimpleName().contentEquals("args")) {
             ExecutableElement ee = (ExecutableElement) e;
-            String sep;
-            if (!ee.getModifiers().contains(Modifier.STATIC)) {
-                sb.append("{ \"self\"");
-                sep = ", ";
-            } else {
-                sb.append("{ ");
-                sep = "";
-            }
+            String sep = "";
+            sb.append("{ ");
             for (VariableElement ve : ee.getParameters()) {
                 sb.append(sep).append('"').append(ve.getSimpleName())
                     .append('"');

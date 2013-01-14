@@ -117,7 +117,7 @@ class VM extends ByteCodeToJavaScript {
             + "    var loader = {};\n"
             + "    loader.vm = vm;\n"
             + "    loader.loadClass = function(name) {\n"
-            + "      var attr = name.replace__Ljava_lang_String_2CC(name, '.','_');\n"
+            + "      var attr = name.replace__Ljava_lang_String_2CC('.','_');\n"
             + "      var fn = vm[attr];\n"
             + "      if (fn) return fn(false);\n"
             + "      if (!args[0]) throw 'bck2brwsr initialized without loader function, cannot load ' + name;\n"

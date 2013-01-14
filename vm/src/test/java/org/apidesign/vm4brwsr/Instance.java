@@ -125,4 +125,11 @@ public class Instance {
     public static boolean iofObject() {
         return jsObj() instanceof Object;
     }
+    
+    public static int jscall() {
+        return jsgetbytes(new Instance());
+    }
+    
+    @JavaScriptBody(args = { "instance" }, body = "return instance.getByte__B();")
+    private static native int jsgetbytes(Instance instance);
 }

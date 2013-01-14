@@ -51,9 +51,9 @@ public abstract class Element {
      * @param r the runnable to execute, never null
      */
     @JavaScriptBody(
-        args={ "self", "ev", "r" },
-        body="var e = window.document.getElementById(self.fld_id);\n"
-           + "e[ev.fld_id] = function() { r.run__V(r); };\n"
+        args={ "ev", "r" },
+        body="var e = window.document.getElementById(this.fld_id);\n"
+           + "e[ev.fld_id] = function() { r.run__V(); };\n"
     )
     final native void on(OnEvent ev, Runnable r);
 

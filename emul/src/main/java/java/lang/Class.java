@@ -216,7 +216,7 @@ public final
         + "\nif (c['cons__V']) {"
         + "\n  if ((c.cons__V.access & 0x1) != 0) {"
         + "\n    var inst = c();"
-        + "\n    c.cons__V(inst);"
+        + "\n    c.cons__V.call(inst);"
         + "\n    return inst;"
         + "\n  }"
         + "\n  return illegal;"
@@ -318,7 +318,7 @@ public final
         return (getAccess() & 0x200) != 0;
     }
     
-    @JavaScriptBody(args = "self", body = "return self.access;")
+    @JavaScriptBody(args = {}, body = "return this.access;")
     private native int getAccess();
 
 
@@ -362,8 +362,8 @@ public final
      * @see     java.lang.Void#TYPE
      * @since JDK1.1
      */
-    @JavaScriptBody(args = "self", body = 
-           "if (self.primitive) return true;"
+    @JavaScriptBody(args = {}, body = 
+           "if (this.primitive) return true;"
         + "else return false;"
     )
     public native boolean isPrimitive();
@@ -447,7 +447,7 @@ public final
         return jvmName().replace('/', '.');
     }
 
-    @JavaScriptBody(args = "self", body = "return self.jvmName;")
+    @JavaScriptBody(args = {}, body = "return this.jvmName;")
     private native String jvmName();
 
     
@@ -481,7 +481,7 @@ public final
      *
      * @return the superclass of the class represented by this object.
      */
-    @JavaScriptBody(args = "self", body = "return self.superclass;")
+    @JavaScriptBody(args = {}, body = "return this.superclass;")
     public native Class<? super T> getSuperclass();
 
     /**
@@ -1078,10 +1078,10 @@ public final
             throw new ClassCastException(this.toString());
     }
 
-    @JavaScriptBody(args = { "self", "ac" }, 
+    @JavaScriptBody(args = { "ac" }, 
         body = 
-          "if (self.anno) {"
-        + "  return self.anno['L' + ac.jvmName + ';'];"
+          "if (this.anno) {"
+        + "  return this.anno['L' + ac.jvmName + ';'];"
         + "} else return null;"
     )
     private Object getAnnotationData(Class<?> annotationClass) {
@@ -1100,8 +1100,8 @@ public final
      * @throws NullPointerException {@inheritDoc}
      * @since 1.5
      */
-    @JavaScriptBody(args = { "self", "ac" }, 
-        body = "if (self.anno && self.anno['L' + ac.jvmName + ';']) { return true; }"
+    @JavaScriptBody(args = { "ac" }, 
+        body = "if (this.anno && this.anno['L' + ac.jvmName + ';']) { return true; }"
         + "else return false;"
     )
     public boolean isAnnotationPresent(
@@ -1112,7 +1112,7 @@ public final
         return getAnnotation(annotationClass) != null;
     }
 
-    @JavaScriptBody(args = "self", body = "return self.anno;")
+    @JavaScriptBody(args = {}, body = "return this.anno;")
     private Object getAnnotationData() {
         throw new UnsupportedOperationException();
     }
