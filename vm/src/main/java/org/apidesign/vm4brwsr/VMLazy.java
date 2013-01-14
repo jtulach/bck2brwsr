@@ -112,11 +112,11 @@ final class VMLazy {
             this.lazy = vm;
         }
         
-        @JavaScriptBody(args = {"self", "n"},
+        @JavaScriptBody(args = {"n"},
         body =
         "var cls = n.replace__Ljava_lang_String_2CC('/','_').toString();"
         + "\nvar dot = n.replace__Ljava_lang_String_2CC('/','.').toString();"
-        + "\nvar lazy = self.fld_lazy;"
+        + "\nvar lazy = this.fld_lazy;"
         + "\nvar loader = lazy.fld_loader;"
         + "\nvar vm = loader.vm;"
         + "\nif (vm[cls]) return false;"

@@ -783,7 +783,7 @@ public class Throwable implements Serializable {
         return this;
     }
 
-    @JavaScriptBody(args = { "self", "dummy" }, body = "")
+    @JavaScriptBody(args = { "dummy" }, body = "")
     private native Throwable fillInStackTrace(int dummy);
 
     /**

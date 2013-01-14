@@ -1452,21 +1452,13 @@ abstract class ByteCodeToJavaScript {
         out.append(prefix).append(mn);
         out.append(" = function(");
         String space = "";
-        int index;
-        if (!isStatic) {                
-            index = 1;
-        } else {
-            index = 0;
-        }
+        int index = 0;
         for (int i = 0; i < cnt.length(); i++) {
             out.append(space);
             space = outputArg(out, p.args, index);
             index++;
         }
         out.append(") {").append("\n");
-        if (!isStatic) {
-            out.append("  var ").append(p.args[0]).append(" = this;\n");
-        }
         out.append(p.body);
         out.append("\n}\n");
         return mn;

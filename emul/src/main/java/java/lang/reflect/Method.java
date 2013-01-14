@@ -646,10 +646,10 @@ public final
         return Modifier.isSynthetic(getModifiers());
     }
 
-    @JavaScriptBody(args = { "self", "ac" }, 
+    @JavaScriptBody(args = { "ac" }, 
         body = 
-          "if (self.fld_data.anno) {"
-        + "  return self.fld_data.anno['L' + ac.jvmName + ';'];"
+          "if (this.fld_data.anno) {"
+        + "  return this.fld_data.anno['L' + ac.jvmName + ';'];"
         + "} else return null;"
     )
     private Object getAnnotationData(Class<?> annotationClass) {
