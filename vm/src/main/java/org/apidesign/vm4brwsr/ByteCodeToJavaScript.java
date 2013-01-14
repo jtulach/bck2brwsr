@@ -908,20 +908,42 @@ abstract class ByteCodeToJavaScript {
                     break;
                 }
                 case opc_newarray:
-                    ++i; // skip type of array
-                    emit(out, "@2 = new Array(@1).fillNulls();",
-                         smapper.popI(), smapper.pushA());
+                    int atype = readByte(byteCodes, ++i);
+                    String jvmType;
+                    switch (atype) {
+                        case 4: jvmType = "[Z"; break;
+                        case 5: jvmType = "[C"; break;
+                        case 6: jvmType = "[F"; break;
+                        case 7: jvmType = "[D"; break;
+                        case 8: jvmType = "[B"; break;
+                        case 9: jvmType = "[S"; break;
+                        case 10: jvmType = "[I"; break;
+                        case 11: jvmType = "[J"; break;
+                        default: throw new IllegalStateException("Array type: " + atype);
+                    }
+                    emit(out, "@2 = new Array(@1).fillNulls().arrtype('@3');",
+                         smapper.popI(), smapper.pushA(), jvmType);
                     break;
-                case opc_anewarray:
-                    i += 2; // skip type of array
-                    emit(out, "@2 = new Array(@1).fillNulls();",
-                         smapper.popI(), smapper.pushA());
-                    break;
-                case opc_multianewarray: {
+                case opc_anewarray: {
+                    int type = readIntArg(byteCodes, i);
                     i += 2;
+                    String typeName = jc.getClassName(type);
+                    if (typeName.startsWith("[")) {
+                        typeName = "[" + typeName;
+                    } else {
+                        typeName = "[L" + typeName + ";";
+                    }
+                    emit(out, "@2 = new Array(@1).fillNulls().arrtype('@3');",
+                         smapper.popI(), smapper.pushA(), typeName);
+                    break;
+                }
+                case opc_multianewarray: {
+                    int type = readIntArg(byteCodes, i);
+                    i += 2;
+                    String typeName = jc.getClassName(type);
                     int dim = readByte(byteCodes, ++i);
                     out.append("{ var a0 = new Array(").append(smapper.popI())
-                       .append(").fillNulls();");
+                       .append(").fillNulls().arrtype('").append(typeName).append("');");
                     for (int d = 1; d < dim; d++) {
                         out.append("\n  var l" + d).append(" = ")
                            .append(smapper.popI()).append(';');

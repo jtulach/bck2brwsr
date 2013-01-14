@@ -330,7 +330,7 @@ public final
      * @since   JDK1.1
      */
     public boolean isArray() {
-        return false;
+        return hasProperty(this, "array"); // NOI18N
     }
 
 

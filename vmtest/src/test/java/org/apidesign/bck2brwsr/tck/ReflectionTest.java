@@ -90,11 +90,45 @@ public class ReflectionTest {
         return (Integer)plus.invoke(null, 2, 3);
     }
     
+    @Compare public String classGetNameForByte() {
+         return byte.class.getName();
+    }
+    @Compare public String classGetNameForBaseObject() {
+        return newObject().getClass().getName();
+    }
+    @Compare public String classGetNameForJavaObject() {
+        return new Object().getClass().getName();
+    }
+    @Compare public String classGetNameForObjectArray() {
+        return (new Object[3]).getClass().getName();
+    }
+    @Compare public String classGetNameForSimpleIntArray() {
+        return (new int[3]).getClass().getName();
+    }
+    @Compare public boolean sameClassGetNameForSimpleCharArray() {
+        return (new char[3]).getClass() == (new char[34]).getClass();
+    }
+    @Compare public String classGetNameForMultiIntArray() {
+        return (new int[3][4][5][6][7][8][9]).getClass().getName();
+    }
+    @Compare public String classGetNameForMultiStringArray() {
+        return (new String[3][4][5][6][7][8][9]).getClass().getName();
+    }
+    
+    @Compare public boolean isArray() {
+        return new Object[0].getClass().isArray();
+    }
+    
     @JavaScriptBody(args = { "arr", "len" }, body="var a = arr.slice(0, len); a.sort(); return a;")
     private static String[] sort(String[] arr, int len) {
         List<String> list = Arrays.asList(arr).subList(0, len);
         Collections.sort(list);
         return list.toArray(new String[0]);
+    }
+    
+    @JavaScriptBody(args = {}, body = "return new Object();")
+    private static Object newObject() {
+        return new Object();
     }
     
     @Factory
