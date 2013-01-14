@@ -1,9 +1,9 @@
 // empty line needed here
-__add32 = function(x,y) { return (x + y) | 0; };
-__sub32 = function(x,y) { return (x - y) | 0; };
-__mul32 = function(x,y) { 
-    return (((x * (y >> 16)) << 16) + x * (y & 0xFFFF)) | 0;
+Number.prototype.add32 = function(x) { return (this + x) | 0; };
+Number.prototype.sub32 = function(x) { return (this - x) | 0; };
+Number.prototype.mul32 = function(x) { 
+    return (((this * (x >> 16)) << 16) + this * (x & 0xFFFF)) | 0;
 };
 
-__toInt8 = function(x)  { return (x << 24) >> 24; };
-__toInt16 = function(x) { return (x << 16) >> 16; };
+Number.prototype.toInt8 = function()  { return (this << 24) >> 24; };
+Number.prototype.toInt16 = function() { return (this << 16) >> 16; };

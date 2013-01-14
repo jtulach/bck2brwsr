@@ -491,7 +491,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 = @2;", lmapper.setD(3), smapper.popD());
                     break;
                 case opc_iadd:
-                    emit(out, "@1 = __add32(@1,@2);", smapper.getI(1), smapper.popI());
+                    emit(out, "@1 = @1.add32(@2);", smapper.getI(1), smapper.popI());
                     break;
                 case opc_ladd:
                     emit(out, "@1 += @2;", smapper.getL(1), smapper.popL());
@@ -503,7 +503,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 += @2;", smapper.getD(1), smapper.popD());
                     break;
                 case opc_isub:
-                    emit(out, "@1 = __sub32(@1,@2);", smapper.getI(1), smapper.popI());
+                    emit(out, "@1 = @1.sub32(@2);", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lsub:
                     emit(out, "@1 -= @2;", smapper.getL(1), smapper.popL());
@@ -515,7 +515,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 -= @2;", smapper.getD(1), smapper.popD());
                     break;
                 case opc_imul:
-                    emit(out, "@1 = __mul32(@1,@2);", smapper.getI(1), smapper.popI());
+                    emit(out, "@1 = @1.mul32(@2);", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lmul:
                     emit(out, "@1 *= @2;", smapper.getL(1), smapper.popL());
@@ -672,13 +672,13 @@ abstract class ByteCodeToJavaScript {
                          smapper.popD(), smapper.pushL());
                     break;
                 case opc_i2b:
-                    emit(out, "@1 = __toInt8(@1);", smapper.getI(0));
+                    emit(out, "@1 = @1.toInt8();", smapper.getI(0));
                     break;
                 case opc_i2c:
                     out.append("{ /* number conversion */ }");
                     break;
                 case opc_i2s:
-                    emit(out, "@1 = __toInt16(@1);", smapper.getI(0));
+                    emit(out, "@1 = @1.toInt16();", smapper.getI(0));
                     break;
                 case opc_aconst_null:
                     emit(out, "@1 = null;", smapper.pushA());
