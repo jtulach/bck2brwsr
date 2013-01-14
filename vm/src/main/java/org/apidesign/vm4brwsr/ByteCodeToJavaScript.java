@@ -672,6 +672,8 @@ abstract class ByteCodeToJavaScript {
                          smapper.popD(), smapper.pushL());
                     break;
                 case opc_i2b:
+                    emit(out, "@1 = __toInt8(@1);", smapper.getI(0));
+                    break;
                 case opc_i2c:
                     out.append("{ /* number conversion */ }");
                     break;
