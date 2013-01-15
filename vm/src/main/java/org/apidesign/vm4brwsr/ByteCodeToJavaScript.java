@@ -973,26 +973,26 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@2 = @1.length;", smapper.popA(), smapper.pushI());
                     break;
                 case opc_lastore:
-                    emit(out, "@3[@2] = @1;",
+                    emit(out, "@3.at(@2, @1);",
                          smapper.popL(), smapper.popI(), smapper.popA());
                     break;
                 case opc_fastore:
-                    emit(out, "@3[@2] = @1;",
+                    emit(out, "@3.at(@2, @1);",
                          smapper.popF(), smapper.popI(), smapper.popA());
                     break;
                 case opc_dastore:
-                    emit(out, "@3[@2] = @1;",
+                    emit(out, "@3.at(@2, @1);",
                          smapper.popD(), smapper.popI(), smapper.popA());
                     break;
                 case opc_aastore:
-                    emit(out, "@3[@2] = @1;",
+                    emit(out, "@3.at(@2, @1);",
                          smapper.popA(), smapper.popI(), smapper.popA());
                     break;
                 case opc_iastore:
                 case opc_bastore:
                 case opc_castore:
                 case opc_sastore:
-                    emit(out, "@3[@2] = @1;",
+                    emit(out, "@3.at(@2, @1);",
                          smapper.popI(), smapper.popI(), smapper.popA());
                     break;
                 case opc_laload:

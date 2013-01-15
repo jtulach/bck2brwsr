@@ -61,9 +61,21 @@ public class CompareByteArrayTest {
         return atIndex(-1);
     }
 
+    @Compare public String toOfBounds() {
+        return toIndex(5);
+    }
+
+    @Compare public String toOfBoundsMinus() {
+        return toIndex(-1);
+    }
+
     private static final int[] arr = { 0, 1, 2 };
     public static String atIndex(int at) {
         return "at@" + arr[at];
+    }
+    public static String toIndex(int at) {
+        arr[at] = 10;
+        return "ok";
     }
     
     

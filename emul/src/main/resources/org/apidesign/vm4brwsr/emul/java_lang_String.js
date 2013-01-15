@@ -7,11 +7,14 @@ Array.prototype.initWith = function(sig, value) {
   this.jvmName = sig;
   return this;
 };
-Array.prototype.at = function(indx) {
+Array.prototype.at = function(indx, value) {
   if (indx < 0 || indx > this.length) {
       var e = vm.java_lang_ArrayIndexOutOfBoundsException(true);
       e.constructor.cons__VLjava_lang_String_2.call(e, indx.toString());
       throw e;
+  }
+  if (arguments.length === 2) {
+      this[indx] = value;
   }
   return this[indx];
 };
