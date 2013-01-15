@@ -145,7 +145,10 @@ public final
      * @exception ClassNotFoundException if the class cannot be located
      */
     public static Class<?> forName(String className)
-                throws ClassNotFoundException {
+    throws ClassNotFoundException {
+        if (className.startsWith("[")) {
+            return defineArray(className);
+        }
         Class<?> c = loadCls(className, className.replace('.', '_'));
         if (c == null) {
             throw new ClassNotFoundException(className);
@@ -1013,6 +1016,18 @@ public final
         return null;
     }
 
+    @JavaScriptBody(args = { "sig" }, body = 
+        "var c = Array[sig];\n" +
+        "if (c) return c;\n" +
+        "c = vm.java_lang_Class(true);\n" +
+        "c.jvmName = sig;\n" +
+        "c.superclass = vm.java_lang_Object(false).$class;\n" +
+        "c.array = true;\n" +
+        "Array[sig] = c;\n" +
+        "return c;"
+    )
+    private static native Class<?> defineArray(String sig);
+    
     /**
      * Returns true if and only if this class was declared as an enum in the
      * source code.
