@@ -40,11 +40,14 @@ and open the template in the editor.
         
         <div>&nbsp;</div>    
             
+        <button class="btn btn-warning pull-right" ng-click="post()">Rebuild</button>
         <ul class="nav nav-tabs">
             <li ng-class="'active'"><a href="#">Result</a></li>
         </ul>    
         
-        <iframe id="result" frameborder="0" scrolling="no" width="100%" style="height: max-content; overflow: hidden; border: 1px solid #DFDFDF;" src="">
+        
+        <!-- button class="btn" ng-click="reload()">Reload</button -->
+        <iframe id="result" frameborder="0" scrolling="yes" width="100%" style="height: 1000px; overflow: auto; border: 1px solid #DFDFDF;" src="result.html">
             <p>Your browser does not support iframes.</p>
         </iframe>
             

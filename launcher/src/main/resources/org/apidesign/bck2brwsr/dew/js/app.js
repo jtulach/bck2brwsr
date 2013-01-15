@@ -70,11 +70,21 @@ angular.module('bck2brwsr', []).
         };
 }]);
 
-function DevCtrl( $scope ) {
+function DevCtrl( $scope, $http ) {
     
-    var htmlChange = function() {
-        var frame = document.getElementById("result");
-        frame.contentDocument.write($scope.html);        
+    $scope.reload= function() {
+        var frame = document.getElementById("result");        
+        frame.src = "result.html";
+        frame.contentDocument.location.reload(true);
+        frame.contentWindow.location.reload();
+    };
+    
+    $scope.post = function(html, java) {
+        return $http({url: ".",
+            method: "POST",
+            //headers: this.headers,
+            data: { html : $scope.html, java : $scope.java} 
+        }).success( $scope.reload );
     };
     
     $scope.tab = "html";
@@ -85,7 +95,7 @@ function DevCtrl( $scope ) {
         return tab === $scope.tab ? "active" : "";
     };
     
-    $scope.$watch( "html", htmlChange );
+    // $scope.$watch( "html", htmlChange );
     
     
 }
