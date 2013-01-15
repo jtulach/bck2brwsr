@@ -24,7 +24,8 @@ import org.json.JSONTokener;
  * @author phrebejk
  */
 public class Dew extends HttpHandler {
-    private static String html = "Nazdar!";
+    private String html = "Nazdar!";
+    private String java = "class C {\n}\n";
 
     @Override
     public void service(Request request, Response response) throws Exception {
@@ -34,7 +35,9 @@ public class Dew extends HttpHandler {
             JSONTokener tok = new JSONTokener(new InputStreamReader(is));
             JSONObject obj = new JSONObject(tok);
             html = obj.getString("html");
+            java = obj.getString("java");
             LOG.info(html);
+            LOG.info(java);
             
             response.getOutputStream().write("[]".getBytes());
             response.setStatus(HttpStatus.OK_200);
