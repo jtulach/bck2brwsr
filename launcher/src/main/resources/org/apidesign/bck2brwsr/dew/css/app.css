@@ -1,0 +1,36 @@
+/* app css stylesheet */
+.code-editor, .mono-font, .CodeMirror {
+    font-family: "Inconsolata","Monaco","Consolas","Andale Mono","Bitstream Vera Sans Mono","Courier New",Courier,monospace;
+    font-size: 13px;
+    line-height: 15px;
+}
+
+.CodeMirror {                    
+    border: 1px solid #d9edf7;      
+    height: 300px;
+}
+      
+.CodeMirror-scroll {
+    overflow-y: auto;
+    overflow-x: auto;
+}
+
+.ic-html5 {
+  display: inline-block;  
+  height: 20px;
+  width: 20px;
+  vertical-align: text-bottom;
+  background-repeat: no-repeat;  
+  background-image: url("../img/html5.png");  
+}
+
+.ic-java {
+  display: inline-block;  
+  height: 20px;
+  width: 20px;
+  vertical-align: text-bottom;
+  background-repeat: no-repeat;  
+  background-image: url("../img/java.png"); 
+ 
+}
+

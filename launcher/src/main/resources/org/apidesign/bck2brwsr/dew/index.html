@@ -1,0 +1,59 @@
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html lang="en" ng-app="bck2brwsr" ng-controller="DevCtrl">
+    <head>
+        <title>Back2Browser - DEW</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="css/bootstrap-combined.min.css"/>  
+        <link rel="stylesheet" href="js/codemirror/codemirror.css">
+        <link rel="stylesheet" href="js/codemirror/theme/elegant.css"/>
+        <link rel="stylesheet" href="css/app.css"/>
+    </head>
+    <body>
+        <div class="container">        
+        <div class="breadcrumb"><h4 class="text-info">Java and HTML5 <small>- Together at Last!</small></h4></div>    
+            
+        <ul class="nav nav-tabs">
+            <li ng-class="tabActive('html')" ng-click="tab='html'"><a href="#"><i class="ic-html5"></i> HTML5</a></li>
+            <li ng-class="tabActive('java')" ng-click="tab='java'"><a href="#"><i class="ic-java"></i> Java</a></li>
+        </ul>
+        
+        
+        <div ng-switch on="tab">
+        <div ng-switch-when="html">
+            <textarea ui-codemirror='{ lineNumbers : true, mode : "xml", theme : "elegant", matchBrackets : true, lineWrapping : true }' ng-model="$parent.html"></textarea>
+            <div class="alert alert-error" ng-show="doc.modelError">
+                <small>{{doc.modelError.toString()}}</small>
+            </div>
+        </div>    
+        <div ng-switch-when="java">
+            <textarea ui-codemirror='{ lineNumbers : true, mode : "text/x-java", theme : "elegant", matchBrackets : true, lineWrapping : true }' ng-model="$parent.java"></textarea>
+            <div class="alert alert-error" ng-show="doc.modelError">
+                <small>{{doc.modelError.toString()}}</small>
+            </div>
+        </div>    
+        </div>
+        
+        <div>&nbsp;</div>    
+            
+        <ul class="nav nav-tabs">
+            <li ng-class="'active'"><a href="#">Result</a></li>
+        </ul>    
+        
+        <iframe id="result" frameborder="0" scrolling="no" width="100%" style="height: max-content; overflow: hidden; border: 1px solid #DFDFDF;" src="">
+            <p>Your browser does not support iframes.</p>
+        </iframe>
+            
+        </div>
+        
+        <script src="js/angular/angular.min.js"></script>
+        <script src="js/codemirror/codemirror.js"></script>
+        <script src="js/codemirror/mode/xml.js"></script>
+        <script src="js/codemirror/mode/clike.js"></script>
+        <script src="js/app.js"></script>
+    </body>
+</html>

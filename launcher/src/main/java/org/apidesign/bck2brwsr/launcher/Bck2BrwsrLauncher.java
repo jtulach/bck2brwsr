@@ -39,6 +39,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apidesign.bck2brwsr.dew.Dew;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 import org.glassfish.grizzly.PortRange;
 import org.glassfish.grizzly.http.server.HttpHandler;
@@ -102,6 +103,14 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
             throw new IOException(ex);
         }
     }
+    
+    public static void main(String... args) throws Exception {
+        Bck2BrwsrLauncher l = new Bck2BrwsrLauncher(null);
+        HttpServer s = l.initServer();
+        s.getServerConfiguration().addHttpHandler(new Dew(), "/dew/");
+        l.launchServerAndBrwsr(s, "/dew/");
+        System.in.read();
+    }
 
     @Override
     public void initialize() throws IOException {
@@ -130,6 +139,7 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
             "org/apidesign/bck2brwsr/launcher/console.xhtml",
             "org.apidesign.bck2brwsr.launcher.Console", "welcome", "false"
         ), "/console");
+        conf.addHttpHandler(new Dew(), "/dew/");
         conf.addHttpHandler(new VM(resources), "/bck2brwsr.js");
         conf.addHttpHandler(new VMInit(), "/vm.js");
         conf.addHttpHandler(new Classes(resources), "/classes/");
