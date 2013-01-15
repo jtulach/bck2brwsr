@@ -7,6 +7,14 @@ Array.prototype.initWith = function(sig, value) {
   this.jvmName = sig;
   return this;
 };
+Array.prototype.at = function(indx) {
+  if (indx < 0 || indx > this.length) {
+      var e = vm.java_lang_ArrayIndexOutOfBoundsException(true);
+      e.constructor.cons__VLjava_lang_String_2.call(e, indx.toString());
+      throw e;
+  }
+  return this[indx];
+};
 Array.prototype.getClass__Ljava_lang_Class_2 = function() {
   return vm.java_lang_Class(false).defineArray__Ljava_lang_Class_2Ljava_lang_String_2(this.jvmName);
 };

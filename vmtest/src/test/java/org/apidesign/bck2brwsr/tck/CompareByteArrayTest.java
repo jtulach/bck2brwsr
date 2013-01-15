@@ -49,6 +49,24 @@ public class CompareByteArrayTest {
         return sum;
     }
     
+    @Compare public String noOutOfBounds() {
+        return atIndex(1);
+    }
+
+    @Compare public String outOfBounds() {
+        return atIndex(5);
+    }
+
+    @Compare public String outOfBoundsMinus() {
+        return atIndex(-1);
+    }
+
+    private static final int[] arr = { 0, 1, 2 };
+    public static String atIndex(int at) {
+        return "at@" + arr[at];
+    }
+    
+    
     @Factory
     public static Object[] create() {
         return VMTest.create(CompareByteArrayTest.class);

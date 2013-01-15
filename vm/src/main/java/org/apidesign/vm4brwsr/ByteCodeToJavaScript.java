@@ -996,26 +996,26 @@ abstract class ByteCodeToJavaScript {
                          smapper.popI(), smapper.popI(), smapper.popA());
                     break;
                 case opc_laload:
-                    emit(out, "@3 = @2[@1];",
+                    emit(out, "@3 = @2.at(@1);",
                          smapper.popI(), smapper.popA(), smapper.pushL());
                     break;
                 case opc_faload:
-                    emit(out, "@3 = @2[@1];",
+                    emit(out, "@3 = @2.at(@1);",
                          smapper.popI(), smapper.popA(), smapper.pushF());
                     break;
                 case opc_daload:
-                    emit(out, "@3 = @2[@1];",
+                    emit(out, "@3 = @2.at(@1);",
                          smapper.popI(), smapper.popA(), smapper.pushD());
                     break;
                 case opc_aaload:
-                    emit(out, "@3 = @2[@1];",
+                    emit(out, "@3 = @2.at(@1);",
                          smapper.popI(), smapper.popA(), smapper.pushA());
                     break;
                 case opc_iaload:
                 case opc_baload:
                 case opc_caload:
                 case opc_saload:
-                    emit(out, "@3 = @2[@1];",
+                    emit(out, "@3 = @2.at(@1);",
                          smapper.popI(), smapper.popA(), smapper.pushI());
                     break;
                 case opc_pop:
