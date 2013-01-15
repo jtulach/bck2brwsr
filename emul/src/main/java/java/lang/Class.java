@@ -1013,9 +1013,47 @@ public final
      * @since JDK1.1
      */
     public Class<?> getComponentType() {
+        if (isArray()) {
+            try {
+                return getComponentType0();
+            } catch (ClassNotFoundException cnfe) {
+                throw new IllegalStateException(cnfe);
+            }
+        }
         return null;
     }
 
+    private Class<?> getComponentType0() throws ClassNotFoundException {
+        String n = getName().substring(1);
+        switch (n.charAt(0)) {
+            case 'L': 
+                n = n.substring(1, n.length() - 1);
+                return Class.forName(n);
+            case 'I':
+                return Integer.TYPE;
+            case 'J':
+                return Long.TYPE;
+            case 'D':
+                return Double.TYPE;
+            case 'F':
+                return Float.TYPE;
+            case 'B':
+                return Byte.TYPE;
+            case 'Z':
+                return Boolean.TYPE;
+            case 'S':
+                return Short.TYPE;
+            case 'V':
+                return Void.TYPE;
+            case 'C':
+                return Character.TYPE;
+            case '[':
+                return defineArray(n);
+            default:
+                throw new ClassNotFoundException("Unknown component type of " + getName());
+        }
+    }
+    
     @JavaScriptBody(args = { "sig" }, body = 
         "var c = Array[sig];\n" +
         "if (c) return c;\n" +
