@@ -11,14 +11,7 @@ Array.prototype.arrtype = function(sig) {
   return this;
 };
 Array.prototype.getClass__Ljava_lang_Class_2 = function() {
-  var c = Array[this.jvmName];
-  if (c) return c;
-  c = vm.java_lang_Class(true);
-  c.jvmName = this.jvmName;
-  c.superclass = vm.java_lang_Object(false).$class;
-  c.array = true;
-  Array[this.jvmName] = c;
-  return c;
+  return vm.java_lang_Class(false).defineArray__Ljava_lang_Class_2Ljava_lang_String_2(this.jvmName);
 };
 Array.prototype.clone__Ljava_lang_Object_2 = function() {
   var s = this.length;

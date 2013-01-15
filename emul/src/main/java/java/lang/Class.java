@@ -145,7 +145,15 @@ public final
      * @exception ClassNotFoundException if the class cannot be located
      */
     public static Class<?> forName(String className)
-                throws ClassNotFoundException {
+    throws ClassNotFoundException {
+        if (className.startsWith("[")) {
+            Class<?> arrType = defineArray(className);
+            Class<?> c = arrType;
+            while (c != null && c.isArray()) {
+                c = c.getComponentType0(); // verify component type is sane
+            }
+            return arrType;
+        }
         Class<?> c = loadCls(className, className.replace('.', '_'));
         if (c == null) {
             throw new ClassNotFoundException(className);
@@ -1010,9 +1018,59 @@ public final
      * @since JDK1.1
      */
     public Class<?> getComponentType() {
+        if (isArray()) {
+            try {
+                return getComponentType0();
+            } catch (ClassNotFoundException cnfe) {
+                throw new IllegalStateException(cnfe);
+            }
+        }
         return null;
     }
 
+    private Class<?> getComponentType0() throws ClassNotFoundException {
+        String n = getName().substring(1);
+        switch (n.charAt(0)) {
+            case 'L': 
+                n = n.substring(1, n.length() - 1);
+                return Class.forName(n);
+            case 'I':
+                return Integer.TYPE;
+            case 'J':
+                return Long.TYPE;
+            case 'D':
+                return Double.TYPE;
+            case 'F':
+                return Float.TYPE;
+            case 'B':
+                return Byte.TYPE;
+            case 'Z':
+                return Boolean.TYPE;
+            case 'S':
+                return Short.TYPE;
+            case 'V':
+                return Void.TYPE;
+            case 'C':
+                return Character.TYPE;
+            case '[':
+                return defineArray(n);
+            default:
+                throw new ClassNotFoundException("Unknown component type of " + getName());
+        }
+    }
+    
+    @JavaScriptBody(args = { "sig" }, body = 
+        "var c = Array[sig];\n" +
+        "if (c) return c;\n" +
+        "c = vm.java_lang_Class(true);\n" +
+        "c.jvmName = sig;\n" +
+        "c.superclass = vm.java_lang_Object(false).$class;\n" +
+        "c.array = true;\n" +
+        "Array[sig] = c;\n" +
+        "return c;"
+    )
+    private static native Class<?> defineArray(String sig);
+    
     /**
      * Returns true if and only if this class was declared as an enum in the
      * source code.
