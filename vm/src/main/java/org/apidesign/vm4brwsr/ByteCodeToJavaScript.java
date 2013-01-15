@@ -494,7 +494,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 = @2;", lmapper.setD(3), smapper.popD());
                     break;
                 case opc_iadd:
-                    emit(out, "@1 = (@1 + @2) | 0;", smapper.getI(1), smapper.popI());
+                    emit(out, "@1 = @1.add32(@2);", smapper.getI(1), smapper.popI());
                     break;
                 case opc_ladd:
                     emit(out, "@1 += @2;", smapper.getL(1), smapper.popL());
@@ -506,7 +506,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 += @2;", smapper.getD(1), smapper.popD());
                     break;
                 case opc_isub:
-                    emit(out, "@1 = (@1 - @2) | 0;", smapper.getI(1), smapper.popI());
+                    emit(out, "@1 = @1.sub32(@2);", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lsub:
                     emit(out, "@1 -= @2;", smapper.getL(1), smapper.popL());
@@ -518,7 +518,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 -= @2;", smapper.getD(1), smapper.popD());
                     break;
                 case opc_imul:
-                    emit(out, "@1 = (((@1 * (@2 >> 16)) << 16) + @1 * (@2 & 0xFFFF)) | 0;", smapper.getI(1), smapper.popI());
+                    emit(out, "@1 = @1.mul32(@2);", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lmul:
                     emit(out, "@1 *= @2;", smapper.getL(1), smapper.popL());
@@ -675,9 +675,13 @@ abstract class ByteCodeToJavaScript {
                          smapper.popD(), smapper.pushL());
                     break;
                 case opc_i2b:
+                    emit(out, "@1 = @1.toInt8();", smapper.getI(0));
+                    break;
                 case opc_i2c:
-                case opc_i2s:
                     out.append("{ /* number conversion */ }");
+                    break;
+                case opc_i2s:
+                    emit(out, "@1 = @1.toInt16();", smapper.getI(0));
                     break;
                 case opc_aconst_null:
                     emit(out, "@1 = null;", smapper.pushA());
@@ -921,7 +925,7 @@ abstract class ByteCodeToJavaScript {
                         case 11: jvmType = "[J"; break;
                         default: throw new IllegalStateException("Array type: " + atype);
                     }
-                    emit(out, "@2 = new Array(@1).fillNulls().arrtype('@3');",
+                    emit(out, "@2 = new Array(@1).initWith('@3', 0);",
                          smapper.popI(), smapper.pushA(), jvmType);
                     break;
                 case opc_anewarray: {
@@ -933,7 +937,7 @@ abstract class ByteCodeToJavaScript {
                     } else {
                         typeName = "[L" + typeName + ";";
                     }
-                    emit(out, "@2 = new Array(@1).fillNulls().arrtype('@3');",
+                    emit(out, "@2 = new Array(@1).initWith('@3', null);",
                          smapper.popI(), smapper.pushA(), typeName);
                     break;
                 }
@@ -943,7 +947,7 @@ abstract class ByteCodeToJavaScript {
                     String typeName = jc.getClassName(type);
                     int dim = readByte(byteCodes, ++i);
                     out.append("{ var a0 = new Array(").append(smapper.popI())
-                       .append(").fillNulls().arrtype('").append(typeName).append("');");
+                       .append(").initWith('").append(typeName).append("', null);");
                     for (int d = 1; d < dim; d++) {
                         typeName = typeName.substring(1);
                         out.append("\n  var l" + d).append(" = ")
@@ -952,8 +956,8 @@ abstract class ByteCodeToJavaScript {
                             append(" < a" + (d - 1)).
                             append(".length; i" + d).append("++) {");
                         out.append("\n    var a" + d).
-                            append (" = new Array(l" + d).append(").fillNulls().arrtype('")
-                            .append(typeName).append("');");
+                            append (" = new Array(l" + d).append(").initWith('")
+                            .append(typeName).append("', null);");
                         out.append("\n    a" + (d - 1)).append("[i" + d).append("] = a" + d).
                             append(";");
                     }

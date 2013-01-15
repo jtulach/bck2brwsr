@@ -98,6 +98,11 @@ public class Array {
         return sum;
     }
     
+    public static int sum(int size) {
+        int[] arr = new int[size];
+        return arr[0] + arr[1];
+    }
+    
     static void arraycopy(char[] value, int srcBegin, char[] dst, int dstBegin, int count) {
         while (count-- > 0) {
             dst[dstBegin++] = value[srcBegin++];

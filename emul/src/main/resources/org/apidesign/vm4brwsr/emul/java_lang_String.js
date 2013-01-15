@@ -2,11 +2,8 @@
 vm.java_lang_String(false);
 
 // we need initialized arrays
-Array.prototype.fillNulls = function() {
-  for(var i = 0; i < this.length; i++) this[i] = null;
-  return this;
-};
-Array.prototype.arrtype = function(sig) {
+Array.prototype.initWith = function(sig, value) {
+  for(var i = 0; i < this.length; i++) this[i] = value;
   this.jvmName = sig;
   return this;
 };
