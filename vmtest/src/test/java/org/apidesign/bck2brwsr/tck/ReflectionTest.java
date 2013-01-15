@@ -115,6 +115,35 @@ public class ReflectionTest {
         return (new String[3][4][5][6][7][8][9]).getClass().getName();
     }
     
+    @Compare public String classForByte() throws Exception {
+        return Class.forName("[Z").getName();
+    }
+    
+    @Compare public String componentGetNameForObjectArray() {
+        return (new Object[3]).getClass().getComponentType().getName();
+    }
+    @Compare public boolean sameComponentGetNameForObjectArray() {
+        return (new Object[3]).getClass().getComponentType() == Object.class;
+    }
+    @Compare public String componentGetNameForSimpleIntArray() {
+        return (new int[3]).getClass().getComponentType().getName();
+    }
+    @Compare public String componentGetNameForMultiIntArray() {
+        return (new int[3][4][5][6][7][8][9]).getClass().getComponentType().getName();
+    }
+    @Compare public String componentGetNameForMultiStringArray() {
+        Class<?> c = (new String[3][4][5][6][7][8][9]).getClass();
+        StringBuilder sb = new StringBuilder();
+        for (;;) {
+            sb.append(c.getName()).append("\n");
+            c = c.getComponentType();
+            if (c == null) {
+                break;
+            }
+        }
+        return sb.toString();
+    }
+    
     @Compare public boolean isArray() {
         return new Object[0].getClass().isArray();
     }
