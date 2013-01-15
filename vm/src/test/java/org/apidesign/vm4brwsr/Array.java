@@ -51,6 +51,16 @@ public class Array {
         return doubles[4][0];
     }
     
+    static double[][] dbls = new double[1][2];
+    public static double twoDoubles() {
+        return dbls[0][0] + dbls[0][0];
+    }
+
+    static int[][] tints = new int[1][2];
+    public static int twoInts() {
+        return tints[0][0] + tints[0][0];
+    }
+    
     private static final Array[] ARR = { new Array(), new Array(), new Array() };
     
     private static Array[][] arr() {

@@ -93,21 +93,12 @@ public class IntegerArithmeticTest {
     
     @Compare public int sumTwoDimensions() {
         int[][] matrix = createMatrix(4, 3);
-        int sum = 0;
-        for (int i = 0; i < matrix.length; i++) {
-            for (int j = 0; j < matrix[i].length; j++) {
-                sum += matrix[i][j];
-            }
-        }
-        return sum;
+        matrix[0][0] += 10;
+        return matrix[0][0];
     }
     
     static int[][] createMatrix(int x, int y) {
-        int[][] m = new int[x][y];
-        for (int i = 0; i < Math.min(x, y); i++) {
-            m[i][i] = i;
-        }
-        return m;
+        return new int[x][y];
     }
     
     @Factory

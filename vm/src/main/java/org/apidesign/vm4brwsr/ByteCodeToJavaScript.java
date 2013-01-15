@@ -19,6 +19,7 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.javap.AnnotationParser;
 import org.apidesign.javap.ClassData;
 import org.apidesign.javap.FieldData;
@@ -957,7 +958,8 @@ abstract class ByteCodeToJavaScript {
                             append(".length; i" + d).append("++) {");
                         out.append("\n    var a" + d).
                             append (" = new Array(l" + d).append(").initWith('")
-                            .append(typeName).append("', null);");
+                            .append(typeName).append("', ")
+                            .append(typeName.length() == 2 ? "0" : "null").append(");");
                         out.append("\n    a" + (d - 1)).append("[i" + d).append("] = a" + d).
                             append(";");
                     }
