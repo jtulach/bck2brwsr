@@ -945,13 +945,15 @@ abstract class ByteCodeToJavaScript {
                     out.append("{ var a0 = new Array(").append(smapper.popI())
                        .append(").fillNulls().arrtype('").append(typeName).append("');");
                     for (int d = 1; d < dim; d++) {
+                        typeName = typeName.substring(1);
                         out.append("\n  var l" + d).append(" = ")
                            .append(smapper.popI()).append(';');
                         out.append("\n  for (var i" + d).append (" = 0; i" + d).
                             append(" < a" + (d - 1)).
                             append(".length; i" + d).append("++) {");
                         out.append("\n    var a" + d).
-                            append (" = new Array(l" + d).append(").fillNulls();");
+                            append (" = new Array(l" + d).append(").fillNulls().arrtype('")
+                            .append(typeName).append("');");
                         out.append("\n    a" + (d - 1)).append("[i" + d).append("] = a" + d).
                             append(";");
                     }

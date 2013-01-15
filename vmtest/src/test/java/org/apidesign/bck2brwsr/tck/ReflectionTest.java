@@ -113,6 +113,12 @@ public class ReflectionTest {
     @Compare public String classGetNameForMultiIntArray() {
         return (new int[3][4][5][6][7][8][9]).getClass().getName();
     }
+    @Compare public String classGetNameForMultiIntArrayInner() {
+        final int[][][][][][][] arr = new int[3][4][5][6][7][8][9];
+        int[][][][][][] subarr = arr[0];
+        int[][][][][] subsubarr = subarr[0];
+        return subsubarr.getClass().getName();
+    }
     @Compare public String classGetNameForMultiStringArray() {
         return (new String[3][4][5][6][7][8][9]).getClass().getName();
     }
