@@ -147,7 +147,12 @@ public final
     public static Class<?> forName(String className)
     throws ClassNotFoundException {
         if (className.startsWith("[")) {
-            return defineArray(className);
+            Class<?> arrType = defineArray(className);
+            Class<?> c = arrType;
+            while (c != null && c.isArray()) {
+                c = c.getComponentType0(); // verify component type is sane
+            }
+            return arrType;
         }
         Class<?> c = loadCls(className, className.replace('.', '_'));
         if (c == null) {

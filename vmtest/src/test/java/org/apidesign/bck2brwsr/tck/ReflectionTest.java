@@ -21,6 +21,8 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
@@ -117,6 +119,22 @@ public class ReflectionTest {
     
     @Compare public String classForByte() throws Exception {
         return Class.forName("[Z").getName();
+    }
+
+    @Compare public String classForUnknownArray() {
+        try {
+            return Class.forName("[W").getName();
+        } catch (Exception ex) {
+            return ex.getClass().getName();
+        }
+    }
+    
+    @Compare public String classForUnknownDeepArray() {
+        try {
+            return Class.forName("[[[[[W").getName();
+        } catch (Exception ex) {
+            return ex.getClass().getName();
+        }
     }
     
     @Compare public String componentGetNameForObjectArray() {
