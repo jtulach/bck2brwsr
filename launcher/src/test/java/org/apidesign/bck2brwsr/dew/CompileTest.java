@@ -1,11 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.apidesign.bck2brwsr.dew;
 
 import java.io.IOException;
-import java.util.Map;
 import static org.testng.Assert.*;
 import org.testng.annotations.Test;
 
@@ -24,7 +19,7 @@ public class CompileTest  {
             + "class X { "
             + "   @OnClick(id=\"btn\") static void clcs() {}"
             + "}";
-        Map<String,byte[]> result = Compile.compile(html, java);
+        Compile result = Compile.create(html, java);
 
         assertNotNull(result.get("x/y/z/X.class"), "Class X is compiled: " + result);
         assertNotNull(result.get("x/y/z/Index.class"), "Class Index is compiled: " + result);
