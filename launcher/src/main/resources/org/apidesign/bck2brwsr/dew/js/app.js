@@ -98,7 +98,7 @@ function DevCtrl( $scope, $http ) {
         + " <script type=\"text/javascript\">\n"
         + "   function ldCls(res) {\n"
         + "     var request = new XMLHttpRequest();\n"
-        + "     request.open('GET', '/dew/classes/' + res, false);\n"
+        + "     request.open('GET', '/classes/' + res, false);\n"
         + "     request.send();\n"
         + "     var arr = eval('(' + request.responseText + ')');\n"
         + "     return arr;\n"
@@ -114,6 +114,7 @@ function DevCtrl( $scope, $http ) {
         + "class YourFirstHTML5PageInRealLanguage {\n"
         + "   @On(event=CLICK, id=\"btn\") static void clcs() {\n"
         + "     Element.alert(\"Hello World!\");\n"
+        + "     Index.BTN.setDisabled(true);\n"
         + "   }\n"
         + "}\n";
 
