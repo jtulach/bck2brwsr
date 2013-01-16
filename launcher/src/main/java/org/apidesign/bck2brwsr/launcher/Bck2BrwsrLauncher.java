@@ -58,6 +58,7 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
     private static final Logger LOG = Logger.getLogger(Bck2BrwsrLauncher.class.getName());
     private static final MethodInvocation END = new MethodInvocation(null, null);
     private Set<ClassLoader> loaders = new LinkedHashSet<>();
+    private Set<Bck2Brwsr.Resources> xRes = new LinkedHashSet<>();
     private BlockingQueue<MethodInvocation> methods = new LinkedBlockingQueue<>();
     private long timeOut;
     private final Res resources = new Res();
@@ -108,7 +109,9 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
         Bck2BrwsrLauncher l = new Bck2BrwsrLauncher(null);
         l.addClassLoader(Bck2BrwsrLauncher.class.getClassLoader());
         HttpServer s = l.initServer();
-        s.getServerConfiguration().addHttpHandler(new Dew(), "/dew/");
+        final Dew dew = new Dew();
+        s.getServerConfiguration().addHttpHandler(dew, "/dew/");
+        l.xRes.add(dew);
         l.launchServerAndBrwsr(s, "/dew/");
         System.in.read();
     }
@@ -343,6 +346,12 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
                 }
                 if (u != null) {
                     return u.openStream();
+                }
+            }
+            for (Bck2Brwsr.Resources r : xRes) {
+                InputStream is = r.get(resource);
+                if (is != null) {
+                    return is;
                 }
             }
             throw new IOException("Can't find " + resource);

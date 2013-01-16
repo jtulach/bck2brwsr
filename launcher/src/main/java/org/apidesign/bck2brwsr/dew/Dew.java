@@ -17,6 +17,7 @@
  */
 package org.apidesign.bck2brwsr.dew;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
+import org.apidesign.vm4brwsr.Bck2Brwsr;
 import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
@@ -38,7 +40,7 @@ import org.json.JSONTokener;
  *
  * @author phrebejk
  */
-public class Dew extends HttpHandler {
+public class Dew extends HttpHandler implements Bck2Brwsr.Resources {
     private String html = "";
     private Compile data;
 
@@ -81,37 +83,6 @@ public class Dew extends HttpHandler {
         if (r.startsWith("/")) {
             r = r.substring(1);
         }
-        if (r.startsWith("classes/")) {
-            r = r.substring(8);
-            byte[] arr = data == null ? null : data.get(r);
-            if (arr == null) {
-                response.setError();
-                response.setDetailMessage("No data for " + r + " yet!");
-                return;
-            }
-            try (Writer w = response.getWriter()) {
-                response.setContentType("text/javascript");
-                w.append("[");
-                for (int i = 0; i < arr.length; i++) {
-                    int b = arr[i];
-                    if (b == -1) {
-                        break;
-                    }
-                    if (i > 0) {
-                        w.append(", ");
-                    }
-                    if (i % 20 == 0) {
-                        w.write("\n");
-                    }
-                    if (b > 127) {
-                        b = b - 256;
-                    }
-                    w.append(Integer.toString(b));
-                }
-                w.append("\n]");
-            }
-            return;
-        }
         
         if (r.endsWith(".html") || r.endsWith(".xhtml")) {
             response.setContentType("text/html");
@@ -125,7 +96,6 @@ public class Dew extends HttpHandler {
             response.setStatus(404);
         }
     }
-    private static final Logger LOG = Logger.getLogger(Dew.class.getName());
     
     static void copyStream(InputStream is, OutputStream os, String baseURL) throws IOException {
         for (;;) {
@@ -136,5 +106,10 @@ public class Dew extends HttpHandler {
             os.write(ch);            
         }
     }
-    
+
+    @Override
+    public InputStream get(String r) throws IOException {
+        byte[] arr = data == null ? null : data.get(r);
+        return arr == null ? null : new ByteArrayInputStream(arr);
+    }
 }
