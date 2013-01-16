@@ -32,9 +32,10 @@ public class CompileTest  {
                 + "</body></html>";
         String java = "package x.y.z;"
                 + "import org.apidesign.bck2brwsr.htmlpage.api.*;"
+                + "import static org.apidesign.bck2brwsr.htmlpage.api.OnEvent.*;"
             + "@Page(xhtml=\"index.html\", className=\"Index\")"
             + "class X { "
-            + "   @OnClick(id=\"btn\") static void clcs() {}"
+            + "   @On(event=CLICK, id=\"btn\") static void clcs() {}"
             + "}";
         Compile result = Compile.create(html, java);
 

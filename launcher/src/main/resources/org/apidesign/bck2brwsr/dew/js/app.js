@@ -109,10 +109,11 @@ function DevCtrl( $scope, $http ) {
         + "</body></html>\n";
     var templateJava = "package bck2brwsr.demo;\n"
         + "import org.apidesign.bck2brwsr.htmlpage.api.*;\n"
+        + "import static org.apidesign.bck2brwsr.htmlpage.api.OnEvent.*;\n"
         + "@Page(xhtml=\"index.html\", className=\"Index\")\n"
         + "class YourFirstHTML5PageInRealLanguage {\n"
-        + "   @OnClick(id=\"btn\") static void clcs() {\n"
-        + "     Index.BTN.setDisabled(true);\n"
+        + "   @On(event=CLICK, id=\"btn\") static void clcs() {\n"
+        + "     Element.alert(\"Hello World!\");\n"
         + "   }\n"
         + "}\n";
 
