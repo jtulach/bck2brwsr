@@ -27,6 +27,11 @@ import org.testng.annotations.Test;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class ArrayTest {
+    @Test public void intArrayShouldBeFilledWithZeroes() throws Exception {
+            assertExec("0 + 0", Array.class, "sum__II", 
+            Double.valueOf(0), 2
+        );
+    }
     @Test public void verifySimpleIntOperation() throws Exception {
             assertExec("CheckTheSum", Array.class, "simple__IZ", 
             Double.valueOf(15), false
@@ -46,6 +51,17 @@ public class ArrayTest {
     @Test public void verifyOperationsOnArrays() throws Exception {
         assertExec("The sum is 105", Array.class, "sum__D", 
             Double.valueOf(105)
+        );
+    }
+
+    @Test public void twoDoubles() throws Exception {
+        assertExec("Elements are initialized", Array.class, "twoDoubles__D", 
+            Double.valueOf(0)
+        );
+    }
+    @Test public void twoInts() throws Exception {
+        assertExec("Elements are initialized", Array.class, "twoInts__I", 
+            Double.valueOf(0)
         );
     }
     

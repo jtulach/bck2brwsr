@@ -11,7 +11,7 @@
   <artifactId>mojo</artifactId>
   <version>0.3-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
-  <name>Maven Mojo to Compile to JavaScript</name>
+  <name>Bck2Brwsr Maven Project</name>
   <url>http://maven.apache.org</url>
       <build>
         <plugins>

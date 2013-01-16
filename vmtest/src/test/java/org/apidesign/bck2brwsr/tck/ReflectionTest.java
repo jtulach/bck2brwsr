@@ -21,6 +21,8 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
@@ -90,11 +92,96 @@ public class ReflectionTest {
         return (Integer)plus.invoke(null, 2, 3);
     }
     
+    @Compare public String classGetNameForByte() {
+         return byte.class.getName();
+    }
+    @Compare public String classGetNameForBaseObject() {
+        return newObject().getClass().getName();
+    }
+    @Compare public String classGetNameForJavaObject() {
+        return new Object().getClass().getName();
+    }
+    @Compare public String classGetNameForObjectArray() {
+        return (new Object[3]).getClass().getName();
+    }
+    @Compare public String classGetNameForSimpleIntArray() {
+        return (new int[3]).getClass().getName();
+    }
+    @Compare public boolean sameClassGetNameForSimpleCharArray() {
+        return (new char[3]).getClass() == (new char[34]).getClass();
+    }
+    @Compare public String classGetNameForMultiIntArray() {
+        return (new int[3][4][5][6][7][8][9]).getClass().getName();
+    }
+    @Compare public String classGetNameForMultiIntArrayInner() {
+        final int[][][][][][][] arr = new int[3][4][5][6][7][8][9];
+        int[][][][][][] subarr = arr[0];
+        int[][][][][] subsubarr = subarr[0];
+        return subsubarr.getClass().getName();
+    }
+    @Compare public String classGetNameForMultiStringArray() {
+        return (new String[3][4][5][6][7][8][9]).getClass().getName();
+    }
+    
+    @Compare public String classForByte() throws Exception {
+        return Class.forName("[Z").getName();
+    }
+
+    @Compare public String classForUnknownArray() {
+        try {
+            return Class.forName("[W").getName();
+        } catch (Exception ex) {
+            return ex.getClass().getName();
+        }
+    }
+    
+    @Compare public String classForUnknownDeepArray() {
+        try {
+            return Class.forName("[[[[[W").getName();
+        } catch (Exception ex) {
+            return ex.getClass().getName();
+        }
+    }
+    
+    @Compare public String componentGetNameForObjectArray() {
+        return (new Object[3]).getClass().getComponentType().getName();
+    }
+    @Compare public boolean sameComponentGetNameForObjectArray() {
+        return (new Object[3]).getClass().getComponentType() == Object.class;
+    }
+    @Compare public String componentGetNameForSimpleIntArray() {
+        return (new int[3]).getClass().getComponentType().getName();
+    }
+    @Compare public String componentGetNameForMultiIntArray() {
+        return (new int[3][4][5][6][7][8][9]).getClass().getComponentType().getName();
+    }
+    @Compare public String componentGetNameForMultiStringArray() {
+        Class<?> c = (new String[3][4][5][6][7][8][9]).getClass();
+        StringBuilder sb = new StringBuilder();
+        for (;;) {
+            sb.append(c.getName()).append("\n");
+            c = c.getComponentType();
+            if (c == null) {
+                break;
+            }
+        }
+        return sb.toString();
+    }
+    
+    @Compare public boolean isArray() {
+        return new Object[0].getClass().isArray();
+    }
+    
     @JavaScriptBody(args = { "arr", "len" }, body="var a = arr.slice(0, len); a.sort(); return a;")
     private static String[] sort(String[] arr, int len) {
         List<String> list = Arrays.asList(arr).subList(0, len);
         Collections.sort(list);
         return list.toArray(new String[0]);
+    }
+    
+    @JavaScriptBody(args = {}, body = "return new Object();")
+    private static Object newObject() {
+        return new Object();
     }
     
     @Factory

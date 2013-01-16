@@ -38,6 +38,16 @@ public class ExceptionsTest {
     }
 
     @Test
+    public void catchJavaScriptStringAsThrowable() throws Exception {
+        assertExec(
+            "Throw hello!",
+            Exceptions.class,
+            "catchThrowableCatchesAll__Ljava_lang_String_2",
+            "Hello!"
+        );
+    }
+
+    @Test
     public void verifyMethodWithTryCatchThrow() throws Exception {
             assertExec(
                     "Throw",

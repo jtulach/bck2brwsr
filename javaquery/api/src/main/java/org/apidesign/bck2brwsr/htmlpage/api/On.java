@@ -15,36 +15,21 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.tck;
+package org.apidesign.bck2brwsr.htmlpage.api;
 
-import org.apidesign.bck2brwsr.vmtest.Compare;
-import org.apidesign.bck2brwsr.vmtest.VMTest;
-import org.testng.annotations.Factory;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-/**
+/** Adds an onClick handler to an element identified by given <em>id</em>.
+ * Apply on a <code>public static void</code> method with no arguments.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class CompareHashTest {
-    @Compare public int hashOfString() {
-        return "Ahoj".hashCode();
-    }
-    
-    @Compare public int hashRemainsYieldsZero() {
-        Object o = new Object();
-        return o.hashCode() - o.hashCode();
-    }
-    
-    @Compare public int initializeInStatic() {
-        return StaticUse.NON_NULL.hashCode() - StaticUse.NON_NULL.hashCode();
-    }
-    
-    @Compare public int hashOfInt() {
-        return Integer.valueOf(Integer.MAX_VALUE).hashCode();
-    }
-    
-    @Factory
-    public static Object[] create() {
-        return VMTest.create(CompareHashTest.class);
-    }
+@Retention(RetentionPolicy.SOURCE)
+@Target(ElementType.METHOD)
+public @interface On {
+    OnEvent event();
+    String[] id();
 }

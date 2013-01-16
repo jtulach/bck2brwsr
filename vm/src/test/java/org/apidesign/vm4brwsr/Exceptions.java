@@ -17,6 +17,8 @@
  */
 package org.apidesign.vm4brwsr;
 
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+
 /**
  *
  * @author tom
@@ -46,6 +48,18 @@ public class Exceptions {
         }
         //join point
         return res;
+    }
+    
+    @JavaScriptBody(args = "msg", body = "throw msg;")
+    public static void thrw(String msg) {}
+    
+    public static String catchThrowableCatchesAll() {
+        try {
+            thrw("Hello!");
+            return "Not here!";
+        } catch (Throwable ex) {
+            return ex.getMessage();
+        }
     }
 
     public static String newInstance(String n) {

@@ -37,29 +37,45 @@ public abstract class Element {
         body="var e = window.document.getElementById(el.fld_id);\n"
            + "e[property] = value;\n"
     )
-    static void setAttribute(Element el, String property, Object value) {
-        throw new UnsupportedOperationException("Needs JavaScript!");
-    }
+    static native void setAttribute(Element el, String property, Object value);
 
     @JavaScriptBody(
         args={"el", "property"},
         body="var e = window.document.getElementById(el.fld_id);\n"
            + "return e[property];\n"
     )
-    static Object getAttribute(Element el, String property) {
-        throw new UnsupportedOperationException("Needs JavaScript!");
-    }
+    static native Object getAttribute(Element el, String property);
     
     /** Executes given runnable when user performs a "click" on the given
      * element.
      * @param r the runnable to execute, never null
      */
     @JavaScriptBody(
-        args={"el", "r"},
-        body="var e = window.document.getElementById(el.fld_id);\n"
-           + "e.onclick = function() { r.run__V(); };\n"
+        args={ "ev", "r" },
+        body="var e = window.document.getElementById(this.fld_id);\n"
+           + "e[ev.fld_id] = function() { r.run__V(); };\n"
     )
-    public final void addOnClick(Runnable r) {
-        throw new UnsupportedOperationException("Needs JavaScript!");
+    final native void on(OnEvent ev, Runnable r);
+
+    /** Shows alert message dialog in a browser.
+     * @param msg the message to show
+     */
+    @JavaScriptBody(args = "msg", body = "alert(msg);")
+    public static native void alert(String msg);
+
+    /** Generic way to query any attribute of this element.
+     * @param property name of the attribute
+     */
+    public final Object getAttribute(String property) {
+        return getAttribute(this, property);
+    }
+    
+    /** Generic way to change an attribute of this element.
+     * 
+     * @param property name of the attribute
+     * @param value value to associate with the attribute
+     */
+    public final void setAttribute(String property, Object value) {
+        setAttribute(this, property, value);
     }
 }

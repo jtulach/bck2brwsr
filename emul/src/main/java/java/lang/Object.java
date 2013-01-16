@@ -66,7 +66,7 @@ public class Object {
      * @see    Class Literals, section 15.8.2 of
      *         <cite>The Java&trade; Language Specification</cite>.
      */
-    @JavaScriptBody(args="self", body="return self.constructor.$class;")
+    @JavaScriptBody(args={}, body="return this.constructor.$class;")
     public final native Class<?> getClass();
 
     /**
@@ -104,13 +104,16 @@ public class Object {
      * @see     java.lang.Object#equals(java.lang.Object)
      * @see     java.lang.System#identityHashCode
      */
-    @JavaScriptBody(args = "self", body = 
-        "if (self.$hashCode) return self.$hashCode;\n"
-        + "var h = Math.random() * Math.pow(2, 32);\n"
-        + "return self.$hashCode = h & h;"
+    @JavaScriptBody(args = {}, body = 
+        "if (this.$hashCode) return this.$hashCode;\n"
+        + "var h = this.computeHashCode__I();\n"
+        + "return this.$hashCode = h & h;"
     )
     public native int hashCode();
 
+    @JavaScriptBody(args = {}, body = "Math.random() * Math.pow(2, 32);")
+    native int computeHashCode();
+    
     /**
      * Indicates whether some other object is "equal to" this one.
      * <p>

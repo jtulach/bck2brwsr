@@ -17,7 +17,8 @@
  */
 package org.apidesign.bck2brwsr.mavenhtml;
 
-import org.apidesign.bck2brwsr.htmlpage.api.OnClick;
+import org.apidesign.bck2brwsr.htmlpage.api.On;
+import static org.apidesign.bck2brwsr.htmlpage.api.OnEvent.*;
 import org.apidesign.bck2brwsr.htmlpage.api.Page;
 
 /** HTML5 & Java demo showing the power of 
@@ -31,21 +32,21 @@ public class App {
     private static double memory;
     private static String operation;
     
-    @OnClick(id="clear")
+    @On(event = CLICK, id="clear")
     static void clear() {
         memory = 0;
         operation = null;
         Calculator.DISPLAY.setValue("0");
     }
     
-    @OnClick(id= { "plus", "minus", "mul", "div" })
+    @On(event = CLICK, id= { "plus", "minus", "mul", "div" })
     static void applyOp(String op) {
         memory = getValue();
         operation = op;
         Calculator.DISPLAY.setValue("0");
     }
     
-    @OnClick(id="result")
+    @On(event = CLICK, id="result")
     static void computeTheValue() {
         switch (operation) {
             case "plus": setValue(memory + getValue()); break;
@@ -56,7 +57,7 @@ public class App {
         }
     }
     
-    @OnClick(id={"n0", "n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9"}) 
+    @On(event = CLICK, id={"n0", "n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9"}) 
     static void addDigit(String digit) {
         digit = digit.substring(1);
         String v = Calculator.DISPLAY.getValue();

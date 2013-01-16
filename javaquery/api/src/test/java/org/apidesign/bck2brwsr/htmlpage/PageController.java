@@ -17,7 +17,8 @@
  */
 package org.apidesign.bck2brwsr.htmlpage;
 
-import org.apidesign.bck2brwsr.htmlpage.api.OnClick;
+import static org.apidesign.bck2brwsr.htmlpage.api.OnEvent.*;
+import org.apidesign.bck2brwsr.htmlpage.api.On;
 import org.apidesign.bck2brwsr.htmlpage.api.Page;
 
 /** Trivial demo for the bck2brwsr project. First of all start
@@ -42,12 +43,12 @@ import org.apidesign.bck2brwsr.htmlpage.api.Page;
  */
 @Page(xhtml="TestPage.html")
 public class PageController {
-    @OnClick(id="pg.button")
+    @On(event = CLICK, id="pg.button")
     static void updateTitle() {
         TestPage.PG_TITLE.setText("You want this window to be named " + TestPage.PG_TEXT.getValue());
     }
     
-    @OnClick(id={ "pg.title", "pg.text" })
+    @On(event = CLICK, id={ "pg.title", "pg.text" })
     static void click(String id) {
         if (!id.equals("pg.title")) {
             throw new IllegalStateException();

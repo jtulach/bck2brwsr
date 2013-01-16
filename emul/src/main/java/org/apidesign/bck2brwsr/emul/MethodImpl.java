@@ -144,6 +144,8 @@ public abstract class MethodImpl {
                         return Short.TYPE;
                     case 'V':
                         return Void.TYPE;
+                    case 'C':
+                        return Character.TYPE;
                     case 'L':
                         try {
                             int up = sig.indexOf("_2");

@@ -19,6 +19,7 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.javap.AnnotationParser;
 import org.apidesign.javap.ClassData;
 import org.apidesign.javap.FieldData;
@@ -249,13 +250,14 @@ abstract class ByteCodeToJavaScript {
                 new LocalsMapper(stackMapIterator.getArguments());
 
         out.append(prefix).append(name).append(" = function(");
-        lmapper.outputArguments(out);
+        lmapper.outputArguments(out, m.isStatic());
         out.append(") {").append("\n");
 
         final byte[] byteCodes = m.getCode();
         if (byteCodes == null) {
             out.append("  throw 'no code found for ")
-               .append(m.getInternalSig()).append("';\n");
+               .append(jc.getClassName()).append('.')
+               .append(m.getName()).append("';\n");
             out.append("};");
             return;
         }
@@ -273,6 +275,9 @@ abstract class ByteCodeToJavaScript {
                 }
                 out.append(';');
             }
+        }
+        if (!m.isStatic()) {
+            out.append("  var ").append(" lcA0 = this;\n");
         }
 
         // maxStack includes two stack positions for every pushed long / double
@@ -490,7 +495,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 = @2;", lmapper.setD(3), smapper.popD());
                     break;
                 case opc_iadd:
-                    emit(out, "@1 += @2;", smapper.getI(1), smapper.popI());
+                    emit(out, "@1 = @1.add32(@2);", smapper.getI(1), smapper.popI());
                     break;
                 case opc_ladd:
                     emit(out, "@1 += @2;", smapper.getL(1), smapper.popL());
@@ -502,7 +507,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 += @2;", smapper.getD(1), smapper.popD());
                     break;
                 case opc_isub:
-                    emit(out, "@1 -= @2;", smapper.getI(1), smapper.popI());
+                    emit(out, "@1 = @1.sub32(@2);", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lsub:
                     emit(out, "@1 -= @2;", smapper.getL(1), smapper.popL());
@@ -514,7 +519,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 -= @2;", smapper.getD(1), smapper.popD());
                     break;
                 case opc_imul:
-                    emit(out, "@1 *= @2;", smapper.getI(1), smapper.popI());
+                    emit(out, "@1 = @1.mul32(@2);", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lmul:
                     emit(out, "@1 *= @2;", smapper.getL(1), smapper.popL());
@@ -671,9 +676,13 @@ abstract class ByteCodeToJavaScript {
                          smapper.popD(), smapper.pushL());
                     break;
                 case opc_i2b:
+                    emit(out, "@1 = @1.toInt8();", smapper.getI(0));
+                    break;
                 case opc_i2c:
-                case opc_i2s:
                     out.append("{ /* number conversion */ }");
+                    break;
+                case opc_i2s:
+                    emit(out, "@1 = @1.toInt16();", smapper.getI(0));
                     break;
                 case opc_aconst_null:
                     emit(out, "@1 = null;", smapper.pushA());
@@ -904,28 +913,53 @@ abstract class ByteCodeToJavaScript {
                     break;
                 }
                 case opc_newarray:
-                    ++i; // skip type of array
-                    emit(out, "@2 = new Array(@1).fillNulls();",
-                         smapper.popI(), smapper.pushA());
+                    int atype = readByte(byteCodes, ++i);
+                    String jvmType;
+                    switch (atype) {
+                        case 4: jvmType = "[Z"; break;
+                        case 5: jvmType = "[C"; break;
+                        case 6: jvmType = "[F"; break;
+                        case 7: jvmType = "[D"; break;
+                        case 8: jvmType = "[B"; break;
+                        case 9: jvmType = "[S"; break;
+                        case 10: jvmType = "[I"; break;
+                        case 11: jvmType = "[J"; break;
+                        default: throw new IllegalStateException("Array type: " + atype);
+                    }
+                    emit(out, "@2 = new Array(@1).initWith('@3', 0);",
+                         smapper.popI(), smapper.pushA(), jvmType);
                     break;
-                case opc_anewarray:
-                    i += 2; // skip type of array
-                    emit(out, "@2 = new Array(@1).fillNulls();",
-                         smapper.popI(), smapper.pushA());
-                    break;
-                case opc_multianewarray: {
+                case opc_anewarray: {
+                    int type = readIntArg(byteCodes, i);
                     i += 2;
+                    String typeName = jc.getClassName(type);
+                    if (typeName.startsWith("[")) {
+                        typeName = "[" + typeName;
+                    } else {
+                        typeName = "[L" + typeName + ";";
+                    }
+                    emit(out, "@2 = new Array(@1).initWith('@3', null);",
+                         smapper.popI(), smapper.pushA(), typeName);
+                    break;
+                }
+                case opc_multianewarray: {
+                    int type = readIntArg(byteCodes, i);
+                    i += 2;
+                    String typeName = jc.getClassName(type);
                     int dim = readByte(byteCodes, ++i);
                     out.append("{ var a0 = new Array(").append(smapper.popI())
-                       .append(").fillNulls();");
+                       .append(").initWith('").append(typeName).append("', null);");
                     for (int d = 1; d < dim; d++) {
+                        typeName = typeName.substring(1);
                         out.append("\n  var l" + d).append(" = ")
                            .append(smapper.popI()).append(';');
                         out.append("\n  for (var i" + d).append (" = 0; i" + d).
                             append(" < a" + (d - 1)).
                             append(".length; i" + d).append("++) {");
                         out.append("\n    var a" + d).
-                            append (" = new Array(l" + d).append(").fillNulls();");
+                            append (" = new Array(l" + d).append(").initWith('")
+                            .append(typeName).append("', ")
+                            .append(typeName.length() == 2 ? "0" : "null").append(");");
                         out.append("\n    a" + (d - 1)).append("[i" + d).append("] = a" + d).
                             append(";");
                     }
@@ -939,49 +973,49 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@2 = @1.length;", smapper.popA(), smapper.pushI());
                     break;
                 case opc_lastore:
-                    emit(out, "@3[@2] = @1;",
+                    emit(out, "@3.at(@2, @1);",
                          smapper.popL(), smapper.popI(), smapper.popA());
                     break;
                 case opc_fastore:
-                    emit(out, "@3[@2] = @1;",
+                    emit(out, "@3.at(@2, @1);",
                          smapper.popF(), smapper.popI(), smapper.popA());
                     break;
                 case opc_dastore:
-                    emit(out, "@3[@2] = @1;",
+                    emit(out, "@3.at(@2, @1);",
                          smapper.popD(), smapper.popI(), smapper.popA());
                     break;
                 case opc_aastore:
-                    emit(out, "@3[@2] = @1;",
+                    emit(out, "@3.at(@2, @1);",
                          smapper.popA(), smapper.popI(), smapper.popA());
                     break;
                 case opc_iastore:
                 case opc_bastore:
                 case opc_castore:
                 case opc_sastore:
-                    emit(out, "@3[@2] = @1;",
+                    emit(out, "@3.at(@2, @1);",
                          smapper.popI(), smapper.popI(), smapper.popA());
                     break;
                 case opc_laload:
-                    emit(out, "@3 = @2[@1];",
+                    emit(out, "@3 = @2.at(@1);",
                          smapper.popI(), smapper.popA(), smapper.pushL());
                     break;
                 case opc_faload:
-                    emit(out, "@3 = @2[@1];",
+                    emit(out, "@3 = @2.at(@1);",
                          smapper.popI(), smapper.popA(), smapper.pushF());
                     break;
                 case opc_daload:
-                    emit(out, "@3 = @2[@1];",
+                    emit(out, "@3 = @2.at(@1);",
                          smapper.popI(), smapper.popA(), smapper.pushD());
                     break;
                 case opc_aaload:
-                    emit(out, "@3 = @2[@1];",
+                    emit(out, "@3 = @2.at(@1);",
                          smapper.popI(), smapper.popA(), smapper.pushA());
                     break;
                 case opc_iaload:
                 case opc_baload:
                 case opc_caload:
                 case opc_saload:
-                    emit(out, "@3 = @2[@1];",
+                    emit(out, "@3 = @2.at(@1);",
                          smapper.popI(), smapper.popA(), smapper.pushI());
                     break;
                 case opc_pop:
@@ -1329,7 +1363,11 @@ abstract class ByteCodeToJavaScript {
             out.append("constructor.");
         }
         out.append(mn);
-        out.append('(');
+        if (isStatic) {
+            out.append('(');
+        } else {
+            out.append(".call(");
+        }
         if (numArguments > 0) {
             out.append(vars[0]);
             for (int j = 1; j < numArguments; ++j) {
@@ -1365,10 +1403,11 @@ abstract class ByteCodeToJavaScript {
         out.append(vars[0]).append('.');
         out.append(mn);
         out.append('(');
-        out.append(vars[0]);
+        String sep = "";
         for (int j = 1; j < numArguments; ++j) {
-            out.append(", ");
+            out.append(sep);
             out.append(vars[j]);
+            sep = ", ";
         }
         out.append(");");
         i += 2;
@@ -1442,15 +1481,8 @@ abstract class ByteCodeToJavaScript {
         final String mn = findMethodName(m, cnt);
         out.append(prefix).append(mn);
         out.append(" = function(");
-        String space;
-        int index;
-        if (!isStatic) {                
-            space = outputArg(out, p.args, 0);
-            index = 1;
-        } else {
-            space = "";
-            index = 0;
-        }
+        String space = "";
+        int index = 0;
         for (int i = 0; i < cnt.length(); i++) {
             out.append(space);
             space = outputArg(out, p.args, index);
@@ -1594,9 +1626,19 @@ abstract class ByteCodeToJavaScript {
             if (e.catch_cpx != 0) { //not finally
                 final String classInternalName = jc.getClassName(e.catch_cpx);
                 addReference(classInternalName);
-                out.append("if (e.$instOf_" + classInternalName.replace('/', '_') + ") {");
-                out.append("gt=" + e.handler_pc + "; stA0 = e; continue;");
-                out.append("}\n");
+                if ("java/lang/Throwable".equals(classInternalName)) {
+                    out.append("if (e.$instOf_java_lang_Throwable) {");
+                    out.append("  stA0 = e;");
+                    out.append("} else {");
+                    out.append("  stA0 = vm.java_lang_Throwable(true);");
+                    out.append("  vm.java_lang_Throwable.cons__VLjava_lang_String_2.call(stA0, e.toString());");
+                    out.append("}");
+                    out.append("gt=" + e.handler_pc + "; continue;");
+                } else {
+                    out.append("if (e.$instOf_" + classInternalName.replace('/', '_') + ") {");
+                    out.append("gt=" + e.handler_pc + "; stA0 = e; continue;");
+                    out.append("}\n");
+                }
             } else {
                 finallyPC = e.handler_pc;
             }

@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import org.apidesign.bck2brwsr.core.ExtraJavaScript;
+
 /**
  * The abstract class <code>Number</code> is the superclass of classes
  * <code>BigDecimal</code>, <code>BigInteger</code>,
@@ -46,6 +48,10 @@ package java.lang;
  * @see     java.lang.Short
  * @since   JDK1.0
  */
+@ExtraJavaScript(
+    resource="/org/apidesign/vm4brwsr/emul/java_lang_Number.js",
+    processByteCode=true
+)
 public abstract class Number implements java.io.Serializable {
     /**
      * Returns the value of the specified number as an <code>int</code>.

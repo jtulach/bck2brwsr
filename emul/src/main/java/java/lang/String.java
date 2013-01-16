@@ -108,10 +108,6 @@ import org.apidesign.bck2brwsr.core.JavaScriptPrototype;
 public final class String
     implements java.io.Serializable, Comparable<String>, CharSequence
 {
-    @JavaScriptOnly
-    /** Cache the hash code for the string */
-    private int hash; // Default to 0
-    
     /** real string to delegate to */
     private Object r;
 
@@ -173,11 +169,11 @@ public final class String
      * @param  value
      *         The initial value of the string
      */
-    @JavaScriptBody(args = { "self", "charArr" }, body=
+    @JavaScriptBody(args = { "charArr" }, body=
         "for (var i = 0; i < charArr.length; i++) {\n"
       + "  if (typeof charArr[i] === 'number') charArr[i] = String.fromCharCode(charArr[i]);\n"
       + "}\n"
-      + "self.fld_r = charArr.join('');\n"
+      + "this.fld_r = charArr.join('');\n"
     )
     public String(char value[]) {
     }
@@ -203,12 +199,12 @@ public final class String
      *          If the {@code offset} and {@code count} arguments index
      *          characters outside the bounds of the {@code value} array
      */
-    @JavaScriptBody(args = { "self", "charArr", "off", "cnt" }, body =
+    @JavaScriptBody(args = { "charArr", "off", "cnt" }, body =
         "var up = off + cnt;\n" +
         "for (var i = off; i < up; i++) {\n" +
         "  if (typeof charArr[i] === 'number') charArr[i] = String.fromCharCode(charArr[i]);\n" +
         "}\n" +
-        "self.fld_r = charArr.slice(off, up).join(\"\");\n"
+        "this.fld_r = charArr.slice(off, up).join(\"\");\n"
     )
     public String(char value[], int offset, int count) {
     }
@@ -622,7 +618,7 @@ public final class String
      * @return  the length of the sequence of characters represented by this
      *          object.
      */
-    @JavaScriptBody(args = "self", body = "return self.toString().length;")
+    @JavaScriptBody(args = {}, body = "return this.toString().length;")
     public int length() {
         throw new UnsupportedOperationException();
     }
@@ -635,7 +631,7 @@ public final class String
      *
      * @since 1.6
      */
-    @JavaScriptBody(args = "self", body="return self.toString().length === 0;")
+    @JavaScriptBody(args = {}, body="return this.toString().length === 0;")
     public boolean isEmpty() {
         return length() == 0;
     }
@@ -658,8 +654,8 @@ public final class String
      *             argument is negative or not less than the length of this
      *             string.
      */
-    @JavaScriptBody(args = { "self", "index" }, 
-        body = "return self.toString().charCodeAt(index);"
+    @JavaScriptBody(args = { "index" }, 
+        body = "return this.toString().charCodeAt(index);"
     )
     public char charAt(int index) {
         throw new UnsupportedOperationException();
@@ -784,8 +780,8 @@ public final class String
      * Copy characters from this string into dst starting at dstBegin.
      * This method doesn't perform any range checking.
      */
-    @JavaScriptBody(args = { "self", "arr", "to" }, body = 
-        "var s = self.toString();\n" +
+    @JavaScriptBody(args = { "arr", "to" }, body = 
+        "var s = this.toString();\n" +
         "for (var i = 0; i < s.length; i++) {\n" +
         "   arr[to++] = s[i];\n" +
         "}"
@@ -824,8 +820,8 @@ public final class String
      *            <li><code>dstBegin+(srcEnd-srcBegin)</code> is larger than
      *                <code>dst.length</code></ul>
      */
-    @JavaScriptBody(args = { "self", "beg", "end", "arr", "dst" }, body=
-        "var s = self.toString();\n" +
+    @JavaScriptBody(args = { "beg", "end", "arr", "dst" }, body=
+        "var s = this.toString();\n" +
         "while (beg < end) {\n" +
         "  arr[dst++] = s[beg++];\n" +
         "}\n"
@@ -997,9 +993,9 @@ public final class String
      * @see  #compareTo(String)
      * @see  #equalsIgnoreCase(String)
      */
-    @JavaScriptBody(args = { "self", "obj" }, body = 
+    @JavaScriptBody(args = { "obj" }, body = 
         "return obj.$instOf_java_lang_String && "
-        + "self.toString() === obj.toString();"
+        + "this.toString() === obj.toString();"
     )
     public boolean equals(Object anObject) {
         if (this == anObject) {
@@ -1424,9 +1420,9 @@ public final class String
      *          this.substring(toffset).startsWith(prefix)
      *          </pre>
      */
-    @JavaScriptBody(args = { "self", "find", "from" }, body=
+    @JavaScriptBody(args = { "find", "from" }, body=
         "find = find.toString();\n" +
-        "return self.toString().substring(from, from + find.length) === find;\n"
+        "return this.toString().substring(from, from + find.length) === find;\n"
     )
     public boolean startsWith(String prefix, int toffset) {
         char ta[] = toCharArray();
@@ -1491,26 +1487,18 @@ public final class String
      *
      * @return  a hash code value for this object.
      */
-    @JavaScriptBody(args = "self", body = 
-        "var h = 0;\n" +
-        "var s = self.toString();\n" +
-        "for (var i = 0; i < s.length; i++) {\n" +
-        "  var high = (h >> 16) & 0xffff, low = h & 0xffff;\n" +
-        "  h = (((((31 * high) & 0xffff) << 16) >>> 0) + (31 * low) + s.charCodeAt(i)) & 0xffffffff;\n" +
-        "}\n" +
-        "return h;\n"
-    )
     public int hashCode() {
-        int h = hash;
+        return super.hashCode();
+    }
+    int computeHashCode() {
+        int h = 0;
         if (h == 0 && length() > 0) {
             int off = offset();
-            char val[] = toCharArray();
             int len = length();
 
             for (int i = 0; i < len; i++) {
-                h = 31*h + val[off++];
+                h = 31*h + charAt(off++);
             }
-            hash = h;
         }
         return h;
     }
@@ -1582,9 +1570,9 @@ public final class String
      *          than or equal to <code>fromIndex</code>, or <code>-1</code>
      *          if the character does not occur.
      */
-    @JavaScriptBody(args = { "self", "ch", "from" }, body = 
+    @JavaScriptBody(args = { "ch", "from" }, body = 
         "if (typeof ch === 'number') ch = String.fromCharCode(ch);\n" +
-        "return self.toString().indexOf(ch, from);\n"
+        "return this.toString().indexOf(ch, from);\n"
     )
     public int indexOf(int ch, int fromIndex) {
         if (fromIndex < 0) {
@@ -1691,9 +1679,9 @@ public final class String
      *          than or equal to <code>fromIndex</code>, or <code>-1</code>
      *          if the character does not occur before that point.
      */
-    @JavaScriptBody(args = { "self", "ch", "from" }, body = 
+    @JavaScriptBody(args = { "ch", "from" }, body = 
         "if (typeof ch === 'number') ch = String.fromCharCode(ch);\n" +
-        "return self.toString().lastIndexOf(ch, from);"
+        "return this.toString().lastIndexOf(ch, from);"
     )
     public int lastIndexOf(int ch, int fromIndex) {
         if (ch < Character.MIN_SUPPLEMENTARY_CODE_POINT) {
@@ -1766,8 +1754,8 @@ public final class String
      *          starting at the specified index,
      *          or {@code -1} if there is no such occurrence.
      */
-    @JavaScriptBody(args = { "self", "str", "fromIndex" }, body =
-        "return self.toString().indexOf(str.toString(), fromIndex);"
+    @JavaScriptBody(args = { "str", "fromIndex" }, body =
+        "return this.toString().indexOf(str.toString(), fromIndex);"
     )
     public native int indexOf(String str, int fromIndex);
 
@@ -1806,8 +1794,8 @@ public final class String
      *          searching backward from the specified index,
      *          or {@code -1} if there is no such occurrence.
      */
-    @JavaScriptBody(args = { "self", "s", "from" }, body = 
-        "return self.toString().lastIndexOf(s.toString(), from);"
+    @JavaScriptBody(args = { "s", "from" }, body = 
+        "return this.toString().lastIndexOf(s.toString(), from);"
     )
     public int lastIndexOf(String str, int fromIndex) {
         return lastIndexOf(toCharArray(), offset(), length(), str.toCharArray(), str.offset(), str.length(), fromIndex);
@@ -1915,8 +1903,8 @@ public final class String
      *             <code>beginIndex</code> is larger than
      *             <code>endIndex</code>.
      */
-    @JavaScriptBody(args = { "self", "beginIndex", "endIndex" }, body = 
-        "return self.toString().substring(beginIndex, endIndex);"
+    @JavaScriptBody(args = { "beginIndex", "endIndex" }, body = 
+        "return this.toString().substring(beginIndex, endIndex);"
     )
     public String substring(int beginIndex, int endIndex) {
         if (beginIndex < 0) {
@@ -2024,10 +2012,10 @@ public final class String
      * @return  a string derived from this string by replacing every
      *          occurrence of <code>oldChar</code> with <code>newChar</code>.
      */
-    @JavaScriptBody(args = { "self", "arg1", "arg2" }, body =
+    @JavaScriptBody(args = { "arg1", "arg2" }, body =
         "if (typeof arg1 === 'number') arg1 = String.fromCharCode(arg1);\n" +
         "if (typeof arg2 === 'number') arg2 = String.fromCharCode(arg2);\n" +
-        "var s = self.toString();\n" +
+        "var s = this.toString();\n" +
         "for (;;) {\n" +
         "  var ret = s.replace(arg1, arg2);\n" +
         "  if (ret === s) {\n" +
@@ -2090,8 +2078,8 @@ public final class String
      * @since 1.4
      * @spec JSR-51
      */
-    @JavaScriptBody(args = { "self", "regex" }, body = 
-          "self = self.toString();\n"
+    @JavaScriptBody(args = { "regex" }, body = 
+          "var self = this.toString();\n"
         + "var re = new RegExp(regex.toString());\n"
         + "var r = re.exec(self);\n"
         + "return r != null && r.length > 0 && self.length == r[0].length;"
@@ -2508,7 +2496,7 @@ public final class String
      * @return  the <code>String</code>, converted to lowercase.
      * @see     java.lang.String#toLowerCase(Locale)
      */
-    @JavaScriptBody(args = "self", body = "return self.toLowerCase();")
+    @JavaScriptBody(args = {}, body = "return this.toLowerCase();")
     public String toLowerCase() {
         throw new UnsupportedOperationException("Should be supported but without connection to locale");
     }
@@ -2674,7 +2662,7 @@ public final class String
      * @return  the <code>String</code>, converted to uppercase.
      * @see     java.lang.String#toUpperCase(Locale)
      */
-    @JavaScriptBody(args = "self", body = "return self.toUpperCase();")
+    @JavaScriptBody(args = {}, body = "return this.toUpperCase();")
     public String toUpperCase() {
         throw new UnsupportedOperationException();
     }
@@ -2730,7 +2718,7 @@ public final class String
      *
      * @return  the string itself.
      */
-    @JavaScriptBody(args = "self", body = "return self.toString();")
+    @JavaScriptBody(args = {}, body = "return this.toString();")
     public String toString() {
         return this;
     }
@@ -2742,7 +2730,6 @@ public final class String
      *          of this string and whose contents are initialized to contain
      *          the character sequence represented by this string.
      */
-    @JavaScriptBody(args = "self", body = "return self.toString().split('');")
     public char[] toCharArray() {
         char result[] = new char[length()];
         getChars(0, length(), result, 0);

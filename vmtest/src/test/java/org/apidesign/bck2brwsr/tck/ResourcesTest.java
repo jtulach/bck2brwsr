@@ -17,6 +17,7 @@
  */
 package org.apidesign.bck2brwsr.tck;
 
+import java.io.InputStream;
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
@@ -25,26 +26,20 @@ import org.testng.annotations.Factory;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class CompareHashTest {
-    @Compare public int hashOfString() {
-        return "Ahoj".hashCode();
+public class ResourcesTest {
+    
+    @Compare public String readResourceAsStream() throws Exception {
+        InputStream is = getClass().getResourceAsStream("Resources.txt");
+        byte[] b = new byte[30];
+        int len = is.read(b);
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < len; i++) {
+            sb.append((char)b[i]);
+        }
+        return sb.toString();
     }
     
-    @Compare public int hashRemainsYieldsZero() {
-        Object o = new Object();
-        return o.hashCode() - o.hashCode();
-    }
-    
-    @Compare public int initializeInStatic() {
-        return StaticUse.NON_NULL.hashCode() - StaticUse.NON_NULL.hashCode();
-    }
-    
-    @Compare public int hashOfInt() {
-        return Integer.valueOf(Integer.MAX_VALUE).hashCode();
-    }
-    
-    @Factory
-    public static Object[] create() {
-        return VMTest.create(CompareHashTest.class);
+    @Factory public static Object[] create() {
+        return VMTest.create(ResourcesTest.class);
     }
 }
