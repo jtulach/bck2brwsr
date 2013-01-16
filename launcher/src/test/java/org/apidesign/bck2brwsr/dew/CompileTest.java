@@ -19,10 +19,14 @@ public class CompileTest  {
                 + " <button id='btn'>Hello!</button>"
                 + "</body></html>";
         String java = "package x.y.z;"
-                + "class X {"
-                + "}";
+                + "import org.apidesign.bck2brwsr.htmlpage.api.*;"
+            + "@Page(xhtml=\"index.html\", className=\"Index\")"
+            + "class X { "
+            + "   @OnClick(id=\"btn\") static void clcs() {}"
+            + "}";
         Map<String,byte[]> result = Compile.compile(html, java);
 
         assertNotNull(result.get("x/y/z/X.class"), "Class X is compiled: " + result);
+        assertNotNull(result.get("x/y/z/Index.class"), "Class Index is compiled: " + result);
     }
 }
