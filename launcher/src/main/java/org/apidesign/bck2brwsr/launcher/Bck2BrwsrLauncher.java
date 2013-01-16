@@ -106,6 +106,7 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
     
     public static void main(String... args) throws Exception {
         Bck2BrwsrLauncher l = new Bck2BrwsrLauncher(null);
+        l.addClassLoader(Bck2BrwsrLauncher.class.getClassLoader());
         HttpServer s = l.initServer();
         s.getServerConfiguration().addHttpHandler(new Dew(), "/dew/");
         l.launchServerAndBrwsr(s, "/dew/");
