@@ -140,7 +140,6 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
             "org/apidesign/bck2brwsr/launcher/console.xhtml",
             "org.apidesign.bck2brwsr.launcher.Console", "welcome", "false"
         ), "/console");
-        conf.addHttpHandler(new Dew(), "/dew/");
         conf.addHttpHandler(new VM(resources), "/bck2brwsr.js");
         conf.addHttpHandler(new VMInit(), "/vm.js");
         conf.addHttpHandler(new Classes(resources), "/classes/");

@@ -71,6 +71,51 @@ angular.module('bck2brwsr', []).
 }]);
 
 function DevCtrl( $scope, $http ) {
+    var templateHtml = "<html><body>\n"
+        + " <button id='btn'>Hello!</button>\n"
+        + " <hr/>\n"
+        + "\n"
+        + "\n"
+        + "\n"
+        + "\n"
+        + "\n"
+        + "\n"
+        + "\n"
+        + "\n"
+        + "\n"
+        + "\n"
+        + "\n"
+        + "\n"
+        + "\n"
+        + "\n"
+        + "\n"
+        + "\n"
+        + "\n"
+        + "\n"
+        + "\n"
+        + "\n"
+        + " <script src=\"/bck2brwsr.js\"></script>\n"
+        + " <script type=\"text/javascript\">\n"
+        + "   function ldCls(res) {\n"
+        + "     var request = new XMLHttpRequest();\n"
+        + "     request.open('GET', '/dew/classes/' + res, false);\n"
+        + "     request.send();\n"
+        + "     var arr = eval('(' + request.responseText + ')');\n"
+        + "     return arr;\n"
+        + "   }\n"
+        + "   var vm = new bck2brwsr(ldCls);\n"
+        + "   vm.loadClass('bck2brwsr.demo.Index');\n"
+        + " </script>\n"
+        + "</body></html>\n";
+    var templateJava = "package bck2brwsr.demo;\n"
+        + "import org.apidesign.bck2brwsr.htmlpage.api.*;\n"
+        + "@Page(xhtml=\"index.html\", className=\"Index\")\n"
+        + "class YourFirstHTML5PageInRealLanguage {\n"
+        + "   @OnClick(id=\"btn\") static void clcs() {\n"
+        + "     Index.BTN.setDisabled(true);\n"
+        + "   }\n"
+        + "}\n";
+
     
     $scope.reload= function() {
         var frame = document.getElementById("result");        
@@ -88,14 +133,14 @@ function DevCtrl( $scope, $http ) {
     };
     
     $scope.tab = "html";
-    $scope.html= "";  
-    $scope.java = "";  
+    $scope.html= templateHtml;  
+    $scope.java = templateJava;  
     
     $scope.tabActive = function( tab ) {
         return tab === $scope.tab ? "active" : "";
     };
     
     // $scope.$watch( "html", htmlChange );
-    
+    $scope.post();
     
 }

@@ -5,10 +5,13 @@
 package org.apidesign.bck2brwsr.dew;
 
 import java.io.ByteArrayInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.tools.Diagnostic;
@@ -26,33 +29,7 @@ import org.json.JSONTokener;
  * @author phrebejk
  */
 public class Dew extends HttpHandler {
-    private String html = "<html><body>\n"
-        + " <button id='btn'>Hello!</button>\n"
-        + " <hr/>\n"
-        + "\n"
-        + "\n"
-        + "\n"
-        + " <script src=\"/bck2brwsr.js\"></script>\n"
-        + " <script type=\"text/javascript\">\n"
-        + "   function ldCls(res) {\n"
-        + "     var request = new XMLHttpRequest();\n"
-        + "     request.open('GET', '/dew/classes/' + res, false);\n"
-        + "     request.send();\n"
-        + "     var arr = eval('(' + request.responseText + ')');\n"
-        + "     return arr;\n"
-        + "   }\n"
-        + " //  var vm = new bck2brwsr(ldCls);\n"
-        + " //  vm.loadClass('bck2brwsr.demo.Index');\n"
-        + " </script>\n"
-        + "</body></html>\n";
-    private String java = "package bck2brwsr.demo;\n"
-                + "import org.apidesign.bck2brwsr.htmlpage.api.*;\n"
-            + "@Page(xhtml=\"index.html\", className=\"Index\")\n"
-            + "class X {\n"
-            + "   @OnClick(id=\"btn\") static void clcs() {\n"
-            + "     Index.BTN.setDisabled(true);\n"
-            + "   }\n"
-            + "}\n";
+    private String html = "";
     private Compile data;
 
     @Override
@@ -62,13 +39,14 @@ public class Dew extends HttpHandler {
             InputStream is = request.getInputStream();
             JSONTokener tok = new JSONTokener(new InputStreamReader(is));
             JSONObject obj = new JSONObject(tok);
-            html = obj.getString("html");
-            java = obj.getString("java");
+            String tmpHtml = obj.getString("html");
+            String tmpJava = obj.getString("java");
             
-            Compile res = Compile.create(html, java);
+            Compile res = Compile.create(tmpHtml, tmpJava);
             List<Diagnostic<? extends JavaFileObject>> err = res.getErrors();
             if (err.isEmpty()) {
                 data = res;
+                html = tmpHtml;
                 response.getOutputStream().write("[]".getBytes());
                 response.setStatus(HttpStatus.OK_200);
             } else {
@@ -94,16 +72,34 @@ public class Dew extends HttpHandler {
             r = r.substring(1);
         }
         if (r.startsWith("classes/")) {
-            if (data == null) {
-                //data = Compile.create(html, java);
-            }
             r = r.substring(8);
-            byte[] is = data == null ? null : data.get(r);
-            if (is == null) {
-                is = new byte[0];
+            byte[] arr = data == null ? null : data.get(r);
+            if (arr == null) {
+                response.setError();
+                response.setDetailMessage("No data for " + r + " yet!");
+                return;
             }
-            OutputStream os = response.getOutputStream();
-            copyStream(new ByteArrayInputStream(is), os, request.getRequestURL().toString() );
+            try (Writer w = response.getWriter()) {
+                response.setContentType("text/javascript");
+                w.append("[");
+                for (int i = 0; i < arr.length; i++) {
+                    int b = arr[i];
+                    if (b == -1) {
+                        break;
+                    }
+                    if (i > 0) {
+                        w.append(", ");
+                    }
+                    if (i % 20 == 0) {
+                        w.write("\n");
+                    }
+                    if (b > 127) {
+                        b = b - 256;
+                    }
+                    w.append(Integer.toString(b));
+                }
+                w.append("\n]");
+            }
             return;
         }
         
