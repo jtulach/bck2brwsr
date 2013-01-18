@@ -98,6 +98,11 @@ public class ReflectionArrayTest {
         Array.setLong(arr, 0, 10);
         return Array.getLong(arr, 0);
     }
+    @Compare public float verifyLongToFloat() {
+        Object arr = Array.newInstance(float.class, 5);
+        Array.setLong(arr, 0, 10);
+        return Array.getFloat(arr, 0);
+    }
 
     @Compare public double verifyConvertToDouble() {
         int[] arr = (int[]) Array.newInstance(int.class, 5);

@@ -439,8 +439,16 @@ class Array {
      * the length of the specified array
      * @see Array#set
      */
-    public static native void setByte(Object array, int index, byte b)
-        throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+    public static void setByte(Object array, int index, byte b)
+    throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
+        Class<?> t = array.getClass().getComponentType();
+        if (t == Byte.TYPE) {
+            byte[] arr = (byte[]) array;
+            arr[index] = b;
+        } else {
+            setShort(array, index, b);
+        }
+    }
 
     /**
      * Sets the value of the indexed component of the specified array
@@ -479,8 +487,17 @@ class Array {
      * the length of the specified array
      * @see Array#set
      */
-    public static native void setShort(Object array, int index, short s)
-        throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+    public static void setShort(Object array, int index, short s)
+    throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
+        Class<?> t = array.getClass().getComponentType();
+        if (t == Short.TYPE) {
+            short[] arr = (short[]) array;
+            arr[index] = s;
+        } else {
+            setInt(array, index, s);
+        }
+        
+    }
 
     /**
      * Sets the value of the indexed component of the specified array
@@ -499,8 +516,16 @@ class Array {
      * the length of the specified array
      * @see Array#set
      */
-    public static native void setInt(Object array, int index, int i)
-        throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+    public static void setInt(Object array, int index, int i)
+    throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
+        Class<?> t = array.getClass().getComponentType();
+        if (t == Integer.TYPE) {
+            long[] arr = (long[]) array;
+            arr[index] = i;
+        } else {
+            setLong(array, index, i);
+        }
+    }
 
     /**
      * Sets the value of the indexed component of the specified array
@@ -519,8 +544,16 @@ class Array {
      * the length of the specified array
      * @see Array#set
      */
-    public static native void setLong(Object array, int index, long l)
-        throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+    public static void setLong(Object array, int index, long l)
+    throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
+        Class<?> t = array.getClass().getComponentType();
+        if (t == Long.TYPE) {
+            long[] arr = (long[]) array;
+            arr[index] = l;
+        } else {
+            setFloat(array, index, l);
+        }
+    }
 
     /**
      * Sets the value of the indexed component of the specified array
@@ -539,8 +572,16 @@ class Array {
      * the length of the specified array
      * @see Array#set
      */
-    public static native void setFloat(Object array, int index, float f)
-        throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+    public static void setFloat(Object array, int index, float f)
+    throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
+        Class<?> t = array.getClass().getComponentType();
+        if (t == Float.TYPE) {
+            float[] arr = (float[])array;
+            arr[index] = f;
+        } else {
+            setDouble(array, index, f);
+        }
+    }
 
     /**
      * Sets the value of the indexed component of the specified array
@@ -559,8 +600,16 @@ class Array {
      * the length of the specified array
      * @see Array#set
      */
-    public static native void setDouble(Object array, int index, double d)
-        throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+    public static void setDouble(Object array, int index, double d)
+    throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
+        Class<?> t = array.getClass().getComponentType();
+        if (t == Double.TYPE) {
+            double[] arr = (double[])array;
+            arr[index] = d;
+        } else {
+            throw new IllegalArgumentException("argument type mismatch");
+        }
+    }
 
     /*
      * Private
@@ -587,7 +636,4 @@ class Array {
         }
         return arr;
     }
-
-
-    
 }
