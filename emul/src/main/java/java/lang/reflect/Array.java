@@ -162,7 +162,7 @@ class Array {
     public static int getLength(Object array)
     throws IllegalArgumentException {
         if (!array.getClass().isArray()) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Argument is not an array");
         }
         return length(array);
     }
@@ -224,8 +224,14 @@ class Array {
      * length of the specified array
      * @see Array#get
      */
-    public static native byte getByte(Object array, int index)
-        throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+    public static byte getByte(Object array, int index)
+    throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
+        if (array.getClass().getComponentType() != Byte.TYPE) {
+            throw new IllegalArgumentException();
+        }
+        byte[] arr = (byte[]) array;
+        return arr[index];
+    }
 
     /**
      * Returns the value of the indexed component in the specified
@@ -262,8 +268,15 @@ class Array {
      * length of the specified array
      * @see Array#get
      */
-    public static native short getShort(Object array, int index)
-        throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+    public static short getShort(Object array, int index)
+    throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
+        final Class<?> t = array.getClass().getComponentType();
+        if (t == Short.TYPE) {
+            short[] arr = (short[]) array;
+            return arr[index];
+        }
+        return getByte(array, index);
+    }
 
     /**
      * Returns the value of the indexed component in the specified
@@ -281,8 +294,15 @@ class Array {
      * length of the specified array
      * @see Array#get
      */
-    public static native int getInt(Object array, int index)
-        throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+    public static int getInt(Object array, int index) 
+    throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
+        final Class<?> t = array.getClass().getComponentType();
+        if (t == Integer.TYPE) {
+            int[] arr = (int[]) array;
+            return arr[index];
+        }
+        return getShort(array, index);
+    }
 
     /**
      * Returns the value of the indexed component in the specified
@@ -300,8 +320,15 @@ class Array {
      * length of the specified array
      * @see Array#get
      */
-    public static native long getLong(Object array, int index)
-        throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+    public static long getLong(Object array, int index)
+    throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
+        final Class<?> t = array.getClass().getComponentType();
+        if (t == Long.TYPE) {
+            long[] arr = (long[]) array;
+            return arr[index];
+        }
+        return getInt(array, index);
+    }
 
     /**
      * Returns the value of the indexed component in the specified
@@ -319,8 +346,15 @@ class Array {
      * length of the specified array
      * @see Array#get
      */
-    public static native float getFloat(Object array, int index)
-        throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+    public static float getFloat(Object array, int index)
+    throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
+        final Class<?> t = array.getClass().getComponentType();
+        if (t == Float.TYPE) {
+            float[] arr = (float[]) array;
+            return arr[index];
+        }
+        return getLong(array, index);
+    }
 
     /**
      * Returns the value of the indexed component in the specified
@@ -338,8 +372,15 @@ class Array {
      * length of the specified array
      * @see Array#get
      */
-    public static native double getDouble(Object array, int index)
-        throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+    public static double getDouble(Object array, int index)
+    throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
+        final Class<?> t = array.getClass().getComponentType();
+        if (t == Double.TYPE) {
+            double[] arr = (double[]) array;
+            return arr[index];
+        }
+        return getFloat(array, index);
+    }
 
     /**
      * Sets the value of the indexed component of the specified array
