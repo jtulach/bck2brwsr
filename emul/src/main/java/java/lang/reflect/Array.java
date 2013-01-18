@@ -188,8 +188,9 @@ class Array {
      */
     public static Object get(Object array, int index)
     throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
-        if (array.getClass().getComponentType().isPrimitive()) {
-            throw new IllegalArgumentException();
+        final Class<?> t = array.getClass().getComponentType();
+        if (t.isPrimitive()) {
+            return Array.fromPrimitive(t, array, index);
         } else {
             return ((Object[])array)[index];
         }
@@ -649,4 +650,10 @@ class Array {
         }
         return arr;
     }
+    private static Object fromPrimitive(Class<?> t, Object array, int index) {
+        return Method.fromPrimitive(t, atArray(array, index));
+    }
+    
+    @JavaScriptBody(args = { "array", "index" }, body = "return array[index]")
+    private static native Object atArray(Object array, int index);
 }
