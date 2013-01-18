@@ -159,8 +159,16 @@ class Array {
      * @exception IllegalArgumentException if the object argument is not
      * an array
      */
-    public static native int getLength(Object array)
-        throws IllegalArgumentException;
+    public static int getLength(Object array)
+    throws IllegalArgumentException {
+        if (!array.getClass().isArray()) {
+            throw new IllegalArgumentException();
+        }
+        return length(array);
+    }
+    
+    @JavaScriptBody(args = { "arr" }, body = "return arr.length;")
+    private static native int length(Object arr);
 
     /**
      * Returns the value of the indexed component in the specified

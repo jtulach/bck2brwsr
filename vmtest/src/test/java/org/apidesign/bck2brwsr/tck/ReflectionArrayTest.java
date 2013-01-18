@@ -31,6 +31,16 @@ public class ReflectionArrayTest {
         String[] arr = (String[]) Array.newInstance(String.class, 10);
         return arr.length;
     }
+    
+    @Compare public int reflectiveLengthOfStringArray() {
+        Object arr = Array.newInstance(String.class, 10);
+        return Array.getLength(arr);
+    }
+
+    @Compare public int reflectiveLengthOneNonArray() {
+        Object arr = "non-array";
+        return Array.getLength(arr);
+    }
 
     @Compare public String compTypeOfStringArray() {
         String[] arr = (String[]) Array.newInstance(String.class, 10);
@@ -46,6 +56,11 @@ public class ReflectionArrayTest {
         return arr.length;
     }
 
+    @Compare public int reflectiveLengthOfIntArray() {
+        Object arr = Array.newInstance(Integer.TYPE, 10);
+        return Array.getLength(arr);
+    }
+
     @Compare public String compTypeOfIntArray() {
         int[] arr = (int[]) Array.newInstance(int.class, 10);
         return arr.getClass().getComponentType().getName();
@@ -53,6 +68,40 @@ public class ReflectionArrayTest {
 
     @Compare public Object intNegativeArrayExcp() {
         return Array.newInstance(int.class, -5);
+    }
+
+    @Compare public Integer verifyAutobox() {
+        int[] arr = (int[]) Array.newInstance(int.class, 5);
+        return (Integer) Array.get(arr, 0);
+    }
+    @Compare public int verifyInt() {
+        int[] arr = (int[]) Array.newInstance(int.class, 5);
+        return Array.getInt(arr, 0);
+    }
+    @Compare public long verifyConvertToLong() {
+        int[] arr = (int[]) Array.newInstance(int.class, 5);
+        return Array.getLong(arr, 0);
+    }
+
+    @Compare public Object verifySetIntToObject() {
+        Object[] arr = (Object[]) Array.newInstance(Object.class, 5);
+        Array.setInt(arr, 0, 10);
+        return Array.get(arr, 0);
+    }
+    @Compare public long verifySetShort() {
+        int[] arr = (int[]) Array.newInstance(int.class, 5);
+        Array.setShort(arr, 0, (short)10);
+        return Array.getLong(arr, 0);
+    }
+    @Compare public long verifyCantSetLong() {
+        int[] arr = (int[]) Array.newInstance(int.class, 5);
+        Array.setLong(arr, 0, 10);
+        return Array.getLong(arr, 0);
+    }
+
+    @Compare public double verifyConvertToDouble() {
+        int[] arr = (int[]) Array.newInstance(int.class, 5);
+        return Array.getDouble(arr, 0);
     }
     
     @Compare public int multiIntArray() {
