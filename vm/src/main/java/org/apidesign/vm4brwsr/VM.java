@@ -33,6 +33,11 @@ class VM extends ByteCodeToJavaScript {
         // uses VMLazy to load dynamic classes
         VMLazy.init();
     }
+
+    @Override
+    boolean debug(String msg) throws IOException {
+        return false;
+    }
     
     static void compile(Bck2Brwsr.Resources l, Appendable out, StringArray names) throws IOException {
         new VM(out).doCompile(l, names);
@@ -112,12 +117,19 @@ class VM extends ByteCodeToJavaScript {
             + "    var loader = {};\n"
             + "    loader.vm = vm;\n"
             + "    loader.loadClass = function(name) {\n"
-            + "      var attr = name.replace__Ljava_lang_String_2CC(name, '.','_');\n"
+            + "      var attr = name.replace__Ljava_lang_String_2CC('.','_');\n"
             + "      var fn = vm[attr];\n"
             + "      if (fn) return fn(false);\n"
             + "      if (!args[0]) throw 'bck2brwsr initialized without loader function, cannot load ' + name;\n"
             + "      return vm.org_apidesign_vm4brwsr_VMLazy(false).\n"
-            + "        load___3Ljava_lang_Object_2Ljava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2(loader, name, args);\n"
+            + "        load__Ljava_lang_Object_2Ljava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2(loader, name, args);\n"
+            + "    }\n"
+            + "    if (args[0]) {\n"
+            + "      vm.loadClass = loader.loadClass;\n"
+            + "      vm.loadBytes = function(name) {\n"
+            + "        if (!args[0]) throw 'bck2brwsr initialized without loader function, cannot load ' + name;\n"
+            + "        return args[0](name);\n"
+            + "      }\n"
             + "    }\n"
             + "    return loader;\n"
             + "  };\n");

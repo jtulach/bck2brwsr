@@ -47,10 +47,10 @@ final class VMLazy {
     
     static Object load(Object loader, String name, Object[] arguments) 
     throws IOException, ClassNotFoundException {
-        return new VMLazy(loader, arguments).load(name);
+        return new VMLazy(loader, arguments).load(name, false);
     }
     
-    private Object load(String name)
+    private Object load(String name, boolean instance)
     throws IOException, ClassNotFoundException {
         String res = name.replace('.', '/') + ".class";
         byte[] arr = read(loader, res, args);
@@ -61,10 +61,27 @@ final class VMLazy {
         StringBuilder out = new StringBuilder();
         out.append("var loader = arguments[0];\n");
         out.append("var vm = loader.vm;\n");
-        new Gen(this, out).compile(new ByteArrayInputStream(arr));
+        int prelude = out.length();
+        String initCode = new Gen(this, out).compile(new ByteArrayInputStream(arr));
         String code = out.toString().toString();
+//        dump("Loading " + name);
+        dump(code);
         String under = name.replace('.', '_');
-        return applyCode(loader, under, code);
+        Object fn = applyCode(loader, under, code, instance);
+        
+        if (!initCode.isEmpty()) {
+            out.setLength(prelude);
+            out.append(initCode);
+            code = out.toString().toString();
+            dump(code);
+            applyCode(loader, null, code, false);
+        }            
+        
+        return fn;
+    }
+
+//    @JavaScriptBody(args = "s", body = "java.lang.System.out.println(s.toString());")
+    static void dump(String s) {
     }
 
 /* possibly not needed:
@@ -76,15 +93,15 @@ final class VMLazy {
 */
     
 
-    @JavaScriptBody(args = {"loader", "name", "script" }, body =
+    @JavaScriptBody(args = {"loader", "name", "script", "instance" }, body =
         "try {\n" +
         "  new Function(script)(loader, name);\n" +
         "} catch (ex) {\n" +
         "  throw 'Cannot compile ' + ex + ' line: ' + ex.lineNumber + ' script:\\n' + script;\n" +
         "}\n" +
-        "return vm[name](false);\n"
+        "return name != null ? vm[name](instance) : null;\n"
     )
-    private static native Object applyCode(Object loader, String name, String script);
+    private static native Object applyCode(Object loader, String name, String script, boolean instance);
     
     
     private static final class Gen extends ByteCodeToJavaScript {
@@ -95,16 +112,17 @@ final class VMLazy {
             this.lazy = vm;
         }
         
-        @JavaScriptBody(args = {"self", "n"},
+        @JavaScriptBody(args = {"n"},
         body =
-        "var cls = n.replace__Ljava_lang_String_2CC(n, '/','_').toString();"
-        + "\nvar dot = n.replace__Ljava_lang_String_2CC(n,'/','.').toString();"
-        + "\nvar lazy = self.fld_lazy;"
+        "var cls = n.replace__Ljava_lang_String_2CC('/','_').toString();"
+        + "\nvar dot = n.replace__Ljava_lang_String_2CC('/','.').toString();"
+        + "\nvar lazy = this.fld_lazy;"
         + "\nvar loader = lazy.fld_loader;"
         + "\nvar vm = loader.vm;"
         + "\nif (vm[cls]) return false;"
         + "\nvm[cls] = function() {"
-        + "\n  return lazy.load__Ljava_lang_Object_2Ljava_lang_String_2(lazy, dot);"
+        + "\n  var instance = arguments.length == 0 || arguments[0] === true;"
+        + "\n  return lazy.load__Ljava_lang_Object_2Ljava_lang_String_2Z(dot, instance);"
         + "\n};"
         + "\nreturn true;")
         @Override

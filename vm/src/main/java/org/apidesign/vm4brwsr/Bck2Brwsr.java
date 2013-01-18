@@ -37,7 +37,7 @@ import java.util.Enumeration;
  *   return null; // byte[] for the resource
  * });
  * </pre>
- * In this scenario, when a request for a unknown class is made, the loader
+ * In this scenario, when a request for an unknown class is made, the loader
  * function is asked for its byte code and the system dynamically transforms
  * it to JavaScript.
  *

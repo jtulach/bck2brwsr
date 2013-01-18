@@ -66,7 +66,7 @@ public class Object {
      * @see    Class Literals, section 15.8.2 of
      *         <cite>The Java&trade; Language Specification</cite>.
      */
-    @JavaScriptBody(args="self", body="return self.constructor.$class;")
+    @JavaScriptBody(args={}, body="return this.constructor.$class;")
     public final native Class<?> getClass();
 
     /**
@@ -104,8 +104,16 @@ public class Object {
      * @see     java.lang.Object#equals(java.lang.Object)
      * @see     java.lang.System#identityHashCode
      */
+    @JavaScriptBody(args = {}, body = 
+        "if (this.$hashCode) return this.$hashCode;\n"
+        + "var h = this.computeHashCode__I();\n"
+        + "return this.$hashCode = h & h;"
+    )
     public native int hashCode();
 
+    @JavaScriptBody(args = {}, body = "Math.random() * Math.pow(2, 32);")
+    native int computeHashCode();
+    
     /**
      * Indicates whether some other object is "equal to" this one.
      * <p>
@@ -216,7 +224,28 @@ public class Object {
      *               be cloned.
      * @see java.lang.Cloneable
      */
-    protected native Object clone() throws CloneNotSupportedException;
+    protected Object clone() throws CloneNotSupportedException {
+        Object ret = clone(this);
+        if (ret == null) {
+            throw new CloneNotSupportedException(getClass().getName());
+        }
+        return ret;
+    }
+
+    @JavaScriptBody(args = "self", body = 
+          "\nif (!self.$instOf_java_lang_Cloneable) {"
+        + "\n  return null;"
+        + "\n} else {"
+        + "\n  var clone = self.constructor(true);"
+        + "\n  var props = Object.getOwnPropertyNames(self);"
+        + "\n  for (var i = 0; i < props.length; i++) {"
+        + "\n    var p = props[i];"
+        + "\n    clone[p] = self[p];"
+        + "\n  };"
+        + "\n  return clone;"
+        + "\n}"
+    )
+    private static native Object clone(Object self) throws CloneNotSupportedException;
 
     /**
      * Returns a string representation of the object. In general, the

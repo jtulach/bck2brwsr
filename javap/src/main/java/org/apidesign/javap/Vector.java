@@ -1,6 +1,19 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Back 2 Browser Bytecode Translator
+ * Copyright (C) 2012 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 2 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. Look for COPYING file in the top folder.
+ * If not, see http://opensource.org/licenses/GPL-2.0.
  */
 package org.apidesign.javap;
 
@@ -24,8 +37,8 @@ final class Vector {
     void add(Object objectType) {
         addElement(objectType);
     }
-    @JavaScriptBody(args = { "self", "obj" }, body = 
-        "self.push(obj);"
+    @JavaScriptBody(args = { "obj" }, body = 
+        "this.push(obj);"
     )
     void addElement(Object obj) {
         final int s = size();
@@ -33,16 +46,16 @@ final class Vector {
         setElementAt(obj, s);
     }
 
-    @JavaScriptBody(args = { "self" }, body = 
-        "return self.length;"
+    @JavaScriptBody(args = { }, body = 
+        "return this.length;"
     )
     int size() {
         return arr == null ? 0 : arr.length;
     }
 
-    @JavaScriptBody(args = { "self", "newArr" }, body =
-        "for (var i = 0; i < self.length; i++) {\n"
-      + "  newArr[i] = self[i];\n"
+    @JavaScriptBody(args = { "newArr" }, body =
+        "for (var i = 0; i < this.length; i++) {\n"
+      + "  newArr[i] = this[i];\n"
       + "}\n")
     void copyInto(Object[] newArr) {
         if (arr == null) {
@@ -54,8 +67,8 @@ final class Vector {
         }
     }
 
-    @JavaScriptBody(args = { "self", "index" }, body =
-        "return self[index];"
+    @JavaScriptBody(args = { "index" }, body =
+        "return this[index];"
     )
     Object elementAt(int index) {
         return arr[index];
@@ -67,8 +80,8 @@ final class Vector {
         arr = newArr;
     }
 
-    @JavaScriptBody(args = { "self", "val", "index" }, body = 
-        "self[index] = val;"
+    @JavaScriptBody(args = { "val", "index" }, body = 
+        "this[index] = val;"
     )
     void setElementAt(Object val, int index) {
         arr[index] = val;

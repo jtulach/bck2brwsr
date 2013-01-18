@@ -43,7 +43,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
-import org.apidesign.bck2brwsr.htmlpage.api.OnClick;
+import org.apidesign.bck2brwsr.htmlpage.api.On;
 import org.apidesign.bck2brwsr.htmlpage.api.Page;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -55,7 +55,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=Processor.class)
 @SupportedAnnotationTypes({
     "org.apidesign.bck2brwsr.htmlpage.api.Page",
-    "org.apidesign.bck2brwsr.htmlpage.api.OnClick"
+    "org.apidesign.bck2brwsr.htmlpage.api.On"
 })
 public final class PageProcessor extends AbstractProcessor {
     @Override
@@ -146,11 +146,11 @@ public final class PageProcessor extends AbstractProcessor {
             }
             TypeElement type = (TypeElement)clazz;
             for (Element method : clazz.getEnclosedElements()) {
-                OnClick oc = method.getAnnotation(OnClick.class);
+                On oc = method.getAnnotation(On.class);
                 if (oc != null) {
                     for (String id : oc.id()) {
                         if (pp.tagNameForId(id) == null) {
-                            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "id = " + oc.id() + " does not exist in the HTML page. Found only " + pp.ids(), method);
+                            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "id = " + id + " does not exist in the HTML page. Found only " + pp.ids(), method);
                             return false;
                         }
                         ExecutableElement ee = (ExecutableElement)method;
@@ -159,21 +159,21 @@ public final class PageProcessor extends AbstractProcessor {
                             hasParam = false;
                         } else {
                             if (ee.getParameters().size() != 1 || ee.getParameters().get(0).asType() != stringType) {
-                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@OnClick method should either have no arguments or one String argument", ee);
+                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@On method should either have no arguments or one String argument", ee);
                                 return false;
                             }
                             hasParam = true;
                         }
                         if (!ee.getModifiers().contains(Modifier.STATIC)) {
-                            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@OnClick method has to be static", ee);
+                            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@On method has to be static", ee);
                             return false;
                         }
                         if (ee.getModifiers().contains(Modifier.PRIVATE)) {
-                            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@OnClick method can't be private", ee);
+                            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@On method can't be private", ee);
                             return false;
                         }
-                        w.append("  ").append(cnstnt(id)).
-                            append(".addOnClick(new Runnable() { public void run() {\n");
+                        w.append("  OnEvent." + oc.event()).append(".of(").append(cnstnt(id)).
+                            append(").perform(new Runnable() { public void run() {\n");
                         w.append("    ").append(type.getSimpleName().toString()).
                             append('.').append(ee.getSimpleName()).append("(");
                         if (hasParam) {

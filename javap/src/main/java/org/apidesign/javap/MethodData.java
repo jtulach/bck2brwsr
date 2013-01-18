@@ -25,9 +25,9 @@
 
 package org.apidesign.javap;
 
-import java.io.*;
-import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
+import java.io.DataInputStream;
+import java.io.IOException;
 import static org.apidesign.javap.RuntimeConstants.*;
 
 /**
@@ -235,22 +235,8 @@ public class MethodData {
     /**
      * Return access of the method.
      */
-    public String[] getAccess(){
-
-        Vector v = new Vector();
-        if ((access & ACC_PUBLIC)   !=0) v.addElement("public");
-        if ((access & ACC_PRIVATE)   !=0) v.addElement("private");
-        if ((access & ACC_PROTECTED)   !=0) v.addElement("protected");
-        if ((access & ACC_STATIC)   !=0) v.addElement("static");
-        if ((access & ACC_FINAL)    !=0) v.addElement("final");
-        if ((access & ACC_SYNCHRONIZED) !=0) v.addElement("synchronized");
-        if ((access & ACC_NATIVE) !=0) v.addElement("native");
-        if ((access & ACC_ABSTRACT) !=0) v.addElement("abstract");
-        if ((access & ACC_STRICT) !=0) v.addElement("strictfp");
-
-        String[] accflags = new String[v.size()];
-        v.copyInto(accflags);
-        return accflags;
+    public int getAccess(){
+        return access;
     }
 
     /**
@@ -357,10 +343,10 @@ public class MethodData {
     /**
      * Return exception table in code attributre.
      */
-    public Vector getexception_table(){
-        return exception_table;
+    public TrapDataIterator getTrapDataIterator(){
+        return new TrapDataIterator(exception_table);
     }
-
+    
 
     /**
      * Return method attributes.
@@ -400,5 +386,9 @@ public class MethodData {
         AttrData[] arr = new AttrData[attrs.size()];
         attrs.copyInto(arr);
         return ClassData.findAttr(n, arr);
+    }
+
+    public boolean isConstructor() {
+        return "<init>".equals(getName());
     }
 }

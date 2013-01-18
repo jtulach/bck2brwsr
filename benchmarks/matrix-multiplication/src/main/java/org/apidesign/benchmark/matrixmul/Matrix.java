@@ -17,17 +17,20 @@
  */
 package org.apidesign.benchmark.matrixmul;
 
-//import java.io.PrintStream;
-//import java.util.Random;
+import java.io.IOException;
+import java.util.Arrays;
 
 public class Matrix {
-
     private final int rank;
-    private float data[][];
+    private final float data[][];
     
     public Matrix(int r) {
-        rank = r;
-        data = new float[r][r];
+        this(r, new float[r][r]);
+    }
+    
+    private Matrix(int r, float[][] data) {
+        this.rank = r;
+        this.data = data;
     }
     
     public void setElement(int i, int j, float value) {
@@ -62,20 +65,44 @@ public class Matrix {
                 res[i][j] = ij;
             }
         }
-        data = res;
-        
-        return this;
+        return new Matrix(rank, res);
     }
     
-    /*
-    public void printOn(PrintStream s) {
+    public void printOn(Appendable s) throws IOException {
         for (int i = 0; i < rank; i++) {
+            String sep = "";
             for (int j = 0; j < rank; j++) {
-                s.printf("%f ", data[i][j]);
+                s.append(sep + data[i][j]);
+                sep = " ";
             }
-            s.println();
+            s.append("\n");
         }
     }
-    */
-    
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Matrix) {
+            Matrix snd = (Matrix)obj;
+            if (snd.rank != rank) {
+                return false;
+            }
+            for (int i = 0; i < rank; i++) {
+                for (int j = 0; j < rank; j++) {
+                    if (data[i][j] != snd.data[i][j]) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 97 * hash + this.rank;
+        hash = 97 * hash + Arrays.deepHashCode(this.data);
+        return hash;
+    }
 }
