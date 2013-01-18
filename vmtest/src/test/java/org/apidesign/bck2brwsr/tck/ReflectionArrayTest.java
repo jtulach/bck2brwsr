@@ -74,6 +74,11 @@ public class ReflectionArrayTest {
         int[] arr = (int[]) Array.newInstance(int.class, 5);
         return (Integer) Array.get(arr, 0);
     }
+    @Compare public String verifyObjectArray() {
+        String[] arr = (String[]) Array.newInstance(String.class, 5);
+        Array.set(arr, 0, "Hello");
+        return (String) Array.get(arr, 0);
+    }
     @Compare public int verifyInt() {
         int[] arr = (int[]) Array.newInstance(int.class, 5);
         return Array.getInt(arr, 0);
@@ -84,9 +89,13 @@ public class ReflectionArrayTest {
     }
 
     @Compare public Object verifySetIntToObject() {
-        Object[] arr = (Object[]) Array.newInstance(Object.class, 5);
-        Array.setInt(arr, 0, 10);
-        return Array.get(arr, 0);
+        try {
+            Object[] arr = (Object[]) Array.newInstance(Object.class, 5);
+            Array.setInt(arr, 0, 10);
+            return Array.get(arr, 0);
+        } catch (Exception exception) {
+            return exception.getClass().getName();
+        }
     }
     @Compare public long verifySetShort() {
         int[] arr = (int[]) Array.newInstance(int.class, 5);

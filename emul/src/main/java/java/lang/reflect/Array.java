@@ -186,8 +186,14 @@ class Array {
      * argument is negative, or if it is greater than or equal to the
      * length of the specified array
      */
-    public static native Object get(Object array, int index)
-        throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+    public static Object get(Object array, int index)
+    throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
+        if (array.getClass().getComponentType().isPrimitive()) {
+            throw new IllegalArgumentException();
+        } else {
+            return ((Object[])array)[index];
+        }
+    }
 
     /**
      * Returns the value of the indexed component in the specified
@@ -399,8 +405,15 @@ class Array {
      * argument is negative, or if it is greater than or equal to
      * the length of the specified array
      */
-    public static native void set(Object array, int index, Object value)
-        throws IllegalArgumentException, ArrayIndexOutOfBoundsException;
+    public static void set(Object array, int index, Object value)
+    throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
+        if (array.getClass().getComponentType().isPrimitive()) {
+            throw new IllegalArgumentException();
+        } else {
+            Object[] arr = (Object[])array;
+            arr[index] = value;
+        }
+    }
 
     /**
      * Sets the value of the indexed component of the specified array
