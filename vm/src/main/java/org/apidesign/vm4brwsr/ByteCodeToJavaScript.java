@@ -926,7 +926,7 @@ abstract class ByteCodeToJavaScript {
                         case 11: jvmType = "[J"; break;
                         default: throw new IllegalStateException("Array type: " + atype);
                     }
-                    emit(out, "@2 = new Array(@1).initWith('@3', 0);",
+                    emit(out, "@2 = Array.prototype.newArray__Ljava_lang_Object_2ZLjava_lang_String_2I(true, '@3', @1);",
                          smapper.popI(), smapper.pushA(), jvmType);
                     break;
                 case opc_anewarray: {
@@ -938,7 +938,7 @@ abstract class ByteCodeToJavaScript {
                     } else {
                         typeName = "[L" + typeName + ";";
                     }
-                    emit(out, "@2 = new Array(@1).initWith('@3', null);",
+                    emit(out, "@2 = Array.prototype.newArray__Ljava_lang_Object_2ZLjava_lang_String_2I(false, '@3', @1);",
                          smapper.popI(), smapper.pushA(), typeName);
                     break;
                 }

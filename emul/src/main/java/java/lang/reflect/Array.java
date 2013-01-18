@@ -26,6 +26,7 @@
 package java.lang.reflect;
 
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
+import org.apidesign.bck2brwsr.core.JavaScriptPrototype;
 
 /**
  * The {@code Array} class provides static methods to dynamically create and
@@ -37,6 +38,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  *
  * @author Nakul Saraiya
  */
+@JavaScriptPrototype(prototype = "new Array", container = "Array.prototype")
 public final
 class Array {
 

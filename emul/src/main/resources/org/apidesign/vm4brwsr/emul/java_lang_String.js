@@ -1,4 +1,5 @@
-// initialize methods on String constants
+// initialize methods on arrays and String constants
+vm.java_lang_reflect_Array(false);
 vm.java_lang_String(false);
 
 // we need initialized arrays
