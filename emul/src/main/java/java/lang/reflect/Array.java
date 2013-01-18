@@ -25,6 +25,8 @@
 
 package java.lang.reflect;
 
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+
 /**
  * The {@code Array} class provides static methods to dynamically create and
  * access Java arrays.
@@ -66,10 +68,44 @@ class Array {
      * is negative
      */
     public static Object newInstance(Class<?> componentType, int length)
-        throws NegativeArraySizeException {
-        return newArray(componentType, length);
+    throws NegativeArraySizeException {
+        if (length < 0) {
+            throw new NegativeArraySizeException();
+        }
+        String sig = findSignature(componentType);
+        return newArray(componentType.isPrimitive(), sig, length);
     }
-
+    
+    private static String findSignature(Class<?> type) {
+        if (type == Integer.TYPE) {
+            return "[I";
+        }
+        if (type == Long.TYPE) {
+            return "[J";
+        }
+        if (type == Double.TYPE) {
+            return "[D";
+        }
+        if (type == Float.TYPE) {
+            return "[F";
+        }
+        if (type == Byte.TYPE) {
+            return "[B";
+        }
+        if (type == Boolean.TYPE) {
+            return "[Z";
+        }
+        if (type == Short.TYPE) {
+            return "[S";
+        }
+        if (type == Character.TYPE) {
+            return "[C";
+        }
+        if (type.getName().equals("void")) {
+            throw new IllegalStateException("Can't create array for " + type);
+        }
+        return "[L" + type.getName() + ";";
+    }
     /**
      * Creates a new array
      * with the specified component type and dimensions.
@@ -474,12 +510,19 @@ class Array {
      * Private
      */
 
-    private static native Object newArray(Class componentType, int length)
-        throws NegativeArraySizeException;
+    @JavaScriptBody(args = { "primitive", "sig", "length" }, body =
+          "var arr = new Array(length);\n"
+        + "var value = primitive ? 0 : null;\n"
+        + "for(var i = 0; i < length; i++) arr[i] = value;\n"
+        + "arr.jvmName = sig;\n"
+        + "return arr;"
+    )
+    private static native Object newArray(boolean primitive, String sig, int length);
 
     private static native Object multiNewArray(Class componentType,
         int[] dimensions)
         throws IllegalArgumentException, NegativeArraySizeException;
 
 
+    
 }
