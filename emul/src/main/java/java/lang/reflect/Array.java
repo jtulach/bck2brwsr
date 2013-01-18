@@ -143,7 +143,12 @@ class Array {
      */
     public static Object newInstance(Class<?> componentType, int... dimensions)
         throws IllegalArgumentException, NegativeArraySizeException {
-        return multiNewArray(componentType, dimensions);
+        StringBuilder sig = new StringBuilder();
+        for (int i = 1; i < dimensions.length; i++) {
+            sig.append('[');
+        }
+        sig.append(findSignature(componentType));
+        return multiNewArray(sig.toString(), dimensions, 0);
     }
 
     /**
@@ -521,9 +526,18 @@ class Array {
     )
     private static native Object newArray(boolean primitive, String sig, int length);
 
-    private static native Object multiNewArray(Class componentType,
-        int[] dimensions)
-        throws IllegalArgumentException, NegativeArraySizeException;
+    private static Object multiNewArray(String sig, int[] dims, int index)
+    throws IllegalArgumentException, NegativeArraySizeException {
+        if (dims.length == index + 1) {
+            return newArray(sig.length() == 2, sig, dims[index]);
+        }
+        Object[] arr = (Object[]) newArray(false, sig, dims[index]);
+        String compsig = sig.substring(1);
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = multiNewArray(compsig, dims, index + 1);
+        }
+        return arr;
+    }
 
 
     

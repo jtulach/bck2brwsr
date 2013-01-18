@@ -55,6 +55,15 @@ public class ReflectionArrayTest {
         return Array.newInstance(int.class, -5);
     }
     
+    @Compare public int multiIntArray() {
+        int[][][] arr = (int[][][]) Array.newInstance(int.class, 3, 3, 3);
+        return arr[0][1][2] + 5 + arr[2][2][0];
+    }
+
+    @Compare public String multiIntArrayCompType() {
+        return Array.newInstance(int.class, 3, 3, 3).getClass().getName();
+    }
+    
     
     @Factory
     public static Object[] create() {
