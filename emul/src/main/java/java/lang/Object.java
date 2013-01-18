@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import java.lang.reflect.Array;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.core.JavaScriptPrototype;
 
@@ -40,8 +41,13 @@ import org.apidesign.bck2brwsr.core.JavaScriptPrototype;
 @JavaScriptPrototype(container = "Object.prototype", prototype = "new Object")
 public class Object {
 
-    @JavaScriptBody(args = {}, body = "")
-    private static native void registerNatives();
+    private static void registerNatives() {
+        try {
+            Array.get(null, 0);
+        } catch (Throwable ex) {
+            // ignore
+        }
+    }
     static {
         registerNatives();
     }
