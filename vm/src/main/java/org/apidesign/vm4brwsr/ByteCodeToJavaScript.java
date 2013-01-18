@@ -947,26 +947,17 @@ abstract class ByteCodeToJavaScript {
                     i += 2;
                     String typeName = jc.getClassName(type);
                     int dim = readByte(byteCodes, ++i);
-                    out.append("{ var a0 = new Array(").append(smapper.popI())
-                       .append(").initWith('").append(typeName).append("', null);");
-                    for (int d = 1; d < dim; d++) {
-                        typeName = typeName.substring(1);
-                        out.append("\n  var l" + d).append(" = ")
-                           .append(smapper.popI()).append(';');
-                        out.append("\n  for (var i" + d).append (" = 0; i" + d).
-                            append(" < a" + (d - 1)).
-                            append(".length; i" + d).append("++) {");
-                        out.append("\n    var a" + d).
-                            append (" = new Array(l" + d).append(").initWith('")
-                            .append(typeName).append("', ")
-                            .append(typeName.length() == 2 ? "0" : "null").append(");");
-                        out.append("\n    a" + (d - 1)).append("[i" + d).append("] = a" + d).
-                            append(";");
+                    StringBuilder dims = new StringBuilder();
+                    dims.append('[');
+                    for (int d = 0; d < dim; d++) {
+                        if (d != 0) {
+                            dims.append(",");
+                        }
+                        dims.append(smapper.popI());
                     }
-                    for (int d = 1; d < dim; d++) {
-                        out.append("\n  }");
-                    }
-                    out.append("\n").append(smapper.pushA()).append(" = a0; }");
+                    dims.append(']');
+                    emit(out, "@2 = Array.prototype.multiNewArray__Ljava_lang_Object_2Ljava_lang_String_2_3II('@3', @1, 0);",
+                         dims.toString(), smapper.pushA(), typeName);
                     break;
                 }
                 case opc_arraylength:
