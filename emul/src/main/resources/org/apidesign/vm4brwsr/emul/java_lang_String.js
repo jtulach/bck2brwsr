@@ -1,12 +1,7 @@
-// initialize methods on String constants
+// initialize methods on arrays and String constants
+vm.java_lang_reflect_Array(false);
 vm.java_lang_String(false);
 
-// we need initialized arrays
-Array.prototype.initWith = function(sig, value) {
-  for(var i = 0; i < this.length; i++) this[i] = value;
-  this.jvmName = sig;
-  return this;
-};
 Array.prototype.at = function(indx, value) {
   if (indx < 0 || indx > this.length) {
       var e = vm.java_lang_ArrayIndexOutOfBoundsException(true);
