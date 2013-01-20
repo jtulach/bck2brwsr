@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -34,15 +35,18 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
+import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
 import org.apidesign.bck2brwsr.htmlpage.api.On;
 import org.apidesign.bck2brwsr.htmlpage.api.Page;
 import org.apidesign.bck2brwsr.htmlpage.api.Property;
@@ -101,6 +105,7 @@ public final class PageProcessor extends AbstractProcessor {
                     }
                     w.append("  }\n");
                     generateProperties(w, p.properties());
+                    generateComputedProperties(w, e.getEnclosedElements());
                     w.append("}\n");
                 } finally {
                     w.close();
@@ -234,7 +239,7 @@ public final class PageProcessor extends AbstractProcessor {
 
     private static void generateProperties(Writer w, Property[] properties) throws IOException {
         for (Property p : properties) {
-            String[] gs = toGetSet(p);
+            String[] gs = toGetSet(p.name(), null);
 
             final String tn = typeName(p);
             w.write("private static " + tn + " prop_" + p.name() + ";\n");
@@ -247,8 +252,34 @@ public final class PageProcessor extends AbstractProcessor {
         }
     }
 
-    private static String[] toGetSet(Property p) {
-        String n = Character.toUpperCase(p.name().charAt(0)) + p.name().substring(1);
+    private void generateComputedProperties(Writer w, Collection<? extends Element> arr) throws IOException {
+        for (Element e : arr) {
+            if (e.getKind() != ElementKind.METHOD) {
+                continue;
+            }
+            if (e.getAnnotation(ComputedProperty.class) == null) {
+                continue;
+            }
+            ExecutableElement ee = (ExecutableElement)e;
+            String[] gs = toGetSet(ee.getSimpleName().toString(), null);
+
+            final String tn = ee.getReturnType().toString();
+            w.write("public static " + tn + " " + gs[0] + "() {\n");
+            w.write("  return " + e.getEnclosingElement().getSimpleName() + '.' + e.getSimpleName() + "(");
+            String sep = "";
+            for (VariableElement pe : ee.getParameters()) {
+                String[] call = toGetSet(pe.getSimpleName().toString(), null);
+                w.write(sep);
+                w.write(call[0] + "()");
+                sep = ", ";
+            }
+            w.write(");\n");
+            w.write("}\n");
+        }
+    }
+
+    private static String[] toGetSet(String name, Object type) {
+        String n = Character.toUpperCase(name.charAt(0)) + name.substring(1);
 //        if (p.type() == boolean.class) {
 //            return new String[] { "is" + n, "set" + n };
 //        } else {

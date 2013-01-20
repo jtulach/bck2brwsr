@@ -17,6 +17,7 @@
  */
 package org.apidesign.bck2brwsr.htmlpage;
 
+import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
 import org.apidesign.bck2brwsr.htmlpage.api.Page;
 import org.apidesign.bck2brwsr.htmlpage.api.Property;
 import static org.testng.Assert.*;
@@ -35,5 +36,15 @@ public class ModelTest {
         assertNotNull(c, "Class for empty page generated");
         Model.setValue(10);
         assertEquals(10, Model.getValue(), "Value changed");
+    }
+    
+    @Test public void computedMethod() {
+        Model.setValue(4);
+        assertEquals(16, Model.getPowerValue());
+    }
+    
+    @ComputedProperty
+    static int powerValue(int value) {
+        return value * value;
     }
 }
