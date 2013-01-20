@@ -24,7 +24,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@ExtraJavaScript(resource = "org/apidesign/bck2brwsr/htmlpage/knockout-min-2.2.0.js")
+@ExtraJavaScript(resource = "org/apidesign/bck2brwsr/htmlpage/knockout-2.2.1.js")
 public final class Knockout {
 
 
