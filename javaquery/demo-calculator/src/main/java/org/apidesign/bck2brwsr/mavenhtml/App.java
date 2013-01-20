@@ -68,7 +68,11 @@ public class App {
         if (v == 0.0) {
             Calculator.setDisplay(Integer.parseInt(digit));
         } else {
-            String txt = Double.toString(v) + digit;
+            String txt = Double.toString(v);
+            if (txt.endsWith(".0")) {
+                txt = txt.substring(0, txt.length() - 2);
+            }
+            txt = txt + digit;
             Calculator.setDisplay(Double.parseDouble(txt));
         }
     }
