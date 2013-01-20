@@ -95,7 +95,7 @@ public final class PageProcessor extends AbstractProcessor {
                             append(type).append("(\"").append(id).append("\");\n");
                     }
                     w.append("  static {\n");
-                    if (!initializeOnClick(pe, w, pp)) {
+                    if (!initializeOnClick((TypeElement) e, w, pp)) {
                         return false;
                     }
                     w.append("  }\n");
@@ -138,14 +138,13 @@ public final class PageProcessor extends AbstractProcessor {
         return id.toUpperCase(Locale.ENGLISH).replace('.', '_');
     }
 
-    private boolean initializeOnClick(PackageElement pe, Writer w, ProcessPage pp) throws IOException {
+    private boolean initializeOnClick(TypeElement type, Writer w, ProcessPage pp) throws IOException {
         TypeMirror stringType = processingEnv.getElementUtils().getTypeElement("java.lang.String").asType();
-        for (Element clazz : pe.getEnclosedElements()) {
-            if (clazz.getKind() != ElementKind.CLASS) {
-                continue;
-            }
-            TypeElement type = (TypeElement)clazz;
-            for (Element method : clazz.getEnclosedElements()) {
+        { //for (Element clazz : pe.getEnclosedElements()) {
+          //  if (clazz.getKind() != ElementKind.CLASS) {
+            //    continue;
+           // }
+            for (Element method : type.getEnclosedElements()) {
                 On oc = method.getAnnotation(On.class);
                 if (oc != null) {
                     for (String id : oc.id()) {
