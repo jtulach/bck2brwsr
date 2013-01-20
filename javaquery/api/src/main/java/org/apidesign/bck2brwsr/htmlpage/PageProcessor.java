@@ -34,17 +34,18 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import org.apidesign.bck2brwsr.htmlpage.api.On;
 import org.apidesign.bck2brwsr.htmlpage.api.Page;
+import org.apidesign.bck2brwsr.htmlpage.api.Property;
 import org.openide.util.lookup.ServiceProvider;
 
 /** Annotation processor to process an XHTML page and generate appropriate 
@@ -99,6 +100,7 @@ public final class PageProcessor extends AbstractProcessor {
                         return false;
                     }
                     w.append("  }\n");
+                    generateProperties(w, p.properties());
                     w.append("}\n");
                 } finally {
                     w.close();
@@ -228,5 +230,40 @@ public final class PageProcessor extends AbstractProcessor {
             return e;
         }
         return e.getEnclosingElement();
+    }
+
+    private static void generateProperties(Writer w, Property[] properties) throws IOException {
+        for (Property p : properties) {
+            String[] gs = toGetSet(p);
+
+            final String tn = typeName(p);
+            w.write("private static " + tn + " prop_" + p.name() + ";\n");
+            w.write("public static " + tn + " " + gs[0] + "() {\n");
+            w.write("  return prop_" + p.name() + ";\n");
+            w.write("}\n");
+            w.write("public static void " + gs[1] + "(" + tn + " v) {\n");
+            w.write("  prop_" + p.name() + " = v;\n");
+            w.write("}\n");
+        }
+    }
+
+    private static String[] toGetSet(Property p) {
+        String n = Character.toUpperCase(p.name().charAt(0)) + p.name().substring(1);
+//        if (p.type() == boolean.class) {
+//            return new String[] { "is" + n, "set" + n };
+//        } else {
+        return new String[]{"get" + n, "set" + n};
+//        }
+    }
+
+    private static String typeName(Property p) {
+        try {
+            return p.type().getName();
+        } catch (MirroredTypeException ex) {
+            if (ex.getTypeMirror().getKind().isPrimitive()) {
+                return ex.getTypeMirror().toString();
+            }
+            throw ex;
+        }
     }
 }

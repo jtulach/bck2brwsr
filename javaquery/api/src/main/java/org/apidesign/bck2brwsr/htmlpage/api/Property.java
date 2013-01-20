@@ -15,25 +15,20 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.htmlpage;
+package org.apidesign.bck2brwsr.htmlpage.api;
 
-import org.apidesign.bck2brwsr.htmlpage.api.Page;
-import org.apidesign.bck2brwsr.htmlpage.api.Property;
-import static org.testng.Assert.*;
-import org.testng.annotations.Test;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-/**
+/** Represents a property in a generated model of an HTML
+ * {@link Page}.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@Page(xhtml = "Empty.html", className = "Model", properties = {
-    @Property(name = "value", type = int.class)
-})
-public class ModelTest {
-    @Test public void classGeneratedWithSetterGetter() {
-        Class<?> c = Model.class;
-        assertNotNull(c, "Class for empty page generated");
-        Model.setValue(10);
-        assertEquals(10, Model.getValue(), "Value changed");
-    }
+@Retention(RetentionPolicy.SOURCE)
+@Target({})
+public @interface Property {
+    String name();
+    Class<?> type();
 }

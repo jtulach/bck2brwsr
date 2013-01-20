@@ -36,4 +36,7 @@ public @interface Page {
      * found elements with IDs.
      */
     String className() default "";
+    /** List of properties generated into the page.
+     */
+    Property[] properties() default {};
 }
