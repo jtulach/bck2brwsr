@@ -26,15 +26,13 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  */
 @ExtraJavaScript(resource = "org/apidesign/bck2brwsr/htmlpage/knockout-2.2.1.js")
 public final class Knockout {
-
-
     private Knockout() {
     }
     
-    public static <M> void applyBindings(
+    public static <M> Knockout applyBindings(
         Class<M> modelClass, M model, String[] propsGettersAndSetters
     ) {
-        Object bindings = new Object();
+        Knockout bindings = new Knockout();
         for (int i = 0; i < propsGettersAndSetters.length; i += 3) {
             bind(bindings, model, propsGettersAndSetters[i],
                 propsGettersAndSetters[i + 1],
@@ -42,6 +40,13 @@ public final class Knockout {
             );
         }
         applyBindings(bindings);
+        return bindings;
+    }
+
+    @JavaScriptBody(args = { "prop" }, body =
+        "this[prop].valueHasMutated();"
+    )
+    public void valueHasMutated(String prop) {
     }
     
     @JavaScriptBody(args = { "bindings", "model", "prop", "getter", "setter" }, body =

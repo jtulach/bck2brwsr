@@ -108,9 +108,10 @@ public final class PageProcessor extends AbstractProcessor {
                     List<String> propsGetSet = new ArrayList<String>();
                     generateProperties(w, p.properties(), propsGetSet);
                     generateComputedProperties(w, e.getEnclosedElements(), propsGetSet);
+                    w.append("  private static org.apidesign.bck2brwsr.htmlpage.Knockout ko;\n");
                     if (!propsGetSet.isEmpty()) {
                         w.write("public static void applyBindings() {\n");
-                        w.write("  org.apidesign.bck2brwsr.htmlpage.Knockout.applyBindings(");
+                        w.write("  ko = org.apidesign.bck2brwsr.htmlpage.Knockout.applyBindings(");
                         w.write(className + ".class, new " + className + "(), ");
                         w.write("new String[] {\n");
                         String sep = "";
@@ -270,6 +271,7 @@ public final class PageProcessor extends AbstractProcessor {
             w.write("}\n");
             w.write("public static void " + gs[1] + "(" + tn + " v) {\n");
             w.write("  prop_" + p.name() + " = v;\n");
+            w.write("  if (ko != null) ko.valueHasMutated(\"" + p.name() + "\");\n");
             w.write("}\n");
             
             props.add(p.name());
