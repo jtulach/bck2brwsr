@@ -92,6 +92,7 @@ public final class PageProcessor extends AbstractProcessor {
                     w.append("package " + pkg + ";\n");
                     w.append("import org.apidesign.bck2brwsr.htmlpage.api.*;\n");
                     w.append("class ").append(className).append(" {\n");
+                    w.append("  private ").append(className).append("() {}\n");
                     for (String id : pp.ids()) {
                         String tag = pp.tagNameForId(id);
                         String type = type(tag);
@@ -104,8 +105,27 @@ public final class PageProcessor extends AbstractProcessor {
                         return false;
                     }
                     w.append("  }\n");
-                    generateProperties(w, p.properties());
-                    generateComputedProperties(w, e.getEnclosedElements());
+                    List<String> propsGetSet = new ArrayList<String>();
+                    generateProperties(w, p.properties(), propsGetSet);
+                    generateComputedProperties(w, e.getEnclosedElements(), propsGetSet);
+                    if (!propsGetSet.isEmpty()) {
+                        w.write("public static void applyBindings() {\n");
+                        w.write("  org.apidesign.bck2brwsr.htmlpage.Knockout.applyBindings(");
+                        w.write(className + ".class, new " + className + "(), ");
+                        w.write("new String[] {\n");
+                        String sep = "";
+                        for (String n : propsGetSet) {
+                            w.write(sep);
+                            if (n == null) {
+                                w.write("    null");
+                            } else {
+                                w.write("    \"" + n + "\"");
+                            }
+                            sep = ",\n";
+                        }
+                        w.write("\n  });\n}\n");
+                        //w.write("static { applyBindings(); }\n");
+                    }
                     w.append("}\n");
                 } finally {
                     w.close();
@@ -237,11 +257,13 @@ public final class PageProcessor extends AbstractProcessor {
         return e.getEnclosingElement();
     }
 
-    private static void generateProperties(Writer w, Property[] properties) throws IOException {
+    private static void generateProperties(
+        Writer w, Property[] properties, Collection<String> props
+    ) throws IOException {
         for (Property p : properties) {
-            String[] gs = toGetSet(p.name(), null);
-
             final String tn = typeName(p);
+            String[] gs = toGetSet(p.name(), tn);
+
             w.write("private static " + tn + " prop_" + p.name() + ";\n");
             w.write("public static " + tn + " " + gs[0] + "() {\n");
             w.write("  return prop_" + p.name() + ";\n");
@@ -249,10 +271,16 @@ public final class PageProcessor extends AbstractProcessor {
             w.write("public static void " + gs[1] + "(" + tn + " v) {\n");
             w.write("  prop_" + p.name() + " = v;\n");
             w.write("}\n");
+            
+            props.add(p.name());
+            props.add(gs[2]);
+            props.add(gs[3]);
         }
     }
 
-    private void generateComputedProperties(Writer w, Collection<? extends Element> arr) throws IOException {
+    private void generateComputedProperties(
+        Writer w, Collection<? extends Element> arr, Collection<String> props
+    ) throws IOException {
         for (Element e : arr) {
             if (e.getKind() != ElementKind.METHOD) {
                 continue;
@@ -261,30 +289,47 @@ public final class PageProcessor extends AbstractProcessor {
                 continue;
             }
             ExecutableElement ee = (ExecutableElement)e;
-            String[] gs = toGetSet(ee.getSimpleName().toString(), null);
-
             final String tn = ee.getReturnType().toString();
+            String[] gs = toGetSet(ee.getSimpleName().toString(), tn);
+
             w.write("public static " + tn + " " + gs[0] + "() {\n");
             w.write("  return " + e.getEnclosingElement().getSimpleName() + '.' + e.getSimpleName() + "(");
             String sep = "";
             for (VariableElement pe : ee.getParameters()) {
-                String[] call = toGetSet(pe.getSimpleName().toString(), null);
+                String[] call = toGetSet(pe.getSimpleName().toString(), pe.asType().toString());
                 w.write(sep);
                 w.write(call[0] + "()");
                 sep = ", ";
             }
             w.write(");\n");
             w.write("}\n");
+            
+            props.add(e.getSimpleName().toString());
+            props.add(gs[2]);
+            props.add(null);
         }
     }
 
-    private static String[] toGetSet(String name, Object type) {
+    private static String[] toGetSet(String name, String type) {
         String n = Character.toUpperCase(name.charAt(0)) + name.substring(1);
-//        if (p.type() == boolean.class) {
-//            return new String[] { "is" + n, "set" + n };
-//        } else {
-        return new String[]{"get" + n, "set" + n};
-//        }
+        String bck2brwsrType = "L" + type.replace('.', '_') + "_2";
+        if ("int".equals(type)) {
+            bck2brwsrType = "I";
+        }
+        if ("double".equals(type)) {
+            bck2brwsrType = "D";
+        }
+        String pref = "get";
+        if ("boolean".equals(type)) {
+            pref = "is";
+            bck2brwsrType = "Z";
+        }
+        return new String[]{
+            pref + n, 
+            "set" + n, 
+            pref + n + "__" + bck2brwsrType,
+            "set" + n + "__V" + bck2brwsrType
+        };
     }
 
     private static String typeName(Property p) {

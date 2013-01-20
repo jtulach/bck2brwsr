@@ -20,6 +20,7 @@ package org.apidesign.bck2brwsr.mavenhtml;
 import org.apidesign.bck2brwsr.htmlpage.api.On;
 import static org.apidesign.bck2brwsr.htmlpage.api.OnEvent.*;
 import org.apidesign.bck2brwsr.htmlpage.api.Page;
+import org.apidesign.bck2brwsr.htmlpage.api.Property;
 
 /** HTML5 & Java demo showing the power of 
  * <a href="http://wiki.apidesign.org/wiki/AnnotationProcessor">annotation processors</a>
@@ -27,7 +28,9 @@ import org.apidesign.bck2brwsr.htmlpage.api.Page;
  * 
  * @author Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  */
-@Page(xhtml="Calculator.xhtml")
+@Page(xhtml="Calculator.xhtml", properties = {
+    @Property(name = "display", type = double.class)
+})
 public class App {
     private static double memory;
     private static String operation;
@@ -36,23 +39,23 @@ public class App {
     static void clear() {
         memory = 0;
         operation = null;
-        Calculator.DISPLAY.setValue("0");
+        Calculator.setDisplay(0);
     }
     
     @On(event = CLICK, id= { "plus", "minus", "mul", "div" })
     static void applyOp(String op) {
-        memory = getValue();
+        memory = Calculator.getDisplay();
         operation = op;
-        Calculator.DISPLAY.setValue("0");
+        Calculator.setDisplay(0);
     }
     
     @On(event = CLICK, id="result")
     static void computeTheValue() {
         switch (operation) {
-            case "plus": setValue(memory + getValue()); break;
-            case "minus": setValue(memory - getValue()); break;
-            case "mul": setValue(memory * getValue()); break;
-            case "div": setValue(memory / getValue()); break;
+            case "plus": Calculator.setDisplay(memory + Calculator.getDisplay()); break;
+            case "minus": Calculator.setDisplay(memory - Calculator.getDisplay()); break;
+            case "mul": Calculator.setDisplay(memory * Calculator.getDisplay()); break;
+            case "div": Calculator.setDisplay(memory / Calculator.getDisplay()); break;
             default: throw new IllegalStateException(operation);
         }
     }
@@ -60,30 +63,13 @@ public class App {
     @On(event = CLICK, id={"n0", "n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9"}) 
     static void addDigit(String digit) {
         digit = digit.substring(1);
-        String v = Calculator.DISPLAY.getValue();
-        if (getValue() == 0.0) {
-            Calculator.DISPLAY.setValue(digit);
+        
+        double v = Calculator.getDisplay();
+        if (v == 0.0) {
+            Calculator.setDisplay(Integer.parseInt(digit));
         } else {
-            Calculator.DISPLAY.setValue(v + digit);
-        }
-    }
-    
-    private static void setValue(double v) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(v);
-        if (sb.toString().endsWith(".0")) {
-            final int l = sb.length();
-            sb.delete(l - 2, l);
-        }
-        Calculator.DISPLAY.setValue(sb.toString());
-    }
-
-    private static double getValue() {
-        try {
-            return Double.parseDouble(Calculator.DISPLAY.getValue());
-        } catch (NumberFormatException ex) {
-            Calculator.DISPLAY.setValue("err");
-            return 0.0;
+            String txt = Double.toString(v) + digit;
+            Calculator.setDisplay(Double.parseDouble(txt));
         }
     }
 }
