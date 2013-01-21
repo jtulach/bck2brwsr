@@ -15,7 +15,7 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.mavenhtml;
+package org.apidesign.bck2brwsr.demo.calc.staticcompilation;
 
 import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
 import org.apidesign.bck2brwsr.htmlpage.api.On;
@@ -35,7 +35,7 @@ import org.apidesign.bck2brwsr.htmlpage.api.Property;
     @Property(name = "operation", type = String.class),
     @Property(name = "hover", type = boolean.class)
 })
-public class App {
+public class Calc {
     static {
         new Calculator().applyBindings();
     }

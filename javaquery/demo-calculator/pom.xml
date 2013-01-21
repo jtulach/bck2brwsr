@@ -42,7 +42,7 @@
                 <configuration>
                     <executable>xdg-open</executable>
                     <arguments>
-                        <argument>${project.build.directory}/classes/org/apidesign/bck2brwsr/mavenhtml/Calculator.xhtml</argument>
+                        <argument>${project.build.directory}/classes/org/apidesign/bck2brwsr/demo/calc/staticcompilation/Calculator.xhtml</argument>
                     </arguments>
                 </configuration>
             </plugin>
