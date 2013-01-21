@@ -96,11 +96,9 @@ public final class PageProcessor extends AbstractProcessor {
                     w.append("import org.apidesign.bck2brwsr.htmlpage.api.*;\n");
                     w.append("final class ").append(className).append(" {\n");
                     w.append("  private static boolean locked;\n");
-                    w.append("  public ").append(className).append("() {\n");
                     if (!initializeOnClick(className, (TypeElement) e, w, pp)) {
                         return false;
                     }
-                    w.append("  }\n");
                     for (String id : pp.ids()) {
                         String tag = pp.tagNameForId(id);
                         String type = type(tag);
@@ -177,6 +175,9 @@ public final class PageProcessor extends AbstractProcessor {
           //  if (clazz.getKind() != ElementKind.CLASS) {
             //    continue;
            // }
+            w.append("  public ").append(className).append("() {\n");
+            StringBuilder dispatch = new StringBuilder();
+            int dispatchCnt = 0;
             for (Element method : type.getEnclosedElements()) {
                 On oc = method.getAnnotation(On.class);
                 if (oc != null) {
@@ -218,15 +219,33 @@ public final class PageProcessor extends AbstractProcessor {
                             return false;
                         }
                         w.append("  OnEvent." + oc.event()).append(".of(").append(cnstnt(id)).
-                            append(").perform(new Runnable() { public void run() {\n");
-                        w.append("    ").append(type.getSimpleName().toString()).
-                            append('.').append(ee.getSimpleName()).append("(");
-                        w.append(params);
-                        w.append(");\n");
-                        w.append("  }});\n");
-                    }           
+                            append(").perform(new OnDispatch(" + dispatchCnt + "));\n");
+
+                        dispatch.
+                            append("      case ").append(dispatchCnt).append(": ").
+                            append(type.getSimpleName().toString()).
+                            append('.').append(ee.getSimpleName()).append("(").
+                            append(params).
+                            append("); break;\n");
+                        
+                        dispatchCnt++;
+                    }
                 }
             }
+            w.append("  }\n");
+            if (dispatchCnt > 0) {
+                w.append("class OnDispatch implements Runnable {\n");
+                w.append("  private final int dispatch;\n");
+                w.append("  OnDispatch(int d) { dispatch = d; }\n");
+                w.append("  public void run() {\n");
+                w.append("    switch (dispatch) {\n");
+                w.append(dispatch);
+                w.append("    }\n");
+                w.append("  }\n");
+                w.append("}\n");
+            }
+            
+
         }
         return true;
     }
