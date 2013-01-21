@@ -95,6 +95,7 @@ public final class PageProcessor extends AbstractProcessor {
                     w.append("package " + pkg + ";\n");
                     w.append("import org.apidesign.bck2brwsr.htmlpage.api.*;\n");
                     w.append("class ").append(className).append(" {\n");
+                    w.append("  private static boolean locked;\n");
                     w.append("  private ").append(className).append("() {}\n");
                     for (String id : pp.ids()) {
                         String tag = pp.tagNameForId(id);
@@ -272,9 +273,11 @@ public final class PageProcessor extends AbstractProcessor {
 
             w.write("private static " + tn + " prop_" + p.name() + ";\n");
             w.write("public static " + tn + " " + gs[0] + "() {\n");
+            w.write("  if (locked) throw new IllegalStateException();\n");
             w.write("  return prop_" + p.name() + ";\n");
             w.write("}\n");
             w.write("public static void " + gs[1] + "(" + tn + " v) {\n");
+            w.write("  if (locked) throw new IllegalStateException();\n");
             w.write("  prop_" + p.name() + " = v;\n");
             w.write("  if (ko != null) {\n");
             w.write("    ko.valueHasMutated(\"" + p.name() + "\");\n");
@@ -310,14 +313,14 @@ public final class PageProcessor extends AbstractProcessor {
             String[] gs = toGetSet(sn, tn);
             
             w.write("public static " + tn + " " + gs[0] + "() {\n");
-            w.write("  return " + e.getEnclosingElement().getSimpleName() + '.' + e.getSimpleName() + "(");
-            String sep = "";
+            w.write("  if (locked) throw new IllegalStateException();\n");
+            int arg = 0;
             for (VariableElement pe : ee.getParameters()) {
                 final String dn = pe.getSimpleName().toString();
-                String[] call = toGetSet(dn, pe.asType().toString());
-                w.write(sep);
-                w.write(call[0] + "()");
-                sep = ", ";
+                final String dt = pe.asType().toString();
+                String[] call = toGetSet(dn, dt);
+                w.write("  " + dt + " arg" + (++arg) + " = ");
+                w.write(call[0] + "();\n");
                 
                 Collection<String> depends = deps.get(dn);
                 if (depends == null) {
@@ -326,7 +329,19 @@ public final class PageProcessor extends AbstractProcessor {
                 }
                 depends.add(sn);
             }
+            w.write("  try {\n");
+            w.write("    locked = true;\n");
+            w.write("    return " + e.getEnclosingElement().getSimpleName() + '.' + e.getSimpleName() + "(");
+            String sep = "";
+            for (int i = 1; i <= arg; i++) {
+                w.write(sep);
+                w.write("arg" + i);
+                sep = ", ";
+            }
             w.write(");\n");
+            w.write("  } finally {\n");
+            w.write("    locked = false;\n");
+            w.write("  }\n");
             w.write("}\n");
             
             props.add(e.getSimpleName().toString());

@@ -65,9 +65,38 @@ public class ModelTest {
         assertTrue(my.mutated.contains("unrelated"), "Its name is unrelated");
     }
     
+    @Test public void computedPropertyCannotWriteToModel() {
+        try {
+            String res = Model.getNotAllowedWrite();
+            fail("We should not be allowed to write to the model: " + res);
+        } catch (IllegalStateException ex) {
+            // OK, we can't read
+        }
+    }
+
+    @Test public void computedPropertyCannotReadToModel() {
+        try {
+            String res = Model.getNotAllowedRead();
+            fail("We should not be allowed to read from the model: " + res);
+        } catch (IllegalStateException ex) {
+            // OK, we can't read
+        }
+    }
+    
     @ComputedProperty
     static int powerValue(int value) {
         return value * value;
+    }
+    
+    @ComputedProperty
+    static String notAllowedRead() {
+        return "Not allowed callback: " + Model.getUnrelated();
+    }
+
+    @ComputedProperty
+    static String notAllowedWrite() {
+        Model.setUnrelated(11);
+        return "Not allowed callback!";
     }
     
     static class MockKnockout extends Knockout {
