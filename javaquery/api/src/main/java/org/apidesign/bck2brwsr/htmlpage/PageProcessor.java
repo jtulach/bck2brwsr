@@ -116,7 +116,7 @@ public final class PageProcessor extends AbstractProcessor {
                     if (!propsGetSet.isEmpty()) {
                         w.write("public " + className + " applyBindings() {\n");
                         w.write("  ko = org.apidesign.bck2brwsr.htmlpage.Knockout.applyBindings(");
-                        w.write(className + ".class, new " + className + "(), ");
+                        w.write(className + ".class, this, ");
                         w.write("new String[] {\n");
                         String sep = "";
                         for (String n : propsGetSet) {
