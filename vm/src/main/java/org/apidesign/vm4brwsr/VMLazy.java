@@ -19,6 +19,7 @@ package org.apidesign.vm4brwsr;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
@@ -112,17 +113,17 @@ final class VMLazy {
             this.lazy = vm;
         }
         
-        @JavaScriptBody(args = {"self", "n"},
+        @JavaScriptBody(args = {"n"},
         body =
-        "var cls = n.replace__Ljava_lang_String_2CC(n, '/','_').toString();"
-        + "\nvar dot = n.replace__Ljava_lang_String_2CC(n,'/','.').toString();"
-        + "\nvar lazy = self.fld_lazy;"
+        "var cls = n.replace__Ljava_lang_String_2CC('/','_').toString();"
+        + "\nvar dot = n.replace__Ljava_lang_String_2CC('/','.').toString();"
+        + "\nvar lazy = this.fld_lazy;"
         + "\nvar loader = lazy.fld_loader;"
         + "\nvar vm = loader.vm;"
         + "\nif (vm[cls]) return false;"
         + "\nvm[cls] = function() {"
         + "\n  var instance = arguments.length == 0 || arguments[0] === true;"
-        + "\n  return lazy.load__Ljava_lang_Object_2Ljava_lang_String_2Z(lazy, dot, instance);"
+        + "\n  return lazy.load__Ljava_lang_Object_2Ljava_lang_String_2Z(dot, instance);"
         + "\n};"
         + "\nreturn true;")
         @Override
@@ -131,7 +132,17 @@ final class VMLazy {
         }
 
         @Override
-        protected void requireScript(String resourcePath) {
+        protected void requireScript(String resourcePath) throws IOException {
+            InputStream is = getClass().getResourceAsStream(resourcePath);
+            StringBuilder sb = new StringBuilder();
+            for (;;) {
+                int ch = is.read();
+                if (ch == -1) {
+                    break;
+                }
+                sb.append((char)ch);
+            }
+            applyCode(lazy.loader, null, sb.toString(), false);
         }
 
         @Override

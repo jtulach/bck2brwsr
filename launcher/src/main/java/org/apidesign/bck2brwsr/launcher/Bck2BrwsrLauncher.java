@@ -237,20 +237,14 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
         
         URI uri = new URI("http://localhost:" + port + page);
         LOG.log(Level.INFO, "Showing {0}", uri);
-//        try {
-//            Desktop.getDesktop().browse(uri);
-//            return null;
-//        } catch (UnsupportedOperationException ex)
-        {
-//            File dir = File.createTempFile("chrome", ".dir");
-//            dir.delete();
-//            dir.mkdirs();
-//            String[] cmd = { 
-//                "google-chrome", "--user-data-dir=" + dir, "--app=" + uri.toString()
-//            };
-//            LOG.log(Level.INFO, "Launching {0}", Arrays.toString(cmd));
-//            final Process process = Runtime.getRuntime().exec(cmd);
-//            return new Object[] { process, dir };
+        if (cmd == null) {
+            try {
+                java.awt.Desktop.getDesktop().browse(uri);
+                LOG.log(Level.INFO, "Desktop.browse successfully finished");
+                return null;
+            } catch (UnsupportedOperationException ex) {
+                LOG.log(Level.INFO, "Desktop.browse not supported", ex);
+            }
         }
         {
             String cmdName = cmd == null ? "xdg-open" : cmd;
@@ -365,8 +359,13 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
                     r = r.substring(1);
                 }
             }
-            if (r.endsWith(".html") || r.endsWith(".xhtml")) {
+            if (r.endsWith(".html")) {
                 response.setContentType("text/html");
+                LOG.info("Content type text/html");
+            }
+            if (r.endsWith(".xhtml")) {
+                response.setContentType("application/xhtml+xml");
+                LOG.info("Content type application/xhtml+xml");
             }
             OutputStream os = response.getOutputStream();
             try (InputStream is = res.get(r)) {

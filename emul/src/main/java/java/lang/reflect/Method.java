@@ -537,7 +537,7 @@ public final
     )
     private static native Object invoke0(boolean isStatic, Method m, Object self, Object[] args);
 
-    private static Object fromPrimitive(Class<?> type, Object o) {
+    static Object fromPrimitive(Class<?> type, Object o) {
         if (type == Integer.TYPE) {
             return fromRaw(Integer.class, "valueOf__Ljava_lang_Integer_2I", o);
         }
@@ -558,6 +558,9 @@ public final
         }
         if (type == Short.TYPE) {
             return fromRaw(Short.class, "valueOf__Ljava_lang_Short_2S", o);
+        }
+        if (type == Character.TYPE) {
+            return fromRaw(Character.class, "valueOf__Ljava_lang_Character_2C", o);
         }
         if (type.getName().equals("void")) {
             return null;
@@ -591,6 +594,9 @@ public final
         }
         if (type == Short.TYPE) {
             return toRaw("shortValue__S", o);
+        }
+        if (type == Character.TYPE) {
+            return toRaw("charValue__C", o);
         }
         if (type.getName().equals("void")) {
             return o;
@@ -640,10 +646,10 @@ public final
         return Modifier.isSynthetic(getModifiers());
     }
 
-    @JavaScriptBody(args = { "self", "ac" }, 
+    @JavaScriptBody(args = { "ac" }, 
         body = 
-          "if (self.fld_data.anno) {"
-        + "  return self.fld_data.anno['L' + ac.jvmName + ';'];"
+          "if (this.fld_data.anno) {"
+        + "  return this.fld_data.anno['L' + ac.jvmName + ';'];"
         + "} else return null;"
     )
     private Object getAnnotationData(Class<?> annotationClass) {

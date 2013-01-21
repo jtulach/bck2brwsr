@@ -26,6 +26,7 @@
 package java.lang;
 import  java.io.*;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
+import org.apidesign.bck2brwsr.core.JavaScriptOnly;
 
 /**
  * The {@code Throwable} class is the superclass of all errors and
@@ -234,6 +235,13 @@ public class Throwable implements Serializable {
     private static final String SELF_SUPPRESSION_MESSAGE = "Self-suppression not permitted";
 
     /** Caption  for labeling causative exception stack traces */
+    @JavaScriptOnly(name="toString", value="function() { return this.toString__Ljava_lang_String_2().toString(); }")
+    private static void jsToString() {
+    }
+    
+    @JavaScriptOnly(name="valueOf", value="function() { return this.toString().valueOf(); }")
+    private static void jsValudOf() {
+    }
     private static final String CAUSE_CAPTION = "Caused by: ";
 
     /** Caption for labeling suppressed exception stack traces */
@@ -783,7 +791,7 @@ public class Throwable implements Serializable {
         return this;
     }
 
-    @JavaScriptBody(args = { "self", "dummy" }, body = "")
+    @JavaScriptBody(args = { "dummy" }, body = "")
     private native Throwable fillInStackTrace(int dummy);
 
     /**

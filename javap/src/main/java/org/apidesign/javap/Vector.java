@@ -37,8 +37,8 @@ final class Vector {
     void add(Object objectType) {
         addElement(objectType);
     }
-    @JavaScriptBody(args = { "self", "obj" }, body = 
-        "self.push(obj);"
+    @JavaScriptBody(args = { "obj" }, body = 
+        "this.push(obj);"
     )
     void addElement(Object obj) {
         final int s = size();
@@ -46,16 +46,16 @@ final class Vector {
         setElementAt(obj, s);
     }
 
-    @JavaScriptBody(args = { "self" }, body = 
-        "return self.length;"
+    @JavaScriptBody(args = { }, body = 
+        "return this.length;"
     )
     int size() {
         return arr == null ? 0 : arr.length;
     }
 
-    @JavaScriptBody(args = { "self", "newArr" }, body =
-        "for (var i = 0; i < self.length; i++) {\n"
-      + "  newArr[i] = self[i];\n"
+    @JavaScriptBody(args = { "newArr" }, body =
+        "for (var i = 0; i < this.length; i++) {\n"
+      + "  newArr[i] = this[i];\n"
       + "}\n")
     void copyInto(Object[] newArr) {
         if (arr == null) {
@@ -67,8 +67,8 @@ final class Vector {
         }
     }
 
-    @JavaScriptBody(args = { "self", "index" }, body =
-        "return self[index];"
+    @JavaScriptBody(args = { "index" }, body =
+        "return this[index];"
     )
     Object elementAt(int index) {
         return arr[index];
@@ -80,8 +80,8 @@ final class Vector {
         arr = newArr;
     }
 
-    @JavaScriptBody(args = { "self", "val", "index" }, body = 
-        "self[index] = val;"
+    @JavaScriptBody(args = { "val", "index" }, body = 
+        "this[index] = val;"
     )
     void setElementAt(Object val, int index) {
         arr[index] = val;

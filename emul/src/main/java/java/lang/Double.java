@@ -774,8 +774,7 @@ public final class Double extends Number implements Comparable<Double> {
      */
     public boolean equals(Object obj) {
         return (obj instanceof Double)
-               && (doubleToLongBits(((Double)obj).value) ==
-                      doubleToLongBits(value));
+               && (((Double)obj).value) == value;
     }
 
     /**

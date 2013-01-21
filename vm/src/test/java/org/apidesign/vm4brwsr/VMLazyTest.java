@@ -67,6 +67,12 @@ public class VMLazyTest {
         );
     }
 
+    @Test public void loadClassWithAssociatedScript() throws Exception {
+        assertExec("ko is defined", "test", true,
+            Script.class.getName(), "checkNotNull__Z"
+        );
+    }
+
     private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
         Object ret = null;
         try {

@@ -33,13 +33,14 @@ final class LocalsMapper {
         localTypeRecords = new TypeArray(initTypeRecords);
     }
 
-    public void outputArguments(final Appendable out) throws IOException {
+    public void outputArguments(final Appendable out, boolean isStatic) throws IOException {
         final int argRecordCount = argTypeRecords.getSize();
-        if (argRecordCount > 0) {
-            Variable variable = getVariable(argTypeRecords, 0);
+        int first = isStatic ? 0 : 1;
+        if (argRecordCount > first) {
+            Variable variable = getVariable(argTypeRecords, first);
             out.append(variable);
 
-            int i = variable.isCategory2() ? 2 : 1;
+            int i = first + (variable.isCategory2() ? 2 : 1);
             while (i < argRecordCount) {
                 variable = getVariable(argTypeRecords, i);
                 out.append(", ");

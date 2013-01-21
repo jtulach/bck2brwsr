@@ -53,6 +53,17 @@ public class ArrayTest {
             Double.valueOf(105)
         );
     }
+
+    @Test public void twoDoubles() throws Exception {
+        assertExec("Elements are initialized", Array.class, "twoDoubles__D", 
+            Double.valueOf(0)
+        );
+    }
+    @Test public void twoInts() throws Exception {
+        assertExec("Elements are initialized", Array.class, "twoInts__I", 
+            Double.valueOf(0)
+        );
+    }
     
     @Test public void doesCopyArrayWork() throws Exception {
         assertExec("Returns 'a'", Array.class, "copyArray__C", Double.valueOf('a'));

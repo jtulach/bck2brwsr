@@ -123,7 +123,7 @@ public final class StackMapIterator {
         }
 
         final int length = methodSignature.length();
-        int skipType = 0;
+        boolean skipType = false;
         int argType;
         for (int i = 1; i < length; ++i) {
             switch (methodSignature.charAt(i)) {
@@ -156,10 +156,10 @@ public final class StackMapIterator {
                     // not interested in the return value type
                     return argTypes;
                 case '[':
-                    if (skipType == 0) {
+                    if (!skipType) {
                         argTypes.add(ITEM_Object);
+                        skipType = true;
                     }
-                    ++skipType;
                     continue;
 
                 default:
@@ -167,10 +167,10 @@ public final class StackMapIterator {
                                   "Invalid method signature");
             }
 
-            if (skipType == 0) {
+            if (!skipType) {
                 argTypes.add(argType);
             } else {
-                --skipType;
+                skipType = false;
             }
         }
 
