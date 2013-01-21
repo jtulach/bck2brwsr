@@ -24,8 +24,11 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Completion;
@@ -106,8 +109,9 @@ public final class PageProcessor extends AbstractProcessor {
                     }
                     w.append("  }\n");
                     List<String> propsGetSet = new ArrayList<String>();
-                    generateProperties(w, p.properties(), propsGetSet);
-                    generateComputedProperties(w, e.getEnclosedElements(), propsGetSet);
+                    Map<String,Collection<String>> propsDeps = new HashMap<String, Collection<String>>();
+                    generateComputedProperties(w, e.getEnclosedElements(), propsGetSet, propsDeps);
+                    generateProperties(w, p.properties(), propsGetSet, propsDeps);
                     w.append("  private static org.apidesign.bck2brwsr.htmlpage.Knockout ko;\n");
                     if (!propsGetSet.isEmpty()) {
                         w.write("public static void applyBindings() {\n");
@@ -259,7 +263,8 @@ public final class PageProcessor extends AbstractProcessor {
     }
 
     private static void generateProperties(
-        Writer w, Property[] properties, Collection<String> props
+        Writer w, Property[] properties, Collection<String> props,
+        Map<String,Collection<String>> deps
     ) throws IOException {
         for (Property p : properties) {
             final String tn = typeName(p);
@@ -271,7 +276,15 @@ public final class PageProcessor extends AbstractProcessor {
             w.write("}\n");
             w.write("public static void " + gs[1] + "(" + tn + " v) {\n");
             w.write("  prop_" + p.name() + " = v;\n");
-            w.write("  if (ko != null) ko.valueHasMutated(\"" + p.name() + "\");\n");
+            w.write("  if (ko != null) {\n");
+            w.write("    ko.valueHasMutated(\"" + p.name() + "\");\n");
+            final Collection<String> dependants = deps.get(p.name());
+            if (dependants != null) {
+                for (String depProp : dependants) {
+                    w.write("    ko.valueHasMutated(\"" + depProp + "\");\n");
+                }
+            }
+            w.write("  }\n");
             w.write("}\n");
             
             props.add(p.name());
@@ -280,8 +293,9 @@ public final class PageProcessor extends AbstractProcessor {
         }
     }
 
-    private void generateComputedProperties(
-        Writer w, Collection<? extends Element> arr, Collection<String> props
+    private boolean generateComputedProperties(
+        Writer w, Collection<? extends Element> arr, Collection<String> props,
+        Map<String,Collection<String>> deps
     ) throws IOException {
         for (Element e : arr) {
             if (e.getKind() != ElementKind.METHOD) {
@@ -292,16 +306,25 @@ public final class PageProcessor extends AbstractProcessor {
             }
             ExecutableElement ee = (ExecutableElement)e;
             final String tn = ee.getReturnType().toString();
-            String[] gs = toGetSet(ee.getSimpleName().toString(), tn);
-
+            final String sn = ee.getSimpleName().toString();
+            String[] gs = toGetSet(sn, tn);
+            
             w.write("public static " + tn + " " + gs[0] + "() {\n");
             w.write("  return " + e.getEnclosingElement().getSimpleName() + '.' + e.getSimpleName() + "(");
             String sep = "";
             for (VariableElement pe : ee.getParameters()) {
-                String[] call = toGetSet(pe.getSimpleName().toString(), pe.asType().toString());
+                final String dn = pe.getSimpleName().toString();
+                String[] call = toGetSet(dn, pe.asType().toString());
                 w.write(sep);
                 w.write(call[0] + "()");
                 sep = ", ";
+                
+                Collection<String> depends = deps.get(dn);
+                if (depends == null) {
+                    depends = new LinkedHashSet<String>();
+                    deps.put(dn, depends);
+                }
+                depends.add(sn);
             }
             w.write(");\n");
             w.write("}\n");
@@ -310,6 +333,8 @@ public final class PageProcessor extends AbstractProcessor {
             props.add(gs[2]);
             props.add(null);
         }
+        
+        return true;
     }
 
     private static String[] toGetSet(String name, String type) {
@@ -326,11 +351,12 @@ public final class PageProcessor extends AbstractProcessor {
             pref = "is";
             bck2brwsrType = "Z";
         }
+        final String nu = n.replace('.', '_');
         return new String[]{
             pref + n, 
             "set" + n, 
-            pref + n + "__" + bck2brwsrType,
-            "set" + n + "__V" + bck2brwsrType
+            pref + nu + "__" + bck2brwsrType,
+            "set" + nu + "__V" + bck2brwsrType
         };
     }
 
@@ -338,10 +364,7 @@ public final class PageProcessor extends AbstractProcessor {
         try {
             return p.type().getName();
         } catch (MirroredTypeException ex) {
-            if (ex.getTypeMirror().getKind().isPrimitive()) {
-                return ex.getTypeMirror().toString();
-            }
-            throw ex;
+            return ex.getTypeMirror().toString();
         }
     }
 }
