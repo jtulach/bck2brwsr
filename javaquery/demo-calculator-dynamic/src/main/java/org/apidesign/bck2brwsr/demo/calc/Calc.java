@@ -15,7 +15,7 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.mavenhtml;
+package org.apidesign.bck2brwsr.demo.calc;
 
 import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
 import org.apidesign.bck2brwsr.htmlpage.api.On;
@@ -35,40 +35,42 @@ import org.apidesign.bck2brwsr.htmlpage.api.Property;
     @Property(name = "operation", type = String.class),
     @Property(name = "hover", type = boolean.class)
 })
-public class App {
-    private static final Calculator CALC = new Calculator().applyBindings();
+public class Calc {
+    static {
+        new Calculator().applyBindings();
+    }
     
     @On(event = CLICK, id="clear")
-    static void clear() {
-        CALC.setMemory(0);
-        CALC.setOperation(null);
-        CALC.setDisplay(0);
+    static void clear(Calculator c) {
+        c.setMemory(0);
+        c.setOperation(null);
+        c.setDisplay(0);
     }
     
     @On(event = CLICK, id= { "plus", "minus", "mul", "div" })
-    static void applyOp(String op) {
-        CALC.setMemory(CALC.getDisplay());
-        CALC.setOperation(op);
-        CALC.setDisplay(0);
+    static void applyOp(Calculator c, String op) {
+        c.setMemory(c.getDisplay());
+        c.setOperation(op);
+        c.setDisplay(0);
     }
 
     @On(event = MOUSE_OVER, id= { "result" })
-    static void attemptingIn(String op) {
-        CALC.setHover(true);
+    static void attemptingIn(Calculator c, String op) {
+        c.setHover(true);
     }
     @On(event = MOUSE_OUT, id= { "result" })
-    static void attemptingOut(String op) {
-        CALC.setHover(false);
+    static void attemptingOut(Calculator c, String op) {
+        c.setHover(false);
     }
     
     @On(event = CLICK, id="result")
-    static void computeTheValue() {
-        CALC.setDisplay(compute(
-            CALC.getOperation(), 
-            CALC.getMemory(), 
-            CALC.getDisplay()
+    static void computeTheValue(Calculator c) {
+        c.setDisplay(compute(
+            c.getOperation(), 
+            c.getMemory(), 
+            c.getDisplay()
         ));
-        CALC.setMemory(0);
+        c.setMemory(0);
     }
     
     private static double compute(String op, double memory, double display) {
@@ -82,19 +84,19 @@ public class App {
     }
     
     @On(event = CLICK, id={"n0", "n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9"}) 
-    static void addDigit(String digit) {
+    static void addDigit(String digit, Calculator c) {
         digit = digit.substring(1);
         
-        double v = CALC.getDisplay();
+        double v = c.getDisplay();
         if (v == 0.0) {
-            CALC.setDisplay(Integer.parseInt(digit));
+            c.setDisplay(Integer.parseInt(digit));
         } else {
             String txt = Double.toString(v);
             if (txt.endsWith(".0")) {
                 txt = txt.substring(0, txt.length() - 2);
             }
             txt = txt + digit;
-            CALC.setDisplay(Double.parseDouble(txt));
+            c.setDisplay(Double.parseDouble(txt));
         }
     }
 
