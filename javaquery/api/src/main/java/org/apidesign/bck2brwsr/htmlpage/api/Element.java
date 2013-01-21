@@ -55,7 +55,8 @@ public abstract class Element {
         body="var e = window.document.getElementById(this.fld_id);\n"
            + "e[ev.fld_id] = function() { r.run__V(); };\n"
     )
-    final native void on(OnEvent ev, Runnable r);
+    final void on(OnEvent ev, Runnable r) {
+    }
 
     /** Shows alert message dialog in a browser.
      * @param msg the message to show
