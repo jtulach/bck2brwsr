@@ -24,6 +24,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.util.List;
+import java.util.Locale;
+import java.util.Locale;
 import java.util.logging.Logger;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
@@ -33,7 +35,9 @@ import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.grizzly.http.util.HttpStatus;
+import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONStringer;
 import org.json.JSONTokener;
 
 /**
@@ -62,7 +66,19 @@ public class Dew extends HttpHandler implements Bck2Brwsr.Resources {
                 response.getOutputStream().write("[]".getBytes());
                 response.setStatus(HttpStatus.OK_200);
             } else {
-                response.getOutputStream().write(("[errors:'" + err + "']").getBytes());
+                
+                JSONArray errors = new JSONArray();
+                
+                for (Diagnostic<? extends JavaFileObject> d : err) {
+                    JSONObject e = new JSONObject();
+                    e.put("col", d.getColumnNumber());
+                    e.put("line", d.getLineNumber());
+                    e.put("kind", d.getKind().toString());
+                    e.put("msg", d.getMessage(Locale.ENGLISH));
+                    errors.put(e);
+                }
+                
+                errors.write(response.getWriter());                
                 response.setStatus(HttpStatus.PRECONDITION_FAILED_412);
             }
             

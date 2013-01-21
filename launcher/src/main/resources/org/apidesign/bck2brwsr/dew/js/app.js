@@ -29,6 +29,7 @@ angular.module('bck2brwsr', []).
                 
                 deferCodeMirror = function() {
                     codeMirror = CodeMirror.fromTextArea(elm[0], opts);
+                    elm[0].codeMirror = codeMirror;
                     // codeMirror.on("change", onChange(opts.onChange));
                     codeMirror.on("change", onChange);
 
@@ -119,11 +120,16 @@ function DevCtrl( $scope, $http ) {
         + "}\n";
 
     
-    $scope.reload= function() {
+    $scope.reload = function() {
+        $scope.errors = null;
         var frame = document.getElementById("result");        
         frame.src = "result.html";
         frame.contentDocument.location.reload(true);
         frame.contentWindow.location.reload();
+    };
+    
+    $scope.fail = function( data ) {
+        $scope.errors = eval( data );
     };
     
     $scope.post = function(html, java) {
@@ -131,7 +137,22 @@ function DevCtrl( $scope, $http ) {
             method: "POST",
             //headers: this.headers,
             data: { html : $scope.html, java : $scope.java} 
-        }).success( $scope.reload );
+        }).success( $scope.reload ).error( $scope.fail );
+    };
+    
+    $scope.errorClass = function( kind ) {
+        switch( kind ) {
+            case "ERROR" :
+                return "error";
+            default :         
+                return "warning";   
+        }
+    };
+    
+    $scope.gotoError = function( line, col ) {
+        var editor = document.getElementById("editorJava").codeMirror;   
+        editor.setCursor({ line: line - 1, ch : col });
+        editor.focus();
     };
     
     $scope.tab = "html";
