@@ -1,4 +1,4 @@
-/**
+/*
  * Back 2 Browser Bytecode Translator
  * Copyright (C) 2012 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  *
@@ -15,7 +15,6 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-
 this.ko = {};
 
 
