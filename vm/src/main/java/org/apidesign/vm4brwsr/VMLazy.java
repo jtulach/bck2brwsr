@@ -19,6 +19,7 @@ package org.apidesign.vm4brwsr;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
@@ -131,7 +132,17 @@ final class VMLazy {
         }
 
         @Override
-        protected void requireScript(String resourcePath) {
+        protected void requireScript(String resourcePath) throws IOException {
+            InputStream is = getClass().getResourceAsStream(resourcePath);
+            StringBuilder sb = new StringBuilder();
+            for (;;) {
+                int ch = is.read();
+                if (ch == -1) {
+                    break;
+                }
+                sb.append((char)ch);
+            }
+            applyCode(lazy.loader, null, sb.toString(), false);
         }
 
         @Override

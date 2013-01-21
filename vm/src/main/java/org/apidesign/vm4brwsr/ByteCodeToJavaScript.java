@@ -52,7 +52,7 @@ abstract class ByteCodeToJavaScript {
     /*
      * @param resourcePath name of resources to read
      */
-    protected abstract void requireScript(String resourcePath);
+    protected abstract void requireScript(String resourcePath) throws IOException;
     
     /** Allows subclasses to redefine what field a function representing a
      * class gets assigned. By default it returns the suggested name followed
