@@ -36,37 +36,39 @@ import org.apidesign.bck2brwsr.htmlpage.api.Property;
     @Property(name = "hover", type = boolean.class)
 })
 public class App {
+    private static final Calculator CALC = new Calculator().applyBindings();
+    
     @On(event = CLICK, id="clear")
     static void clear() {
-        Calculator.setMemory(0);
-        Calculator.setOperation(null);
-        Calculator.setDisplay(0);
+        CALC.setMemory(0);
+        CALC.setOperation(null);
+        CALC.setDisplay(0);
     }
     
     @On(event = CLICK, id= { "plus", "minus", "mul", "div" })
     static void applyOp(String op) {
-        Calculator.setMemory(Calculator.getDisplay());
-        Calculator.setOperation(op);
-        Calculator.setDisplay(0);
+        CALC.setMemory(CALC.getDisplay());
+        CALC.setOperation(op);
+        CALC.setDisplay(0);
     }
 
     @On(event = MOUSE_OVER, id= { "result" })
     static void attemptingIn(String op) {
-        Calculator.setHover(true);
+        CALC.setHover(true);
     }
     @On(event = MOUSE_OUT, id= { "result" })
     static void attemptingOut(String op) {
-        Calculator.setHover(false);
+        CALC.setHover(false);
     }
     
     @On(event = CLICK, id="result")
     static void computeTheValue() {
-        Calculator.setDisplay(compute(
-            Calculator.getOperation(), 
-            Calculator.getMemory(), 
-            Calculator.getDisplay()
+        CALC.setDisplay(compute(
+            CALC.getOperation(), 
+            CALC.getMemory(), 
+            CALC.getDisplay()
         ));
-        Calculator.setMemory(0);
+        CALC.setMemory(0);
     }
     
     private static double compute(String op, double memory, double display) {
@@ -83,16 +85,16 @@ public class App {
     static void addDigit(String digit) {
         digit = digit.substring(1);
         
-        double v = Calculator.getDisplay();
+        double v = CALC.getDisplay();
         if (v == 0.0) {
-            Calculator.setDisplay(Integer.parseInt(digit));
+            CALC.setDisplay(Integer.parseInt(digit));
         } else {
             String txt = Double.toString(v);
             if (txt.endsWith(".0")) {
                 txt = txt.substring(0, txt.length() - 2);
             }
             txt = txt + digit;
-            Calculator.setDisplay(Double.parseDouble(txt));
+            CALC.setDisplay(Double.parseDouble(txt));
         }
     }
 
@@ -104,9 +106,5 @@ public class App {
             return "Type numbers and perform simple operations! Press '=' to get result.";
         }
         return "Attempt to compute " + memory + " " + operation + " " + display + " = " + compute(operation, memory, display);
-    }
-    
-    static {
-        Calculator.applyBindings();
     }
 }

@@ -23,6 +23,7 @@ import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
 import org.apidesign.bck2brwsr.htmlpage.api.Page;
 import org.apidesign.bck2brwsr.htmlpage.api.Property;
 import static org.testng.Assert.*;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 /**
@@ -34,25 +35,31 @@ import org.testng.annotations.Test;
     @Property(name = "unrelated", type = long.class)
 })
 public class ModelTest {
+    private Model model;
+    private static Model leakedModel;
+    
+    @BeforeMethod
+    public void createModel() {
+        model = new Model();
+    }
+    
     @Test public void classGeneratedWithSetterGetter() {
-        Class<?> c = Model.class;
-        assertNotNull(c, "Class for empty page generated");
-        Model.setValue(10);
-        assertEquals(10, Model.getValue(), "Value changed");
+        model.setValue(10);
+        assertEquals(10, model.getValue(), "Value changed");
     }
     
     @Test public void computedMethod() {
-        Model.setValue(4);
-        assertEquals(16, Model.getPowerValue());
+        model.setValue(4);
+        assertEquals(16, model.getPowerValue());
     }
     
     @Test public void derivedPropertiesAreNotified() {
         MockKnockout my = new MockKnockout();
         MockKnockout.next = my;
         
-        Model.applyBindings();
+        model.applyBindings();
         
-        Model.setValue(33);
+        model.setValue(33);
         
         assertEquals(my.mutated.size(), 2, "Two properties changed: " + my.mutated);
         assertTrue(my.mutated.contains("powerValue"), "Power value is in there: " + my.mutated);
@@ -60,14 +67,15 @@ public class ModelTest {
         
         my.mutated.clear();
         
-        Model.setUnrelated(44);
+        model.setUnrelated(44);
         assertEquals(my.mutated.size(), 1, "One property changed");
         assertTrue(my.mutated.contains("unrelated"), "Its name is unrelated");
     }
     
     @Test public void computedPropertyCannotWriteToModel() {
+        leakedModel = model;
         try {
-            String res = Model.getNotAllowedWrite();
+            String res = model.getNotAllowedWrite();
             fail("We should not be allowed to write to the model: " + res);
         } catch (IllegalStateException ex) {
             // OK, we can't read
@@ -75,8 +83,9 @@ public class ModelTest {
     }
 
     @Test public void computedPropertyCannotReadToModel() {
+        leakedModel = model;
         try {
-            String res = Model.getNotAllowedRead();
+            String res = model.getNotAllowedRead();
             fail("We should not be allowed to read from the model: " + res);
         } catch (IllegalStateException ex) {
             // OK, we can't read
@@ -90,12 +99,12 @@ public class ModelTest {
     
     @ComputedProperty
     static String notAllowedRead() {
-        return "Not allowed callback: " + Model.getUnrelated();
+        return "Not allowed callback: " + leakedModel.getUnrelated();
     }
 
     @ComputedProperty
     static String notAllowedWrite() {
-        Model.setUnrelated(11);
+        leakedModel.setUnrelated(11);
         return "Not allowed callback!";
     }
     

@@ -94,28 +94,27 @@ public final class PageProcessor extends AbstractProcessor {
                 try {
                     w.append("package " + pkg + ";\n");
                     w.append("import org.apidesign.bck2brwsr.htmlpage.api.*;\n");
-                    w.append("class ").append(className).append(" {\n");
+                    w.append("final class ").append(className).append(" {\n");
                     w.append("  private static boolean locked;\n");
-                    w.append("  private ").append(className).append("() {}\n");
-                    for (String id : pp.ids()) {
-                        String tag = pp.tagNameForId(id);
-                        String type = type(tag);
-                        w.append("  ").append("public static final ").
-                            append(type).append(' ').append(cnstnt(id)).append(" = new ").
-                            append(type).append("(\"").append(id).append("\");\n");
-                    }
-                    w.append("  static {\n");
+                    w.append("  public ").append(className).append("() {\n");
                     if (!initializeOnClick((TypeElement) e, w, pp)) {
                         return false;
                     }
                     w.append("  }\n");
+                    for (String id : pp.ids()) {
+                        String tag = pp.tagNameForId(id);
+                        String type = type(tag);
+                        w.append("  ").append("public final ").
+                            append(type).append(' ').append(cnstnt(id)).append(" = new ").
+                            append(type).append("(\"").append(id).append("\");\n");
+                    }
                     List<String> propsGetSet = new ArrayList<String>();
                     Map<String,Collection<String>> propsDeps = new HashMap<String, Collection<String>>();
                     generateComputedProperties(w, e.getEnclosedElements(), propsGetSet, propsDeps);
                     generateProperties(w, p.properties(), propsGetSet, propsDeps);
-                    w.append("  private static org.apidesign.bck2brwsr.htmlpage.Knockout ko;\n");
+                    w.append("  private org.apidesign.bck2brwsr.htmlpage.Knockout ko;\n");
                     if (!propsGetSet.isEmpty()) {
-                        w.write("public static void applyBindings() {\n");
+                        w.write("public " + className + " applyBindings() {\n");
                         w.write("  ko = org.apidesign.bck2brwsr.htmlpage.Knockout.applyBindings(");
                         w.write(className + ".class, new " + className + "(), ");
                         w.write("new String[] {\n");
@@ -129,8 +128,7 @@ public final class PageProcessor extends AbstractProcessor {
                             }
                             sep = ",\n";
                         }
-                        w.write("\n  });\n}\n");
-                        //w.write("static { applyBindings(); }\n");
+                        w.write("\n  });\n  return this;\n}\n");
                     }
                     w.append("}\n");
                 } finally {
@@ -271,12 +269,12 @@ public final class PageProcessor extends AbstractProcessor {
             final String tn = typeName(p);
             String[] gs = toGetSet(p.name(), tn);
 
-            w.write("private static " + tn + " prop_" + p.name() + ";\n");
-            w.write("public static " + tn + " " + gs[0] + "() {\n");
+            w.write("private " + tn + " prop_" + p.name() + ";\n");
+            w.write("public " + tn + " " + gs[0] + "() {\n");
             w.write("  if (locked) throw new IllegalStateException();\n");
             w.write("  return prop_" + p.name() + ";\n");
             w.write("}\n");
-            w.write("public static void " + gs[1] + "(" + tn + " v) {\n");
+            w.write("public void " + gs[1] + "(" + tn + " v) {\n");
             w.write("  if (locked) throw new IllegalStateException();\n");
             w.write("  prop_" + p.name() + " = v;\n");
             w.write("  if (ko != null) {\n");
@@ -312,7 +310,7 @@ public final class PageProcessor extends AbstractProcessor {
             final String sn = ee.getSimpleName().toString();
             String[] gs = toGetSet(sn, tn);
             
-            w.write("public static " + tn + " " + gs[0] + "() {\n");
+            w.write("public " + tn + " " + gs[0] + "() {\n");
             w.write("  if (locked) throw new IllegalStateException();\n");
             int arg = 0;
             for (VariableElement pe : ee.getParameters()) {

@@ -17,6 +17,7 @@
  */
 package org.apidesign.bck2brwsr.mavenhtml;
 
+import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
 import org.apidesign.bck2brwsr.htmlpage.api.On;
 import static org.apidesign.bck2brwsr.htmlpage.api.OnEvent.*;
 import org.apidesign.bck2brwsr.htmlpage.api.Page;
@@ -29,34 +30,54 @@ import org.apidesign.bck2brwsr.htmlpage.api.Property;
  * @author Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  */
 @Page(xhtml="Calculator.xhtml", properties = {
-    @Property(name = "display", type = double.class)
+    @Property(name = "memory", type = double.class),
+    @Property(name = "display", type = double.class),
+    @Property(name = "operation", type = String.class),
+    @Property(name = "hover", type = boolean.class)
 })
 public class App {
-    private static double memory;
-    private static String operation;
+    private static final Calculator CALC = new Calculator().applyBindings();
     
     @On(event = CLICK, id="clear")
     static void clear() {
-        memory = 0;
-        operation = null;
-        Calculator.setDisplay(0);
+        CALC.setMemory(0);
+        CALC.setOperation(null);
+        CALC.setDisplay(0);
     }
     
     @On(event = CLICK, id= { "plus", "minus", "mul", "div" })
     static void applyOp(String op) {
-        memory = Calculator.getDisplay();
-        operation = op;
-        Calculator.setDisplay(0);
+        CALC.setMemory(CALC.getDisplay());
+        CALC.setOperation(op);
+        CALC.setDisplay(0);
+    }
+
+    @On(event = MOUSE_OVER, id= { "result" })
+    static void attemptingIn(String op) {
+        CALC.setHover(true);
+    }
+    @On(event = MOUSE_OUT, id= { "result" })
+    static void attemptingOut(String op) {
+        CALC.setHover(false);
     }
     
     @On(event = CLICK, id="result")
     static void computeTheValue() {
-        switch (operation) {
-            case "plus": Calculator.setDisplay(memory + Calculator.getDisplay()); break;
-            case "minus": Calculator.setDisplay(memory - Calculator.getDisplay()); break;
-            case "mul": Calculator.setDisplay(memory * Calculator.getDisplay()); break;
-            case "div": Calculator.setDisplay(memory / Calculator.getDisplay()); break;
-            default: throw new IllegalStateException(operation);
+        CALC.setDisplay(compute(
+            CALC.getOperation(), 
+            CALC.getMemory(), 
+            CALC.getDisplay()
+        ));
+        CALC.setMemory(0);
+    }
+    
+    private static double compute(String op, double memory, double display) {
+        switch (op) {
+            case "plus": return memory + display;
+            case "minus": return memory - display;
+            case "mul": return memory * display;
+            case "div": return memory / display;
+            default: throw new IllegalStateException(op);
         }
     }
     
@@ -64,12 +85,26 @@ public class App {
     static void addDigit(String digit) {
         digit = digit.substring(1);
         
-        double v = Calculator.getDisplay();
+        double v = CALC.getDisplay();
         if (v == 0.0) {
-            Calculator.setDisplay(Integer.parseInt(digit));
+            CALC.setDisplay(Integer.parseInt(digit));
         } else {
-            String txt = Double.toString(v) + digit;
-            Calculator.setDisplay(Double.parseDouble(txt));
+            String txt = Double.toString(v);
+            if (txt.endsWith(".0")) {
+                txt = txt.substring(0, txt.length() - 2);
+            }
+            txt = txt + digit;
+            CALC.setDisplay(Double.parseDouble(txt));
         }
+    }
+
+    @ComputedProperty
+    public static String displayPreview(
+        double display, boolean hover, double memory, String operation
+    ) {
+        if (!hover) {
+            return "Type numbers and perform simple operations! Press '=' to get result.";
+        }
+        return "Attempt to compute " + memory + " " + operation + " " + display + " = " + compute(operation, memory, display);
     }
 }
