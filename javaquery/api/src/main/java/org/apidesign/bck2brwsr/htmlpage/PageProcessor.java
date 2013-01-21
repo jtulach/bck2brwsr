@@ -97,7 +97,7 @@ public final class PageProcessor extends AbstractProcessor {
                     w.append("final class ").append(className).append(" {\n");
                     w.append("  private static boolean locked;\n");
                     w.append("  public ").append(className).append("() {\n");
-                    if (!initializeOnClick((TypeElement) e, w, pp)) {
+                    if (!initializeOnClick(className, (TypeElement) e, w, pp)) {
                         return false;
                     }
                     w.append("  }\n");
@@ -169,7 +169,9 @@ public final class PageProcessor extends AbstractProcessor {
         return id.toUpperCase(Locale.ENGLISH).replace('.', '_');
     }
 
-    private boolean initializeOnClick(TypeElement type, Writer w, ProcessPage pp) throws IOException {
+    private boolean initializeOnClick(
+        String className, TypeElement type, Writer w, ProcessPage pp
+    ) throws IOException {
         TypeMirror stringType = processingEnv.getElementUtils().getTypeElement("java.lang.String").asType();
         { //for (Element clazz : pe.getEnclosedElements()) {
           //  if (clazz.getKind() != ElementKind.CLASS) {
@@ -184,15 +186,28 @@ public final class PageProcessor extends AbstractProcessor {
                             return false;
                         }
                         ExecutableElement ee = (ExecutableElement)method;
-                        boolean hasParam;
-                        if (ee.getParameters().isEmpty()) {
-                            hasParam = false;
-                        } else {
-                            if (ee.getParameters().size() != 1 || ee.getParameters().get(0).asType() != stringType) {
-                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@On method should either have no arguments or one String argument", ee);
+                        StringBuilder params = new StringBuilder();
+                        {
+                            boolean first = true;
+                            for (VariableElement ve : ee.getParameters()) {
+                                if (!first) {
+                                    params.append(", ");
+                                }
+                                first = false;
+                                if (ve.asType() == stringType) {
+                                    params.append('"').append(id).append('"');
+                                    continue;
+                                }
+                                if (ve.asType().toString().equals(className)) {
+                                    params.append(className).append(".this");
+                                    continue;
+                                }
+                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, 
+                                    "@On method can only accept String or " + className + " arguments",
+                                    ee
+                                );
                                 return false;
                             }
-                            hasParam = true;
                         }
                         if (!ee.getModifiers().contains(Modifier.STATIC)) {
                             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@On method has to be static", ee);
@@ -206,9 +221,7 @@ public final class PageProcessor extends AbstractProcessor {
                             append(").perform(new Runnable() { public void run() {\n");
                         w.append("    ").append(type.getSimpleName().toString()).
                             append('.').append(ee.getSimpleName()).append("(");
-                        if (hasParam) {
-                            w.append("\"").append(id).append("\"");
-                        }
+                        w.append(params);
                         w.append(");\n");
                         w.append("  }});\n");
                     }           

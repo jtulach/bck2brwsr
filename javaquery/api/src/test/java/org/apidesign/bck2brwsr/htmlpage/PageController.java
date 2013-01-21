@@ -46,8 +46,11 @@ public class PageController {
     private static final TestPage PAGE = new TestPage();
     
     @On(event = CLICK, id="pg.button")
-    static void updateTitle() {
-        PAGE.PG_TITLE.setText("You want this window to be named " + PAGE.PG_TEXT.getValue());
+    static void updateTitle(TestPage ref) {
+        if (PAGE != ref) {
+            throw new IllegalStateException("Both references should be the same. " + ref + " != " + PAGE);
+        }
+        ref.PG_TITLE.setText("You want this window to be named " + ref.PG_TEXT.getValue());
     }
     
     @On(event = CLICK, id={ "pg.title", "pg.text" })
