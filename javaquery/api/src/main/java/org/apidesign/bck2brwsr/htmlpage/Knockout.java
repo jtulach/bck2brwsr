@@ -25,14 +25,21 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @ExtraJavaScript(resource = "org/apidesign/bck2brwsr/htmlpage/knockout-2.2.1.js")
-public final class Knockout {
-    private Knockout() {
+public class Knockout {
+    /** used by tests */
+    static Knockout next;
+    
+    Knockout() {
     }
     
     public static <M> Knockout applyBindings(
         Class<M> modelClass, M model, String[] propsGettersAndSetters
     ) {
-        Knockout bindings = new Knockout();
+        Knockout bindings = next;
+        next = null;
+        if (bindings == null) {
+            bindings = new Knockout();
+        }
         for (int i = 0; i < propsGettersAndSetters.length; i += 3) {
             bind(bindings, model, propsGettersAndSetters[i],
                 propsGettersAndSetters[i + 1],

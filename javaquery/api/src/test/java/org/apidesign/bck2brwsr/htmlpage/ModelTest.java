@@ -17,6 +17,8 @@
  */
 package org.apidesign.bck2brwsr.htmlpage;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
 import org.apidesign.bck2brwsr.htmlpage.api.Page;
 import org.apidesign.bck2brwsr.htmlpage.api.Property;
@@ -28,7 +30,8 @@ import org.testng.annotations.Test;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @Page(xhtml = "Empty.html", className = "Model", properties = {
-    @Property(name = "value", type = int.class)
+    @Property(name = "value", type = int.class),
+    @Property(name = "unrelated", type = long.class)
 })
 public class ModelTest {
     @Test public void classGeneratedWithSetterGetter() {
@@ -43,8 +46,36 @@ public class ModelTest {
         assertEquals(16, Model.getPowerValue());
     }
     
+    @Test public void derivedPropertiesAreNotified() {
+        MockKnockout my = new MockKnockout();
+        MockKnockout.next = my;
+        
+        Model.applyBindings();
+        
+        Model.setValue(33);
+        
+        assertEquals(my.mutated.size(), 2, "Two properties changed: " + my.mutated);
+        assertTrue(my.mutated.contains("powerValue"), "Power value is in there: " + my.mutated);
+        assertTrue(my.mutated.contains("value"), "Simple value is in there: " + my.mutated);
+        
+        my.mutated.clear();
+        
+        Model.setUnrelated(44);
+        assertEquals(my.mutated.size(), 1, "One property changed");
+        assertTrue(my.mutated.contains("unrelated"), "Its name is unrelated");
+    }
+    
     @ComputedProperty
     static int powerValue(int value) {
         return value * value;
+    }
+    
+    static class MockKnockout extends Knockout {
+        List<String> mutated = new ArrayList<String>();
+        
+        @Override
+        public void valueHasMutated(String prop) {
+            mutated.add(prop);
+        }
     }
 }
