@@ -39,3 +39,16 @@
  
 }
 
+.issues {    
+    width: 16px;
+}
+
+.issue { 
+    height: 16px;
+    width: 16px;
+    vertical-align: middle;
+    background-repeat: no-repeat;  
+    background-image: url("../img/error.png"); 
+    /* color: #822; */
+}
+

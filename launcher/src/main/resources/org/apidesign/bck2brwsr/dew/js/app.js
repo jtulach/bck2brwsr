@@ -120,19 +120,59 @@ function DevCtrl( $scope, $http ) {
         + "}\n";
 
     
+    $scope.makeMarker = function( editor, line ) {
+        var marker = document.createElement("div");
+        marker.innerHTML = " ";
+        marker.className = "issue";
+        
+        var info = editor.lineInfo(line);
+        editor.setGutterMarker(line, "issues", info.markers ? null : marker);
+        
+        return marker;
+    };
+    
+    
+    // Returns a function, that, as long as it continues to be invoked, will not
+    // be triggered. The function will be called after it stops being called for
+    // N milliseconds. If `immediate` is passed, trigger the function on the
+    // leading edge, instead of the trailing.
+    $scope.debounce = function(func, wait, immediate) {
+      var timeout, result;
+      return function() {
+        var context = this, args = arguments;
+        var later = function() {
+          timeout = null;
+          if (!immediate) result = func.apply(context, args);
+        };
+        var callNow = immediate && !timeout;
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+        if (callNow) result = func.apply(context, args);
+        return result;
+      };
+    };
+    
     $scope.reload = function() {
         $scope.errors = null;
         var frame = document.getElementById("result");        
         frame.src = "result.html";
         frame.contentDocument.location.reload(true);
         frame.contentWindow.location.reload();
+        document.getElementById("editorJava").codeMirror.clearGutter("issues");   
     };
     
     $scope.fail = function( data ) {
         $scope.errors = eval( data );
+        var editor = document.getElementById("editorJava").codeMirror;   
+        editor.clearGutter( "issues" );
+        
+        for( var i = 0; i < $scope.errors.length; i ++ ) {
+            $scope.makeMarker( editor, $scope.errors[i].line - 1 );
+        }
+        
     };
     
-    $scope.post = function(html, java) {
+    $scope.post = function() {
         return $http({url: ".",
             method: "POST",
             //headers: this.headers,
@@ -151,7 +191,7 @@ function DevCtrl( $scope, $http ) {
     
     $scope.gotoError = function( line, col ) {
         var editor = document.getElementById("editorJava").codeMirror;   
-        editor.setCursor({ line: line - 1, ch : col });
+        editor.setCursor({ line: line - 1, ch : col - 1 });
         editor.focus();
     };
     
@@ -159,11 +199,8 @@ function DevCtrl( $scope, $http ) {
     $scope.html= templateHtml;  
     $scope.java = templateJava;  
     
-    $scope.tabActive = function( tab ) {
-        return tab === $scope.tab ? "active" : "";
-    };
-    
-    // $scope.$watch( "html", htmlChange );
+    $scope.$watch( "html", $scope.debounce( $scope.post, 2000 ) );
+    $scope.$watch( "java", $scope.debounce( $scope.post, 2000 ) );
     $scope.post();
     
 }

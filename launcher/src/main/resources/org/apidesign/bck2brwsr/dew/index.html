@@ -56,7 +56,7 @@ and open the template in the editor.
                 <tr><td><i class="ic-java"></i> Java</td></tr>               
                 </table>                
                 <div>
-                    <textarea id="editorJava" ui-codemirror='{ lineNumbers : true, mode : "text/x-java", theme : "elegant", matchBrackets : true, lineWrapping : true }' ng-model="java"></textarea>
+                    <textarea id="editorJava" ui-codemirror='{ lineNumbers : true, mode : "text/x-java", theme : "elegant", matchBrackets : true, lineWrapping : true, gutters: ["CodeMirror-linenumbers", "issues"] }' ng-model="java"></textarea>
                     <div class="alert alert-error" ng-show="doc.modelError">
                         <small>{{doc.modelError.toString()}}</small>
                     </div>
