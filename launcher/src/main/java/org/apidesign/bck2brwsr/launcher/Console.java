@@ -65,18 +65,49 @@ public class Console {
         Object res = invokeMethod(clazz, method);
         setAttr("result", "value", res);
     }
+
+    @JavaScriptBody(args = { "url", "callback", "arr" }, body = ""
+        + "var request = new XMLHttpRequest();\n"
+        + "request.open('GET', url, true);\n"
+        + "request.onreadystatechange = function() {\n"
+        + "  if (this.readyState!==4) return;\n"
+        + "  arr[0] = this.responseText;\n"
+        + "  callback.run__V();\n"
+        + "};"
+        + "request.send();"
+    )
+    private static native void loadText(String url, Runnable callback, String[] arr) throws IOException;
     
-    public static void harness(String url) {
+    public static void harness(String url) throws IOException {
         log("Connecting to " + url);
-        try {
-            URL u = new URL(url);
-            for (;;) {
-                String data = (String) u.getContent(new Class[] { String.class });
+        Request r = new Request(url);
+    }
+    
+    private static class Request implements Runnable {
+        private final String[] arr = { null };
+        private final String url;
+
+        private Request(String url) throws IOException {
+            this.url = url;
+            loadText(url, this, arr);
+        }
+        
+        @Override
+        public void run() {
+            try {
+                String data = arr[0];
                 log("\nGot \"" + data + "\"");
+                
+                if (data == null) {
+                    log("Some error exiting");
+                    closeWindow();
+                    return;
+                }
+                
                 if (data.isEmpty()) {
                     log("No data, exiting");
                     closeWindow();
-                    break;
+                    return;
                 }
                 
                 Case c = Case.parseData(data);
@@ -89,12 +120,13 @@ public class Console {
                 result = encodeURL("" + result);
                 
                 log("Sending back: " + url + "?request=" + c.getRequestId() + "&result=" + result);
-                u = new URL(url + "?request=" + c.getRequestId() + "&result=" + result);
+                String u = url + "?request=" + c.getRequestId() + "&result=" + result;
+                
+                loadText(u, this, arr);
+                
+            } catch (Exception ex) {
+                log(ex.getMessage());
             }
-            
-            
-        } catch (Exception ex) {
-            log(ex.getMessage());
         }
     }
     
