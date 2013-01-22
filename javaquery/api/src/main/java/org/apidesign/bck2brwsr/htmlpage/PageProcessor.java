@@ -209,7 +209,12 @@ public final class PageProcessor extends AbstractProcessor {
                                     params.append('"').append(id).append('"');
                                     continue;
                                 }
-                                if (ve.asType().toString().equals(className)) {
+                                String rn = ve.asType().toString();
+                                int last = rn.lastIndexOf('.');
+                                if (last >= 0) {
+                                    rn = rn.substring(last + 1);
+                                }
+                                if (rn.equals(className)) {
                                     params.append(className).append(".this");
                                     continue;
                                 }
