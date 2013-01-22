@@ -35,7 +35,7 @@
     <fileSet filtered="true" packaged="true">
       <directory>src/test/java</directory>
       <includes>
-        <include>**/AppTest.java</include>
+        <include>**/*Test.java</include>
       </includes>
     </fileSet>
     <fileSet filtered="false" packaged="false">
