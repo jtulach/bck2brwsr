@@ -216,12 +216,12 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
             if (ch == -1) {
                 break;
             }
-            if (ch == '$') {
+            if (ch == '$' && params.length > 0) {
                 int cnt = is.read() - '0';
                 if (cnt == 'U' - '0') {
                     os.write(baseURL.getBytes());
                 }
-                if (cnt < params.length) {
+                if (cnt >= 0 && cnt < params.length) {
                     os.write(params[cnt].getBytes());
                 }
             } else {
@@ -360,17 +360,20 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
                     r = r.substring(1);
                 }
             }
+            String[] replace = {};
             if (r.endsWith(".html")) {
                 response.setContentType("text/html");
                 LOG.info("Content type text/html");
+                replace = args;
             }
             if (r.endsWith(".xhtml")) {
                 response.setContentType("application/xhtml+xml");
                 LOG.info("Content type application/xhtml+xml");
+                replace = args;
             }
             OutputStream os = response.getOutputStream();
             try (InputStream is = res.get(r)) {
-                copyStream(is, os, request.getRequestURL().toString(), args);
+                copyStream(is, os, request.getRequestURL().toString(), replace);
             } catch (IOException ex) {
                 response.setDetailMessage(ex.getLocalizedMessage());
                 response.setError();
