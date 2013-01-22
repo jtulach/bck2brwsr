@@ -18,9 +18,6 @@
 package org.apidesign.bck2brwsr.vmtest.impl;
 
 import org.apidesign.bck2brwsr.vmtest.*;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
