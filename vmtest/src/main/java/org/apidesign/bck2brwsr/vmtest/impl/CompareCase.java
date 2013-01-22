@@ -74,23 +74,8 @@ public final class CompareCase implements ITest {
         }
         
         for (Method m : arr) {
-            Compare c = m.getAnnotation(Compare.class);
-            if (c == null) {
-                continue;
-            }
-            final Bck2BrwsrCase real = new Bck2BrwsrCase(m, "Java", null);
-            final Bck2BrwsrCase js = new Bck2BrwsrCase(m, "JavaScript", l.javaScript());
-            ret.add(real);
-            ret.add(js);
-            ret.add(new CompareCase(m, real, js));
-
-            for (String b : brwsr) {
-                final Launcher s = l.brwsr(b);
-                ret.add(s);
-                final Bck2BrwsrCase cse = new Bck2BrwsrCase(m, b, s);
-                ret.add(cse);
-                ret.add(new CompareCase(m, real, cse));
-            }
+            registerCompareCases(m, l, ret, brwsr);
+            registerBrwsrCases(m, l, ret, brwsr);
         }
         return ret.toArray();
     }
@@ -122,5 +107,41 @@ public final class CompareCase implements ITest {
     @Override
     public String getTestName() {
         return m.getName() + "[Compare " + second.typeName() + "]";
+    }
+    
+    private static void registerCompareCases(Method m, final LaunchSetup l, List<Object> ret, String[] brwsr) {
+        Compare c = m.getAnnotation(Compare.class);
+        if (c == null) {
+            return;
+        }
+        final Bck2BrwsrCase real = new Bck2BrwsrCase(m, "Java", null, false);
+        final Bck2BrwsrCase js = new Bck2BrwsrCase(m, "JavaScript", l.javaScript(), false);
+        ret.add(real);
+        ret.add(js);
+        ret.add(new CompareCase(m, real, js));
+        for (String b : brwsr) {
+            final Launcher s = l.brwsr(b);
+            ret.add(s);
+            final Bck2BrwsrCase cse = new Bck2BrwsrCase(m, b, s, false);
+            ret.add(cse);
+            ret.add(new CompareCase(m, real, cse));
+        }
+    }
+    private static void registerBrwsrCases(Method m, final LaunchSetup l, List<Object> ret, String[] brwsr) {
+        BrwsrTest c = m.getAnnotation(BrwsrTest.class);
+        if (c == null) {
+            return;
+        }
+        if (brwsr.length == 0) {
+            final Launcher s = l.brwsr(null);
+            ret.add(s);
+            ret.add(new Bck2BrwsrCase(m, "Brwsr", s, true));
+        } else {
+            for (String b : brwsr) {
+                final Launcher s = l.brwsr(b);
+                ret.add(s);
+                ret.add(new Bck2BrwsrCase(m, b, s, true));
+            }
+        }
     }
 }

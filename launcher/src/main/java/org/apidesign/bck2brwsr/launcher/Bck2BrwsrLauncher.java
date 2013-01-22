@@ -243,7 +243,8 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
                 LOG.log(Level.INFO, "Desktop.browse successfully finished");
                 return null;
             } catch (UnsupportedOperationException ex) {
-                LOG.log(Level.INFO, "Desktop.browse not supported", ex);
+                LOG.log(Level.INFO, "Desktop.browse not supported: {0}", ex.getMessage());
+                LOG.log(Level.FINE, null, ex);
             }
         }
         {
