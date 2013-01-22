@@ -34,12 +34,6 @@ public class Console {
     static {
         turnAssetionStatusOn();
     }
-    public static String welcome() {
-        return "HellofromBck2Brwsr";
-    }
-    public static String multiply() {
-        return String.valueOf(Integer.MAX_VALUE / 2 + Integer.MAX_VALUE);
-    }
     
     @JavaScriptBody(args = {"id", "attr"}, body = 
         "return window.document.getElementById(id)[attr].toString();")
