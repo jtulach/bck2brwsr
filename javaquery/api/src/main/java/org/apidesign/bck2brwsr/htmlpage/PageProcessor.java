@@ -95,7 +95,7 @@ public final class PageProcessor extends AbstractProcessor {
                     w.append("package " + pkg + ";\n");
                     w.append("import org.apidesign.bck2brwsr.htmlpage.api.*;\n");
                     w.append("final class ").append(className).append(" {\n");
-                    w.append("  private static boolean locked;\n");
+                    w.append("  private boolean locked;\n");
                     if (!initializeOnClick(className, (TypeElement) e, w, pp)) {
                         return false;
                     }
