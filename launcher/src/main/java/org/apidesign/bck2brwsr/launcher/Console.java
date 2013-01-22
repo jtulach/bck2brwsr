@@ -53,7 +53,7 @@ public class Console {
     private static native void closeWindow();
 
     private static void log(String newText) {
-        String id = "result";
+        String id = "bck2brwsr.result";
         String attr = "value";
         setAttr(id, attr, getAttr(id, attr) + "\n" + newText);
         setAttr(id, "scrollTop", getAttr(id, "scrollHeight"));
@@ -63,7 +63,7 @@ public class Console {
         String clazz = (String) getAttr("clazz", "value");
         String method = (String) getAttr("method", "value");
         Object res = invokeMethod(clazz, method);
-        setAttr("result", "value", res);
+        setAttr("bck2brwsr.result", "value", res);
     }
 
     @JavaScriptBody(args = { "url", "callback", "arr" }, body = ""
@@ -111,10 +111,14 @@ public class Console {
                 }
                 
                 Case c = Case.parseData(data);
+                if (c.getHtmlFragment() != null) {
+                    setAttr("bck2brwsr.fragment", "innerHTML", c.getHtmlFragment());
+                }
                 log("Invoking " + c.getClassName() + '.' + c.getMethodName() + " as request: " + c.getRequestId());
 
                 Object result = invokeMethod(c.getClassName(), c.getMethodName());
                 
+                setAttr("bck2brwsr.fragment", "innerHTML", "");
                 log("Result: " + result);
                 
                 result = encodeURL("" + result);
@@ -237,11 +241,19 @@ public class Console {
         public String getRequestId() {
             return value("request", data);
         }
+
+        public String getHtmlFragment() {
+            return value("html", data);
+        }
         
         @JavaScriptBody(args = "s", body = "return eval('(' + s + ')');")
         private static native Object toJSON(String s);
         
-        @JavaScriptBody(args = {"p", "d"}, body = "return d[p].toString();")
+        @JavaScriptBody(args = {"p", "d"}, body = 
+              "var v = d[p];\n"
+            + "if (typeof v === 'undefined') return null;\n"
+            + "return v.toString();"
+        )
         private static native String value(String p, Object d);
     }
 }

@@ -40,20 +40,20 @@ public final class Bck2BrwsrCase implements ITest {
     private final String type;
     private final boolean fail;
     Object value;
-    private static final Map<Class, Object[]> compiled = new WeakHashMap<>();
-    private Object inst;
+    private final String html;
 
-    Bck2BrwsrCase(Method m, String type, Launcher l, boolean fail) {
+    Bck2BrwsrCase(Method m, String type, Launcher l, boolean fail, String html) {
         this.l = l;
         this.m = m;
         this.type = type;
         this.fail = fail;
+        this.html = html;
     }
 
     @Test(groups = "run")
     public void executeCode() throws Throwable {
         if (l != null) {
-            MethodInvocation c = l.invokeMethod(m.getDeclaringClass(), m.getName());
+            MethodInvocation c = l.invokeMethod(m.getDeclaringClass(), m.getName(), html);
             String res = c.toString();
             value = res;
             if (fail) {
