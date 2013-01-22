@@ -1198,7 +1198,8 @@ public final
     )
     native static Class getPrimitiveClass(String type);
 
-    public boolean desiredAssertionStatus() {
-        return false;
-    }
+    @JavaScriptBody(args = {}, body = 
+        "return vm.desiredAssertionStatus ? vm.desiredAssertionStatus : false;"
+    )
+    public native boolean desiredAssertionStatus();
 }

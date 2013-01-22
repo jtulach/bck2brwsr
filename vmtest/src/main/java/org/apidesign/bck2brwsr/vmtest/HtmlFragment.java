@@ -22,14 +22,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Can be applied on a method that yields a return value. 
- * Together with {@link VMTest#create} it can be used to write
- * methods which are executed in real as well as JavaScript VMs and
- * their results are compared.
+/** Allows to specify an HTML fragment for a given {@link BrwsrTest}. 
+ * Apply either to the method or to enclosing class. The fragment will be
+ * made available in the page that executes given test. Its elements shall
+ * be regularly accessible from the test.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface Compare {
+@Target({ ElementType.METHOD, ElementType.TYPE})
+public @interface HtmlFragment {
+    /** HTML code fragment to be exposed on the testing page.
+     */
+    String value();
 }

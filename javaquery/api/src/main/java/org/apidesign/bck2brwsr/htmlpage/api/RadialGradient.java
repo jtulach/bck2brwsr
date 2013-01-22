@@ -15,21 +15,31 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.vmtest;
+package org.apidesign.bck2brwsr.htmlpage.api;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
-/** Can be applied on a method that yields a return value. 
- * Together with {@link VMTest#create} it can be used to write
- * methods which are executed in real as well as JavaScript VMs and
- * their results are compared.
+/**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Anton Epple <toni.epple@eppleton.de>
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface Compare {
+public class RadialGradient {
+
+    private Object gradient;
+
+    public RadialGradient(Object radialGradient) {
+        this.gradient = radialGradient;
+    }
+
+    public void addColorStop(double position, String color) {
+        addColorStopImpl(gradient, position, color);
+    }
+
+    @JavaScriptBody(args = {"gradient", "position", "color"}, body =
+            "gradient.addColorStop(position,color)")
+    private static native void addColorStopImpl(Object gradient, double position, String color);
+
+    Object object() {
+        return gradient;
+    }
 }

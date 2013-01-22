@@ -160,11 +160,17 @@ public final class PageProcessor extends AbstractProcessor {
         if (tag.equals("input")) {
             return "Input";
         }
+        if (tag.equals("canvas")) {
+            return "Canvas";
+        }
+        if (tag.equals("img")) {
+            return "Image";
+        }
         return "Element";
     }
 
     private static String cnstnt(String id) {
-        return id.toUpperCase(Locale.ENGLISH).replace('.', '_');
+        return id.toUpperCase(Locale.ENGLISH).replace('.', '_').replace('-', '_');
     }
 
     private boolean initializeOnClick(

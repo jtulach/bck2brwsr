@@ -46,6 +46,12 @@ public abstract class Element {
     )
     static native Object getAttribute(Element el, String property);
     
+    @JavaScriptBody(
+        args={"el"},
+        body="return window.document.getElementById(el.fld_id);"
+    )
+    static native Object getElementById(Element el);
+    
     /** Executes given runnable when user performs a "click" on the given
      * element.
      * @param r the runnable to execute, never null

@@ -20,6 +20,7 @@ package org.apidesign.bck2brwsr.vmtest.impl;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -37,21 +38,56 @@ public final class Bck2BrwsrCase implements ITest {
     private final Method m;
     private final Launcher l;
     private final String type;
+    private final boolean fail;
     Object value;
-    private static final Map<Class, Object[]> compiled = new WeakHashMap<>();
-    private Object inst;
+    private final String html;
 
-    Bck2BrwsrCase(Method m, String type, Launcher l) {
+    Bck2BrwsrCase(Method m, String type, Launcher l, boolean fail, String html) {
         this.l = l;
         this.m = m;
         this.type = type;
+        this.fail = fail;
+        this.html = html;
     }
 
     @Test(groups = "run")
     public void executeCode() throws Throwable {
         if (l != null) {
-            MethodInvocation c = l.invokeMethod(m.getDeclaringClass(), m.getName());
-            value = c.toString();
+            MethodInvocation c = l.invokeMethod(m.getDeclaringClass(), m.getName(), html);
+            String res = c.toString();
+            value = res;
+            if (fail) {
+                int idx = res.indexOf(':');
+                if (idx >= 0) {
+                    Class<? extends Throwable> thrwbl = null;
+                    try {
+                        Class<?> exCls = Class.forName(res.substring(0, idx));
+                        if (Throwable.class.isAssignableFrom(exCls)) {
+                            thrwbl = exCls.asSubclass(Throwable.class);
+                        }
+                    } catch (Exception ex) {
+                        // ignore
+                    }
+                    if (thrwbl != null) {
+                        Throwable t = null;
+                        try {
+                            for (Constructor<?> cnstr : thrwbl.getConstructors()) {
+                                if (cnstr.getParameterTypes().length == 1 && cnstr.getParameterTypes()[0].isAssignableFrom(String.class)) {
+                                    t = (Throwable) cnstr.newInstance(res.substring(idx + 1));
+                                    break;
+                                }
+                            }
+                        } catch (Throwable ex) {
+                            t = thrwbl.newInstance().initCause(ex);
+                        }
+                        if (t == null) {
+                            t = thrwbl.newInstance().initCause(new Exception(res.substring(idx)));
+                        }
+                        throw t;
+                    }
+                    throw new AssertionError(res);
+                }
+            }
         } else {
             try {
                 value = m.invoke(m.getDeclaringClass().newInstance());

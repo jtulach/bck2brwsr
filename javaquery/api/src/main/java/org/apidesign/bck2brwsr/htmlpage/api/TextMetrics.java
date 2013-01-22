@@ -15,21 +15,34 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.vmtest;
+package org.apidesign.bck2brwsr.htmlpage.api;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
-/** Can be applied on a method that yields a return value. 
- * Together with {@link VMTest#create} it can be used to write
- * methods which are executed in real as well as JavaScript VMs and
- * their results are compared.
+/**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Anton Epple <toni.epple@eppleton.de>
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface Compare {
+public class TextMetrics {
+
+    private Object textMetrics;
+
+    TextMetrics(Object measureTextImpl) {
+        this.textMetrics = measureTextImpl;
+    }
+
+    @JavaScriptBody(args = {"textMetrics"}, body = "return textMetrics.width;")
+    private native double getWidth(Object textMetrics);
+
+    @JavaScriptBody(args = {"textMetrics"}, body = "return textMetrics.height;")
+    private native double getHeight(Object textMetrics);
+
+    public double getWidth() {
+        return getWidth(textMetrics);
+    }
+
+    public double getHeight() {
+        return getHeight(textMetrics);
+
+    }
 }

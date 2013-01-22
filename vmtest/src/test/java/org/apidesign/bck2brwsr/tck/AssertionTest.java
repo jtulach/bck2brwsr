@@ -15,21 +15,25 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.vmtest;
+package org.apidesign.bck2brwsr.tck;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.apidesign.bck2brwsr.vmtest.Compare;
+import org.apidesign.bck2brwsr.vmtest.VMTest;
+import org.testng.annotations.Factory;
 
-/** Can be applied on a method that yields a return value. 
- * Together with {@link VMTest#create} it can be used to write
- * methods which are executed in real as well as JavaScript VMs and
- * their results are compared.
+/**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface Compare {
+public class AssertionTest {
+
+    @Compare public Object checkAssert() throws ClassNotFoundException {
+        assert false : "Is assertion status on?";
+        return null;
+    }
+    
+    @Factory
+    public static Object[] create() {
+        return VMTest.create(AssertionTest.class);
+    }
 }

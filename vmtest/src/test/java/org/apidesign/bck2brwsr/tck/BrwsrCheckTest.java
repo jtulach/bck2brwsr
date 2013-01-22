@@ -15,10 +15,11 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.benchmark.matrixmul;
+package org.apidesign.bck2brwsr.tck;
 
-import java.io.IOException;
-import org.apidesign.bck2brwsr.vmtest.Compare;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+import org.apidesign.bck2brwsr.vmtest.BrwsrTest;
+import org.apidesign.bck2brwsr.vmtest.HtmlFragment;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
 
@@ -26,31 +27,31 @@ import org.testng.annotations.Factory;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class MatrixTest {
-    public MatrixTest() {
+public class BrwsrCheckTest {
+
+    @BrwsrTest public void assertWindowObjectIsDefined() {
+        assert window() != null : "No window object found!";
     }
 
-    @Compare public String tenThousandIterations() throws IOException {
     
-        Matrix m1 = new Matrix(5);
-        Matrix m2 = new Matrix(5);
-        
-        m1.generateData();
-        m2.generateData();
-        
-        Matrix res = null;
-        for (int i = 0; i < 10000; i++) {
-            res = m1.multiply(m2);
-            m1 = res;
-        }
-        
-        StringBuilder sb = new StringBuilder();
-        res.printOn(sb);
-        return sb.toString();
+    
+    
+    @HtmlFragment("<h1 id='hello'>\n"
+        + "Hello!\n"
+        + "</h1>\n")
+    @BrwsrTest public void accessProvidedFragment() {
+        assert getElementById("hello") != null : "Element with 'hello' ID found";
     }
     
     @Factory
     public static Object[] create() {
-        return VMTest.create(MatrixTest.class);
+        return VMTest.create(BrwsrCheckTest.class);
     }
+    
+
+    @JavaScriptBody(args = {}, body = "return window;")
+    private static native Object window();
+
+    @JavaScriptBody(args = { "id" }, body = "return window.document.getElementById(id);")
+    private static native Object getElementById(String id);
 }

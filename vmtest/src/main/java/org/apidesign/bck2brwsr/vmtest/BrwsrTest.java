@@ -22,14 +22,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Can be applied on a method that yields a return value. 
- * Together with {@link VMTest#create} it can be used to write
- * methods which are executed in real as well as JavaScript VMs and
- * their results are compared.
+/** Annotation to indicate that given method should be executed
+ * in a browser environment. Has to be used in conjunction with {@link VMTest#create(java.lang.Class)}
+ * factory method. 
+ * <p>
+ * The browser to is by default executed via {@link java.awt.Desktop#browse(java.net.URI)},
+ * but one can change that by specifying <code>-Dvmtest.brwsrs=firefox,google-chrome</code>
+ * property.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface Compare {
+public @interface BrwsrTest {
 }

@@ -44,13 +44,14 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>vm4brwsr</artifactId>
-      <version>0.3-SNAPSHOT</version>
+      <version>${project.version}</version>
       <type>jar</type>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>emul</artifactId>
-      <version>0.3-SNAPSHOT</version>
+      <version>${project.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
