@@ -21,7 +21,10 @@ public class App {
     
     @On(event = CLICK, id="hello")
     static void hello(Index m) {
-        Element.alert(m.getHelloMessage());
+        GraphicsContext g = m.CANVAS.getContext();
+        g.clearRect(0, 0, 1000, 1000);
+        g.setFont("italic 40px Calibri");
+        g.fillText(m.getHelloMessage(), 10, 40);
     }
     
     @ComputedProperty
