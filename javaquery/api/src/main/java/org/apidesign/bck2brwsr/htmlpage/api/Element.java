@@ -30,6 +30,13 @@ public abstract class Element {
         this.id = id;
     }
     
+    /** Id of the element in the document.
+     * @return the id for this element
+     */
+    public String getId() {
+        return id;
+    }
+    
     abstract void dontSubclass();
     
     @JavaScriptBody(

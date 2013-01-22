@@ -17,8 +17,10 @@
  */
 package org.apidesign.bck2brwsr.htmlpage;
 
+import java.lang.reflect.Method;
 import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
+import org.apidesign.bck2brwsr.htmlpage.api.Element;
 
 /** Provides binding between models and 
  *
@@ -40,11 +42,17 @@ public class Knockout {
         if (bindings == null) {
             bindings = new Knockout();
         }
-        for (int i = 0; i < propsGettersAndSetters.length; i += 3) {
-            bind(bindings, model, propsGettersAndSetters[i],
-                propsGettersAndSetters[i + 1],
-                propsGettersAndSetters[i + 2]
-            );
+        for (int i = 0; i < propsGettersAndSetters.length; i += 4) {
+            try {
+                Method getter = modelClass.getMethod(propsGettersAndSetters[i + 3]);
+                bind(bindings, model, propsGettersAndSetters[i],
+                    propsGettersAndSetters[i + 1],
+                    propsGettersAndSetters[i + 2],
+                    getter.getReturnType().isPrimitive()
+                );
+            } catch (NoSuchMethodException ex) {
+                Element.alert("Error: " + ex.getMessage());
+            }
         }
         applyBindings(bindings);
         return bindings;
@@ -56,7 +64,12 @@ public class Knockout {
     public void valueHasMutated(String prop) {
     }
     
-    @JavaScriptBody(args = { "bindings", "model", "prop", "getter", "setter" }, body =
+
+    @JavaScriptBody(args = { "id", "ev" }, body = "ko.utils.triggerEvent(window.document.getElementById(id), ev.substring(2));")
+    public static void triggerEvent(String id, String ev) {
+    }
+    
+    @JavaScriptBody(args = { "bindings", "model", "prop", "getter", "setter", "primitive" }, body =
           "var bnd = {\n"
         + "  read: function() {\n"
         + "    var v = model[getter]();\n"
@@ -66,13 +79,13 @@ public class Knockout {
         + "};\n"
         + "if (setter != null) {\n"
         + "  bnd.write = function(val) {\n"
-        + "    model[setter](new Number(val));\n"
+        + "    model[setter](primitive ? new Number(val) : val);\n"
         + "  };\n"
         + "}\n"
         + "bindings[prop] = ko.computed(bnd);"
     )
     private static void bind(
-        Object bindings, Object model, String prop, String getter, String setter
+        Object bindings, Object model, String prop, String getter, String setter, boolean primitive
     ) {
     }
     

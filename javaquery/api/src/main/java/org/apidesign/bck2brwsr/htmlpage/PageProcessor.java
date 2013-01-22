@@ -127,6 +127,10 @@ public final class PageProcessor extends AbstractProcessor {
                             sep = ",\n";
                         }
                         w.write("\n  });\n  return this;\n}\n");
+                        
+                        w.write("public void triggerEvent(Element e, OnEvent ev) {\n");
+                        w.write("  org.apidesign.bck2brwsr.htmlpage.Knockout.triggerEvent(e.getId(), ev.getElementPropertyName());\n");
+                        w.write("}\n");
                     }
                     w.append("}\n");
                 } finally {
@@ -329,6 +333,7 @@ public final class PageProcessor extends AbstractProcessor {
             props.add(p.name());
             props.add(gs[2]);
             props.add(gs[3]);
+            props.add(gs[0]);
         }
     }
 
@@ -383,6 +388,7 @@ public final class PageProcessor extends AbstractProcessor {
             props.add(e.getSimpleName().toString());
             props.add(gs[2]);
             props.add(null);
+            props.add(gs[0]);
         }
         
         return true;
