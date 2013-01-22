@@ -20,7 +20,6 @@ package org.apidesign.bck2brwsr.htmlpage;
 import java.lang.reflect.Method;
 import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
-import org.apidesign.bck2brwsr.htmlpage.api.Element;
 
 /** Provides binding between models and 
  *
@@ -51,7 +50,7 @@ public class Knockout {
                     getter.getReturnType().isPrimitive()
                 );
             } catch (NoSuchMethodException ex) {
-                Element.alert("Error: " + ex.getMessage());
+                throw new IllegalStateException(ex.getMessage());
             }
         }
         applyBindings(bindings);
