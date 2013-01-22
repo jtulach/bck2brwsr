@@ -31,6 +31,9 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class Console {
+    static {
+        turnAssetionStatusOn();
+    }
     public static String welcome() {
         return "HellofromBck2Brwsr";
     }
@@ -167,13 +170,17 @@ public class Console {
                 } else {
                     res = found.invoke(c.newInstance());
                 }
-            } catch (Exception ex) {
+            } catch (Exception | Error ex) {
                 res = ex.getClass().getName() + ":" + ex.getMessage();
             }
         } else {
             res = "Can't find method " + method + " in " + clazz;
         }
         return res;
+    }
+
+    @JavaScriptBody(args = {}, body = "vm.desiredAssertionStatus = true;")
+    private static void turnAssetionStatusOn() {
     }
     
     private static final class Case {
