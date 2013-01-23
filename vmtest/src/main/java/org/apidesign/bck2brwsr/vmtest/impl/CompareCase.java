@@ -112,10 +112,12 @@ public final class CompareCase implements ITest {
             return;
         }
         final Bck2BrwsrCase real = new Bck2BrwsrCase(m, "Java", null, false, null);
-        final Bck2BrwsrCase js = new Bck2BrwsrCase(m, "JavaScript", l.javaScript(), false, null);
         ret.add(real);
-        ret.add(js);
-        ret.add(new CompareCase(m, real, js));
+        if (c.scripting()) {
+            final Bck2BrwsrCase js = new Bck2BrwsrCase(m, "JavaScript", l.javaScript(), false, null);
+            ret.add(js);
+            ret.add(new CompareCase(m, real, js));
+        }
         for (String b : brwsr) {
             final Launcher s = l.brwsr(b);
             ret.add(s);

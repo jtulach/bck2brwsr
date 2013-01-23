@@ -30,7 +30,8 @@ public class MatrixTest {
     public MatrixTest() {
     }
 
-    @Compare public String tenThousandIterations() throws IOException {
+    @Compare(scripting = false) 
+    public String tenThousandIterations() throws IOException {
     
         Matrix m1 = new Matrix(5);
         Matrix m2 = new Matrix(5);
