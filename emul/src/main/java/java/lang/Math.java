@@ -641,6 +641,7 @@ public final class Math {
      * to {@code 0.0} and less than {@code 1.0}.
      * @see Random#nextDouble()
      */
+    @JavaScriptBody(args={}, body="return Math.random();")
     public static double random() {
         throw new UnsupportedOperationException();
     }
