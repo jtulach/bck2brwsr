@@ -26,6 +26,7 @@
 package java.io;
 
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
+import org.apidesign.bck2brwsr.emul.lang.System;
 
 /**
  * A data input stream lets an application read primitive Java data
@@ -565,7 +566,7 @@ loop:   while (true) {
                 if (--room < 0) {
                     buf = new char[offset + 128];
                     room = buf.length - offset - 1;
-                    arraycopy(lineBuffer, 0, buf, 0, offset);
+                    System.arraycopy(lineBuffer, 0, buf, 0, offset);
                     lineBuffer = buf;
                 }
                 buf[offset++] = (char) c;
@@ -695,10 +696,5 @@ loop:   while (true) {
         }
         // The number of chars produced may be less than utflen
         return new String(chararr, 0, chararr_count);
-    }
-    static void arraycopy(char[] value, int srcBegin, char[] dst, int dstBegin, int count) {
-        while (count-- > 0) {
-            dst[dstBegin++] = value[srcBegin++];
-        }
     }
 }

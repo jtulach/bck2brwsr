@@ -25,6 +25,8 @@
 
 package java.util;
 
+import org.apidesign.bck2brwsr.emul.lang.System;
+
 /**
  * Resizable-array implementation of the <tt>List</tt> interface.  Implements
  * all optional list operations, and permits all elements, including
@@ -686,51 +688,6 @@ public class ArrayList<E> extends AbstractList<E>
             }
         }
         return modified;
-    }
-
-    /**
-     * Save the state of the <tt>ArrayList</tt> instance to a stream (that
-     * is, serialize it).
-     *
-     * @serialData The length of the array backing the <tt>ArrayList</tt>
-     *             instance is emitted (int), followed by all of its elements
-     *             (each an <tt>Object</tt>) in the proper order.
-     */
-    private void writeObject(java.io.ObjectOutputStream s)
-        throws java.io.IOException{
-        // Write out element count, and any hidden stuff
-        int expectedModCount = modCount;
-        s.defaultWriteObject();
-
-        // Write out array length
-        s.writeInt(elementData.length);
-
-        // Write out all elements in the proper order.
-        for (int i=0; i<size; i++)
-            s.writeObject(elementData[i]);
-
-        if (modCount != expectedModCount) {
-            throw new ConcurrentModificationException();
-        }
-
-    }
-
-    /**
-     * Reconstitute the <tt>ArrayList</tt> instance from a stream (that is,
-     * deserialize it).
-     */
-    private void readObject(java.io.ObjectInputStream s)
-        throws java.io.IOException, ClassNotFoundException {
-        // Read in size, and any hidden stuff
-        s.defaultReadObject();
-
-        // Read in array length and allocate array
-        int arrayLength = s.readInt();
-        Object[] a = elementData = new Object[arrayLength];
-
-        // Read in all elements in the proper order.
-        for (int i=0; i<size; i++)
-            a[i] = s.readObject();
     }
 
     /**

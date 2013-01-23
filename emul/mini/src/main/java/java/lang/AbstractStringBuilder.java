@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import org.apidesign.bck2brwsr.emul.lang.System;
+
 /**
  * A mutable sequence of characters.
  * <p>
@@ -350,7 +352,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
             throw new StringIndexOutOfBoundsException(srcEnd);
         if (srcBegin > srcEnd)
             throw new StringIndexOutOfBoundsException("srcBegin > srcEnd");
-        arraycopy(value, srcBegin, dst, dstBegin, srcEnd - srcBegin);
+        System.arraycopy(value, srcBegin, dst, dstBegin, srcEnd - srcBegin);
     }
 
     /**
@@ -500,7 +502,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
     public AbstractStringBuilder append(char[] str) {
         int len = str.length;
         ensureCapacityInternal(count + len);
-        arraycopy(str, 0, value, count, len);
+        System.arraycopy(str, 0, value, count, len);
         count += len;
         return this;
     }
@@ -530,7 +532,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
     public AbstractStringBuilder append(char str[], int offset, int len) {
         if (len > 0)                // let arraycopy report AIOOBE for len < 0
             ensureCapacityInternal(count + len);
-        arraycopy(str, offset, value, count, len);
+        System.arraycopy(str, offset, value, count, len);
         count += len;
         return this;
     }
@@ -683,7 +685,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
             throw new StringIndexOutOfBoundsException();
         int len = end - start;
         if (len > 0) {
-            arraycopy(value, start+len, value, start, count-end);
+            System.arraycopy(value, start+len, value, start, count-end);
             count -= len;
         }
         return this;
@@ -745,7 +747,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
     public AbstractStringBuilder deleteCharAt(int index) {
         if ((index < 0) || (index >= count))
             throw new StringIndexOutOfBoundsException(index);
-        arraycopy(value, index+1, value, index, count-index-1);
+        System.arraycopy(value, index+1, value, index, count-index-1);
         count--;
         return this;
     }
@@ -783,7 +785,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
         int newCount = count + len - (end - start);
         ensureCapacityInternal(newCount);
 
-        arraycopy(value, end, value, start + len, count - end);
+        System.arraycopy(value, end, value, start + len, count - end);
         str.getChars(value, start);
         count = newCount;
         return this;
@@ -889,8 +891,8 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
                 "offset " + offset + ", len " + len + ", str.length "
                 + str.length);
         ensureCapacityInternal(count + len);
-        arraycopy(value, index, value, index + len, count - index);
-        arraycopy(str, offset, value, index, len);
+        System.arraycopy(value, index, value, index + len, count - index);
+        System.arraycopy(str, offset, value, index, len);
         count += len;
         return this;
     }
@@ -956,7 +958,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
             str = "null";
         int len = str.length();
         ensureCapacityInternal(count + len);
-        arraycopy(value, offset, value, offset + len, count - offset);
+        System.arraycopy(value, offset, value, offset + len, count - offset);
         str.getChars(value, offset);
         count += len;
         return this;
@@ -991,8 +993,8 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
             throw new StringIndexOutOfBoundsException(offset);
         int len = str.length;
         ensureCapacityInternal(count + len);
-        arraycopy(value, offset, value, offset + len, count - offset);
-        arraycopy(str, 0, value, offset, len);
+        System.arraycopy(value, offset, value, offset + len, count - offset);
+        System.arraycopy(str, 0, value, offset, len);
         count += len;
         return this;
     }
@@ -1082,7 +1084,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
                 + s.length());
         int len = end - start;
         ensureCapacityInternal(count + len);
-        arraycopy(value, dstOffset, value, dstOffset + len,
+        System.arraycopy(value, dstOffset, value, dstOffset + len,
                          count - dstOffset);
         for (int i=start; i<end; i++)
             value[dstOffset++] = s.charAt(i);
@@ -1134,7 +1136,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      */
     public AbstractStringBuilder insert(int offset, char c) {
         ensureCapacityInternal(count + 1);
-        arraycopy(value, offset, value, offset + 1, count - offset);
+        System.arraycopy(value, offset, value, offset + 1, count - offset);
         value[offset] = c;
         count += 1;
         return this;
@@ -1394,20 +1396,8 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
             throw new IllegalArgumentException(from + " > " + to);
         }
         char[] copy = new char[newLength];
-        arraycopy(original, from, copy, 0, Math.min(original.length - from, newLength));
+        System.arraycopy(original, from, copy, 0, Math.min(original.length - from, newLength));
         return copy;
-    }
-
-    static void arraycopy(char[] value, int srcBegin, char[] dst, int dstBegin, int count) {
-        if (srcBegin < dstBegin) {
-            while (count-- > 0) {
-                dst[dstBegin + count] = value[srcBegin + count];
-            }
-        } else {
-            while (count-- > 0) {
-                dst[dstBegin++] = value[srcBegin++];
-            }
-        }
     }
 
     // access system property
@@ -1417,7 +1407,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
 
     static char[] copyOf(char[] original, int newLength) {
         char[] copy = new char[newLength];
-        arraycopy(original, 0, copy, 0, Math.min(original.length, newLength));
+        System.arraycopy(original, 0, copy, 0, Math.min(original.length, newLength));
         return copy;
     }
     

@@ -25,6 +25,8 @@
 
 package java.io;
 
+import org.apidesign.bck2brwsr.emul.lang.System;
+
 /**
  * A <code>ByteArrayInputStream</code> contains
  * an internal buffer that contains bytes that
@@ -191,7 +193,7 @@ class ByteArrayInputStream extends InputStream {
         if (len <= 0) {
             return 0;
         }
-        PushbackInputStream.arraycopy(buf, pos, b, off, len);
+        System.arraycopy(buf, pos, b, off, len);
         pos += len;
         return len;
     }

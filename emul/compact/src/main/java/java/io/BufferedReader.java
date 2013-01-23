@@ -25,6 +25,8 @@
 
 package java.io;
 
+import org.apidesign.bck2brwsr.emul.lang.System;
+
 
 /**
  * Reads text from a character-input stream, buffering characters so as to

@@ -94,14 +94,14 @@ public abstract class Reader implements Readable, Closeable {
      * @throws ReadOnlyBufferException if target is a read only buffer
      * @since 1.5
      */
-    public int read(java.nio.CharBuffer target) throws IOException {
-        int len = target.remaining();
-        char[] cbuf = new char[len];
-        int n = read(cbuf, 0, len);
-        if (n > 0)
-            target.put(cbuf, 0, n);
-        return n;
-    }
+//    public int read(java.nio.CharBuffer target) throws IOException {
+//        int len = target.remaining();
+//        char[] cbuf = new char[len];
+//        int n = read(cbuf, 0, len);
+//        if (n > 0)
+//            target.put(cbuf, 0, n);
+//        return n;
+//    }
 
     /**
      * Reads a single character.  This method will block until a character is

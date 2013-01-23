@@ -50,6 +50,6 @@ public interface Readable {
      * @throws NullPointerException if cb is null
      * @throws java.nio.ReadOnlyBufferException if cb is a read only buffer
      */
-    public int read(java.nio.CharBuffer cb) throws IOException;
+// XXX:    public int read(java.nio.CharBuffer cb) throws IOException;
 
 }

@@ -25,6 +25,8 @@
 
 package java.io;
 
+import org.apidesign.bck2brwsr.emul.lang.System;
+
 /**
  * A <code>PushbackInputStream</code> adds
  * functionality to another input stream, namely
@@ -177,7 +179,7 @@ class PushbackInputStream extends FilterInputStream {
             if (len < avail) {
                 avail = len;
             }
-            arraycopy(buf, pos, b, off, avail);
+            System.arraycopy(buf, pos, b, off, avail);
             pos += avail;
             off += avail;
             len -= avail;
@@ -232,7 +234,7 @@ class PushbackInputStream extends FilterInputStream {
             throw new IOException("Push back buffer is full");
         }
         pos -= len;
-        arraycopy(b, off, buf, pos, len);
+        System.arraycopy(b, off, buf, pos, len);
     }
 
     /**
@@ -379,10 +381,5 @@ class PushbackInputStream extends FilterInputStream {
         in.close();
         in = null;
         buf = null;
-    }
-    static void arraycopy(byte[] value, int srcBegin, byte[] dst, int dstBegin, int count) {
-        while (count-- > 0) {
-            dst[dstBegin++] = value[srcBegin++];
-        }
     }
 }

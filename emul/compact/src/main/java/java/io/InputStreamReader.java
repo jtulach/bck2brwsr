@@ -109,13 +109,14 @@ public class InputStreamReader extends Reader {
      * @since 1.4
      * @spec JSR-51
      */
+/* XXX:
     public InputStreamReader(InputStream in, Charset cs) {
         super(in);
         if (cs == null)
             throw new NullPointerException("charset");
         sd = StreamDecoder.forInputStreamReader(in, this, cs);
     }
-
+*/
     /**
      * Creates an InputStreamReader that uses the given charset decoder.  </p>
      *
@@ -125,13 +126,15 @@ public class InputStreamReader extends Reader {
      * @since 1.4
      * @spec JSR-51
      */
+/* XXX:
     public InputStreamReader(InputStream in, CharsetDecoder dec) {
         super(in);
         if (dec == null)
             throw new NullPointerException("charset decoder");
         sd = StreamDecoder.forInputStreamReader(in, this, dec);
     }
-
+*/
+    
     /**
      * Returns the name of the character encoding being used by this stream.
      *

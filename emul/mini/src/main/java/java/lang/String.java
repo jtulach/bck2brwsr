@@ -30,6 +30,7 @@ import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.core.JavaScriptOnly;
 import org.apidesign.bck2brwsr.core.JavaScriptPrototype;
+import org.apidesign.bck2brwsr.emul.lang.System;
 
 /**
  * The <code>String</code> class represents character strings. All
@@ -787,7 +788,7 @@ public final class String
         "}"
     )
     void getChars(char dst[], int dstBegin) {
-        AbstractStringBuilder.arraycopy(toCharArray(), offset(), dst, dstBegin, length());
+        System.arraycopy(toCharArray(), offset(), dst, dstBegin, length());
     }
 
     /**
@@ -836,7 +837,7 @@ public final class String
         if (srcBegin > srcEnd) {
             throw new StringIndexOutOfBoundsException(srcEnd - srcBegin);
         }
-        AbstractStringBuilder.arraycopy(toCharArray(), offset() + srcBegin, dst, dstBegin,
+        System.arraycopy(toCharArray(), offset() + srcBegin, dst, dstBegin,
              srcEnd - srcBegin);
     }
 
@@ -2416,7 +2417,7 @@ public final class String
 //                                    * is the write location in result */
 //
 //        /* Just copy the first few lowerCase characters. */
-//        arraycopy(value, offset, result, 0, firstUpper);
+//        System.arraycopy(value, offset, result, 0, firstUpper);
 //
 //        String lang = locale.getLanguage();
 //        boolean localeDependent =
@@ -2462,7 +2463,7 @@ public final class String
 //                int mapLen = lowerCharArray.length;
 //                if (mapLen > srcCount) {
 //                    char[] result2 = new char[result.length + mapLen - srcCount];
-//                    arraycopy(result, 0, result2, 0,
+//                    System.arraycopy(result, 0, result2, 0,
 //                        i + resultOffset);
 //                    result = result2;
 //                }
@@ -2584,7 +2585,7 @@ public final class String
                                     * is the write location in result *
 
         /* Just copy the first few upperCase characters. *
-        arraycopy(value, offset, result, 0, firstLower);
+        System.arraycopy(value, offset, result, 0, firstLower);
 
         String lang = locale.getLanguage();
         boolean localeDependent =
@@ -2627,7 +2628,7 @@ public final class String
                 int mapLen = upperCharArray.length;
                 if (mapLen > srcCount) {
                     char[] result2 = new char[result.length + mapLen - srcCount];
-                    arraycopy(result, 0, result2, 0,
+                    System.arraycopy(result, 0, result2, 0,
                         i + resultOffset);
                     result = result2;
                 }
