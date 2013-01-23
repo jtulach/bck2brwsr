@@ -108,6 +108,10 @@ public class Array {
         return sum;
     }
     
+    public static String objectArrayClass() {
+        return Object[].class.getName();
+    }
+    
     public static int sum(int size) {
         int[] arr = new int[size];
         return arr[0] + arr[1];
