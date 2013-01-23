@@ -26,14 +26,14 @@
 package java.lang;
 
 import java.io.ByteArrayInputStream;
-import org.apidesign.bck2brwsr.emul.AnnotationImpl;
+import org.apidesign.bck2brwsr.emul.reflect.AnnotationImpl;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.TypeVariable;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
-import org.apidesign.bck2brwsr.emul.MethodImpl;
+import org.apidesign.bck2brwsr.emul.reflect.MethodImpl;
 
 /**
  * Instances of the class {@code Class} represent classes and

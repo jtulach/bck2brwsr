@@ -28,8 +28,8 @@ package java.lang.reflect;
 import java.lang.annotation.Annotation;
 import java.util.Enumeration;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
-import org.apidesign.bck2brwsr.emul.AnnotationImpl;
-import org.apidesign.bck2brwsr.emul.MethodImpl;
+import org.apidesign.bck2brwsr.emul.reflect.AnnotationImpl;
+import org.apidesign.bck2brwsr.emul.reflect.MethodImpl;
 
 /**
  * A {@code Method} provides information about, and access to, a single method

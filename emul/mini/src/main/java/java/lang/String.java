@@ -101,7 +101,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptPrototype;
  */
 
 @ExtraJavaScript(
-    resource="/org/apidesign/vm4brwsr/emul/java_lang_String.js",
+    resource="/org/apidesign/vm4brwsr/emul/lang/java_lang_String.js",
     processByteCode=true
 )
 @JavaScriptPrototype(container = "String.prototype", prototype = "new String")

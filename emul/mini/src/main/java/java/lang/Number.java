@@ -49,7 +49,7 @@ import org.apidesign.bck2brwsr.core.ExtraJavaScript;
  * @since   JDK1.0
  */
 @ExtraJavaScript(
-    resource="/org/apidesign/vm4brwsr/emul/java_lang_Number.js",
+    resource="/org/apidesign/vm4brwsr/emul/lang/java_lang_Number.js",
     processByteCode=true
 )
 public abstract class Number implements java.io.Serializable {

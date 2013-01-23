@@ -15,7 +15,7 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.emul;
+package org.apidesign.bck2brwsr.emul.reflect;
 
 import java.lang.annotation.Annotation;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;

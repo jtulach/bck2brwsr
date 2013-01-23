@@ -22,7 +22,7 @@
  * or visit www.oracle.com if you need additional information or have any
  * questions.
  */
-package org.apidesign.bck2brwsr.emul;
+package org.apidesign.bck2brwsr.emul.reflect;
 
 import java.lang.reflect.Method;
 import java.util.Enumeration;
