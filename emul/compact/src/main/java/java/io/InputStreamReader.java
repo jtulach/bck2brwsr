@@ -25,10 +25,6 @@
 
 package java.io;
 
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import sun.nio.cs.StreamDecoder;
-
 
 /**
  * An InputStreamReader is a bridge from byte streams to character streams: It
@@ -61,8 +57,6 @@ import sun.nio.cs.StreamDecoder;
 
 public class InputStreamReader extends Reader {
 
-    private final StreamDecoder sd;
-
     /**
      * Creates an InputStreamReader that uses the default charset.
      *
@@ -70,12 +64,6 @@ public class InputStreamReader extends Reader {
      */
     public InputStreamReader(InputStream in) {
         super(in);
-        try {
-            sd = StreamDecoder.forInputStreamReader(in, this, (String)null); // ## check lock object
-        } catch (UnsupportedEncodingException e) {
-            // The default encoding should always be available
-            throw new Error(e);
-        }
     }
 
     /**
@@ -95,9 +83,9 @@ public class InputStreamReader extends Reader {
         throws UnsupportedEncodingException
     {
         super(in);
-        if (charsetName == null)
-            throw new NullPointerException("charsetName");
-        sd = StreamDecoder.forInputStreamReader(in, this, charsetName);
+        if (!charsetName.toUpperCase().equals("UTF-8")) {
+            throw new UnsupportedEncodingException(charsetName);
+        }
     }
 
     /**
@@ -156,7 +144,7 @@ public class InputStreamReader extends Reader {
      * @spec JSR-51
      */
     public String getEncoding() {
-        return sd.getEncoding();
+        return "UTF-8";
     }
 
     /**
@@ -168,7 +156,7 @@ public class InputStreamReader extends Reader {
      * @exception  IOException  If an I/O error occurs
      */
     public int read() throws IOException {
-        return sd.read();
+        return ((InputStream)lock).read();
     }
 
     /**
@@ -184,7 +172,15 @@ public class InputStreamReader extends Reader {
      * @exception  IOException  If an I/O error occurs
      */
     public int read(char cbuf[], int offset, int length) throws IOException {
-        return sd.read(cbuf, offset, length);
+        for (int i = 0; i < length; i++) {
+            int ch = read();
+            if (ch == -1) {
+                if (i == 0) return -1;
+                return i;
+            }
+            cbuf[offset++] = (char) ch;
+        }
+        return length;
     }
 
     /**
@@ -195,10 +191,10 @@ public class InputStreamReader extends Reader {
      * @exception  IOException  If an I/O error occurs
      */
     public boolean ready() throws IOException {
-        return sd.ready();
+        return ((InputStream)lock).available() > 0;
     }
 
     public void close() throws IOException {
-        sd.close();
+        ((InputStream)lock).close();
     }
 }
