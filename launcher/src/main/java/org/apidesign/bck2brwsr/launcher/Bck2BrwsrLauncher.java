@@ -261,6 +261,11 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
         LOG.log(Level.INFO, "Showing {0}", uri);
         if (cmd == null) {
             try {
+                LOG.log(Level.INFO, "Trying Desktop.browse on {0} {2} by {1}", new Object[] {
+                    System.getProperty("java.vm.name"),
+                    System.getProperty("java.vm.vendor"),
+                    System.getProperty("java.vm.version"),
+                });
                 java.awt.Desktop.getDesktop().browse(uri);
                 LOG.log(Level.INFO, "Desktop.browse successfully finished");
                 return null;

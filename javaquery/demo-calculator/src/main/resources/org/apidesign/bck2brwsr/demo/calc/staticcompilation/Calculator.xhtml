@@ -46,7 +46,7 @@
         <table border="0" cellspacing="2">
             <tbody>
                 <tr>
-                    <td colspan="4"><input id="display" value="0" 
+                    <td colspan="4"><input data-bind="value: display" value="0" 
                             style="text-align: right"/>
                 </td>
                 </tr>
@@ -76,12 +76,8 @@
                 </tr>
             </tbody>
         </table>
-
-        <script src="/bck2brwsr.js"></script>
-        <script src="/vm.js"></script>
-        <script type="text/javascript">
-            vm.loadClass('org.apidesign.bck2brwsr.mavenhtml.Calculator');
-        </script>
+        <div data-bind="text: displayPreview"></div>
+        <script src="bootjava.js"/>
         
         <hr/>
     <pre>

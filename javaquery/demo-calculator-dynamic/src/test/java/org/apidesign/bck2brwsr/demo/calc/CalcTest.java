@@ -15,28 +15,32 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.htmlpage.api;
+package org.apidesign.bck2brwsr.demo.calc;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import static org.testng.Assert.*;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
-/** Converts an XHTML page into a Java class that contains 
- * references to all IDs.
+/** Demonstrating POJO testing of HTML page model.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@Retention(RetentionPolicy.SOURCE)
-@Target(ElementType.TYPE)
-public @interface Page {
-    /** Path to the XHTML page to read in */
-    String xhtml();
-    /** Name of a Java class to generate. It will contain constants for all
-     * found elements with IDs.
-     */
-    String className() default "";
-    /** List of properties generated into the page.
-     */
-    Property[] properties() default {};
+public class CalcTest {
+    private Calculator model;
+    
+
+    @BeforeMethod
+    public void initModel() {
+        model = new Calculator().applyBindings();
+    }
+
+    @Test
+    public void testSomeMethod() {
+        model.setDisplay(10);
+        Calc.applyOp(model, "plus");
+        assertEquals(0.0, model.getDisplay(), "Cleared after pressing +");
+        model.setDisplay(5);
+        Calc.computeTheValue(model);
+        assertEquals(15.0, model.getDisplay(), "Shows fifteen");
+    }
 }

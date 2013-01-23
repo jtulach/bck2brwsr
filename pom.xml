@@ -75,6 +75,7 @@
                        <exclude>.*/**</exclude>
                        <exclude>mojo/src/main/resources/archetype-resources/**</exclude>
                        <exclude>vmtest/src/test/resources/**</exclude>
+                       <exclude>javaquery/api/src/main/resources/org/apidesign/bck2brwsr/htmlpage/knockout*.js</exclude>
                   </excludes>
               </configuration>
           </plugin>

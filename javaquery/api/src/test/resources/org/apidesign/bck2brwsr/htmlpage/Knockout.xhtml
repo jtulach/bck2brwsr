@@ -18,31 +18,8 @@
     If not, see http://opensource.org/licenses/GPL-2.0.
 
 -->
-<archetype-descriptor name="bck2brwsr">
-  <fileSets>
-    <fileSet filtered="true" packaged="true">
-      <directory>src/main/java</directory>
-      <includes>
-        <include>**/App.java</include>
-      </includes>
-    </fileSet>
-    <fileSet filtered="true" packaged="true">
-      <directory>src/main/resources</directory>
-      <includes>
-        <include>**/*.xhtml</include>
-      </includes>
-    </fileSet>
-    <fileSet filtered="true" packaged="true">
-      <directory>src/test/java</directory>
-      <includes>
-        <include>**/*Test.java</include>
-      </includes>
-    </fileSet>
-    <fileSet filtered="false" packaged="false">
-      <directory></directory>
-      <includes>
-        <include>nbactions.xml</include>
-      </includes>
-    </fileSet>
-  </fileSets>    
-</archetype-descriptor>
+<p>
+    <h1 data-bind="text: helloMessage">Loading Bck2Brwsr's Hello World...</h1>
+    Your name: <input id="input" data-bind="value: name, valueUpdate: 'afterkeydown'"></input>
+    <button id="hello">Say Hello!</button>
+</p>

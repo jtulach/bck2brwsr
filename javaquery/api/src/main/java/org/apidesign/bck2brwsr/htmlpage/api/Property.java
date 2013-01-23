@@ -17,26 +17,18 @@
  */
 package org.apidesign.bck2brwsr.htmlpage.api;
 
-import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Converts an XHTML page into a Java class that contains 
- * references to all IDs.
+/** Represents a property in a generated model of an HTML
+ * {@link Page}.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @Retention(RetentionPolicy.SOURCE)
-@Target(ElementType.TYPE)
-public @interface Page {
-    /** Path to the XHTML page to read in */
-    String xhtml();
-    /** Name of a Java class to generate. It will contain constants for all
-     * found elements with IDs.
-     */
-    String className() default "";
-    /** List of properties generated into the page.
-     */
-    Property[] properties() default {};
+@Target({})
+public @interface Property {
+    String name();
+    Class<?> type();
 }

@@ -82,7 +82,10 @@ public class BrswrMojo extends AbstractMojo {
         List<URL> arr = new ArrayList<URL>();
         arr.add(root.toURI().toURL());
         for (Artifact a : deps) {
-            arr.add(a.getFile().toURI().toURL());
+            final File f = a.getFile();
+            if (f != null) {
+                arr.add(f.toURI().toURL());
+            }
         }
         return new URLClassLoader(arr.toArray(new URL[0]), BrswrMojo.class.getClassLoader());
     }

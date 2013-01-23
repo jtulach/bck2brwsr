@@ -15,31 +15,24 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.vmtest;
+package org.apidesign.bck2brwsr.htmlpage.api;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Can be applied on a method that yields a return value. 
- * Together with {@link VMTest#create} it can be used to write
- * methods which are executed in real VM as well as JavaScript VMs and
- * their results are compared.
+/** Can be used in classes annotated with {@link Page} annotation to
+ * define a derived property. Value of derived property is based on values
+ * of {@link Property} as enumerated by {@link Page#properties()}.
+ * <p>
+ * The name of the derived property is the name of the method. The arguments
+ * of the method define the property names (from {@link Page#properties()} list)
+ * the value of property depends on. 
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.METHOD)
-public @interface Compare {
-    /** Specifies whether the system should internal JavaScript interpreter
-     * as available via {@link javax.script.ScriptEngine}. Defaults to true,
-     * but in some situations (benchmarking comes to my mind), one may set this
-     * to <code>false</code>. In such case only browsers provided via
-     * <code>vmtest.brwsrs</code> property are used. For example
-     * <code>"vmtest.brwsrs=firefox,google-chrome"</code> would run the test
-     * in HotSpot VM, firefox and chrome and would compare the results.
-     * @return 
-     */
-    boolean scripting() default true;
+public @interface ComputedProperty {
 }

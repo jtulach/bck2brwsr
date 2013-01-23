@@ -212,7 +212,7 @@ abstract class ByteCodeToJavaScript {
         out.append("\n    return this;");
         out.append("\n  }");
         out.append("\n  return arguments[0] ? new CLS() : CLS.prototype;");
-        out.append("\n}");
+        out.append("\n};");
         StringBuilder sb = new StringBuilder();
         for (String init : toInitilize.toArray()) {
             sb.append("\n").append(init).append("();");

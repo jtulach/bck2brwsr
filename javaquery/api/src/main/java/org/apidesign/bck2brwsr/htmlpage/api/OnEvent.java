@@ -26,6 +26,7 @@ public enum OnEvent {
     BLUR("onblur"),
     CAN_PLAY("oncanplay"),
     CAN_PLAY_THROUGH("oncanplaythrough"),
+    CHANGE("onchange"),
     CLICK("onclick"),
     CONTEXT_MENU("oncontextmenu"),
     DBL_CLICK("ondblclick"),
@@ -80,6 +81,13 @@ public enum OnEvent {
     
     private OnEvent(String id) {
         this.id = id;
+    }
+    
+    /** The name of property this event is referenced by from an {@link Element}.
+     * For {@link OnEvent#CHANGE}, it is <code>onchange</code>.
+     */
+    public String getElementPropertyName() {
+        return id;
     }
     
     /** What should happen when this even happen on one

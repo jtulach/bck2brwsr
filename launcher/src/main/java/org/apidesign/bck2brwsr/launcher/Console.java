@@ -200,7 +200,7 @@ public class Console {
                 } else {
                     res = found.invoke(c.newInstance());
                 }
-            } catch (Exception | Error ex) {
+            } catch (Throwable ex) {
                 res = ex.getClass().getName() + ":" + ex.getMessage();
             }
         } else {
