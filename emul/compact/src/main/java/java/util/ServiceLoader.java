@@ -488,7 +488,7 @@ public final class ServiceLoader<S>
      * @return A new service loader
      */
     public static <S> ServiceLoader<S> load(Class<S> service) {
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        ClassLoader cl = null; // XXX: Thread.currentThread().getContextClassLoader();
         return ServiceLoader.load(service, cl);
     }
 
