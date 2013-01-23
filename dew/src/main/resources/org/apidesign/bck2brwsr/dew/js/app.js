@@ -72,52 +72,70 @@ angular.module('bck2brwsr', []).
 }]);
 
 function DevCtrl( $scope, $http ) {
-    var templateHtml = "<html><body>\n"
-        + " <button id='btn'>Hello!</button>\n"
-        + " <hr/>\n"
-        + "\n"
-        + "\n"
-        + "\n"
-        + "\n"
-        + "\n"
-        + "\n"
-        + "\n"
-        + "\n"
-        + "\n"
-        + "\n"
-        + "\n"
-        + "\n"
-        + "\n"
-        + "\n"
-        + "\n"
-        + "\n"
-        + "\n"
-        + "\n"
-        + "\n"
-        + "\n"
-        + " <script src=\"/bck2brwsr.js\"></script>\n"
-        + " <script type=\"text/javascript\">\n"
-        + "   function ldCls(res) {\n"
-        + "     var request = new XMLHttpRequest();\n"
-        + "     request.open('GET', '/classes/' + res, false);\n"
-        + "     request.send();\n"
-        + "     var arr = eval('(' + request.responseText + ')');\n"
-        + "     return arr;\n"
-        + "   }\n"
-        + "   var vm = new bck2brwsr(ldCls);\n"
-        + "   vm.loadClass('bck2brwsr.demo.Index');\n"
-        + " </script>\n"
-        + "</body></html>\n";
-    var templateJava = "package bck2brwsr.demo;\n"
-        + "import org.apidesign.bck2brwsr.htmlpage.api.*;\n"
-        + "import static org.apidesign.bck2brwsr.htmlpage.api.OnEvent.*;\n"
-        + "@Page(xhtml=\"index.html\", className=\"Index\")\n"
-        + "class YourFirstHTML5PageInRealLanguage {\n"
-        + "   @On(event=CLICK, id=\"btn\") static void clcs() {\n"
-        + "     Element.alert(\"Hello World!\");\n"
-        + "     Index.BTN.setDisabled(true);\n"
-        + "   }\n"
-        + "}\n";
+    var templateHtml = 
+"<html><body>\n" +
+"  <input data-bind=\"value: value, valueUpdate: 'afterkeydown'\" \n" +
+"     value=\"0\" type=\"number\">\n" +
+"  </input>\n" +
+"  * <span data-bind=\"text: value\">0</span> \n" +
+"  = <span data-bind=\"text: powerValue\">0</span>\n" +
+"  <br/>\n" +
+"  <button id='dupl'>Duplicate!</button>\n" +
+"  <button id=\"clear\">Clear!</button>" +
+" <hr/>\n" +
+"\n" +
+"\n" +
+"\n" +
+"\n" +
+"\n" +
+"\n" +
+"\n" +
+"\n" +
+"\n" +
+"\n" +
+"\n" +
+"\n" +
+"\n" +
+"\n" +
+"\n" +
+"\n" +
+"\n" +
+"\n" +
+"\n" +
+"\n" +
+" <script src=\"/bck2brwsr.js\"></script>\n" +
+" <script type=\"text/javascript\">\n" +
+"   function ldCls(res) {\n" +
+"     var request = new XMLHttpRequest();\n" +
+"     request.open('GET', '/classes/' + res, false);\n" +
+"     request.send();\n" +
+"     var arr = eval('(' + request.responseText + ')');\n" +
+"     return arr;\n" +
+"   }\n" +
+"   var vm = new bck2brwsr(ldCls);\n" +
+"   vm.loadClass('bck2brwsr.demo.YourFirstHTML5PageInRealLanguage');\n" +
+" </script>\n" +
+"</body></html>";
+    var templateJava = 
+"package bck2brwsr.demo;\n" +
+"import org.apidesign.bck2brwsr.htmlpage.api.*;\n" +
+"import static org.apidesign.bck2brwsr.htmlpage.api.OnEvent.*;\n" +
+"\n" +
+"@Page(xhtml=\"index.html\", className=\"Index\", properties={\n" +
+"  @Property(name=\"value\", type=int.class)\n" +
+"})\n" +
+"class YourFirstHTML5PageInRealLanguage {\n" +
+"  static { new Index().applyBindings(); }\n" +
+"  @On(event=CLICK, id=\"dupl\") static void duplicateValue(Index m) {\n" +
+"    m.setValue(m.getValue() * 2);\n" +
+"  }\n" +
+"  @On(event=CLICK, id=\"clear\") static void zeroTheValue(Index m) {\n" +
+"     m.setValue(0);;\n" +
+"  }\n" +
+"  @ComputedProperty static int powerValue(int value) {\n" +
+"    return value * value;\n" +
+"  }\n" +
+"}";
 
     
     $scope.makeMarker = function( editor, line ) {
