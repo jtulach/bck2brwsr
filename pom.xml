@@ -10,6 +10,7 @@
     <module>vm</module>
     <module>emul</module>
     <module>core</module>
+    <module>dew</module>
     <module>mojo</module>
     <module>javaquery</module>
     <module>javap</module>
@@ -74,7 +75,7 @@
                        <exclude>*</exclude>
                        <exclude>.*/**</exclude>
                        <exclude>mojo/src/main/resources/archetype-resources/**</exclude>
-                       <exclude>launcher/src/main/resources/org/apidesign/bck2brwsr/dew/**</exclude>
+                       <exclude>dew/src/main/resources/org/apidesign/bck2brwsr/dew/**</exclude>
                        <exclude>vmtest/src/test/resources/**</exclude>
                        <exclude>javaquery/api/src/main/resources/org/apidesign/bck2brwsr/htmlpage/knockout*.js</exclude>
                   </excludes>
