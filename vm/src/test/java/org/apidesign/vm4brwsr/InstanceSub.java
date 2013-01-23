@@ -1,6 +1,6 @@
 /**
- * Java 4 Browser Bytecode Translator
- * Copyright (C) 2012-2012 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * Back 2 Browser Bytecode Translator
+ * Copyright (C) 2012 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,12 +22,19 @@ package org.apidesign.vm4brwsr;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class InstanceSub extends Instance implements GetByte {
+    private double in;
+    
     public InstanceSub(int i, double d) {
         super(i, d);
+        in = 555.55;
     }
     
     @Override
     public void setByte(byte b) {
         super.setByte((byte) (b + 1));
+    }
+    
+    public static double recallDbl() {
+        return defaultDblValue();
     }
 }

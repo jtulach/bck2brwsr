@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Back 2 Browser Bytecode Translator
+    Copyright (C) 2012 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, version 2 of the License.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program. Look for COPYING file in the top folder.
+    If not, see http://opensource.org/licenses/GPL-2.0.
+
+-->
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>Simple Calculator in HTML5 and Java</title>
+
+        <style type="text/css">
+        body {color: #ffffff; background-color: #121e31; font-family: Monospaced}
+        pre {color: #ffffff; background-color: #121e31; font-family: Monospaced}
+        table {color: #ffffff; background-color: #121e31; font-family: Monospaced}
+        .string {color: #e2ce00}
+        a {color: #e2ce00}
+        .ST1 {color: #0000cc; font-family: Monospaced; font-weight: bold}
+        .ST0 {color: #0000ff}
+        .comment {color: #428bdd}
+        .keyword-directive {color: #f8bb00}
+        .tag {color: #f8bb00}
+        .ST0 {color: #628fb5; background-color: #1b3450}
+        .sgml-comment {color: #808080}
+        .value {color: #99006b}
+        .argument {color: #007c00}
+        .sgml-declaration {color: #bf9221}
+        </style>    
+        </head>
+    <body>
+        <h1>Java and HTML5 - Together at Last!</h1>
+        <table border="0" cellspacing="2">
+            <tbody>
+                <tr>
+                    <td colspan="4"><input data-bind="value: display" value="0" 
+                            style="text-align: right"/>
+                </td>
+                </tr>
+                <tr>
+                    <td><button id="n1">1</button></td>
+                    <td><button id="n2">2</button></td>
+                    <td><button id="n3">3</button></td>
+                    <td><button id="plus">+</button></td>
+                </tr>
+                <tr>
+                    <td><button id="n4">4</button></td>
+                    <td><button id="n5">5</button></td>
+                    <td><button id="n6">6</button></td>
+                    <td><button id="minus">-</button></td>
+                </tr>
+                <tr>
+                    <td><button id="n7">7</button></td>
+                    <td><button id="n8">8</button></td>
+                    <td><button id="n9">9</button></td>
+                    <td><button id="mul">*</button></td>
+                </tr>
+                <tr>
+                    <td><button id="clear">C</button></td>
+                    <td><button id="n0">0</button></td>
+                    <td><button id="result">=</button></td>
+                    <td><button id="div">/</button></td>
+                </tr>
+            </tbody>
+        </table>
+        <div data-bind="text: displayPreview"></div>
+        <script src="bootjava.js"/>
+        
+        <hr/>
+    <pre>
+    <span class="keyword-directive">package</span> org.apidesign.bck2brwsr.mavenhtml;
+
+    <span class="keyword-directive">import</span> org.apidesign.bck2brwsr.htmlpage.api.OnClick;
+    <span class="keyword-directive">import</span> org.apidesign.bck2brwsr.htmlpage.api.Page;
+
+    <span class="comment">/**</span> <span class="comment">HTML5</span><span class="comment"> &amp; </span><span class="comment">Java</span> <span class="comment">demo</span> <span class="comment">showing</span> <span class="comment">the</span> <span class="comment">power</span> <span class="comment">of</span> <a href="http://wiki.apidesign.org/wiki/AnnotationProcessor">annotation processors</a>
+    <span class="comment"> * </span><span class="comment">as</span> <span class="comment">well</span> <span class="comment">as</span> <span class="comment">other</span> <span class="comment">goodies</span><span class="comment">, including type-safe association between</span>
+    <span class="comment"> * </span><span class="comment">an XHTML page and Java.</span>
+    <span class="comment"> * </span>
+    <span class="comment"> * </span><span class="ST1">@author</span> <span class="comment">Jaroslav</span> <span class="comment">Tulach</span> <span class="ST0">&lt;jaroslav.tulach@apidesign.org&gt;</span>
+     <span class="comment">*/</span>
+    @Page(xhtml=<span class="string">&quot;</span><span class="string">Calculator.xhtml</span><span class="string">&quot;</span>)
+    <span class="keyword-directive">public</span> <span class="keyword-directive">class</span> App {
+        <span class="keyword-directive">private</span> <span class="keyword-directive">static</span> <span class="keyword-directive">double</span> memory;
+        <span class="keyword-directive">private</span> <span class="keyword-directive">static</span> String operation;
+
+        @OnClick(id=<span class="string">&quot;</span><span class="string">clear</span><span class="string">&quot;</span>)
+        <span class="keyword-directive">static</span> <span class="keyword-directive">void</span> clear() {
+            memory = <span class="number">0</span>;
+            operation = <span class="keyword-directive">null</span>;
+            Calculator.DISPLAY.setValue(<span class="string">&quot;</span><span class="string">0</span><span class="string">&quot;</span>);
+        }
+
+        @OnClick(id= { <span class="string">&quot;</span><span class="string">plus</span><span class="string">&quot;</span>, <span class="string">&quot;</span><span class="string">minus</span><span class="string">&quot;</span>, <span class="string">&quot;</span><span class="string">mul</span><span class="string">&quot;</span>, <span class="string">&quot;</span><span class="string">div</span><span class="string">&quot;</span> })
+        <span class="keyword-directive">static</span> <span class="keyword-directive">void</span> applyOp(String op) {
+            memory = getValue();
+            operation = op;
+            Calculator.DISPLAY.setValue(<span class="string">&quot;</span><span class="string">0</span><span class="string">&quot;</span>);
+        }
+
+        @OnClick(id=<span class="string">&quot;</span><span class="string">result</span><span class="string">&quot;</span>)
+        <span class="keyword-directive">static</span> <span class="keyword-directive">void</span> computeTheValue() {
+            <span class="keyword-directive">switch</span> (operation) {
+                <span class="keyword-directive">case</span> <span class="string">&quot;</span><span class="string">plus</span><span class="string">&quot;</span>: setValue(memory + getValue()); <span class="keyword-directive">break</span>;
+                <span class="keyword-directive">case</span> <span class="string">&quot;</span><span class="string">minus</span><span class="string">&quot;</span>: setValue(memory - getValue()); <span class="keyword-directive">break</span>;
+                <span class="keyword-directive">case</span> <span class="string">&quot;</span><span class="string">mul</span><span class="string">&quot;</span>: setValue(memory * getValue()); <span class="keyword-directive">break</span>;
+                <span class="keyword-directive">case</span> <span class="string">&quot;</span><span class="string">div</span><span class="string">&quot;</span>: setValue(memory / getValue()); <span class="keyword-directive">break</span>;
+                <span class="keyword-directive">default</span>: <span class="keyword-directive">throw</span> <span class="keyword-directive">new</span> IllegalStateException(operation);
+            }
+        }
+
+        @OnClick(id={<span class="string">&quot;</span><span class="string">n0</span><span class="string">&quot;</span>, <span class="string">&quot;</span><span class="string">n1</span><span class="string">&quot;</span>, <span class="string">&quot;</span><span class="string">n2</span><span class="string">&quot;</span>, <span class="string">&quot;</span><span class="string">n3</span><span class="string">&quot;</span>, <span class="string">&quot;</span><span class="string">n4</span><span class="string">&quot;</span>, <span class="string">&quot;</span><span class="string">n5</span><span class="string">&quot;</span>, <span class="string">&quot;</span><span class="string">n6</span><span class="string">&quot;</span>, <span class="string">&quot;</span><span class="string">n7</span><span class="string">&quot;</span>, <span class="string">&quot;</span><span class="string">n8</span><span class="string">&quot;</span>, <span class="string">&quot;</span><span class="string">n9</span><span class="string">&quot;</span>}) 
+        <span class="keyword-directive">static</span> <span class="keyword-directive">void</span> addDigit(String digit) {
+            digit = digit.substring(<span class="number">1</span>);
+            String v = Calculator.DISPLAY.getValue();
+            <span class="keyword-directive">if</span> (getValue() == <span class="number">0.0</span>) {
+                Calculator.DISPLAY.setValue(digit);
+            } <span class="keyword-directive">else</span> {
+                Calculator.DISPLAY.setValue(v + digit);
+            }
+        }
+
+        <span class="keyword-directive">private</span> <span class="keyword-directive">static</span> <span class="keyword-directive">void</span> setValue(<span class="keyword-directive">double</span> v) {
+            StringBuilder sb = <span class="keyword-directive">new</span> StringBuilder();
+            sb.append(v);
+            Calculator.DISPLAY.setValue(sb.toString());
+        }
+
+        <span class="keyword-directive">private</span> <span class="keyword-directive">static</span> <span class="keyword-directive">double</span> getValue() {
+            <span class="keyword-directive">try</span> {
+                <span class="keyword-directive">return</span> Double.parseDouble(Calculator.DISPLAY.getValue());
+            } <span class="keyword-directive">catch</span> (NumberFormatException ex) {
+                Calculator.DISPLAY.setValue(<span class="string">&quot;</span><span class="string">err</span><span class="string">&quot;</span>);
+                <span class="keyword-directive">return</span> <span class="number">0.0</span>;
+            }
+        }
+    }
+
+    </pre>
+    </body>
+</html>

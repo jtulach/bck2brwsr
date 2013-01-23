@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+
 /**
  * The {@code Integer} class wraps a value of the primitive type
  * {@code int} in an object. An object of type {@code Integer}
@@ -322,13 +324,14 @@ public final class Integer extends Number implements Comparable<Integer> {
      * @param   i   an integer to be converted.
      * @return  a string representation of the argument in base&nbsp;10.
      */
+    @JavaScriptBody(args = "i", body = "return i.toString();")
     public static String toString(int i) {
         if (i == Integer.MIN_VALUE)
             return "-2147483648";
         int size = (i < 0) ? stringSize(-i) + 1 : stringSize(i);
         char[] buf = new char[size];
         getChars(i, size, buf);
-        return new String(0, size, buf);
+        return new String(buf, 0, size);
     }
 
     /**
@@ -439,6 +442,7 @@ public final class Integer extends Number implements Comparable<Integer> {
      * @exception  NumberFormatException if the {@code String}
      *             does not contain a parsable {@code int}.
      */
+    @JavaScriptBody(args={"s", "radix"}, body="return parseInt(s,radix);")
     public static int parseInt(String s, int radix)
                 throws NumberFormatException
     {
@@ -600,7 +604,7 @@ public final class Integer extends Number implements Comparable<Integer> {
             // high value may be configured by property
             int h = 127;
             String integerCacheHighPropValue =
-                String.getProperty("java.lang.Integer.IntegerCache.high");
+                AbstractStringBuilder.getProperty("java.lang.Integer.IntegerCache.high");
             if (integerCacheHighPropValue != null) {
                 int i = parseInt(integerCacheHighPropValue);
                 i = Math.max(i, 127);
@@ -882,7 +886,7 @@ public final class Integer extends Number implements Comparable<Integer> {
     public static Integer getInteger(String nm, Integer val) {
         String v = null;
         try {
-            v = String.getProperty(nm);
+            v = AbstractStringBuilder.getProperty(nm);
         } catch (IllegalArgumentException e) {
         } catch (NullPointerException e) {
         }

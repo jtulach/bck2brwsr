@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+
 /**
  * The {@code Float} class wraps a value of primitive type
  * {@code float} in an object. An object of type
@@ -191,8 +193,7 @@ public final class Float extends Number implements Comparable<Float> {
      * @return a string representation of the argument.
      */
     public static String toString(float f) {
-        throw new UnsupportedOperationException();
-//        return new FloatingDecimal(f).toJavaFormatString();
+        return Double.toString(f);
     }
 
     /**
@@ -816,6 +817,18 @@ public final class Float extends Number implements Comparable<Float> {
      * @return  the {@code float} floating-point value with the same bit
      *          pattern.
      */
+    @JavaScriptBody(args = "bits",
+        body = 
+          "if (bits === 0x7f800000) return Number.POSITIVE_INFINITY;\n"
+        + "if (bits === 0xff800000) return Number.NEGATIVE_INFINITY;\n"
+        + "if (bits >= 0x7f800001 && bits <= 0xffffffff) return Number.NaN;\n"
+        + "var s = ((bits >> 31) == 0) ? 1 : -1;\n"
+        + "var e = ((bits >> 23) & 0xff);\n"
+        + "var m = (e == 0) ?\n"
+        + "  (bits & 0x7fffff) << 1 :\n"
+        + "  (bits & 0x7fffff) | 0x800000;\n"
+        + "return s * m * Math.pow(2.0, e - 150);\n"
+    )
     public static native float intBitsToFloat(int bits);
 
     /**

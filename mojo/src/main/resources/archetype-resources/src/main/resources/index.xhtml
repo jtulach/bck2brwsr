@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>Bck2Brwsr's Hello World</title>
+    </head>
+    <body>
+        <h1 data-bind="text: helloMessage">Loading Bck2Brwsr's Hello World...</h1>
+        Your name: <input id='input' data-bind="value: name, valueUpdate: 'afterkeydown'"></input>
+        <button id="hello">Say Hello!</button>
+        <p>
+            <canvas id="canvas" width="300" height="50">
+            </canvas>
+        </p>
+
+        <script src="/bck2brwsr.js"></script>
+        <script src="/vm.js"></script>
+        <script type="text/javascript">
+            vm.loadClass('${package}.App');
+        </script>
+    </body>
+</html>

@@ -1,20 +1,20 @@
-/*
-Java 4 Browser Bytecode Translator
-Copyright (C) 2012-2012 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, version 2 of the License.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program. Look for COPYING file in the top folder.
-If not, see http://opensource.org/licenses/GPL-2.0.
-*/
+/**
+ * Back 2 Browser Bytecode Translator
+ * Copyright (C) 2012 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 2 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. Look for COPYING file in the top folder.
+ * If not, see http://opensource.org/licenses/GPL-2.0.
+ */
 package org.apidesign.vm4brwsr;
 
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
@@ -25,6 +25,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  */
 public class StaticMethod {
     private static int cnt;
+    private static Object NULL;
 
     public static int minusOne() {
         return -1;
@@ -40,6 +41,10 @@ public class StaticMethod {
             }
         }
         return toRet;
+    }
+    
+    public static boolean isNull() {
+        return NULL == null;
     }
     
     public static int sum(int x, int y) {
@@ -95,10 +100,32 @@ public class StaticMethod {
     }
     
     @JavaScriptBody(
-        args={"i","j"}, body="return (i + j).toString();"
+        args={"i","j"}, body="\n\r\treturn (i + j).toString();"
     )
     public static String i2s(int i, int j) {
         throw new IllegalStateException();
+    }
+    
+    public static String castNull(boolean n) {
+        Object value = n ? null : "Ahoj";
+        return (String)value;
+    }
+    
+    public static String swtch(int what) {
+        switch (what) {
+            case 0: return "Jarda";
+            case 1: return "Darda";
+            case 2: return "Parda";
+            default: return "Marda";
+        }
+    }
+    public static String swtch2(int what) {
+        switch (what) {
+            case 0: return "Jarda";
+            case 11: return "Darda";
+            case 22: return "Parda";
+            default: return "Marda";
+        }
     }
     
     static {

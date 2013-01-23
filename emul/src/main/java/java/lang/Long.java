@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+
 /**
  * The {@code Long} class wraps a value of the primitive type {@code
  * long} in an object. An object of type {@code Long} contains a
@@ -260,13 +262,14 @@ public final class Long extends Number implements Comparable<Long> {
      * @param   i   a {@code long} to be converted.
      * @return  a string representation of the argument in base&nbsp;10.
      */
+    @JavaScriptBody(args = "i", body = "return i.toString();")
     public static String toString(long i) {
         if (i == Long.MIN_VALUE)
             return "-9223372036854775808";
         int size = (i < 0) ? stringSize(-i) + 1 : stringSize(i);
         char[] buf = new char[size];
         getChars(i, size, buf);
-        return new String(0, size, buf);
+        return new String(buf, 0, size);
     }
 
     /**
@@ -923,7 +926,7 @@ public final class Long extends Number implements Comparable<Long> {
     public static Long getLong(String nm, Long val) {
         String v = null;
         try {
-            v = String.getProperty(nm);
+            v = AbstractStringBuilder.getProperty(nm);
         } catch (IllegalArgumentException e) {
         } catch (NullPointerException e) {
         }

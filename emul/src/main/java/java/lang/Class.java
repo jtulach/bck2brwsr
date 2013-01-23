@@ -25,7 +25,15 @@
 
 package java.lang;
 
+import java.io.ByteArrayInputStream;
+import org.apidesign.bck2brwsr.emul.AnnotationImpl;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.TypeVariable;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+import org.apidesign.bck2brwsr.emul.MethodImpl;
 
 /**
  * Instances of the class {@code Class} represent classes and
@@ -73,10 +81,10 @@ import java.lang.annotation.Annotation;
  * @since   JDK1.0
  */
 public final
-    class Class<T> implements java.io.Serializable {
-//                              java.lang.reflect.GenericDeclaration,
-//                              java.lang.reflect.Type,
-//                              java.lang.reflect.AnnotatedElement {
+    class Class<T> implements java.io.Serializable,
+                              java.lang.reflect.GenericDeclaration,
+                              java.lang.reflect.Type,
+                              java.lang.reflect.AnnotatedElement {
     private static final int ANNOTATION= 0x00002000;
     private static final int ENUM      = 0x00004000;
     private static final int SYNTHETIC = 0x00001000;
@@ -137,9 +145,31 @@ public final
      * @exception ClassNotFoundException if the class cannot be located
      */
     public static Class<?> forName(String className)
-                throws ClassNotFoundException {
-        throw new UnsupportedOperationException();
+    throws ClassNotFoundException {
+        if (className.startsWith("[")) {
+            Class<?> arrType = defineArray(className);
+            Class<?> c = arrType;
+            while (c != null && c.isArray()) {
+                c = c.getComponentType0(); // verify component type is sane
+            }
+            return arrType;
+        }
+        Class<?> c = loadCls(className, className.replace('.', '_'));
+        if (c == null) {
+            throw new ClassNotFoundException(className);
+        }
+        return c;
     }
+    
+    @JavaScriptBody(args = {"n", "c" }, body =
+        "if (vm[c]) return vm[c].$class;\n"
+      + "if (vm.loadClass) {\n"
+      + "  vm.loadClass(n);\n"
+      + "  if (vm[c]) return vm[c].$class;\n"
+      + "}\n"
+      + "return null;"
+    )
+    private static native Class<?> loadCls(String n, String c);
 
 
     /**
@@ -189,10 +219,32 @@ public final
      *             </ul>
      *
      */
+    @JavaScriptBody(args = { "self", "illegal" }, body =
+          "\nvar c = self.cnstr;"
+        + "\nif (c['cons__V']) {"
+        + "\n  if ((c.cons__V.access & 0x1) != 0) {"
+        + "\n    var inst = c();"
+        + "\n    c.cons__V.call(inst);"
+        + "\n    return inst;"
+        + "\n  }"
+        + "\n  return illegal;"
+        + "\n}"
+        + "\nreturn null;"
+    )
+    private static native Object newInstance0(Class<?> self, Object illegal);
+    
     public T newInstance()
         throws InstantiationException, IllegalAccessException
     {
-        throw new UnsupportedOperationException("Should be somehow supported");
+        Object illegal = new Object();
+        Object inst = newInstance0(this, illegal);
+        if (inst == null) {
+            throw new InstantiationException(getName());
+        }
+        if (inst == illegal) {
+            throw new IllegalAccessException();
+        }
+        return (T)inst;
     }
 
     /**
@@ -225,7 +277,15 @@ public final
      *
      * @since JDK1.1
      */
-    public native boolean isInstance(Object obj);
+    public boolean isInstance(Object obj) {
+        String prop = "$instOf_" + getName().replace('.', '_');
+        return hasProperty(obj, prop);
+    }
+    
+    @JavaScriptBody(args = { "who", "prop" }, body = 
+        "if (who[prop]) return true; else return false;"
+    )
+    private static native boolean hasProperty(Object who, String prop);
 
 
     /**
@@ -262,7 +322,12 @@ public final
      * @return  {@code true} if this object represents an interface;
      *          {@code false} otherwise.
      */
-    public native boolean isInterface();
+    public boolean isInterface() {
+        return (getAccess() & 0x200) != 0;
+    }
+    
+    @JavaScriptBody(args = {}, body = "return this.access;")
+    private native int getAccess();
 
 
     /**
@@ -272,7 +337,9 @@ public final
      *          {@code false} otherwise.
      * @since   JDK1.1
      */
-    public native boolean isArray();
+    public boolean isArray() {
+        return hasProperty(this, "array"); // NOI18N
+    }
 
 
     /**
@@ -303,6 +370,10 @@ public final
      * @see     java.lang.Void#TYPE
      * @since JDK1.1
      */
+    @JavaScriptBody(args = {}, body = 
+           "if (this.primitive) return true;"
+        + "else return false;"
+    )
     public native boolean isPrimitive();
 
     /**
@@ -381,13 +452,32 @@ public final
      *          represented by this object.
      */
     public String getName() {
-        throw new UnsupportedOperationException();
-//        String name = this.name;
-//        if (name == null)
-//            this.name = name = getName0();
-//        return name;
+        return jvmName().replace('/', '.');
     }
 
+    @JavaScriptBody(args = {}, body = "return this.jvmName;")
+    private native String jvmName();
+
+    
+    /**
+     * Returns an array of {@code TypeVariable} objects that represent the
+     * type variables declared by the generic declaration represented by this
+     * {@code GenericDeclaration} object, in declaration order.  Returns an
+     * array of length 0 if the underlying generic declaration declares no type
+     * variables.
+     *
+     * @return an array of {@code TypeVariable} objects that represent
+     *     the type variables declared by this generic declaration
+     * @throws java.lang.reflect.GenericSignatureFormatError if the generic
+     *     signature of this generic declaration does not conform to
+     *     the format specified in
+     *     <cite>The Java&trade; Virtual Machine Specification</cite>
+     * @since 1.5
+     */
+    public TypeVariable<Class<T>>[] getTypeParameters() {
+        throw new UnsupportedOperationException();
+    }
+ 
     /**
      * Returns the {@code Class} representing the superclass of the entity
      * (class, interface, primitive type or void) represented by this
@@ -399,6 +489,7 @@ public final
      *
      * @return the superclass of the class represented by this object.
      */
+    @JavaScriptBody(args = {}, body = "return this.superclass;")
     public native Class<? super T> getSuperclass();
 
     /**
@@ -444,37 +535,290 @@ public final
      * @since 1.5
      */
     public String getSimpleName() {
-        throw new UnsupportedOperationException();
-////        if (isArray())
-////            return getComponentType().getSimpleName()+"[]";
-////
-////        String simpleName = getSimpleBinaryName();
-////        if (simpleName == null) { // top level class
-////            simpleName = getName();
-////            return simpleName.substring(simpleName.lastIndexOf(".")+1); // strip the package name
-////        }
-////        // According to JLS3 "Binary Compatibility" (13.1) the binary
-////        // name of non-package classes (not top level) is the binary
-////        // name of the immediately enclosing class followed by a '$' followed by:
-////        // (for nested and inner classes): the simple name.
-////        // (for local classes): 1 or more digits followed by the simple name.
-////        // (for anonymous classes): 1 or more digits.
-////
-////        // Since getSimpleBinaryName() will strip the binary name of
-////        // the immediatly enclosing class, we are now looking at a
-////        // string that matches the regular expression "\$[0-9]*"
-////        // followed by a simple name (considering the simple of an
-////        // anonymous class to be the empty string).
-////
-////        // Remove leading "\$[0-9]*" from the name
-////        int length = simpleName.length();
-////        if (length < 1 || simpleName.charAt(0) != '$')
-////            throw new InternalError("Malformed class name");
-////        int index = 1;
-////        while (index < length && isAsciiDigit(simpleName.charAt(index)))
-////            index++;
-////        // Eventually, this is the empty string iff this is an anonymous class
-////        return simpleName.substring(index);
+        if (isArray())
+            return getComponentType().getSimpleName()+"[]";
+
+        String simpleName = getSimpleBinaryName();
+        if (simpleName == null) { // top level class
+            simpleName = getName();
+            return simpleName.substring(simpleName.lastIndexOf(".")+1); // strip the package name
+        }
+        // According to JLS3 "Binary Compatibility" (13.1) the binary
+        // name of non-package classes (not top level) is the binary
+        // name of the immediately enclosing class followed by a '$' followed by:
+        // (for nested and inner classes): the simple name.
+        // (for local classes): 1 or more digits followed by the simple name.
+        // (for anonymous classes): 1 or more digits.
+
+        // Since getSimpleBinaryName() will strip the binary name of
+        // the immediatly enclosing class, we are now looking at a
+        // string that matches the regular expression "\$[0-9]*"
+        // followed by a simple name (considering the simple of an
+        // anonymous class to be the empty string).
+
+        // Remove leading "\$[0-9]*" from the name
+        int length = simpleName.length();
+        if (length < 1 || simpleName.charAt(0) != '$')
+            throw new IllegalStateException("Malformed class name");
+        int index = 1;
+        while (index < length && isAsciiDigit(simpleName.charAt(index)))
+            index++;
+        // Eventually, this is the empty string iff this is an anonymous class
+        return simpleName.substring(index);
+    }
+
+    /**
+     * Returns the "simple binary name" of the underlying class, i.e.,
+     * the binary name without the leading enclosing class name.
+     * Returns {@code null} if the underlying class is a top level
+     * class.
+     */
+    private String getSimpleBinaryName() {
+        Class<?> enclosingClass = null; // XXX getEnclosingClass();
+        if (enclosingClass == null) // top level class
+            return null;
+        // Otherwise, strip the enclosing class' name
+        try {
+            return getName().substring(enclosingClass.getName().length());
+        } catch (IndexOutOfBoundsException ex) {
+            throw new IllegalStateException("Malformed class name");
+        }
+    }
+
+    /**
+     * Returns an array containing {@code Field} objects reflecting all
+     * the accessible public fields of the class or interface represented by
+     * this {@code Class} object.  The elements in the array returned are
+     * not sorted and are not in any particular order.  This method returns an
+     * array of length 0 if the class or interface has no accessible public
+     * fields, or if it represents an array class, a primitive type, or void.
+     *
+     * <p> Specifically, if this {@code Class} object represents a class,
+     * this method returns the public fields of this class and of all its
+     * superclasses.  If this {@code Class} object represents an
+     * interface, this method returns the fields of this interface and of all
+     * its superinterfaces.
+     *
+     * <p> The implicit length field for array class is not reflected by this
+     * method. User code should use the methods of class {@code Array} to
+     * manipulate arrays.
+     *
+     * <p> See <em>The Java Language Specification</em>, sections 8.2 and 8.3.
+     *
+     * @return the array of {@code Field} objects representing the
+     * public fields
+     * @exception  SecurityException
+     *             If a security manager, <i>s</i>, is present and any of the
+     *             following conditions is met:
+     *
+     *             <ul>
+     *
+     *             <li> invocation of
+     *             {@link SecurityManager#checkMemberAccess
+     *             s.checkMemberAccess(this, Member.PUBLIC)} denies
+     *             access to the fields within this class
+     *
+     *             <li> the caller's class loader is not the same as or an
+     *             ancestor of the class loader for the current class and
+     *             invocation of {@link SecurityManager#checkPackageAccess
+     *             s.checkPackageAccess()} denies access to the package
+     *             of this class
+     *
+     *             </ul>
+     *
+     * @since JDK1.1
+     */
+    public Field[] getFields() throws SecurityException {
+        throw new SecurityException();
+    }
+
+    /**
+     * Returns an array containing {@code Method} objects reflecting all
+     * the public <em>member</em> methods of the class or interface represented
+     * by this {@code Class} object, including those declared by the class
+     * or interface and those inherited from superclasses and
+     * superinterfaces.  Array classes return all the (public) member methods
+     * inherited from the {@code Object} class.  The elements in the array
+     * returned are not sorted and are not in any particular order.  This
+     * method returns an array of length 0 if this {@code Class} object
+     * represents a class or interface that has no public member methods, or if
+     * this {@code Class} object represents a primitive type or void.
+     *
+     * <p> The class initialization method {@code <clinit>} is not
+     * included in the returned array. If the class declares multiple public
+     * member methods with the same parameter types, they are all included in
+     * the returned array.
+     *
+     * <p> See <em>The Java Language Specification</em>, sections 8.2 and 8.4.
+     *
+     * @return the array of {@code Method} objects representing the
+     * public methods of this class
+     * @exception  SecurityException
+     *             If a security manager, <i>s</i>, is present and any of the
+     *             following conditions is met:
+     *
+     *             <ul>
+     *
+     *             <li> invocation of
+     *             {@link SecurityManager#checkMemberAccess
+     *             s.checkMemberAccess(this, Member.PUBLIC)} denies
+     *             access to the methods within this class
+     *
+     *             <li> the caller's class loader is not the same as or an
+     *             ancestor of the class loader for the current class and
+     *             invocation of {@link SecurityManager#checkPackageAccess
+     *             s.checkPackageAccess()} denies access to the package
+     *             of this class
+     *
+     *             </ul>
+     *
+     * @since JDK1.1
+     */
+    public Method[] getMethods() throws SecurityException {
+        return MethodImpl.findMethods(this, 0x01);
+    }
+
+    /**
+     * Returns a {@code Field} object that reflects the specified public
+     * member field of the class or interface represented by this
+     * {@code Class} object. The {@code name} parameter is a
+     * {@code String} specifying the simple name of the desired field.
+     *
+     * <p> The field to be reflected is determined by the algorithm that
+     * follows.  Let C be the class represented by this object:
+     * <OL>
+     * <LI> If C declares a public field with the name specified, that is the
+     *      field to be reflected.</LI>
+     * <LI> If no field was found in step 1 above, this algorithm is applied
+     *      recursively to each direct superinterface of C. The direct
+     *      superinterfaces are searched in the order they were declared.</LI>
+     * <LI> If no field was found in steps 1 and 2 above, and C has a
+     *      superclass S, then this algorithm is invoked recursively upon S.
+     *      If C has no superclass, then a {@code NoSuchFieldException}
+     *      is thrown.</LI>
+     * </OL>
+     *
+     * <p> See <em>The Java Language Specification</em>, sections 8.2 and 8.3.
+     *
+     * @param name the field name
+     * @return  the {@code Field} object of this class specified by
+     * {@code name}
+     * @exception NoSuchFieldException if a field with the specified name is
+     *              not found.
+     * @exception NullPointerException if {@code name} is {@code null}
+     * @exception  SecurityException
+     *             If a security manager, <i>s</i>, is present and any of the
+     *             following conditions is met:
+     *
+     *             <ul>
+     *
+     *             <li> invocation of
+     *             {@link SecurityManager#checkMemberAccess
+     *             s.checkMemberAccess(this, Member.PUBLIC)} denies
+     *             access to the field
+     *
+     *             <li> the caller's class loader is not the same as or an
+     *             ancestor of the class loader for the current class and
+     *             invocation of {@link SecurityManager#checkPackageAccess
+     *             s.checkPackageAccess()} denies access to the package
+     *             of this class
+     *
+     *             </ul>
+     *
+     * @since JDK1.1
+     */
+    public Field getField(String name)
+        throws SecurityException {
+        throw new SecurityException();
+    }
+    
+    
+    /**
+     * Returns a {@code Method} object that reflects the specified public
+     * member method of the class or interface represented by this
+     * {@code Class} object. The {@code name} parameter is a
+     * {@code String} specifying the simple name of the desired method. The
+     * {@code parameterTypes} parameter is an array of {@code Class}
+     * objects that identify the method's formal parameter types, in declared
+     * order. If {@code parameterTypes} is {@code null}, it is
+     * treated as if it were an empty array.
+     *
+     * <p> If the {@code name} is "{@code <init>};"or "{@code <clinit>}" a
+     * {@code NoSuchMethodException} is raised. Otherwise, the method to
+     * be reflected is determined by the algorithm that follows.  Let C be the
+     * class represented by this object:
+     * <OL>
+     * <LI> C is searched for any <I>matching methods</I>. If no matching
+     *      method is found, the algorithm of step 1 is invoked recursively on
+     *      the superclass of C.</LI>
+     * <LI> If no method was found in step 1 above, the superinterfaces of C
+     *      are searched for a matching method. If any such method is found, it
+     *      is reflected.</LI>
+     * </OL>
+     *
+     * To find a matching method in a class C:&nbsp; If C declares exactly one
+     * public method with the specified name and exactly the same formal
+     * parameter types, that is the method reflected. If more than one such
+     * method is found in C, and one of these methods has a return type that is
+     * more specific than any of the others, that method is reflected;
+     * otherwise one of the methods is chosen arbitrarily.
+     *
+     * <p>Note that there may be more than one matching method in a
+     * class because while the Java language forbids a class to
+     * declare multiple methods with the same signature but different
+     * return types, the Java virtual machine does not.  This
+     * increased flexibility in the virtual machine can be used to
+     * implement various language features.  For example, covariant
+     * returns can be implemented with {@linkplain
+     * java.lang.reflect.Method#isBridge bridge methods}; the bridge
+     * method and the method being overridden would have the same
+     * signature but different return types.
+     *
+     * <p> See <em>The Java Language Specification</em>, sections 8.2 and 8.4.
+     *
+     * @param name the name of the method
+     * @param parameterTypes the list of parameters
+     * @return the {@code Method} object that matches the specified
+     * {@code name} and {@code parameterTypes}
+     * @exception NoSuchMethodException if a matching method is not found
+     *            or if the name is "&lt;init&gt;"or "&lt;clinit&gt;".
+     * @exception NullPointerException if {@code name} is {@code null}
+     * @exception  SecurityException
+     *             If a security manager, <i>s</i>, is present and any of the
+     *             following conditions is met:
+     *
+     *             <ul>
+     *
+     *             <li> invocation of
+     *             {@link SecurityManager#checkMemberAccess
+     *             s.checkMemberAccess(this, Member.PUBLIC)} denies
+     *             access to the method
+     *
+     *             <li> the caller's class loader is not the same as or an
+     *             ancestor of the class loader for the current class and
+     *             invocation of {@link SecurityManager#checkPackageAccess
+     *             s.checkPackageAccess()} denies access to the package
+     *             of this class
+     *
+     *             </ul>
+     *
+     * @since JDK1.1
+     */
+    public Method getMethod(String name, Class<?>... parameterTypes)
+        throws SecurityException, NoSuchMethodException {
+        Method m = MethodImpl.findMethod(this, name, parameterTypes);
+        if (m == null) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(getName()).append('.').append(name).append('(');
+            String sep = "";
+            for (int i = 0; i < parameterTypes.length; i++) {
+                sb.append(sep).append(parameterTypes[i].getName());
+                sep = ", ";
+            }
+            sb.append(')');
+            throw new NoSuchMethodException(sb.toString());
+        }
+        return m;
     }
 
     /**
@@ -496,25 +840,25 @@ public final
      * @since 1.5
      */
     public String getCanonicalName() {
-        throw new UnsupportedOperationException();
-//        if (isArray()) {
-//            String canonicalName = getComponentType().getCanonicalName();
-//            if (canonicalName != null)
-//                return canonicalName + "[]";
-//            else
-//                return null;
-//        }
+        if (isArray()) {
+            String canonicalName = getComponentType().getCanonicalName();
+            if (canonicalName != null)
+                return canonicalName + "[]";
+            else
+                return null;
+        }
 //        if (isLocalOrAnonymousClass())
 //            return null;
 //        Class<?> enclosingClass = getEnclosingClass();
-//        if (enclosingClass == null) { // top level class
-//            return getName();
-//        } else {
-//            String enclosingName = enclosingClass.getCanonicalName();
-//            if (enclosingName == null)
-//                return null;
-//            return enclosingName + "." + getSimpleName();
-//        }
+        Class<?> enclosingClass = null;
+        if (enclosingClass == null) { // top level class
+            return getName();
+        } else {
+            String enclosingName = enclosingClass.getCanonicalName();
+            if (enclosingName == null)
+                return null;
+            return enclosingName + "." + getSimpleName();
+        }
     }
 
     /**
@@ -552,15 +896,16 @@ public final
      * @throws  NullPointerException If {@code name} is {@code null}
      * @since  JDK1.1
      */
-//     public InputStream getResourceAsStream(String name) {
-//        name = resolveName(name);
-//        ClassLoader cl = getClassLoader0();
-//        if (cl==null) {
-//            // A system class.
-//            return ClassLoader.getSystemResourceAsStream(name);
-//        }
-//        return cl.getResourceAsStream(name);
-//    }
+     public InputStream getResourceAsStream(String name) {
+        name = resolveName(name);
+        byte[] arr = getResourceAsStream0(name);
+        return arr == null ? null : new ByteArrayInputStream(arr);
+     }
+     
+     @JavaScriptBody(args = "name", body = 
+         "return (vm.loadBytes) ? vm.loadBytes(name) : null;"
+     )
+     private static native byte[] getResourceAsStream0(String name);
 
     /**
      * Finds a resource with a given name.  The rules for searching resources
@@ -596,19 +941,136 @@ public final
      *              resource with this name is found
      * @since  JDK1.1
      */
-//    public java.net.URL getResource(String name) {
-//        name = resolveName(name);
-//        ClassLoader cl = getClassLoader0();
-//        if (cl==null) {
-//            // A system class.
-//            return ClassLoader.getSystemResource(name);
-//        }
-//        return cl.getResource(name);
-//    }
+    public java.net.URL getResource(String name) {
+        name = resolveName(name);
+        ClassLoader cl = null;
+        if (cl==null) {
+            // A system class.
+            return ClassLoader.getSystemResource(name);
+        }
+        return cl.getResource(name);
+    }
 
 
+   /**
+     * Add a package name prefix if the name is not absolute Remove leading "/"
+     * if name is absolute
+     */
+    private String resolveName(String name) {
+        if (name == null) {
+            return name;
+        }
+        if (!name.startsWith("/")) {
+            Class<?> c = this;
+            while (c.isArray()) {
+                c = c.getComponentType();
+            }
+            String baseName = c.getName();
+            int index = baseName.lastIndexOf('.');
+            if (index != -1) {
+                name = baseName.substring(0, index).replace('.', '/')
+                    +"/"+name;
+            }
+        } else {
+            name = name.substring(1);
+        }
+        return name;
+    }
+    
+    /**
+     * Returns the class loader for the class.  Some implementations may use
+     * null to represent the bootstrap class loader. This method will return
+     * null in such implementations if this class was loaded by the bootstrap
+     * class loader.
+     *
+     * <p> If a security manager is present, and the caller's class loader is
+     * not null and the caller's class loader is not the same as or an ancestor of
+     * the class loader for the class whose class loader is requested, then
+     * this method calls the security manager's {@code checkPermission}
+     * method with a {@code RuntimePermission("getClassLoader")}
+     * permission to ensure it's ok to access the class loader for the class.
+     *
+     * <p>If this object
+     * represents a primitive type or void, null is returned.
+     *
+     * @return  the class loader that loaded the class or interface
+     *          represented by this object.
+     * @throws SecurityException
+     *    if a security manager exists and its
+     *    {@code checkPermission} method denies
+     *    access to the class loader for the class.
+     * @see java.lang.ClassLoader
+     * @see SecurityManager#checkPermission
+     * @see java.lang.RuntimePermission
+     */
+    public ClassLoader getClassLoader() {
+        throw new SecurityException();
+    }
+    
+    /**
+     * Returns the {@code Class} representing the component type of an
+     * array.  If this class does not represent an array class this method
+     * returns null.
+     *
+     * @return the {@code Class} representing the component type of this
+     * class if this class is an array
+     * @see     java.lang.reflect.Array
+     * @since JDK1.1
+     */
+    public Class<?> getComponentType() {
+        if (isArray()) {
+            try {
+                return getComponentType0();
+            } catch (ClassNotFoundException cnfe) {
+                throw new IllegalStateException(cnfe);
+            }
+        }
+        return null;
+    }
 
-
+    private Class<?> getComponentType0() throws ClassNotFoundException {
+        String n = getName().substring(1);
+        switch (n.charAt(0)) {
+            case 'L': 
+                n = n.substring(1, n.length() - 1);
+                return Class.forName(n);
+            case 'I':
+                return Integer.TYPE;
+            case 'J':
+                return Long.TYPE;
+            case 'D':
+                return Double.TYPE;
+            case 'F':
+                return Float.TYPE;
+            case 'B':
+                return Byte.TYPE;
+            case 'Z':
+                return Boolean.TYPE;
+            case 'S':
+                return Short.TYPE;
+            case 'V':
+                return Void.TYPE;
+            case 'C':
+                return Character.TYPE;
+            case '[':
+                return defineArray(n);
+            default:
+                throw new ClassNotFoundException("Unknown component type of " + getName());
+        }
+    }
+    
+    @JavaScriptBody(args = { "sig" }, body = 
+        "var c = Array[sig];\n" +
+        "if (c) return c;\n" +
+        "c = vm.java_lang_Class(true);\n" +
+        "c.jvmName = sig;\n" +
+        "c.superclass = vm.java_lang_Object(false).$class;\n" +
+        "c.array = true;\n" +
+        "Array[sig] = c;\n" +
+        "return c;"
+    )
+    private static native Class<?> defineArray(String sig);
+    
     /**
      * Returns true if and only if this class was declared as an enum in the
      * source code.
@@ -674,18 +1136,32 @@ public final
             throw new ClassCastException(this.toString());
     }
 
+    @JavaScriptBody(args = { "ac" }, 
+        body = 
+          "if (this.anno) {"
+        + "  return this.anno['L' + ac.jvmName + ';'];"
+        + "} else return null;"
+    )
+    private Object getAnnotationData(Class<?> annotationClass) {
+        throw new UnsupportedOperationException();
+    }
     /**
      * @throws NullPointerException {@inheritDoc}
      * @since 1.5
      */
     public <A extends Annotation> A getAnnotation(Class<A> annotationClass) {
-        throw new UnsupportedOperationException();
+        Object data = getAnnotationData(annotationClass);
+        return data == null ? null : AnnotationImpl.create(annotationClass, data);
     }
 
     /**
      * @throws NullPointerException {@inheritDoc}
      * @since 1.5
      */
+    @JavaScriptBody(args = { "ac" }, 
+        body = "if (this.anno && this.anno['L' + ac.jvmName + ';']) { return true; }"
+        + "else return false;"
+    )
     public boolean isAnnotationPresent(
         Class<? extends Annotation> annotationClass) {
         if (annotationClass == null)
@@ -694,12 +1170,17 @@ public final
         return getAnnotation(annotationClass) != null;
     }
 
+    @JavaScriptBody(args = {}, body = "return this.anno;")
+    private Object getAnnotationData() {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * @since 1.5
      */
     public Annotation[] getAnnotations() {
-        throw new UnsupportedOperationException();
+        Object data = getAnnotationData();
+        return data == null ? new Annotation[0] : AnnotationImpl.create(data);
     }
 
     /**
@@ -709,12 +1190,16 @@ public final
         throw new UnsupportedOperationException();
     }
 
-    static Class getPrimitiveClass(String type) {
-        // XXX
-        return Object.class;
-    }
+    @JavaScriptBody(args = "type", body = ""
+        + "var c = vm.java_lang_Class(true);"
+        + "c.jvmName = type;"
+        + "c.primitive = true;"
+        + "return c;"
+    )
+    native static Class getPrimitiveClass(String type);
 
-    public boolean desiredAssertionStatus() {
-        return false;
-    }
+    @JavaScriptBody(args = {}, body = 
+        "return vm.desiredAssertionStatus ? vm.desiredAssertionStatus : false;"
+    )
+    public native boolean desiredAssertionStatus();
 }

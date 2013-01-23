@@ -5,14 +5,27 @@
   <parent>
     <groupId>org.apidesign</groupId>
     <artifactId>bck2brwsr</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.3-SNAPSHOT</version>
   </parent>
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>core</artifactId>
-  <version>1.0-SNAPSHOT</version>
-  <name>core</name>
+  <version>0.3-SNAPSHOT</version>
+  <name>Core JS Annotations</name>
   <url>http://maven.apache.org</url>
-  <properties>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <dependencies>
@@ -22,5 +35,11 @@
       <version>3.8.1</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.netbeans.api</groupId>
+      <artifactId>org-openide-util-lookup</artifactId>
+    </dependency>
   </dependencies>
+    <description>Contains esential annotations for associating JavaScript code with
+methods and classes.</description>
 </project>

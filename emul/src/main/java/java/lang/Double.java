@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+
 /**
  * The {@code Double} class wraps a value of the primitive type
  * {@code double} in an object. An object of type
@@ -188,6 +190,9 @@ public final class Double extends Number implements Comparable<Double> {
      * @param   d   the {@code double} to be converted.
      * @return a string representation of the argument.
      */
+    @JavaScriptBody(args="d", body="var r = d.toString();"
+        + "if (r.indexOf('.') === -1) r = r + '.0';"
+        + "return r;")
     public static String toString(double d) {
         throw new UnsupportedOperationException();
     }
@@ -497,6 +502,7 @@ public final class Double extends Number implements Comparable<Double> {
      * @throws     NumberFormatException  if the string does not contain a
      *             parsable number.
      */
+    @JavaScriptBody(args="s", body="return parseFloat(s);")
     public static Double valueOf(String s) throws NumberFormatException {
         throw new UnsupportedOperationException();
 //        return new Double(FloatingDecimal.readJavaFormatString(s).doubleValue());
@@ -534,6 +540,7 @@ public final class Double extends Number implements Comparable<Double> {
      * @see    java.lang.Double#valueOf(String)
      * @since 1.2
      */
+    @JavaScriptBody(args="s", body="return parseFloat(s);")
     public static double parseDouble(String s) throws NumberFormatException {
         throw new UnsupportedOperationException();
 //        return FloatingDecimal.readJavaFormatString(s).doubleValue();
@@ -767,8 +774,7 @@ public final class Double extends Number implements Comparable<Double> {
      */
     public boolean equals(Object obj) {
         return (obj instanceof Double)
-               && (doubleToLongBits(((Double)obj).value) ==
-                      doubleToLongBits(value));
+               && (((Double)obj).value) == value;
     }
 
     /**

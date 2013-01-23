@@ -1,6 +1,6 @@
 /**
- * Java 4 Browser Bytecode Translator
- * Copyright (C) 2012-2012 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * Back 2 Browser Bytecode Translator
+ * Copyright (C) 2012 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,9 +18,8 @@
 package org.apidesign.vm4brwsr;
 
 import javax.script.Invocable;
-import javax.script.ScriptException;
 import org.testng.annotations.Test;
-import static org.testng.Assert.*;
+import org.testng.annotations.BeforeClass;
 
 /**
  *
@@ -30,35 +29,42 @@ public class InstanceTest {
     @Test public void verifyDefaultDoubleValue() throws Exception {
         assertExec(
             "Will be zero",
-            "org_apidesign_vm4brwsr_Instance_defaultDblValueD",
+            Instance.class, "defaultDblValue__D",
+            Double.valueOf(0)
+        );
+    }
+    @Test public void verifyStaticMethodCall() throws Exception {
+        assertExec(
+            "Will be zero",
+            InstanceSub.class, "recallDbl__D",
             Double.valueOf(0)
         );
     }
     @Test public void verifyAssignedByteValue() throws Exception {
         assertExec(
             "Will one thirty one",
-            "org_apidesign_vm4brwsr_Instance_assignedByteValueB",
+            Instance.class, "assignedByteValue__B",
             Double.valueOf(31)
         );
     }
     @Test public void verifyMagicOne() throws Exception {
         assertExec(
             "Should be three and something",
-            "org_apidesign_vm4brwsr_Instance_magicOneD",
+            Instance.class, "magicOne__D",
             Double.valueOf(3.3)
         );
     }
     @Test public void verifyInstanceMethods() throws Exception {
         assertExec(
             "Should be eleven as we invoke overwritten method, plus 44",
-            "org_apidesign_vm4brwsr_Instance_virtualBytesI",
+            Instance.class, "virtualBytes__I",
             Double.valueOf(55)
         );
     }
     @Test public void verifyInterfaceMethods() throws Exception {
         assertExec(
             "Retruns default value",
-            "org_apidesign_vm4brwsr_Instance_interfaceBytesF",
+            Instance.class, "interfaceBytes__F",
             Double.valueOf(31)
         );
     }
@@ -66,7 +72,7 @@ public class InstanceTest {
     @Test public void isNull() throws Exception {
         assertExec(
             "Yes, we are instance",
-            "org_apidesign_vm4brwsr_Instance_isNullZ",
+            Instance.class, "isNull__Z",
             Double.valueOf(0.0)
         );
     }
@@ -74,7 +80,7 @@ public class InstanceTest {
     @Test public void isInstanceOf() throws Exception {
         assertExec(
             "Yes, we are instance",
-            "org_apidesign_vm4brwsr_Instance_instanceOfZZ",
+            Instance.class, "instanceOf__ZZ",
             Double.valueOf(1.0), true
         );
     }
@@ -82,7 +88,7 @@ public class InstanceTest {
     @Test public void notInstanceOf() throws Exception {
         assertExec(
             "No, we are not an instance",
-            "org_apidesign_vm4brwsr_Instance_instanceOfZZ",
+            Instance.class, "instanceOf__ZZ",
             Double.valueOf(0.0), false
         );
     }
@@ -90,15 +96,47 @@ public class InstanceTest {
     @Test public void verifyCastToClass() throws Exception {
         assertExec(
             "Five signals all is good",
-            "org_apidesign_vm4brwsr_Instance_castsWorkIZ",
+            Instance.class, "castsWork__IZ",
             Double.valueOf(5.0), false
         );
     }
     @Test public void verifyCastToInterface() throws Exception {
         assertExec(
             "Five signals all is good",
-            "org_apidesign_vm4brwsr_Instance_castsWorkIZ",
+            Instance.class, "castsWork__IZ",
             Double.valueOf(5.0), true
+        );
+    }
+    
+    @Test public void sharedConstructor() throws Exception {
+        assertExec(
+            "Constructor of first and 2nd instance should be the same",
+            Instance.class, "sharedConstructor__Z",
+            Double.valueOf(1.0)
+        );
+    }
+
+    @Test public void differentConstructor() throws Exception {
+        assertExec(
+            "Constructor of X and Y should be the different",
+            Instance.class, "differentConstructor__Z",
+            Double.valueOf(0)
+        );
+    }
+
+    @Test public void jsObjectIsLikeJavaObject() throws Exception {
+        assertExec(
+            "JavaScript object is instance of Java Object",
+            Instance.class, "iofObject__Z",
+            Double.valueOf(1)
+        );
+    }
+
+    @Test public void jsCallingConvention() throws Exception {
+        assertExec(
+            "Pointer to 'this' is passed automatically (and not as a first argument)",
+            Instance.class, "jscall__I",
+            Double.valueOf(31)
         );
     }
     
@@ -106,28 +144,22 @@ public class InstanceTest {
         return "org/apidesign/vm4brwsr/Instance";
     }
     
+    private static CharSequence codeSeq;
+    private static Invocable code;
+    
+    @BeforeClass
+    public void compileTheCode() throws Exception {
+        if (codeSeq == null) {
+            StringBuilder sb = new StringBuilder();
+            code = StaticMethodTest.compileClass(sb, startCompilationWith());
+            codeSeq = sb;
+        }
+    }
+    
     private void assertExec(
-        String msg, String methodName, Object expRes, Object... args
+        String msg, Class clazz, String method, Object expRes, Object... args
     ) throws Exception {
-        StringBuilder sb = new StringBuilder();
-        Invocable i = StaticMethodTest.compileClass(sb, startCompilationWith());
-        
-        Object ret = null;
-        try {
-            ret = i.invokeFunction(methodName, args);
-        } catch (ScriptException ex) {
-            fail("Execution failed in " + sb, ex);
-        } catch (NoSuchMethodException ex) {
-            fail("Cannot find method in " + sb, ex);
-        }
-        if (ret == null && expRes == null) {
-            return;
-        }
-        if (expRes.equals(ret)) {
-            return;
-        }
-        assertEquals(ret, expRes, msg + "was: " + ret + "\n" + sb);
-        
+        StaticMethodTest.assertExec(code, codeSeq, msg, clazz, method, expRes, args);
     }
     
 }

@@ -1,6 +1,6 @@
 /**
- * Java 4 Browser Bytecode Translator
- * Copyright (C) 2012-2012 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * Back 2 Browser Bytecode Translator
+ * Copyright (C) 2012 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,12 +17,14 @@
  */
 package org.apidesign.vm4brwsr;
 
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class Instance {
-    private int i;
+    private int in;
     protected short s;
     public double d;
     private float f;
@@ -32,7 +34,7 @@ public class Instance {
     }
 
     public Instance(int i, double d) {
-        this.i = i;
+        this.in = i;
         this.d = d;
     }
     public byte getByte() {
@@ -53,7 +55,7 @@ public class Instance {
     public static double magicOne() {
         Instance i = new Instance(10, 3.3d);
         i.b = (byte)0x09;
-        return (i.i - i.b) * i.d;
+        return (i.in - i.b) * i.d;
     }
     public static int virtualBytes() {
         Instance i = new InstanceSub(7, 2.2d);
@@ -89,4 +91,45 @@ public class Instance {
     private static boolean isNull() {
         return createInstance(true) == null;
     }
+    
+    @JavaScriptBody(args = "obj", body = "return obj.constructor;")
+    static Object constructor(Object obj) {
+        return obj;
+    }
+    
+    public static boolean sharedConstructor() {
+        class X {
+        }
+        
+        X x1 = new X();
+        X x2 = new X();
+        
+        return constructor(x1) == constructor(x2);
+    }
+    public static boolean differentConstructor() {
+        class X {
+        }
+        class Y {
+        }
+        
+        X x = new X();
+        Y y = new Y();
+        
+        return constructor(x) == constructor(y);
+    }
+    @JavaScriptBody(args = {}, body = "return {};")
+    private static Object jsObj() {
+        return null;
+    }
+    
+    public static boolean iofObject() {
+        return jsObj() instanceof Object;
+    }
+    
+    public static int jscall() {
+        return jsgetbytes(new Instance());
+    }
+    
+    @JavaScriptBody(args = { "instance" }, body = "return instance.getByte__B();")
+    private static native int jsgetbytes(Instance instance);
 }

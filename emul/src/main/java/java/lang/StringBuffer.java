@@ -527,8 +527,7 @@ package java.lang;
      * @since      1.4
      */
     public synchronized int indexOf(String str, int fromIndex) {
-        return String.indexOf(value, 0, count,
-                              str.toCharArray(), 0, str.length(), fromIndex);
+        return super.indexOf(str, fromIndex);
     }
 
     /**
