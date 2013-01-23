@@ -26,6 +26,7 @@
 package java.util;
 
 import java.lang.reflect.*;
+import org.apidesign.bck2brwsr.emul.lang.System;
 
 /**
  * This class contains various methods for manipulating arrays (such as
