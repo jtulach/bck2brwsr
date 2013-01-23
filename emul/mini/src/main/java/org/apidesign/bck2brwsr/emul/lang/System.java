@@ -17,6 +17,8 @@
  */
 package org.apidesign.bck2brwsr.emul.lang;
 
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
@@ -25,40 +27,16 @@ public class System {
     private System() {
     }
 
-    public static void arraycopy(char[] value, int srcBegin, char[] dst, int dstBegin, int count) {
-        if (srcBegin < dstBegin) {
-            while (count-- > 0) {
-                dst[dstBegin + count] = value[srcBegin + count];
-            }
-        } else {
-            while (count-- > 0) {
-                dst[dstBegin++] = value[srcBegin++];
-            }
-        }
-    }
-    
-    public static void arraycopy(byte[] value, int srcBegin, byte[] dst, int dstBegin, int count) {
-        if (srcBegin < dstBegin) {
-            while (count-- > 0) {
-                dst[dstBegin + count] = value[srcBegin + count];
-            }
-        } else {
-            while (count-- > 0) {
-                dst[dstBegin++] = value[srcBegin++];
-            }
-        }
-    }
-
-    public static void arraycopy(Object[] value, int srcBegin, Object[] dst, int dstBegin, int count) {
-        if (srcBegin < dstBegin) {
-            while (count-- > 0) {
-                dst[dstBegin + count] = value[srcBegin + count];
-            }
-        } else {
-            while (count-- > 0) {
-                dst[dstBegin++] = value[srcBegin++];
-            }
-        }
-    }
-    
+    @JavaScriptBody(args = { "value", "srcBegin", "dst", "dstBegin", "count" }, body = 
+        "if (srcBegin < dstBegin) {\n" +
+        "    while (count-- > 0) {\n" +
+        "        dst[dstBegin + count] = value[srcBegin + count];\n" +
+        "    }\n" +
+        "} else {\n" +
+        "    while (count-- > 0) {\n" +
+        "        dst[dstBegin++] = value[srcBegin++];\n" +
+        "    }\n" +
+        "}"
+    )
+    public static native void arraycopy(Object value, int srcBegin, Object dst, int dstBegin, int count);
 }
