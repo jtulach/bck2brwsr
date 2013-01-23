@@ -22,32 +22,39 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.Writer;
 import java.util.List;
 import java.util.Locale;
-import java.util.Locale;
-import java.util.logging.Logger;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.server.HttpHandler;
+import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.json.JSONStringer;
 import org.json.JSONTokener;
 
 /**
  *
  * @author phrebejk
  */
-public class Dew extends HttpHandler implements Bck2Brwsr.Resources {
+final class Dew extends HttpHandler implements Bck2Brwsr.Resources {
     private String html = "";
     private Compile data;
 
+    public static void main(String... args) throws Exception {
+        DewLauncher l = new DewLauncher(null);
+        l.addClassLoader(DewLauncher.class.getClassLoader());
+        final Dew dew = new Dew();
+        HttpServer s = l.initServer(dew);
+        s.getServerConfiguration().addHttpHandler(dew, "/dew/");
+        l.launchServerAndBrwsr(s, "/dew/");
+        System.in.read();
+    }
+    
     @Override
     public void service(Request request, Response response) throws Exception {
         
