@@ -1895,7 +1895,140 @@ class Character implements java.io.Serializable, Comparable<Character> {
     static int getType(int x) {
         throw new UnsupportedOperationException();
     }
-    
+ 
+    /**
+     * Determines if the specified character is
+     * permissible as the first character in a Java identifier.
+     * <p>
+     * A character may start a Java identifier if and only if
+     * one of the following conditions is true:
+     * <ul>
+     * <li> {@link #isLetter(char) isLetter(ch)} returns {@code true}
+     * <li> {@link #getType(char) getType(ch)} returns {@code LETTER_NUMBER}
+     * <li> {@code ch} is a currency symbol (such as {@code '$'})
+     * <li> {@code ch} is a connecting punctuation character (such as {@code '_'}).
+     * </ul>
+     *
+     * <p><b>Note:</b> This method cannot handle <a
+     * href="#supplementary"> supplementary characters</a>. To support
+     * all Unicode characters, including supplementary characters, use
+     * the {@link #isJavaIdentifierStart(int)} method.
+     *
+     * @param   ch the character to be tested.
+     * @return  {@code true} if the character may start a Java identifier;
+     *          {@code false} otherwise.
+     * @see     Character#isJavaIdentifierPart(char)
+     * @see     Character#isLetter(char)
+     * @see     Character#isUnicodeIdentifierStart(char)
+     * @see     javax.lang.model.SourceVersion#isIdentifier(CharSequence)
+     * @since   1.1
+     */
+    public static boolean isJavaIdentifierStart(char ch) {
+        return isJavaIdentifierStart((int)ch);
+    }
+
+    /**
+     * Determines if the character (Unicode code point) is
+     * permissible as the first character in a Java identifier.
+     * <p>
+     * A character may start a Java identifier if and only if
+     * one of the following conditions is true:
+     * <ul>
+     * <li> {@link #isLetter(int) isLetter(codePoint)}
+     *      returns {@code true}
+     * <li> {@link #getType(int) getType(codePoint)}
+     *      returns {@code LETTER_NUMBER}
+     * <li> the referenced character is a currency symbol (such as {@code '$'})
+     * <li> the referenced character is a connecting punctuation character
+     *      (such as {@code '_'}).
+     * </ul>
+     *
+     * @param   codePoint the character (Unicode code point) to be tested.
+     * @return  {@code true} if the character may start a Java identifier;
+     *          {@code false} otherwise.
+     * @see     Character#isJavaIdentifierPart(int)
+     * @see     Character#isLetter(int)
+     * @see     Character#isUnicodeIdentifierStart(int)
+     * @see     javax.lang.model.SourceVersion#isIdentifier(CharSequence)
+     * @since   1.5
+     */
+    public static boolean isJavaIdentifierStart(int codePoint) {
+        return 
+            ('A' <= codePoint && codePoint <= 'Z') ||
+            ('a' <= codePoint && codePoint <= 'z');
+    }
+
+    /**
+     * Determines if the specified character may be part of a Java
+     * identifier as other than the first character.
+     * <p>
+     * A character may be part of a Java identifier if any of the following
+     * are true:
+     * <ul>
+     * <li>  it is a letter
+     * <li>  it is a currency symbol (such as {@code '$'})
+     * <li>  it is a connecting punctuation character (such as {@code '_'})
+     * <li>  it is a digit
+     * <li>  it is a numeric letter (such as a Roman numeral character)
+     * <li>  it is a combining mark
+     * <li>  it is a non-spacing mark
+     * <li> {@code isIdentifierIgnorable} returns
+     * {@code true} for the character
+     * </ul>
+     *
+     * <p><b>Note:</b> This method cannot handle <a
+     * href="#supplementary"> supplementary characters</a>. To support
+     * all Unicode characters, including supplementary characters, use
+     * the {@link #isJavaIdentifierPart(int)} method.
+     *
+     * @param   ch      the character to be tested.
+     * @return {@code true} if the character may be part of a
+     *          Java identifier; {@code false} otherwise.
+     * @see     Character#isIdentifierIgnorable(char)
+     * @see     Character#isJavaIdentifierStart(char)
+     * @see     Character#isLetterOrDigit(char)
+     * @see     Character#isUnicodeIdentifierPart(char)
+     * @see     javax.lang.model.SourceVersion#isIdentifier(CharSequence)
+     * @since   1.1
+     */
+    public static boolean isJavaIdentifierPart(char ch) {
+        return isJavaIdentifierPart((int)ch);
+    }
+
+    /**
+     * Determines if the character (Unicode code point) may be part of a Java
+     * identifier as other than the first character.
+     * <p>
+     * A character may be part of a Java identifier if any of the following
+     * are true:
+     * <ul>
+     * <li>  it is a letter
+     * <li>  it is a currency symbol (such as {@code '$'})
+     * <li>  it is a connecting punctuation character (such as {@code '_'})
+     * <li>  it is a digit
+     * <li>  it is a numeric letter (such as a Roman numeral character)
+     * <li>  it is a combining mark
+     * <li>  it is a non-spacing mark
+     * <li> {@link #isIdentifierIgnorable(int)
+     * isIdentifierIgnorable(codePoint)} returns {@code true} for
+     * the character
+     * </ul>
+     *
+     * @param   codePoint the character (Unicode code point) to be tested.
+     * @return {@code true} if the character may be part of a
+     *          Java identifier; {@code false} otherwise.
+     * @see     Character#isIdentifierIgnorable(int)
+     * @see     Character#isJavaIdentifierStart(int)
+     * @see     Character#isLetterOrDigit(int)
+     * @see     Character#isUnicodeIdentifierPart(int)
+     * @see     javax.lang.model.SourceVersion#isIdentifier(CharSequence)
+     * @since   1.5
+     */
+    public static boolean isJavaIdentifierPart(int codePoint) {
+        return isJavaIdentifierStart(codePoint) ||
+            ('0' <= codePoint && codePoint <= '9');
+    }
+   
     /**
      * Converts the character argument to lowercase using case
      * mapping information from the UnicodeData file.
