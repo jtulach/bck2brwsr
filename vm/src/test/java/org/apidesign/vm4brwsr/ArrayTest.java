@@ -68,6 +68,10 @@ public class ArrayTest {
     @Test public void doesCopyArrayWork() throws Exception {
         assertExec("Returns 'a'", Array.class, "copyArray__C", Double.valueOf('a'));
     }
+
+    @Test public void verifyObjectArrayClass() throws Exception {
+        assertExec("Returns 'Object[]'", Array.class, "objectArrayClass__Ljava_lang_String_2", Array.objectArrayClass());
+    }
     
     private static CharSequence codeSeq;
     private static Invocable code;
