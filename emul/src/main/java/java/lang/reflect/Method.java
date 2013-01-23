@@ -537,7 +537,7 @@ public final
     )
     private static native Object invoke0(boolean isStatic, Method m, Object self, Object[] args);
 
-    private static Object fromPrimitive(Class<?> type, Object o) {
+    static Object fromPrimitive(Class<?> type, Object o) {
         if (type == Integer.TYPE) {
             return fromRaw(Integer.class, "valueOf__Ljava_lang_Integer_2I", o);
         }

@@ -56,7 +56,7 @@ import org.glassfish.grizzly.http.server.ServerConfiguration;
  */
 final class Bck2BrwsrLauncher extends Launcher implements Closeable {
     private static final Logger LOG = Logger.getLogger(Bck2BrwsrLauncher.class.getName());
-    private static final MethodInvocation END = new MethodInvocation(null, null);
+    private static final MethodInvocation END = new MethodInvocation(null, null, null);
     private Set<ClassLoader> loaders = new LinkedHashSet<>();
     private Set<Bck2Brwsr.Resources> xRes = new LinkedHashSet<>();
     private BlockingQueue<MethodInvocation> methods = new LinkedBlockingQueue<>();
@@ -72,9 +72,9 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
     }
     
     @Override
-    public MethodInvocation addMethod(Class<?> clazz, String method) throws IOException {
+     MethodInvocation addMethod(Class<?> clazz, String method, String html) throws IOException {
         loaders.add(clazz.getClassLoader());
-        MethodInvocation c = new MethodInvocation(clazz.getName(), method);
+        MethodInvocation c = new MethodInvocation(clazz.getName(), method, html);
         methods.add(c);
         try {
             c.await(timeOut);
@@ -187,12 +187,34 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
                     + "className: '" + cn + "', "
                     + "methodName: '" + mn + "', "
                     + "request: " + cnt
-                    + "}");
+                );
+                if (mi.html != null) {
+                    response.getWriter().write(", html: '");
+                    response.getWriter().write(encodeJSON(mi.html));
+                    response.getWriter().write("'");
+                }
+                response.getWriter().write("}");
                 cnt++;
             }
         }, "/data");
 
         this.brwsr = launchServerAndBrwsr(server, "/execute");
+    }
+    
+    private static String encodeJSON(String in) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < in.length(); i++) {
+            char ch = in.charAt(i);
+            if (ch < 32 || ch == '\'' || ch == '"') {
+                sb.append("\\u");
+                String hs = "0000" + Integer.toHexString(ch);
+                hs = hs.substring(hs.length() - 4);
+                sb.append(hs);
+            } else {
+                sb.append(ch);
+            }
+        }
+        return sb.toString();
     }
     
     @Override
@@ -229,12 +251,12 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
             if (ch == -1) {
                 break;
             }
-            if (ch == '$') {
+            if (ch == '$' && params.length > 0) {
                 int cnt = is.read() - '0';
                 if (cnt == 'U' - '0') {
                     os.write(baseURL.getBytes());
                 }
-                if (cnt < params.length) {
+                if (cnt >= 0 && cnt < params.length) {
                     os.write(params[cnt].getBytes());
                 }
             } else {
@@ -252,11 +274,17 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
         LOG.log(Level.INFO, "Showing {0}", uri);
         if (cmd == null) {
             try {
+                LOG.log(Level.INFO, "Trying Desktop.browse on {0} {2} by {1}", new Object[] {
+                    System.getProperty("java.vm.name"),
+                    System.getProperty("java.vm.vendor"),
+                    System.getProperty("java.vm.version"),
+                });
                 java.awt.Desktop.getDesktop().browse(uri);
                 LOG.log(Level.INFO, "Desktop.browse successfully finished");
                 return null;
             } catch (UnsupportedOperationException ex) {
-                LOG.log(Level.INFO, "Desktop.browse not supported", ex);
+                LOG.log(Level.INFO, "Desktop.browse not supported: {0}", ex.getMessage());
+                LOG.log(Level.FINE, null, ex);
             }
         }
         {
@@ -366,7 +394,7 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
         public Page(Res res, String resource, String... args) {
             this.res = res;
             this.resource = resource;
-            this.args = args;
+            this.args = args.length == 0 ? new String[] { "$0" } : args;
         }
 
         @Override
@@ -378,17 +406,20 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
                     r = r.substring(1);
                 }
             }
+            String[] replace = {};
             if (r.endsWith(".html")) {
                 response.setContentType("text/html");
                 LOG.info("Content type text/html");
+                replace = args;
             }
             if (r.endsWith(".xhtml")) {
                 response.setContentType("application/xhtml+xml");
                 LOG.info("Content type application/xhtml+xml");
+                replace = args;
             }
             OutputStream os = response.getOutputStream();
             try (InputStream is = res.get(r)) {
-                copyStream(is, os, request.getRequestURL().toString(), args);
+                copyStream(is, os, request.getRequestURL().toString(), replace);
             } catch (IOException ex) {
                 response.setDetailMessage(ex.getLocalizedMessage());
                 response.setError();

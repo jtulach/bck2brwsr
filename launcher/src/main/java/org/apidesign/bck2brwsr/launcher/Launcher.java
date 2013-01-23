@@ -32,12 +32,12 @@ public abstract class Launcher {
     Launcher() {
     }
     
-    abstract MethodInvocation addMethod(Class<?> clazz, String method) throws IOException; 
+    abstract MethodInvocation addMethod(Class<?> clazz, String method, String html) throws IOException; 
 
     public abstract void initialize() throws IOException;
     public abstract void shutdown() throws IOException;
-    public MethodInvocation invokeMethod(Class<?> clazz, String method) throws IOException {
-        return addMethod(clazz, method);
+    public MethodInvocation invokeMethod(Class<?> clazz, String method, String html) throws IOException {
+        return addMethod(clazz, method, html);
     }
     
     

@@ -45,7 +45,9 @@ public class VMLazyTest {
         sb.append("\n  return c[method]();");
         sb.append("\n}");
         
-        
+        sb.append("\nfunction checkKO() {");
+        sb.append("\n  return ko !== null;");
+        sb.append("\n}");
        
         ScriptEngine[] arr = { null };
         code = StaticMethodTest.compileClass(sb, arr,
@@ -65,6 +67,15 @@ public class VMLazyTest {
         assertExec("Expecting zero", "test", Double.valueOf(0),
             InstanceSub.class.getName(), "recallDbl__D"
         );
+    }
+
+    @Test public void loadClassWithAssociatedScript() throws Exception {
+        assertExec("ko is defined", "test", true,
+            Script.class.getName(), "checkNotNull__Z"
+        );
+        
+        Object res = code.invokeFunction("checkKO");
+        assertEquals(res, true, "KO is defined on a global level");
     }
 
     private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
