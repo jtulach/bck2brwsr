@@ -42,10 +42,9 @@ final class JSLauncher extends Launcher {
     private Object console;
     
     
-    @Override
-    public MethodInvocation addMethod(Class<?> clazz, String method) {
+    @Override MethodInvocation addMethod(Class<?> clazz, String method, String html) {
         loaders.add(clazz.getClassLoader());
-        MethodInvocation mi = new MethodInvocation(clazz.getName(), method);
+        MethodInvocation mi = new MethodInvocation(clazz.getName(), method, html);
         try {
             mi.result(code.invokeMethod(
                 console,

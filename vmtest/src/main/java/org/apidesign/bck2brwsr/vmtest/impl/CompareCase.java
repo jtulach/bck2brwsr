@@ -18,9 +18,6 @@
 package org.apidesign.bck2brwsr.vmtest.impl;
 
 import org.apidesign.bck2brwsr.vmtest.*;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -114,15 +111,17 @@ public final class CompareCase implements ITest {
         if (c == null) {
             return;
         }
-        final Bck2BrwsrCase real = new Bck2BrwsrCase(m, "Java", null, false);
-        final Bck2BrwsrCase js = new Bck2BrwsrCase(m, "JavaScript", l.javaScript(), false);
+        final Bck2BrwsrCase real = new Bck2BrwsrCase(m, "Java", null, false, null);
         ret.add(real);
-        ret.add(js);
-        ret.add(new CompareCase(m, real, js));
+        if (c.scripting()) {
+            final Bck2BrwsrCase js = new Bck2BrwsrCase(m, "JavaScript", l.javaScript(), false, null);
+            ret.add(js);
+            ret.add(new CompareCase(m, real, js));
+        }
         for (String b : brwsr) {
             final Launcher s = l.brwsr(b);
             ret.add(s);
-            final Bck2BrwsrCase cse = new Bck2BrwsrCase(m, b, s, false);
+            final Bck2BrwsrCase cse = new Bck2BrwsrCase(m, b, s, false, null);
             ret.add(cse);
             ret.add(new CompareCase(m, real, cse));
         }
@@ -132,15 +131,20 @@ public final class CompareCase implements ITest {
         if (c == null) {
             return;
         }
+        HtmlFragment f = m.getAnnotation(HtmlFragment.class);
+        if (f == null) {
+            f = m.getDeclaringClass().getAnnotation(HtmlFragment.class);
+        }
+        String html = f == null ? null : f.value();
         if (brwsr.length == 0) {
             final Launcher s = l.brwsr(null);
             ret.add(s);
-            ret.add(new Bck2BrwsrCase(m, "Brwsr", s, true));
+            ret.add(new Bck2BrwsrCase(m, "Brwsr", s, true, html));
         } else {
             for (String b : brwsr) {
                 final Launcher s = l.brwsr(b);
                 ret.add(s);
-                ret.add(new Bck2BrwsrCase(m, b, s, true));
+                ret.add(new Bck2BrwsrCase(m, b, s, true, html));
             }
         }
     }
