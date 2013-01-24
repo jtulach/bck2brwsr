@@ -72,6 +72,9 @@ public class ArrayTest {
     @Test public void verifyObjectArrayClass() throws Exception {
         assertExec("Returns 'Object[]'", Array.class, "objectArrayClass__Ljava_lang_String_2", Array.objectArrayClass());
     }
+    @Test public void verifyInstanceOfArray() throws Exception {
+        assertExec("Returns 'false'", Array.class, "instanceOfArray__ZLjava_lang_Object_2", Double.valueOf(0), "non-array");
+    }
     
     private static CharSequence codeSeq;
     private static Invocable code;

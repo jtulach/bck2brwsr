@@ -190,7 +190,7 @@ class Array {
     throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
         final Class<?> t = array.getClass().getComponentType();
         if (t.isPrimitive()) {
-            return Array.fromPrimitive(t, array, index);
+            return fromPrimitive(t, array, index);
         } else {
             return ((Object[])array)[index];
         }
@@ -512,7 +512,7 @@ class Array {
         }
         
     }
-
+    
     /**
      * Sets the value of the indexed component of the specified array
      * object to the specified {@code int} value.
@@ -534,7 +534,7 @@ class Array {
     throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
         Class<?> t = array.getClass().getComponentType();
         if (t == Integer.TYPE) {
-            long[] arr = (long[]) array;
+            int[] arr = (int[]) array;
             arr[index] = i;
         } else {
             setLong(array, index, i);
@@ -643,10 +643,11 @@ class Array {
         if (dims.length == index + 1) {
             return newArray(sig.length() == 2, sig, dims[index]);
         }
-        Object[] arr = (Object[]) newArray(false, sig, dims[index]);
+        Object arr = newArray(false, sig, dims[index]);
         String compsig = sig.substring(1);
-        for (int i = 0; i < arr.length; i++) {
-            arr[i] = multiNewArray(compsig, dims, index + 1);
+        int len = getLength(arr);
+        for (int i = 0; i < len; i++) {
+            setArray(arr, i, multiNewArray(compsig, dims, index + 1));
         }
         return arr;
     }
@@ -654,6 +655,9 @@ class Array {
         return Method.fromPrimitive(t, atArray(array, index));
     }
     
-    @JavaScriptBody(args = { "array", "index" }, body = "return array[index]")
+    @JavaScriptBody(args = { "array", "index" }, body = "return array[index];")
     private static native Object atArray(Object array, int index);
+
+    @JavaScriptBody(args = { "array", "index", "v" }, body = "array[index] = v;")
+    private static native Object setArray(Object array, int index, Object v);
 }

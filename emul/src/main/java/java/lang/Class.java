@@ -278,6 +278,10 @@ public final
      * @since JDK1.1
      */
     public boolean isInstance(Object obj) {
+        if (isArray()) {
+            return isAssignableFrom(obj.getClass());
+        }
+        
         String prop = "$instOf_" + getName().replace('.', '_');
         return hasProperty(obj, prop);
     }
@@ -312,7 +316,21 @@ public final
      *            null.
      * @since JDK1.1
      */
-    public native boolean isAssignableFrom(Class<?> cls);
+    public boolean isAssignableFrom(Class<?> cls) {
+        if (this == cls) {
+            return true;
+        }
+        
+        if (isArray()) {
+            final Class<?> cmpType = cls.getComponentType();
+            if (isPrimitive()) {
+                return this == cmpType;
+            }
+            return cmpType != null && getComponentType().isAssignableFrom(cmpType);
+        }
+        String prop = "$instOf_" + getName().replace('.', '_');
+        return hasProperty(cls, prop);
+    }
 
 
     /**

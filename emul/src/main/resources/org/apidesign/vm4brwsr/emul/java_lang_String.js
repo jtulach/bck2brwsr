@@ -22,5 +22,6 @@ Array.prototype.clone__Ljava_lang_Object_2 = function() {
   for (var i = 0; i < s; i++) {
       ret[i] = this[i];
   }
+  ret.jvmName = this.jvmName;
   return ret;
 };
