@@ -32,6 +32,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.TypeVariable;
+import java.net.URL;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.emul.reflect.MethodImpl;
 
@@ -1028,15 +1029,16 @@ public final
      * @since  JDK1.1
      */
     public java.net.URL getResource(String name) {
-        name = resolveName(name);
-        ClassLoader cl = null;
-        if (cl==null) {
-            // A system class.
-            return ClassLoader.getSystemResource(name);
-        }
-        return cl.getResource(name);
+        InputStream is = getResourceAsStream(name);
+        return is == null ? null : newResourceURL(URL.class, "res:/" + name, is);
     }
-
+    
+    @JavaScriptBody(args = { "url", "spec", "is" }, body = 
+        "var u = url.cnstr(true);\n"
+      + "u.constructor.cons__VLjava_lang_String_2Ljava_io_InputStream_2.call(u, spec, is);\n"
+      + "return u;"
+    )
+    private static native URL newResourceURL(Class<URL> url, String spec, InputStream is);
 
    /**
      * Add a package name prefix if the name is not absolute Remove leading "/"

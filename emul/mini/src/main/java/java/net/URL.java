@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
+
 /**
  * Class <code>URL</code> represents a Uniform Resource
  * Locator, a pointer to a "resource" on the World
@@ -212,6 +213,9 @@ public final class URL implements java.io.Serializable {
      * @serial
      */
     private int hashCode = -1;
+    
+    /** input stream associated with the URL */
+    private InputStream is;
 
     /**
      * Creates a <code>URL</code> object from the specified
@@ -420,6 +424,11 @@ public final class URL implements java.io.Serializable {
      */
     public URL(String spec) throws MalformedURLException {
         this(null, spec);
+    }
+    
+    private URL(String spec, InputStream is) throws MalformedURLException {
+        this(null, spec);
+        this.is = is;
     }
 
     /**
@@ -950,8 +959,10 @@ public final class URL implements java.io.Serializable {
      * @see        java.net.URLConnection#getInputStream()
      */
     public final InputStream openStream() throws java.io.IOException {
+        if (is != null) {
+            return is;
+        }
         throw new IOException();
-//        return openConnection().getInputStream();
     }
 
     /**
@@ -1006,7 +1017,6 @@ public final class URL implements java.io.Serializable {
     }
 
 }
-
 class Parts {
     String path, query, ref;
 
