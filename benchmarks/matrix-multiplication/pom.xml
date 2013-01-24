@@ -31,7 +31,7 @@
   <dependencies>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
-      <artifactId>emul</artifactId>
+      <artifactId>emul.mini</artifactId>
       <version>0.3-SNAPSHOT</version>
     </dependency>
     <dependency>

@@ -30,7 +30,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.tools.Diagnostic;
@@ -60,6 +59,9 @@ public final class JavaScriptProcesor extends AbstractProcessor {
             List<? extends VariableElement> params = ee.getParameters();
             
             JavaScriptBody jsb = e.getAnnotation(JavaScriptBody.class);
+            if (jsb == null) {
+                continue;
+            }
             String[] arr = jsb.args();
             if (params.size() != arr.length) {
                 processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Number of args arguments does not match real arguments!", e);

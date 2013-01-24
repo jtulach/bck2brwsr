@@ -70,7 +70,7 @@
                   <header>COPYING</header>
                   <strictCheck>true</strictCheck>
                   <excludes>
-                       <exclude>emul/**</exclude>
+                       <exclude>emul/*/src/main/**</exclude>
                        <exclude>javap/**</exclude>
                        <exclude>*</exclude>
                        <exclude>.*/**</exclude>
