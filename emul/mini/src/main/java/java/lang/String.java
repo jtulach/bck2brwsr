@@ -824,7 +824,7 @@ public final class String
     @JavaScriptBody(args = { "beg", "end", "arr", "dst" }, body=
         "var s = this.toString();\n" +
         "while (beg < end) {\n" +
-        "  arr[dst++] = s[beg++];\n" +
+        "  arr[dst++] = s.charCodeAt(beg++);\n" +
         "}\n"
     )
     public void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin) {

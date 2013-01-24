@@ -109,6 +109,10 @@ public class StringSample {
     public static String concatStrings() {
         return (toStringTest(1) + "\\\n\r\t").toString();
     }
+    
+    public static int compare(String a, String b) {
+        return a.compareTo(b);
+    }
 
     @Override
     public String toString() {

@@ -112,6 +112,10 @@ public class Array {
         return Object[].class.getName();
     }
     
+    public static boolean instanceOfArray(Object obj) {
+        return obj instanceof Object[];
+    }
+    
     public static int sum(int size) {
         int[] arr = new int[size];
         return arr[0] + arr[1];

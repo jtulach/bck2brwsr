@@ -1106,11 +1106,13 @@ abstract class ByteCodeToJavaScript {
                     int indx = readIntArg(byteCodes, i);
                     final String type = jc.getClassName(indx);
                     if (!type.startsWith("[")) {
-                        // no way to check arrays right now
-                        // XXX proper exception
                         emit(out,
                              "if (@1 !== null && !@1.$instOf_@2) throw {};",
                              smapper.getA(0), type.replace('/', '_'));
+                    } else {
+                        emit(out, "vm.java_lang_Class(false).forName__Ljava_lang_Class_2Ljava_lang_String_2('@2').cast__Ljava_lang_Object_2Ljava_lang_Object_2(@1);",
+                             smapper.getA(0), type
+                        );
                     }
                     i += 2;
                     break;
@@ -1118,9 +1120,16 @@ abstract class ByteCodeToJavaScript {
                 case opc_instanceof: {
                     int indx = readIntArg(byteCodes, i);
                     final String type = jc.getClassName(indx);
-                    emit(out, "var @2 = @1.$instOf_@3 ? 1 : 0;",
-                         smapper.popA(), smapper.pushI(),
-                         type.replace('/', '_'));
+                    if (!type.startsWith("[")) {
+                        emit(out, "var @2 = @1.$instOf_@3 ? 1 : 0;",
+                             smapper.popA(), smapper.pushI(),
+                             type.replace('/', '_'));
+                    } else {
+                        emit(out, "var @2 = vm.java_lang_Class(false).forName__Ljava_lang_Class_2Ljava_lang_String_2('@3').isInstance__ZLjava_lang_Object_2(@1);",
+                            smapper.popA(), smapper.pushI(),
+                            type
+                        );
+                    }
                     i += 2;
                     break;
                 }

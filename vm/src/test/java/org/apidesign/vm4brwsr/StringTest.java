@@ -173,6 +173,16 @@ public class StringTest {
         );
         
     }
+
+    @Test public void compareStrings() throws Exception {
+        int res = StringSample.compare("Saab", "Volvo");
+        assertExec(
+            "Saab finished sooner than Volvo",
+            StringSample.class, "compare__ILjava_lang_String_2Ljava_lang_String_2",
+            Double.valueOf(res), "Saab", "Volvo"
+        );
+        
+    }
     
     private static CharSequence codeSeq;
     private static Invocable code;
