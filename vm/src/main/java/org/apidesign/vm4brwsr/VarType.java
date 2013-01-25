@@ -45,13 +45,13 @@ final class VarType {
                 return VarType.DOUBLE;
             case RuntimeConstants.ITEM_Long:
                 return VarType.LONG;
+            case RuntimeConstants.ITEM_Null:
+            case RuntimeConstants.ITEM_InitObject:
             case RuntimeConstants.ITEM_Object:
+            case RuntimeConstants.ITEM_NewObject:
                 return VarType.REFERENCE;
 
             case RuntimeConstants.ITEM_Bogus:
-            case RuntimeConstants.ITEM_Null:
-            case RuntimeConstants.ITEM_InitObject:
-            case RuntimeConstants.ITEM_NewObject:
                 /* unclear how to handle for now */
             default:
                 throw new IllegalStateException("Unhandled stack map type");
