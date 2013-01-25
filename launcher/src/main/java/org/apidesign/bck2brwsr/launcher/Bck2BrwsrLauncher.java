@@ -122,16 +122,11 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
         }
     }
     
-    private HttpServer initServer() {
+    private HttpServer initServer() throws IOException {
         HttpServer s = HttpServer.createSimpleServer(".", new PortRange(8080, 65535));
 
         final ServerConfiguration conf = s.getServerConfiguration();
-        conf.addHttpHandler(new Page(resources, 
-            "org/apidesign/bck2brwsr/launcher/console.xhtml",
-            "org.apidesign.bck2brwsr.launcher.Console", "welcome", "false"
-        ), "/console");
-        conf.addHttpHandler(new VM(resources), "/bck2brwsr.js");
-        conf.addHttpHandler(new VMInit(), "/vm.js");
+        conf.addHttpHandler(new VM(resources), "/vm.js");
         conf.addHttpHandler(new Classes(resources), "/classes/");
         return s;
     }
@@ -410,28 +405,12 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
     }
 
     private static class VM extends HttpHandler {
-        private final Res loader;
+        private final String bck2brwsr;
 
-        public VM(Res loader) {
-            this.loader = loader;
-        }
-
-        @Override
-        public void service(Request request, Response response) throws Exception {
-            response.setCharacterEncoding("UTF-8");
-            response.setContentType("text/javascript");
-            Bck2Brwsr.generate(response.getWriter(), loader);
-        }
-    }
-    private static class VMInit extends HttpHandler {
-        public VMInit() {
-        }
-
-        @Override
-        public void service(Request request, Response response) throws Exception {
-            response.setCharacterEncoding("UTF-8");
-            response.setContentType("text/javascript");
-            response.getWriter().append(
+        public VM(Res loader) throws IOException {
+            StringBuilder sb = new StringBuilder();
+            Bck2Brwsr.generate(sb, loader);
+            sb.append(
                 "function ldCls(res) {\n"
                 + "  var request = new XMLHttpRequest();\n"
                 + "  request.open('GET', '/classes/' + res, false);\n"
@@ -439,7 +418,16 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
                 + "  var arr = eval('(' + request.responseText + ')');\n"
                 + "  return arr;\n"
                 + "}\n"
-                + "var vm = new bck2brwsr(ldCls);\n");
+                + "var vm = new bck2brwsr(ldCls);\n"
+            );
+            this.bck2brwsr = sb.toString();
+        }
+
+        @Override
+        public void service(Request request, Response response) throws Exception {
+            response.setCharacterEncoding("UTF-8");
+            response.setContentType("text/javascript");
+            response.getWriter().write(bck2brwsr);
         }
     }
 
