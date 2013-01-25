@@ -28,12 +28,14 @@ public final class MethodInvocation {
     final CountDownLatch wait = new CountDownLatch(1);
     final String className;
     final String methodName;
+    final String html;
     private String result;
     private Throwable exception;
 
-    MethodInvocation(String className, String methodName) {
+    MethodInvocation(String className, String methodName, String html) {
         this.className = className;
         this.methodName = methodName;
+        this.html = html;
     }
     
     void await(long timeOut) throws InterruptedException {

@@ -18,9 +18,6 @@
 package org.apidesign.bck2brwsr.vmtest.impl;
 
 import org.apidesign.bck2brwsr.vmtest.*;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,23 +71,8 @@ public final class CompareCase implements ITest {
         }
         
         for (Method m : arr) {
-            Compare c = m.getAnnotation(Compare.class);
-            if (c == null) {
-                continue;
-            }
-            final Bck2BrwsrCase real = new Bck2BrwsrCase(m, "Java", null);
-            final Bck2BrwsrCase js = new Bck2BrwsrCase(m, "JavaScript", l.javaScript());
-            ret.add(real);
-            ret.add(js);
-            ret.add(new CompareCase(m, real, js));
-
-            for (String b : brwsr) {
-                final Launcher s = l.brwsr(b);
-                ret.add(s);
-                final Bck2BrwsrCase cse = new Bck2BrwsrCase(m, b, s);
-                ret.add(cse);
-                ret.add(new CompareCase(m, real, cse));
-            }
+            registerCompareCases(m, l, ret, brwsr);
+            registerBrwsrCases(m, l, ret, brwsr);
         }
         return ret.toArray();
     }
@@ -122,5 +104,48 @@ public final class CompareCase implements ITest {
     @Override
     public String getTestName() {
         return m.getName() + "[Compare " + second.typeName() + "]";
+    }
+    
+    private static void registerCompareCases(Method m, final LaunchSetup l, List<Object> ret, String[] brwsr) {
+        Compare c = m.getAnnotation(Compare.class);
+        if (c == null) {
+            return;
+        }
+        final Bck2BrwsrCase real = new Bck2BrwsrCase(m, "Java", null, false, null);
+        ret.add(real);
+        if (c.scripting()) {
+            final Bck2BrwsrCase js = new Bck2BrwsrCase(m, "JavaScript", l.javaScript(), false, null);
+            ret.add(js);
+            ret.add(new CompareCase(m, real, js));
+        }
+        for (String b : brwsr) {
+            final Launcher s = l.brwsr(b);
+            ret.add(s);
+            final Bck2BrwsrCase cse = new Bck2BrwsrCase(m, b, s, false, null);
+            ret.add(cse);
+            ret.add(new CompareCase(m, real, cse));
+        }
+    }
+    private static void registerBrwsrCases(Method m, final LaunchSetup l, List<Object> ret, String[] brwsr) {
+        BrwsrTest c = m.getAnnotation(BrwsrTest.class);
+        if (c == null) {
+            return;
+        }
+        HtmlFragment f = m.getAnnotation(HtmlFragment.class);
+        if (f == null) {
+            f = m.getDeclaringClass().getAnnotation(HtmlFragment.class);
+        }
+        String html = f == null ? null : f.value();
+        if (brwsr.length == 0) {
+            final Launcher s = l.brwsr(null);
+            ret.add(s);
+            ret.add(new Bck2BrwsrCase(m, "Brwsr", s, true, html));
+        } else {
+            for (String b : brwsr) {
+                final Launcher s = l.brwsr(b);
+                ret.add(s);
+                ret.add(new Bck2BrwsrCase(m, b, s, true, html));
+            }
+        }
     }
 }

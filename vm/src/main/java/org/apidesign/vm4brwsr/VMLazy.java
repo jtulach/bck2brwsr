@@ -19,6 +19,7 @@ package org.apidesign.vm4brwsr;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
@@ -97,7 +98,7 @@ final class VMLazy {
         "try {\n" +
         "  new Function(script)(loader, name);\n" +
         "} catch (ex) {\n" +
-        "  throw 'Cannot compile ' + ex + ' line: ' + ex.lineNumber + ' script:\\n' + script;\n" +
+        "  throw 'Cannot compile ' + name + ' ' + ex + ' line: ' + ex.lineNumber + ' script:\\n' + script;\n" +
         "}\n" +
         "return name != null ? vm[name](instance) : null;\n"
     )
@@ -131,7 +132,17 @@ final class VMLazy {
         }
 
         @Override
-        protected void requireScript(String resourcePath) {
+        protected void requireScript(String resourcePath) throws IOException {
+            InputStream is = getClass().getResourceAsStream(resourcePath);
+            StringBuilder sb = new StringBuilder();
+            for (;;) {
+                int ch = is.read();
+                if (ch == -1) {
+                    break;
+                }
+                sb.append((char)ch);
+            }
+            applyCode(lazy.loader, null, sb.toString(), false);
         }
 
         @Override

@@ -30,6 +30,13 @@ public abstract class Element {
         this.id = id;
     }
     
+    /** Id of the element in the document.
+     * @return the id for this element
+     */
+    public String getId() {
+        return id;
+    }
+    
     abstract void dontSubclass();
     
     @JavaScriptBody(
@@ -46,6 +53,12 @@ public abstract class Element {
     )
     static native Object getAttribute(Element el, String property);
     
+    @JavaScriptBody(
+        args={"el"},
+        body="return window.document.getElementById(el.fld_id);"
+    )
+    static native Object getElementById(Element el);
+    
     /** Executes given runnable when user performs a "click" on the given
      * element.
      * @param r the runnable to execute, never null
@@ -55,7 +68,8 @@ public abstract class Element {
         body="var e = window.document.getElementById(this.fld_id);\n"
            + "e[ev.fld_id] = function() { r.run__V(); };\n"
     )
-    final native void on(OnEvent ev, Runnable r);
+    final void on(OnEvent ev, Runnable r) {
+    }
 
     /** Shows alert message dialog in a browser.
      * @param msg the message to show

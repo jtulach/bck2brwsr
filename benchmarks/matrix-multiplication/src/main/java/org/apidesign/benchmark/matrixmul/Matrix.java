@@ -45,7 +45,7 @@ public class Matrix {
         //final int x = 10;
         for (int i = 0; i < rank; i++) {
             for (int j = 0; j < rank; j++) {
-                data[i][j] = i + j;
+                data[i][j] = 1 / (1 + i + j);
             }
         }
     }

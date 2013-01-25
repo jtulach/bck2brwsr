@@ -42,6 +42,10 @@ public class CompareStringsTest {
         return String.class.cast(o);
     }
     
+    @Compare public boolean equalToNull() {
+        return "Ahoj".equals(null);
+    }
+    
     @Compare public static Object compareURLs() throws MalformedURLException {
         return new URL("http://apidesign.org:8080/wiki/").toExternalForm().toString();
     }
