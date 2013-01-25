@@ -56,7 +56,7 @@ final class DewLauncher {
         this.loaders.add(url);
     }
 
-    final HttpServer initServer(Bck2Brwsr.Resources... extraResources) {
+    final HttpServer initServer(Bck2Brwsr.Resources... extraResources) throws IOException {
         xRes.addAll(Arrays.asList(extraResources));
         
         HttpServer s = HttpServer.createSimpleServer(".", new PortRange(8080, 65535));
@@ -125,17 +125,19 @@ final class DewLauncher {
     }
 
     private static class VM extends HttpHandler {
-        private final Res loader;
+        private final String bck2brwsr;
 
-        public VM(Res loader) {
-            this.loader = loader;
+        public VM(Res loader) throws IOException {
+            StringBuilder sb = new StringBuilder();
+            Bck2Brwsr.generate(sb, loader);
+            this.bck2brwsr = sb.toString();
         }
 
         @Override
         public void service(Request request, Response response) throws Exception {
             response.setCharacterEncoding("UTF-8");
             response.setContentType("text/javascript");
-            Bck2Brwsr.generate(response.getWriter(), loader);
+            response.getWriter().write(bck2brwsr);
         }
     }
     private static class VMInit extends HttpHandler {
