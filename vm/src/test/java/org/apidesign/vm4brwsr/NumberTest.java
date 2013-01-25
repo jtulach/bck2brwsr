@@ -157,22 +157,10 @@ public class NumberTest {
     }
 
     private static void assertExec(
-        String msg, Class<?> clazz, String method, Object expRes, Object... args) throws Exception {
-
-        Object ret = null;
-        try {
-            ret = code.invokeFunction("bck2brwsr");
-            ret = code.invokeMethod(ret, "loadClass", clazz.getName());
-            ret = code.invokeMethod(ret, method, args);
-        } catch (ScriptException ex) {
-            fail("Execution failed in\n" + StaticMethodTest.dumpJS(codeSeq), ex);
-        } catch (NoSuchMethodException ex) {
-            fail("Cannot find method in\n" + StaticMethodTest.dumpJS(codeSeq), ex);
-        }
-        if (ret == null && expRes == null) {
-            return;
-        }
-        if (expRes.equals(ret)) {
+        String msg, Class<?> clazz, String method, Object expRes, Object... args) throws Exception
+    {
+        Object ret = TestUtils.execCode(code, codeSeq, msg, clazz, method, expRes, args);
+        if (ret == null) {
             return;
         }
         if (expRes instanceof Double && ret instanceof Double) {
