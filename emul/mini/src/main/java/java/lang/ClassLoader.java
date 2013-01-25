@@ -703,7 +703,7 @@ public abstract class ClassLoader {
     public static Enumeration<URL> getSystemResources(String name)
         throws IOException
     {
-        ClassLoader system = getSystemClassLoader();
+        ClassLoader system = null; // getSystemClassLoader();
         if (system == null) {
             return getBootstrapResources(name);
         }
@@ -874,7 +874,29 @@ public abstract class ClassLoader {
     }
 
     private static Enumeration<URL> getBootstrapResources(String name) {
-        throw new UnsupportedOperationException();
+        URL u = Object.class.getResource("/" + name);
+        return new OneOrZeroEnum(u);
+    }
+    
+    private static class OneOrZeroEnum implements Enumeration<URL> {
+        private URL u;
+
+        public OneOrZeroEnum(URL u) {
+            this.u = u;
+        }
+
+        public boolean hasMoreElements() {
+            return u != null;
+        }
+
+        public URL nextElement() {
+            URL r = u;
+            if (r == null) {
+                throw new NoSuchElementException();
+            }
+            u = null;
+            return r;
+        }
     }
 
     private static class CompoundEnumeration implements Enumeration<URL> {

@@ -2026,7 +2026,7 @@ class Character implements java.io.Serializable, Comparable<Character> {
      */
     public static boolean isJavaIdentifierPart(int codePoint) {
         return isJavaIdentifierStart(codePoint) ||
-            ('0' <= codePoint && codePoint <= '9');
+            ('0' <= codePoint && codePoint <= '9') || codePoint == '$';
     }
    
     /**
