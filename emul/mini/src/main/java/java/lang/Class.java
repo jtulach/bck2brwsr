@@ -605,7 +605,9 @@ public final
      * @see     java.lang.reflect.Modifier
      * @since JDK1.1
      */
-    public native int getModifiers();
+    public int getModifiers() {
+        return getAccess();
+    }
 
 
     /**
