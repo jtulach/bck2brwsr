@@ -126,12 +126,7 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
         HttpServer s = HttpServer.createSimpleServer(".", new PortRange(8080, 65535));
 
         final ServerConfiguration conf = s.getServerConfiguration();
-        conf.addHttpHandler(new Page(resources, 
-            "org/apidesign/bck2brwsr/launcher/console.xhtml",
-            "org.apidesign.bck2brwsr.launcher.Console", "welcome", "false"
-        ), "/console");
-        conf.addHttpHandler(new VM(resources), "/bck2brwsr.js");
-        conf.addHttpHandler(new VMInit(), "/vm.js");
+        conf.addHttpHandler(new VM(resources), "/vm.js");
         conf.addHttpHandler(new Classes(resources), "/classes/");
         return s;
     }
@@ -415,6 +410,16 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
         public VM(Res loader) throws IOException {
             StringBuilder sb = new StringBuilder();
             Bck2Brwsr.generate(sb, loader);
+            sb.append(
+                "function ldCls(res) {\n"
+                + "  var request = new XMLHttpRequest();\n"
+                + "  request.open('GET', '/classes/' + res, false);\n"
+                + "  request.send();\n"
+                + "  var arr = eval('(' + request.responseText + ')');\n"
+                + "  return arr;\n"
+                + "}\n"
+                + "var vm = new bck2brwsr(ldCls);\n"
+            );
             this.bck2brwsr = sb.toString();
         }
 
@@ -423,25 +428,6 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
             response.setCharacterEncoding("UTF-8");
             response.setContentType("text/javascript");
             response.getWriter().write(bck2brwsr);
-        }
-    }
-    private static class VMInit extends HttpHandler {
-        public VMInit() {
-        }
-
-        @Override
-        public void service(Request request, Response response) throws Exception {
-            response.setCharacterEncoding("UTF-8");
-            response.setContentType("text/javascript");
-            response.getWriter().append(
-                "function ldCls(res) {\n"
-                + "  var request = new XMLHttpRequest();\n"
-                + "  request.open('GET', '/classes/' + res, false);\n"
-                + "  request.send();\n"
-                + "  var arr = eval('(' + request.responseText + ')');\n"
-                + "  return arr;\n"
-                + "}\n"
-                + "var vm = new bck2brwsr(ldCls);\n");
         }
     }
 
