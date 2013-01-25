@@ -52,10 +52,12 @@ final class Compile implements DiagnosticListener<JavaFileObject> {
     private final Map<String, byte[]> classes;
     private final String pkg;
     private final String cls;
+    private final String html;
 
     private Compile(String html, String code) throws IOException {
         this.pkg = findPkg(code);
         this.cls = findCls(code);
+        this.html = html;
         classes = compile(html, code);
     }
 
@@ -192,5 +194,10 @@ final class Compile implements DiagnosticListener<JavaFileObject> {
         }
         String cls = m.group(1);
         return cls;
+    }
+
+    String getHtml() {
+        String fqn = "'" + pkg + '.' + cls + "'";
+        return html.replace("'${fqn}'", fqn);
     }
 }

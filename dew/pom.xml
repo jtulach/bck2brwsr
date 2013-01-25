@@ -23,6 +23,26 @@
                     <target>1.7</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.2.1</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <executable>java</executable>
+                     <arguments>
+                        <argument>-classpath</argument>
+                        <classpath/>
+                        <argument>org.apidesign.bck2brwsr.dew.Dew</argument>
+                    </arguments>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     <properties>
