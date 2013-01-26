@@ -115,7 +115,7 @@ public final class String
     /** use serialVersionUID from JDK 1.0.2 for interoperability */
     private static final long serialVersionUID = -6849794470754667710L;
     
-    @JavaScriptOnly(name="toString", value="function() { return this.fld_r; }")
+    @JavaScriptOnly(name="toString", value="String.prototype._r")
     private static void jsToString() {
     }
     
@@ -174,7 +174,7 @@ public final class String
         "for (var i = 0; i < charArr.length; i++) {\n"
       + "  if (typeof charArr[i] === 'number') charArr[i] = String.fromCharCode(charArr[i]);\n"
       + "}\n"
-      + "this.fld_r = charArr.join('');\n"
+      + "this._r(charArr.join(''));\n"
     )
     public String(char value[]) {
     }
@@ -205,7 +205,7 @@ public final class String
         "for (var i = off; i < up; i++) {\n" +
         "  if (typeof charArr[i] === 'number') charArr[i] = String.fromCharCode(charArr[i]);\n" +
         "}\n" +
-        "this.fld_r = charArr.slice(off, up).join(\"\");\n"
+        "this._r(charArr.slice(off, up).join(\"\"));\n"
     )
     public String(char value[], int offset, int count) {
     }
