@@ -108,7 +108,9 @@ public class ProcessPageTest {
             + "\n"
             + "window.document = doc;\n"
         );
-        Invocable i = compileClass(sb, "org/apidesign/bck2brwsr/htmlpage/PageController");
+        Invocable i = compileClass(sb, 
+            "org/apidesign/bck2brwsr/htmlpage/PageController"
+        );
 
         Object ret = null;
         try {

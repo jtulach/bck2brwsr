@@ -27,12 +27,11 @@ import org.testng.annotations.Factory;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class MatrixTest {
-    public static final int ITERATION_COUNT = 10;
-    
     public MatrixTest() {
     }
 
-    @Compare public String tenThousandIterations() throws IOException {
+    @Compare(scripting = false) 
+    public String tenThousandIterations() throws IOException {
     
         Matrix m1 = new Matrix(5);
         Matrix m2 = new Matrix(5);
@@ -41,12 +40,9 @@ public class MatrixTest {
         m2.generateData();
         
         Matrix res = null;
-        for (int i = 0; i < ITERATION_COUNT; i++) {
-            Matrix m = m1.multiply(m2);
-            if (res != null && !res.equals(m)) {
-                return "different";
-            }
-            res = m;
+        for (int i = 0; i < 10000; i++) {
+            res = m1.multiply(m2);
+            m1 = res;
         }
         
         StringBuilder sb = new StringBuilder();

@@ -24,13 +24,14 @@
         <title>Bck2Brwsr Harness</title>
     </head>
     <body>
-        <script src="/bck2brwsr.js"></script>
         <script src="/vm.js"></script>
         
-        <h1>Bck2Browser Execution Harness</h1>
+        <h1>Bck2Brwsr Execution Harness</h1>
         
-        <textarea id="result" rows="25" style="width: 100%;" disabled="">
+        <textarea id="bck2brwsr.result" rows="25" style="width: 100%;" disabled="">
         </textarea>
+
+        <div id="bck2brwsr.fragment"/>
         
         <script type="text/javascript">
             vm.loadClass('org.apidesign.bck2brwsr.launcher.Console').harness__VLjava_lang_String_2('$U/../data');

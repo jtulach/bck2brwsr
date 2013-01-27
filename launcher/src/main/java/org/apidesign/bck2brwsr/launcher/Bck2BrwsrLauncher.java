@@ -55,7 +55,7 @@ import org.glassfish.grizzly.http.server.ServerConfiguration;
  */
 final class Bck2BrwsrLauncher extends Launcher implements Closeable {
     private static final Logger LOG = Logger.getLogger(Bck2BrwsrLauncher.class.getName());
-    private static final MethodInvocation END = new MethodInvocation(null, null);
+    private static final MethodInvocation END = new MethodInvocation(null, null, null);
     private Set<ClassLoader> loaders = new LinkedHashSet<>();
     private BlockingQueue<MethodInvocation> methods = new LinkedBlockingQueue<>();
     private long timeOut;
@@ -70,9 +70,9 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
     }
     
     @Override
-    public MethodInvocation addMethod(Class<?> clazz, String method) throws IOException {
+     MethodInvocation addMethod(Class<?> clazz, String method, String html) throws IOException {
         loaders.add(clazz.getClassLoader());
-        MethodInvocation c = new MethodInvocation(clazz.getName(), method);
+        MethodInvocation c = new MethodInvocation(clazz.getName(), method, html);
         methods.add(c);
         try {
             c.await(timeOut);
@@ -122,16 +122,11 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
         }
     }
     
-    private HttpServer initServer() {
+    private HttpServer initServer() throws IOException {
         HttpServer s = HttpServer.createSimpleServer(".", new PortRange(8080, 65535));
 
         final ServerConfiguration conf = s.getServerConfiguration();
-        conf.addHttpHandler(new Page(resources, 
-            "org/apidesign/bck2brwsr/launcher/console.xhtml",
-            "org.apidesign.bck2brwsr.launcher.Console", "welcome", "false"
-        ), "/console");
-        conf.addHttpHandler(new VM(resources), "/bck2brwsr.js");
-        conf.addHttpHandler(new VMInit(), "/vm.js");
+        conf.addHttpHandler(new VM(resources), "/vm.js");
         conf.addHttpHandler(new Classes(resources), "/classes/");
         return s;
     }
@@ -174,12 +169,34 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
                     + "className: '" + cn + "', "
                     + "methodName: '" + mn + "', "
                     + "request: " + cnt
-                    + "}");
+                );
+                if (mi.html != null) {
+                    response.getWriter().write(", html: '");
+                    response.getWriter().write(encodeJSON(mi.html));
+                    response.getWriter().write("'");
+                }
+                response.getWriter().write("}");
                 cnt++;
             }
         }, "/data");
 
         this.brwsr = launchServerAndBrwsr(server, "/execute");
+    }
+    
+    private static String encodeJSON(String in) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < in.length(); i++) {
+            char ch = in.charAt(i);
+            if (ch < 32 || ch == '\'' || ch == '"') {
+                sb.append("\\u");
+                String hs = "0000" + Integer.toHexString(ch);
+                hs = hs.substring(hs.length() - 4);
+                sb.append(hs);
+            } else {
+                sb.append(ch);
+            }
+        }
+        return sb.toString();
     }
     
     @Override
@@ -216,12 +233,12 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
             if (ch == -1) {
                 break;
             }
-            if (ch == '$') {
+            if (ch == '$' && params.length > 0) {
                 int cnt = is.read() - '0';
                 if (cnt == 'U' - '0') {
                     os.write(baseURL.getBytes());
                 }
-                if (cnt < params.length) {
+                if (cnt >= 0 && cnt < params.length) {
                     os.write(params[cnt].getBytes());
                 }
             } else {
@@ -239,11 +256,17 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
         LOG.log(Level.INFO, "Showing {0}", uri);
         if (cmd == null) {
             try {
+                LOG.log(Level.INFO, "Trying Desktop.browse on {0} {2} by {1}", new Object[] {
+                    System.getProperty("java.vm.name"),
+                    System.getProperty("java.vm.vendor"),
+                    System.getProperty("java.vm.version"),
+                });
                 java.awt.Desktop.getDesktop().browse(uri);
                 LOG.log(Level.INFO, "Desktop.browse successfully finished");
                 return null;
             } catch (UnsupportedOperationException ex) {
-                LOG.log(Level.INFO, "Desktop.browse not supported", ex);
+                LOG.log(Level.INFO, "Desktop.browse not supported: {0}", ex.getMessage());
+                LOG.log(Level.FINE, null, ex);
             }
         }
         {
@@ -347,7 +370,7 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
         public Page(Res res, String resource, String... args) {
             this.res = res;
             this.resource = resource;
-            this.args = args;
+            this.args = args.length == 0 ? new String[] { "$0" } : args;
         }
 
         @Override
@@ -359,17 +382,20 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
                     r = r.substring(1);
                 }
             }
+            String[] replace = {};
             if (r.endsWith(".html")) {
                 response.setContentType("text/html");
                 LOG.info("Content type text/html");
+                replace = args;
             }
             if (r.endsWith(".xhtml")) {
                 response.setContentType("application/xhtml+xml");
                 LOG.info("Content type application/xhtml+xml");
+                replace = args;
             }
             OutputStream os = response.getOutputStream();
             try (InputStream is = res.get(r)) {
-                copyStream(is, os, request.getRequestURL().toString(), args);
+                copyStream(is, os, request.getRequestURL().toString(), replace);
             } catch (IOException ex) {
                 response.setDetailMessage(ex.getLocalizedMessage());
                 response.setError();
@@ -379,28 +405,12 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
     }
 
     private static class VM extends HttpHandler {
-        private final Res loader;
+        private final String bck2brwsr;
 
-        public VM(Res loader) {
-            this.loader = loader;
-        }
-
-        @Override
-        public void service(Request request, Response response) throws Exception {
-            response.setCharacterEncoding("UTF-8");
-            response.setContentType("text/javascript");
-            Bck2Brwsr.generate(response.getWriter(), loader);
-        }
-    }
-    private static class VMInit extends HttpHandler {
-        public VMInit() {
-        }
-
-        @Override
-        public void service(Request request, Response response) throws Exception {
-            response.setCharacterEncoding("UTF-8");
-            response.setContentType("text/javascript");
-            response.getWriter().append(
+        public VM(Res loader) throws IOException {
+            StringBuilder sb = new StringBuilder();
+            Bck2Brwsr.generate(sb, loader);
+            sb.append(
                 "function ldCls(res) {\n"
                 + "  var request = new XMLHttpRequest();\n"
                 + "  request.open('GET', '/classes/' + res, false);\n"
@@ -408,7 +418,16 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
                 + "  var arr = eval('(' + request.responseText + ')');\n"
                 + "  return arr;\n"
                 + "}\n"
-                + "var vm = new bck2brwsr(ldCls);\n");
+                + "var vm = new bck2brwsr(ldCls);\n"
+            );
+            this.bck2brwsr = sb.toString();
+        }
+
+        @Override
+        public void service(Request request, Response response) throws Exception {
+            response.setCharacterEncoding("UTF-8");
+            response.setContentType("text/javascript");
+            response.getWriter().write(bck2brwsr);
         }
     }
 

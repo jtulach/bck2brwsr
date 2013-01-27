@@ -21,8 +21,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
@@ -69,6 +67,15 @@ public class ReflectionTest {
 
     @Compare public Object voidReturnType() throws Exception {
         return StaticUse.class.getMethod("instanceMethod").getReturnType();
+    }
+    
+    enum E { A, B };
+    @Compare public boolean isEnum() {
+        return E.A.getClass().isEnum();
+    }
+
+    @Compare public boolean isNotEnum() {
+        return "".getClass().isEnum();
     }
     
     @Compare public String newInstanceFails() throws InstantiationException {

@@ -43,9 +43,14 @@ import org.apidesign.bck2brwsr.htmlpage.api.Page;
  */
 @Page(xhtml="TestPage.html")
 public class PageController {
+    private static final TestPage PAGE = new TestPage();
+    
     @On(event = CLICK, id="pg.button")
-    static void updateTitle() {
-        TestPage.PG_TITLE.setText("You want this window to be named " + TestPage.PG_TEXT.getValue());
+    static void updateTitle(TestPage ref) {
+        if (PAGE != ref) {
+            throw new IllegalStateException("Both references should be the same. " + ref + " != " + PAGE);
+        }
+        ref.PG_TITLE.setText("You want this window to be named " + ref.PG_TEXT.getValue());
     }
     
     @On(event = CLICK, id={ "pg.title", "pg.text" })
@@ -53,6 +58,6 @@ public class PageController {
         if (!id.equals("pg.title")) {
             throw new IllegalStateException();
         }
-        TestPage.PG_TITLE.setText(id);
+        PAGE.PG_TITLE.setText(id);
     }
 }

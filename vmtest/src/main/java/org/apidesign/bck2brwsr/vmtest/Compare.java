@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
 
 /** Can be applied on a method that yields a return value. 
  * Together with {@link VMTest#create} it can be used to write
- * methods which are executed in real as well as JavaScript VMs and
+ * methods which are executed in real VM as well as JavaScript VMs and
  * their results are compared.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
@@ -32,5 +32,14 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Compare {
-    
+    /** Specifies whether the system should internal JavaScript interpreter
+     * as available via {@link javax.script.ScriptEngine}. Defaults to true,
+     * but in some situations (benchmarking comes to my mind), one may set this
+     * to <code>false</code>. In such case only browsers provided via
+     * <code>vmtest.brwsrs</code> property are used. For example
+     * <code>"vmtest.brwsrs=firefox,google-chrome"</code> would run the test
+     * in HotSpot VM, firefox and chrome and would compare the results.
+     * @return 
+     */
+    boolean scripting() default true;
 }

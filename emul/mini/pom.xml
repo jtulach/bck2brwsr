@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apidesign.bck2brwsr</groupId>
+    <artifactId>emul.pom</artifactId>
+    <version>0.3-SNAPSHOT</version>
+  </parent>
+  <groupId>org.apidesign.bck2brwsr</groupId>
+  <artifactId>emul.mini</artifactId>
+  <version>0.3-SNAPSHOT</version>
+  <name>Minimal API Profile</name>
+  <url>http://maven.apache.org</url>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>org.apidesign.bck2brwsr</groupId>
+      <artifactId>core</artifactId>
+      <version>0.3-SNAPSHOT</version>
+      <type>jar</type>
+    </dependency>
+  </dependencies>
+  <build>
+      <plugins>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-compiler-plugin</artifactId>
+              <version>2.5.1</version>
+              <configuration>
+                  <compilerArguments>
+                      <bootclasspath>netbeans.ignore.jdk.bootsclasspath</bootclasspath>
+                  </compilerArguments>
+                 <source>1.7</source>
+                 <target>1.7</target>
+              </configuration>
+          </plugin>
+      </plugins>
+  </build>
+</project>

@@ -28,7 +28,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <startpage>org/apidesign/bck2brwsr/mavenhtml/Calculator.xhtml</startpage>
+                    <startpage>org/apidesign/bck2brwsr/demo/calc/Calculator.xhtml</startpage>
                 </configuration>
             </plugin>
          <plugin>
@@ -46,13 +46,19 @@
   <dependencies>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
-      <artifactId>emul</artifactId>
+      <artifactId>emul.mini</artifactId>
       <version>0.3-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>javaquery.api</artifactId>
       <version>0.3-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.testng</groupId>
+      <artifactId>testng</artifactId>
+      <version>6.5.2</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>
