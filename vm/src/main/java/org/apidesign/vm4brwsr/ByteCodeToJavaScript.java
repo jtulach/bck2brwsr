@@ -313,7 +313,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "var @1 = @2;", smapper.pushI(), lmapper.getI(0));
                     break;
                 case opc_lload_0:
-                    emit(out, "var @1 = MakeLong(@2);", smapper.pushL(), lmapper.getL(0));
+                    emit(out, "var @1 = @2;", smapper.pushL(), lmapper.getL(0));
                     break;
                 case opc_fload_0:
                     emit(out, "var @1 = @2;", smapper.pushF(), lmapper.getF(0));
@@ -328,7 +328,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "var @1 = @2;", smapper.pushI(), lmapper.getI(1));
                     break;
                 case opc_lload_1:
-                    emit(out, "var @1 = MakeLong(@2);", smapper.pushL(), lmapper.getL(1));
+                    emit(out, "var @1 = @2;", smapper.pushL(), lmapper.getL(1));
                     break;
                 case opc_fload_1:
                     emit(out, "var @1 = @2;", smapper.pushF(), lmapper.getF(1));
@@ -343,7 +343,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "var @1 = @2;", smapper.pushI(), lmapper.getI(2));
                     break;
                 case opc_lload_2:
-                    emit(out, "var @1 = MakeLong(@2);", smapper.pushL(), lmapper.getL(2));
+                    emit(out, "var @1 = @2;", smapper.pushL(), lmapper.getL(2));
                     break;
                 case opc_fload_2:
                     emit(out, "var @1 = @2;", smapper.pushF(), lmapper.getF(2));
@@ -358,7 +358,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "var @1 = @2;", smapper.pushI(), lmapper.getI(3));
                     break;
                 case opc_lload_3:
-                    emit(out, "var @1 = MakeLong(@2);", smapper.pushL(), lmapper.getL(3));
+                    emit(out, "var @1 = @2;", smapper.pushL(), lmapper.getL(3));
                     break;
                 case opc_fload_3:
                     emit(out, "var @1 = @2;", smapper.pushF(), lmapper.getF(3));
@@ -662,7 +662,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "return @1;", smapper.popA());
                     break;
                 case opc_i2l:
-                    emit(out, "var @2 = new Long(@1, 0);", smapper.popI(), smapper.pushL());
+                    emit(out, "var @2 = @1", smapper.popI(), smapper.pushL());
                     break;
                 case opc_i2f:
                     emit(out, "var @2 = @1;", smapper.popI(), smapper.pushF());
@@ -691,7 +691,7 @@ abstract class ByteCodeToJavaScript {
                          smapper.popF(), smapper.pushI());
                     break;
                 case opc_f2l:
-                    emit(out, "var @2 = LongFromNumber(Math.floor(@1));",
+                    emit(out, "var @2 = Math.floor(@1).toLong();",
                          smapper.popF(), smapper.pushL());
                     break;
                 case opc_d2i:
@@ -699,7 +699,7 @@ abstract class ByteCodeToJavaScript {
                          smapper.popD(), smapper.pushI());
                     break;
                 case opc_d2l:
-                    emit(out, "var @2 = LongFromNumber(Math.floor(@1));",
+                    emit(out, "var @2 = Math.floor(@1).toLong();",
                          smapper.popD(), smapper.pushL());
                     break;
                 case opc_i2b:
@@ -724,7 +724,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "var @1 = 0;", smapper.pushD());
                     break;
                 case opc_lconst_0:
-                    emit(out, "var @1 = new Long(0,0);", smapper.pushL());
+                    emit(out, "var @1 = 0;", smapper.pushL());
                     break;
                 case opc_fconst_0:
                     emit(out, "var @1 = 0;", smapper.pushF());
@@ -733,7 +733,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "var @1 = 1;", smapper.pushI());
                     break;
                 case opc_lconst_1:
-                    emit(out, "var @1 = new Long(1,0);", smapper.pushL());
+                    emit(out, "var @1 = 1;", smapper.pushL());
                     break;
                 case opc_fconst_1:
                     emit(out, "var @1 = 1;", smapper.pushF());
@@ -773,7 +773,7 @@ abstract class ByteCodeToJavaScript {
                         final Long lv = new Long(v);
                         final int low = (int)(lv.longValue() & 0xFFFFFFFF);
                         final int hi = (int)(lv.longValue() >> 32);
-                        emit(out, "var @1 = new Long(0x@2, 0x@3);", smapper.pushL(), 
+                        emit(out, "var @1 = 0x@3.next32(0x@2);", smapper.pushL(), 
                                 Integer.toHexString(low), Integer.toHexString(hi));
                     } else {
                         emit(out, "var @1 = @2;", smapper.pushT(type), v);

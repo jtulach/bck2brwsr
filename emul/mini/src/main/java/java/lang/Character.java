@@ -2193,6 +2193,10 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * @see     Character#isDigit(int)
      * @since   1.5
      */
+    @JavaScriptBody(args = { "codePoint", "radix" }, body=
+        "var x = parseInt(String.fromCharCode(codePoint), radix);\n"
+      + "return isNaN(x) ? -1 : x;"
+    )
     public static int digit(int codePoint, int radix) {
         throw new UnsupportedOperationException();
     }

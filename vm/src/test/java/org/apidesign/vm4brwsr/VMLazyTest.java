@@ -51,7 +51,7 @@ public class VMLazyTest {
        
         ScriptEngine[] arr = { null };
         code = StaticMethodTest.compileClass(sb, arr,
-            "org/apidesign/vm4brwsr/VM"
+            new String[]{"org/apidesign/vm4brwsr/VM", "org/apidesign/vm4brwsr/StaticMethod"}
         );
         arr[0].getContext().setAttribute("loader", new BytesLoader(), ScriptContext.ENGINE_SCOPE);
         codeSeq = sb;
