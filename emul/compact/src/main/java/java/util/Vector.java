@@ -25,6 +25,8 @@
 
 package java.util;
 
+import org.apidesign.bck2brwsr.emul.lang.System;
+
 /**
  * The {@code Vector} class implements a growable array of
  * objects. Like an array, it contains components that can be
@@ -1052,25 +1054,6 @@ public class Vector<E>
         int newElementCount = elementCount - (toIndex-fromIndex);
         while (elementCount != newElementCount)
             elementData[--elementCount] = null;
-    }
-
-    /**
-     * Save the state of the {@code Vector} instance to a stream (that
-     * is, serialize it).
-     * This method performs synchronization to ensure the consistency
-     * of the serialized data.
-     */
-    private void writeObject(java.io.ObjectOutputStream s)
-            throws java.io.IOException {
-        final java.io.ObjectOutputStream.PutField fields = s.putFields();
-        final Object[] data;
-        synchronized (this) {
-            fields.put("capacityIncrement", capacityIncrement);
-            fields.put("elementCount", elementCount);
-            data = elementData.clone();
-        }
-        fields.put("elementData", data);
-        s.writeFields();
     }
 
     /**

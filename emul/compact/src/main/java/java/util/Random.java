@@ -24,9 +24,8 @@
  */
 
 package java.util;
-import java.io.*;
-import java.util.concurrent.atomic.AtomicLong;
-import sun.misc.Unsafe;
+
+import org.apidesign.bck2brwsr.emul.lang.System;
 
 /**
  * An instance of this class is used to generate a stream of
@@ -75,7 +74,7 @@ class Random implements java.io.Serializable {
      * (The specs for the methods in this class describe the ongoing
      * computation of this value.)
      */
-    private final AtomicLong seed;
+    private long seed;
 
     private static final long multiplier = 0x5DEECE66DL;
     private static final long addend = 0xBL;
@@ -89,20 +88,17 @@ class Random implements java.io.Serializable {
     public Random() {
         this(seedUniquifier() ^ System.nanoTime());
     }
-
-    private static long seedUniquifier() {
+    
+    private static synchronized long seedUniquifier() {
         // L'Ecuyer, "Tables of Linear Congruential Generators of
         // Different Sizes and Good Lattice Structure", 1999
-        for (;;) {
-            long current = seedUniquifier.get();
-            long next = current * 181783497276652981L;
-            if (seedUniquifier.compareAndSet(current, next))
-                return next;
-        }
+        long current = seedUniquifier;
+        long next = current * 181783497276652981L;
+        seedUniquifier = next;
+        return next;
     }
 
-    private static final AtomicLong seedUniquifier
-        = new AtomicLong(8682522807148012L);
+    private static long seedUniquifier = 8682522807148012L;
 
     /**
      * Creates a new random number generator using a single {@code long} seed.
@@ -118,7 +114,7 @@ class Random implements java.io.Serializable {
      * @see   #setSeed(long)
      */
     public Random(long seed) {
-        this.seed = new AtomicLong(initialScramble(seed));
+        this.seed = initialScramble(seed);
     }
 
     private static long initialScramble(long seed) {
@@ -145,7 +141,7 @@ class Random implements java.io.Serializable {
      * @param seed the initial seed
      */
     synchronized public void setSeed(long seed) {
-        this.seed.set(initialScramble(seed));
+        this.seed = initialScramble(seed);
         haveNextNextGaussian = false;
     }
 
@@ -174,13 +170,12 @@ class Random implements java.io.Serializable {
      *         generator's sequence
      * @since  1.1
      */
-    protected int next(int bits) {
+    protected synchronized int next(int bits) {
         long oldseed, nextseed;
-        AtomicLong seed = this.seed;
-        do {
-            oldseed = seed.get();
-            nextseed = (oldseed * multiplier + addend) & mask;
-        } while (!seed.compareAndSet(oldseed, nextseed));
+        long seed = this.seed;
+        oldseed = seed;
+        nextseed = (oldseed * multiplier + addend) & mask;
+        this.seed = nextseed;
         return (int)(nextseed >>> (48 - bits));
     }
 
@@ -499,77 +494,10 @@ class Random implements java.io.Serializable {
                 v2 = 2 * nextDouble() - 1; // between -1 and 1
                 s = v1 * v1 + v2 * v2;
             } while (s >= 1 || s == 0);
-            double multiplier = StrictMath.sqrt(-2 * StrictMath.log(s)/s);
+            double multiplier = Math.sqrt(-2 * Math.log(s)/s);
             nextNextGaussian = v2 * multiplier;
             haveNextNextGaussian = true;
             return v1 * multiplier;
         }
-    }
-
-    /**
-     * Serializable fields for Random.
-     *
-     * @serialField    seed long
-     *              seed for random computations
-     * @serialField    nextNextGaussian double
-     *              next Gaussian to be returned
-     * @serialField      haveNextNextGaussian boolean
-     *              nextNextGaussian is valid
-     */
-    private static final ObjectStreamField[] serialPersistentFields = {
-        new ObjectStreamField("seed", Long.TYPE),
-        new ObjectStreamField("nextNextGaussian", Double.TYPE),
-        new ObjectStreamField("haveNextNextGaussian", Boolean.TYPE)
-    };
-
-    /**
-     * Reconstitute the {@code Random} instance from a stream (that is,
-     * deserialize it).
-     */
-    private void readObject(java.io.ObjectInputStream s)
-        throws java.io.IOException, ClassNotFoundException {
-
-        ObjectInputStream.GetField fields = s.readFields();
-
-        // The seed is read in as {@code long} for
-        // historical reasons, but it is converted to an AtomicLong.
-        long seedVal = fields.get("seed", -1L);
-        if (seedVal < 0)
-          throw new java.io.StreamCorruptedException(
-                              "Random: invalid seed");
-        resetSeed(seedVal);
-        nextNextGaussian = fields.get("nextNextGaussian", 0.0);
-        haveNextNextGaussian = fields.get("haveNextNextGaussian", false);
-    }
-
-    /**
-     * Save the {@code Random} instance to a stream.
-     */
-    synchronized private void writeObject(ObjectOutputStream s)
-        throws IOException {
-
-        // set the values of the Serializable fields
-        ObjectOutputStream.PutField fields = s.putFields();
-
-        // The seed is serialized as a long for historical reasons.
-        fields.put("seed", seed.get());
-        fields.put("nextNextGaussian", nextNextGaussian);
-        fields.put("haveNextNextGaussian", haveNextNextGaussian);
-
-        // save them
-        s.writeFields();
-    }
-
-    // Support for resetting seed while deserializing
-    private static final Unsafe unsafe = Unsafe.getUnsafe();
-    private static final long seedOffset;
-    static {
-        try {
-            seedOffset = unsafe.objectFieldOffset
-                (Random.class.getDeclaredField("seed"));
-        } catch (Exception ex) { throw new Error(ex); }
-    }
-    private void resetSeed(long seedVal) {
-        unsafe.putObjectVolatile(this, seedOffset, new AtomicLong(seedVal));
     }
 }

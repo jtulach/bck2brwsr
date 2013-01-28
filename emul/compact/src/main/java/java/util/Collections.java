@@ -25,9 +25,9 @@
 
 package java.util;
 import java.io.Serializable;
-import java.io.ObjectOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
+import org.apidesign.bck2brwsr.emul.lang.System;
 
 /**
  * This class consists exclusively of static methods that operate on or return
@@ -1655,9 +1655,6 @@ public class Collections {
         public String toString() {
             synchronized (mutex) {return c.toString();}
         }
-        private void writeObject(ObjectOutputStream s) throws IOException {
-            synchronized (mutex) {s.defaultWriteObject();}
-        }
     }
 
     /**
@@ -2080,9 +2077,6 @@ public class Collections {
         }
         public String toString() {
             synchronized (mutex) {return m.toString();}
-        }
-        private void writeObject(ObjectOutputStream s) throws IOException {
-            synchronized (mutex) {s.defaultWriteObject();}
         }
     }
 
@@ -3906,12 +3900,6 @@ public class Collections {
 
         private static final long serialVersionUID = 2454657854757543876L;
 
-        private void readObject(java.io.ObjectInputStream stream)
-            throws IOException, ClassNotFoundException
-        {
-            stream.defaultReadObject();
-            s = m.keySet();
-        }
     }
 
     /**

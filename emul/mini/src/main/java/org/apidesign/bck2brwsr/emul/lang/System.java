@@ -44,5 +44,7 @@ public class System {
         "while (expectedSize-- > arr.length) { arr.push(0); }; return arr;"
     )
     public static native byte[] expandArray(byte[] arr, int expectedSize);
-    
+
+    @JavaScriptBody(args = {}, body = "new Date().getMilliseconds() * 1000;")
+    public static native long nanoTime();
 }
