@@ -117,8 +117,8 @@ final class VMLazy {
         body =
         "var cls = n.replace__Ljava_lang_String_2CC('/','_').toString();"
         + "\nvar dot = n.replace__Ljava_lang_String_2CC('/','.').toString();"
-        + "\nvar lazy = this.fld_lazy;"
-        + "\nvar loader = lazy.fld_loader;"
+        + "\nvar lazy = this._lazy();"
+        + "\nvar loader = lazy._loader();"
         + "\nvar vm = loader.vm;"
         + "\nif (vm[cls]) return false;"
         + "\nvm[cls] = function() {"

@@ -32,7 +32,7 @@ public class GraphicsContext {
     }
 
     @JavaScriptBody(args = {"centerx", "centery", "radius", "startangle", "endangle", "ccw"},
-            body = "this.fld_context.arc(centerx,centery, radius, startangle, endangle,ccw);")
+            body = "this._context().arc(centerx,centery, radius, startangle, endangle,ccw);")
     public native void arc(double centerX,
             double centerY,
             double startAngle,
@@ -41,7 +41,7 @@ public class GraphicsContext {
             boolean ccw);
 
     @JavaScriptBody(args = {"x1", "y1", "x2", "y2", "r"},
-            body = "this.fld_context.arcTo(x1,y1,x2,y2,r);")
+            body = "this._context().arcTo(x1,y1,x2,y2,r);")
     public native void arcTo(double x1,
             double y1,
             double x2,
@@ -49,68 +49,68 @@ public class GraphicsContext {
             double r);
 
     @JavaScriptBody(args = {"x", "y"},
-            body = "return this.fld_context.isPointInPath(x,y);")
+            body = "return this._context().isPointInPath(x,y);")
     public native boolean isPointInPath(double x, double y);
 
-    @JavaScriptBody(args = {}, body = "this.fld_context.fill();")
+    @JavaScriptBody(args = {}, body = "this._context().fill();")
     public native void fill();
 
-    @JavaScriptBody(args = {}, body = "this.fld_context.stroke();")
+    @JavaScriptBody(args = {}, body = "this._context().stroke();")
     public native void stroke();
 
-    @JavaScriptBody(args = {}, body = "this.fld_context.beginPath();")
+    @JavaScriptBody(args = {}, body = "this._context().beginPath();")
     public native void beginPath();
 
-    @JavaScriptBody(args = {}, body = "this.fld_context.closePath();")
+    @JavaScriptBody(args = {}, body = "this._context().closePath();")
     public native void closePath();
 
-    @JavaScriptBody(args = {}, body = "this.fld_context.clip();")
+    @JavaScriptBody(args = {}, body = "this._context().clip();")
     public native void clip();
 
-    @JavaScriptBody(args = {"x", "y"}, body = "this.fld_context.moveTo(x,y);")
+    @JavaScriptBody(args = {"x", "y"}, body = "this._context().moveTo(x,y);")
     public native void moveTo(double x, double y);
 
-    @JavaScriptBody(args = {"x", "y"}, body = "this.fld_context.lineTo(x,y);")
+    @JavaScriptBody(args = {"x", "y"}, body = "this._context().lineTo(x,y);")
     public native void lineTo(double x, double y);
 
-    @JavaScriptBody(args = {"cpx", "cpy", "x", "y"}, body = "this.fld_context.quadraticCurveTo(cpx,cpy,x,y);")
+    @JavaScriptBody(args = {"cpx", "cpy", "x", "y"}, body = "this._context().quadraticCurveTo(cpx,cpy,x,y);")
     public native void quadraticCurveTo(double cpx, double cpy, double x, double y);
 
     @JavaScriptBody(args = {"cp1x", "cp1y", "cp2x", "cp2y", "x", "y"},
-            body = "this.fld_context.bezierCurveTo(cp1x,cp1y,cp2x,cp2y,x,y);")
+            body = "this._context().bezierCurveTo(cp1x,cp1y,cp2x,cp2y,x,y);")
     public native void bezierCurveTo(double cp1x, double cp1y, double cp2x, double cp2y, double x, double y);
 
-    @JavaScriptBody(args = {"x", "y", "width", "height"}, body = "this.fld_context.fillRect(x,y,width,height);")
+    @JavaScriptBody(args = {"x", "y", "width", "height"}, body = "this._context().fillRect(x,y,width,height);")
     public native void fillRect(double x, double y, double width, double height);
 
-    @JavaScriptBody(args = {"x", "y", "width", "height"}, body = "this.fld_context.strokeRect(x,y,width,height);")
+    @JavaScriptBody(args = {"x", "y", "width", "height"}, body = "this._context().strokeRect(x,y,width,height);")
     public native void strokeRect(double x, double y, double width, double height);
 
-    @JavaScriptBody(args = {"x", "y", "width", "height"}, body = "this.fld_context.clearRect(x,y,width,height);")
+    @JavaScriptBody(args = {"x", "y", "width", "height"}, body = "this._context().clearRect(x,y,width,height);")
     public native void clearRect(double x, double y, double width, double height);
 
-    @JavaScriptBody(args = {"x", "y", "width", "height"}, body = "this.fld_context.rectect(x,y,width,height);")
+    @JavaScriptBody(args = {"x", "y", "width", "height"}, body = "this._context().rectect(x,y,width,height);")
     public native void rect(double x, double y, double width, double height);
 
-    @JavaScriptBody(args = {}, body = "this.fld_context.save();")
+    @JavaScriptBody(args = {}, body = "this._context().save();")
     public native void save();
 
-    @JavaScriptBody(args = {}, body = "this.fld_context.restore();")
+    @JavaScriptBody(args = {}, body = "this._context().restore();")
     public native void restore();
 
-    @JavaScriptBody(args = {"angle"}, body = "this.fld_context.rotate(angle);")
+    @JavaScriptBody(args = {"angle"}, body = "this._context().rotate(angle);")
     public native void rotate(double angle);
 
-    @JavaScriptBody(args = {"a", "b", "c", "d", "e", "f"}, body = "this.fld_context.transform(a,b,c,d,e,f);")
+    @JavaScriptBody(args = {"a", "b", "c", "d", "e", "f"}, body = "this._context().transform(a,b,c,d,e,f);")
     public native void transform(double a, double b, double c, double d, double e, double f);
 
-    @JavaScriptBody(args = {"a", "b", "c", "d", "e", "f"}, body = "this.fld_context.setTransform(a,b,c,d,e,f);")
+    @JavaScriptBody(args = {"a", "b", "c", "d", "e", "f"}, body = "this._context().setTransform(a,b,c,d,e,f);")
     public native void setTransform(double a, double b, double c, double d, double e, double f);
 
-    @JavaScriptBody(args = {"x", "y"}, body = "this.fld_context.translate(x,y);")
+    @JavaScriptBody(args = {"x", "y"}, body = "this._context().translate(x,y);")
     public native void translate(double x, double y);
 
-    @JavaScriptBody(args = {"x", "y"}, body = "this.fld_context.scale(x,y);")
+    @JavaScriptBody(args = {"x", "y"}, body = "this._context().scale(x,y);")
     public native void scale(double x, double y);
 
     public void drawImage(Image image, double x, double y) {
@@ -134,10 +134,10 @@ public class GraphicsContext {
     @JavaScriptBody(args = {"ctx", "img", "x", "y"}, body = "ctx.drawImage(img,x,y);")
     private native static void drawImageImpl(Object ctx, Object img, double x, double y);
 
-    @JavaScriptBody(args = {"style"}, body = "this.fld_context.fillStyle=style;")
+    @JavaScriptBody(args = {"style"}, body = "this._context().fillStyle=style;")
     public native void setFillStyle(String style);
 
-    @JavaScriptBody(args = {}, body = "return this.fld_context.fillStyle;")
+    @JavaScriptBody(args = {}, body = "return this._context().fillStyle;")
     public native String getFillStyle();
 
     public void setFillStyle(LinearGradient style) {
@@ -155,7 +155,7 @@ public class GraphicsContext {
     @JavaScriptBody(args = {"context","obj"}, body = "context.fillStyle=obj;")
     private native void setFillStyleImpl(Object context, Object obj);
 
-    @JavaScriptBody(args = {"style"}, body = "this.fld_context.strokeStyle=style;")
+    @JavaScriptBody(args = {"style"}, body = "this._context().strokeStyle=style;")
     public native void setStrokeStyle(String style);
 
     public void setStrokeStyle(LinearGradient style) {
@@ -166,7 +166,7 @@ public class GraphicsContext {
         setStrokeStyleImpl(context, style.object());
     }
 
-    @JavaScriptBody(args = {"style"}, body = "this.fld_context.fillStyle=style;")
+    @JavaScriptBody(args = {"style"}, body = "this._context().fillStyle=style;")
     public void setStrokeStyle(Pattern style) {
         setStrokeStyleImpl(context, style.object());
     }
@@ -174,79 +174,79 @@ public class GraphicsContext {
     @JavaScriptBody(args = {"context","obj"}, body = "context.strokeStyle=obj;")
     private native void setStrokeStyleImpl(Object context, Object obj);
 
-    @JavaScriptBody(args = {"color"}, body = "this.fld_context.shadowColor=color;")
+    @JavaScriptBody(args = {"color"}, body = "this._context().shadowColor=color;")
     public native void setShadowColor(String color);
 
-    @JavaScriptBody(args = {"blur"}, body = "this.fld_context.shadowBlur=blur;")
+    @JavaScriptBody(args = {"blur"}, body = "this._context().shadowBlur=blur;")
     public native void setShadowBlur(double blur);
     
-    @JavaScriptBody(args = {"x"}, body = "this.fld_context.shadowOffsetX=x;")
+    @JavaScriptBody(args = {"x"}, body = "this._context().shadowOffsetX=x;")
     public native void setShadowOffsetX(double x);
 
-    @JavaScriptBody(args = {"y"}, body = "this.fld_context.shadowOffsetY=y;")
+    @JavaScriptBody(args = {"y"}, body = "this._context().shadowOffsetY=y;")
     public native void setShadowOffsetY(double y);
 
-    @JavaScriptBody(args = {}, body = "return this.fld_context.strokeStyle;")
+    @JavaScriptBody(args = {}, body = "return this._context().strokeStyle;")
     public native String getStrokeStyle();
 
-    @JavaScriptBody(args = {}, body = "return this.fld_context.shadowColor;")
+    @JavaScriptBody(args = {}, body = "return this._context().shadowColor;")
     public native String getShadowColor();
 
-    @JavaScriptBody(args = {}, body = "return this.fld_context.shadowBlur;")
+    @JavaScriptBody(args = {}, body = "return this._context().shadowBlur;")
     public native double getShadowBlur();
 
-    @JavaScriptBody(args = {}, body = "return this.fld_context.shadowOffsetX;")
+    @JavaScriptBody(args = {}, body = "return this._context().shadowOffsetX;")
     public native double getShadowOffsetX();
 
-    @JavaScriptBody(args = {}, body = "return this.fld_context.shadowOffsetY;")
+    @JavaScriptBody(args = {}, body = "return this._context().shadowOffsetY;")
     public native double getShadowOffsetY();
 
-    @JavaScriptBody(args = {}, body = "return this.fld_context.lineCap;")
+    @JavaScriptBody(args = {}, body = "return this._context().lineCap;")
     public native String getLineCap();
 
-    @JavaScriptBody(args = {"style"}, body = "this.fld_context.lineCap=style;")
+    @JavaScriptBody(args = {"style"}, body = "this._context().lineCap=style;")
     public native void setLineCap(String style);
 
-    @JavaScriptBody(args = {}, body = "return this.fld_context.lineJoin;")
+    @JavaScriptBody(args = {}, body = "return this._context().lineJoin;")
     public native String getLineJoin();
 
-    @JavaScriptBody(args = {"style"}, body = "this.fld_context.lineJoin=style;")
+    @JavaScriptBody(args = {"style"}, body = "this._context().lineJoin=style;")
     public native void setLineJoin(String style) ;
 
-    @JavaScriptBody(args = {}, body = "return this.fld_context.lineWidth;")
+    @JavaScriptBody(args = {}, body = "return this._context().lineWidth;")
     public native double getLineWidth();
 
-    @JavaScriptBody(args = {"width"}, body = "this.fld_context.lineJoin=width;")
+    @JavaScriptBody(args = {"width"}, body = "this._context().lineJoin=width;")
     public native void setLineWidth(double width);
 
-    @JavaScriptBody(args = {}, body = "return this.fld_context.miterLimit;")
+    @JavaScriptBody(args = {}, body = "return this._context().miterLimit;")
     public native double getMiterLimit();
 
-    @JavaScriptBody(args = {"limit"}, body = "this.fld_context.miterLimit=limit;")
+    @JavaScriptBody(args = {"limit"}, body = "this._context().miterLimit=limit;")
     public native void setMiterLimit(double limit);
 
-    @JavaScriptBody(args = {}, body = "return this.fld_context.font;")
+    @JavaScriptBody(args = {}, body = "return this._context().font;")
     public native String getFont();
 
-    @JavaScriptBody(args = {"font"}, body = "this.fld_context.font=font;")
+    @JavaScriptBody(args = {"font"}, body = "this._context().font=font;")
     public native void setFont(String font);
 
-    @JavaScriptBody(args = {}, body = "return this.fld_context.textAlign;")
+    @JavaScriptBody(args = {}, body = "return this._context().textAlign;")
     public native String getTextAlign();
 
-    @JavaScriptBody(args = {"textalign"}, body = "this.fld_context.textAlign=textalign;")
+    @JavaScriptBody(args = {"textalign"}, body = "this._context().textAlign=textalign;")
     public native void setTextAlign(String textAlign);
 
-    @JavaScriptBody(args = {}, body = "return this.fld_context.textBaseline;")
+    @JavaScriptBody(args = {}, body = "return this._context().textBaseline;")
     public native String getTextBaseline();
 
-    @JavaScriptBody(args = {"textbaseline"}, body = "this.fld_context.textBaseline=textbaseline;")
+    @JavaScriptBody(args = {"textbaseline"}, body = "this._context().textBaseline=textbaseline;")
     public native void setTextBaseline(String textbaseline);
 
-    @JavaScriptBody(args = {"text", "x", "y"}, body = "this.fld_context.fillText(text,x,y);")
+    @JavaScriptBody(args = {"text", "x", "y"}, body = "this._context().fillText(text,x,y);")
     public native void fillText(String text, double x, double y);
 
-    @JavaScriptBody(args = {"text", "x", "y", "maxwidth"}, body = "this.fld_context.fillText(text,x,y,maxwidth);")
+    @JavaScriptBody(args = {"text", "x", "y", "maxwidth"}, body = "this._context().fillText(text,x,y,maxwidth);")
     public void fillText(String text, double x, double y, double maxWidth) {
     }
 
@@ -255,13 +255,13 @@ public class GraphicsContext {
     }
 
     @JavaScriptBody(args = {"text"},
-            body = "return this.fld_context.measureText(text);")
+            body = "return this._context().measureText(text);")
     private native Object measureTextImpl(String text);
 
-    @JavaScriptBody(args = {"text", "x", "y"}, body = "this.fld_context.strokeText(text,x,y);")
+    @JavaScriptBody(args = {"text", "x", "y"}, body = "this._context().strokeText(text,x,y);")
     public native void strokeText(String text, double x, double y);
 
-    @JavaScriptBody(args = {"text", "x", "y", "maxWidth"}, body = "this.fld_context.strokeText(text,x,y,maxWidth);")
+    @JavaScriptBody(args = {"text", "x", "y", "maxWidth"}, body = "this._context().strokeText(text,x,y,maxWidth);")
     public native void strokeText(String text, double x, double y, double maxWidth) ;
 
     public ImageData createImageData(double x, double y) {
@@ -269,7 +269,7 @@ public class GraphicsContext {
     }
 
     @JavaScriptBody(args = {"x", "y"},
-            body = "return this.fld_context.createImageData(x,y);")
+            body = "return this._context().createImageData(x,y);")
     private native Object createImageDataImpl(double x, double y);
 
     public ImageData createImageData(ImageData imageData) {
@@ -281,7 +281,7 @@ public class GraphicsContext {
     }
 
     @JavaScriptBody(args = {"x", "y", "width", "height"},
-            body = "return this.fld_context.getImageData(x,y,width,height);")
+            body = "return this._context().getImageData(x,y,width,height);")
     private native Object getImageDataImpl(double x, double y, double width, double height);
 
     public void putImageData(ImageData imageData, double x, double y) {
@@ -289,7 +289,7 @@ public class GraphicsContext {
     }
 
     @JavaScriptBody(args = {"imageData", "x", "y"},
-            body = "this.fld_context.putImageData(imageData,x,y);")
+            body = "this._context().putImageData(imageData,x,y);")
     private native void putImageDataImpl(Object imageData, double x, double y);
 
     public void putImageData(ImageData imageData, double x, double y, double dirtyx, double dirtyy, double dirtywidth, double dirtyheight) {
@@ -297,19 +297,19 @@ public class GraphicsContext {
     }
 
     @JavaScriptBody(args = {"imageData", "x", "y", "dirtyx", "dirtyy", "dirtywidth", "dirtyheight"},
-            body = "this.fld_context.putImageData(imageData,x,y, dirtyx, dirtyy, dirtywidth,dirtyheight);")
+            body = "this._context().putImageData(imageData,x,y, dirtyx, dirtyy, dirtywidth,dirtyheight);")
     private native void putImageDataImpl(Object imageData, double x, double y, double dirtyx, double dirtyy, double dirtywidth, double dirtyheight);
 
-    @JavaScriptBody(args = {"alpha"}, body = "this.fld_context.globalAlpha=alpha;")
+    @JavaScriptBody(args = {"alpha"}, body = "this._context().globalAlpha=alpha;")
     public native void setGlobalAlpha(double alpha) ;
 
-    @JavaScriptBody(args = {}, body = "return this.fld_context.globalAlpha;")
+    @JavaScriptBody(args = {}, body = "return this._context().globalAlpha;")
     public native double getGlobalAlpha();
 
-    @JavaScriptBody(args = {"operation"}, body = "this.fld_context.globalCompositeOperation=operation;")
+    @JavaScriptBody(args = {"operation"}, body = "this._context().globalCompositeOperation=operation;")
     public native void setGlobalCompositeOperation(double alpha);
 
-    @JavaScriptBody(args = {}, body = "return this.fld_context.globalCompositeOperation;")
+    @JavaScriptBody(args = {}, body = "return this._context().globalCompositeOperation;")
     public native double getGlobalCompositeOperation();
 
     public LinearGradient createLinearGradient(double x0, double y0, double x1, double y1) {

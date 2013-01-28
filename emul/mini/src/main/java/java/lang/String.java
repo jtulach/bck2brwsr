@@ -115,7 +115,7 @@ public final class String
     /** use serialVersionUID from JDK 1.0.2 for interoperability */
     private static final long serialVersionUID = -6849794470754667710L;
     
-    @JavaScriptOnly(name="toString", value="function() { return this.fld_r; }")
+    @JavaScriptOnly(name="toString", value="String.prototype._r")
     private static void jsToString() {
     }
     
@@ -174,7 +174,7 @@ public final class String
         "for (var i = 0; i < charArr.length; i++) {\n"
       + "  if (typeof charArr[i] === 'number') charArr[i] = String.fromCharCode(charArr[i]);\n"
       + "}\n"
-      + "this.fld_r = charArr.join('');\n"
+      + "this._r(charArr.join(''));\n"
     )
     public String(char value[]) {
     }
@@ -205,7 +205,7 @@ public final class String
         "for (var i = off; i < up; i++) {\n" +
         "  if (typeof charArr[i] === 'number') charArr[i] = String.fromCharCode(charArr[i]);\n" +
         "}\n" +
-        "this.fld_r = charArr.slice(off, up).join(\"\");\n"
+        "this._r(charArr.slice(off, up).join(\"\"));\n"
     )
     public String(char value[], int offset, int count) {
     }
@@ -971,10 +971,24 @@ public final class String
      * @since      JDK1.1
      */
     public byte[] getBytes() {
-        byte[] arr = new byte[length()];
-        for (int i = 0; i < arr.length; i++) {
-            final char v = charAt(i);
-            arr[i] = (byte)v;
+        int len = length();
+        byte[] arr = new byte[len];
+        for (int i = 0, j = 0; j < len; j++) {
+            final int v = charAt(j);
+            if (v < 128) {
+                arr[i++] = (byte) v;
+                continue;
+            }
+            if (v < 0x0800) {
+                arr = System.expandArray(arr, i + 1);
+                arr[i++] = (byte) (0xC0 | (v >> 6));
+                arr[i++] = (byte) (0x80 | (0x3F & v));
+                continue;
+            }
+            arr = System.expandArray(arr, i + 2);
+            arr[i++] = (byte) (0xE0 | (v >> 12));
+            arr[i++] = (byte) (0x80 | ((v >> 6) & 0x7F));
+            arr[i++] = (byte) (0x80 | (0x3F & v));
         }
         return arr;
     }

@@ -375,6 +375,68 @@ public final class Math {
     public static double floor(double a) {
         throw new UnsupportedOperationException();
     }
+    /**
+     * Computes the remainder operation on two arguments as prescribed
+     * by the IEEE 754 standard.
+     * The remainder value is mathematically equal to
+     * <code>f1&nbsp;-&nbsp;f2</code>&nbsp;&times;&nbsp;<i>n</i>,
+     * where <i>n</i> is the mathematical integer closest to the exact
+     * mathematical value of the quotient {@code f1/f2}, and if two
+     * mathematical integers are equally close to {@code f1/f2},
+     * then <i>n</i> is the integer that is even. If the remainder is
+     * zero, its sign is the same as the sign of the first argument.
+     * Special cases:
+     * <ul><li>If either argument is NaN, or the first argument is infinite,
+     * or the second argument is positive zero or negative zero, then the
+     * result is NaN.
+     * <li>If the first argument is finite and the second argument is
+     * infinite, then the result is the same as the first argument.</ul>
+     *
+     * @param   f1   the dividend.
+     * @param   f2   the divisor.
+     * @return  the remainder when {@code f1} is divided by
+     *          {@code f2}.
+     */
+//    public static double IEEEremainder(double f1, double f2) {
+//        return f1 % f2;
+//    }
+
+    /**
+     * Returns the {@code double} value that is closest in value
+     * to the argument and is equal to a mathematical integer. If two
+     * {@code double} values that are mathematical integers are
+     * equally close, the result is the integer value that is
+     * even. Special cases:
+     * <ul><li>If the argument value is already equal to a mathematical
+     * integer, then the result is the same as the argument.
+     * <li>If the argument is NaN or an infinity or positive zero or negative
+     * zero, then the result is the same as the argument.</ul>
+     *
+     * @param   a   a {@code double} value.
+     * @return  the closest floating-point value to {@code a} that is
+     *          equal to a mathematical integer.
+     */
+    public static double rint(double a) {
+        double ceil = ceil(a);
+        double floor = floor(a);
+        
+        double dc = ceil - a;
+        double df = a - floor;
+        
+        if (dc < df) {
+            return ceil;
+        } else if (dc > df) {
+            return floor;
+        }
+        
+        int tenC = (int) (ceil % 10.0);
+        
+        if (tenC % 2 == 0) {
+            return ceil;
+        } else {
+            return floor;
+        }
+    }
 
     /**
      * Returns the angle <i>theta</i> from the conversion of rectangular

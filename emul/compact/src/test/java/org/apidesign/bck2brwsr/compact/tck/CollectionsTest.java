@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Vector;
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
@@ -92,10 +94,9 @@ public class CollectionsTest {
         map.put("nine", 9);
         map.put("ten", 10);
         
-        Map.Entry<String,Integer>[] arr = map.entrySet().toArray(new Map.Entry[map.size()]);
-        Arrays.sort(arr, new C());
-        
-        return Arrays.asList(arr).toString();
+        List<Entry<String,Integer>> arr = new Vector<>();
+        arr.addAll(map.entrySet());
+        return arr.toString();
     }
     
     @Factory
