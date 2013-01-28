@@ -23,6 +23,7 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
@@ -46,10 +47,15 @@ final class JSLauncher extends Launcher {
         loaders.add(clazz.getClassLoader());
         MethodInvocation mi = new MethodInvocation(clazz.getName(), method, html);
         try {
-            mi.result(code.invokeMethod(
+            long time = System.currentTimeMillis();
+            LOG.log(Level.FINE, "Invoking {0}.{1}", new Object[]{mi.className, mi.methodName});
+            String res = code.invokeMethod(
                 console,
                 "invoke__Ljava_lang_String_2Ljava_lang_String_2Ljava_lang_String_2",
-                mi.className, mi.methodName).toString(), null);
+                mi.className, mi.methodName).toString();
+            time = System.currentTimeMillis() - time;
+            LOG.log(Level.FINE, "Resut of {0}.{1} = {2} in {3} ms", new Object[]{mi.className, mi.methodName, res, time});
+            mi.result(res, null);
         } catch (ScriptException | NoSuchMethodException ex) {
             mi.result(null, ex);
         }

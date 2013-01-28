@@ -971,10 +971,24 @@ public final class String
      * @since      JDK1.1
      */
     public byte[] getBytes() {
-        byte[] arr = new byte[length()];
-        for (int i = 0; i < arr.length; i++) {
-            final char v = charAt(i);
-            arr[i] = (byte)v;
+        int len = length();
+        byte[] arr = new byte[len];
+        for (int i = 0, j = 0; j < len; j++) {
+            final int v = charAt(j);
+            if (v < 128) {
+                arr[i++] = (byte) v;
+                continue;
+            }
+            if (v < 0x0800) {
+                arr = System.expandArray(arr, i + 1);
+                arr[i++] = (byte) (0xC0 | (v >> 6));
+                arr[i++] = (byte) (0x80 | (0x3F & v));
+                continue;
+            }
+            arr = System.expandArray(arr, i + 2);
+            arr[i++] = (byte) (0xE0 | (v >> 12));
+            arr[i++] = (byte) (0x80 | ((v >> 6) & 0x7F));
+            arr[i++] = (byte) (0x80 | (0x3F & v));
         }
         return arr;
     }

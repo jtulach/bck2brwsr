@@ -23,8 +23,6 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.WeakHashMap;
 import org.apidesign.bck2brwsr.launcher.Launcher;
 import org.apidesign.bck2brwsr.launcher.MethodInvocation;
 import org.testng.ITest;
