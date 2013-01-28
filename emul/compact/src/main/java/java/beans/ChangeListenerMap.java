@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import org.apidesign.bck2brwsr.emul.lang.System;
 
 /**
  * This is an abstract class that provides base functionality

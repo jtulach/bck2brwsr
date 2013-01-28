@@ -62,9 +62,6 @@ public class ReferenceQueue<T> {
                 r.next = (head == null) ? r : head;
                 head = r;
                 queueLength++;
-                if (r instanceof FinalReference) {
-                    sun.misc.VM.addFinalRefCount(1);
-                }
                 lock.notifyAll();
                 return true;
             }
@@ -78,9 +75,6 @@ public class ReferenceQueue<T> {
             r.queue = NULL;
             r.next = r;
             queueLength--;
-            if (r instanceof FinalReference) {
-                sun.misc.VM.addFinalRefCount(-1);
-            }
             return r;
         }
         return null;

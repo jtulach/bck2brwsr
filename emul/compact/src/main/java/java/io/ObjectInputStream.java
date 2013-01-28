@@ -25,22 +25,12 @@
 
 package java.io;
 
-import java.io.ObjectStreamClass.WeakClassKey;
-import java.lang.ref.ReferenceQueue;
 import java.lang.reflect.Array;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
-import java.security.AccessControlContext;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import static java.io.ObjectStreamClass.processQueue;
+import org.apidesign.bck2brwsr.emul.lang.System;
 
 /**
  * An ObjectInputStream deserializes primitive data and objects previously
@@ -226,16 +216,6 @@ public class ObjectInputStream
         primClasses.put("void", void.class);
     }
 
-    private static class Caches {
-        /** cache of subclass security audit results */
-        static final ConcurrentMap<WeakClassKey,Boolean> subclassAudits =
-            new ConcurrentHashMap<>();
-
-        /** queue for WeakReferences to audited subclasses */
-        static final ReferenceQueue<Class<?>> subclassAuditsQueue =
-            new ReferenceQueue<>();
-    }
-
     /** filter stream for handling block data conversion */
     private final BlockDataInputStream bin;
     /** validation callback list */
@@ -265,7 +245,7 @@ public class ObjectInputStream
      * object currently being deserialized and descriptor for current class.
      * Null when not during readObject upcall.
      */
-    private SerialCallbackContext curContext;
+    private Object curContext;
 
     /**
      * Creates an ObjectInputStream that reads from the specified InputStream.
@@ -316,14 +296,7 @@ public class ObjectInputStream
      * @see java.io.SerializablePermission
      */
     protected ObjectInputStream() throws IOException, SecurityException {
-        SecurityManager sm = System.getSecurityManager();
-        if (sm != null) {
-            sm.checkPermission(SUBCLASS_IMPLEMENTATION_PERMISSION);
-        }
-        bin = null;
-        handles = null;
-        vlist = null;
-        enableOverride = true;
+        throw new SecurityException();
     }
 
     /**
@@ -359,29 +332,7 @@ public class ObjectInputStream
     public final Object readObject()
         throws IOException, ClassNotFoundException
     {
-        if (enableOverride) {
-            return readObjectOverride();
-        }
-
-        // if nested read, passHandle contains handle of enclosing object
-        int outerHandle = passHandle;
-        try {
-            Object obj = readObject0(false);
-            handles.markDependency(outerHandle, passHandle);
-            ClassNotFoundException ex = handles.lookupException(passHandle);
-            if (ex != null) {
-                throw ex;
-            }
-            if (depth == 0) {
-                vlist.doCallbacks();
-            }
-            return obj;
-        } finally {
-            passHandle = outerHandle;
-            if (closed && depth == 0) {
-                clear();
-            }
-        }
+        throw new IOException();
     }
 
     /**
@@ -492,8 +443,8 @@ public class ObjectInputStream
         if (curContext == null) {
             throw new NotActiveException("not in call to readObject");
         }
-        Object curObj = curContext.getObj();
-        ObjectStreamClass curDesc = curContext.getDesc();
+        Object curObj = null; // curContext.getObj();
+        ObjectStreamClass curDesc = null; // curContext.getDesc();
         bin.setBlockDataMode(false);
         defaultReadFields(curObj, curDesc);
         bin.setBlockDataMode(true);
@@ -530,8 +481,8 @@ public class ObjectInputStream
         if (curContext == null) {
             throw new NotActiveException("not in call to readObject");
         }
-        Object curObj = curContext.getObj();
-        ObjectStreamClass curDesc = curContext.getDesc();
+        Object curObj = null; // curContext.getObj();
+        ObjectStreamClass curDesc = null; // curContext.getDesc();
         bin.setBlockDataMode(false);
         GetFieldImpl getField = new GetFieldImpl(curDesc);
         getField.readFields();
@@ -769,17 +720,7 @@ public class ObjectInputStream
     protected boolean enableResolveObject(boolean enable)
         throws SecurityException
     {
-        if (enable == enableResolve) {
-            return enable;
-        }
-        if (enable) {
-            SecurityManager sm = System.getSecurityManager();
-            if (sm != null) {
-                sm.checkPermission(SUBSTITUTION_PERMISSION);
-            }
-        }
-        enableResolve = enable;
-        return !enableResolve;
+        throw new SecurityException();
     }
 
     /**
@@ -1233,53 +1174,7 @@ public class ObjectInputStream
         if (cl == ObjectInputStream.class) {
             return;
         }
-        SecurityManager sm = System.getSecurityManager();
-        if (sm == null) {
-            return;
-        }
-        processQueue(Caches.subclassAuditsQueue, Caches.subclassAudits);
-        WeakClassKey key = new WeakClassKey(cl, Caches.subclassAuditsQueue);
-        Boolean result = Caches.subclassAudits.get(key);
-        if (result == null) {
-            result = Boolean.valueOf(auditSubclass(cl));
-            Caches.subclassAudits.putIfAbsent(key, result);
-        }
-        if (result.booleanValue()) {
-            return;
-        }
-        sm.checkPermission(SUBCLASS_IMPLEMENTATION_PERMISSION);
-    }
-
-    /**
-     * Performs reflective checks on given subclass to verify that it doesn't
-     * override security-sensitive non-final methods.  Returns true if subclass
-     * is "safe", false otherwise.
-     */
-    private static boolean auditSubclass(final Class<?> subcl) {
-        Boolean result = AccessController.doPrivileged(
-            new PrivilegedAction<Boolean>() {
-                public Boolean run() {
-                    for (Class<?> cl = subcl;
-                         cl != ObjectInputStream.class;
-                         cl = cl.getSuperclass())
-                    {
-                        try {
-                            cl.getDeclaredMethod(
-                                "readUnshared", (Class[]) null);
-                            return Boolean.FALSE;
-                        } catch (NoSuchMethodException ex) {
-                        }
-                        try {
-                            cl.getDeclaredMethod("readFields", (Class[]) null);
-                            return Boolean.FALSE;
-                        } catch (NoSuchMethodException ex) {
-                        }
-                    }
-                    return Boolean.TRUE;
-                }
-            }
-        );
-        return result.booleanValue();
+        throw new SecurityException();
     }
 
     /**
@@ -1798,7 +1693,7 @@ public class ObjectInputStream
     private void readExternalData(Externalizable obj, ObjectStreamClass desc)
         throws IOException
     {
-        SerialCallbackContext oldContext = curContext;
+        Object oldContext = curContext;
         curContext = null;
         try {
             boolean blocked = desc.hasBlockExternalData();
@@ -1857,10 +1752,10 @@ public class ObjectInputStream
                     slotDesc.hasReadObjectMethod() &&
                     handles.lookupException(passHandle) == null)
                 {
-                    SerialCallbackContext oldContext = curContext;
+                    Object oldContext = curContext;
 
                     try {
-                        curContext = new SerialCallbackContext(obj, slotDesc);
+                        curContext = null; //new SerialCallbackContext(obj, slotDesc);
 
                         bin.setBlockDataMode(true);
                         slotDesc.invokeReadObject(obj, this);
@@ -1874,7 +1769,7 @@ public class ObjectInputStream
                          */
                         handles.markException(passHandle, ex);
                     } finally {
-                        curContext.setUsed();
+                        //curContext.setUsed();
                         curContext = oldContext;
                     }
 
@@ -2158,24 +2053,6 @@ public class ObjectInputStream
      */
     private static class ValidationList {
 
-        private static class Callback {
-            final ObjectInputValidation obj;
-            final int priority;
-            Callback next;
-            final AccessControlContext acc;
-
-            Callback(ObjectInputValidation obj, int priority, Callback next,
-                AccessControlContext acc)
-            {
-                this.obj = obj;
-                this.priority = priority;
-                this.next = next;
-                this.acc = acc;
-            }
-        }
-
-        /** linked list of callbacks */
-        private Callback list;
 
         /**
          * Creates new (empty) ValidationList.
@@ -2193,18 +2070,7 @@ public class ObjectInputStream
             if (obj == null) {
                 throw new InvalidObjectException("null callback");
             }
-
-            Callback prev = null, cur = list;
-            while (cur != null && priority < cur.priority) {
-                prev = cur;
-                cur = cur.next;
-            }
-            AccessControlContext acc = AccessController.getContext();
-            if (prev != null) {
-                prev.next = new Callback(obj, priority, cur, acc);
-            } else {
-                list = new Callback(obj, priority, list, acc);
-            }
+            throw new InvalidObjectException("Does not work.");
         }
 
         /**
@@ -2215,29 +2081,12 @@ public class ObjectInputStream
          * and the exception propagated upwards.
          */
         void doCallbacks() throws InvalidObjectException {
-            try {
-                while (list != null) {
-                    AccessController.doPrivileged(
-                        new PrivilegedExceptionAction<Void>()
-                    {
-                        public Void run() throws InvalidObjectException {
-                            list.obj.validateObject();
-                            return null;
-                        }
-                    }, list.acc);
-                    list = list.next;
-                }
-            } catch (PrivilegedActionException ex) {
-                list = null;
-                throw (InvalidObjectException) ex.getException();
-            }
         }
 
         /**
          * Resets the callback list to its initial (empty) state.
          */
         public void clear() {
-            list = null;
         }
     }
 

@@ -179,26 +179,6 @@ public interface ObjectStreamConstants {
     /* *******************************************************************/
     /* Security permissions */
 
-    /**
-     * Enable substitution of one object for another during
-     * serialization/deserialization.
-     *
-     * @see java.io.ObjectOutputStream#enableReplaceObject(boolean)
-     * @see java.io.ObjectInputStream#enableResolveObject(boolean)
-     * @since 1.2
-     */
-    final static SerializablePermission SUBSTITUTION_PERMISSION =
-                           new SerializablePermission("enableSubstitution");
-
-    /**
-     * Enable overriding of readObject and writeObject.
-     *
-     * @see java.io.ObjectOutputStream#writeObjectOverride(Object)
-     * @see java.io.ObjectInputStream#readObjectOverride()
-     * @since 1.2
-     */
-    final static SerializablePermission SUBCLASS_IMPLEMENTATION_PERMISSION =
-                    new SerializablePermission("enableSubclassImplementation");
    /**
     * A Stream Protocol Version. <p>
     *

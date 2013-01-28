@@ -25,8 +25,6 @@
 
 package java.lang.ref;
 
-import sun.misc.Cleaner;
-
 
 /**
  * Abstract base class for reference objects.  This class defines the
@@ -110,57 +108,6 @@ public abstract class Reference<T> {
      */
     private static Reference pending = null;
 
-    /* High-priority thread to enqueue pending References
-     */
-    private static class ReferenceHandler extends Thread {
-
-        ReferenceHandler(ThreadGroup g, String name) {
-            super(g, name);
-        }
-
-        public void run() {
-            for (;;) {
-
-                Reference r;
-                synchronized (lock) {
-                    if (pending != null) {
-                        r = pending;
-                        Reference rn = r.next;
-                        pending = (rn == r) ? null : rn;
-                        r.next = r;
-                    } else {
-                        try {
-                            lock.wait();
-                        } catch (InterruptedException x) { }
-                        continue;
-                    }
-                }
-
-                // Fast path for cleaners
-                if (r instanceof Cleaner) {
-                    ((Cleaner)r).clean();
-                    continue;
-                }
-
-                ReferenceQueue q = r.queue;
-                if (q != ReferenceQueue.NULL) q.enqueue(r);
-            }
-        }
-    }
-
-    static {
-        ThreadGroup tg = Thread.currentThread().getThreadGroup();
-        for (ThreadGroup tgn = tg;
-             tgn != null;
-             tg = tgn, tgn = tg.getParent());
-        Thread handler = new ReferenceHandler(tg, "Reference Handler");
-        /* If there were a special system-only priority greater than
-         * MAX_PRIORITY, it would be used here
-         */
-        handler.setPriority(Thread.MAX_PRIORITY);
-        handler.setDaemon(true);
-        handler.start();
-    }
 
 
     /* -- Referent accessor and setters -- */

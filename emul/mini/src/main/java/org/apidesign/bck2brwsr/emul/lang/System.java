@@ -47,4 +47,8 @@ public class System {
 
     @JavaScriptBody(args = {}, body = "new Date().getMilliseconds() * 1000;")
     public static native long nanoTime();
+    
+    @JavaScriptBody(args = { "obj" }, body="return vm.java_lang_Object(false).hashCode__I.call(obj);")
+    public static native int identityHashCode(Object obj);
+    
 }

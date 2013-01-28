@@ -25,17 +25,8 @@
 
 package java.lang.reflect;
 
-import sun.reflect.ConstructorAccessor;
-import sun.reflect.Reflection;
-import sun.reflect.generics.repository.ConstructorRepository;
-import sun.reflect.generics.factory.CoreReflectionFactory;
-import sun.reflect.generics.factory.GenericsFactory;
-import sun.reflect.generics.scope.ConstructorScope;
 import java.lang.annotation.Annotation;
-import java.util.Map;
-import sun.reflect.annotation.AnnotationParser;
-import java.lang.annotation.AnnotationFormatError;
-import java.lang.reflect.Modifier;
+import org.apidesign.bck2brwsr.emul.reflect.TypeProvider;
 
 /**
  * {@code Constructor} provides information about, and access to, a single
@@ -69,31 +60,10 @@ public final
     private int                 modifiers;
     // Generics and annotations support
     private transient String    signature;
-    // generic info repository; lazily initialized
-    private transient ConstructorRepository genericInfo;
     private byte[]              annotations;
     private byte[]              parameterAnnotations;
 
-    // Generics infrastructure
-    // Accessor for factory
-    private GenericsFactory getFactory() {
-        // create scope and factory
-        return CoreReflectionFactory.make(this, ConstructorScope.make(this));
-    }
 
-    // Accessor for generic info repository
-    private ConstructorRepository getGenericInfo() {
-        // lazily initialize repository if necessary
-        if (genericInfo == null) {
-            // create and cache generic info repository
-            genericInfo =
-                ConstructorRepository.make(getSignature(),
-                                           getFactory());
-        }
-        return genericInfo; //return cached repository
-    }
-
-    private volatile ConstructorAccessor constructorAccessor;
     // For sharing of ConstructorAccessors. This branching structure
     // is currently only two levels deep (i.e., one root Constructor
     // and potentially many Constructor objects pointing to it.)
@@ -129,23 +99,7 @@ public final
      * "root" field points to this Constructor.
      */
     Constructor<T> copy() {
-        // This routine enables sharing of ConstructorAccessor objects
-        // among Constructor objects which refer to the same underlying
-        // method in the VM. (All of this contortion is only necessary
-        // because of the "accessibility" bit in AccessibleObject,
-        // which implicitly requires that new java.lang.reflect
-        // objects be fabricated for each reflective call on Class
-        // objects.)
-        Constructor<T> res = new Constructor<>(clazz,
-                                                parameterTypes,
-                                                exceptionTypes, modifiers, slot,
-                                                signature,
-                                                annotations,
-                                                parameterAnnotations);
-        res.root = this;
-        // Might as well eagerly propagate this if already present
-        res.constructorAccessor = constructorAccessor;
-        return res;
+        return this;
     }
 
     /**
@@ -191,10 +145,7 @@ public final
      * @since 1.5
      */
     public TypeVariable<Constructor<T>>[] getTypeParameters() {
-      if (getSignature() != null) {
-        return (TypeVariable<Constructor<T>>[])getGenericInfo().getTypeParameters();
-      } else
-          return (TypeVariable<Constructor<T>>[])new TypeVariable[0];
+        return TypeProvider.getDefault().getTypeParameters(this);
     }
 
 
@@ -240,10 +191,7 @@ public final
      * @since 1.5
      */
     public Type[] getGenericParameterTypes() {
-        if (getSignature() != null)
-            return getGenericInfo().getParameterTypes();
-        else
-            return getParameterTypes();
+        return TypeProvider.getDefault().getGenericParameterTypes(this);
     }
 
 
@@ -284,12 +232,7 @@ public final
      * @since 1.5
      */
       public Type[] getGenericExceptionTypes() {
-          Type[] result;
-          if (getSignature() != null &&
-              ( (result = getGenericInfo().getExceptionTypes()).length > 0  ))
-              return result;
-          else
-              return getExceptionTypes();
+          return TypeProvider.getDefault().getGenericExceptionTypes(this);
       }
 
     /**
@@ -509,20 +452,7 @@ public final
         throws InstantiationException, IllegalAccessException,
                IllegalArgumentException, InvocationTargetException
     {
-        if (!override) {
-            if (!Reflection.quickCheckMemberAccess(clazz, modifiers)) {
-                Class<?> caller = Reflection.getCallerClass(2);
-
-                checkAccess(caller, clazz, null, modifiers);
-            }
-        }
-        if ((clazz.getModifiers() & Modifier.ENUM) != 0)
-            throw new IllegalArgumentException("Cannot reflectively create enum objects");
-        ConstructorAccessor ca = constructorAccessor;   // read volatile
-        if (ca == null) {
-            ca = acquireConstructorAccessor();
-        }
-        return (T) ca.newInstance(initargs);
+        throw new SecurityException();
     }
 
     /**
@@ -551,43 +481,6 @@ public final
         return Modifier.isSynthetic(getModifiers());
     }
 
-    // NOTE that there is no synchronization used here. It is correct
-    // (though not efficient) to generate more than one
-    // ConstructorAccessor for a given Constructor. However, avoiding
-    // synchronization will probably make the implementation more
-    // scalable.
-    private ConstructorAccessor acquireConstructorAccessor() {
-        // First check to see if one has been created yet, and take it
-        // if so.
-        ConstructorAccessor tmp = null;
-        if (root != null) tmp = root.getConstructorAccessor();
-        if (tmp != null) {
-            constructorAccessor = tmp;
-        } else {
-            // Otherwise fabricate one and propagate it up to the root
-            tmp = reflectionFactory.newConstructorAccessor(this);
-            setConstructorAccessor(tmp);
-        }
-
-        return tmp;
-    }
-
-    // Returns ConstructorAccessor for this Constructor object, not
-    // looking up the chain to the root
-    ConstructorAccessor getConstructorAccessor() {
-        return constructorAccessor;
-    }
-
-    // Sets the ConstructorAccessor for this Constructor object and
-    // (recursively) its root
-    void setConstructorAccessor(ConstructorAccessor accessor) {
-        constructorAccessor = accessor;
-        // Propagate up
-        if (root != null) {
-            root.setConstructorAccessor(accessor);
-        }
-    }
-
     int getSlot() {
         return slot;
     }
@@ -612,26 +505,14 @@ public final
         if (annotationClass == null)
             throw new NullPointerException();
 
-        return (T) declaredAnnotations().get(annotationClass);
+        return null; // XXX (T) declaredAnnotations().get(annotationClass);
     }
 
     /**
      * @since 1.5
      */
     public Annotation[] getDeclaredAnnotations()  {
-        return AnnotationParser.toArray(declaredAnnotations());
-    }
-
-    private transient Map<Class<? extends Annotation>, Annotation> declaredAnnotations;
-
-    private synchronized  Map<Class<? extends Annotation>, Annotation> declaredAnnotations() {
-        if (declaredAnnotations == null) {
-            declaredAnnotations = AnnotationParser.parseAnnotations(
-                annotations, sun.misc.SharedSecrets.getJavaLangAccess().
-                getConstantPool(getDeclaringClass()),
-                getDeclaringClass());
-        }
-        return declaredAnnotations;
+        return new Annotation[0]; // XXX AnnotationParser.toArray(declaredAnnotations());
     }
 
     /**
@@ -654,7 +535,9 @@ public final
         int numParameters = parameterTypes.length;
         if (parameterAnnotations == null)
             return new Annotation[numParameters][0];
-
+        
+        return new Annotation[numParameters][0]; // XXX
+/*
         Annotation[][] result = AnnotationParser.parseParameterAnnotations(
             parameterAnnotations,
             sun.misc.SharedSecrets.getJavaLangAccess().
@@ -679,5 +562,6 @@ public final
             }
         }
         return result;
+        */
     }
 }

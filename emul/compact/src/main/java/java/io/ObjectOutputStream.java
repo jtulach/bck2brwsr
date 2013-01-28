@@ -25,17 +25,10 @@
 
 package java.io;
 
-import java.io.ObjectStreamClass.WeakClassKey;
-import java.lang.ref.ReferenceQueue;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import static java.io.ObjectStreamClass.processQueue;
-import java.io.SerialCallbackContext;
+import org.apidesign.bck2brwsr.emul.lang.System;
 
 /**
  * An ObjectOutputStream writes primitive data types and graphs of Java objects
@@ -161,17 +154,6 @@ import java.io.SerialCallbackContext;
 public class ObjectOutputStream
     extends OutputStream implements ObjectOutput, ObjectStreamConstants
 {
-
-    private static class Caches {
-        /** cache of subclass security audit results */
-        static final ConcurrentMap<WeakClassKey,Boolean> subclassAudits =
-            new ConcurrentHashMap<>();
-
-        /** queue for WeakReferences to audited subclasses */
-        static final ReferenceQueue<Class<?>> subclassAuditsQueue =
-            new ReferenceQueue<>();
-    }
-
     /** filter stream for handling block data conversion */
     private final BlockDataOutputStream bout;
     /** obj -> wire handle map */
@@ -197,7 +179,7 @@ public class ObjectOutputStream
      * object currently being serialized and descriptor for current class.
      * Null when not during writeObject upcall.
      */
-    private SerialCallbackContext curContext;
+    private Object curContext;
     /** current PutField object */
     private PutFieldImpl curPut;
 
@@ -208,10 +190,7 @@ public class ObjectOutputStream
      * value of "sun.io.serialization.extendedDebugInfo" property,
      * as true or false for extended information about exception's place
      */
-    private static final boolean extendedDebugInfo =
-        java.security.AccessController.doPrivileged(
-            new sun.security.action.GetBooleanAction(
-                "sun.io.serialization.extendedDebugInfo")).booleanValue();
+    private static final boolean extendedDebugInfo = false;
 
     /**
      * Creates an ObjectOutputStream that writes to the specified OutputStream.
@@ -268,15 +247,7 @@ public class ObjectOutputStream
      * @see java.io.SerializablePermission
      */
     protected ObjectOutputStream() throws IOException, SecurityException {
-        SecurityManager sm = System.getSecurityManager();
-        if (sm != null) {
-            sm.checkPermission(SUBCLASS_IMPLEMENTATION_PERMISSION);
-        }
-        bout = null;
-        handles = null;
-        subs = null;
-        enableOverride = true;
-        debugInfoStack = null;
+        throw new SecurityException();
     }
 
     /**
@@ -432,8 +403,8 @@ public class ObjectOutputStream
         if ( curContext == null ) {
             throw new NotActiveException("not in call to writeObject");
         }
-        Object curObj = curContext.getObj();
-        ObjectStreamClass curDesc = curContext.getDesc();
+        Object curObj = null; // curContext.getObj();
+        ObjectStreamClass curDesc = null; // curContext.getDesc();
         bout.setBlockDataMode(false);
         defaultWriteFields(curObj, curDesc);
         bout.setBlockDataMode(true);
@@ -454,8 +425,8 @@ public class ObjectOutputStream
             if (curContext == null) {
                 throw new NotActiveException("not in call to writeObject");
             }
-            Object curObj = curContext.getObj();
-            ObjectStreamClass curDesc = curContext.getDesc();
+            Object curObj = null; // curContext.getObj();
+            ObjectStreamClass curDesc = null; // curContext.getDesc();
             curPut = new PutFieldImpl(curDesc);
         }
         return curPut;
@@ -607,17 +578,7 @@ public class ObjectOutputStream
     protected boolean enableReplaceObject(boolean enable)
         throws SecurityException
     {
-        if (enable == enableReplace) {
-            return enable;
-        }
-        if (enable) {
-            SecurityManager sm = System.getSecurityManager();
-            if (sm != null) {
-                sm.checkPermission(SUBSTITUTION_PERMISSION);
-            }
-        }
-        enableReplace = enable;
-        return !enableReplace;
+        throw new SecurityException();
     }
 
     /**
@@ -1038,53 +999,7 @@ public class ObjectOutputStream
         if (cl == ObjectOutputStream.class) {
             return;
         }
-        SecurityManager sm = System.getSecurityManager();
-        if (sm == null) {
-            return;
-        }
-        processQueue(Caches.subclassAuditsQueue, Caches.subclassAudits);
-        WeakClassKey key = new WeakClassKey(cl, Caches.subclassAuditsQueue);
-        Boolean result = Caches.subclassAudits.get(key);
-        if (result == null) {
-            result = Boolean.valueOf(auditSubclass(cl));
-            Caches.subclassAudits.putIfAbsent(key, result);
-        }
-        if (result.booleanValue()) {
-            return;
-        }
-        sm.checkPermission(SUBCLASS_IMPLEMENTATION_PERMISSION);
-    }
-
-    /**
-     * Performs reflective checks on given subclass to verify that it doesn't
-     * override security-sensitive non-final methods.  Returns true if subclass
-     * is "safe", false otherwise.
-     */
-    private static boolean auditSubclass(final Class subcl) {
-        Boolean result = AccessController.doPrivileged(
-            new PrivilegedAction<Boolean>() {
-                public Boolean run() {
-                    for (Class cl = subcl;
-                         cl != ObjectOutputStream.class;
-                         cl = cl.getSuperclass())
-                    {
-                        try {
-                            cl.getDeclaredMethod(
-                                "writeUnshared", new Class[] { Object.class });
-                            return Boolean.FALSE;
-                        } catch (NoSuchMethodException ex) {
-                        }
-                        try {
-                            cl.getDeclaredMethod("putFields", (Class[]) null);
-                            return Boolean.FALSE;
-                        } catch (NoSuchMethodException ex) {
-                        }
-                    }
-                    return Boolean.TRUE;
-                }
-            }
-        );
-        return result.booleanValue();
+        throw new SecurityException();
     }
 
     /**
@@ -1433,7 +1348,7 @@ public class ObjectOutputStream
         if (extendedDebugInfo) {
             debugInfoStack.push("writeExternal data");
         }
-        SerialCallbackContext oldContext = curContext;
+        Object oldContext = curContext;
         try {
             curContext = null;
             if (protocol == PROTOCOL_VERSION_1) {
@@ -1467,7 +1382,7 @@ public class ObjectOutputStream
             if (slotDesc.hasWriteObjectMethod()) {
                 PutFieldImpl oldPut = curPut;
                 curPut = null;
-                SerialCallbackContext oldContext = curContext;
+                Object oldContext = curContext;
 
                 if (extendedDebugInfo) {
                     debugInfoStack.push(
@@ -1475,13 +1390,13 @@ public class ObjectOutputStream
                         slotDesc.getName() + "\")");
                 }
                 try {
-                    curContext = new SerialCallbackContext(obj, slotDesc);
+                    curContext = new Object(); //new SerialCallbackContext(obj, slotDesc);
                     bout.setBlockDataMode(true);
                     slotDesc.invokeWriteObject(obj, this);
                     bout.setBlockDataMode(false);
                     bout.writeByte(TC_ENDBLOCKDATA);
                 } finally {
-                    curContext.setUsed();
+                    //curContext.setUsed();
                     curContext = oldContext;
                     if (extendedDebugInfo) {
                         debugInfoStack.pop();
