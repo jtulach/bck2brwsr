@@ -146,6 +146,22 @@ public class StaticMethodTest {
         );
     }
 
+    @Test public void ieeeReminder1() throws Exception {
+        assertExec(
+            "Same result 1",
+            Math.class, "IEEEremainder__DDD", 
+            Math.IEEEremainder(10.0, 4.5), 10.0, 4.5
+        );
+    }
+
+    @Test public void ieeeReminder2() throws Exception {
+        assertExec(
+            "Same result 1",
+            Math.class, "IEEEremainder__DDD", 
+            Math.IEEEremainder(Integer.MAX_VALUE, -4.5), Integer.MAX_VALUE, -4.5
+        );
+    }
+
     @Test public void divAndRound() throws Exception {
         assertExec(
             "Should be rounded to one",

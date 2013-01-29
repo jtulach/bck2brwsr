@@ -397,9 +397,9 @@ public final class Math {
      * @return  the remainder when {@code f1} is divided by
      *          {@code f2}.
      */
-//    public static double IEEEremainder(double f1, double f2) {
-//        return f1 % f2;
-//    }
+    public static double IEEEremainder(double f1, double f2) {
+        return f1 - (f2 * Math.round(f1 / f2));
+    }
 
     /**
      * Returns the {@code double} value that is closest in value
