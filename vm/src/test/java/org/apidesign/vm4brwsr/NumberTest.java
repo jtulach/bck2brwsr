@@ -144,6 +144,13 @@ public class NumberTest {
         );
     }
     
+    @Test public void longConversion() throws Exception {
+        assertExec("Long from cPool",
+            Numbers.class, "conversionL__J", 
+            Double.valueOf(Long.MAX_VALUE)
+        );
+    }
+    
     private static CharSequence codeSeq;
     private static Invocable code;
 

@@ -47,6 +47,7 @@ class TestUtils {
             // in case of Long it is necessary convert it to number
             // since the Long is represented by two numbers in JavaScript
             try {
+                ret = code.invokeMethod(ret, "toFP");
                 ret = code.invokeFunction("Number", ret);
             } catch (ScriptException ex) {
                 fail("Conversion to number failed in " + StaticMethodTest.dumpJS(codeSeq), ex);

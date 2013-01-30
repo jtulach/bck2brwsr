@@ -67,4 +67,28 @@ public class Numbers {
     static String floatToString() {
         return new Float(7.0).toString().toString();
     }
+    
+    public static long conversionL() {
+        return Long.MAX_VALUE;
+    }
+    
+    public static long addL(long x, long y) {
+        return (x + y);
+    }
+    
+    public static long subL(long x, long y) {
+        return (x - y);
+    }
+    
+    public static long mulL(long x, long y) {
+        return (x * y);
+    }
+    
+    public static long divL(long x, long y) {
+        return (x / y);
+    }
+    
+    public static long modL(long x, long y) {
+        return (x % y);
+    }
 }

@@ -8,6 +8,8 @@ Number.prototype.mul32 = function(x) {
 Number.prototype.toInt8 = function()  { return (this << 24) >> 24; };
 Number.prototype.toInt16 = function() { return (this << 16) >> 16; };
 
+var __m32 = 0xFFFFFFFF;
+
 Number.prototype.next32 = function(low) {
   if (this === 0) {
     return low;
@@ -18,15 +20,15 @@ Number.prototype.next32 = function(low) {
 };
 
 Number.prototype.high32 = function() { 
-    return this.hi ? this.hi : (Math.floor(this / 0xFFFFFFFF)) | 0;
+    return this.hi ? this.hi : (Math.floor(this / (__m32+1))) | 0;
 };
 Number.prototype.toInt32 = function() { return this | 0; };
 Number.prototype.toFP = function() {
-    return this.hi ? this.hi * 0xFFFFFFFF + this : this;
+    return this.hi ? this.hi * (__m32+1) + this : this;
 };
 Number.prototype.toLong = function() {
-    var hi = (this > 0xFFFFFFFF) ? (Math.floor(this / 0xFFFFFFFF)) | 0 : 0;
-    return hi.next32(this % 0xFFFFFFFF);
+    var hi = (this > __m32) ? (Math.floor(this / (__m32+1))) | 0 : 0;
+    return hi.next32(this % (__m32+1));
 };
 
 Number.prototype.toExactString = function() {
@@ -59,20 +61,29 @@ Number.prototype.toExactString = function() {
 Number.prototype.add64 = function(x) {
     var low = this + x;
     carry = 0;
-    if (low > 0xFFFFFFFF) {
+    if (low > __m32) {
         carry = 1;
-        low -= 0xFFFFFFFF;  // should not here be also -1?
+        low -= (__m32+1);
     }
-    var hi = (this.high32() + x.high32() + carry) & 0xFFFFFFFF;
+    var hi = (this.high32() + x.high32() + carry) | 0;
     return hi.next32(low);
 };
 
 Number.prototype.div64 = function(x) {
     var low = Math.floor(this.toFP() / x.toFP()); // TODO: not exact enough
-    if (low > 0xFFFFFFFF) {
-        var hi = Math.floor(low / 0xFFFFFFFF) | 0;
-        return hi.next32(low % 0xFFFFFFFF);
+    if (low > __m32) {
+        var hi = Math.floor(low / (__m32+1)) | 0;
+        return hi.next32(low % (__m32+1));
     }
+    return low;
+};
+
+Number.prototype.and64 = function(x) {
+    var low = this & x;
+    if (this.hi && x.hi) {
+        var hi = this.hi & x.hi;
+        return hi.next32(low);
+    };
     return low;
 };
 
@@ -82,9 +93,22 @@ Number.prototype.shl64 = function(x) {
         return hi.next32(0);
     } else {
         var hi = (this.high32() << x) & 0xFFFFFFFF;
-        var low_reminder = this >> x;
+        var low_reminder = this >> (32 - x);
         hi |= low_reminder;
         var low = this << x;
+        return hi.next32(low);
+    }
+};
+
+Number.prototype.shr64 = function(x) {
+    if (x > 32) {
+        var low = (this.high32() >> (x - 32)) & 0xFFFFFFFF;
+        return low;
+    } else {
+        var low = (this >> x) & 0xFFFFFFFF;
+        var hi_reminder = (this.high32() << (32 - x)) >> (32 - x);
+        low |= hi_reminder;
+        var hi = this.high32() >> x;
         return hi.next32(low);
     }
 };

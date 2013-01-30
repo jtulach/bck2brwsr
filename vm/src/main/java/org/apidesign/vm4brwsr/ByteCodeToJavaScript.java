@@ -582,7 +582,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 &= @2;", smapper.getI(1), smapper.popI());
                     break;
                 case opc_land:
-                    emit(out, "@1 &= @2;", smapper.getL(1), smapper.popL());
+                    emit(out, "@1 = @1.and64(@2);", smapper.getL(1), smapper.popL());
                     break;
                 case opc_ior:
                     emit(out, "@1 |= @2;", smapper.getI(1), smapper.popI());
@@ -618,7 +618,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 >>= @2;", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lshr:
-                    emit(out, "@1 >>= @2;", smapper.getL(1), smapper.popI());
+                    emit(out, "@1 = @1.shr64(@2);", smapper.getL(1), smapper.popI());
                     break;
                 case opc_iushr:
                     emit(out, "@1 >>>= @2;", smapper.getI(1), smapper.popI());
