@@ -64,7 +64,7 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
     private Object[] brwsr;
     private HttpServer server;
     private CountDownLatch wait;
-
+    
     public Bck2BrwsrLauncher(String cmd) {
         this.cmd = cmd;
     }
@@ -94,8 +94,20 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
         if (!startpage.startsWith("/")) {
             startpage = "/" + startpage;
         }
-        HttpServer s = initServer();
+        HttpServer s = initServer(".", true);
         s.getServerConfiguration().addHttpHandler(new Page(resources, null), "/");
+        try {
+            launchServerAndBrwsr(s, startpage);
+        } catch (URISyntaxException | InterruptedException ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    void showDirectory(File dir, String startpage) throws IOException {
+        if (!startpage.startsWith("/")) {
+            startpage = "/" + startpage;
+        }
+        HttpServer s = initServer(dir.getPath(), false);
         try {
             launchServerAndBrwsr(s, startpage);
         } catch (URISyntaxException | InterruptedException ex) {
@@ -122,18 +134,20 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
         }
     }
     
-    private HttpServer initServer() throws IOException {
-        HttpServer s = HttpServer.createSimpleServer(".", new PortRange(8080, 65535));
+    private HttpServer initServer(String path, boolean addClasses) throws IOException {
+        HttpServer s = HttpServer.createSimpleServer(path, new PortRange(8080, 65535));
 
         final ServerConfiguration conf = s.getServerConfiguration();
-        conf.addHttpHandler(new VM(resources), "/vm.js");
-        conf.addHttpHandler(new Classes(resources), "/classes/");
+        if (addClasses) {
+            conf.addHttpHandler(new VM(resources), "/vm.js");
+            conf.addHttpHandler(new Classes(resources), "/classes/");
+        }
         return s;
     }
     
     private void executeInBrowser() throws InterruptedException, URISyntaxException, IOException {
         wait = new CountDownLatch(1);
-        server = initServer();
+        server = initServer(".", true);
         ServerConfiguration conf = server.getServerConfiguration();
         conf.addHttpHandler(new Page(resources, 
             "org/apidesign/bck2brwsr/launcher/harness.xhtml"

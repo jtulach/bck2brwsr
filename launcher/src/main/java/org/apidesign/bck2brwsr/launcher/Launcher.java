@@ -18,6 +18,7 @@
 package org.apidesign.bck2brwsr.launcher;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.net.URLClassLoader;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
@@ -60,4 +61,10 @@ public abstract class Launcher {
         l.showURL(startpage);
         return l;
     }
+    public static Closeable showDir(File directory, String startpage) throws IOException {
+        Bck2BrwsrLauncher l = new Bck2BrwsrLauncher(null);
+        l.showDirectory(directory, startpage);
+        return l;
+    }
+
 }
