@@ -201,6 +201,10 @@ public final class String
      *          If the {@code offset} and {@code count} arguments index
      *          characters outside the bounds of the {@code value} array
      */
+    public String(char value[], int offset, int count) {
+        initFromCharArray(value, offset, count);
+    }
+    
     @JavaScriptBody(args = { "charArr", "off", "cnt" }, body =
         "var up = off + cnt;\n" +
         "for (var i = off; i < up; i++) {\n" +
@@ -208,8 +212,7 @@ public final class String
         "}\n" +
         "this._r(charArr.slice(off, up).join(\"\"));\n"
     )
-    public String(char value[], int offset, int count) {
-    }
+    private native void initFromCharArray(char value[], int offset, int count);
 
     /**
      * Allocates a new {@code String} that contains characters from a subarray
@@ -555,7 +558,7 @@ public final class String
             int ch = nextChar(bytes, at);
             v[chlen++] = (char)ch;
         }
-        this.r = new String(v, 0, chlen);
+        initFromCharArray(v, 0, chlen);
     }
 
     /**

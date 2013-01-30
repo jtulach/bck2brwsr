@@ -33,7 +33,7 @@ package java.util.zip;
  */
 public
 class CRC32 implements Checksum {
-    private int crc;
+    private int crc = 0xFFFFFFFF;
 
     /**
      * Creates a new CRC32 object.
@@ -49,7 +49,8 @@ class CRC32 implements Checksum {
      * @param b the byte to update the checksum with
      */
     public void update(int b) {
-        crc = update(crc, b);
+        byte[] arr = { (byte)b };
+        update(arr);
     }
 
     /**
@@ -88,6 +89,25 @@ class CRC32 implements Checksum {
         return (long)crc & 0xffffffffL;
     }
 
-    private native static int update(int crc, int b);
-    private native static int updateBytes(int crc, byte[] b, int off, int len);
+    // XXX: taken from 
+    // http://introcs.cs.princeton.edu/java/51data/CRC32.java.html
+    private static int updateBytes(int crc, byte[] arr, int off, int len) {
+        int poly = 0xEDB88320;   // reverse polynomial
+
+        while (len-- > 0) {
+            byte b = arr[off++];
+            int temp = (crc ^ b) & 0xff;
+
+            // read 8 bits one at a time
+            for (int i = 0; i < 8; i++) {
+                if ((temp & 1) == 1) {
+                    temp = (temp >>> 1) ^ poly;
+                } else {
+                    temp = (temp >>> 1);
+                }
+            }
+            crc = (crc >>> 8) ^ temp;
+        }
+        return crc ^ 0xffffffff;
+    }
 }

@@ -25,8 +25,6 @@
 
 package java.util.zip;
 
-import java.util.Date;
-
 /**
  * This class is used to represent a ZIP file entry.
  *
@@ -281,6 +279,8 @@ class ZipEntry implements ZipConstants, Cloneable {
      * Converts DOS time to Java time (number of milliseconds since epoch).
      */
     private static long dosToJavaTime(long dtime) {
+        return dtime;
+        /* XXX:
         Date d = new Date((int)(((dtime >> 25) & 0x7f) + 80),
                           (int)(((dtime >> 21) & 0x0f) - 1),
                           (int)((dtime >> 16) & 0x1f),
@@ -288,12 +288,15 @@ class ZipEntry implements ZipConstants, Cloneable {
                           (int)((dtime >> 5) & 0x3f),
                           (int)((dtime << 1) & 0x3e));
         return d.getTime();
+        */
     }
 
     /*
      * Converts Java time to DOS time.
      */
     private static long javaToDosTime(long time) {
+        return time;
+        /* XXX:
         Date d = new Date(time);
         int year = d.getYear() + 1900;
         if (year < 1980) {
@@ -302,6 +305,7 @@ class ZipEntry implements ZipConstants, Cloneable {
         return (year - 1980) << 25 | (d.getMonth() + 1) << 21 |
                d.getDate() << 16 | d.getHours() << 11 | d.getMinutes() << 5 |
                d.getSeconds() >> 1;
+        */
     }
 
     /**
@@ -321,7 +325,7 @@ class ZipEntry implements ZipConstants, Cloneable {
             return e;
         } catch (CloneNotSupportedException e) {
             // This should never happen, since we are Cloneable
-            throw new InternalError();
+            throw new IllegalStateException();
         }
     }
 }

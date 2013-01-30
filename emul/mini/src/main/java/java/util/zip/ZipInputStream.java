@@ -29,9 +29,8 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.EOFException;
 import java.io.PushbackInputStream;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import static java.util.zip.ZipConstants64.*;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
  * This class implements an input stream filter for reading files in the
@@ -56,8 +55,6 @@ class ZipInputStream extends InflaterInputStream implements ZipConstants {
     // one entry
     private boolean entryEOF = false;
 
-    private ZipCoder zc;
-
     /**
      * Check to make sure that this stream has not been closed
      */
@@ -76,7 +73,12 @@ class ZipInputStream extends InflaterInputStream implements ZipConstants {
      * @param in the actual input stream
      */
     public ZipInputStream(InputStream in) {
-        this(in, StandardCharsets.UTF_8);
+//        this(in, "UTF-8");
+        super(new PushbackInputStream(in, 512), new Inflater(true), 512);
+        usesDefaultInflater = true;
+        if(in == null) {
+            throw new NullPointerException("in is null");
+        }
     }
 
     /**
@@ -92,7 +94,7 @@ class ZipInputStream extends InflaterInputStream implements ZipConstants {
      *        flag is set).
      *
      * @since 1.7
-     */
+     *
     public ZipInputStream(InputStream in, Charset charset) {
         super(new PushbackInputStream(in, 512), new Inflater(true), 512);
         usesDefaultInflater = true;
@@ -103,6 +105,7 @@ class ZipInputStream extends InflaterInputStream implements ZipConstants {
             throw new NullPointerException("charset is null");
         this.zc = ZipCoder.get(charset);
     }
+    */
 
     /**
      * Reads the next ZIP file entry and positions the stream at the
@@ -295,8 +298,8 @@ class ZipInputStream extends InflaterInputStream implements ZipConstants {
         readFully(b, 0, len);
         // Force to use UTF-8 if the EFS bit is ON, even the cs is NOT UTF-8
         ZipEntry e = createZipEntry(((flag & EFS) != 0)
-                                    ? zc.toStringUTF8(b, len)
-                                    : zc.toString(b, len));
+                                    ? toStringUTF8(b, len)
+                                    : toString(b, len));
         // now get the remaining fields for the entry
         if ((flag & 1) == 1) {
             throw new ZipException("encrypted ZIP entry not supported");
@@ -452,5 +455,13 @@ class ZipInputStream extends InflaterInputStream implements ZipConstants {
      */
     private static final long get64(byte b[], int off) {
         return get32(b, off) | (get32(b, off+4) << 32);
+    }
+
+    private static String toStringUTF8(byte[] arr, int len) {
+        return new String(arr, 0, len);
+    }
+    
+    private static String toString(byte[] b, int len) {
+        return new String(b, 0, len);
     }
 }

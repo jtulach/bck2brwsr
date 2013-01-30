@@ -25,6 +25,9 @@
 
 package java.util.zip;
 
+import org.apidesign.bck2brwsr.core.ExtraJavaScript;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+
 /**
  * This class provides support for general purpose decompression using the
  * popular ZLIB compression library. The ZLIB compression library was
@@ -70,21 +73,18 @@ package java.util.zip;
  * @author      David Connelly
  *
  */
+@ExtraJavaScript(
+    resource = "/org/apidesign/vm4brwsr/emul/zip/js-inflate.min.js"
+)
 public
 class Inflater {
-
-    private final ZStreamRef zsRef;
-    private byte[] buf = defaultBuf;
-    private int off, len;
+    private String data = "";
+    private int offset;
+    private long counter;
     private boolean finished;
     private boolean needDict;
 
     private static final byte[] defaultBuf = new byte[0];
-
-    static {
-        /* Zip library is loaded from System.initializeSystemClass */
-        initIDs();
-    }
 
     /**
      * Creates a new decompressor. If the parameter 'nowrap' is true then
@@ -98,7 +98,6 @@ class Inflater {
      * @param nowrap if true then support GZIP compatible compression
      */
     public Inflater(boolean nowrap) {
-        zsRef = new ZStreamRef(init(nowrap));
     }
 
     /**
@@ -124,11 +123,7 @@ class Inflater {
         if (off < 0 || len < 0 || off > b.length - len) {
             throw new ArrayIndexOutOfBoundsException();
         }
-        synchronized (zsRef) {
-            this.buf = b;
-            this.off = off;
-            this.len = len;
-        }
+        data = (String) infl(b, off, len);
     }
 
     /**
@@ -160,11 +155,7 @@ class Inflater {
         if (off < 0 || len < 0 || off > b.length - len) {
             throw new ArrayIndexOutOfBoundsException();
         }
-        synchronized (zsRef) {
-            ensureOpen();
-            setDictionary(zsRef.address(), b, off, len);
-            needDict = false;
-        }
+        needDict = false;
     }
 
     /**
@@ -187,9 +178,7 @@ class Inflater {
      * @return the total number of bytes remaining in the input buffer
      */
     public int getRemaining() {
-        synchronized (zsRef) {
-            return len;
-        }
+        return data.length() - offset;
     }
 
     /**
@@ -199,9 +188,7 @@ class Inflater {
      * @return true if no data remains in the input buffer
      */
     public boolean needsInput() {
-        synchronized (zsRef) {
-            return len <= 0;
-        }
+        return getRemaining() <= 0;
     }
 
     /**
@@ -210,9 +197,7 @@ class Inflater {
      * @see Inflater#setDictionary
      */
     public boolean needsDictionary() {
-        synchronized (zsRef) {
-            return needDict;
-        }
+        return needDict;
     }
 
     /**
@@ -222,9 +207,7 @@ class Inflater {
      * reached
      */
     public boolean finished() {
-        synchronized (zsRef) {
-            return finished;
-        }
+        return finished;
     }
 
     /**
@@ -251,11 +234,21 @@ class Inflater {
         if (off < 0 || len < 0 || off > b.length - len) {
             throw new ArrayIndexOutOfBoundsException();
         }
-        synchronized (zsRef) {
-            ensureOpen();
-            return inflateBytes(zsRef.address(), b, off, len);
+        int cnt = 0;
+        while (offset < data.length()) {
+            b[off++] = (byte)data.charAt(offset++);
+            cnt++;
+            counter++;
         }
+        return cnt;
     }
+    
+    @JavaScriptBody(args = { "arr", "offset", "len" }, body = 
+          "var r = {};\n"
+        + "r.charCodeAt = function(idx) { return arr[offset + idx]; };\n"
+        + "return JSInflate.inflate(r);"
+    )
+    private static native Object infl(byte[] arr, int offset, int len);
 
     /**
      * Uncompresses bytes into specified buffer. Returns actual number
@@ -279,10 +272,7 @@ class Inflater {
      * @return the ADLER-32 value of the uncompressed data
      */
     public int getAdler() {
-        synchronized (zsRef) {
-            ensureOpen();
-            return getAdler(zsRef.address());
-        }
+        return 0;
     }
 
     /**
@@ -305,10 +295,7 @@ class Inflater {
      * @since 1.5
      */
     public long getBytesRead() {
-        synchronized (zsRef) {
-            ensureOpen();
-            return getBytesRead(zsRef.address());
-        }
+        return counter;
     }
 
     /**
@@ -331,24 +318,17 @@ class Inflater {
      * @since 1.5
      */
     public long getBytesWritten() {
-        synchronized (zsRef) {
-            ensureOpen();
-            return getBytesWritten(zsRef.address());
-        }
+        return counter;
     }
 
     /**
      * Resets inflater so that a new set of input data can be processed.
      */
     public void reset() {
-        synchronized (zsRef) {
-            ensureOpen();
-            reset(zsRef.address());
-            buf = defaultBuf;
-            finished = false;
-            needDict = false;
-            off = len = 0;
-        }
+        data = "";
+        finished = false;
+        needDict = false;
+        offset = 0;
     }
 
     /**
@@ -359,44 +339,5 @@ class Inflater {
      * object is undefined.
      */
     public void end() {
-        synchronized (zsRef) {
-            long addr = zsRef.address();
-            zsRef.clear();
-            if (addr != 0) {
-                end(addr);
-                buf = null;
-            }
-        }
     }
-
-    /**
-     * Closes the decompressor when garbage is collected.
-     */
-    protected void finalize() {
-        end();
-    }
-
-    private void ensureOpen () {
-        assert Thread.holdsLock(zsRef);
-        if (zsRef.address() == 0)
-            throw new NullPointerException("Inflater has been closed");
-    }
-
-    boolean ended() {
-        synchronized (zsRef) {
-            return zsRef.address() == 0;
-        }
-    }
-
-    private native static void initIDs();
-    private native static long init(boolean nowrap);
-    private native static void setDictionary(long addr, byte[] b, int off,
-                                             int len);
-    private native int inflateBytes(long addr, byte[] b, int off, int len)
-            throws DataFormatException;
-    private native static int getAdler(long addr);
-    private native static long getBytesRead(long addr);
-    private native static long getBytesWritten(long addr);
-    private native static void reset(long addr);
-    private native static void end(long addr);
 }
