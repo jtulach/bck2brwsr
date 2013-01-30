@@ -27,7 +27,34 @@ Number.prototype.toFP = function() {
 Number.prototype.toLong = function() {
     var hi = (this > 0xFFFFFFFF) ? (Math.floor(this / 0xFFFFFFFF)) | 0 : 0;
     return hi.next32(this % 0xFFFFFFFF);
-}
+};
+
+Number.prototype.toExactString = function() {
+    if (this.hi) {
+        var res = 0;
+        var a = [ 6,9,2,7,6,9,4,9,2,4 ];
+        var s = '';
+        var digit;
+        var hi = this.hi;
+        var low = this;
+        for (var i = 0; i < a.length; i++) {
+            res += hi * a[i];
+            var low_digit = low % 10;
+            digit = (res % 10) + low_digit;
+
+            low = Math.floor(low / 10);
+            res = Math.floor(res / 10);
+
+            if (digit >= 10) {
+                digit -= 10;
+                res++;
+            }
+            s = String(digit).concat(s);
+        }
+        return String(res).concat(s);
+    }
+    return String(this);
+};
 
 Number.prototype.add64 = function(x) {
     var low = this + x;
