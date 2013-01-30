@@ -42,7 +42,7 @@
                 <configuration>
                     <executable>xdg-open</executable>
                     <arguments>
-                        <argument>${project.build.directory}/classes/org/apidesign/bck2brwsr/demo/calc/staticcompilation/Calculator.xhtml</argument>
+                        <argument>${project.build.directory}/${project.build.finalName}-bck2brwsr/public_html/index.xhtml</argument>
                     </arguments>
                 </configuration>
             </plugin>
@@ -55,6 +55,24 @@
                <target>1.7</target>
             </configuration>
          </plugin>
+         <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
+                    <execution>
+                        <id>distro-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>src/main/assembly/bck2brwsr.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>                
+            </plugin>      
       </plugins>
   </build>
 
@@ -63,6 +81,12 @@
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>emul.mini</artifactId>
       <version>0.3-SNAPSHOT</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>org-openide-util-lookup</artifactId>
+          <groupId>org.netbeans.api</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
