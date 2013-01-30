@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Comparator;
 import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
@@ -415,17 +416,11 @@ public final class String
      *
      * @since  JDK1.1
      */
-//    public String(byte bytes[], int offset, int length, String charsetName)
-//        throws UnsupportedEncodingException
-//    {
-//        if (charsetName == null)
-//            throw new NullPointerException("charsetName");
-//        checkBounds(bytes, offset, length);
-//        char[] v = StringCoding.decode(charsetName, bytes, offset, length);
-//        this.offset = 0;
-//        this.count = v.length;
-//        this.value = v;
-//    }
+    public String(byte bytes[], int offset, int length, String charsetName)
+        throws UnsupportedEncodingException
+    {
+        this(checkUTF8(bytes, charsetName), offset, length);
+    }
 
     /**
      * Constructs a new {@code String} by decoding the specified subarray of
@@ -492,11 +487,11 @@ public final class String
      *
      * @since  JDK1.1
      */
-//    public String(byte bytes[], String charsetName)
-//        throws UnsupportedEncodingException
-//    {
-//        this(bytes, 0, bytes.length, charsetName);
-//    }
+    public String(byte bytes[], String charsetName)
+        throws UnsupportedEncodingException
+    {
+        this(bytes, 0, bytes.length, charsetName);
+    }
 
     /**
      * Constructs a new {@code String} by decoding the specified array of
@@ -553,10 +548,14 @@ public final class String
     public String(byte bytes[], int offset, int length) {
         checkBounds(bytes, offset, length);
         char[] v  = new char[length];
-        for (int i = 0; i < length; i++) {
-            v[i] = (char)bytes[offset++];
+        int[] at = { offset };
+        int end = offset + length;
+        int chlen = 0;
+        while (at[0] < end) {
+            int ch = nextChar(bytes, at);
+            v[chlen++] = (char)ch;
         }
-        this.r = new String(v, 0, v.length);
+        this.r = new String(v, 0, chlen);
     }
 
     /**
@@ -925,12 +924,12 @@ public final class String
      *
      * @since  JDK1.1
      */
-//    public byte[] getBytes(String charsetName)
-//        throws UnsupportedEncodingException
-//    {
-//        if (charsetName == null) throw new NullPointerException();
-//        return StringCoding.encode(charsetName, value, offset, count);
-//    }
+    public byte[] getBytes(String charsetName)
+        throws UnsupportedEncodingException
+    {
+        checkUTF8(null, charsetName);
+        return getBytes();
+    }
 
     /**
      * Encodes this {@code String} into a sequence of bytes using the given
@@ -1224,7 +1223,7 @@ public final class String
     private static int offset() {
         return 0;
     }
-    
+
     private static class CaseInsensitiveComparator
                          implements Comparator<String>, java.io.Serializable {
         // use serialVersionUID from JDK 1.2.2 for interoperability
@@ -3021,4 +3020,57 @@ public final class String
      *          guaranteed to be from a pool of unique strings.
      */
     public native String intern();
+    
+    
+    private static <T> T checkUTF8(T data, String charsetName)
+        throws UnsupportedEncodingException {
+        if (charsetName == null) {
+            throw new NullPointerException("charsetName");
+        }
+        if (!charsetName.equalsIgnoreCase("UTF-8")
+            && !charsetName.equalsIgnoreCase("UTF8")) {
+            throw new UnsupportedEncodingException(charsetName);
+        }
+        return data;
+    }
+    
+    private static int nextChar(byte[] arr, int[] index) throws IndexOutOfBoundsException {
+        int c = arr[index[0]++] & 0xff;
+        switch (c >> 4) {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+            case 6:
+            case 7:
+                /* 0xxxxxxx*/
+                return c;
+            case 12:
+            case 13: {
+                /* 110x xxxx   10xx xxxx*/
+                int char2 = (int) arr[index[0]++];
+                if ((char2 & 0xC0) != 0x80) {
+                    throw new IndexOutOfBoundsException("malformed input");
+                }
+                return (((c & 0x1F) << 6) | (char2 & 0x3F));
+            }
+            case 14: {
+                /* 1110 xxxx  10xx xxxx  10xx xxxx */
+                int char2 = arr[index[0]++];
+                int char3 = arr[index[0]++];
+                if (((char2 & 0xC0) != 0x80) || ((char3 & 0xC0) != 0x80)) {
+                    throw new IndexOutOfBoundsException("malformed input");
+                }
+                return (((c & 0x0F) << 12)
+                    | ((char2 & 0x3F) << 6)
+                    | ((char3 & 0x3F) << 0));
+            }
+            default:
+                /* 10xx xxxx,  1111 xxxx */
+                throw new IndexOutOfBoundsException("malformed input");
+        }
+        
+    }
 }
