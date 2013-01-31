@@ -17,6 +17,7 @@
  */
 package org.apidesign.bck2brwsr.launcher;
 
+import org.apidesign.bck2brwsr.launcher.impl.Console;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -43,18 +44,17 @@ final class JSLauncher extends Launcher {
     private Object console;
     
     
-    @Override MethodInvocation addMethod(Class<?> clazz, String method, String html) {
-        loaders.add(clazz.getClassLoader());
-        MethodInvocation mi = new MethodInvocation(clazz.getName(), method, html);
+    @Override InvocationContext runMethod(InvocationContext mi) {
+        loaders.add(mi.clazz.getClassLoader());
         try {
             long time = System.currentTimeMillis();
-            LOG.log(Level.FINE, "Invoking {0}.{1}", new Object[]{mi.className, mi.methodName});
+            LOG.log(Level.FINE, "Invoking {0}.{1}", new Object[]{mi.clazz.getName(), mi.methodName});
             String res = code.invokeMethod(
                 console,
                 "invoke__Ljava_lang_String_2Ljava_lang_String_2Ljava_lang_String_2",
-                mi.className, mi.methodName).toString();
+                mi.clazz.getName(), mi.methodName).toString();
             time = System.currentTimeMillis() - time;
-            LOG.log(Level.FINE, "Resut of {0}.{1} = {2} in {3} ms", new Object[]{mi.className, mi.methodName, res, time});
+            LOG.log(Level.FINE, "Resut of {0}.{1} = {2} in {3} ms", new Object[]{mi.clazz.getName(), mi.methodName, res, time});
             mi.result(res, null);
         } catch (ScriptException | NoSuchMethodException ex) {
             mi.result(null, ex);
@@ -89,7 +89,7 @@ final class JSLauncher extends Launcher {
         ScriptEngine mach = sem.getEngineByExtension("js");
 
         sb.append(
-              "\nvar vm = new bck2brwsr(org.apidesign.bck2brwsr.launcher.Console.read);"
+              "\nvar vm = new bck2brwsr(org.apidesign.bck2brwsr.launcher.impl.Console.read);"
             + "\nfunction initVM() { return vm; };"
             + "\n");
 

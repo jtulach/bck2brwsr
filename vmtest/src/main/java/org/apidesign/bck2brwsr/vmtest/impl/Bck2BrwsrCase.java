@@ -24,7 +24,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import org.apidesign.bck2brwsr.launcher.Launcher;
-import org.apidesign.bck2brwsr.launcher.MethodInvocation;
+import org.apidesign.bck2brwsr.launcher.InvocationContext;
 import org.testng.ITest;
 import org.testng.annotations.Test;
 
@@ -51,8 +51,11 @@ public final class Bck2BrwsrCase implements ITest {
     @Test(groups = "run")
     public void executeCode() throws Throwable {
         if (l != null) {
-            MethodInvocation c = l.invokeMethod(m.getDeclaringClass(), m.getName(), html);
-            String res = c.toString();
+            InvocationContext c = l.createInvocation(m.getDeclaringClass(), m.getName());
+            if (html != null) {
+                c.setHtmlFragment(html);
+            }
+            String res = c.invoke();
             value = res;
             if (fail) {
                 int idx = res.indexOf(':');

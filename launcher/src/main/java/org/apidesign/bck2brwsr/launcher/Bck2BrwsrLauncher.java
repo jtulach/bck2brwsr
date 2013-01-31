@@ -55,9 +55,9 @@ import org.glassfish.grizzly.http.server.ServerConfiguration;
  */
 final class Bck2BrwsrLauncher extends Launcher implements Closeable {
     private static final Logger LOG = Logger.getLogger(Bck2BrwsrLauncher.class.getName());
-    private static final MethodInvocation END = new MethodInvocation(null, null, null);
-    private Set<ClassLoader> loaders = new LinkedHashSet<>();
-    private BlockingQueue<MethodInvocation> methods = new LinkedBlockingQueue<>();
+    private static final InvocationContext END = new InvocationContext(null, null, null);
+    private final Set<ClassLoader> loaders = new LinkedHashSet<>();
+    private final BlockingQueue<InvocationContext> methods = new LinkedBlockingQueue<>();
     private long timeOut;
     private final Res resources = new Res();
     private final String cmd;
@@ -70,9 +70,8 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
     }
     
     @Override
-     MethodInvocation addMethod(Class<?> clazz, String method, String html) throws IOException {
-        loaders.add(clazz.getClassLoader());
-        MethodInvocation c = new MethodInvocation(clazz.getName(), method, html);
+    InvocationContext runMethod(InvocationContext c) throws IOException {
+        loaders.add(c.clazz.getClassLoader());
         methods.add(c);
         try {
             c.await(timeOut);
@@ -154,7 +153,7 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
         ), "/execute");
         conf.addHttpHandler(new HttpHandler() {
             int cnt;
-            List<MethodInvocation> cases = new ArrayList<>();
+            List<InvocationContext> cases = new ArrayList<>();
             @Override
             public void service(Request request, Response response) throws Exception {
                 String id = request.getParameter("request");
@@ -166,7 +165,7 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
                     cases.get(Integer.parseInt(id)).result(value, null);
                 }
                 
-                MethodInvocation mi = methods.take();
+                InvocationContext mi = methods.take();
                 if (mi == END) {
                     response.getWriter().write("");
                     wait.countDown();
@@ -176,7 +175,7 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
                 }
                 
                 cases.add(mi);
-                final String cn = mi.className;
+                final String cn = mi.clazz.getName();
                 final String mn = mi.methodName;
                 LOG.log(Level.INFO, "Request for {0} case. Sending {1}.{2}", new Object[]{cnt, cn, mn});
                 response.getWriter().write("{"
