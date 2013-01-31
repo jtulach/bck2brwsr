@@ -102,13 +102,15 @@ Number.prototype.shl64 = function(x) {
 };
 
 Number.prototype.shr64 = function(x) {
-    if (x > 32) {
-        var low = (this.high32() >> (x - 32)) & 0xFFFFFFFF;
+    if (x >= 32) {
+        var low = (this.high32() >> (x - 32)) | 0;
+        low += (low < 0) ? (__m32+1) : 0;
         return low;
     } else {
-        var low = (this >> x) & 0xFFFFFFFF;
-        var hi_reminder = (this.high32() << (32 - x)) >> (32 - x);
+        var low = (this >> x) | 0;
+        var hi_reminder = this.high32() << (32 - x);
         low |= hi_reminder;
+        low += (low < 0) ? (__m32+1) : 0;
         var hi = this.high32() >> x;
         return hi.next32(low);
     }
