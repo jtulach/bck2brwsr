@@ -17,6 +17,7 @@
  */
 package org.apidesign.bck2brwsr.tck;
 
+import java.net.URL;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.vmtest.BrwsrTest;
 import org.apidesign.bck2brwsr.vmtest.HttpResource;
@@ -34,6 +35,23 @@ public class HttpResourceTest {
     public String testReadContentViaXHR() throws Exception {
         String msg = read("/xhr");
         assert "Hello Brwsr!".equals(msg) : "The message was " + msg;
+        return msg;
+    }
+
+    @HttpResource(path = "/url", content = "Hello via URL!", mimeType = "text/plain")
+    @BrwsrTest
+    public String testReadContentViaURL() throws Exception {
+        URL url = new URL("http:/url");
+        String msg = (String) url.getContent();
+        assert "Hello via URL!".equals(msg) : "The message was " + msg;
+        return msg;
+    }
+    @HttpResource(path = "/url", content = "Hello via URL!", mimeType = "text/plain")
+    @BrwsrTest
+    public String testReadContentViaURLWithStringParam() throws Exception {
+        URL url = new URL("http:/url");
+        String msg = (String) url.getContent(new Class[] { String.class });
+        assert "Hello via URL!".equals(msg) : "The message was " + msg;
         return msg;
     }
     
