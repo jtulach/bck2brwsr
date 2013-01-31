@@ -255,6 +255,26 @@ public class NumberTest {
                 45);
     }
     
+    @Test public void longAnd() throws Exception {
+        final long res = 0x00fa37d7763e0ca1l & 0xa7b3432fff00123el;
+        assertExec("LOng binary AND",
+            Numbers.class, "andL__J_3B_3B", 
+            Double.valueOf(res),
+            new byte[] { (byte)0x00, (byte)0xfa, (byte)0x37, (byte)0xd7, (byte)0x76, (byte)0x3e, (byte)0x0c, (byte)0xa1 },
+            new byte[] { (byte)0xa7, (byte)0xb3, (byte)0x43, (byte)0x2f, (byte)0xff, (byte)0x00, (byte)0x12, (byte)0x3e }
+        );
+    }
+    
+    @Test public void longOr() throws Exception {
+        final long res = 0x00fa37d7763e0ca1l | 0xa7b3432fff00123el;
+        assertExec("Long binary OR",
+            Numbers.class, "orL__J_3B_3B", 
+            Double.valueOf(res),
+            new byte[] { (byte)0x00, (byte)0xfa, (byte)0x37, (byte)0xd7, (byte)0x76, (byte)0x3e, (byte)0x0c, (byte)0xa1 },
+            new byte[] { (byte)0xa7, (byte)0xb3, (byte)0x43, (byte)0x2f, (byte)0xff, (byte)0x00, (byte)0x12, (byte)0x3e }
+        );
+    }
+    
     private static CharSequence codeSeq;
     private static Invocable code;
 

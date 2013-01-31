@@ -111,4 +111,20 @@ public class Numbers {
         DataInputStream disValue = new DataInputStream(isValue);
         return (disValue.readLong() >> nBits);
     }
+    
+    public static long andL(byte[] arrX, byte[] arrY) throws IOException {
+        ByteArrayInputStream isX = new ByteArrayInputStream(arrX);
+        DataInputStream disX = new DataInputStream(isX);
+        ByteArrayInputStream isY = new ByteArrayInputStream(arrY);
+        DataInputStream disY = new DataInputStream(isY);
+        return (disX.readLong() & disY.readLong());
+    }
+    
+    public static long orL(byte[] arrX, byte[] arrY) throws IOException {
+        ByteArrayInputStream isX = new ByteArrayInputStream(arrX);
+        DataInputStream disX = new DataInputStream(isX);
+        ByteArrayInputStream isY = new ByteArrayInputStream(arrY);
+        DataInputStream disY = new DataInputStream(isY);
+        return (disX.readLong() | disY.readLong());
+    }
 }

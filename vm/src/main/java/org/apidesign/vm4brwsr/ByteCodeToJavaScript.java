@@ -588,7 +588,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 |= @2;", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lor:
-                    emit(out, "@1 |= @2;", smapper.getL(1), smapper.popL());
+                    emit(out, "@1 = @1.or64(@2);", smapper.getL(1), smapper.popL());
                     break;
                 case opc_ixor:
                     emit(out, "@1 ^= @2;", smapper.getI(1), smapper.popI());
