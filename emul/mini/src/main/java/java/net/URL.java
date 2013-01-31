@@ -987,6 +987,17 @@ public final class URL implements java.io.Serializable {
     )
     private static native String loadText(String url) throws IOException;
 
+    @JavaScriptBody(args = { "url", "arr" }, body = ""
+        + "var request = new XMLHttpRequest();\n"
+        + "request.open('GET', url, false);\n"
+        + "request.overrideMimeType('text\\/plain; charset=x-user-defined');\n"
+        + "request.send();\n"
+        + "var t = request.responseText;\n"
+        + "for (var i = 0; i < t.length; i++) arr.push(t.charCodeAt(i) & 0xff);\n"
+        + "return arr;\n"
+    )
+    private static native Object loadBytes(String url, byte[] arr) throws IOException;
+
     /**
      * Gets the contents of this URL. This method is a shorthand for:
      * <blockquote><pre>
@@ -1005,7 +1016,10 @@ public final class URL implements java.io.Serializable {
     throws java.io.IOException {
         for (Class<?> c : classes) {
             if (c == String.class) {
-                return getContent();
+                return loadText(toExternalForm());
+            }
+            if (c == byte[].class) {
+                return loadBytes(toExternalForm(), new byte[0]);
             }
         }
         return null;

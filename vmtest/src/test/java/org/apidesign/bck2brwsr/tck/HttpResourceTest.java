@@ -54,6 +54,17 @@ public class HttpResourceTest {
         assert "Hello via URL!".equals(msg) : "The message was " + msg;
         return msg;
     }
+
+    @HttpResource(path = "/bytes", content = "\u00fe", mimeType = "x-application/binary")
+    @BrwsrTest
+    public void testReadByte() throws Exception {
+        URL url = new URL("http:/bytes");
+        final Object res = url.getContent(new Class[] { byte[].class });
+        assert res instanceof byte[] : "Expecting byte[]: " + res;
+        byte[] arr = (byte[]) res;
+        assert arr.length == 1 : "One byte " + arr.length;
+        assert arr[0] == 0xfe : "It is 0xfe: " + Integer.toHexString(arr[0]);
+    }
     
     @JavaScriptBody(args = { "url" }, body = 
           "var req = new XMLHttpRequest();\n"
