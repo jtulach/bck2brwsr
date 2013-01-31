@@ -95,4 +95,16 @@ public class Numbers {
     public static long modL(long x, long y) {
         return (x % y);
     }
+    
+    public static long shlL(byte[] arrValue, int nBits) throws IOException {
+        ByteArrayInputStream isValue = new ByteArrayInputStream(arrValue);
+        DataInputStream disValue = new DataInputStream(isValue);
+        return (disValue.readLong() << nBits);
+    }
+    
+    public static long shrL(byte[] arrValue, int nBits) throws IOException {
+        ByteArrayInputStream isValue = new ByteArrayInputStream(arrValue);
+        DataInputStream disValue = new DataInputStream(isValue);
+        return (disValue.readLong() >> nBits);
+    }
 }

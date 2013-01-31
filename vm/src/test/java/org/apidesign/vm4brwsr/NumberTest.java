@@ -171,6 +171,36 @@ public class NumberTest {
         );
     }
     
+    @Test public void longShiftL1() throws Exception {
+        final long res = 0x00fa37d7763e0ca1l << 5;
+        assertExec("Long MAX",
+            Numbers.class, "shlL__J_3BI", 
+            Double.valueOf(res),
+                new byte[] { (byte)0x00, (byte)0xfa, (byte)0x37, (byte)0xd7, (byte)0x76, (byte)0x3e, (byte)0x0c, (byte)0xa1 },
+                5
+        );
+    }
+    
+    @Test public void longShiftL2() throws Exception {
+        final long res = 0x00fa37d7763e0ca1l << 32;
+        assertExec("Long MAX",
+            Numbers.class, "shlL__J_3BI", 
+            Double.valueOf(res),
+                new byte[] { (byte)0x00, (byte)0xfa, (byte)0x37, (byte)0xd7, (byte)0x76, (byte)0x3e, (byte)0x0c, (byte)0xa1 },
+                32
+        );
+    }
+    
+    @Test public void longShiftL3() throws Exception {
+        final long res = 0x00fa37d7763e0ca1l << 45;
+        assertExec("Long MAX",
+            Numbers.class, "shlL__J_3BI", 
+            Double.valueOf(res),
+                new byte[] { (byte)0x00, (byte)0xfa, (byte)0x37, (byte)0xd7, (byte)0x76, (byte)0x3e, (byte)0x0c, (byte)0xa1 },
+                45
+        );
+    }
+    
     private static CharSequence codeSeq;
     private static Invocable code;
 
