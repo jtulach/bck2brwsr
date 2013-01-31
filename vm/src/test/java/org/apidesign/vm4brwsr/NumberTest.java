@@ -151,6 +151,26 @@ public class NumberTest {
         );
     }
     
+    @Test public void longAddOverflow() throws Exception {
+        final long res = Long.MAX_VALUE + 1l;
+        assertExec("Addition 1+MAX",
+            Numbers.class, "addL__J_3B_3B", 
+            Double.valueOf(res),
+                new byte[] { (byte)0x7f, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff },
+                new byte[] { (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)1 }
+        );
+    }
+    
+    @Test public void longAddMaxAndMax() throws Exception {
+        final long res = Long.MAX_VALUE + Long.MAX_VALUE;
+        assertExec("Addition MAX+MAX",
+            Numbers.class, "addL__J_3B_3B", 
+            Double.valueOf(res),
+            new byte[] { (byte)0x7f, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff },
+            new byte[] { (byte)0x7f, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff }
+        );
+    }
+    
     private static CharSequence codeSeq;
     private static Invocable code;
 
@@ -173,10 +193,11 @@ public class NumberTest {
         if (expRes instanceof Double && ret instanceof Double) {
             double expD = ((Double)expRes).doubleValue();
             double retD = ((Double)ret).doubleValue();
-            assertEquals(retD, expD, 0.000004, msg + " was " + ret + "\n" + StaticMethodTest.dumpJS(codeSeq));
+            assertEquals(retD, expD, 0.000004, msg + " "
+                    + StaticMethodTest.dumpJS(codeSeq));
             return;
         }
-        assertEquals(ret, expRes, msg + "was: " + ret + "\n" + StaticMethodTest.dumpJS(codeSeq));
+        assertEquals(ret, expRes, msg + " " + StaticMethodTest.dumpJS(codeSeq));
     }
     
 }

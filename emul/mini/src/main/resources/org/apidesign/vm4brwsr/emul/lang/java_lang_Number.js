@@ -15,7 +15,7 @@ Number.prototype.next32 = function(low) {
     return low;
   }
   var l = new Number(low);
-  l.hi = this;
+  l.hi = this | 0;
   return l;
 };
 
@@ -28,7 +28,7 @@ Number.prototype.toFP = function() {
 };
 Number.prototype.toLong = function() {
     var hi = (this > __m32) ? (Math.floor(this / (__m32+1))) | 0 : 0;
-    return hi.next32(this % (__m32+1));
+    return hi.next32(Math.floor(this % (__m32+1)));
 };
 
 Number.prototype.toExactString = function() {
@@ -88,14 +88,15 @@ Number.prototype.and64 = function(x) {
 };
 
 Number.prototype.shl64 = function(x) {
-    if (x > 32) {
-        var hi = (this << (x - 32)) & 0xFFFFFFFF;
+    if (x >= 32) {
+        var hi = (this << (x - 32)) | 0;
         return hi.next32(0);
     } else {
-        var hi = (this.high32() << x) & 0xFFFFFFFF;
+        var hi = (this.high32() << x) | 0;
         var low_reminder = this >> (32 - x);
         hi |= low_reminder;
         var low = this << x;
+        low += (low < 0) ? (__m32+1) : 0;
         return hi.next32(low);
     }
 };
