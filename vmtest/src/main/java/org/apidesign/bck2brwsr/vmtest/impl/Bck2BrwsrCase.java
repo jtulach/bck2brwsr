@@ -25,6 +25,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import org.apidesign.bck2brwsr.launcher.Launcher;
 import org.apidesign.bck2brwsr.launcher.InvocationContext;
+import org.apidesign.bck2brwsr.vmtest.HtmlFragment;
+import org.apidesign.bck2brwsr.vmtest.HttpResource;
 import org.testng.ITest;
 import org.testng.annotations.Test;
 
@@ -37,15 +39,17 @@ public final class Bck2BrwsrCase implements ITest {
     private final Launcher l;
     private final String type;
     private final boolean fail;
+    private final HtmlFragment html;
+    private final HttpResource http;
     Object value;
-    private final String html;
 
-    Bck2BrwsrCase(Method m, String type, Launcher l, boolean fail, String html) {
+    Bck2BrwsrCase(Method m, String type, Launcher l, boolean fail, HtmlFragment html, HttpResource http) {
         this.l = l;
         this.m = m;
         this.type = type;
         this.fail = fail;
         this.html = html;
+        this.http = http;
     }
 
     @Test(groups = "run")
@@ -53,7 +57,10 @@ public final class Bck2BrwsrCase implements ITest {
         if (l != null) {
             InvocationContext c = l.createInvocation(m.getDeclaringClass(), m.getName());
             if (html != null) {
-                c.setHtmlFragment(html);
+                c.setHtmlFragment(html.value());
+            }
+            if (http != null) {
+                c.setHttpResource(http.path(), http.mimeType(), http.content());
             }
             String res = c.invoke();
             value = res;

@@ -111,17 +111,17 @@ public final class CompareCase implements ITest {
         if (c == null) {
             return;
         }
-        final Bck2BrwsrCase real = new Bck2BrwsrCase(m, "Java", null, false, null);
+        final Bck2BrwsrCase real = new Bck2BrwsrCase(m, "Java", null, false, null, null);
         ret.add(real);
         if (c.scripting()) {
-            final Bck2BrwsrCase js = new Bck2BrwsrCase(m, "JavaScript", l.javaScript(), false, null);
+            final Bck2BrwsrCase js = new Bck2BrwsrCase(m, "JavaScript", l.javaScript(), false, null, null);
             ret.add(js);
             ret.add(new CompareCase(m, real, js));
         }
         for (String b : brwsr) {
             final Launcher s = l.brwsr(b);
             ret.add(s);
-            final Bck2BrwsrCase cse = new Bck2BrwsrCase(m, b, s, false, null);
+            final Bck2BrwsrCase cse = new Bck2BrwsrCase(m, b, s, false, null, null);
             ret.add(cse);
             ret.add(new CompareCase(m, real, cse));
         }
@@ -135,16 +135,19 @@ public final class CompareCase implements ITest {
         if (f == null) {
             f = m.getDeclaringClass().getAnnotation(HtmlFragment.class);
         }
-        String html = f == null ? null : f.value();
+        HttpResource r = m.getAnnotation(HttpResource.class);
+        if (r == null) {
+            r = m.getDeclaringClass().getAnnotation(HttpResource.class);
+        }
         if (brwsr.length == 0) {
             final Launcher s = l.brwsr(null);
             ret.add(s);
-            ret.add(new Bck2BrwsrCase(m, "Brwsr", s, true, html));
+            ret.add(new Bck2BrwsrCase(m, "Brwsr", s, true, f, r));
         } else {
             for (String b : brwsr) {
                 final Launcher s = l.brwsr(b);
                 ret.add(s);
-                ret.add(new Bck2BrwsrCase(m, b, s, true, html));
+                ret.add(new Bck2BrwsrCase(m, b, s, true, f, r));
             }
         }
     }

@@ -55,6 +55,9 @@ public final class InvocationContext {
      * perform an HTTP query and obtain a resource relative to the page.
      */
     public void setHttpResource(String relativePath, String mimeType, String content) {
+        if (relativePath == null || mimeType == null || content == null) {
+            throw new NullPointerException();
+        }
         this.httpPath = relativePath;
         this.httpType = mimeType;
         this.httpContent = content;

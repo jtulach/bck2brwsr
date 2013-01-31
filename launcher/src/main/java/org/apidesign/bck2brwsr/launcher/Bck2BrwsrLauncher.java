@@ -147,13 +147,40 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
     private void executeInBrowser() throws InterruptedException, URISyntaxException, IOException {
         wait = new CountDownLatch(1);
         server = initServer(".", true);
-        ServerConfiguration conf = server.getServerConfiguration();
+        final ServerConfiguration conf = server.getServerConfiguration();
+        
+        class DynamicResourceHandler extends HttpHandler {
+            private final InvocationContext ic;
+            public DynamicResourceHandler(InvocationContext ic) {
+                if (ic == null || ic.httpPath == null) {
+                    throw new NullPointerException();
+                }
+                this.ic = ic;
+                conf.addHttpHandler(this, ic.httpPath);
+            }
+
+            public void close() {
+                conf.removeHttpHandler(this);
+            }
+            
+            @Override
+            public void service(Request request, Response response) throws Exception {
+                if (ic.httpPath.equals(request.getRequestURI())) {
+                    LOG.log(Level.INFO, "Serving HttpResource for {0}", request.getRequestURI());
+                    response.setContentType(ic.httpType);
+                    response.getWriter().write(ic.httpContent);
+                }
+            }
+        }
+        
         conf.addHttpHandler(new Page(resources, 
             "org/apidesign/bck2brwsr/launcher/harness.xhtml"
         ), "/execute");
+        
         conf.addHttpHandler(new HttpHandler() {
             int cnt;
             List<InvocationContext> cases = new ArrayList<>();
+            DynamicResourceHandler prev;
             @Override
             public void service(Request request, Response response) throws Exception {
                 String id = request.getParameter("request");
@@ -165,6 +192,11 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
                     cases.get(Integer.parseInt(id)).result(value, null);
                 }
                 
+                if (prev != null) {
+                    prev.close();
+                    prev = null;
+                }
+                
                 InvocationContext mi = methods.take();
                 if (mi == END) {
                     response.getWriter().write("");
@@ -172,6 +204,10 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
                     cnt = 0;
                     LOG.log(Level.INFO, "End of data reached. Exiting.");
                     return;
+                }
+                
+                if (mi.httpPath != null) {
+                    prev = new DynamicResourceHandler(mi);
                 }
                 
                 cases.add(mi);
