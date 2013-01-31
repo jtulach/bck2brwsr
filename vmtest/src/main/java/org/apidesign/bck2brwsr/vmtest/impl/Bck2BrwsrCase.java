@@ -17,9 +17,11 @@
  */
 package org.apidesign.bck2brwsr.vmtest.impl;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -60,7 +62,13 @@ public final class Bck2BrwsrCase implements ITest {
                 c.setHtmlFragment(html.value());
             }
             if (http != null) {
-                c.setHttpResource(http.path(), http.mimeType(), http.content());
+                if (!http.content().isEmpty()) {
+                    InputStream is = new ByteArrayInputStream(http.content().getBytes("UTF-8"));
+                    c.setHttpResource(http.path(), http.mimeType(), is);
+                } else {
+                    InputStream is = m.getDeclaringClass().getResourceAsStream(http.resource());
+                    c.setHttpResource(http.path(), http.mimeType(), is);
+                }
             }
             String res = c.invoke();
             value = res;

@@ -55,7 +55,7 @@ public class HttpResourceTest {
         return msg;
     }
 
-    @HttpResource(path = "/bytes", content = "\u00fe", mimeType = "x-application/binary")
+    @HttpResource(path = "/bytes", content = "", resource = "0xfe", mimeType = "x-application/binary")
     @BrwsrTest
     public void testReadByte() throws Exception {
         URL url = new URL("http:/bytes");

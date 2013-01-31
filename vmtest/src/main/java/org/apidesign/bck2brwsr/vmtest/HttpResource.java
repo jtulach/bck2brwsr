@@ -34,6 +34,10 @@ public @interface HttpResource {
     String path();
     /** the content of the HttpResource */
     String content();
+    /** resource relative to the class that should be used instead of <code>content</code>.
+     * Leave content equal to empty string.
+     */
+    String resource() default "";
     /** mime type of the resource */
     String mimeType();
 }
