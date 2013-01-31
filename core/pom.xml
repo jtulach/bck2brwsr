@@ -38,6 +38,7 @@
     <dependency>
       <groupId>org.netbeans.api</groupId>
       <artifactId>org-openide-util-lookup</artifactId>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
     <description>Contains esential annotations for associating JavaScript code with

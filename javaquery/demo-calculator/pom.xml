@@ -68,12 +68,6 @@
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>emul.mini</artifactId>
       <version>0.3-SNAPSHOT</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>org-openide-util-lookup</artifactId>
-          <groupId>org.netbeans.api</groupId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
