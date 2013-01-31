@@ -109,6 +109,16 @@ Number.prototype.or64 = function(x) {
     return low;
 };
 
+Number.prototype.xor64 = function(x) {
+    var low = this ^ x;
+    low += (low < 0) ? (__m32+1) : 0;
+    if (this.hi || x.hi) {
+        var hi = this.hi ^ x.hi;
+        return hi.next32(low);
+    };
+    return low;
+};
+
 Number.prototype.shl64 = function(x) {
     if (x >= 32) {
         var hi = (this << (x - 32)) | 0;

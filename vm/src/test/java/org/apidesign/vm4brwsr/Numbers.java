@@ -127,4 +127,12 @@ public class Numbers {
         DataInputStream disY = new DataInputStream(isY);
         return (disX.readLong() | disY.readLong());
     }
+    
+    public static long xorL(byte[] arrX, byte[] arrY) throws IOException {
+        ByteArrayInputStream isX = new ByteArrayInputStream(arrX);
+        DataInputStream disX = new DataInputStream(isX);
+        ByteArrayInputStream isY = new ByteArrayInputStream(arrY);
+        DataInputStream disY = new DataInputStream(isY);
+        return (disX.readLong() ^ disY.readLong());
+    }
 }
