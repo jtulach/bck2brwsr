@@ -532,7 +532,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 = @1.sub32(@2);", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lsub:
-                    emit(out, "@1 -= @2;", smapper.getL(1), smapper.popL());
+                    emit(out, "@1 = @1.sub64(@2);", smapper.getL(1), smapper.popL());
                     break;
                 case opc_fsub:
                     emit(out, "@1 -= @2;", smapper.getF(1), smapper.popF());

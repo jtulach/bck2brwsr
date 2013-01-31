@@ -171,6 +171,36 @@ public class NumberTest {
         );
     }
     
+    @Test public void longSubUnderflow() throws Exception {
+        final long res = Long.MIN_VALUE - 1l;
+        assertExec("Subtraction MIN-1",
+            Numbers.class, "subL__J_3B_3B", 
+            Double.valueOf(res),
+                new byte[] { (byte)0x80, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00 },
+                new byte[] { (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)1 }
+        );
+    }
+    
+    @Test public void longSubMinAndMin() throws Exception {
+        final long res = Long.MIN_VALUE - Long.MIN_VALUE;
+        assertExec("Subtraction MIN-MIN",
+            Numbers.class, "subL__J_3B_3B", 
+            Double.valueOf(res),
+            new byte[] { (byte)0x80, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00 },
+            new byte[] { (byte)0x80, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00 }
+        );
+    }
+    
+    @Test public void longSubMinAndMax() throws Exception {
+        final long res = Long.MIN_VALUE - Long.MAX_VALUE;
+        assertExec("Subtraction MIN-MAX",
+            Numbers.class, "subL__J_3B_3B", 
+            Double.valueOf(res),
+            new byte[] { (byte)0x80, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00 },
+            new byte[] { (byte)0x7f, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff }
+        );
+    }
+    
     @Test public void longShiftL1() throws Exception {
         final long res = 0x00fa37d7763e0ca1l << 5;
         assertExec("Long << 5",

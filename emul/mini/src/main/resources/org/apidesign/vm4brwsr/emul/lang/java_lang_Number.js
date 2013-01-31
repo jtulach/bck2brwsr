@@ -69,6 +69,17 @@ Number.prototype.add64 = function(x) {
     return hi.next32(low);
 };
 
+Number.prototype.sub64 = function(x) {
+    var low = this - x;
+    carry = 0;
+    if (low < 0) {
+        carry = 1;
+        low += (__m32+1);
+    }
+    var hi = (this.high32() - x.high32() - carry) | 0;
+    return hi.next32(low);
+};
+
 Number.prototype.div64 = function(x) {
     var low = Math.floor(this.toFP() / x.toFP()); // TODO: not exact enough
     if (low > __m32) {
