@@ -53,6 +53,26 @@ public class ZipFileTest {
         return ret;
     }
     
+    @JavaScriptBody(args = { "res", "path" }, body = 
+          "var myvm = new bck2brwsr(path);\n"
+        + "var cls = myvm.loadClass('java.lang.String');\n"
+        + "return cls.getClass__Ljava_lang_Class_2().getResourceAsStream__Ljava_io_InputStream_2Ljava_lang_String_2(res);\n"
+    )
+    private static native Object loadVMResource(String res, String...path);
+
+    @HttpResource(path = "/readAnEntry.jar", mimeType = "x-application/zip", content = "", resource="readAnEntry.zip")
+    @BrwsrTest  public void canVmLoadResourceFromZip() throws IOException {
+        Object res = loadVMResource("/my/main/file.txt", "http:/readAnEntry.jar");
+        assert res instanceof InputStream : "Got array of bytes: " + res;
+        InputStream is = (InputStream)res;
+        
+        byte[] arr = new byte[4096];
+        int len = is.read(arr);
+        
+        final String ret = new String(arr, 0, len, "UTF-8");
+
+        assertEquals(ret, "Hello World!", "Can read the bytes");
+    }
     
     private static void assertEquals(Object real, Object exp, String msg) {
         assert Objects.equals(exp, real) : msg + " exp: " + exp + " real: " + real;
