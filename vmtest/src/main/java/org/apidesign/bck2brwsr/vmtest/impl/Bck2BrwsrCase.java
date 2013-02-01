@@ -110,6 +110,9 @@ public final class Bck2BrwsrCase implements ITest {
             } catch (InvocationTargetException ex) {
                 Throwable t = ex.getTargetException();
                 value = t.getClass().getName() + ":" + t.getMessage();
+                if (t instanceof AssertionError) {
+                    throw t;
+                }
             }
         }
     }
