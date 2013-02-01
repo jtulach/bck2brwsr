@@ -25,6 +25,8 @@
 
 package java.util;
 
+import org.apidesign.bck2brwsr.emul.lang.System;
+
 /**
  * An unbounded priority {@linkplain Queue queue} based on a priority heap.
  * The elements of the priority queue are ordered according to their
@@ -726,50 +728,5 @@ public class PriorityQueue<E> extends AbstractQueue<E>
         return comparator;
     }
 
-    /**
-     * Saves the state of the instance to a stream (that
-     * is, serializes it).
-     *
-     * @serialData The length of the array backing the instance is
-     *             emitted (int), followed by all of its elements
-     *             (each an {@code Object}) in the proper order.
-     * @param s the stream
-     */
-    private void writeObject(java.io.ObjectOutputStream s)
-        throws java.io.IOException{
-        // Write out element count, and any hidden stuff
-        s.defaultWriteObject();
 
-        // Write out array length, for compatibility with 1.5 version
-        s.writeInt(Math.max(2, size + 1));
-
-        // Write out all elements in the "proper order".
-        for (int i = 0; i < size; i++)
-            s.writeObject(queue[i]);
-    }
-
-    /**
-     * Reconstitutes the {@code PriorityQueue} instance from a stream
-     * (that is, deserializes it).
-     *
-     * @param s the stream
-     */
-    private void readObject(java.io.ObjectInputStream s)
-        throws java.io.IOException, ClassNotFoundException {
-        // Read in size, and any hidden stuff
-        s.defaultReadObject();
-
-        // Read in (and discard) array length
-        s.readInt();
-
-        queue = new Object[size];
-
-        // Read in all elements.
-        for (int i = 0; i < size; i++)
-            queue[i] = s.readObject();
-
-        // Elements are guaranteed to be in "proper order", but the
-        // spec has never explained what that might be.
-        heapify();
-    }
 }
