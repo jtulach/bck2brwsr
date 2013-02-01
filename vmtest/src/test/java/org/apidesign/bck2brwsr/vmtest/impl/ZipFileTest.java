@@ -19,9 +19,13 @@ package org.apidesign.bck2brwsr.vmtest.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+import org.apidesign.bck2brwsr.vmtest.BrwsrTest;
 import org.apidesign.bck2brwsr.vmtest.Compare;
+import org.apidesign.bck2brwsr.vmtest.HttpResource;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
 
@@ -29,23 +33,29 @@ import org.testng.annotations.Factory;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
+@GenerateZip(name = "readAnEntry.zip", contents = { 
+    "my/main/file.txt", "Hello World!"
+})
 public class ZipFileTest {
     
-    @GenerateZip(name = "readAnEntry.zip", contents = { "my/main/file.txt", "Hello World!" })
     @Compare public String readAnEntry() throws IOException {
         InputStream is = ZipFileTest.class.getResourceAsStream("readAnEntry.zip");
         ZipInputStream zip = new ZipInputStream(is);
         ZipEntry entry = zip.getNextEntry();
         assertEquals(entry.getName(), "my/main/file.txt", "Correct entry");
-        
+
         byte[] arr = new byte[4096];
         int len = zip.read(arr);
         
-        return new String(arr, 0, len, "UTF-8");
+        assertEquals(zip.getNextEntry(), null, "No next entry");
+        
+        final String ret = new String(arr, 0, len, "UTF-8");
+        return ret;
     }
-
-    private static void assertEquals(String real, String exp, String msg) {
-        assert exp.equals(real) : msg + " exp: " + exp + " real: " + real;
+    
+    
+    private static void assertEquals(Object real, Object exp, String msg) {
+        assert Objects.equals(exp, real) : msg + " exp: " + exp + " real: " + real;
     }
     
     @Factory public static Object[] create() {
