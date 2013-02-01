@@ -121,10 +121,10 @@ Number.prototype.xor64 = function(x) {
 
 Number.prototype.shl64 = function(x) {
     if (x >= 32) {
-        var hi = (this << (x - 32)) | 0;
+        var hi = this << (x - 32);
         return hi.next32(0);
     } else {
-        var hi = (this.high32() << x) | 0;
+        var hi = this.high32() << x;
         var low_reminder = this >> (32 - x);
         hi |= low_reminder;
         var low = this << x;
@@ -135,15 +135,30 @@ Number.prototype.shl64 = function(x) {
 
 Number.prototype.shr64 = function(x) {
     if (x >= 32) {
-        var low = (this.high32() >> (x - 32)) | 0;
+        var low = this.high32() >> (x - 32);
         low += (low < 0) ? (__m32+1) : 0;
         return low;
     } else {
-        var low = (this >> x) | 0;
+        var low = this >> x;
         var hi_reminder = this.high32() << (32 - x);
         low |= hi_reminder;
         low += (low < 0) ? (__m32+1) : 0;
         var hi = this.high32() >> x;
+        return hi.next32(low);
+    }
+};
+
+Number.prototype.ushr64 = function(x) {
+    if (x >= 32) {
+        var low = this.high32() >>> (x - 32);
+        low += (low < 0) ? (__m32+1) : 0;
+        return low;
+    } else {
+        var low = this >>> x;
+        var hi_reminder = this.high32() << (32 - x);
+        low |= hi_reminder;
+        low += (low < 0) ? (__m32+1) : 0;
+        var hi = this.high32() >>> x;
         return hi.next32(low);
     }
 };

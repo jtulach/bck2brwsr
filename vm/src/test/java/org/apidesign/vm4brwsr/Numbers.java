@@ -112,6 +112,12 @@ public class Numbers {
         return (disValue.readLong() >> nBits);
     }
     
+    public static long ushrL(byte[] arrValue, int nBits) throws IOException {
+        ByteArrayInputStream isValue = new ByteArrayInputStream(arrValue);
+        DataInputStream disValue = new DataInputStream(isValue);
+        return (disValue.readLong() >>> nBits);
+    }
+    
     public static long andL(byte[] arrX, byte[] arrY) throws IOException {
         ByteArrayInputStream isX = new ByteArrayInputStream(arrX);
         DataInputStream disX = new DataInputStream(isX);

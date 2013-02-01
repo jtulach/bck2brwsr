@@ -624,7 +624,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 >>>= @2;", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lushr:
-                    emit(out, "@1 >>>= @2;", smapper.getL(1), smapper.popI());
+                    emit(out, "@1 = @1.ushr64(@2);", smapper.getL(1), smapper.popI());
                     break;
                 case opc_iinc: {
                     ++i;

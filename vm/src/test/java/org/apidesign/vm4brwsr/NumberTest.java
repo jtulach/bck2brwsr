@@ -255,6 +255,42 @@ public class NumberTest {
                 45);
     }
     
+    @Test public void longUShiftR1() throws Exception {
+        final long res = 0x00fa37d7763e0ca1l >>> 5;
+        assertExec("Long >>> 5",
+            Numbers.class, "ushrL__J_3BI", 
+            Double.valueOf(res),
+                new byte[] { (byte)0x00, (byte)0xfa, (byte)0x37, (byte)0xd7, (byte)0x76, (byte)0x3e, (byte)0x0c, (byte)0xa1 },
+                5);
+    }
+    
+    @Test public void longUShiftR2() throws Exception {
+        final long res = 0x00fa37d7763e0ca1l >>> 45;
+        assertExec("Long >>> 45",
+            Numbers.class, "ushrL__J_3BI", 
+            Double.valueOf(res),
+                new byte[] { (byte)0x00, (byte)0xfa, (byte)0x37, (byte)0xd7, (byte)0x76, (byte)0x3e, (byte)0x0c, (byte)0xa1 },
+                45);
+    }
+    
+    @Test public void longUShiftR3() throws Exception {
+        final long res = 0xf0fa37d7763e0ca1l >>> 5;
+        assertExec("Long >>> 5",
+            Numbers.class, "ushrL__J_3BI", 
+            Double.valueOf(res),
+                new byte[] { (byte)0xf0, (byte)0xfa, (byte)0x37, (byte)0xd7, (byte)0x76, (byte)0x3e, (byte)0x0c, (byte)0xa1 },
+                5);
+    }
+    
+    @Test public void longUShiftR4() throws Exception {
+        final long res = 0xf0fa37d7763e0ca1l >>> 45;
+        assertExec("Long >>> 45",
+            Numbers.class, "ushrL__J_3BI", 
+            Double.valueOf(res),
+                new byte[] { (byte)0xf0, (byte)0xfa, (byte)0x37, (byte)0xd7, (byte)0x76, (byte)0x3e, (byte)0x0c, (byte)0xa1 },
+                45);
+    }
+    
     @Test public void longAnd() throws Exception {
         final long res = 0x00fa37d7763e0ca1l & 0xa7b3432fff00123el;
         assertExec("LOng binary AND",
