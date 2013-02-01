@@ -991,9 +991,11 @@ public final class Math {
      * @author Joseph D. Darcy
      * @since 1.5
      */
-//    public static double signum(double d) {
-//        return sun.misc.FpUtils.signum(d);
-//    }
+    public static double signum(double d) {
+        if (d < 0.0) { return -1.0; }
+        if (d > 0.0) { return 1.0; }
+        return d;
+    }
 
     /**
      * Returns the signum function of the argument; zero if the argument
@@ -1012,9 +1014,11 @@ public final class Math {
      * @author Joseph D. Darcy
      * @since 1.5
      */
-//    public static float signum(float f) {
-//        return sun.misc.FpUtils.signum(f);
-//    }
+    public static float signum(float f) {
+        if (f < 0.0f) { return -1.0f; }
+        if (f > 0.0f) { return 1.0f; }
+        return f;
+    }
 
     /**
      * Returns the first floating-point argument with the sign of the
