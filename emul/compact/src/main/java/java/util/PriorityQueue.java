@@ -25,7 +25,6 @@
 
 package java.util;
 
-import org.apidesign.bck2brwsr.emul.lang.System;
 
 /**
  * An unbounded priority {@linkplain Queue queue} based on a priority heap.
