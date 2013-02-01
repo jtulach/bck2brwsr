@@ -506,6 +506,17 @@ public final class URL implements java.io.Serializable {
     public URL(URL context, String spec, URLStreamHandler handler)
         throws MalformedURLException
     {
+        this(findContext(context), spec, handler != null);
+    }
+    
+    private URL(URL context, String spec, boolean ishandler)
+    throws MalformedURLException {
+        // Check for permission to specify a handler
+        if (ishandler) {
+            throw new SecurityException();
+        }
+        URLStreamHandler handler = null;
+        
         String original = spec;
         int i, limit, c;
         int start = 0;
@@ -513,10 +524,6 @@ public final class URL implements java.io.Serializable {
         boolean aRef=false;
         boolean isRelative = false;
 
-        // Check for permission to specify a handler
-        if (handler != null) {
-            throw new SecurityException();
-        }
 
         try {
             limit = spec.length();
@@ -1035,6 +1042,23 @@ public final class URL implements java.io.Serializable {
         return universal;
     }
 
+    private static URL findContext(URL context) throws MalformedURLException {
+        if (context == null) {
+            String base = findBaseURL();
+            if (base != null) {
+                context = new URL(null, base, false);
+            }
+        }
+        return context;
+    }
+    
+    @JavaScriptBody(args = {}, body = 
+          "if (window && window.location && window.location.href) {\n"
+        + "  return window.location.href;\n"
+        + "}\n"
+        + "return null;"
+    )
+    private static native String findBaseURL();
 }
 class Parts {
     String path, query, ref;

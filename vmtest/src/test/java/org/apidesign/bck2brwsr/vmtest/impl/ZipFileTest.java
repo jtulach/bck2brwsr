@@ -62,7 +62,7 @@ public class ZipFileTest {
 
     @HttpResource(path = "/readAnEntry.jar", mimeType = "x-application/zip", content = "", resource="readAnEntry.zip")
     @BrwsrTest  public void canVmLoadResourceFromZip() throws IOException {
-        Object res = loadVMResource("/my/main/file.txt", "http:/readAnEntry.jar");
+        Object res = loadVMResource("/my/main/file.txt", "/readAnEntry.jar");
         assert res instanceof InputStream : "Got array of bytes: " + res;
         InputStream is = (InputStream)res;
         
