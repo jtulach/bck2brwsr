@@ -347,6 +347,9 @@ public final
      * @since JDK1.1
      */
     public boolean isInstance(Object obj) {
+        if (obj == null) {
+            return false;
+        }
         if (isArray()) {
             return isAssignableFrom(obj.getClass());
         }
