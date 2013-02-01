@@ -17,6 +17,7 @@
  */
 package org.apidesign.bck2brwsr.tck;
 
+import java.io.InputStream;
 import java.net.URL;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.vmtest.BrwsrTest;
@@ -63,6 +64,17 @@ public class HttpResourceTest {
         assert res instanceof byte[] : "Expecting byte[]: " + res;
         byte[] arr = (byte[]) res;
         assert arr.length == 1 : "One byte " + arr.length;
+        assert arr[0] == 0xfe : "It is 0xfe: " + Integer.toHexString(arr[0]);
+    }
+
+    @HttpResource(path = "/bytes", content = "", resource = "0xfe", mimeType = "x-application/binary")
+    @BrwsrTest
+    public void testReadByteViaInputStream() throws Exception {
+        URL url = new URL("http:/bytes");
+        InputStream is = url.openStream();
+        byte[] arr = new byte[10];
+        int len = is.read(arr);
+        assert len == 1 : "One byte " + len;
         assert arr[0] == 0xfe : "It is 0xfe: " + Integer.toHexString(arr[0]);
     }
     

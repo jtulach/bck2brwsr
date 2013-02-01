@@ -25,6 +25,7 @@
 
 package java.net;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
@@ -962,7 +963,11 @@ public final class URL implements java.io.Serializable {
         if (is != null) {
             return is;
         }
-        throw new IOException();
+        byte[] arr = (byte[]) getContent(new Class[] { byte[].class });
+        if (arr == null) {
+            throw new IOException();
+        }
+        return new ByteArrayInputStream(arr);
     }
 
     /**
