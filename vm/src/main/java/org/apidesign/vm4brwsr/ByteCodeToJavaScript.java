@@ -600,7 +600,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 = -@1;", smapper.getI(0));
                     break;
                 case opc_lneg:
-                    emit(out, "@1 = -@1;", smapper.getL(0));
+                    emit(out, "@1 = @1.neg64();", smapper.getL(0));
                     break;
                 case opc_fneg:
                     emit(out, "@1 = -@1;", smapper.getF(0));

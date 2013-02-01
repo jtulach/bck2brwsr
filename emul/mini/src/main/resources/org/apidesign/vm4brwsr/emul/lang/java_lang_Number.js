@@ -169,3 +169,13 @@ Number.prototype.compare64 = function(x) {
     }
     return (this.hi < x.hi) ? -1 : 1;
 };
+
+Number.prototype.neg64 = function() {
+    var hi = this.high32();
+    var low = this;
+    if ((hi === 0) && (low < 0)) { return -low; }
+    hi = ~hi;
+    low = ~low;
+    low += (low < 0) ? (__m32+1) : 0;
+    return hi.next32(low);
+};

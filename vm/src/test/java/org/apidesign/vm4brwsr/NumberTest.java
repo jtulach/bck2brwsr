@@ -151,6 +151,24 @@ public class NumberTest {
         );
     }
     
+    @Test public void longNegate1() throws Exception {
+        final long res = -0x00fa37d7763e0ca1l;
+        assertExec("Long negate",
+            Numbers.class, "negL__J_3B", 
+            Double.valueOf(res),
+                new byte[] { (byte)0x00, (byte)0xfa, (byte)0x37, (byte)0xd7, (byte)0x76, (byte)0x3e, (byte)0x0c, (byte)0xa1 }
+        );
+    }
+    
+    @Test public void longNegate2() throws Exception {
+        final long res = -0x80fa37d7763e0ca1l;
+        assertExec("Long negate",
+            Numbers.class, "negL__J_3B", 
+            Double.valueOf(res),
+                new byte[] { (byte)0x80, (byte)0xfa, (byte)0x37, (byte)0xd7, (byte)0x76, (byte)0x3e, (byte)0x0c, (byte)0xa1 }
+        );
+    }
+    
     @Test public void longAddOverflow() throws Exception {
         final long res = Long.MAX_VALUE + 1l;
         assertExec("Addition 1+MAX",

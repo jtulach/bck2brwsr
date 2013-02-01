@@ -72,6 +72,12 @@ public class Numbers {
         return Long.MAX_VALUE;
     }
     
+    public static long negL(byte[] arrValue) throws IOException {
+        ByteArrayInputStream isValue = new ByteArrayInputStream(arrValue);
+        DataInputStream disValue = new DataInputStream(isValue);
+        return (-disValue.readLong());
+    }
+    
     public static long addL(byte[] arrX, byte[] arrY) throws IOException {
         ByteArrayInputStream isX = new ByteArrayInputStream(arrX);
         DataInputStream disX = new DataInputStream(isX);
