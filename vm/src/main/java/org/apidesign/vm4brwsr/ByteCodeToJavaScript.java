@@ -1269,7 +1269,7 @@ abstract class ByteCodeToJavaScript {
                     int indx = readIntArg(byteCodes, i);
                     final String type = jc.getClassName(indx);
                     if (!type.startsWith("[")) {
-                        emit(out, "var @2 = @1.$instOf_@3 ? 1 : 0;",
+                        emit(out, "var @2 = @1 != null && @1.$instOf_@3 ? 1 : 0;",
                              smapper.popA(), smapper.pushI(),
                              type.replace('/', '_'));
                     } else {

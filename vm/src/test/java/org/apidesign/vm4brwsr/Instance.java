@@ -68,12 +68,12 @@ public class Instance {
         GetByte i = new InstanceSub(7, 2.2d);
         return i.getByte();
     }
-    public static boolean instanceOf(boolean sub) {
+    public static boolean instanceOf(int sub) {
         Instance i = createInstance(sub);
         return isInstanceSubOf(i);
     }
     public static int castsWork(boolean interfc) {
-        Instance i = createInstance(true);
+        Instance i = createInstance(2);
         if (interfc) {
             GetByte b = (GetByte)i;
         } else {
@@ -85,11 +85,16 @@ public class Instance {
     private static boolean isInstanceSubOf(Instance instance) {
         return instance instanceof InstanceSub;
     }
-    private static Instance createInstance(boolean sub) {
-        return sub ? new InstanceSub(3, 0) : new Instance();
+    private static Instance createInstance(int type) {
+        switch (type) {
+            case 0: return null;
+            case 1: return new Instance();
+            case 2: return new InstanceSub(3, 0);
+        }
+        throw new IllegalArgumentException();
     }
     private static boolean isNull() {
-        return createInstance(true) == null;
+        return createInstance(2) == null;
     }
     
     @JavaScriptBody(args = "obj", body = "return obj.constructor;")
