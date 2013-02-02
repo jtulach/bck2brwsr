@@ -1053,7 +1053,7 @@ public final class URL implements java.io.Serializable {
     }
     
     @JavaScriptBody(args = {}, body = 
-          "if (!window) return null;\n"
+          "if (typeof window !== 'object') return null;\n"
         + "if (!window.location) return null;\n"
         + "if (!window.location.href) return null;\n"
         + "return window.location.href;\n"
