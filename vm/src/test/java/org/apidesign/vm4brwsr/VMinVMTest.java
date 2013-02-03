@@ -20,7 +20,6 @@ package org.apidesign.vm4brwsr;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import static org.testng.Assert.*;
 import javax.script.Invocable;
 import org.testng.annotations.BeforeClass;
@@ -35,13 +34,31 @@ public class VMinVMTest {
     private static CharSequence codeSeq;
     private static Invocable code;
     
-    @Test public void compareTheGeneratedCode() throws Exception {
-        byte[] arr = readClass("/org/apidesign/vm4brwsr/Array.class");
+    @Test public void compareGeneratedCodeForArrayClass() throws Exception {
+        compareCode("org/apidesign/vm4brwsr/Array.class");
+    }
+
+    @Test public void compareGeneratedCodeForClassesClass() throws Exception {
+        compareCode("org/apidesign/vm4brwsr/Classes.class");
+    }
+
+    @BeforeClass
+    public void compileTheCode() throws Exception {
+        StringBuilder sb = new StringBuilder();
+        code = StaticMethodTest.compileClass(sb, 
+            "org/apidesign/vm4brwsr/VMinVM"
+        );
+        codeSeq = sb;
+    }
+    
+    private void compareCode(final String nm) throws Exception, IOException {
+        byte[] arr = BytesLoader.readClass(nm);
         String ret1 = VMinVM.toJavaScript(arr);
         
         Object ret;
         try {
-            ret = code.invokeFunction(VMinVM.class.getName().replace('.', '_'), true);
+            ret = code.invokeFunction("bck2brwsr");
+            ret = code.invokeMethod(ret, "loadClass", VMinVM.class.getName());
             ret = code.invokeMethod(ret, "toJavaScript__Ljava_lang_String_2_3B", arr);
         } catch (Exception ex) {
             File f = File.createTempFile("execution", ".js");
@@ -64,27 +81,14 @@ public class VMinVMTest {
         
         assertTrue(ret instanceof String, "It is string: " + ret);
         
-        assertEquals((String)ret, ret1.toString(), "The code is the same");
-    }
-    
-    @BeforeClass
-    public void compileTheCode() throws Exception {
-        StringBuilder sb = new StringBuilder();
-        code = StaticMethodTest.compileClass(sb, 
-            "org/apidesign/vm4brwsr/VMinVM"
-        );
-        codeSeq = sb;
-    }
-    
-    private static byte[] readClass(String res) throws IOException {
-        InputStream is1 = VMinVMTest.class.getResourceAsStream(res);
-        assertNotNull(is1, "Stream found");
-        byte[] arr = new byte[is1.available()];
-        int len = is1.read(arr);
-        is1.close();
-        if (len != arr.length) {
-            throw new IOException("Wrong len " + len + " for arr: " + arr.length);
+        if (!ret1.toString().equals(ret)) {
+            StringBuilder msg = new StringBuilder("Difference found between ");
+            msg.append(StaticMethodTest.dumpJS(ret1));
+            msg.append(" ");
+            msg.append(StaticMethodTest.dumpJS((CharSequence) ret));
+            msg.append(" compiled by ");
+            msg.append(StaticMethodTest.dumpJS(codeSeq));
+            fail(msg.toString());
         }
-        return arr;
     }
 }

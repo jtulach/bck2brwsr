@@ -29,10 +29,13 @@ import java.lang.annotation.Target;
 @Target({ ElementType.TYPE })
 public @interface JavaScriptPrototype {
     /** Expression that identifies the function where all methods
-     * should be added into.
+     * should be added into. If this attribute is unspecified
+     * all methods are added to the same object specified by
+     * {@link #prototype()}.
+     * 
      * @return name of function to contain methods found in given class
      */
-    String container();
+    String container() default "";
     /** Expression that defines the way to construct prototype for this
      * class.
      * @return expression to construct prototype

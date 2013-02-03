@@ -32,24 +32,24 @@ public class ByteCodeToJavaScriptTest {
     @Test
     public void findMethodNameManglesObjectsCorrectly() {
         StringBuilder cnt = new StringBuilder();
-        boolean[] hasReturn = { false };
+        char[] returnType = { 'V' };
         String ret = ByteCodeToJavaScript.findMethodName(new String[] { 
             "StringTest", "replace", "(Ljava/lang/String;CC)Ljava/lang/String;"
-        }, cnt, hasReturn);
+        }, cnt, returnType);
         assertEquals(cnt.toString(), "000", "No doubles or longs");
-        assertTrue(hasReturn[0], "Returns string");
+        assertTrue(returnType[0] != 'V', "Returns string");
         assertEquals(ret, "replace__Ljava_lang_String_2Ljava_lang_String_2CC");
     }
 
     @Test
     public void manglingArrays() {
         StringBuilder cnt = new StringBuilder();
-        boolean[] hasReturn = { false };
+        char[] returnType = { 'V' };
         String ret = ByteCodeToJavaScript.findMethodName(new String[] { 
             "VMinVM", "toJavaScript", "([B)Ljava/lang/String;"
-        }, cnt, hasReturn);
+        }, cnt, returnType);
         assertEquals(cnt.toString(), "0", "No doubles or longs");
-        assertTrue(hasReturn[0], "Returns string");
+        assertTrue(returnType[0] != 'V', "Returns string");
         assertEquals(ret, "toJavaScript__Ljava_lang_String_2_3B");
     }
 }

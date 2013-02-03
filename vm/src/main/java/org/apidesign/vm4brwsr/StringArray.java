@@ -48,7 +48,7 @@ class StringArray {
         return arr == null ? new String[0] : arr;
     }
     
-    static StringArray asList(String[] names) {
+    static StringArray asList(String... names) {
         return new StringArray(names);
     }
 

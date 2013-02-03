@@ -51,6 +51,16 @@ public class Array {
         return doubles[4][0];
     }
     
+    static double[][] dbls = new double[1][2];
+    public static double twoDoubles() {
+        return dbls[0][0] + dbls[0][0];
+    }
+
+    static int[][] tints = new int[1][2];
+    public static int twoInts() {
+        return tints[0][0] + tints[0][0];
+    }
+    
     private static final Array[] ARR = { new Array(), new Array(), new Array() };
     
     private static Array[][] arr() {
@@ -82,14 +92,33 @@ public class Array {
         }
         return sum;
     }
-    public static int simple() {
-        int[] arr = { 0, 1, 2, 3, 4, 5 };
+    private static final int[] arr = { 0, 1, 2, 3, 4, 5 };
+    public static int simple(boolean clone) {
+        int[] ar;
+        if (clone) {
+            ar = arr.clone();
+        } else {
+            ar = arr;
+        }
         
         int sum = 0;
-        for (int a : arr) {
+        for (int a : ar) {
             sum += a;
         }
         return sum;
+    }
+    
+    public static String objectArrayClass() {
+        return Object[].class.getName();
+    }
+    
+    public static boolean instanceOfArray(Object obj) {
+        return obj instanceof Object[];
+    }
+    
+    public static int sum(int size) {
+        int[] arr = new int[size];
+        return arr[0] + arr[1];
     }
     
     static void arraycopy(char[] value, int srcBegin, char[] dst, int dstBegin, int count) {

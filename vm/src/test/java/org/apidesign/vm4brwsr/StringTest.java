@@ -75,6 +75,16 @@ public class StringTest {
         );
     }
 
+    @Test public void getBytes() throws Exception {
+        final String horse = "Žluťoučký kůň";
+        final String expected = StringSample.getBytes(horse);
+        assertExec(
+            "Bytes look simplar",
+            StringSample.class, "getBytes__Ljava_lang_String_2Ljava_lang_String_2",
+            expected, horse
+        );
+    }
+
     @Test(timeOut=10000) public void toStringConcatenation() throws Exception {
         assertExec(
             "Five executions should generate 5Hello World!",
@@ -170,6 +180,16 @@ public class StringTest {
             "One A and one B adds to 3",
             StringSample.class, "countAB__ILjava_lang_String_2",
             Double.valueOf(3), "Ahoj Bedo!"
+        );
+        
+    }
+
+    @Test public void compareStrings() throws Exception {
+        int res = StringSample.compare("Saab", "Volvo");
+        assertExec(
+            "Saab finished sooner than Volvo",
+            StringSample.class, "compare__ILjava_lang_String_2Ljava_lang_String_2",
+            Double.valueOf(res), "Saab", "Volvo"
         );
         
     }

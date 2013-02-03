@@ -30,6 +30,18 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
 @ClassesMarker(number = 10)
 @ClassesNamer(name = "my text")
 public class Classes {
+    public static String nameOfIO() {
+        return nameFor(IOException.class);
+    }
+    
+    private static String nameFor(Class<?> c) {
+        return c.getName();
+    }
+    
+    public static boolean isInterface(String s) throws ClassNotFoundException {
+        return Class.forName(s).isInterface();
+    }
+    
     public static boolean equalsClassesOfExceptions() {
         return MalformedURLException.class.getSuperclass() == IOException.class;
     }
@@ -60,6 +72,14 @@ public class Classes {
         }
         throw new IllegalStateException("Not a subtype: " + ioe);
     }
+    public static String newInstanceNoPubConstructor() throws Exception {
+        try {
+            Float f = Float.class.newInstance();
+            return "wrong, can't instantiate: " + f;
+        } catch (Exception ex) {
+            return (ex.getClass().getName() + ":" + ex.getMessage()).toString().toString();
+        }
+    }
     public static int getMarker() {
         if (!Classes.class.isAnnotationPresent(ClassesMarker.class)) {
             return -2;
@@ -78,6 +98,21 @@ public class Classes {
             }
         }
         return null;
+    }
+    
+    public static String intType() {
+        return Integer.TYPE.getName();
+    }
+    
+    public static int primitive() {
+        return 1;
+    }
+    public static boolean primitiveB() {
+        return true;
+    }
+    
+    public static String primitiveType(String method) throws Exception {
+        return reflectiveMethodCall(false, method).getClass().getName();
     }
     
     @JavaScriptBody(args = "msg", body = "throw msg;")
@@ -110,5 +145,10 @@ public class Classes {
             throw new NullPointerException(sb.toString());
         }
         return find.invoke(null);
+    }
+    
+    public static int reflectiveSum(int a, int b) throws Exception {
+        Method m = StaticMethod.class.getMethod("sum", int.class, int.class);
+        return (int) m.invoke(null, a, b);
     }
 }

@@ -68,6 +68,15 @@ public class StringSample {
         return chars('a', (char)30, 'b') instanceof String;
     }
     
+    public static String getBytes(String s) {
+        byte[] arr = s.getBytes();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < arr.length; i++) {
+            sb.append(arr[i]).append(" ");
+        }
+        return sb.toString().toString();
+    }
+    
     public static String insertBuffer() {
         StringBuilder sb = new StringBuilder();
         sb.append("Jardo!");
@@ -108,6 +117,10 @@ public class StringSample {
     
     public static String concatStrings() {
         return (toStringTest(1) + "\\\n\r\t").toString();
+    }
+    
+    public static int compare(String a, String b) {
+        return a.compareTo(b);
     }
 
     @Override

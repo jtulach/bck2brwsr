@@ -326,6 +326,10 @@ public final class ClassData implements RuntimeConstants {
             return res; // "#"+cpx+"// ERROR IN DISASSEMBLER";
         }
     }
+    
+    public int getAccessFlags() {
+        return access;
+    }
 
     /**
      * Returns true if it is a class
@@ -554,14 +558,14 @@ public final class ClassData implements RuntimeConstants {
             return in.toString();
         }
         case CONSTANT_CLASS:
-            String jn = javaName(getClassName(cpx));
+            String jn = getClassName(cpx);
             if (textual) {
                 if (refs != null) {
                     refs[0] = jn;
                 }
-                return jn.replace('/', '_') + "(false).constructor.$class";
+                return jn;
             }
-            return jn;
+            return javaName(jn);
         case CONSTANT_STRING:
             String sv = stringValue(((CPX)x).cpx, textual);
             if (textual) {

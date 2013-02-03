@@ -4,11 +4,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.apidesign.bck2brwsr</groupId>
-  <artifactId>demo.calculator</artifactId>
+  <artifactId>demo.static.calculator</artifactId>
   <version>0.3-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>JavaQuery Demo - Calculator</name>
+  <name>JavaQuery Demo - Calculator - Static Compilation</name>
   <url>http://maven.apache.org</url>
 
   <properties>
@@ -42,7 +42,7 @@
                 <configuration>
                     <executable>xdg-open</executable>
                     <arguments>
-                        <argument>${project.build.directory}/classes/org/apidesign/bck2brwsr/mavenhtml/Calculator.xhtml</argument>
+                        <argument>${project.build.directory}/classes/org/apidesign/bck2brwsr/demo/calc/staticcompilation/Calculator.xhtml</argument>
                     </arguments>
                 </configuration>
             </plugin>
@@ -61,7 +61,7 @@
   <dependencies>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
-      <artifactId>emul</artifactId>
+      <artifactId>emul.mini</artifactId>
       <version>0.3-SNAPSHOT</version>
     </dependency>
     <dependency>

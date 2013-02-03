@@ -32,7 +32,7 @@ import static org.apidesign.javap.RuntimeConstants.*;
 
 /* represents one entry of StackMapTable attribute
  */
-class StackMapTableData {
+abstract class StackMapTableData {
     final int frameType;
     int offsetDelta;
 
@@ -40,10 +40,58 @@ class StackMapTableData {
         this.frameType = frameType;
     }
 
+    abstract void applyTo(TypeArray localTypes, TypeArray stackTypes);
+
+    protected static String toString(
+            final String frameType,
+            final int offset,
+            final int[] localTypes,
+            final int[] stackTypes) {
+        final StringBuilder sb = new StringBuilder(frameType);
+
+        sb.append("(off: +").append(offset);
+        if (localTypes != null) {
+            sb.append(", locals: ");
+            appendTypes(sb, localTypes);
+        }
+        if (stackTypes != null) {
+            sb.append(", stack: ");
+            appendTypes(sb, stackTypes);
+        }
+        sb.append(')');
+
+        return sb.toString();
+    }
+
+    private static void appendTypes(final StringBuilder sb, final int[] types) {
+        sb.append('[');
+        if (types.length > 0) {
+            sb.append(TypeArray.typeString(types[0]));
+            for (int i = 1; i < types.length; ++i) {
+                sb.append(", ");
+                sb.append(TypeArray.typeString(types[i]));
+            }
+        }
+        sb.append(']');
+    }
+
     static class SameFrame extends StackMapTableData {
         SameFrame(int frameType, int offsetDelta) {
             super(frameType);
             this.offsetDelta = offsetDelta;
+        }
+
+        @Override
+        void applyTo(TypeArray localTypes, TypeArray stackTypes) {
+            stackTypes.clear();
+        }
+
+        @Override
+        public String toString() {
+            return toString("SAME" + ((frameType == SAME_FRAME_EXTENDED)
+                                          ? "_FRAME_EXTENDED" : ""),
+                            offsetDelta,
+                            null, null);
         }
     }
 
@@ -54,12 +102,39 @@ class StackMapTableData {
             this.offsetDelta = offsetDelta;
             this.stack = stack;
         }
+
+        @Override
+        void applyTo(TypeArray localTypes, TypeArray stackTypes) {
+            stackTypes.setAll(stack);
+        }
+
+        @Override
+        public String toString() {
+            return toString(
+                       "SAME_LOCALS_1_STACK_ITEM"
+                           + ((frameType == SAME_LOCALS_1_STACK_ITEM_EXTENDED)
+                                  ? "_EXTENDED" : ""),
+                       offsetDelta,
+                       null, stack);
+        }
     }
 
     static class ChopFrame extends StackMapTableData {
         ChopFrame(int frameType, int offsetDelta) {
             super(frameType);
             this.offsetDelta = offsetDelta;
+        }
+
+        @Override
+        void applyTo(TypeArray localTypes, TypeArray stackTypes) {
+            localTypes.setSize(localTypes.getSize()
+                                   - (SAME_FRAME_EXTENDED - frameType));
+            stackTypes.clear();
+        }
+
+        @Override
+        public String toString() {
+            return toString("CHOP", offsetDelta, null, null);
         }
     }
 
@@ -69,6 +144,17 @@ class StackMapTableData {
             super(frameType);
             this.offsetDelta = offsetDelta;
             this.locals = locals;
+        }
+
+        @Override
+        void applyTo(TypeArray localTypes, TypeArray stackTypes) {
+            localTypes.addAll(locals);
+            stackTypes.clear();
+        }
+
+        @Override
+        public String toString() {
+            return toString("APPEND", offsetDelta, locals, null);
         }
     }
 
@@ -80,6 +166,17 @@ class StackMapTableData {
             this.offsetDelta = offsetDelta;
             this.locals = locals;
             this.stack = stack;
+        }
+
+        @Override
+        void applyTo(TypeArray localTypes, TypeArray stackTypes) {
+            localTypes.setAll(locals);
+            stackTypes.setAll(stack);
+        }
+
+        @Override
+        public String toString() {
+            return toString("FULL", offsetDelta, locals, stack);
         }
     }
 

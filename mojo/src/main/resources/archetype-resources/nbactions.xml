@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+    <action>
+        <actionName>run</actionName>
+        <goals>
+            <goal>process-classes</goal>
+            <goal>org.apidesign.bck2brwsr:mojo:0.3-SNAPSHOT:brwsr</goal>
+        </goals>
+    </action>
+</actions>
