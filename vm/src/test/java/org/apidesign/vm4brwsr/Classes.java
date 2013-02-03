@@ -27,7 +27,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@ClassesMarker(number = 10)
+@ClassesMarker(number = 10, nicknames = { "Ten", "Deset" })
 @ClassesNamer(name = "my text")
 public class Classes {
     public static String nameOfIO() {
@@ -39,6 +39,7 @@ public class Classes {
     }
     
     private static final Class<?> PRELOAD = Runnable.class;
+    private static final Class<?> PRELOAD2 = ClassesMarker.E.class;
     
     public static boolean isInterface(String s) throws ClassNotFoundException {
         return Class.forName(s).isInterface();
@@ -57,7 +58,7 @@ public class Classes {
         return new IOException().getClass().getName().toString();
     }
     
-    @ClassesMarker(number = 1)
+    @ClassesMarker(number = 1, nicknames = { "One", "Jedna" } )
     public static String name() {
         return IOException.class.getName().toString();
     }
@@ -88,6 +89,17 @@ public class Classes {
         }
         ClassesMarker cm = Classes.class.getAnnotation(ClassesMarker.class);
         return cm == null ? -1 : cm.number();
+    }
+    public static String getMarkerNicknames() {
+        ClassesMarker cm = Classes.class.getAnnotation(ClassesMarker.class);
+        if (cm == null) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (String s : cm.nicknames()) {
+            sb.append(s).append("\n");
+        }
+        return sb.toString().toString();
     }
     public static String getNamer(boolean direct) {
         if (direct) {

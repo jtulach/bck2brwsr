@@ -18,6 +18,8 @@
 package org.apidesign.bck2brwsr.emul.reflect;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
@@ -29,7 +31,7 @@ public final class AnnotationImpl implements Annotation {
         return getClass();
     }
 
-    @JavaScriptBody(args = { "a", "n", "values" }, body = ""
+    @JavaScriptBody(args = { "a", "n", "arr", "values" }, body = ""
         + "function f(v, p) {\n"
         + "  var val = v;\n"
         + "  var prop = p;\n"
@@ -37,27 +39,42 @@ public final class AnnotationImpl implements Annotation {
         + "    return val[prop];\n"
         + "  };\n"
         + "}\n"
-        + "var props = Object.getOwnPropertyNames(values);\n"
-        + "for (var i = 0; i < props.length; i++) {\n"
-        + "  var p = props[i];\n"
-        + "  a[p] = new f(values, p);\n"
+        + "for (var i = 0; i < arr.length; i += 2) {\n"
+        + "  var m = arr[i];\n"
+        + "  var p = arr[i + 1];\n"
+        + "  a[m] = new f(values, p);\n"
         + "}\n"
         + "a['$instOf_' + n] = true;\n"
         + "return a;"
     )
-    private static <T extends Annotation> T create(AnnotationImpl a, String n, Object values) {
-        return null;
-    }
+    private static native <T extends Annotation> T create(
+        AnnotationImpl a, String n, String[] methodsAndProps, Object values
+    );
+    
     public static <T extends Annotation> T create(Class<T> annoClass, Object values) {
-        return create(new AnnotationImpl(), annoClass.getName().replace('.', '_'), values);
+        return create(new AnnotationImpl(), 
+            annoClass.getName().replace('.', '_'), 
+            findProps(annoClass), values
+        );
     }
 
     public static Annotation[] create(Object anno) {
         String[] names = findNames(anno);
         Annotation[] ret = new Annotation[names.length];
         for (int i = 0; i < names.length; i++) {
-            String n = names[i].substring(1, names[i].length() - 1).replace('/', '_');
-            ret[i] = create(new AnnotationImpl(), n, findData(anno, names[i]));
+            String annoNameSlash = names[i].substring(1, names[i].length() - 1);
+            Class<?> annoClass;
+            try {
+                annoClass = Class.forName(annoNameSlash.replace('/', '.'));
+            } catch (ClassNotFoundException ex) {
+                throw new IllegalStateException("Can't find annotation class " + annoNameSlash);
+            }
+            ret[i] = create(
+                new AnnotationImpl(), 
+                annoNameSlash.replace('/', '_'),
+                findProps(annoClass),
+                findData(anno, names[i])
+            );
         }
         return ret;
     }
@@ -70,12 +87,19 @@ public final class AnnotationImpl implements Annotation {
         + "}"
         + "return arr;"
     )
-    private static String[] findNames(Object anno) {
-        throw new UnsupportedOperationException();
-    }
+    private static native String[] findNames(Object anno);
 
     @JavaScriptBody(args={ "anno", "p"}, body="return anno[p];")
-    private static Object findData(Object anno, String p) {
-        throw new UnsupportedOperationException();
+    private static native Object findData(Object anno, String p);
+
+    private static String[] findProps(Class<?> annoClass) {
+        final Method[] marr = MethodImpl.findMethods(annoClass, Modifier.PUBLIC);
+        String[] arr = new String[marr.length * 2];
+        int pos = 0;
+        for (Method m : marr) {
+            arr[pos++] = MethodImpl.toSignature(m);
+            arr[pos++] = m.getName();
+        }
+        return arr;
     }
 }

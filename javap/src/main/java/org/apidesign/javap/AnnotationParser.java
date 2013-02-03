@@ -35,9 +35,11 @@ import java.io.IOException;
  */
 public class AnnotationParser {
     private final boolean textual;
+    private final boolean iterateArray;
     
-    protected AnnotationParser(boolean textual) {
+    protected AnnotationParser(boolean textual, boolean iterateArray) {
         this.textual = textual;
+        this.iterateArray = iterateArray;
     }
 
     protected void visitAnnotationStart(String type) throws IOException {
@@ -45,6 +47,13 @@ public class AnnotationParser {
 
     protected void visitAnnotationEnd(String type) throws IOException {
     }
+
+    protected void visitValueStart(String attrName, char type) throws IOException {
+    }
+
+    protected void visitValueEnd(String attrName, char type) throws IOException {
+    }
+
     
     protected void visitAttr(
         String annoType, String attr, String attrType, String value
@@ -89,9 +98,11 @@ public class AnnotationParser {
         }
     }
 
-    private void readValue(DataInputStream dis, ClassData cd, String typeName, String attrName) 
-    throws IOException {
+    private void readValue(
+        DataInputStream dis, ClassData cd, String typeName, String attrName
+    ) throws IOException {
         char type = (char)dis.readByte();
+        visitValueStart(attrName, type);
         if (type == '@') {
             readAnno(dis, cd);
         } else if ("CFJZsSIDB".indexOf(type) >= 0) { // NOI18N
@@ -112,13 +123,20 @@ public class AnnotationParser {
         } else if (type == '[') {
             int cnt = dis.readUnsignedShort();
             for (int i = 0; i < cnt; i++) {
-                readValue(dis, cd, typeName, attrName);
+                readValue(dis, cd, typeName, iterateArray ? attrName : null);
             }
         } else if (type == 'e') {
             int enumT = dis.readUnsignedShort();
+            String attrType = cd.stringValue(enumT, textual);
             int enumN = dis.readUnsignedShort();
+            String val = cd.stringValue(enumN, textual);
+            if (textual) {
+                val = '"' + val + '"';
+            }
+            visitAttr(typeName, attrName, attrType, val);
         } else {
             throw new IOException("Unknown type " + type);
         }
+        visitValueEnd(attrName, type);
     }
 }

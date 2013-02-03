@@ -1605,7 +1605,7 @@ abstract class ByteCodeToJavaScript {
         final String jvmType = "Lorg/apidesign/bck2brwsr/core/JavaScriptBody;";
         class P extends AnnotationParser {
             public P() {
-                super(false);
+                super(false, true);
             }
             
             int cnt;
@@ -1661,7 +1661,7 @@ abstract class ByteCodeToJavaScript {
         final String[] values = new String[attrNames.length];
         final boolean[] found = { false };
         final String jvmType = "L" + className.replace('.', '/') + ";";
-        AnnotationParser ap = new AnnotationParser(false) {
+        AnnotationParser ap = new AnnotationParser(false, true) {
             @Override
             protected void visitAttr(String type, String attr, String at, String value) {
                 if (type.equals(jvmType)) {
@@ -1699,34 +1699,54 @@ abstract class ByteCodeToJavaScript {
     }
 
     private static void generateAnno(ClassData cd, final Appendable out, byte[] data) throws IOException {
-        AnnotationParser ap = new AnnotationParser(true) {
-            int anno;
-            int cnt;
+        AnnotationParser ap = new AnnotationParser(true, false) {
+            int[] cnt = new int[32];
+            int depth;
             
             @Override
             protected void visitAnnotationStart(String type) throws IOException {
-                if (anno++ > 0) {
+                if (cnt[depth]++ > 0) {
                     out.append(",");
                 }
                 out.append('"').append(type).append("\" : {\n");
-                cnt = 0;
+                cnt[++depth] = 0;
             }
 
             @Override
             protected void visitAnnotationEnd(String type) throws IOException {
                 out.append("\n}\n");
+                depth--;
+            }
+
+            @Override
+            protected void visitValueStart(String attrName, char type) throws IOException {
+                if (cnt[depth]++ > 0) {
+                    out.append(",\n");
+                }
+                cnt[++depth] = 0;
+                if (attrName != null) {
+                    out.append(attrName).append(" : ");
+                }
+                if (type == '[') {
+                    out.append("[");
+                }
+            }
+
+            @Override
+            protected void visitValueEnd(String attrName, char type) throws IOException {
+                if (type == '[') {
+                    out.append("]");
+                }
+                depth--;
             }
             
             @Override
             protected void visitAttr(String type, String attr, String attrType, String value) 
             throws IOException {
-                if (attr == null) {
+                if (attr == null && value == null) {
                     return;
                 }
-                if (cnt++ > 0) {
-                    out.append(",\n");
-                }
-                out.append(attr).append("__").append(attrType).append(" : ").append(value);
+                out.append(value);
             }
         };
         ap.parse(data, cd);
