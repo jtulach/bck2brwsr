@@ -19,6 +19,7 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
@@ -27,7 +28,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@ClassesMarker(number = 10, nicknames = { "Ten", "Deset" })
+@ClassesMarker(number = 10, nicknames = { "Ten", "Deset" }, count = ClassesMarker.E.TWO)
 @ClassesNamer(name = "my text")
 public class Classes {
     public static String nameOfIO() {
@@ -40,6 +41,7 @@ public class Classes {
     
     private static final Class<?> PRELOAD = Runnable.class;
     private static final Class<?> PRELOAD2 = ClassesMarker.E.class;
+    private static final Class<?> PRELOAD3 = RetentionPolicy.class;
     
     public static boolean isInterface(String s) throws ClassNotFoundException {
         return Class.forName(s).isInterface();
@@ -100,6 +102,13 @@ public class Classes {
             sb.append(s).append("\n");
         }
         return sb.toString().toString();
+    }
+    public static String getMarkerE() {
+        ClassesMarker cm = Classes.class.getAnnotation(ClassesMarker.class);
+        if (cm == null) {
+            return null;
+        }
+        return cm.count().name();
     }
     public static String getNamer(boolean direct) {
         if (direct) {

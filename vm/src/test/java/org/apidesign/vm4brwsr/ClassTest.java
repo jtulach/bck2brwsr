@@ -90,6 +90,9 @@ public class ClassTest {
     @Test public void jsArrayAnnotation() throws Exception {
         assertExec("Check array annotation", Classes.class, "getMarkerNicknames__Ljava_lang_String_2", Classes.getMarkerNicknames());
     }
+    @Test public void jsEnumAnnotation() throws Exception {
+        assertExec("Check enum annotation", Classes.class, "getMarkerE__Ljava_lang_String_2", Classes.getMarkerE());
+    }
     @Test public void jsStringAnnotation() throws Exception {
         assertExec("Check class annotation", Classes.class, "getNamer__Ljava_lang_String_2Z", "my text", true);
     }

@@ -131,7 +131,7 @@ public class AnnotationParser {
             int enumN = dis.readUnsignedShort();
             String val = cd.stringValue(enumN, textual);
             if (textual) {
-                val = '"' + val + '"';
+                val = "vm." + attrType.substring(1, attrType.length() - 1).replace('/', '_') + "(false).constructor." + val;
             }
             visitAttr(typeName, attrName, attrType, val);
         } else {
