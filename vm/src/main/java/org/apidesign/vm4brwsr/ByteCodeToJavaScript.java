@@ -175,6 +175,7 @@ abstract class ByteCodeToJavaScript {
                 out.append("\n    };");
             }
             out.append(prefix).append(mn).append(".access = " + m.getAccess()).append(";");
+            out.append(prefix).append(mn).append(".cls = CLS;");
         }
         out.append("\n    c.constructor = CLS;");
         out.append("\n    c.$instOf_").append(className).append(" = true;");

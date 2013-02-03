@@ -27,8 +27,14 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public final class AnnotationImpl implements Annotation {
+    private final Class<? extends Annotation> type;
+
+    public AnnotationImpl(Class<? extends Annotation> type) {
+        this.type = type;
+    }
+    
     public Class<? extends Annotation> annotationType() {
-        return getClass();
+        return type;
     }
 
     @JavaScriptBody(args = { "a", "n", "arr", "values" }, body = ""
@@ -52,7 +58,7 @@ public final class AnnotationImpl implements Annotation {
     );
     
     public static <T extends Annotation> T create(Class<T> annoClass, Object values) {
-        return create(new AnnotationImpl(), 
+        return create(new AnnotationImpl(annoClass), 
             annoClass.getName().replace('.', '_'), 
             findProps(annoClass), values
         );
@@ -63,14 +69,14 @@ public final class AnnotationImpl implements Annotation {
         Annotation[] ret = new Annotation[names.length];
         for (int i = 0; i < names.length; i++) {
             String annoNameSlash = names[i].substring(1, names[i].length() - 1);
-            Class<?> annoClass;
+            Class<? extends Annotation> annoClass;
             try {
-                annoClass = Class.forName(annoNameSlash.replace('/', '.'));
+                annoClass = (Class<? extends Annotation>)Class.forName(annoNameSlash.replace('/', '.'));
             } catch (ClassNotFoundException ex) {
                 throw new IllegalStateException("Can't find annotation class " + annoNameSlash);
             }
             ret[i] = create(
-                new AnnotationImpl(), 
+                new AnnotationImpl(annoClass), 
                 annoNameSlash.replace('/', '_'),
                 findProps(annoClass),
                 findData(anno, names[i])

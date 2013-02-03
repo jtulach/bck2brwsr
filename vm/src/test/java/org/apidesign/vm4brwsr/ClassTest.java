@@ -93,6 +93,9 @@ public class ClassTest {
     @Test public void jsEnumAnnotation() throws Exception {
         assertExec("Check enum annotation", Classes.class, "getMarkerE__Ljava_lang_String_2", Classes.getMarkerE());
     }
+    @Test public void jsRetentionAnnotation() throws Exception {
+        assertExec("Check enum annotation", Classes.class, "getRetention__Ljava_lang_String_2", Classes.getRetention());
+    }
     @Test public void jsStringAnnotation() throws Exception {
         assertExec("Check class annotation", Classes.class, "getNamer__Ljava_lang_String_2Z", "my text", true);
     }
@@ -108,6 +111,14 @@ public class ClassTest {
             "java.io.IOException", true, "name"
         );
     }
+    
+    @Test public void jsMethodDeclaredInObject() throws Exception {
+        assertExec("Defined in Object", Classes.class, 
+            "objectName__Ljava_lang_String_2", 
+            "java.lang.Object"
+        );
+    }
+    
     @Test public void jsInvokeParamMethod() throws Exception {
         assertExec("sums two numbers via reflection", Classes.class, 
             "reflectiveSum__III", Double.valueOf(5), 2, 3

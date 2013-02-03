@@ -56,8 +56,10 @@ public abstract class MethodImpl {
         + "var arr = new Array();\n"
         + "for (m in c) {\n"
         + "  if (m.indexOf(prefix) === 0) {\n"
+        + "     if (!c[m].cls) continue;\n"
         + "     arr.push(m);\n"
         + "     arr.push(c[m]);\n"
+        + "     arr.push(c[m].cls.$class);\n"
         + "  }"
         + "}\n"
         + "return arr;")
@@ -67,9 +69,10 @@ public abstract class MethodImpl {
     public static Method findMethod(
         Class<?> clazz, String name, Class<?>... parameterTypes) {
         Object[] data = findMethodData(clazz, name + "__");
-        BIG: for (int i = 0; i < data.length; i += 2) {
-            String sig = ((String) data[0]).substring(name.length() + 2);
-            Method tmp = INSTANCE.create(clazz, name, data[1], sig);
+        BIG: for (int i = 0; i < data.length; i += 3) {
+            String sig = ((String) data[i]).substring(name.length() + 2);
+            Class<?> cls = (Class<?>) data[i + 2];
+            Method tmp = INSTANCE.create(cls, name, data[i + 1], sig);
             Class<?>[] tmpParms = tmp.getParameterTypes();
             if (parameterTypes.length != tmpParms.length) {
                 continue;
@@ -87,7 +90,7 @@ public abstract class MethodImpl {
     public static Method[] findMethods(Class<?> clazz, int mask) {
         Object[] namesAndData = findMethodData(clazz, "");
         int cnt = 0;
-        for (int i = 0; i < namesAndData.length; i += 2) {
+        for (int i = 0; i < namesAndData.length; i += 3) {
             String sig = (String) namesAndData[i];
             Object data = namesAndData[i + 1];
             int middle = sig.indexOf("__");
@@ -96,7 +99,8 @@ public abstract class MethodImpl {
             }
             String name = sig.substring(0, middle);
             sig = sig.substring(middle + 2);
-            final Method m = INSTANCE.create(clazz, name, data, sig);
+            Class<?> cls = (Class<?>) namesAndData[i + 2];
+            final Method m = INSTANCE.create(cls, name, data, sig);
             if ((m.getModifiers() & mask) == 0) {
                 continue;
             }

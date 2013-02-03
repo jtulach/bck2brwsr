@@ -19,6 +19,8 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -42,6 +44,7 @@ public class Classes {
     private static final Class<?> PRELOAD = Runnable.class;
     private static final Class<?> PRELOAD2 = ClassesMarker.E.class;
     private static final Class<?> PRELOAD3 = RetentionPolicy.class;
+    private static final Class<?> PRELOAD4 = ElementType.class;
     
     public static boolean isInterface(String s) throws ClassNotFoundException {
         return Class.forName(s).isInterface();
@@ -70,6 +73,11 @@ public class Classes {
     public static String canonicalName() {
         return IOException.class.getCanonicalName();
     }
+    
+    public static String objectName() throws NoSuchMethodException {
+        return IOException.class.getMethod("wait").getDeclaringClass().getName();
+    }
+    
     public static boolean newInstance() throws Exception {
         IOException ioe = IOException.class.newInstance();
         if (ioe instanceof IOException) {
@@ -102,6 +110,16 @@ public class Classes {
             sb.append(s).append("\n");
         }
         return sb.toString().toString();
+    }
+    @Retention(RetentionPolicy.CLASS)
+    @interface Ann {
+    }
+    
+    public static String getRetention() throws Exception {
+        Retention r = Ann.class.getAnnotation(Retention.class);
+        assert r != null : "Annotation is present";
+        assert r.value() == RetentionPolicy.CLASS : "Policy value is OK: " + r.value();
+        return r.annotationType().getName();
     }
     public static String getMarkerE() {
         ClassesMarker cm = Classes.class.getAnnotation(ClassesMarker.class);
