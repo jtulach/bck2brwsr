@@ -60,6 +60,12 @@ public class AnnotationParser {
     ) throws IOException {
     }
     
+    protected void visitEnumAttr(
+        String annoType, String attr, String attrType, String value
+    ) throws IOException {
+        visitAttr(annoType, attr, attrType, value);
+    }
+    
     /** Initialize the parsing with constant pool from <code>cd</code>.
      * 
      * @param attr the attribute defining annotations
@@ -130,10 +136,7 @@ public class AnnotationParser {
             String attrType = cd.stringValue(enumT, textual);
             int enumN = dis.readUnsignedShort();
             String val = cd.stringValue(enumN, textual);
-            if (textual) {
-                val = "vm." + attrType.substring(1, attrType.length() - 1).replace('/', '_') + "(false).constructor." + val;
-            }
-            visitAttr(typeName, attrName, attrType, val);
+            visitEnumAttr(typeName, attrName, attrType, val);
         } else {
             throw new IOException("Unknown type " + type);
         }

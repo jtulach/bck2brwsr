@@ -1699,7 +1699,7 @@ abstract class ByteCodeToJavaScript {
         return " = null;";
     }
 
-    private static void generateAnno(ClassData cd, final Appendable out, byte[] data) throws IOException {
+    private void generateAnno(ClassData cd, final Appendable out, byte[] data) throws IOException {
         AnnotationParser ap = new AnnotationParser(true, false) {
             int[] cnt = new int[32];
             int depth;
@@ -1748,6 +1748,16 @@ abstract class ByteCodeToJavaScript {
                     return;
                 }
                 out.append(value);
+            }
+
+            @Override
+            protected void visitEnumAttr(String type, String attr, String attrType, String value) 
+            throws IOException {
+                final String slashType = attrType.substring(1, attrType.length() - 1);
+                requireReference(slashType);
+                
+                out.append(accessClass(slashType.replace('/', '_')))
+                   .append("(false).constructor.").append(value);
             }
         };
         ap.parse(data, cd);

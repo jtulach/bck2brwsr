@@ -19,7 +19,6 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Method;
@@ -42,9 +41,6 @@ public class Classes {
     }
     
     private static final Class<?> PRELOAD = Runnable.class;
-    private static final Class<?> PRELOAD2 = ClassesMarker.E.class;
-    private static final Class<?> PRELOAD3 = RetentionPolicy.class;
-    private static final Class<?> PRELOAD4 = ElementType.class;
     
     public static boolean isInterface(String s) throws ClassNotFoundException {
         return Class.forName(s).isInterface();

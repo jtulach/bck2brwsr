@@ -17,6 +17,8 @@
  */
 package org.apidesign.bck2brwsr.tck;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
@@ -67,6 +69,19 @@ public class ReflectionTest {
         }
         return sb.toString();
     }
+
+    @Compare public String namesOfDeclaringClassesOfMethods() {
+        StringBuilder sb = new StringBuilder();
+        String[] arr = new String[20];
+        int i = 0;
+        for (Method m : StaticUse.class.getMethods()) {
+            arr[i++] = m.getName() + "@" + m.getDeclaringClass().getName();
+        }
+        for (String s : sort(arr, i)) {
+            sb.append(s).append("\n");
+        }
+        return sb.toString();
+    }
     
     @Compare public String cannotCallNonStaticMethodWithNull() throws Exception {
         StaticUse.class.getMethod("instanceMethod").invoke(null);
@@ -75,6 +90,17 @@ public class ReflectionTest {
 
     @Compare public Object voidReturnType() throws Exception {
         return StaticUse.class.getMethod("instanceMethod").getReturnType();
+    }
+    
+    @Retention(RetentionPolicy.RUNTIME)
+    @interface Ann {
+    }
+    
+    @Compare public String annoClass() throws Exception {
+        Retention r = Ann.class.getAnnotation(Retention.class);
+        assert r != null : "Annotation is present";
+        assert r.value() == RetentionPolicy.RUNTIME : "Policy value is OK: " + r.value();
+        return r.annotationType().getName();
     }
     
     enum E { A, B };
