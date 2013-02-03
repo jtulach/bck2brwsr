@@ -149,14 +149,12 @@ public class ClassTest {
             0.0, "java.lang.String"
         );
     }
-    /*
     @Test public void isInterface() throws Exception {
         assertExec("Calls Class.isInterface", Classes.class, 
             "isInterface__ZLjava_lang_String_2", 
             1.0, "java.lang.Runnable"
         );
     }
-    */
     @Test public void integerType() throws Exception {
         assertExec("Computes the type", Classes.class, 
             "intType__Ljava_lang_String_2", 

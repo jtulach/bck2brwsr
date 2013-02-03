@@ -47,6 +47,14 @@ public class ReflectionTest {
         return long.class.toString();
     }
     
+    @Compare public boolean isRunnableInterface() {
+        return Runnable.class.isInterface();
+    }
+
+    @Compare public String isRunnableHasRunMethod() throws NoSuchMethodException {
+        return Runnable.class.getMethod("run").getName();
+    }
+    
     @Compare public String namesOfMethods() {
         StringBuilder sb = new StringBuilder();
         String[] arr = new String[20];

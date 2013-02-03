@@ -38,6 +38,8 @@ public class Classes {
         return c.getName();
     }
     
+    private static final Class<?> PRELOAD = Runnable.class;
+    
     public static boolean isInterface(String s) throws ClassNotFoundException {
         return Class.forName(s).isInterface();
     }
