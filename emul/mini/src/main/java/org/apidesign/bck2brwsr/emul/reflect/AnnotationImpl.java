@@ -41,6 +41,15 @@ public final class AnnotationImpl implements Annotation {
         + "function f(val, prop, clazz) {\n"
         + "  return function() {\n"
         + "    if (clazz == null) return val[prop];\n"
+        + "    if (clazz.isArray__Z()) {\n"
+        + "      var valarr = val[prop];\n"
+        + "      var cmp = clazz.getComponentType__Ljava_lang_Class_2();\n"
+        + "      var retarr = vm.java_lang_reflect_Array(false).newInstance__Ljava_lang_Object_2Ljava_lang_Class_2I(cmp, valarr.length);\n"
+        + "      for (var i = 0; i < valarr.length; i++) {\n"
+        + "        retarr[i] = CLS.prototype.c__Ljava_lang_Object_2Ljava_lang_Class_2Ljava_lang_Object_2(cmp, valarr[i]);\n"
+        + "      }\n"
+        + "      return retarr;\n"
+        + "    }\n"
         + "    return CLS.prototype.c__Ljava_lang_Object_2Ljava_lang_Class_2Ljava_lang_Object_2(clazz, val[prop]);\n"
         + "  };\n"
         + "}\n"
@@ -109,7 +118,12 @@ public final class AnnotationImpl implements Annotation {
         for (Method m : marr) {
             arr[pos++] = MethodImpl.toSignature(m);
             arr[pos++] = m.getName();
-            arr[pos++] = m.getReturnType().isAnnotation() ? m.getReturnType() : null;
+            final Class<?> rt = m.getReturnType();
+            if (rt.isArray()) {
+                arr[pos++] = rt.getComponentType().isAnnotation() ? rt : null;
+            } else {
+                arr[pos++] = rt.isAnnotation() ? rt : null;
+            }
         }
         return arr;
     }

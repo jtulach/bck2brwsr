@@ -153,6 +153,15 @@ public class Classes {
         assert cm != null : "ClassesNamer is present";
         return cm.anno().value();
     }
+    public static int getInnerNamers() {
+        ClassesMarker cm = Classes.class.getAnnotation(ClassesMarker.class);
+        assert cm != null : "ClassesNamer is present";
+        int sum = 0;
+        for (ClassesMarker.Anno anno : cm.subs()) {
+            sum += anno.value();
+        }
+        return sum;
+    }
     
     public static String intType() {
         return Integer.TYPE.getName();
