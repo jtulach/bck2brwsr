@@ -231,12 +231,14 @@ public final
     }
     
     @JavaScriptBody(args = {"n", "c" }, body =
-        "if (vm[c]) return vm[c].$class;\n"
-      + "if (vm.loadClass) {\n"
-      + "  vm.loadClass(n);\n"
-      + "  if (vm[c]) return vm[c].$class;\n"
+        "if (!vm[c]) {\n"
+      + "  if (vm.loadClass) {\n"
+      + "    vm.loadClass(n);\n"
+      + "  }\n"
+      + "  if (!vm[c]) return null;\n"
       + "}\n"
-      + "return null;"
+      + "vm[c](false);"
+      + "return vm[c].$class;"
     )
     private static native Class<?> loadCls(String n, String c);
 
