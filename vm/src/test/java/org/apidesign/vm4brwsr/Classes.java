@@ -97,6 +97,9 @@ public class Classes {
             return -2;
         }
         ClassesMarker cm = Classes.class.getAnnotation(ClassesMarker.class);
+        assert cm instanceof Object : "Is object " + cm;
+        assert cm instanceof Annotation : "Is annotation " + cm;
+        assert !((Object)cm instanceof Class) : "Is not Class " + cm;
         return cm == null ? -1 : cm.number();
     }
     public static String getMarkerNicknames() {
