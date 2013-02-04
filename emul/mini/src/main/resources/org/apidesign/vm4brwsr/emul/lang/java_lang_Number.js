@@ -80,6 +80,32 @@ Number.prototype.sub64 = function(x) {
     return hi.next32(low);
 };
 
+Number.prototype.mul64 = function(x) {
+    var low = this.mul32(x);
+    low += (low < 0) ? (__m32+1) : 0;
+    // first count upper 32 bits of (this.low * x.low)
+    var hi_hi = 0;
+    var hi_low = 0;
+    var m = 1;
+    for (var i = 0; i < 32; i++) {
+        if (x & m) {
+            hi_hi += this >>> 16;
+            hi_low += this & 0xFFFF
+        }
+        hi_low >>= 1;
+        hi_low += (hi_hi & 1) ? 0x8000 : 0;
+        hi_hi >>= 1;
+        m <<= 1;
+    }
+    var hi = (hi_hi << 16) + hi_low;
+    
+    var m1 = this.high32().mul32(x);
+    var m2 = this.mul32(x.high32());
+    hi = hi.add32(m1).add32(m2);
+    
+    return hi.next32(low);
+};
+
 Number.prototype.div64 = function(x) {
     var low = Math.floor(this.toFP() / x.toFP()); // TODO: not exact enough
     if (low > __m32) {

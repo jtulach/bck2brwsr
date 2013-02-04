@@ -219,6 +219,56 @@ public class NumberTest {
         );
     }
     
+    @Test public void longMultiplyMax() throws Exception {
+        final long res = Long.MAX_VALUE * 2l;
+        assertExec("Multiplication MAX*2",
+            Numbers.class, "mulL__J_3B_3B",
+            Double.valueOf(res),
+            new byte[] { (byte)0x7f, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff },
+            new byte[] { (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x02 }
+        );
+    }
+    
+    @Test public void longMultiplyMaxAndMax() throws Exception {
+        final long res = Long.MAX_VALUE * Long.MAX_VALUE;
+        assertExec("Multiplication MAX*MAX",
+            Numbers.class, "mulL__J_3B_3B",
+            Double.valueOf(res),
+            new byte[] { (byte)0x7f, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff },
+            new byte[] { (byte)0x7f, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff }
+        );
+    }
+    
+    @Test public void longMultiplyMin() throws Exception {
+        final long res = Long.MIN_VALUE * 2l;
+        assertExec("Multiplication MIN*2",
+            Numbers.class, "mulL__J_3B_3B",
+            Double.valueOf(res),
+            new byte[] { (byte)0x80, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00 },
+            new byte[] { (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x02 }
+        );
+    }
+    
+    @Test public void longMultiplyMinAndMin() throws Exception {
+        final long res = Long.MIN_VALUE * Long.MIN_VALUE;
+        assertExec("Multiplication MIN*2",
+            Numbers.class, "mulL__J_3B_3B",
+            Double.valueOf(res),
+            new byte[] { (byte)0x80, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00 },
+            new byte[] { (byte)0x80, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00 }
+        );
+    }
+    
+    @Test public void longMultiplyPrecision() throws Exception {
+        final long res = 0x00fa37d7763e0ca1l * 0xa7b3432fff00123el;
+        assertExec("Multiplication",
+            Numbers.class, "mulL__J_3B_3B",
+            Double.valueOf(res),
+            new byte[] { (byte)0x00, (byte)0xfa, (byte)0x37, (byte)0xd7, (byte)0x76, (byte)0x3e, (byte)0x0c, (byte)0xa1 },
+            new byte[] { (byte)0xa7, (byte)0xb3, (byte)0x43, (byte)0x2f, (byte)0xff, (byte)0x00, (byte)0x12, (byte)0x3e }
+        );
+    }
+    
     @Test public void longShiftL1() throws Exception {
         final long res = 0x00fa37d7763e0ca1l << 5;
         assertExec("Long << 5",

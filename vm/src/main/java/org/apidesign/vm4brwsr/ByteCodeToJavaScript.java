@@ -544,7 +544,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 = @1.mul32(@2);", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lmul:
-                    emit(out, "@1 *= @2;", smapper.getL(1), smapper.popL());
+                    emit(out, "@1 = @1.mul64(@2);", smapper.getL(1), smapper.popL());
                     break;
                 case opc_fmul:
                     emit(out, "@1 *= @2;", smapper.getF(1), smapper.popF());
