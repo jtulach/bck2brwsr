@@ -103,6 +103,15 @@ public class ReflectionTest {
         return r.annotationType().getName();
     }
     
+    @Compare public boolean isAnnotation() {
+        return Ann.class.isAnnotation();
+    }
+    @Compare public boolean isNotAnnotation() {
+        return String.class.isAnnotation();
+    }
+    @Compare public boolean isNotAnnotationEnum() {
+        return E.class.isAnnotation();
+    }
     enum E { A, B };
     @Compare public boolean isEnum() {
         return E.A.getClass().isEnum();
