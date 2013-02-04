@@ -38,10 +38,7 @@ public final class AnnotationImpl implements Annotation {
     }
 
     @JavaScriptBody(args = { "a", "n", "arr", "values" }, body = ""
-        + "function f(v, p, c) {\n"
-        + "  var val = v;\n"
-        + "  var prop = p;\n"
-        + "  var clazz = c;\n"
+        + "function f(val, prop, clazz) {\n"
         + "  return function() {\n"
         + "    if (clazz == null) return val[prop];\n"
         + "    return CLS.prototype.c__Ljava_lang_Object_2Ljava_lang_Class_2Ljava_lang_Object_2(clazz, val[prop]);\n"
@@ -51,7 +48,7 @@ public final class AnnotationImpl implements Annotation {
         + "  var m = arr[i];\n"
         + "  var p = arr[i + 1];\n"
         + "  var c = arr[i + 2];\n"
-        + "  a[m] = new f(values, p, c);\n"
+        + "  a[m] = f(values, p, c);\n"
         + "}\n"
         + "a['$instOf_' + n] = true;\n"
         + "return a;"
