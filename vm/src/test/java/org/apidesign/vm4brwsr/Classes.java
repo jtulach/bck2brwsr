@@ -104,6 +104,12 @@ public class Classes {
         if (cm == null) {
             return null;
         }
+        
+        final Object[] arr = cm.nicknames();
+        assert arr instanceof Object[] : "Instance of Object array: " + arr;
+        assert arr instanceof String[] : "Instance of String array: " + arr;
+        assert !(arr instanceof Integer[]) : "Not instance of Integer array: " + arr;
+        
         StringBuilder sb = new StringBuilder();
         for (String s : cm.nicknames()) {
             sb.append(s).append("\n");
