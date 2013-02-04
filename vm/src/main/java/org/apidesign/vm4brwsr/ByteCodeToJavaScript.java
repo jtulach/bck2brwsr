@@ -1705,16 +1705,22 @@ abstract class ByteCodeToJavaScript {
             int depth;
             
             @Override
-            protected void visitAnnotationStart(String type) throws IOException {
+            protected void visitAnnotationStart(String attrType, boolean top) throws IOException {
+                final String slashType = attrType.substring(1, attrType.length() - 1);
+                requireReference(slashType);
+                
                 if (cnt[depth]++ > 0) {
                     out.append(",");
                 }
-                out.append('"').append(type).append("\" : {\n");
+                if (top) {
+                    out.append('"').append(attrType).append("\" : ");
+                }
+                out.append("{\n");
                 cnt[++depth] = 0;
             }
 
             @Override
-            protected void visitAnnotationEnd(String type) throws IOException {
+            protected void visitAnnotationEnd(String type, boolean top) throws IOException {
                 out.append("\n}\n");
                 depth--;
             }

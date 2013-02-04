@@ -33,4 +33,10 @@ public @interface ClassesMarker {
     enum E {
         ONE, TWO;
     }
+    
+    Anno[] subs() default {};
+    
+    public @interface Anno {
+        int value();
+    }
 }

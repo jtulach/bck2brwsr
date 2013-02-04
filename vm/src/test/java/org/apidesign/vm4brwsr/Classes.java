@@ -29,8 +29,11 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@ClassesMarker(number = 10, nicknames = { "Ten", "Deset" }, count = ClassesMarker.E.TWO)
-@ClassesNamer(name = "my text")
+@ClassesMarker(number = 10, nicknames = { "Ten", "Deset" }, count = ClassesMarker.E.TWO, subs = {
+    @ClassesMarker.Anno(Integer.SIZE),
+    @ClassesMarker.Anno(Integer.MIN_VALUE)
+})
+@ClassesNamer(name = "my text", anno = @ClassesMarker.Anno(Integer.MAX_VALUE))
 public class Classes {
     public static String nameOfIO() {
         return nameFor(IOException.class);
