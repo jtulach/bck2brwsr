@@ -38,24 +38,31 @@ public final class AnnotationImpl implements Annotation {
     }
 
     @JavaScriptBody(args = { "a", "n", "arr", "values" }, body = ""
-        + "function f(v, p) {\n"
+        + "function f(v, p, c) {\n"
         + "  var val = v;\n"
         + "  var prop = p;\n"
+        + "  var clazz = c;\n"
         + "  return function() {\n"
-        + "    return val[prop];\n"
+        + "    if (clazz == null) return val[prop];\n"
+        + "    return CLS.prototype.c__Ljava_lang_Object_2Ljava_lang_Class_2Ljava_lang_Object_2(clazz, val[prop]);\n"
         + "  };\n"
         + "}\n"
-        + "for (var i = 0; i < arr.length; i += 2) {\n"
+        + "for (var i = 0; i < arr.length; i += 3) {\n"
         + "  var m = arr[i];\n"
         + "  var p = arr[i + 1];\n"
-        + "  a[m] = new f(values, p);\n"
+        + "  var c = arr[i + 2];\n"
+        + "  a[m] = new f(values, p, c);\n"
         + "}\n"
         + "a['$instOf_' + n] = true;\n"
         + "return a;"
     )
     private static native <T extends Annotation> T create(
-        AnnotationImpl a, String n, String[] methodsAndProps, Object values
+        AnnotationImpl a, String n, Object[] methodsAndProps, Object values
     );
+    
+    private static Object c(Class<? extends Annotation> a, Object v) {
+        return create(a, v);
+    }
     
     public static <T extends Annotation> T create(Class<T> annoClass, Object values) {
         return create(new AnnotationImpl(annoClass), 
@@ -98,13 +105,14 @@ public final class AnnotationImpl implements Annotation {
     @JavaScriptBody(args={ "anno", "p"}, body="return anno[p];")
     private static native Object findData(Object anno, String p);
 
-    private static String[] findProps(Class<?> annoClass) {
+    private static Object[] findProps(Class<?> annoClass) {
         final Method[] marr = MethodImpl.findMethods(annoClass, Modifier.PUBLIC);
-        String[] arr = new String[marr.length * 2];
+        Object[] arr = new Object[marr.length * 3];
         int pos = 0;
         for (Method m : marr) {
             arr[pos++] = MethodImpl.toSignature(m);
             arr[pos++] = m.getName();
+            arr[pos++] = m.getReturnType().isAnnotation() ? m.getReturnType() : null;
         }
         return arr;
     }

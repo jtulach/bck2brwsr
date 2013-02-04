@@ -33,7 +33,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
     @ClassesMarker.Anno(Integer.SIZE),
     @ClassesMarker.Anno(Integer.MIN_VALUE)
 })
-@ClassesNamer(name = "my text", anno = @ClassesMarker.Anno(Integer.MAX_VALUE))
+@ClassesNamer(name = "my text", anno = @ClassesMarker.Anno(333))
 public class Classes {
     public static String nameOfIO() {
         return nameFor(IOException.class);
@@ -144,6 +144,11 @@ public class Classes {
             }
         }
         return null;
+    }
+    public static int getInnerNamer() {
+        ClassesNamer cm = Classes.class.getAnnotation(ClassesNamer.class);
+        assert cm != null : "ClassesNamer is present";
+        return cm.anno().value();
     }
     
     public static String intType() {

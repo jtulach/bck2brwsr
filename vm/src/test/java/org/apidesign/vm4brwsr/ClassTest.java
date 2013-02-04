@@ -102,6 +102,9 @@ public class ClassTest {
     @Test public void jsStringAnnotationFromArray() throws Exception {
         assertExec("Check class annotation", Classes.class, "getNamer__Ljava_lang_String_2Z", "my text", false);
     }
+    @Test public void jsInnerAnnotation() throws Exception {
+        assertExec("Check inner annotation", Classes.class, "getInnerNamer__I", Double.valueOf(Classes.getInnerNamer()));
+    }
     @Test public void javaInvokeMethod() throws Exception {
         assertEquals(Classes.reflectiveMethodCall(true, "name"), "java.io.IOException", "Calls the name() method via reflection");
     }
