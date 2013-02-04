@@ -51,4 +51,7 @@ public class System {
     public static long nanoTime() {
         return 1000L * currentTimeMillis();
     }
+    @JavaScriptBody(args = { "obj" }, body="return vm.java_lang_Object(false).hashCode__I.call(obj);")
+    public static native int identityHashCode(Object obj);
+    
 }

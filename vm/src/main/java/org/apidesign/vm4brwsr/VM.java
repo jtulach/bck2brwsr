@@ -32,6 +32,7 @@ class VM extends ByteCodeToJavaScript {
     static {
         // uses VMLazy to load dynamic classes
         VMLazy.init();
+        Zips.init();
     }
 
     @Override
@@ -116,6 +117,12 @@ class VM extends ByteCodeToJavaScript {
             + "    var args = arguments;\n"
             + "    var loader = {};\n"
             + "    loader.vm = vm;\n"
+            + "    if (args.length == 1 && typeof args[0] !== 'function') {;\n"
+            + "      var classpath = args[0];\n"
+            + "      args[0] = function(name) {\n"
+            + "        return vm.org_apidesign_vm4brwsr_Zips(false).loadFromCp___3B_3Ljava_lang_Object_2Ljava_lang_String_2(classpath, name);\n"
+            + "      };\n"
+            + "    };\n"
             + "    loader.loadClass = function(name) {\n"
             + "      var attr = name.replace__Ljava_lang_String_2CC('.','_');\n"
             + "      var fn = vm[attr];\n"
