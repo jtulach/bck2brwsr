@@ -203,5 +203,6 @@ Number.prototype.neg64 = function() {
     hi = ~hi;
     low = ~low;
     low += (low < 0) ? (__m32+1) : 0;
-    return hi.next32(low);
+    var ret = hi.next32(low);
+    return ret.add64(1);
 };

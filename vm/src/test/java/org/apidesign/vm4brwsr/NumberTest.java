@@ -169,6 +169,16 @@ public class NumberTest {
         );
     }
     
+    @Test public void longNegate3() throws Exception {
+        final long res = -0xfffffffffffffeddl;
+        assertExec("Long negate",
+            Numbers.class, "negL__J_3B",
+            Double.valueOf(res),
+                new byte[] { (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xfe, (byte)0xdd }
+        );
+    }
+
+    
     @Test public void longAddOverflow() throws Exception {
         final long res = Long.MAX_VALUE + 1l;
         assertExec("Addition 1+MAX",
