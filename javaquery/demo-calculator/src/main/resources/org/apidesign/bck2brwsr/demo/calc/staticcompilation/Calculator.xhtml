@@ -78,5 +78,10 @@
         </table>
         <div data-bind="text: displayPreview"></div>
         <script src="bck2brwsr.js"/>
+        <script>
+            var classpath = [ 'demo.static.calculator-0.3-SNAPSHOT.jar' ];
+            var vm = bck2brwsr(classpath);
+            vm.loadClass('org.apidesign.bck2brwsr.demo.calc.staticcompilation.Calc');
+        </script>
     </body>
 </html>

@@ -33,6 +33,15 @@
         <scope>runtime</scope>
         <outputDirectory>lib</outputDirectory>
     </dependencySet>
+    <dependencySet>
+        <useProjectArtifact>false</useProjectArtifact>
+        <scope>runtime</scope>
+        <includes>
+            <include>*:js</include>
+        </includes>
+        <unpack>true</unpack>
+        <outputDirectory>/</outputDirectory>
+    </dependencySet>
   </dependencySets> 
   <files>
     <file>
@@ -43,11 +52,6 @@
       <source>${project.build.directory}/classes/org/apidesign/bck2brwsr/demo/calc/staticcompilation/Calculator.xhtml</source>
       <outputDirectory>/</outputDirectory>
       <destName>index.xhtml</destName>
-    </file>
-    <file>
-      <source>${project.build.directory}/classes/org/apidesign/bck2brwsr/demo/calc/staticcompilation/bootjava.js</source>
-      <outputDirectory>/</outputDirectory>
-      <destName>bck2brwsr.js</destName>
     </file>
   </files>
 

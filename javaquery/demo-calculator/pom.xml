@@ -23,7 +23,6 @@
                 <executions>
                     <execution>
                         <goals>
-                            <goal>j2js</goal>
                             <goal>brwsr</goal>
                         </goals>
                     </execution>
@@ -41,6 +40,19 @@
                <source>1.7</source>
                <target>1.7</target>
             </configuration>
+         </plugin>
+         <plugin>
+             <groupId>org.apache.maven.plugins</groupId>
+             <artifactId>maven-jar-plugin</artifactId>
+             <version>2.4</version>
+             <configuration>
+                 <archive>
+                     <manifest>
+                         <addClasspath>true</addClasspath>
+                         <classpathPrefix>lib/</classpathPrefix>
+                     </manifest>
+                 </archive>
+             </configuration>
          </plugin>
          <plugin>
             <artifactId>maven-assembly-plugin</artifactId>
@@ -73,6 +85,14 @@
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>javaquery.api</artifactId>
       <version>0.3-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apidesign.bck2brwsr</groupId>
+      <artifactId>vm4brwsr</artifactId>
+      <classifier>js</classifier>
+      <type>zip</type>
+      <version>0.3-SNAPSHOT</version>
+      <scope>runtime</scope>
     </dependency>
   </dependencies>
 </project>
