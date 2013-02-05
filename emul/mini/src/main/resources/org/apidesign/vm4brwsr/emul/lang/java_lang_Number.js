@@ -205,7 +205,7 @@ Number.prototype.neg64 = function() {
     return ret.add64(1);
 };
 
-function __initDivMod(numberPrototype) {
+(function(numberPrototype) {
     function __Int64(hi32, lo32) {
         this.hi32 = hi32 | 0;
         this.lo32 = lo32 | 0;
@@ -511,6 +511,4 @@ function __initDivMod(numberPrototype) {
         var result = r64.toNumber();
         return negateResult ? result.neg64() : result; 
     }
-};
-
-__initDivMod(Number.prototype);
+})(Number.prototype);
