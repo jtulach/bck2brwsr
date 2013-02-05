@@ -31,8 +31,12 @@ class VM extends ByteCodeToJavaScript {
     
     static {
         // uses VMLazy to load dynamic classes
-        VMLazy.init();
-        Zips.init();
+        boolean assertsOn = false;
+        assert assertsOn = true;
+        if (assertsOn) {
+            VMLazy.init();
+            Zips.init();
+        }
     }
 
     @Override
