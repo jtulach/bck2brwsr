@@ -51,21 +51,28 @@ public class BrswrMojo extends AbstractMojo {
     /** Root of the class files */
     @Parameter(defaultValue="${project.build.directory}/classes")
     private File classes;
+    
+    /** Root of all pages, and files, etc. */
+    @Parameter
+    private File directory;
 
     @Override
     public void execute() throws MojoExecutionException {
         if (startpage == null) {
             throw new MojoExecutionException("You have to provide a start page");
         }
-
+        
         try {
-            URLClassLoader url = buildClassLoader(classes, prj.getDependencyArtifacts());
-            
             Closeable httpServer;
-            try {
-                httpServer = Launcher.showURL(url, startpage());
-            } catch (Exception ex) {
-                throw new MojoExecutionException("Can't open " + startpage(), ex);
+            if (directory != null) {
+                httpServer = Launcher.showDir(directory, startpage);
+            } else {
+                URLClassLoader url = buildClassLoader(classes, prj.getDependencyArtifacts());
+                try {
+                    httpServer = Launcher.showURL(url, startpage());
+                } catch (Exception ex) {
+                    throw new MojoExecutionException("Can't open " + startpage(), ex);
+                }
             }
             System.in.read();
             httpServer.close();

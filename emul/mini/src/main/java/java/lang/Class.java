@@ -347,6 +347,9 @@ public final
      * @since JDK1.1
      */
     public boolean isInstance(Object obj) {
+        if (obj == null) {
+            return false;
+        }
         if (isArray()) {
             return isAssignableFrom(obj.getClass());
         }
@@ -909,7 +912,50 @@ public final
         }
         return m;
     }
-
+    
+    /**
+     * Returns an array of {@code Method} objects reflecting all the
+     * methods declared by the class or interface represented by this
+     * {@code Class} object. This includes public, protected, default
+     * (package) access, and private methods, but excludes inherited methods.
+     * The elements in the array returned are not sorted and are not in any
+     * particular order.  This method returns an array of length 0 if the class
+     * or interface declares no methods, or if this {@code Class} object
+     * represents a primitive type, an array class, or void.  The class
+     * initialization method {@code <clinit>} is not included in the
+     * returned array. If the class declares multiple public member methods
+     * with the same parameter types, they are all included in the returned
+     * array.
+     *
+     * <p> See <em>The Java Language Specification</em>, section 8.2.
+     *
+     * @return    the array of {@code Method} objects representing all the
+     * declared methods of this class
+     * @exception  SecurityException
+     *             If a security manager, <i>s</i>, is present and any of the
+     *             following conditions is met:
+     *
+     *             <ul>
+     *
+     *             <li> invocation of
+     *             {@link SecurityManager#checkMemberAccess
+     *             s.checkMemberAccess(this, Member.DECLARED)} denies
+     *             access to the declared methods within this class
+     *
+     *             <li> the caller's class loader is not the same as or an
+     *             ancestor of the class loader for the current class and
+     *             invocation of {@link SecurityManager#checkPackageAccess
+     *             s.checkPackageAccess()} denies access to the package
+     *             of this class
+     *
+     *             </ul>
+     *
+     * @since JDK1.1
+     */
+    public Method[] getDeclaredMethods() throws SecurityException {
+        throw new SecurityException();
+    }
+    
     /**
      * Character.isDigit answers {@code true} to some non-ascii
      * digits.  This one does not.
@@ -1096,6 +1142,48 @@ public final
     public ClassLoader getClassLoader() {
         throw new SecurityException();
     }
+
+    /**
+     * Determines the interfaces implemented by the class or interface
+     * represented by this object.
+     *
+     * <p> If this object represents a class, the return value is an array
+     * containing objects representing all interfaces implemented by the
+     * class. The order of the interface objects in the array corresponds to
+     * the order of the interface names in the {@code implements} clause
+     * of the declaration of the class represented by this object. For
+     * example, given the declaration:
+     * <blockquote>
+     * {@code class Shimmer implements FloorWax, DessertTopping { ... }}
+     * </blockquote>
+     * suppose the value of {@code s} is an instance of
+     * {@code Shimmer}; the value of the expression:
+     * <blockquote>
+     * {@code s.getClass().getInterfaces()[0]}
+     * </blockquote>
+     * is the {@code Class} object that represents interface
+     * {@code FloorWax}; and the value of:
+     * <blockquote>
+     * {@code s.getClass().getInterfaces()[1]}
+     * </blockquote>
+     * is the {@code Class} object that represents interface
+     * {@code DessertTopping}.
+     *
+     * <p> If this object represents an interface, the array contains objects
+     * representing all interfaces extended by the interface. The order of the
+     * interface objects in the array corresponds to the order of the interface
+     * names in the {@code extends} clause of the declaration of the
+     * interface represented by this object.
+     *
+     * <p> If this object represents a class or interface that implements no
+     * interfaces, the method returns an array of length 0.
+     *
+     * <p> If this object represents a primitive type or void, the method
+     * returns an array of length 0.
+     *
+     * @return an array of interfaces implemented by this class.
+     */
+    public native Class<?>[] getInterfaces();
     
     /**
      * Returns the {@code Class} representing the component type of an

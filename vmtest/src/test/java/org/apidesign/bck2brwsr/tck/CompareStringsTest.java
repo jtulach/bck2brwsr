@@ -17,6 +17,7 @@
  */
 package org.apidesign.bck2brwsr.tck;
 
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.apidesign.bck2brwsr.vmtest.Compare;
@@ -119,6 +120,21 @@ public class CompareStringsTest {
     public String nullFieldInitialized() {
         NullField nf = new NullField();
         return ("" + nf.name).toString();
+    }
+    @Compare
+    public String toUTFString() throws UnsupportedEncodingException {
+        byte[] arr = {
+            (byte) -59, (byte) -67, (byte) 108, (byte) 117, (byte) -59, (byte) -91,
+            (byte) 111, (byte) 117, (byte) -60, (byte) -115, (byte) 107, (byte) -61,
+            (byte) -67, (byte) 32, (byte) 107, (byte) -59, (byte) -81, (byte) -59,
+            (byte) -120
+        };
+        return new String(arr, "utf-8");
+    }
+
+    @Compare
+    public int stringToBytesLenght() throws UnsupportedEncodingException {
+        return "Žluťoučký kůň".getBytes("utf8").length;
     }
 
     @Factory
