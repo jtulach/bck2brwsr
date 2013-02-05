@@ -34,7 +34,6 @@
 
 package java.util;
 import java.io.*;
-import org.apidesign.bck2brwsr.emul.lang.System;
 
 /**
  * Resizable-array implementation of the {@link Deque} interface.  Array

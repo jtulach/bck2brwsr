@@ -27,4 +27,16 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ClassesMarker {
     int number();
+    String[] nicknames();
+    E count() default E.ONE;
+    
+    enum E {
+        ONE, TWO;
+    }
+    
+    Anno[] subs() default {};
+    
+    public @interface Anno {
+        int value();
+    }
 }

@@ -18,6 +18,8 @@
 package org.apidesign.bck2brwsr.emul.reflect;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
@@ -25,39 +27,73 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public final class AnnotationImpl implements Annotation {
+    private final Class<? extends Annotation> type;
+
+    public AnnotationImpl(Class<? extends Annotation> type) {
+        this.type = type;
+    }
+    
     public Class<? extends Annotation> annotationType() {
-        return getClass();
+        return type;
     }
 
-    @JavaScriptBody(args = { "a", "n", "values" }, body = ""
-        + "function f(v, p) {\n"
-        + "  var val = v;\n"
-        + "  var prop = p;\n"
+    @JavaScriptBody(args = { "a", "n", "arr", "values" }, body = ""
+        + "function f(val, prop, clazz) {\n"
         + "  return function() {\n"
-        + "    return val[prop];\n"
+        + "    if (clazz == null) return val[prop];\n"
+        + "    if (clazz.isArray__Z()) {\n"
+        + "      var valarr = val[prop];\n"
+        + "      var cmp = clazz.getComponentType__Ljava_lang_Class_2();\n"
+        + "      var retarr = vm.java_lang_reflect_Array(false).newInstance__Ljava_lang_Object_2Ljava_lang_Class_2I(cmp, valarr.length);\n"
+        + "      for (var i = 0; i < valarr.length; i++) {\n"
+        + "        retarr[i] = CLS.prototype.c__Ljava_lang_Object_2Ljava_lang_Class_2Ljava_lang_Object_2(cmp, valarr[i]);\n"
+        + "      }\n"
+        + "      return retarr;\n"
+        + "    }\n"
+        + "    return CLS.prototype.c__Ljava_lang_Object_2Ljava_lang_Class_2Ljava_lang_Object_2(clazz, val[prop]);\n"
         + "  };\n"
         + "}\n"
-        + "var props = Object.getOwnPropertyNames(values);\n"
-        + "for (var i = 0; i < props.length; i++) {\n"
-        + "  var p = props[i];\n"
-        + "  a[p] = new f(values, p);\n"
+        + "for (var i = 0; i < arr.length; i += 3) {\n"
+        + "  var m = arr[i];\n"
+        + "  var p = arr[i + 1];\n"
+        + "  var c = arr[i + 2];\n"
+        + "  a[m] = f(values, p, c);\n"
         + "}\n"
         + "a['$instOf_' + n] = true;\n"
         + "return a;"
     )
-    private static <T extends Annotation> T create(AnnotationImpl a, String n, Object values) {
-        return null;
+    private static native <T extends Annotation> T create(
+        AnnotationImpl a, String n, Object[] methodsAndProps, Object values
+    );
+    
+    private static Object c(Class<? extends Annotation> a, Object v) {
+        return create(a, v);
     }
+    
     public static <T extends Annotation> T create(Class<T> annoClass, Object values) {
-        return create(new AnnotationImpl(), annoClass.getName().replace('.', '_'), values);
+        return create(new AnnotationImpl(annoClass), 
+            annoClass.getName().replace('.', '_'), 
+            findProps(annoClass), values
+        );
     }
 
     public static Annotation[] create(Object anno) {
         String[] names = findNames(anno);
         Annotation[] ret = new Annotation[names.length];
         for (int i = 0; i < names.length; i++) {
-            String n = names[i].substring(1, names[i].length() - 1).replace('/', '_');
-            ret[i] = create(new AnnotationImpl(), n, findData(anno, names[i]));
+            String annoNameSlash = names[i].substring(1, names[i].length() - 1);
+            Class<? extends Annotation> annoClass;
+            try {
+                annoClass = (Class<? extends Annotation>)Class.forName(annoNameSlash.replace('/', '.'));
+            } catch (ClassNotFoundException ex) {
+                throw new IllegalStateException("Can't find annotation class " + annoNameSlash);
+            }
+            ret[i] = create(
+                new AnnotationImpl(annoClass), 
+                annoNameSlash.replace('/', '_'),
+                findProps(annoClass),
+                findData(anno, names[i])
+            );
         }
         return ret;
     }
@@ -70,12 +106,25 @@ public final class AnnotationImpl implements Annotation {
         + "}"
         + "return arr;"
     )
-    private static String[] findNames(Object anno) {
-        throw new UnsupportedOperationException();
-    }
+    private static native String[] findNames(Object anno);
 
     @JavaScriptBody(args={ "anno", "p"}, body="return anno[p];")
-    private static Object findData(Object anno, String p) {
-        throw new UnsupportedOperationException();
+    private static native Object findData(Object anno, String p);
+
+    private static Object[] findProps(Class<?> annoClass) {
+        final Method[] marr = MethodImpl.findMethods(annoClass, Modifier.PUBLIC);
+        Object[] arr = new Object[marr.length * 3];
+        int pos = 0;
+        for (Method m : marr) {
+            arr[pos++] = MethodImpl.toSignature(m);
+            arr[pos++] = m.getName();
+            final Class<?> rt = m.getReturnType();
+            if (rt.isArray()) {
+                arr[pos++] = rt.getComponentType().isAnnotation() ? rt : null;
+            } else {
+                arr[pos++] = rt.isAnnotation() ? rt : null;
+            }
+        }
+        return arr;
     }
 }

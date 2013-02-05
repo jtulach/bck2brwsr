@@ -15,17 +15,22 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.vm4brwsr;
+package java.lang;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
-/**
+/** Poor man's re-implementation of most important System methods.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@Retention(RetentionPolicy.RUNTIME)
-public @interface ClassesNamer {
-    String name();
-    ClassesMarker.Anno anno();
+public class System {
+    private System() {
+    }
+    
+    public static void arraycopy(Object value, int srcBegin, Object dst, int dstBegin, int count) {
+        org.apidesign.bck2brwsr.emul.lang.System.arraycopy(value, srcBegin, dst, dstBegin, count);
+    }
+    
+    public static long currentTimeMillis() {
+        return org.apidesign.bck2brwsr.emul.lang.System.currentTimeMillis();
+    }
+    
 }

@@ -25,7 +25,6 @@
 
 package java.util;
 
-import org.apidesign.bck2brwsr.emul.lang.System;
 
 /**
  * The {@code Vector} class implements a growable array of

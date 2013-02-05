@@ -27,7 +27,6 @@ package java.util;
 import java.io.Serializable;
 import java.io.IOException;
 import java.lang.reflect.Array;
-import org.apidesign.bck2brwsr.emul.lang.System;
 
 /**
  * This class consists exclusively of static methods that operate on or return

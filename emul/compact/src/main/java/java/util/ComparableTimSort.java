@@ -25,7 +25,6 @@
 
 package java.util;
 
-import org.apidesign.bck2brwsr.emul.lang.System;
 
 /**
  * This is a near duplicate of {@link TimSort}, modified for use with

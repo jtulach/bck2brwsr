@@ -17,6 +17,8 @@
  */
 package org.apidesign.bck2brwsr.tck;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
@@ -47,12 +49,33 @@ public class ReflectionTest {
         return long.class.toString();
     }
     
+    @Compare public boolean isRunnableInterface() {
+        return Runnable.class.isInterface();
+    }
+
+    @Compare public String isRunnableHasRunMethod() throws NoSuchMethodException {
+        return Runnable.class.getMethod("run").getName();
+    }
+    
     @Compare public String namesOfMethods() {
         StringBuilder sb = new StringBuilder();
         String[] arr = new String[20];
         int i = 0;
         for (Method m : StaticUse.class.getMethods()) {
             arr[i++] = m.getName();
+        }
+        for (String s : sort(arr, i)) {
+            sb.append(s).append("\n");
+        }
+        return sb.toString();
+    }
+
+    @Compare public String namesOfDeclaringClassesOfMethods() {
+        StringBuilder sb = new StringBuilder();
+        String[] arr = new String[20];
+        int i = 0;
+        for (Method m : StaticUse.class.getMethods()) {
+            arr[i++] = m.getName() + "@" + m.getDeclaringClass().getName();
         }
         for (String s : sort(arr, i)) {
             sb.append(s).append("\n");
@@ -69,6 +92,26 @@ public class ReflectionTest {
         return StaticUse.class.getMethod("instanceMethod").getReturnType();
     }
     
+    @Retention(RetentionPolicy.RUNTIME)
+    @interface Ann {
+    }
+    
+    @Compare public String annoClass() throws Exception {
+        Retention r = Ann.class.getAnnotation(Retention.class);
+        assert r != null : "Annotation is present";
+        assert r.value() == RetentionPolicy.RUNTIME : "Policy value is OK: " + r.value();
+        return r.annotationType().getName();
+    }
+    
+    @Compare public boolean isAnnotation() {
+        return Ann.class.isAnnotation();
+    }
+    @Compare public boolean isNotAnnotation() {
+        return String.class.isAnnotation();
+    }
+    @Compare public boolean isNotAnnotationEnum() {
+        return E.class.isAnnotation();
+    }
     enum E { A, B };
     @Compare public boolean isEnum() {
         return E.A.getClass().isEnum();
