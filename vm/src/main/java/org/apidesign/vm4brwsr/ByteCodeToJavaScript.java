@@ -595,7 +595,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 ^= @2;", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lxor:
-                    emit(out, "@1 = @1.xor64(@2)", smapper.getL(1), smapper.popL());
+                    emit(out, "@1 = @1.xor64(@2);", smapper.getL(1), smapper.popL());
                     break;
                 case opc_ineg:
                     emit(out, "@1 = -@1;", smapper.getI(0));
@@ -663,7 +663,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "return @1;", smapper.popA());
                     break;
                 case opc_i2l:
-                    emit(out, "var @2 = @1", smapper.popI(), smapper.pushL());
+                    emit(out, "var @2 = @1;", smapper.popI(), smapper.pushL());
                     break;
                 case opc_i2f:
                     emit(out, "var @2 = @1;", smapper.popI(), smapper.pushF());
