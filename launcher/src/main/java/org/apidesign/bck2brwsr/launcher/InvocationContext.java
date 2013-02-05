@@ -19,6 +19,8 @@ package org.apidesign.bck2brwsr.launcher;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -34,9 +36,7 @@ public final class InvocationContext {
     private String result;
     private Throwable exception;
     String html;
-    InputStream httpContent;
-    String httpType;
-    String httpPath;
+    final List<Resource> resources = new ArrayList<>();
 
     InvocationContext(Launcher launcher, Class<?> clazz, String methodName) {
         this.launcher = launcher;
@@ -55,13 +55,11 @@ public final class InvocationContext {
     /** HTTP resource to be available during execution. An invocation may
      * perform an HTTP query and obtain a resource relative to the page.
      */
-    public void setHttpResource(String relativePath, String mimeType, InputStream content) {
+    public void addHttpResource(String relativePath, String mimeType, InputStream content) {
         if (relativePath == null || mimeType == null || content == null) {
             throw new NullPointerException();
         }
-        this.httpPath = relativePath;
-        this.httpType = mimeType;
-        this.httpContent = content;
+        resources.add(new Resource(content, mimeType, relativePath));
     }
     
     /** Invokes the associated method. 
@@ -97,5 +95,16 @@ public final class InvocationContext {
         wait.countDown();
     }
 
-    
+
+    static final class Resource {
+        final InputStream httpContent;
+        final String httpType;
+        final String httpPath;
+
+        Resource(InputStream httpContent, String httpType, String httpPath) {
+            this.httpContent = httpContent;
+            this.httpType = httpType;
+            this.httpPath = httpPath;
+        }
+    }
 }

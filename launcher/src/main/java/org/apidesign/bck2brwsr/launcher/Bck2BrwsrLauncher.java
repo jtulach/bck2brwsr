@@ -39,6 +39,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apidesign.bck2brwsr.launcher.InvocationContext.Resource;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 import org.glassfish.grizzly.PortRange;
 import org.glassfish.grizzly.http.server.HttpHandler;
@@ -152,11 +153,13 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
         class DynamicResourceHandler extends HttpHandler {
             private final InvocationContext ic;
             public DynamicResourceHandler(InvocationContext ic) {
-                if (ic == null || ic.httpPath == null) {
+                if (ic == null || ic.resources.isEmpty()) {
                     throw new NullPointerException();
                 }
                 this.ic = ic;
-                conf.addHttpHandler(this, ic.httpPath);
+                for (Resource r : ic.resources) {
+                    conf.addHttpHandler(this, r.httpPath);
+                }
             }
 
             public void close() {
@@ -165,10 +168,12 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
             
             @Override
             public void service(Request request, Response response) throws Exception {
-                if (ic.httpPath.equals(request.getRequestURI())) {
-                    LOG.log(Level.INFO, "Serving HttpResource for {0}", request.getRequestURI());
-                    response.setContentType(ic.httpType);
-                    copyStream(ic.httpContent, response.getOutputStream(), null);
+                for (Resource r : ic.resources) {
+                    if (r.httpPath.equals(request.getRequestURI())) {
+                        LOG.log(Level.INFO, "Serving HttpResource for {0}", request.getRequestURI());
+                        response.setContentType(r.httpType);
+                        copyStream(r.httpContent, response.getOutputStream(), null);
+                    }
                 }
             }
         }
@@ -206,7 +211,7 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
                     return;
                 }
                 
-                if (mi.httpPath != null) {
+                if (!mi.resources.isEmpty()) {
                     prev = new DynamicResourceHandler(mi);
                 }
                 

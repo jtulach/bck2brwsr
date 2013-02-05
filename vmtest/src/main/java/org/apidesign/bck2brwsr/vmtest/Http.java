@@ -22,22 +22,35 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Exposes an HTTP page to the running {@link BrwsrTest}, so it can access
- * under the relative path.
+/**
+ * Exposes HTTP page or pages to the running {@link BrwsrTest}, so it can access under
+ * the relative path.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD, ElementType.TYPE})
-public @interface HttpResource {
-    /** path on the server that the test can use to access the exposed resource */
-    String path();
-    /** the content of the HttpResource */
-    String content();
-    /** resource relative to the class that should be used instead of <code>content</code>.
-     * Leave content equal to empty string.
+@Target({ElementType.METHOD, ElementType.TYPE})
+public @interface Http {
+    /** Set of pages to make available */
+    public Resource[] value();
+    
+    /** Exposes an HTTP page to the running {@link BrwsrTest}, so it can access
+     * under the relative path.
+     *
+     * @author Jaroslav Tulach <jtulach@netbeans.org>
      */
-    String resource() default "";
-    /** mime type of the resource */
-    String mimeType();
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({})
+    public @interface Resource {
+        /** path on the server that the test can use to access the exposed resource */
+        String path();
+        /** the content of the HttpResource */
+        String content();
+        /** resource relative to the class that should be used instead of <code>content</code>.
+         * Leave content equal to empty string.
+         */
+        String resource() default "";
+        /** mime type of the resource */
+        String mimeType();
+    }
 }

@@ -135,9 +135,15 @@ public final class CompareCase implements ITest {
         if (f == null) {
             f = m.getDeclaringClass().getAnnotation(HtmlFragment.class);
         }
-        HttpResource r = m.getAnnotation(HttpResource.class);
-        if (r == null) {
-            r = m.getDeclaringClass().getAnnotation(HttpResource.class);
+        Http.Resource[] r = {};
+        Http h = m.getAnnotation(Http.class);
+        if (h == null) {
+            h = m.getDeclaringClass().getAnnotation(Http.class);
+            if (h != null) {
+                r = h.value();
+            }
+        } else {
+            r = h.value();
         }
         if (brwsr.length == 0) {
             final Launcher s = l.brwsr(null);

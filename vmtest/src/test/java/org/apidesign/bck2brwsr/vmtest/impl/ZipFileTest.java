@@ -25,7 +25,7 @@ import java.util.zip.ZipInputStream;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.vmtest.BrwsrTest;
 import org.apidesign.bck2brwsr.vmtest.Compare;
-import org.apidesign.bck2brwsr.vmtest.HttpResource;
+import org.apidesign.bck2brwsr.vmtest.Http;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
 
@@ -60,7 +60,9 @@ public class ZipFileTest {
     )
     private static native Object loadVMResource(String res, String...path);
 
-    @HttpResource(path = "/readAnEntry.jar", mimeType = "x-application/zip", content = "", resource="readAnEntry.zip")
+    @Http({
+        @Http.Resource(path = "/readAnEntry.jar", mimeType = "x-application/zip", content = "", resource="readAnEntry.zip")
+    })
     @BrwsrTest  public void canVmLoadResourceFromZip() throws IOException {
         Object res = loadVMResource("/my/main/file.txt", "/readAnEntry.jar");
         assert res instanceof InputStream : "Got array of bytes: " + res;
