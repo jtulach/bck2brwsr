@@ -37,8 +37,15 @@ Number.prototype.toExactString = function() {
         var a = [ 6,9,2,7,6,9,4,9,2,4 ];
         var s = '';
         var digit;
-        var hi = this.hi;
-        var low = this;
+        var neg = this.hi < 0;
+        if (neg) {
+            var x = this.neg64();
+            var hi = x.hi;
+            var low = x;
+        } else {
+            var hi = this.hi;
+            var low = this;
+        }
         for (var i = 0; i < a.length; i++) {
             res += hi * a[i];
             var low_digit = low % 10;
@@ -53,7 +60,7 @@ Number.prototype.toExactString = function() {
             }
             s = String(digit).concat(s);
         }
-        return String(res).concat(s);
+        return (neg ? '-' : '').concat(res).concat(s);
     }
     return String(this);
 };
