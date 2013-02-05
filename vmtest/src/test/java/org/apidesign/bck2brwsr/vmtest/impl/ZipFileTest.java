@@ -76,6 +76,28 @@ public class ZipFileTest {
         assertEquals(ret, "Hello World!", "Can read the bytes");
     }
     
+    @GenerateZip(name = "cpattr.zip", contents = { 
+        "META-INF/MANIFEST.MF", "Manifest-Version: 1.0\n"
+        + "Created-By: hand\n"
+        + "Class-Path: realJar.jar\n\n\n"
+    })
+    @Http({
+        @Http.Resource(path = "/readComplexEntry.jar", mimeType = "x-application/zip", content = "", resource="cpattr.zip"),
+        @Http.Resource(path = "/realJar.jar", mimeType = "x-application/zip", content = "", resource="readAnEntry.zip"),
+    })
+    @BrwsrTest  public void understandsClassPathAttr() throws IOException {
+        Object res = loadVMResource("/my/main/file.txt", "/readComplexEntry.jar");
+        assert res instanceof InputStream : "Got array of bytes: " + res;
+        InputStream is = (InputStream)res;
+        
+        byte[] arr = new byte[4096];
+        int len = is.read(arr);
+        
+        final String ret = new String(arr, 0, len, "UTF-8");
+
+        assertEquals(ret, "Hello World!", "Can read the bytes from secondary JAR");
+    }
+    
     private static void assertEquals(Object real, Object exp, String msg) {
         assert Objects.equals(exp, real) : msg + " exp: " + exp + " real: " + real;
     }

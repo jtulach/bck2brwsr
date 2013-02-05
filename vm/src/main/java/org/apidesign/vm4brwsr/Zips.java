@@ -17,7 +17,9 @@
  */
 package org.apidesign.vm4brwsr;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -39,7 +41,13 @@ final class Zips {
             Object c = classpath[i];
             if (c instanceof String) {
                 try {
-                    c = classpath[i] = toZip((String)c);
+                    String url = (String)c;
+                    final Zips z = toZip(url);
+                    c = classpath[i] = z;
+                    final byte[] man = z.findRes("META-INF/MANIFEST.MF");
+                    if (man != null) {
+                        processClassPathAttr(man, url, classpath);
+                    }
                 } catch (IOException ex) {
                     classpath[i] = ex;
                 }
@@ -87,6 +95,38 @@ final class Zips {
         return z;
     }
 
+    private static void processClassPathAttr(final byte[] man, String url, Object[] classpath) throws IOException {
+        try (InputStream is = initIS(new ByteArrayInputStream(man))) {
+            String cp = is.toString();
+            if (cp == null) {
+                return;
+            }
+            for (int p = 0; p < cp.length();) {
+                int n = cp.indexOf(':', p);
+                if (n == -1) {
+                    n = cp.length();
+                }
+                String el = cp.substring(p, n);
+                URL u = new URL(new URL(url), el);
+                classpath = addToArray(classpath, u.toString());
+                p = n;
+            }
+        }
+    }
+
+    private static InputStream initIS(InputStream is) throws IOException {
+        return new ParseCPAttr(is);
+    }
+    
+    private static Object[] addToArray(Object[] arr, String value) {
+        final int last = arr.length;
+        Object[] ret = enlargeArray(arr, last + 1);
+        ret[last] = value;
+        return ret;
+    }
+
+    @JavaScriptBody(args = { "arr", "len" }, body = "while (arr.length < len) arr.push(null); return arr;throw('Arr: ' + arr);")
+    private static native Object[] enlargeArray(Object[] arr, int len);
     @JavaScriptBody(args = { "arr", "len" }, body = "while (arr.length < len) arr.push(0);")
     private static native void enlargeArray(byte[] arr, int len);
 
