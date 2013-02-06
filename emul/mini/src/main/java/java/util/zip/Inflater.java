@@ -882,23 +882,7 @@ public class Inflater
         if (code != 65536)
           throw new DataFormatException("Code lengths don't add up properly.");
 
-        /* Now create and fill the extra tables from longest to shortest
-         * bit len.  This way the sub trees will be aligned.
-         */
-        tree = new short[treeSize];
-        int treePtr = 512;
-        for (int bits = MAX_BITLEN; bits >= 10; bits--)
-          {
-        int end   = code & 0x1ff80;
-        code -= blCount[bits] << (16 - bits);
-        int start = code & 0x1ff80;
-        for (int i = start; i < end; i += 1 << 7)
-          {
-            tree[bitReverse(i)]
-              = (short) ((-treePtr << 4) | bits);
-            treePtr += 1 << (bits-9);
-          }
-          }
+        fillTable1(treeSize, code, blCount);
 
         for (int i = 0; i < codeLengths.length; i++)
           {
@@ -935,11 +919,11 @@ public class Inflater
         "\000\010\004\014\002\012\006\016\001\011\005\015\003\013\007\017";
       static short bitReverse(int value) {
             return (short) (bit4Reverse.charAt(value & 0xf) << 12
-                | bit4Reverse.charAt((value >> 4) & 0xf) << 8
-                | bit4Reverse.charAt((value >> 8) & 0xf) << 4
-                | bit4Reverse.charAt(value >> 12));
+                    | bit4Reverse.charAt((value >> 4) & 0xf) << 8
+                    | bit4Reverse.charAt((value >> 8) & 0xf) << 4
+                    | bit4Reverse.charAt(value >> 12));
       }
-
+      
       /**
        * Reads the next symbol from input.  The symbol is encoded using the
        * huffman tree.
@@ -992,6 +976,29 @@ public class Inflater
           return -1;
           }
       }
+
+        private void fillTable1(int treeSize, int code, int[] blCount) {
+            /* Now create and fill the extra tables from longest to shortest
+             * bit len.  This way the sub trees will be aligned.
+             */
+            tree = new short[treeSize];
+            int treePtr = 512;
+            for (int bits = MAX_BITLEN; bits >= 10; bits--) {
+                int end = code & 0x1ff80;
+                code -= blCount[bits] << (16 - bits);
+                int start = code & 0x1ff80;
+                final int inc = 1 << 7;
+                fillTable2(start, end, inc, treePtr, bits);
+            }
+        }
+
+        private void fillTable2(int start, int end, final int inc, int treePtr, int bits) {
+            for (int i = start; i < end; i += inc) {
+                final short br = bitReverse(i);
+                tree[br] = (short) ((-treePtr << 4) | bits);
+                treePtr += 1 << (bits - 9);
+            }
+        }
     }
     private static class InflaterDynHeader
     {
