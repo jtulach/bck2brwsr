@@ -51,7 +51,7 @@ public class ReaderTest {
         return sb.toString().toString();
     }
     @Compare public String stringToBytes() {
-        return Arrays.toString("Žluťoučký kůň".getBytes());
+        return Arrays.toString("\u017dlu\u0165ou\u010dk\u00fd k\u016f\u0148".getBytes());
     }
     
     @Factory public static Object[] create() {
