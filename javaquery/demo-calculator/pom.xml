@@ -92,7 +92,7 @@
       <classifier>js</classifier>
       <type>zip</type>
       <version>0.3-SNAPSHOT</version>
-      <scope>runtime</scope>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 </project>
