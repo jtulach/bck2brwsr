@@ -101,15 +101,16 @@ final class Zips {
             if (cp == null) {
                 return;
             }
+            cp = cp.trim();
             for (int p = 0; p < cp.length();) {
-                int n = cp.indexOf(':', p);
+                int n = cp.indexOf(' ', p);
                 if (n == -1) {
                     n = cp.length();
                 }
                 String el = cp.substring(p, n);
                 URL u = new URL(new URL(url), el);
                 classpath = addToArray(classpath, u.toString());
-                p = n;
+                p = n + 1;
             }
         }
     }
