@@ -649,7 +649,47 @@ public class NumberTest {
             new byte[] { (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0xff, (byte)0x00, (byte)0x12, (byte)0x3e }
         );
     }
-    
+
+    @Test public void longCompareSameNumbers() throws Exception {
+        assertExec("Long compare same numbers",
+            Numbers.class, "compareL__I_3B_3BI",
+            0.0,
+            new byte[] { (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00 },
+            new byte[] { (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00 },
+            0
+        );
+    }
+
+    @Test public void longComparePositiveNumbers() throws Exception {
+        assertExec("Long compare positive numbers",
+            Numbers.class, "compareL__I_3B_3BI",
+            -1.0,
+            new byte[] { (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x20, (byte)0x00, (byte)0x00 },
+            new byte[] { (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x10, (byte)0x00, (byte)0x00, (byte)0x00 },
+            0
+        );
+    }
+
+    @Test public void longCompareNegativeNumbers() throws Exception {
+        assertExec("Long compare negative numbers",
+            Numbers.class, "compareL__I_3B_3BI",
+            1.0,
+            new byte[] { (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff },
+            new byte[] { (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00 },
+            0
+        );
+    }
+
+    @Test public void longCompareMixedNumbers() throws Exception {
+        assertExec("Long compare mixed numbers",
+            Numbers.class, "compareL__I_3B_3BI",
+            -1.0,
+            new byte[] { (byte)0x80, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00 },
+            new byte[] { (byte)0x7f, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff, (byte)0xff },
+            0
+        );
+    }
+
     private static CharSequence codeSeq;
     private static Invocable code;
 

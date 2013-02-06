@@ -188,10 +188,10 @@ Number.prototype.ushr64 = function(x) {
 };
 
 Number.prototype.compare64 = function(x) {
-    if (this.hi == x.hi) {
-        return (this == x) ? 0 : ((this < x) ? -1 : 1);
+    if (this.high32() === x.high32()) {
+        return (this < x) ? -1 : ((this > x) ? 1 : 0);
     }
-    return (this.hi < x.hi) ? -1 : 1;
+    return (this.high32() < x.high32()) ? -1 : 1;
 };
 
 Number.prototype.neg64 = function() {

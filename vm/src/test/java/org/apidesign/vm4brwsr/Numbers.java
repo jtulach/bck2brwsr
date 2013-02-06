@@ -159,4 +159,44 @@ public class Numbers {
         DataInputStream disY = new DataInputStream(isY);
         return (disX.readLong() ^ disY.readLong());
     }
+
+    public static int compareL(byte[] arrX, byte[] arrY,
+                               int zero) throws IOException {
+        ByteArrayInputStream isX = new ByteArrayInputStream(arrX);
+        DataInputStream disX = new DataInputStream(isX);
+        ByteArrayInputStream isY = new ByteArrayInputStream(arrY);
+        DataInputStream disY = new DataInputStream(isY);
+        final long x = disX.readLong();
+        final long y = disY.readLong();
+
+        final int xyResult = compareL(x, y, zero);
+        final int yxResult = compareL(y, x, zero);
+
+        return ((xyResult + yxResult) == 0) ? xyResult : -2;
+    }
+
+    private static int compareL(long x, long y, int zero) {
+        int result = -2;
+        int trueCount = 0;
+
+        x += zero;
+        if (x == y) {
+            result = 0;
+            ++trueCount;
+        }
+
+        x += zero;
+        if (x < y) {
+            result = -1;
+            ++trueCount;
+        }
+
+        x += zero;
+        if (x > y) {
+            result = 1;
+            ++trueCount;
+        }
+
+        return (trueCount == 1) ? result : -2;
+    }
 }
