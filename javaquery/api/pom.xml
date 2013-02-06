@@ -47,21 +47,16 @@
     </dependency>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
-      <artifactId>core</artifactId>
-      <version>0.3-SNAPSHOT</version>
+      <artifactId>emul</artifactId>
+      <version>${project.version}</version>
+      <classifier>rt</classifier>
       <type>jar</type>
-    </dependency>
-    <dependency>
-      <groupId>org.apidesign.bck2brwsr</groupId>
-      <artifactId>emul.mini</artifactId>
-      <version>0.3-SNAPSHOT</version>
-      <type>jar</type>
-      <scope>runtime</scope>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>vm4brwsr</artifactId>
-      <version>0.3-SNAPSHOT</version>
+      <version>${project.version}</version>
       <type>jar</type>
       <scope>test</scope>
     </dependency>

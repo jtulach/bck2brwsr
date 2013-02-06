@@ -34,6 +34,7 @@
         <outputDirectory>lib</outputDirectory>
         <includes>
             <include>*:jar</include>
+            <include>*:rt</include>
         </includes>
     </dependencySet>
     <dependencySet>

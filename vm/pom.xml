@@ -82,7 +82,6 @@
                  </execution>
              </executions>
              <configuration>
-                 <classpathScope>provided</classpathScope>
                  <mainClass>org.apidesign.vm4brwsr.Main</mainClass>
                  <arguments>
                      <argument>${project.build.directory}/bck2brwsr.js</argument>
@@ -138,7 +137,7 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>javap</artifactId>
       <version>${project.version}</version>
-      <scope>provided</scope>
+      <scope>compile</scope>
     </dependency>
   </dependencies>
 </project>
