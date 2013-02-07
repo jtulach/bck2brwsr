@@ -19,24 +19,21 @@ package org.apidesign.bck2brwsr.compact.tck;
 
 import java.io.IOException;
 import java.io.InputStream;
-import org.apidesign.bck2brwsr.vmtest.Compare;
-import org.apidesign.bck2brwsr.vmtest.VMTest;
-import org.testng.annotations.Factory;
+import org.testng.annotations.Test;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class ZipCompatibilityTest {
-    @Compare
-    public String testDemoStaticCalculator() throws IOException {
+public class ZipVsJzLibTest {
+    @Test public void r() throws IOException {
         InputStream is = getClass().getResourceAsStream("demo.static.calculator-0.3-SNAPSHOT.jar");
         ZipArchive zip = ZipArchive.createZip(is);
-        return zip.toString();
+        
+        is = getClass().getResourceAsStream("demo.static.calculator-0.3-SNAPSHOT.jar");
+        ZipArchive real = ZipArchive.createReal(is);
+        
+        real.assertEquals(zip, "Are they the same?");
     }
     
-    @Factory
-    public static Object[] create() {
-        return VMTest.create(ZipCompatibilityTest.class);
-    }
 }

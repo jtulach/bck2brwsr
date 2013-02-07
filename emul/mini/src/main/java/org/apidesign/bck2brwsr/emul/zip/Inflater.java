@@ -23,7 +23,10 @@
  * questions.
  */
 
-package java.util.zip;
+package org.apidesign.bck2brwsr.emul.zip;
+
+import java.util.zip.*;
+import java.io.IOException;
 
 /**
  * This class provides support for general purpose decompression using the
@@ -71,8 +74,9 @@ package java.util.zip;
  *
  */
 public
-class Inflater {
-    private final org.apidesign.bck2brwsr.emul.zip.Inflater impl;
+class Inflater extends java.util.zip.Inflater {
+    private final boolean nowrap;
+    private JzLibInflater impl;
     
     /**
      * Creates a new decompressor. If the parameter 'nowrap' is true then
@@ -86,11 +90,8 @@ class Inflater {
      * @param nowrap if true then support GZIP compatible compression
      */
     public Inflater(boolean nowrap) {
-        if (getClass() == org.apidesign.bck2brwsr.emul.zip.Inflater.class) {
-            impl = null;
-        } else {
-            impl = new org.apidesign.bck2brwsr.emul.zip.Inflater(nowrap);
-        }
+        this.nowrap = nowrap;
+        reset();
     }
 
     /**
@@ -110,7 +111,13 @@ class Inflater {
      * @see Inflater#needsInput
      */
     public void setInput(byte[] b, int off, int len) {
-        impl.setInput(b, off, len);
+        if (b == null) {
+            throw new NullPointerException();
+        }
+        if (off < 0 || len < 0 || off > b.length - len) {
+            throw new ArrayIndexOutOfBoundsException();
+        }
+        impl.setInput(b, off, len, false);
     }
 
     /**
@@ -121,7 +128,7 @@ class Inflater {
      * @see Inflater#needsInput
      */
     public void setInput(byte[] b) {
-        impl.setInput(b);
+        setInput(b, 0, b.length);
     }
 
     /**
@@ -136,7 +143,20 @@ class Inflater {
      * @see Inflater#getAdler
      */
     public void setDictionary(byte[] b, int off, int len) {
-        impl.setDictionary(b, off, len);
+        if (b == null) {
+            throw new NullPointerException();
+        }
+        if (off < 0 || len < 0 || off > b.length - len) {
+            throw new ArrayIndexOutOfBoundsException();
+        }
+        byte[] arr;
+        if (off == 0) {
+            arr = b;
+        } else {
+            arr = new byte[len];
+            org.apidesign.bck2brwsr.emul.lang.System.arraycopy(b, off, arr, 0, len);
+        }
+        impl.setDictionary(arr, len);
     }
 
     /**
@@ -149,7 +169,7 @@ class Inflater {
      * @see Inflater#getAdler
      */
     public void setDictionary(byte[] b) {
-        impl.setDictionary(b);
+        impl.setDictionary(b, b.length);
     }
 
     /**
@@ -159,7 +179,7 @@ class Inflater {
      * @return the total number of bytes remaining in the input buffer
      */
     public int getRemaining() {
-        return impl.getRemaining();
+        return impl.getAvailIn();
     }
 
     /**
@@ -169,7 +189,7 @@ class Inflater {
      * @return true if no data remains in the input buffer
      */
     public boolean needsInput() {
-        return impl.needsInput();
+        return getRemaining() <= 0;
     }
 
     /**
@@ -178,7 +198,7 @@ class Inflater {
      * @see Inflater#setDictionary
      */
     public boolean needsDictionary() {
-        return impl.needsDictionary();
+        return impl.needDict();
     }
 
     /**
@@ -209,7 +229,15 @@ class Inflater {
     public int inflate(byte[] b, int off, int len)
         throws DataFormatException
     {
-        return impl.inflate(b, off, len);
+        if (b == null) {
+            throw new NullPointerException();
+        }
+        if (off < 0 || len < 0 || off > b.length - len) {
+            throw new ArrayIndexOutOfBoundsException();
+        }
+        impl.setOutput(b, off, len);
+        int err = impl.inflate(JzLibInflater.Z_NO_FLUSH);
+        return impl.next_out_index - off;
     }
 
     /**
@@ -226,7 +254,7 @@ class Inflater {
      * @see Inflater#needsDictionary
      */
     public int inflate(byte[] b) throws DataFormatException {
-        return impl.inflate(b);
+        return inflate(b, 0, b.length);
     }
 
     /**
@@ -234,7 +262,7 @@ class Inflater {
      * @return the ADLER-32 value of the uncompressed data
      */
     public int getAdler() {
-        return impl.getAdler();
+        return (int) impl.getAdler();
     }
 
     /**
@@ -247,7 +275,7 @@ class Inflater {
      * @return the total number of compressed bytes input so far
      */
     public int getTotalIn() {
-        return impl.getTotalIn();
+        return (int) getBytesRead();
     }
 
     /**
@@ -257,7 +285,7 @@ class Inflater {
      * @since 1.5
      */
     public long getBytesRead() {
-        return impl.getBytesRead();
+        return impl.total_in;
     }
 
     /**
@@ -270,7 +298,7 @@ class Inflater {
      * @return the total number of uncompressed bytes output so far
      */
     public int getTotalOut() {
-        return impl.getTotalOut();
+        return (int) getBytesWritten();
     }
 
     /**
@@ -280,14 +308,14 @@ class Inflater {
      * @since 1.5
      */
     public long getBytesWritten() {
-        return impl.getBytesWritten();
+        return impl.total_out;
     }
 
     /**
      * Resets inflater so that a new set of input data can be processed.
      */
     public void reset() {
-        impl.reset();
+        impl = new JzLibInflater(15, nowrap);
     }
 
     /**
