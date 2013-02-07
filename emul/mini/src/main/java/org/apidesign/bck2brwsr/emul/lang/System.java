@@ -39,4 +39,19 @@ public class System {
         "}"
     )
     public static native void arraycopy(Object value, int srcBegin, Object dst, int dstBegin, int count);
+
+    @JavaScriptBody(args = { "arr", "expectedSize" }, body = 
+        "while (expectedSize-- > arr.length) { arr.push(0); }; return arr;"
+    )
+    public static native byte[] expandArray(byte[] arr, int expectedSize);
+
+    @JavaScriptBody(args = {}, body = "new Date().getMilliseconds();")
+    public static native long currentTimeMillis();
+    
+    public static long nanoTime() {
+        return 1000000L * currentTimeMillis();
+    }
+    @JavaScriptBody(args = { "obj" }, body="return vm.java_lang_Object(false).hashCode__I.call(obj);")
+    public static native int identityHashCode(Object obj);
+    
 }

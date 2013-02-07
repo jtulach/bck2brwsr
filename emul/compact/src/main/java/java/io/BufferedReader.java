@@ -25,7 +25,6 @@
 
 package java.io;
 
-import org.apidesign.bck2brwsr.emul.lang.System;
 
 
 /**

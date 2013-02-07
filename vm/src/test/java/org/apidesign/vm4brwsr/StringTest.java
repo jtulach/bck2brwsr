@@ -75,6 +75,16 @@ public class StringTest {
         );
     }
 
+    @Test public void getBytes() throws Exception {
+        final String horse = "Žluťoučký kůň";
+        final String expected = StringSample.getBytes(horse);
+        assertExec(
+            "Bytes look simplar",
+            StringSample.class, "getBytes__Ljava_lang_String_2Ljava_lang_String_2",
+            expected, horse
+        );
+    }
+
     @Test(timeOut=10000) public void toStringConcatenation() throws Exception {
         assertExec(
             "Five executions should generate 5Hello World!",

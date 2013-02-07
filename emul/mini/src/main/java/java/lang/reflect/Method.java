@@ -533,7 +533,7 @@ public final
         + "} else {\n"
         + "  p = args;\n"
         + "}\n"
-        + "return method.fld_data.apply(self, p);\n"
+        + "return method._data().apply(self, p);\n"
     )
     private static native Object invoke0(boolean isStatic, Method m, Object self, Object[] args);
 
@@ -648,8 +648,9 @@ public final
 
     @JavaScriptBody(args = { "ac" }, 
         body = 
-          "if (this.fld_data.anno) {"
-        + "  return this.fld_data.anno['L' + ac.jvmName + ';'];"
+          "var a = this._data().anno;"
+        + "if (a) {"
+        + "  return a['L' + ac.jvmName + ';'];"
         + "} else return null;"
     )
     private Object getAnnotationData(Class<?> annotationClass) {

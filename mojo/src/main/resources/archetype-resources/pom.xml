@@ -60,7 +60,7 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>vmtest</artifactId>
       <version>0.3-SNAPSHOT</version>
       <scope>test</scope>

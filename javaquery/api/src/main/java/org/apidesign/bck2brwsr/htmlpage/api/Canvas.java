@@ -47,7 +47,7 @@ public class Canvas extends Element {
 
     @JavaScriptBody(
             args = {"el"},
-            body = "var e = window.document.getElementById(el.fld_id);\n"
+            body = "var e = window.document.getElementById(el._id());\n"
             + "return e.getContext('2d');\n")
     private native static Object getContextImpl(Canvas el);
 

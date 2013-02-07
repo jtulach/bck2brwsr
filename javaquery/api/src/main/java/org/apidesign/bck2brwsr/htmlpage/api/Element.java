@@ -41,21 +41,21 @@ public abstract class Element {
     
     @JavaScriptBody(
         args={"el", "property", "value"},
-        body="var e = window.document.getElementById(el.fld_id);\n"
+        body="var e = window.document.getElementById(el._id());\n"
            + "e[property] = value;\n"
     )
     static native void setAttribute(Element el, String property, Object value);
 
     @JavaScriptBody(
         args={"el", "property"},
-        body="var e = window.document.getElementById(el.fld_id);\n"
+        body="var e = window.document.getElementById(el._id());\n"
            + "return e[property];\n"
     )
     static native Object getAttribute(Element el, String property);
     
     @JavaScriptBody(
         args={"el"},
-        body="return window.document.getElementById(el.fld_id);"
+        body="return window.document.getElementById(el._id());"
     )
     static native Object getElementById(Element el);
     
@@ -65,8 +65,8 @@ public abstract class Element {
      */
     @JavaScriptBody(
         args={ "ev", "r" },
-        body="var e = window.document.getElementById(this.fld_id);\n"
-           + "e[ev.fld_id] = function() { r.run__V(); };\n"
+        body="var e = window.document.getElementById(this._id());\n"
+           + "e[ev._id()] = function() { r.run__V(); };\n"
     )
     final void on(OnEvent ev, Runnable r) {
     }

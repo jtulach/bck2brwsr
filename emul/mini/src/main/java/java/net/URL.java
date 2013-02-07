@@ -25,9 +25,11 @@
 
 package java.net;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
+
 
 /**
  * Class <code>URL</code> represents a Uniform Resource
@@ -212,6 +214,9 @@ public final class URL implements java.io.Serializable {
      * @serial
      */
     private int hashCode = -1;
+    
+    /** input stream associated with the URL */
+    private InputStream is;
 
     /**
      * Creates a <code>URL</code> object from the specified
@@ -421,6 +426,11 @@ public final class URL implements java.io.Serializable {
     public URL(String spec) throws MalformedURLException {
         this(null, spec);
     }
+    
+    private URL(String spec, InputStream is) throws MalformedURLException {
+        this(null, spec);
+        this.is = is;
+    }
 
     /**
      * Creates a URL by parsing the given spec within a specified context.
@@ -496,6 +506,17 @@ public final class URL implements java.io.Serializable {
     public URL(URL context, String spec, URLStreamHandler handler)
         throws MalformedURLException
     {
+        this(findContext(context), spec, handler != null);
+    }
+    
+    private URL(URL context, String spec, boolean ishandler)
+    throws MalformedURLException {
+        // Check for permission to specify a handler
+        if (ishandler) {
+            throw new SecurityException();
+        }
+        URLStreamHandler handler = null;
+        
         String original = spec;
         int i, limit, c;
         int start = 0;
@@ -503,10 +524,6 @@ public final class URL implements java.io.Serializable {
         boolean aRef=false;
         boolean isRelative = false;
 
-        // Check for permission to specify a handler
-        if (handler != null) {
-            throw new SecurityException();
-        }
 
         try {
             limit = spec.length();
@@ -950,8 +967,14 @@ public final class URL implements java.io.Serializable {
      * @see        java.net.URLConnection#getInputStream()
      */
     public final InputStream openStream() throws java.io.IOException {
-        throw new IOException();
-//        return openConnection().getInputStream();
+        if (is != null) {
+            return is;
+        }
+        byte[] arr = (byte[]) getContent(new Class[] { byte[].class });
+        if (arr == null) {
+            throw new IOException();
+        }
+        return new ByteArrayInputStream(arr);
     }
 
     /**
@@ -976,6 +999,17 @@ public final class URL implements java.io.Serializable {
     )
     private static native String loadText(String url) throws IOException;
 
+    @JavaScriptBody(args = { "url", "arr" }, body = ""
+        + "var request = new XMLHttpRequest();\n"
+        + "request.open('GET', url, false);\n"
+        + "request.overrideMimeType('text\\/plain; charset=x-user-defined');\n"
+        + "request.send();\n"
+        + "var t = request.responseText;\n"
+        + "for (var i = 0; i < t.length; i++) arr.push(t.charCodeAt(i) & 0xff);\n"
+        + "return arr;\n"
+    )
+    private static native Object loadBytes(String url, byte[] arr) throws IOException;
+
     /**
      * Gets the contents of this URL. This method is a shorthand for:
      * <blockquote><pre>
@@ -994,7 +1028,10 @@ public final class URL implements java.io.Serializable {
     throws java.io.IOException {
         for (Class<?> c : classes) {
             if (c == String.class) {
-                return getContent();
+                return loadText(toExternalForm());
+            }
+            if (c == byte[].class) {
+                return loadBytes(toExternalForm(), new byte[0]);
             }
         }
         return null;
@@ -1005,8 +1042,24 @@ public final class URL implements java.io.Serializable {
         return universal;
     }
 
+    private static URL findContext(URL context) throws MalformedURLException {
+        if (context == null) {
+            String base = findBaseURL();
+            if (base != null) {
+                context = new URL(null, base, false);
+            }
+        }
+        return context;
+    }
+    
+    @JavaScriptBody(args = {}, body = 
+          "if (typeof window !== 'object') return null;\n"
+        + "if (!window.location) return null;\n"
+        + "if (!window.location.href) return null;\n"
+        + "return window.location.href;\n"
+    )
+    private static native String findBaseURL();
 }
-
 class Parts {
     String path, query, ref;
 

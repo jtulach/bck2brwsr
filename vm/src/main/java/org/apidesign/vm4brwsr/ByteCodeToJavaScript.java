@@ -114,11 +114,6 @@ abstract class ByteCodeToJavaScript {
         out.append("\n\n").append(assignClass(className));
         out.append("function CLS() {");
         out.append("\n  if (!CLS.prototype.$instOf_").append(className).append(") {");
-        for (FieldData v : jc.getFields()) {
-            if (v.isStatic()) {
-                out.append("\n  CLS.").append(v.getName()).append(initField(v));
-            }
-        }
         if (proto == null) {
             String sc = jc.getSuperClassName(); // with _
             out.append("\n    var pp = ").
@@ -133,6 +128,18 @@ abstract class ByteCodeToJavaScript {
             }
             out.append("\n    var c = ").append(proto[0]).append(";");
             out.append("\n    var sprcls = null;");
+        }
+        for (FieldData v : jc.getFields()) {
+            if (v.isStatic()) {
+                out.append("\n  CLS.").append(v.getName()).append(initField(v));
+            } else {
+                out.append("\n  c._").append(v.getName()).append(" = function (v) {")
+                   .append("  if (arguments.length == 1) this.fld_").
+                    append(className).append('_').append(v.getName())
+                   .append(" = v; return this.fld_").
+                    append(className).append('_').append(v.getName())
+                   .append("; };");
+            }
         }
         for (MethodData m : jc.getMethods()) {
             byte[] onlyArr = m.findAnnotationData(true);
@@ -206,6 +213,7 @@ abstract class ByteCodeToJavaScript {
             }
             if (!v.isStatic()) {
                 out.append("\n    this.fld_").
+                    append(className).append('_').
                     append(v.getName()).append(initField(v));
             }
         }
@@ -1197,8 +1205,26 @@ abstract class ByteCodeToJavaScript {
                     int indx = readIntArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
-                    emit(out, "var @2 = @1.fld_@3;",
-                         smapper.popA(), smapper.pushT(type), fi[1]);
+                    final String mangleClass = mangleSig(fi[0]);
+                    final String mangleClassAccess = accessClass(mangleClass);
+                    emit(out, "var @2 = @4(false)._@3.call(@1);",
+                         smapper.popA(),
+                         smapper.pushT(type), fi[1], mangleClassAccess
+                    );
+                    i += 2;
+                    break;
+                }
+                case opc_putfield: {
+                    int indx = readIntArg(byteCodes, i);
+                    String[] fi = jc.getFieldInfoName(indx);
+                    final int type = VarType.fromFieldType(fi[2].charAt(0));
+                    final String mangleClass = mangleSig(fi[0]);
+                    final String mangleClassAccess = accessClass(mangleClass);
+                    emit(out, "@4(false)._@3.call(@2, @1);",
+                         smapper.popT(type),
+                         smapper.popA(), fi[1], 
+                         mangleClassAccess
+                    );
                     i += 2;
                     break;
                 }
@@ -1211,15 +1237,6 @@ abstract class ByteCodeToJavaScript {
                          accessClass(fi[0].replace('/', '_')), fi[1]);
                     i += 2;
                     addReference(fi[0]);
-                    break;
-                }
-                case opc_putfield: {
-                    int indx = readIntArg(byteCodes, i);
-                    String[] fi = jc.getFieldInfoName(indx);
-                    final int type = VarType.fromFieldType(fi[2].charAt(0));
-                    emit(out, "@2.fld_@3 = @1;",
-                         smapper.popT(type), smapper.popA(), fi[1]);
-                    i += 2;
                     break;
                 }
                 case opc_putstatic: {
@@ -1252,7 +1269,7 @@ abstract class ByteCodeToJavaScript {
                     int indx = readIntArg(byteCodes, i);
                     final String type = jc.getClassName(indx);
                     if (!type.startsWith("[")) {
-                        emit(out, "var @2 = @1.$instOf_@3 ? 1 : 0;",
+                        emit(out, "var @2 = @1 != null && @1.$instOf_@3 ? 1 : 0;",
                              smapper.popA(), smapper.pushI(),
                              type.replace('/', '_'));
                     } else {
@@ -1418,6 +1435,10 @@ abstract class ByteCodeToJavaScript {
                     throw new IllegalStateException("Invalid char: " + ch);
             }
         }
+    }
+    
+    static String mangleSig(String sig) {
+        return mangleSig(sig, 0, sig.length());
     }
     
     private static String mangleSig(String txt, int first, int last) {

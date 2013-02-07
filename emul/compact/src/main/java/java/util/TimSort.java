@@ -25,7 +25,6 @@
 
 package java.util;
 
-import org.apidesign.bck2brwsr.emul.lang.System;
 
 /**
  * A stable, adaptive, iterative mergesort that requires far fewer than
