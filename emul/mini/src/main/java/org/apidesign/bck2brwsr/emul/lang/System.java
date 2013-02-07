@@ -54,7 +54,7 @@ public class System {
     )
     public static native byte[] expandArray(byte[] arr, int expectedSize);
 
-    @JavaScriptBody(args = {}, body = "new Date().getMilliseconds();")
+    @JavaScriptBody(args = {}, body = "return new Date().getMilliseconds();")
     public static native long currentTimeMillis();
     
     public static long nanoTime() {
