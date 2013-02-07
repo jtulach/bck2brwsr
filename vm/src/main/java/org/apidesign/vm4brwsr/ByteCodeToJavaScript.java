@@ -598,7 +598,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 = @1.xor64(@2);", smapper.getL(1), smapper.popL());
                     break;
                 case opc_ineg:
-                    emit(out, "@1 = -@1;", smapper.getI(0));
+                    emit(out, "@1 = @1.neg32();", smapper.getI(0));
                     break;
                 case opc_lneg:
                     emit(out, "@1 = @1.neg64();", smapper.getL(0));
