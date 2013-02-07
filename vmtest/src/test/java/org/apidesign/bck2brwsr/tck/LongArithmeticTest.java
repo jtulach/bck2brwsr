@@ -48,7 +48,63 @@ public class LongArithmeticTest {
     }
     
     private static long neg(long x) {
-        return -x;
+        return (-x);
+    }
+    
+    private static long shl(long x, int b) {
+        return (x << b);
+    }
+    
+    private static long shr(long x, int b) {
+        return (x >> b);
+    }
+    
+    private static long ushr(long x, int b) {
+        return (x >>> b);
+    }
+    
+    private static long and(long x, long y) {
+        return (x & y);
+    }
+    
+    private static long or(long x, long y) {
+        return (x | y);
+    }
+    
+    private static long xor(long x, long y) {
+        return (x ^ y);
+    }
+    
+    public static int compare(long x, long y, int zero) {
+        final int xyResult = compareL(x, y, zero);
+        final int yxResult = compareL(y, x, zero);
+
+        return ((xyResult + yxResult) == 0) ? xyResult : -2;
+    }
+
+    private static int compareL(long x, long y, int zero) {
+        int result = -2;
+        int trueCount = 0;
+
+        x += zero;
+        if (x == y) {
+            result = 0;
+            ++trueCount;
+        }
+
+        x += zero;
+        if (x < y) {
+            result = -1;
+            ++trueCount;
+        }
+
+        x += zero;
+        if (x > y) {
+            result = 1;
+            ++trueCount;
+        }
+
+        return (trueCount == 1) ? result : -2;
     }
     
     @Compare public long conversion() {
@@ -193,6 +249,82 @@ public class LongArithmeticTest {
 
     @Compare public long moduloWithCorrection() {
         return mod(0x7fff800000000000l, 0x800000000001l);
+    }
+    
+    @Compare public long shiftL1() {
+        return shl(0x00fa37d7763e0ca1l, 5);
+    }
+    
+    @Compare public long shiftL2() {
+        return shl(0x00fa37d7763e0ca1l, 32);
+    }
+    
+    @Compare public long shiftL3() {
+        return shl(0x00fa37d7763e0ca1l, 45);
+    }
+    
+    @Compare public long shiftR1() {
+        return shr(0x00fa37d7763e0ca1l, 5);
+    }
+    
+    @Compare public long shiftR2() {
+        return shr(0x00fa37d7763e0ca1l, 32);
+    }
+    
+    @Compare public long shiftR3() {
+        return shr(0x00fa37d7763e0ca1l, 45);
+    }
+    
+    @Compare public long uShiftR1() {
+        return ushr(0x00fa37d7763e0ca1l, 5);
+    }
+    
+    @Compare public long uShiftR2() {
+        return ushr(0x00fa37d7763e0ca1l, 45);
+    }
+    
+    @Compare public long uShiftR3() {
+        return ushr(0xf0fa37d7763e0ca1l, 5);
+    }
+    
+    @Compare public long uShiftR4() {
+        return ushr(0xf0fa37d7763e0ca1l, 45);
+    }
+    
+    @Compare public long and1() {
+        return and(0x00fa37d7763e0ca1l, 0xa7b3432fff00123el);
+    }
+    
+    @Compare public long or1() {
+        return or(0x00fa37d7763e0ca1l, 0xa7b3432fff00123el);
+    }
+    
+    @Compare public long xor1() {
+        return xor(0x00fa37d7763e0ca1l, 0xa7b3432fff00123el);
+    }
+    
+    @Compare public long xor2() {
+        return xor(0x00fa37d7763e0ca1l, 0x00000000ff00123el);
+    }
+    
+    @Compare public long xor3() {
+        return xor(0x00000000763e0ca1l, 0x00000000ff00123el);
+    }
+    
+    @Compare public int compareSameNumbers() {
+        return compare(0x0000000000000000l, 0x0000000000000000l, 0);
+    }
+
+    @Compare public int comparePositiveNumbers() {
+        return compare(0x0000000000200000l, 0x0000000010000000l, 0);
+    }
+
+    @Compare public int compareNegativeNumbers() {
+        return compare(0xffffffffffffffffl, 0xffffffff00000000l, 0);
+    }
+
+    @Compare public int compareMixedNumbers() {
+        return compare(0x8000000000000000l, 0x7fffffffffffffffl, 0);
     }
     
     @Factory
