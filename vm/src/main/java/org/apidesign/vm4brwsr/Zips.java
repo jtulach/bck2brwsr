@@ -19,7 +19,6 @@ package org.apidesign.vm4brwsr;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -36,7 +35,7 @@ final class Zips {
     public static void init() {
     }
     
-    public static byte[] loadFromCp(Object[] classpath, String res) {
+    public static byte[] loadFromCp(Object[] classpath, String res) throws Exception {
         for (int i = 0; i < classpath.length; i++) {
             Object c = classpath[i];
             if (c instanceof String) {
@@ -46,13 +45,17 @@ final class Zips {
                     c = classpath[i] = z;
                     final byte[] man = z.findRes("META-INF/MANIFEST.MF");
                     if (man != null) {
-                        processClassPathAttr(man, url, classpath);
+                        String mainClass = processClassPathAttr(man, url, classpath);
+                        if (mainClass != null) {
+                            Class.forName(mainClass);
+                        }
                     }
-                } catch (IOException ex) {
+                } catch (Exception ex) {
                     classpath[i] = ex;
+                    throw ex;
                 }
             }
-            if (c instanceof Zips) {
+            if (res != null && c instanceof Zips) {
                 Object checkRes = ((Zips)c).findRes(res);
                 if (checkRes instanceof byte[]) {
                     return (byte[])checkRes;
@@ -95,30 +98,26 @@ final class Zips {
         return z;
     }
 
-    private static void processClassPathAttr(final byte[] man, String url, Object[] classpath) throws IOException {
-        try (InputStream is = initIS(new ByteArrayInputStream(man))) {
+    private static String processClassPathAttr(final byte[] man, String url, Object[] classpath) throws IOException {
+        try (ParseMan is = new ParseMan(new ByteArrayInputStream(man))) {
             String cp = is.toString();
-            if (cp == null) {
-                return;
-            }
-            cp = cp.trim();
-            for (int p = 0; p < cp.length();) {
-                int n = cp.indexOf(' ', p);
-                if (n == -1) {
-                    n = cp.length();
+            if (cp != null) {
+                cp = cp.trim();
+                for (int p = 0; p < cp.length();) {
+                    int n = cp.indexOf(' ', p);
+                    if (n == -1) {
+                        n = cp.length();
+                    }
+                    String el = cp.substring(p, n);
+                    URL u = new URL(new URL(url), el);
+                    classpath = addToArray(classpath, u.toString());
+                    p = n + 1;
                 }
-                String el = cp.substring(p, n);
-                URL u = new URL(new URL(url), el);
-                classpath = addToArray(classpath, u.toString());
-                p = n + 1;
             }
+            return is.getMainClass();
         }
     }
 
-    private static InputStream initIS(InputStream is) throws IOException {
-        return new ParseCPAttr(is);
-    }
-    
     private static Object[] addToArray(Object[] arr, String value) {
         final int last = arr.length;
         Object[] ret = enlargeArray(arr, last + 1);

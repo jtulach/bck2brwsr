@@ -120,10 +120,11 @@ class VM extends ByteCodeToJavaScript {
               "  global.bck2brwsr = function() {\n"
             + "    var args = arguments;\n"
             + "    var loader = {};\n"
+            + "    var init = null;\n"
             + "    loader.vm = vm;\n"
             + "    if (args.length == 1 && typeof args[0] !== 'function') {;\n"
             + "      var classpath = args[0];\n"
-            + "      args[0] = function(name) {\n"
+            + "      init = args[0] = function(name) {\n"
             + "        return vm.org_apidesign_vm4brwsr_Zips(false).loadFromCp___3B_3Ljava_lang_Object_2Ljava_lang_String_2(classpath, name);\n"
             + "      };\n"
             + "    };\n"
@@ -142,6 +143,7 @@ class VM extends ByteCodeToJavaScript {
             + "        return args[0](name);\n"
             + "      }\n"
             + "    }\n"
+            + "    if (init) init(null);\n"
             + "    return loader;\n"
             + "  };\n");
         out.append("}(this));");

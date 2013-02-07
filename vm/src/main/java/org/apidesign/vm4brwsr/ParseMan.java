@@ -25,10 +25,11 @@ import org.apidesign.bck2brwsr.emul.lang.ManifestInputStream;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-final class ParseCPAttr extends ManifestInputStream {
+final class ParseMan extends ManifestInputStream {
     private String cp;
+    private String mc;
 
-    public ParseCPAttr(InputStream is) throws IOException {
+    public ParseMan(InputStream is) throws IOException {
         super(is);
         readAttributes(new byte[512]);
     }
@@ -38,7 +39,14 @@ final class ParseCPAttr extends ManifestInputStream {
         if ("Class-Path".equals(key)) {
             cp = value;
         }
+        if ("Main-Class".equals(key)) {
+            mc = value;
+        }
         return null;
+    }
+    
+    String getMainClass() {
+        return mc;
     }
 
     @Override
