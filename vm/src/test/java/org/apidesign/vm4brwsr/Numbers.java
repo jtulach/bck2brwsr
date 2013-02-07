@@ -68,56 +68,6 @@ public class Numbers {
         return new Float(7.0).toString().toString();
     }
     
-    public static long conversionL() {
-        return Long.MAX_VALUE;
-    }
-    
-    public static long negL(byte[] arrValue) throws IOException {
-        ByteArrayInputStream isValue = new ByteArrayInputStream(arrValue);
-        DataInputStream disValue = new DataInputStream(isValue);
-        return (-disValue.readLong());
-    }
-    
-    public static long addL(byte[] arrX, byte[] arrY) throws IOException {
-        ByteArrayInputStream isX = new ByteArrayInputStream(arrX);
-        DataInputStream disX = new DataInputStream(isX);
-        ByteArrayInputStream isY = new ByteArrayInputStream(arrY);
-        DataInputStream disY = new DataInputStream(isY);
-        return (disX.readLong() + disY.readLong());
-    }
-    
-    public static long subL(byte[] arrX, byte[] arrY) throws IOException {
-        ByteArrayInputStream isX = new ByteArrayInputStream(arrX);
-        DataInputStream disX = new DataInputStream(isX);
-        ByteArrayInputStream isY = new ByteArrayInputStream(arrY);
-        DataInputStream disY = new DataInputStream(isY);
-        return (disX.readLong() - disY.readLong());
-    }
-    
-    public static long mulL(byte[] arrX, byte[] arrY) throws IOException {
-        ByteArrayInputStream isX = new ByteArrayInputStream(arrX);
-        DataInputStream disX = new DataInputStream(isX);
-        ByteArrayInputStream isY = new ByteArrayInputStream(arrY);
-        DataInputStream disY = new DataInputStream(isY);
-        return (disX.readLong() * disY.readLong());
-    }
-    
-    public static long divL(byte[] arrX, byte[] arrY) throws IOException {
-        ByteArrayInputStream isX = new ByteArrayInputStream(arrX);
-        DataInputStream disX = new DataInputStream(isX);
-        ByteArrayInputStream isY = new ByteArrayInputStream(arrY);
-        DataInputStream disY = new DataInputStream(isY);
-        return (disX.readLong() / disY.readLong());
-    }
-    
-    public static long modL(byte[] arrX, byte[] arrY) throws IOException {
-        ByteArrayInputStream isX = new ByteArrayInputStream(arrX);
-        DataInputStream disX = new DataInputStream(isX);
-        ByteArrayInputStream isY = new ByteArrayInputStream(arrY);
-        DataInputStream disY = new DataInputStream(isY);
-        return (disX.readLong() % disY.readLong());
-    }
-    
     public static long shlL(byte[] arrValue, int nBits) throws IOException {
         ByteArrayInputStream isValue = new ByteArrayInputStream(arrValue);
         DataInputStream disValue = new DataInputStream(isValue);

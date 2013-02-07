@@ -33,6 +33,10 @@ Number.prototype.toLong = function() {
 
 Number.prototype.toExactString = function() {
     if (this.hi) {
+        // check for Long.MIN_VALUE
+        if ((this.hi == (0x80000000 | 0)) && (this == 0)) {
+            return '-9223372036854775808';
+        }
         var res = 0;
         var a = [ 6,9,2,7,6,9,4,9,2,4 ];
         var s = '';
@@ -60,7 +64,8 @@ Number.prototype.toExactString = function() {
             }
             s = String(digit).concat(s);
         }
-        return (neg ? '-' : '').concat(res).concat(s);
+        s = String(res).concat(s).replace(/^0+/, '');
+        return (neg ? '-' : '').concat(s);
     }
     return String(this);
 };
