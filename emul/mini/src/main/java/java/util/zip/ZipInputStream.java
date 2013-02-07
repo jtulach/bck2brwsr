@@ -48,7 +48,7 @@ class ZipInputStream extends InflaterInputStream implements ZipConstants {
      * @param in the actual input stream
      */
     public ZipInputStream(InputStream in) {
-        super(null);
+        super(in);
         impl = new org.apidesign.bck2brwsr.emul.zip.ZipInputStream(in);
     }
 
