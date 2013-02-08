@@ -262,7 +262,7 @@ public final class Long extends Number implements Comparable<Long> {
      * @param   i   a {@code long} to be converted.
      * @return  a string representation of the argument in base&nbsp;10.
      */
-    @JavaScriptBody(args = "i", body = "return i.toString();")
+    @JavaScriptBody(args = "i", body = "return i.toExactString();")
     public static String toString(long i) {
         if (i == Long.MIN_VALUE)
             return "-9223372036854775808";

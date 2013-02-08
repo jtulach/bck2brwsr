@@ -353,17 +353,8 @@ public class StaticMethodTest {
         String msg, Class clazz, String method, 
         Object expRes, Object... args
     ) throws Exception {
-        Object ret = null;
-        try {
-            ret = toRun.invokeFunction("bck2brwsr");
-            ret = toRun.invokeMethod(ret, "loadClass", clazz.getName());
-            ret = toRun.invokeMethod(ret, method, args);
-        } catch (ScriptException ex) {
-            fail("Execution failed in\n" + dumpJS(theCode), ex);
-        } catch (NoSuchMethodException ex) {
-            fail("Cannot find method in\n" + dumpJS(theCode), ex);
-        }
-        if (ret == null && expRes == null) {
+        Object ret = TestUtils.execCode(toRun, theCode, msg, clazz, method, expRes, args);
+        if (ret == null) {
             return;
         }
         if (expRes != null && expRes.equals(ret)) {

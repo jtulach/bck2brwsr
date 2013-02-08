@@ -47,6 +47,10 @@ public class IntegerArithmeticTest {
         return x % y;
     }
     
+    private static int neg(int x) {
+        return (-x);
+    }
+    
     @Compare public int addOverflow() {
         return add(Integer.MAX_VALUE, 1);
     }
@@ -89,6 +93,18 @@ public class IntegerArithmeticTest {
     
     @Compare public int divisionReminder() {
         return mod(1, 2);
+    }
+    
+    @Compare public int negate() {
+        return neg(123456);
+    }
+    
+    @Compare public int negateMaxInt() {
+        return neg(Integer.MAX_VALUE);
+    }
+    
+    @Compare public int negateMinInt() {
+        return neg(Integer.MIN_VALUE);
     }
     
     @Compare public int sumTwoDimensions() {
