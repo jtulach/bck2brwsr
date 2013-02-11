@@ -113,7 +113,7 @@ abstract class ByteCodeToJavaScript {
         final String className = className(jc);
         out.append("\n\n").append(assignClass(className));
         out.append("function CLS() {");
-        out.append("\n  if (!CLS.prototype.$instOf_").append(className).append(") {");
+        out.append("\n  if (!CLS.$class) {");
         if (proto == null) {
             String sc = jc.getSuperClassName(); // with _
             out.append("\n    var pp = ").
@@ -182,6 +182,7 @@ abstract class ByteCodeToJavaScript {
         for (String superInterface : jc.getSuperInterfaces()) {
             out.append("\n    c.$instOf_").append(superInterface.replace('/', '_')).append(" = true;");
         }
+        out.append("\n    CLS.$class = 'temp';");
         out.append("\n    CLS.$class = ");
         out.append(accessClass("java_lang_Class(true);"));
         out.append("\n    CLS.$class.jvmName = '").append(jc.getClassName()).append("';");

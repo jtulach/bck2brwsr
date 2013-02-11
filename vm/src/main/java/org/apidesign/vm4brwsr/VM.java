@@ -48,8 +48,7 @@ class VM extends ByteCodeToJavaScript {
         new VM(out).doCompile(l, names);
     }
     protected void doCompile(Bck2Brwsr.Resources l, StringArray names) throws IOException {
-        out.append("(function VM(global) {");
-        out.append("\n  var vm = {};");
+        out.append("(function VM(global) {var fillInVMSkeleton = function(vm) {");
         StringArray processed = new StringArray();
         StringArray initCode = new StringArray();
         for (String baseClass : names.toArray()) {
@@ -117,8 +116,11 @@ class VM extends ByteCodeToJavaScript {
             }
         }
         out.append(
-              "  global.bck2brwsr = function() {\n"
+              "  return vm;\n"
+            + "  };\n"
+            + "  global.bck2brwsr = function() {\n"
             + "    var args = arguments;\n"
+            + "    var vm = fillInVMSkeleton({});\n"
             + "    var loader = {};\n"
             + "    var init = null;\n"
             + "    loader.vm = vm;\n"
@@ -137,6 +139,9 @@ class VM extends ByteCodeToJavaScript {
             + "        load__Ljava_lang_Object_2Ljava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2(loader, name, args);\n"
             + "    }\n"
             + "    if (args[0]) {\n"
+            + "      if (vm.loadClass) {\n"
+            + "        throw 'Cannot initialize the bck2brwsr VM twice!';\n"
+            + "      }\n"
             + "      vm.loadClass = loader.loadClass;\n"
             + "      vm.loadBytes = function(name) {\n"
             + "        if (!args[0]) throw 'bck2brwsr initialized without loader function, cannot load ' + name;\n"
