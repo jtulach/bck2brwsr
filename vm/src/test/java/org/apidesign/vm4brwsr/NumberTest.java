@@ -17,8 +17,6 @@
  */
 package org.apidesign.vm4brwsr;
 
-import javax.script.Invocable;
-import javax.script.ScriptException;
 import static org.testng.Assert.*;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -690,22 +688,17 @@ public class NumberTest {
         );
     }
 
-    private static CharSequence codeSeq;
-    private static Invocable code;
+    private static TestVM code;
 
     @BeforeClass
     public void compileTheCode() throws Exception {
-        if (codeSeq == null) {
-            StringBuilder sb = new StringBuilder();
-            code = StaticMethodTest.compileClass(sb, "org/apidesign/vm4brwsr/Numbers");
-            codeSeq = sb;
-        }
+        code = TestVM.compileClass("org/apidesign/vm4brwsr/Numbers");
     }
 
     private static void assertExec(
         String msg, Class<?> clazz, String method, Object expRes, Object... args) throws Exception
     {
-        Object ret = TestUtils.execCode(code, codeSeq, msg, clazz, method, expRes, args);
+        Object ret = code.execCode(msg, clazz, method, expRes, args);
         if (ret == null) {
             return;
         }
@@ -713,10 +706,10 @@ public class NumberTest {
             double expD = ((Double)expRes).doubleValue();
             double retD = ((Double)ret).doubleValue();
             assertEquals(retD, expD, 0.000004, msg + " "
-                    + StaticMethodTest.dumpJS(codeSeq));
+                    + code.toString());
             return;
         }
-        assertEquals(ret, expRes, msg + " " + StaticMethodTest.dumpJS(codeSeq));
+        assertEquals(ret, expRes, msg + " " + code.toString());
     }
     
 }

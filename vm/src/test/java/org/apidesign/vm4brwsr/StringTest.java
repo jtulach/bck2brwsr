@@ -17,7 +17,6 @@
  */
 package org.apidesign.vm4brwsr;
 
-import javax.script.Invocable;
 import org.testng.annotations.Test;
 import static org.testng.Assert.*;
 import org.testng.annotations.BeforeClass;
@@ -194,23 +193,20 @@ public class StringTest {
         
     }
     
-    private static CharSequence codeSeq;
-    private static Invocable code;
+    private static TestVM code;
     
     @BeforeClass 
     public void compileTheCode() throws Exception {
-        StringBuilder sb = new StringBuilder();
-        code = StaticMethodTest.compileClass(sb, 
+        code = TestVM.compileClass(
             "org/apidesign/vm4brwsr/StringSample",
             "java/lang/String"
         );
-        codeSeq = sb;
     }
     
     private static void assertExec(String msg, 
         Class<?> clazz, String method, Object expRes, Object... args
     ) throws Exception {
-        StaticMethodTest.assertExec(code, codeSeq, msg, clazz, method, expRes, args);
+        code.assertExec(msg, clazz, method, expRes, args);
     }
     
 }

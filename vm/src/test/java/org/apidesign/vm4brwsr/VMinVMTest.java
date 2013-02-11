@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import static org.testng.Assert.*;
-import javax.script.Invocable;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -30,9 +29,7 @@ import org.testng.annotations.Test;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class VMinVMTest {
-
-    private static CharSequence codeSeq;
-    private static Invocable code;
+    private static TestVM code;
     
     @Test public void compareGeneratedCodeForArrayClass() throws Exception {
         compareCode("org/apidesign/vm4brwsr/Array.class");
@@ -44,11 +41,7 @@ public class VMinVMTest {
 
     @BeforeClass
     public void compileTheCode() throws Exception {
-        StringBuilder sb = new StringBuilder();
-        code = StaticMethodTest.compileClass(sb, 
-            "org/apidesign/vm4brwsr/VMinVM"
-        );
-        codeSeq = sb;
+        code = TestVM.compileClass("org/apidesign/vm4brwsr/VMinVM");
     }
     
     private void compareCode(final String nm) throws Exception, IOException {
@@ -73,7 +66,7 @@ public class VMinVMTest {
                 }
             }
             w.append("\n];\n");
-            w.append(codeSeq);
+            w.append(code.toString());
             w.close();
             throw new Exception(ex.getMessage() + " file: " + f, ex);
         }
@@ -83,11 +76,11 @@ public class VMinVMTest {
         
         if (!ret1.toString().equals(ret)) {
             StringBuilder msg = new StringBuilder("Difference found between ");
-            msg.append(StaticMethodTest.dumpJS(ret1));
+            msg.append(TestVM.dumpJS(ret1));
             msg.append(" ");
-            msg.append(StaticMethodTest.dumpJS((CharSequence) ret));
+            msg.append(TestVM.dumpJS((CharSequence) ret));
             msg.append(" compiled by ");
-            msg.append(StaticMethodTest.dumpJS(codeSeq));
+            msg.append(code.toString());
             fail(msg.toString());
         }
     }
