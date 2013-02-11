@@ -191,10 +191,26 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
                 String id = request.getParameter("request");
                 String value = request.getParameter("result");
                 
+                
+                InvocationContext mi = null;
+                int caseNmbr = -1;
+                
                 if (id != null && value != null) {
                     LOG.log(Level.INFO, "Received result for case {0} = {1}", new Object[]{id, value});
                     value = decodeURL(value);
-                    cases.get(Integer.parseInt(id)).result(value, null);
+                    int indx = Integer.parseInt(id);
+                    cases.get(indx).result(value, null);
+                    if (++indx < cases.size()) {
+                        mi = cases.get(indx);
+                        LOG.log(Level.INFO, "Re-executing case {0}", indx);
+                        caseNmbr = indx;
+                    }
+                } else {
+                    if (!cases.isEmpty()) {
+                        LOG.info("Re-executing test cases");
+                        mi = cases.get(0);
+                        caseNmbr = 0;
+                    }
                 }
                 
                 if (prev != null) {
@@ -202,7 +218,10 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
                     prev = null;
                 }
                 
-                InvocationContext mi = methods.take();
+                if (mi == null) {
+                    mi = methods.take();
+                    caseNmbr = cnt++;
+                }
                 if (mi == END) {
                     response.getWriter().write("");
                     wait.countDown();
@@ -218,11 +237,11 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
                 cases.add(mi);
                 final String cn = mi.clazz.getName();
                 final String mn = mi.methodName;
-                LOG.log(Level.INFO, "Request for {0} case. Sending {1}.{2}", new Object[]{cnt, cn, mn});
+                LOG.log(Level.INFO, "Request for {0} case. Sending {1}.{2}", new Object[]{caseNmbr, cn, mn});
                 response.getWriter().write("{"
                     + "className: '" + cn + "', "
                     + "methodName: '" + mn + "', "
-                    + "request: " + cnt
+                    + "request: " + caseNmbr
                 );
                 if (mi.html != null) {
                     response.getWriter().write(", html: '");
@@ -230,7 +249,6 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
                     response.getWriter().write("'");
                 }
                 response.getWriter().write("}");
-                cnt++;
             }
         }, "/data");
 
