@@ -32,12 +32,12 @@ final class Zips {
     private final FastJar fj;
 
     private Zips(String path, byte[] zipData) throws IOException {
-        long bef = currentTimeMillis();
+        long bef = timeNow();
         fj = new FastJar(zipData);
         for (FastJar.Entry e : fj.list()) {
             putRes(e.name, e);
         }
-        log("Iterating thru " + path + " took " + (currentTimeMillis() - bef) + "ms");
+        log("Iterating thru " + path + " took " + (timeNow() - bef) + "ms");
     }
     
     public static void init() {
@@ -79,11 +79,11 @@ final class Zips {
     private byte[] findRes(String res) throws IOException {
         Object arr = findResImpl(res);
         if (arr instanceof FastJar.Entry) {
-            long bef = currentTimeMillis();
+            long bef = timeNow();
             InputStream zip = fj.getInputStream((FastJar.Entry)arr);
             arr = readFully(new byte[512], zip);
             putRes(res, arr);
-            log("Reading " + res + " took " + (currentTimeMillis() - bef) + "ms");
+            log("Reading " + res + " took " + (timeNow() - bef) + "ms");
         }
         return (byte[]) arr;
     }
@@ -151,10 +151,18 @@ final class Zips {
         return arr;
     }
 
-    private static long currentTimeMillis() {
-        return (long)m();
+    private static long timeNow() {
+        double time = m();
+        if (time >= 0) {
+            return (long)time;
+        }
+        return org.apidesign.bck2brwsr.emul.lang.System.currentTimeMillis();
     }
-    @JavaScriptBody(args = {  }, body = "return window.performance.now();")
+    @JavaScriptBody(args = {}, body = 
+        "if (typeof window.performance === 'undefined') return -1;\n"
+      + "if (typeof window.performance.now === 'undefined') return -1;\n"
+      + "return window.performance.now();"
+    )
     private static native double m();
     
     
