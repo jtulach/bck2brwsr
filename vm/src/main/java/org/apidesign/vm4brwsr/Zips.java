@@ -42,15 +42,22 @@ final class Zips {
     
     public static void init() {
     }
+    @JavaScriptBody(args = { "arr" }, body = "return arr.length;")
+    private static native int length(Object arr);
+    @JavaScriptBody(args = { "arr", "index" }, body = "return arr[index];")
+    private static native Object at(Object arr, int index);
+    @JavaScriptBody(args = { "arr", "index", "value" }, body = "arr[index] = value; return value;")
+    private static native Object set(Object arr, int index, Object value);
     
-    public static byte[] loadFromCp(Object[] classpath, String res) throws Exception {
-        for (int i = 0; i < classpath.length; i++) {
-            Object c = classpath[i];
+    public static byte[] loadFromCp(Object classpath, String res) 
+    throws IOException, ClassNotFoundException {
+        for (int i = 0; i < length(classpath); i++) {
+            Object c = at(classpath, i);
             if (c instanceof String) {
                 try {
                     String url = (String)c;
                     final Zips z = toZip(url);
-                    c = classpath[i] = z;
+                    c = set(classpath, i, z);
                     final byte[] man = z.findRes("META-INF/MANIFEST.MF");
                     if (man != null) {
                         String mainClass = processClassPathAttr(man, url, classpath);
@@ -58,20 +65,31 @@ final class Zips {
                             Class.forName(mainClass);
                         }
                     }
-                } catch (Exception ex) {
-                    classpath[i] = ex;
+                } catch (IOException | ClassNotFoundException ex) {
+                    set(classpath, i, ex);
                     throw ex;
                 }
             }
-            if (res != null && c instanceof Zips) {
-                Object checkRes = ((Zips)c).findRes(res);
-                if (checkRes instanceof byte[]) {
-                    return (byte[])checkRes;
+            if (res != null) {
+                byte[] checkRes;
+                if (c instanceof Zips) {
+                    checkRes = ((Zips)c).findRes(res);
+                } else {
+                    checkRes = callFunction(c, res);
+                }
+                if (checkRes != null) {
+                    return checkRes;
                 }
             }
         }
         return null;
     }
+    
+    @JavaScriptBody(args = { "fn", "res" }, body = 
+        "if (typeof fn === 'function') return fn(res);\n"
+      + "return null;"
+    )
+    private static native byte[] callFunction(Object fn, String res);
     
     @JavaScriptBody(args = { "msg" }, body = "console.log(msg.toString());")
     private static native void log(String msg);
@@ -100,7 +118,7 @@ final class Zips {
         return new Zips(path, zipData);
     }
 
-    private static String processClassPathAttr(final byte[] man, String url, Object[] classpath) throws IOException {
+    private static String processClassPathAttr(final byte[] man, String url, Object classpath) throws IOException {
         try (ParseMan is = new ParseMan(new ByteArrayInputStream(man))) {
             String cp = is.toString();
             if (cp != null) {
@@ -120,17 +138,17 @@ final class Zips {
         }
     }
 
-    private static Object[] addToArray(Object[] arr, String value) {
-        final int last = arr.length;
-        Object[] ret = enlargeArray(arr, last + 1);
-        ret[last] = value;
+    private static Object addToArray(Object arr, String value) {
+        final int last = length(arr);
+        Object ret = enlargeArray(arr, last + 1);
+        set(ret, last, value);
         return ret;
     }
 
-    @JavaScriptBody(args = { "arr", "len" }, body = "while (arr.length < len) arr.push(null); return arr;throw('Arr: ' + arr);")
-    private static native Object[] enlargeArray(Object[] arr, int len);
+    @JavaScriptBody(args = { "arr", "len" }, body = "while (arr.length < len) arr.push(null); return arr;")
+    private static native Object enlargeArray(Object arr, int len);
     @JavaScriptBody(args = { "arr", "len" }, body = "while (arr.length < len) arr.push(0);")
-    private static native void enlargeArray(byte[] arr, int len);
+    private static native void enlargeBytes(byte[] arr, int len);
 
     @JavaScriptBody(args = { "arr", "len" }, body = "arr.splice(len, arr.length - len);")
     private static native void sliceArray(byte[] arr, int len);
@@ -144,7 +162,7 @@ final class Zips {
             }
             offset += len;
             if (offset == arr.length) {
-                enlargeArray(arr, arr.length + 4096);
+                enlargeBytes(arr, arr.length + 4096);
             }
         }
         sliceArray(arr, offset);
