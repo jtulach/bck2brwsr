@@ -26,7 +26,7 @@ import java.util.Map;
  * To facilitate lookup of methods by name and signature, instead of manually parsing signatures,
  * constructs the map of all methods and uses Class.getName() to generate almost-correct signatures.
  */
-public class JNIHelper {
+class JNIHelper {
 
     static Method method(String clazz, String method, String signature) {
         final Map<String, Method> methods = methodMap(JNIHelper.clazz(clazz));

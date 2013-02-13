@@ -33,10 +33,11 @@ public class DejsniReaderTest {
                 "    }-*/;\n" +
                 "}\n";
 
-        String expected = "class Test {\n" +
+        String expected = " import org.apidesign.bck2brwsr.core.JavaScriptBody;\n"
+              + "class Test {\n" +
                 "\n" +
                 "    /** javadoc */\n" +
-                "    @org.apidesign.bck2brwsr.core.JavaScriptBody(args = {  }, body = \"\\n        // body\\n  \")\n" +
+                "    @JavaScriptBody(args = {}, body = \"\\n        // body\\n  \")\n" +
                 "    public native void test();\n" +
                 "}\n";
         
@@ -44,7 +45,7 @@ public class DejsniReaderTest {
                 .input(s)
                 .classpath(FileUtil.getArchiveRoot(JavaScriptBody.class.getProtectionDomain().getCodeSource().getLocation()))
                 .run(JSNI2JavaScriptBody.class)
-                .findWarning("2:23-2:26:verifier:" + Bundle.ERR_JSNI2JavaScriptBody())
+                .findWarning("2:23-2:27:verifier:" + Bundle.ERR_JSNI2JavaScriptBody())
                 .applyFix()
                 .assertCompilable()
                 .assertOutput(expected);
@@ -62,18 +63,20 @@ public class DejsniReaderTest {
                 "    }-*/;\n" +
                 "}\n";
 
-        String expected = "class Test {\n" +
+        String expected = " import org.apidesign.bck2brwsr.core.JavaScriptBody;\n"
+              + "class Test {\n" +
                 "\n" +
                 "    /** javadoc */\n" +
                 "    @SuppressWarnings(\"unused\")\n" +
-                "    @org.apidesign.bck2brwsr.core.JavaScriptBody(args = {  }, body = \"\\n        // body\\n  \")\n" +
+                "    // comment\n" +
+                "    @JavaScriptBody(args = {}, body = \"\\n        // body\\n  \")\n" +
                 "    public native void test();\n" +
                 "}\n";
           HintTest.create()
                 .input(s)
                 .classpath(FileUtil.getArchiveRoot(JavaScriptBody.class.getProtectionDomain().getCodeSource().getLocation()))
                 .run(JSNI2JavaScriptBody.class)
-                .findWarning("2:23-2:26:verifier:" + Bundle.ERR_JSNI2JavaScriptBody())
+                .findWarning("4:23-4:27:verifier:" + Bundle.ERR_JSNI2JavaScriptBody())
                 .applyFix()
                 .assertCompilable()
                 .assertOutput(expected);

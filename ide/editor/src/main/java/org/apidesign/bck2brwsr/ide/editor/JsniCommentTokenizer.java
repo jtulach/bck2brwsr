@@ -20,14 +20,14 @@ package org.apidesign.bck2brwsr.ide.editor;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class JsniCommentTokenizer {
+final class JsniCommentTokenizer {
 
     /**
      * Tokenize the contents of JSNI comment into the provided {@linkplain Sink}.
      * @param in the contents of JSNI comment
      * @param out the sink that consumes parsed tokens
      */
-    public void process(final String in, final Sink out) {
+    public void process(final CharSequence in, final Sink out) {
         final Matcher member = Pattern.compile("@([^:]+)::([a-zA-Z_$][a-zA-Z\\d_$]*)").matcher(in);
         final Matcher signature = Pattern.compile("\\(([^\\)]*)\\)").matcher(in);
 
@@ -36,7 +36,7 @@ public class JsniCommentTokenizer {
             if (member.find(i)) {
                 final int memberStart = member.start();
                 final int memberEnd = member.end();
-                if (memberStart > i) out.javascript(in.substring(i, memberStart));
+                if (memberStart > i) out.javascript(in.subSequence(i, memberStart).toString());
 
                 final String clazz = member.group(1);
                 final String name = member.group(2);
@@ -53,14 +53,14 @@ public class JsniCommentTokenizer {
                     i = memberEnd;
                 }
             } else {
-                out.javascript(in.substring(i, in.length()));
+                out.javascript(in.subSequence(i, in.length()).toString());
                 break;
             }
         }
     }
 
 
-    public static interface Sink {
+    static interface Sink {
         void javascript(String s);
 
         void method(String clazz, String method, String signature);

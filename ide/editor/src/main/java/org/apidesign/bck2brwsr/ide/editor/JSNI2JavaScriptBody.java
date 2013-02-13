@@ -55,8 +55,6 @@ import org.openide.util.NbBundle.Messages;
 })
 public class JSNI2JavaScriptBody {
 
-    private static final Pattern JSNIPattern = Pattern.compile("/\\*-\\{(.*)}-\\*/");
-
     @TriggerTreeKind(Kind.METHOD)
     @Messages("ERR_JSNI2JavaScriptBody=Can convert JSNI to @JavaScriptBody")
     public static ErrorDescription computeWarning(final HintContext ctx) {
@@ -88,7 +86,12 @@ public class JSNI2JavaScriptBody {
                 case LINE_COMMENT: break;
                 case JAVADOC_COMMENT: break;
                 case BLOCK_COMMENT:
-                    if (JSNIPattern.matcher(ts.token().text()).matches()) {
+                    final CharSequence tok = ts.token().text();
+                    final int l = tok.length(); 
+                    if (l > 4 
+                        && tok.subSequence(0, 4).toString().equals("/*-{") // NOI18N
+                        && tok.subSequence(l - 4, l).toString().equals("}-*/") // NOI18N
+                    ) {
                         return ts.offsetToken();
                     }
                     break;
@@ -120,16 +123,15 @@ public class JSNI2JavaScriptBody {
                 //XXX: warn?
                 return ;
             }
-
-            Matcher m = JSNIPattern.matcher(jsniComment.text());
-
-            if (!m.matches()) return ; //XXX: warn?
+            
+            JsniCommentTokenizer tok = new JsniCommentTokenizer();
+            ManglingSink ms = new ManglingSink();
+            final CharSequence cmnt = jsniComment.text();
+            tok.process(cmnt.subSequence(4, cmnt.length() - 4), ms);
 
             TreeMaker make = ctx.getWorkingCopy().getTreeMaker();
             MethodTree mt = (MethodTree) ctx.getPath().getLeaf();
             List<LiteralTree> params = new ArrayList<LiteralTree>();
-
-            params.add(make.Literal("this"));
 
             for (VariableTree p : mt.getParameters()) {
                 params.add(make.Literal(p.getName().toString()));
@@ -137,8 +139,8 @@ public class JSNI2JavaScriptBody {
 
             AnnotationTree jsBody = make.Annotation(make.QualIdent("org.apidesign.bck2brwsr.core.JavaScriptBody"),
                 Arrays.<ExpressionTree>asList(
-                    make.Assignment(make.Identifier("body"), make.Literal(m.group(1))),
-                    make.Assignment(make.Identifier("args"), make.NewArray(null, Collections.<ExpressionTree>emptyList(), params))
+                    make.Assignment(make.Identifier("args"), make.NewArray(null, Collections.<ExpressionTree>emptyList(), params)),
+                    make.Assignment(make.Identifier("body"), make.Literal(ms.out.toString()))
                 )
             );
 
