@@ -39,7 +39,7 @@ public class JSNI2JavaScriptBodyTest {
                 .assertOutput("package test;\n" +
                               "import org.apidesign.bck2brwsr.core.JavaScriptBody;\n" +
                               "public class Test {\n" +
-                              "    @JavaScriptBody(body = \" this.a = a; \", args = {\"this\", \"a\"})\n" +
+                              "    @JavaScriptBody(args = {\"a\"}, body = \" this.a = a; \")\n" +
                               "    public native void run(int a);\n" +
                               "}\n");
     }
