@@ -17,6 +17,7 @@
     <module>benchmarks</module>
     <module>launcher</module>
     <module>vmtest</module>
+    <module>ide</module>
   </modules>
   <licenses>
       <license>
