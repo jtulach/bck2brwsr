@@ -37,7 +37,7 @@ import org.apache.maven.project.MavenProject;
 import org.apidesign.bck2brwsr.launcher.Launcher;
 
 /** Executes given HTML page in a browser. */
-@Mojo(name="brwsr", defaultPhase=LifecyclePhase.DEPLOY)
+@Mojo(name="brwsr", defaultPhase=LifecyclePhase.NONE)
 public class BrswrMojo extends AbstractMojo {
     public BrswrMojo() {
     }
