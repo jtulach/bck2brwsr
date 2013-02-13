@@ -28,8 +28,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import static org.netbeans.api.java.lexer.JavaTokenId.BLOCK_COMMENT;
 import static org.netbeans.api.java.lexer.JavaTokenId.JAVADOC_COMMENT;
