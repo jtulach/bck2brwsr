@@ -307,10 +307,10 @@ public class GraphicsContext {
     public native double getGlobalAlpha();
 
     @JavaScriptBody(args = {"operation"}, body = "this._context().globalCompositeOperation=operation;")
-    public native void setGlobalCompositeOperation(double alpha);
+    public native void setGlobalCompositeOperation(String operation);
 
     @JavaScriptBody(args = {}, body = "return this._context().globalCompositeOperation;")
-    public native double getGlobalCompositeOperation();
+    public native String getGlobalCompositeOperation();
 
     public LinearGradient createLinearGradient(double x0, double y0, double x1, double y1) {
         return new LinearGradient(createLinearGradientImpl(context, x0, y0, x1, y1));
