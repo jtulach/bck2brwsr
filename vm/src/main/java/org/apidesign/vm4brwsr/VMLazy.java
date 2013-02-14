@@ -98,7 +98,7 @@ final class VMLazy {
         "try {\n" +
         "  new Function(script)(loader, name);\n" +
         "} catch (ex) {\n" +
-        "  throw 'Cannot compile ' + ex + ' line: ' + ex.lineNumber + ' script:\\n' + script;\n" +
+        "  throw 'Cannot compile ' + name + ' ' + ex + ' line: ' + ex.lineNumber + ' script:\\n' + script;\n" +
         "}\n" +
         "return name != null ? vm[name](instance) : null;\n"
     )
@@ -117,8 +117,8 @@ final class VMLazy {
         body =
         "var cls = n.replace__Ljava_lang_String_2CC('/','_').toString();"
         + "\nvar dot = n.replace__Ljava_lang_String_2CC('/','.').toString();"
-        + "\nvar lazy = this.fld_lazy;"
-        + "\nvar loader = lazy.fld_loader;"
+        + "\nvar lazy = this._lazy();"
+        + "\nvar loader = lazy._loader();"
         + "\nvar vm = loader.vm;"
         + "\nif (vm[cls]) return false;"
         + "\nvm[cls] = function() {"

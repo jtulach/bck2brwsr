@@ -114,11 +114,6 @@ abstract class ByteCodeToJavaScript {
         out.append("\n\n").append(assignClass(className));
         out.append("function CLS() {");
         out.append("\n  if (!CLS.prototype.$instOf_").append(className).append(") {");
-        for (FieldData v : jc.getFields()) {
-            if (v.isStatic()) {
-                out.append("\n  CLS.").append(v.getName()).append(initField(v));
-            }
-        }
         if (proto == null) {
             String sc = jc.getSuperClassName(); // with _
             out.append("\n    var pp = ").
@@ -133,6 +128,18 @@ abstract class ByteCodeToJavaScript {
             }
             out.append("\n    var c = ").append(proto[0]).append(";");
             out.append("\n    var sprcls = null;");
+        }
+        for (FieldData v : jc.getFields()) {
+            if (v.isStatic()) {
+                out.append("\n  CLS.").append(v.getName()).append(initField(v));
+            } else {
+                out.append("\n  c._").append(v.getName()).append(" = function (v) {")
+                   .append("  if (arguments.length == 1) this.fld_").
+                    append(className).append('_').append(v.getName())
+                   .append(" = v; return this.fld_").
+                    append(className).append('_').append(v.getName())
+                   .append("; };");
+            }
         }
         for (MethodData m : jc.getMethods()) {
             byte[] onlyArr = m.findAnnotationData(true);
@@ -206,6 +213,7 @@ abstract class ByteCodeToJavaScript {
             }
             if (!v.isStatic()) {
                 out.append("\n    this.fld_").
+                    append(className).append('_').
                     append(v.getName()).append(initField(v));
             }
         }
@@ -270,6 +278,7 @@ abstract class ByteCodeToJavaScript {
 
         int lastStackFrame = -1;
         TrapData[] previousTrap = null;
+        boolean wide = false;
         
         out.append("\n  var gt = 0;\n  for(;;) switch(gt) {\n");
         for (int i = 0; i < byteCodes.length; i++) {
@@ -295,7 +304,7 @@ abstract class ByteCodeToJavaScript {
                 out.append("try {");
                 previousTrap = trap.current();
             }
-            final int c = readByte(byteCodes, i);
+            final int c = readUByte(byteCodes, i);
             switch (c) {
                 case opc_aload_0:
                     emit(out, "var @1 = @2;", smapper.pushA(), lmapper.getA(0));
@@ -358,61 +367,91 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "var @1 = @2;", smapper.pushD(), lmapper.getD(3));
                     break;
                 case opc_iload: {
-                    final int indx = readByte(byteCodes, ++i);
+                    ++i;
+                    final int indx = wide ? readUShort(byteCodes, i++)
+                                          : readUByte(byteCodes, i);
+                    wide = false;
                     emit(out, "var @1 = @2;",
                          smapper.pushI(), lmapper.getI(indx));
                     break;
                 }
                 case opc_lload: {
-                    final int indx = readByte(byteCodes, ++i);
+                    ++i;
+                    final int indx = wide ? readUShort(byteCodes, i++)
+                                          : readUByte(byteCodes, i);
+                    wide = false;
                     emit(out, "var @1 = @2;",
                          smapper.pushL(), lmapper.getL(indx));
                     break;
                 }
                 case opc_fload: {
-                    final int indx = readByte(byteCodes, ++i);
+                    ++i;
+                    final int indx = wide ? readUShort(byteCodes, i++)
+                                          : readUByte(byteCodes, i);
+                    wide = false;
                     emit(out, "var @1 = @2;",
                          smapper.pushF(), lmapper.getF(indx));
                     break;
                 }
                 case opc_dload: {
-                    final int indx = readByte(byteCodes, ++i);
+                    ++i;
+                    final int indx = wide ? readUShort(byteCodes, i++)
+                                          : readUByte(byteCodes, i);
+                    wide = false;
                     emit(out, "var @1 = @2;",
                          smapper.pushD(), lmapper.getD(indx));
                     break;
                 }
                 case opc_aload: {
-                    final int indx = readByte(byteCodes, ++i);
+                    ++i;
+                    final int indx = wide ? readUShort(byteCodes, i++)
+                                          : readUByte(byteCodes, i);
+                    wide = false;
                     emit(out, "var @1 = @2;",
                          smapper.pushA(), lmapper.getA(indx));
                     break;
                 }
                 case opc_istore: {
-                    final int indx = readByte(byteCodes, ++i);
+                    ++i;
+                    final int indx = wide ? readUShort(byteCodes, i++)
+                                          : readUByte(byteCodes, i);
+                    wide = false;
                     emit(out, "var @1 = @2;",
                          lmapper.setI(indx), smapper.popI());
                     break;
                 }
                 case opc_lstore: {
-                    final int indx = readByte(byteCodes, ++i);
+                    ++i;
+                    final int indx = wide ? readUShort(byteCodes, i++)
+                                          : readUByte(byteCodes, i);
+                    wide = false;
                     emit(out, "var @1 = @2;",
                          lmapper.setL(indx), smapper.popL());
                     break;
                 }
                 case opc_fstore: {
-                    final int indx = readByte(byteCodes, ++i);
+                    ++i;
+                    final int indx = wide ? readUShort(byteCodes, i++)
+                                          : readUByte(byteCodes, i);
+                    wide = false;
                     emit(out, "var @1 = @2;",
                          lmapper.setF(indx), smapper.popF());
                     break;
                 }
                 case opc_dstore: {
-                    final int indx = readByte(byteCodes, ++i);
+                    ++i;
+                    final int indx = wide ? readUShort(byteCodes, i++)
+                                          : readUByte(byteCodes, i);
+                    wide = false;
                     emit(out, "var @1 = @2;",
                          lmapper.setD(indx), smapper.popD());
                     break;
                 }
                 case opc_astore: {
-                    final int indx = readByte(byteCodes, ++i);
+                    ++i;
+                    final int indx = wide ? readUShort(byteCodes, i++)
+                                          : readUByte(byteCodes, i);
+                    wide = false;
                     emit(out, "var @1 = @2;",
                          lmapper.setA(indx), smapper.popA());
                     break;
@@ -481,7 +520,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 = @1.add32(@2);", smapper.getI(1), smapper.popI());
                     break;
                 case opc_ladd:
-                    emit(out, "@1 += @2;", smapper.getL(1), smapper.popL());
+                    emit(out, "@1 = @1.add64(@2);", smapper.getL(1), smapper.popL());
                     break;
                 case opc_fadd:
                     emit(out, "@1 += @2;", smapper.getF(1), smapper.popF());
@@ -493,7 +532,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 = @1.sub32(@2);", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lsub:
-                    emit(out, "@1 -= @2;", smapper.getL(1), smapper.popL());
+                    emit(out, "@1 = @1.sub64(@2);", smapper.getL(1), smapper.popL());
                     break;
                 case opc_fsub:
                     emit(out, "@1 -= @2;", smapper.getF(1), smapper.popF());
@@ -505,7 +544,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 = @1.mul32(@2);", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lmul:
-                    emit(out, "@1 *= @2;", smapper.getL(1), smapper.popL());
+                    emit(out, "@1 = @1.mul64(@2);", smapper.getL(1), smapper.popL());
                     break;
                 case opc_fmul:
                     emit(out, "@1 *= @2;", smapper.getF(1), smapper.popF());
@@ -518,7 +557,7 @@ abstract class ByteCodeToJavaScript {
                          smapper.getI(1), smapper.popI());
                     break;
                 case opc_ldiv:
-                    emit(out, "@1 = Math.floor(@1 / @2);",
+                    emit(out, "@1 = @1.div64(@2);",
                          smapper.getL(1), smapper.popL());
                     break;
                 case opc_fdiv:
@@ -531,7 +570,8 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 %= @2;", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lrem:
-                    emit(out, "@1 %= @2;", smapper.getL(1), smapper.popL());
+                    emit(out, "@1 = @1.mod64(@2);",
+                         smapper.getL(1), smapper.popL());
                     break;
                 case opc_frem:
                     emit(out, "@1 %= @2;", smapper.getF(1), smapper.popF());
@@ -543,25 +583,25 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 &= @2;", smapper.getI(1), smapper.popI());
                     break;
                 case opc_land:
-                    emit(out, "@1 &= @2;", smapper.getL(1), smapper.popL());
+                    emit(out, "@1 = @1.and64(@2);", smapper.getL(1), smapper.popL());
                     break;
                 case opc_ior:
                     emit(out, "@1 |= @2;", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lor:
-                    emit(out, "@1 |= @2;", smapper.getL(1), smapper.popL());
+                    emit(out, "@1 = @1.or64(@2);", smapper.getL(1), smapper.popL());
                     break;
                 case opc_ixor:
                     emit(out, "@1 ^= @2;", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lxor:
-                    emit(out, "@1 ^= @2;", smapper.getL(1), smapper.popL());
+                    emit(out, "@1 = @1.xor64(@2);", smapper.getL(1), smapper.popL());
                     break;
                 case opc_ineg:
-                    emit(out, "@1 = -@1;", smapper.getI(0));
+                    emit(out, "@1 = @1.neg32();", smapper.getI(0));
                     break;
                 case opc_lneg:
-                    emit(out, "@1 = -@1;", smapper.getL(0));
+                    emit(out, "@1 = @1.neg64();", smapper.getL(0));
                     break;
                 case opc_fneg:
                     emit(out, "@1 = -@1;", smapper.getF(0));
@@ -573,23 +613,28 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 <<= @2;", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lshl:
-                    emit(out, "@1 <<= @2;", smapper.getL(1), smapper.popI());
+                    emit(out, "@1 = @1.shl64(@2);", smapper.getL(1), smapper.popI());
                     break;
                 case opc_ishr:
                     emit(out, "@1 >>= @2;", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lshr:
-                    emit(out, "@1 >>= @2;", smapper.getL(1), smapper.popI());
+                    emit(out, "@1 = @1.shr64(@2);", smapper.getL(1), smapper.popI());
                     break;
                 case opc_iushr:
                     emit(out, "@1 >>>= @2;", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lushr:
-                    emit(out, "@1 >>>= @2;", smapper.getL(1), smapper.popI());
+                    emit(out, "@1 = @1.ushr64(@2);", smapper.getL(1), smapper.popI());
                     break;
                 case opc_iinc: {
-                    final int varIndx = readByte(byteCodes, ++i);
-                    final int incrBy = byteCodes[++i];
+                    ++i;
+                    final int varIndx = wide ? readUShort(byteCodes, i++)
+                                             : readUByte(byteCodes, i);
+                    ++i;
+                    final int incrBy = wide ? readShort(byteCodes, i++)
+                                            : byteCodes[i];
+                    wide = false;
                     if (incrBy == 1) {
                         emit(out, "@1++;", lmapper.getI(varIndx));
                     } else {
@@ -627,14 +672,14 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "var @2 = @1;", smapper.popI(), smapper.pushD());
                     break;
                 case opc_l2i:
-                    emit(out, "var @2 = @1;", smapper.popL(), smapper.pushI());
+                    emit(out, "var @2 = @1.toInt32();", smapper.popL(), smapper.pushI());
                     break;
                     // max int check?
                 case opc_l2f:
-                    emit(out, "var @2 = @1;", smapper.popL(), smapper.pushF());
+                    emit(out, "var @2 = @1.toFP();", smapper.popL(), smapper.pushF());
                     break;
                 case opc_l2d:
-                    emit(out, "var @2 = @1;", smapper.popL(), smapper.pushD());
+                    emit(out, "var @2 = @1.toFP();", smapper.popL(), smapper.pushD());
                     break;
                 case opc_f2d:
                     emit(out, "var @2 = @1;", smapper.popF(), smapper.pushD());
@@ -647,7 +692,7 @@ abstract class ByteCodeToJavaScript {
                          smapper.popF(), smapper.pushI());
                     break;
                 case opc_f2l:
-                    emit(out, "var @2 = Math.floor(@1);",
+                    emit(out, "var @2 = Math.floor(@1).toLong();",
                          smapper.popF(), smapper.pushL());
                     break;
                 case opc_d2i:
@@ -655,7 +700,7 @@ abstract class ByteCodeToJavaScript {
                          smapper.popD(), smapper.pushI());
                     break;
                 case opc_d2l:
-                    emit(out, "var @2 = Math.floor(@1);",
+                    emit(out, "var @2 = Math.floor(@1).toLong();",
                          smapper.popD(), smapper.pushL());
                     break;
                 case opc_i2b:
@@ -713,7 +758,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "var @1 = 5;", smapper.pushI());
                     break;
                 case opc_ldc: {
-                    int indx = readByte(byteCodes, ++i);
+                    int indx = readUByte(byteCodes, ++i);
                     String v = encodeConstant(indx);
                     int type = VarType.fromConstantType(jc.getTag(indx));
                     emit(out, "var @1 = @2;", smapper.pushT(type), v);
@@ -725,11 +770,19 @@ abstract class ByteCodeToJavaScript {
                     i += 2;
                     String v = encodeConstant(indx);
                     int type = VarType.fromConstantType(jc.getTag(indx));
-                    emit(out, "var @1 = @2;", smapper.pushT(type), v);
+                    if (type == VarType.LONG) {
+                        final Long lv = new Long(v);
+                        final int low = (int)(lv.longValue() & 0xFFFFFFFF);
+                        final int hi = (int)(lv.longValue() >> 32);
+                        emit(out, "var @1 = 0x@3.next32(0x@2);", smapper.pushL(), 
+                                Integer.toHexString(low), Integer.toHexString(hi));
+                    } else {
+                        emit(out, "var @1 = @2;", smapper.pushT(type), v);
+                    }
                     break;
                 }
                 case opc_lcmp:
-                    emit(out, "var @3 = (@2 == @1) ? 0 : ((@2 < @1) ? -1 : 1);",
+                    emit(out, "var @3 = @2.compare64(@1);",
                          smapper.popL(), smapper.popL(), smapper.pushI());
                     break;
                 case opc_fcmpl:
@@ -896,7 +949,7 @@ abstract class ByteCodeToJavaScript {
                     break;
                 }
                 case opc_newarray:
-                    int atype = readByte(byteCodes, ++i);
+                    int atype = readUByte(byteCodes, ++i);
                     String jvmType;
                     switch (atype) {
                         case 4: jvmType = "[Z"; break;
@@ -929,7 +982,7 @@ abstract class ByteCodeToJavaScript {
                     int type = readIntArg(byteCodes, i);
                     i += 2;
                     String typeName = jc.getClassName(type);
-                    int dim = readByte(byteCodes, ++i);
+                    int dim = readUByte(byteCodes, ++i);
                     StringBuilder dims = new StringBuilder();
                     dims.append('[');
                     for (int d = 0; d < dim; d++) {
@@ -1004,16 +1057,16 @@ abstract class ByteCodeToJavaScript {
                     break;
                 }
                 case opc_dup2: {
-                    if (smapper.get(0).isCategory2()) {
-                        final Variable v = smapper.get(0);
+                    final Variable vi1 = smapper.get(0);
+
+                    if (vi1.isCategory2()) {
                         emit(out, "var @1 = @2;",
-                             smapper.pushT(v.getType()), v);
+                             smapper.pushT(vi1.getType()), vi1);
                     } else {
-                        final Variable v1 = smapper.get(0);
-                        final Variable v2 = smapper.get(1);
+                        final Variable vi2 = smapper.get(1);
                         emit(out, "var @1 = @2, @3 = @4;",
-                             smapper.pushT(v2.getType()), v2,
-                             smapper.pushT(v1.getType()), v1);
+                             smapper.pushT(vi2.getType()), vi2,
+                             smapper.pushT(vi1.getType()), vi1);
                     }
                     break;
                 }
@@ -1028,10 +1081,11 @@ abstract class ByteCodeToJavaScript {
                          vo1, vi1, vo2, vi2, vo3, vo1);
                     break;
                 }
-                case opc_dup_x2: {
-                    if (smapper.get(1).isCategory2()) {
-                        final Variable vi1 = smapper.pop();
-                        final Variable vi2 = smapper.pop();
+                case opc_dup2_x1: {
+                    final Variable vi1 = smapper.pop();
+                    final Variable vi2 = smapper.pop();
+
+                    if (vi1.isCategory2()) {
                         final Variable vo3 = smapper.pushT(vi1.getType());
                         final Variable vo2 = smapper.pushT(vi2.getType());
                         final Variable vo1 = smapper.pushT(vi1.getType());
@@ -1039,8 +1093,32 @@ abstract class ByteCodeToJavaScript {
                         emit(out, "var @1 = @2, @3 = @4, @5 = @6;",
                              vo1, vi1, vo2, vi2, vo3, vo1);
                     } else {
-                        final Variable vi1 = smapper.pop();
-                        final Variable vi2 = smapper.pop();
+                        final Variable vi3 = smapper.pop();
+                        final Variable vo5 = smapper.pushT(vi2.getType());
+                        final Variable vo4 = smapper.pushT(vi1.getType());
+                        final Variable vo3 = smapper.pushT(vi3.getType());
+                        final Variable vo2 = smapper.pushT(vi2.getType());
+                        final Variable vo1 = smapper.pushT(vi1.getType());
+
+                        emit(out, "var @1 = @2, @3 = @4, @5 = @6,",
+                             vo1, vi1, vo2, vi2, vo3, vi3);
+                        emit(out, " @1 = @2, @3 = @4;",
+                             vo4, vo1, vo5, vo2);
+                    }
+                    break;
+                }
+                case opc_dup_x2: {
+                    final Variable vi1 = smapper.pop();
+                    final Variable vi2 = smapper.pop();
+
+                    if (vi2.isCategory2()) {
+                        final Variable vo3 = smapper.pushT(vi1.getType());
+                        final Variable vo2 = smapper.pushT(vi2.getType());
+                        final Variable vo1 = smapper.pushT(vi1.getType());
+
+                        emit(out, "var @1 = @2, @3 = @4, @5 = @6;",
+                             vo1, vi1, vo2, vi2, vo3, vo1);
+                    } else {
                         final Variable vi3 = smapper.pop();
                         final Variable vo4 = smapper.pushT(vi1.getType());
                         final Variable vo3 = smapper.pushT(vi3.getType());
@@ -1049,6 +1127,76 @@ abstract class ByteCodeToJavaScript {
 
                         emit(out, "var @1 = @2, @3 = @4, @5 = @6, @7 = @8;",
                              vo1, vi1, vo2, vi2, vo3, vi3, vo4, vo1);
+                    }
+                    break;
+                }
+                case opc_dup2_x2: {
+                    final Variable vi1 = smapper.pop();
+                    final Variable vi2 = smapper.pop();
+
+                    if (vi1.isCategory2()) {
+                        if (vi2.isCategory2()) {
+                            final Variable vo3 = smapper.pushT(vi1.getType());
+                            final Variable vo2 = smapper.pushT(vi2.getType());
+                            final Variable vo1 = smapper.pushT(vi1.getType());
+
+                            emit(out, "var @1 = @2, @3 = @4, @5 = @6;",
+                                 vo1, vi1, vo2, vi2, vo3, vo1);
+                        } else {
+                            final Variable vi3 = smapper.pop();
+                            final Variable vo4 = smapper.pushT(vi1.getType());
+                            final Variable vo3 = smapper.pushT(vi3.getType());
+                            final Variable vo2 = smapper.pushT(vi2.getType());
+                            final Variable vo1 = smapper.pushT(vi1.getType());
+
+                            emit(out, "var @1 = @2, @3 = @4, @5 = @6, @7 = @8;",
+                                 vo1, vi1, vo2, vi2, vo3, vi3, vo4, vo1);
+                        }
+                    } else {
+                        final Variable vi3 = smapper.pop();
+
+                        if (vi3.isCategory2()) {
+                            final Variable vo5 = smapper.pushT(vi2.getType());
+                            final Variable vo4 = smapper.pushT(vi1.getType());
+                            final Variable vo3 = smapper.pushT(vi3.getType());
+                            final Variable vo2 = smapper.pushT(vi2.getType());
+                            final Variable vo1 = smapper.pushT(vi1.getType());
+
+                            emit(out, "var @1 = @2, @3 = @4, @5 = @6,",
+                                 vo1, vi1, vo2, vi2, vo3, vi3);
+                            emit(out, " @1 = @2, @3 = @4;",
+                                 vo4, vo1, vo5, vo2);
+                        } else {
+                            final Variable vi4 = smapper.pop();
+                            final Variable vo6 = smapper.pushT(vi2.getType());
+                            final Variable vo5 = smapper.pushT(vi1.getType());
+                            final Variable vo4 = smapper.pushT(vi4.getType());
+                            final Variable vo3 = smapper.pushT(vi3.getType());
+                            final Variable vo2 = smapper.pushT(vi2.getType());
+                            final Variable vo1 = smapper.pushT(vi1.getType());
+                            
+                            emit(out, "var @1 = @2, @3 = @4, @5 = @6, @7 = @8,",
+                                 vo1, vi1, vo2, vi2, vo3, vi3, vo4, vi4);
+                            emit(out, " @1 = @2, @3 = @4;",
+                                 vo5, vo1, vo6, vo2);
+                        }
+                    }
+                    break;
+                }
+                case opc_swap: {
+                    final Variable vi1 = smapper.get(0);
+                    final Variable vi2 = smapper.get(1);
+
+                    if (vi1.getType() == vi2.getType()) {
+                        final Variable tmp = smapper.pushT(vi1.getType());
+
+                        emit(out, "var @1 = @2, @2 = @3, @3 = @1;",
+                             tmp, vi1, vi2);
+                        smapper.pop(1);
+                    } else {
+                        smapper.pop(2);
+                        smapper.pushT(vi1.getType());
+                        smapper.pushT(vi2.getType());
                     }
                     break;
                 }
@@ -1066,8 +1214,26 @@ abstract class ByteCodeToJavaScript {
                     int indx = readIntArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
-                    emit(out, "var @2 = @1.fld_@3;",
-                         smapper.popA(), smapper.pushT(type), fi[1]);
+                    final String mangleClass = mangleSig(fi[0]);
+                    final String mangleClassAccess = accessClass(mangleClass);
+                    emit(out, "var @2 = @4(false)._@3.call(@1);",
+                         smapper.popA(),
+                         smapper.pushT(type), fi[1], mangleClassAccess
+                    );
+                    i += 2;
+                    break;
+                }
+                case opc_putfield: {
+                    int indx = readIntArg(byteCodes, i);
+                    String[] fi = jc.getFieldInfoName(indx);
+                    final int type = VarType.fromFieldType(fi[2].charAt(0));
+                    final String mangleClass = mangleSig(fi[0]);
+                    final String mangleClassAccess = accessClass(mangleClass);
+                    emit(out, "@4(false)._@3.call(@2, @1);",
+                         smapper.popT(type),
+                         smapper.popA(), fi[1], 
+                         mangleClassAccess
+                    );
                     i += 2;
                     break;
                 }
@@ -1080,15 +1246,6 @@ abstract class ByteCodeToJavaScript {
                          accessClass(fi[0].replace('/', '_')), fi[1]);
                     i += 2;
                     addReference(fi[0]);
-                    break;
-                }
-                case opc_putfield: {
-                    int indx = readIntArg(byteCodes, i);
-                    String[] fi = jc.getFieldInfoName(indx);
-                    final int type = VarType.fromFieldType(fi[2].charAt(0));
-                    emit(out, "@2.fld_@3 = @1;",
-                         smapper.popT(type), smapper.popA(), fi[1]);
-                    i += 2;
                     break;
                 }
                 case opc_putstatic: {
@@ -1106,11 +1263,13 @@ abstract class ByteCodeToJavaScript {
                     int indx = readIntArg(byteCodes, i);
                     final String type = jc.getClassName(indx);
                     if (!type.startsWith("[")) {
-                        // no way to check arrays right now
-                        // XXX proper exception
                         emit(out,
                              "if (@1 !== null && !@1.$instOf_@2) throw {};",
                              smapper.getA(0), type.replace('/', '_'));
+                    } else {
+                        emit(out, "vm.java_lang_Class(false).forName__Ljava_lang_Class_2Ljava_lang_String_2('@2').cast__Ljava_lang_Object_2Ljava_lang_Object_2(@1);",
+                             smapper.getA(0), type
+                        );
                     }
                     i += 2;
                     break;
@@ -1118,9 +1277,16 @@ abstract class ByteCodeToJavaScript {
                 case opc_instanceof: {
                     int indx = readIntArg(byteCodes, i);
                     final String type = jc.getClassName(indx);
-                    emit(out, "var @2 = @1.$instOf_@3 ? 1 : 0;",
-                         smapper.popA(), smapper.pushI(),
-                         type.replace('/', '_'));
+                    if (!type.startsWith("[")) {
+                        emit(out, "var @2 = @1 != null && @1.$instOf_@3 ? 1 : 0;",
+                             smapper.popA(), smapper.pushI(),
+                             type.replace('/', '_'));
+                    } else {
+                        emit(out, "var @2 = vm.java_lang_Class(false).forName__Ljava_lang_Class_2Ljava_lang_String_2('@3').isInstance__ZLjava_lang_Object_2(@1);",
+                            smapper.popA(), smapper.pushI(),
+                            type
+                        );
+                    }
                     i += 2;
                     break;
                 }
@@ -1145,7 +1311,12 @@ abstract class ByteCodeToJavaScript {
                     break;
                 }
 
+                case opc_wide:
+                    wide = true;
+                    break;
+
                 default: {
+                    wide = false;
                     emit(out, "throw 'unknown bytecode @1';",
                          Integer.toString(c));
                 }
@@ -1153,7 +1324,7 @@ abstract class ByteCodeToJavaScript {
             if (debug(" //")) {
                 for (int j = prev; j <= i; j++) {
                     out.append(" ");
-                    final int cc = readByte(byteCodes, j);
+                    final int cc = readUByte(byteCodes, j);
                     out.append(Integer.toString(cc));
                 }
             }
@@ -1182,17 +1353,27 @@ abstract class ByteCodeToJavaScript {
         final int indxLo = byteCodes[offsetInstruction + 2];
         return (indxHi & 0xffffff00) | (indxLo & 0xff);
     }
-    private int readInt4(byte[] byteCodes, int offsetInstruction) {
-        final int d = byteCodes[offsetInstruction + 0] << 24;
-        final int c = byteCodes[offsetInstruction + 1] << 16;
-        final int b = byteCodes[offsetInstruction + 2] << 8;
-        final int a = byteCodes[offsetInstruction + 3];
+    private int readInt4(byte[] byteCodes, int offset) {
+        final int d = byteCodes[offset + 0] << 24;
+        final int c = byteCodes[offset + 1] << 16;
+        final int b = byteCodes[offset + 2] << 8;
+        final int a = byteCodes[offset + 3];
         return (d & 0xff000000) | (c & 0xff0000) | (b & 0xff00) | (a & 0xff);
     }
-    private int readByte(byte[] byteCodes, int offsetInstruction) {
-        return byteCodes[offsetInstruction] & 0xff;
+    private int readUByte(byte[] byteCodes, int offset) {
+        return byteCodes[offset] & 0xff;
     }
-    
+
+    private int readUShort(byte[] byteCodes, int offset) {
+        return ((byteCodes[offset] & 0xff) << 8)
+                    | (byteCodes[offset + 1] & 0xff);
+    }
+
+    private int readShort(byte[] byteCodes, int offset) {
+        return (byteCodes[offset] << 8)
+                    | (byteCodes[offset + 1] & 0xff);
+    }
+
     private static void countArgs(String descriptor, char[] returnType, StringBuilder sig, StringBuilder cnt) {
         int i = 0;
         Boolean count = null;
@@ -1268,6 +1449,10 @@ abstract class ByteCodeToJavaScript {
                     throw new IllegalStateException("Invalid char: " + ch);
             }
         }
+    }
+    
+    static String mangleSig(String sig) {
+        return mangleSig(sig, 0, sig.length());
     }
     
     private static String mangleSig(String txt, int first, int last) {
@@ -1416,8 +1601,12 @@ abstract class ByteCodeToJavaScript {
         String[] classRef = { null };
         String s = jc.stringValue(entryIndex, classRef);
         if (classRef[0] != null) {
-            addReference(classRef[0]);
-            s = accessClass(s.replace('/', '_')) + "(false).constructor.$class";
+            if (classRef[0].startsWith("[")) {
+                s = accessClass("java_lang_Class") + "(false).forName__Ljava_lang_Class_2Ljava_lang_String_2('" + classRef[0] + "');";
+            } else {
+                addReference(classRef[0]);
+                s = accessClass(s.replace('/', '_')) + "(false).constructor.$class";
+            }
         }
         return s;
     }

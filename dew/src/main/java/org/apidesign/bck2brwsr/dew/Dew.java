@@ -42,7 +42,6 @@ import org.json.JSONTokener;
  * @author phrebejk
  */
 final class Dew extends HttpHandler implements Bck2Brwsr.Resources {
-    private String html = "";
     private Compile data;
 
     public static void main(String... args) throws Exception {
@@ -69,7 +68,6 @@ final class Dew extends HttpHandler implements Bck2Brwsr.Resources {
             List<Diagnostic<? extends JavaFileObject>> err = res.getErrors();
             if (err.isEmpty()) {
                 data = res;
-                html = tmpHtml;
                 response.getOutputStream().write("[]".getBytes());
                 response.setStatus(HttpStatus.OK_200);
             } else {
@@ -98,7 +96,7 @@ final class Dew extends HttpHandler implements Bck2Brwsr.Resources {
         }
         if (r.equals("/result.html")) {
             response.setContentType("text/html");
-            response.getOutputBuffer().write(html);
+            response.getOutputBuffer().write(data.getHtml());
             response.setStatus(HttpStatus.OK_200);
             return;
         }

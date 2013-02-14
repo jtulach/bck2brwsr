@@ -113,7 +113,7 @@ function DevCtrl( $scope, $http ) {
 "     return arr;\n" +
 "   }\n" +
 "   var vm = new bck2brwsr(ldCls);\n" +
-"   vm.loadClass('bck2brwsr.demo.YourFirstHTML5PageInRealLanguage');\n" +
+"   vm.loadClass('${fqn}');\n" +
 " </script>\n" +
 "</body></html>";
     var templateJava = 

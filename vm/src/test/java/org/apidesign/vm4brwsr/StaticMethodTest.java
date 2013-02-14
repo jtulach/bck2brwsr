@@ -78,6 +78,89 @@ public class StaticMethodTest {
             3.0d, 1l
         );
     }
+    
+    @Test public void rintNegativeUp() throws Exception {
+        final double cnts = -453904.634;
+        assertExec(
+            "Should round up to end with 5",
+            Math.class, "rint__DD", 
+            -453905.0, cnts
+        );
+    }
+
+    @Test public void rintNegativeDown() throws Exception {
+        final double cnts = -453904.434;
+        assertExec(
+            "Should round up to end with 4",
+            Math.class, "rint__DD", 
+            -453904.0, cnts
+        );
+    }
+
+    @Test public void rintPositiveUp() throws Exception {
+        final double cnts = 453904.634;
+        assertExec(
+            "Should round up to end with 5",
+            Math.class, "rint__DD", 
+            453905.0, cnts
+        );
+    }
+    @Test public void rintPositiveDown() throws Exception {
+        final double cnts = 453904.434;
+        assertExec(
+            "Should round up to end with 4",
+            Math.class, "rint__DD", 
+            453904.0, cnts
+        );
+    }
+    @Test public void rintOneHalf() throws Exception {
+        final double cnts = 1.5;
+        assertExec(
+            "Should round up to end with 2",
+            Math.class, "rint__DD", 
+            2.0, cnts
+        );
+    }
+    @Test public void rintNegativeOneHalf() throws Exception {
+        final double cnts = -1.5;
+        assertExec(
+            "Should round up to end with 2",
+            Math.class, "rint__DD", 
+            -2.0, cnts
+        );
+    }
+    @Test public void rintTwoAndHalf() throws Exception {
+        final double cnts = 2.5;
+        assertExec(
+            "Should round up to end with 2",
+            Math.class, "rint__DD", 
+            2.0, cnts
+        );
+    }
+    @Test public void rintNegativeTwoOneHalf() throws Exception {
+        final double cnts = -2.5;
+        assertExec(
+            "Should round up to end with 2",
+            Math.class, "rint__DD", 
+            -2.0, cnts
+        );
+    }
+
+    @Test public void ieeeReminder1() throws Exception {
+        assertExec(
+            "Same result 1",
+            Math.class, "IEEEremainder__DDD", 
+            Math.IEEEremainder(10.0, 4.5), 10.0, 4.5
+        );
+    }
+
+    @Test public void ieeeReminder2() throws Exception {
+        assertExec(
+            "Same result 1",
+            Math.class, "IEEEremainder__DDD", 
+            Math.IEEEremainder(Integer.MAX_VALUE, -4.5), Integer.MAX_VALUE, -4.5
+        );
+    }
 
     @Test public void divAndRound() throws Exception {
         assertExec(
@@ -270,17 +353,8 @@ public class StaticMethodTest {
         String msg, Class clazz, String method, 
         Object expRes, Object... args
     ) throws Exception {
-        Object ret = null;
-        try {
-            ret = toRun.invokeFunction("bck2brwsr");
-            ret = toRun.invokeMethod(ret, "loadClass", clazz.getName());
-            ret = toRun.invokeMethod(ret, method, args);
-        } catch (ScriptException ex) {
-            fail("Execution failed in\n" + dumpJS(theCode), ex);
-        } catch (NoSuchMethodException ex) {
-            fail("Cannot find method in\n" + dumpJS(theCode), ex);
-        }
-        if (ret == null && expRes == null) {
+        Object ret = TestUtils.execCode(toRun, theCode, msg, clazz, method, expRes, args);
+        if (ret == null) {
             return;
         }
         if (expRes != null && expRes.equals(ret)) {

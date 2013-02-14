@@ -80,16 +80,23 @@ public class InstanceTest {
     @Test public void isInstanceOf() throws Exception {
         assertExec(
             "Yes, we are instance",
-            Instance.class, "instanceOf__ZZ",
-            Double.valueOf(1.0), true
+            Instance.class, "instanceOf__ZI",
+            Double.valueOf(1.0), 2
         );
     }
 
     @Test public void notInstanceOf() throws Exception {
         assertExec(
             "No, we are not an instance",
-            Instance.class, "instanceOf__ZZ",
-            Double.valueOf(0.0), false
+            Instance.class, "instanceOf__ZI",
+            Double.valueOf(0.0), 1
+        );
+    }
+    @Test public void nullInstanceOf() throws Exception {
+        assertExec(
+            "No, null is not an instance",
+            Instance.class, "instanceOf__ZI",
+            Double.valueOf(0.0), 0
         );
     }
     

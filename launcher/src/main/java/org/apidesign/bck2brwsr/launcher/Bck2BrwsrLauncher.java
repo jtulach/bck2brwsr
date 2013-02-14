@@ -55,24 +55,23 @@ import org.glassfish.grizzly.http.server.ServerConfiguration;
  */
 final class Bck2BrwsrLauncher extends Launcher implements Closeable {
     private static final Logger LOG = Logger.getLogger(Bck2BrwsrLauncher.class.getName());
-    private static final MethodInvocation END = new MethodInvocation(null, null, null);
-    private Set<ClassLoader> loaders = new LinkedHashSet<>();
-    private BlockingQueue<MethodInvocation> methods = new LinkedBlockingQueue<>();
+    private static final InvocationContext END = new InvocationContext(null, null, null);
+    private final Set<ClassLoader> loaders = new LinkedHashSet<>();
+    private final BlockingQueue<InvocationContext> methods = new LinkedBlockingQueue<>();
     private long timeOut;
     private final Res resources = new Res();
     private final String cmd;
     private Object[] brwsr;
     private HttpServer server;
     private CountDownLatch wait;
-
+    
     public Bck2BrwsrLauncher(String cmd) {
         this.cmd = cmd;
     }
     
     @Override
-     MethodInvocation addMethod(Class<?> clazz, String method, String html) throws IOException {
-        loaders.add(clazz.getClassLoader());
-        MethodInvocation c = new MethodInvocation(clazz.getName(), method, html);
+    InvocationContext runMethod(InvocationContext c) throws IOException {
+        loaders.add(c.clazz.getClassLoader());
         methods.add(c);
         try {
             c.await(timeOut);
@@ -94,8 +93,20 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
         if (!startpage.startsWith("/")) {
             startpage = "/" + startpage;
         }
-        HttpServer s = initServer();
+        HttpServer s = initServer(".", true);
         s.getServerConfiguration().addHttpHandler(new Page(resources, null), "/");
+        try {
+            launchServerAndBrwsr(s, startpage);
+        } catch (URISyntaxException | InterruptedException ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    void showDirectory(File dir, String startpage) throws IOException {
+        if (!startpage.startsWith("/")) {
+            startpage = "/" + startpage;
+        }
+        HttpServer s = initServer(dir.getPath(), false);
         try {
             launchServerAndBrwsr(s, startpage);
         } catch (URISyntaxException | InterruptedException ex) {
@@ -122,30 +133,54 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
         }
     }
     
-    private HttpServer initServer() {
-        HttpServer s = HttpServer.createSimpleServer(".", new PortRange(8080, 65535));
+    private HttpServer initServer(String path, boolean addClasses) throws IOException {
+        HttpServer s = HttpServer.createSimpleServer(path, new PortRange(8080, 65535));
 
         final ServerConfiguration conf = s.getServerConfiguration();
-        conf.addHttpHandler(new Page(resources, 
-            "org/apidesign/bck2brwsr/launcher/console.xhtml",
-            "org.apidesign.bck2brwsr.launcher.Console", "welcome", "false"
-        ), "/console");
-        conf.addHttpHandler(new VM(resources), "/bck2brwsr.js");
-        conf.addHttpHandler(new VMInit(), "/vm.js");
-        conf.addHttpHandler(new Classes(resources), "/classes/");
+        if (addClasses) {
+            conf.addHttpHandler(new VM(resources), "/vm.js");
+            conf.addHttpHandler(new Classes(resources), "/classes/");
+        }
         return s;
     }
     
     private void executeInBrowser() throws InterruptedException, URISyntaxException, IOException {
         wait = new CountDownLatch(1);
-        server = initServer();
-        ServerConfiguration conf = server.getServerConfiguration();
+        server = initServer(".", true);
+        final ServerConfiguration conf = server.getServerConfiguration();
+        
+        class DynamicResourceHandler extends HttpHandler {
+            private final InvocationContext ic;
+            public DynamicResourceHandler(InvocationContext ic) {
+                if (ic == null || ic.httpPath == null) {
+                    throw new NullPointerException();
+                }
+                this.ic = ic;
+                conf.addHttpHandler(this, ic.httpPath);
+            }
+
+            public void close() {
+                conf.removeHttpHandler(this);
+            }
+            
+            @Override
+            public void service(Request request, Response response) throws Exception {
+                if (ic.httpPath.equals(request.getRequestURI())) {
+                    LOG.log(Level.INFO, "Serving HttpResource for {0}", request.getRequestURI());
+                    response.setContentType(ic.httpType);
+                    copyStream(ic.httpContent, response.getOutputStream(), null);
+                }
+            }
+        }
+        
         conf.addHttpHandler(new Page(resources, 
             "org/apidesign/bck2brwsr/launcher/harness.xhtml"
         ), "/execute");
+        
         conf.addHttpHandler(new HttpHandler() {
             int cnt;
-            List<MethodInvocation> cases = new ArrayList<>();
+            List<InvocationContext> cases = new ArrayList<>();
+            DynamicResourceHandler prev;
             @Override
             public void service(Request request, Response response) throws Exception {
                 String id = request.getParameter("request");
@@ -157,7 +192,12 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
                     cases.get(Integer.parseInt(id)).result(value, null);
                 }
                 
-                MethodInvocation mi = methods.take();
+                if (prev != null) {
+                    prev.close();
+                    prev = null;
+                }
+                
+                InvocationContext mi = methods.take();
                 if (mi == END) {
                     response.getWriter().write("");
                     wait.countDown();
@@ -166,8 +206,12 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
                     return;
                 }
                 
+                if (mi.httpPath != null) {
+                    prev = new DynamicResourceHandler(mi);
+                }
+                
                 cases.add(mi);
-                final String cn = mi.className;
+                final String cn = mi.clazz.getName();
                 final String mn = mi.methodName;
                 LOG.log(Level.INFO, "Request for {0} case. Sending {1}.{2}", new Object[]{cnt, cn, mn});
                 response.getWriter().write("{"
@@ -241,10 +285,10 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
             if (ch == '$' && params.length > 0) {
                 int cnt = is.read() - '0';
                 if (cnt == 'U' - '0') {
-                    os.write(baseURL.getBytes());
+                    os.write(baseURL.getBytes("UTF-8"));
                 }
                 if (cnt >= 0 && cnt < params.length) {
-                    os.write(params[cnt].getBytes());
+                    os.write(params[cnt].getBytes("UTF-8"));
                 }
             } else {
                 os.write(ch);
@@ -410,28 +454,12 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
     }
 
     private static class VM extends HttpHandler {
-        private final Res loader;
+        private final String bck2brwsr;
 
-        public VM(Res loader) {
-            this.loader = loader;
-        }
-
-        @Override
-        public void service(Request request, Response response) throws Exception {
-            response.setCharacterEncoding("UTF-8");
-            response.setContentType("text/javascript");
-            Bck2Brwsr.generate(response.getWriter(), loader);
-        }
-    }
-    private static class VMInit extends HttpHandler {
-        public VMInit() {
-        }
-
-        @Override
-        public void service(Request request, Response response) throws Exception {
-            response.setCharacterEncoding("UTF-8");
-            response.setContentType("text/javascript");
-            response.getWriter().append(
+        public VM(Res loader) throws IOException {
+            StringBuilder sb = new StringBuilder();
+            Bck2Brwsr.generate(sb, loader);
+            sb.append(
                 "function ldCls(res) {\n"
                 + "  var request = new XMLHttpRequest();\n"
                 + "  request.open('GET', '/classes/' + res, false);\n"
@@ -439,7 +467,16 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
                 + "  var arr = eval('(' + request.responseText + ')');\n"
                 + "  return arr;\n"
                 + "}\n"
-                + "var vm = new bck2brwsr(ldCls);\n");
+                + "var vm = new bck2brwsr(ldCls);\n"
+            );
+            this.bck2brwsr = sb.toString();
+        }
+
+        @Override
+        public void service(Request request, Response response) throws Exception {
+            response.setCharacterEncoding("UTF-8");
+            response.setContentType("text/javascript");
+            response.getWriter().write(bck2brwsr);
         }
     }
 

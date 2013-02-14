@@ -7,6 +7,11 @@
   <artifactId>matrix.multiplication</artifactId>
   <version>0.3-SNAPSHOT</version>
   <packaging>jar</packaging>
+  <parent>
+    <artifactId>benchmarks</artifactId>
+    <groupId>org.apidesign.bck2brwsr</groupId>
+    <version>0.3-SNAPSHOT</version>
+  </parent>
 
   <name>Matrix multiplication</name>
 
@@ -25,13 +30,21 @@
                <target>1.7</target>
             </configuration>
           </plugin>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-deploy-plugin</artifactId>
+              <version>2.7</version>
+              <configuration>
+                  <skip>true</skip>
+              </configuration>
+          </plugin>      
       </plugins>
   </build>
   
   <dependencies>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
-      <artifactId>emul</artifactId>
+      <artifactId>emul.mini</artifactId>
       <version>0.3-SNAPSHOT</version>
     </dependency>
     <dependency>
