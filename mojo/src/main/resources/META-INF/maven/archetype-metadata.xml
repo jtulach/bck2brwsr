@@ -30,6 +30,7 @@
       <directory>src/main/resources</directory>
       <includes>
         <include>**/*.xhtml</include>
+        <include>**/*.html</include>
       </includes>
     </fileSet>
     <fileSet filtered="true" packaged="true">
@@ -42,6 +43,12 @@
       <directory></directory>
       <includes>
         <include>nbactions.xml</include>
+      </includes>
+    </fileSet>
+    <fileSet filtered="true" packaged="false">
+      <directory></directory>
+      <includes>
+        <include>bck2brwsr-assembly.xml</include>
       </includes>
     </fileSet>
   </fileSets>    

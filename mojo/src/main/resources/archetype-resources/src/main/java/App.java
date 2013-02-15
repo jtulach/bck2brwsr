@@ -9,7 +9,7 @@ import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
 /** Edit the index.xhtml file. Use 'id' to name certain HTML elements.
  * Use this class to define behavior of the elements.
  */
-@Page(xhtml="index.xhtml", className="Index", properties={
+@Page(xhtml="index.html", className="Index", properties={
     @Property(name="name", type=String.class)
 })
 public class App {

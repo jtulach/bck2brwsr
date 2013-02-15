@@ -23,14 +23,14 @@
  * questions.
  */
 
-package java.util.zip;
+package org.apidesign.bck2brwsr.emul.zip;
 
 /*
  * This class defines the constants that are used by the classes
  * which manipulate Zip64 files.
  */
 
-class ZipConstants64 {
+public class ZipConstants64 {
 
     /*
      * ZIP64 constants

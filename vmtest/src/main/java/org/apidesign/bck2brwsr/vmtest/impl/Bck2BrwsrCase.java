@@ -28,7 +28,7 @@ import java.lang.reflect.Method;
 import org.apidesign.bck2brwsr.launcher.Launcher;
 import org.apidesign.bck2brwsr.launcher.InvocationContext;
 import org.apidesign.bck2brwsr.vmtest.HtmlFragment;
-import org.apidesign.bck2brwsr.vmtest.HttpResource;
+import org.apidesign.bck2brwsr.vmtest.Http;
 import org.testng.ITest;
 import org.testng.annotations.Test;
 
@@ -42,10 +42,10 @@ public final class Bck2BrwsrCase implements ITest {
     private final String type;
     private final boolean fail;
     private final HtmlFragment html;
-    private final HttpResource http;
+    private final Http.Resource[] http;
     Object value;
 
-    Bck2BrwsrCase(Method m, String type, Launcher l, boolean fail, HtmlFragment html, HttpResource http) {
+    Bck2BrwsrCase(Method m, String type, Launcher l, boolean fail, HtmlFragment html, Http.Resource[] http) {
         this.l = l;
         this.m = m;
         this.type = type;
@@ -62,12 +62,14 @@ public final class Bck2BrwsrCase implements ITest {
                 c.setHtmlFragment(html.value());
             }
             if (http != null) {
-                if (!http.content().isEmpty()) {
-                    InputStream is = new ByteArrayInputStream(http.content().getBytes("UTF-8"));
-                    c.setHttpResource(http.path(), http.mimeType(), is);
-                } else {
-                    InputStream is = m.getDeclaringClass().getResourceAsStream(http.resource());
-                    c.setHttpResource(http.path(), http.mimeType(), is);
+                for (Http.Resource r : http) {
+                    if (!r.content().isEmpty()) {
+                        InputStream is = new ByteArrayInputStream(r.content().getBytes("UTF-8"));
+                        c.addHttpResource(r.path(), r.mimeType(), is);
+                    } else {
+                        InputStream is = m.getDeclaringClass().getResourceAsStream(r.resource());
+                        c.addHttpResource(r.path(), r.mimeType(), is);
+                    }
                 }
             }
             String res = c.invoke();

@@ -22,8 +22,11 @@
         <action>
             <actionName>run</actionName>
             <goals>
-                <goal>process-classes</goal>
+                <goal>package</goal>
                 <goal>org.apidesign.bck2brwsr:mojo:0.3-SNAPSHOT:brwsr</goal>
             </goals>
+            <properties>
+                <skipTests>true</skipTests>
+            </properties>
         </action>
-    </actions>
+</actions>

@@ -17,6 +17,7 @@
  */
 package org.apidesign.bck2brwsr.emul.reflect;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.Enumeration;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
@@ -34,7 +35,7 @@ public abstract class MethodImpl {
             throw new IllegalStateException(ex);
         }
     }
-    
+
     protected abstract Method create(Class<?> declaringClass, String name, Object data, String sig);
     
     
@@ -48,8 +49,10 @@ public abstract class MethodImpl {
         + "var arr = new Array();\n"
         + "for (m in c) {\n"
         + "  if (m.indexOf(prefix) === 0) {\n"
+        + "     if (!c[m].cls) continue;\n"
         + "     arr.push(m);\n"
         + "     arr.push(c[m]);\n"
+        + "     arr.push(c[m].cls.$class);\n"
         + "  }"
         + "}\n"
         + "return arr;")
@@ -59,9 +62,10 @@ public abstract class MethodImpl {
     public static Method findMethod(
         Class<?> clazz, String name, Class<?>... parameterTypes) {
         Object[] data = findMethodData(clazz, name + "__");
-        BIG: for (int i = 0; i < data.length; i += 2) {
-            String sig = ((String) data[0]).substring(name.length() + 2);
-            Method tmp = INSTANCE.create(clazz, name, data[1], sig);
+        BIG: for (int i = 0; i < data.length; i += 3) {
+            String sig = ((String) data[i]).substring(name.length() + 2);
+            Class<?> cls = (Class<?>) data[i + 2];
+            Method tmp = INSTANCE.create(cls, name, data[i + 1], sig);
             Class<?>[] tmpParms = tmp.getParameterTypes();
             if (parameterTypes.length != tmpParms.length) {
                 continue;
@@ -79,7 +83,7 @@ public abstract class MethodImpl {
     public static Method[] findMethods(Class<?> clazz, int mask) {
         Object[] namesAndData = findMethodData(clazz, "");
         int cnt = 0;
-        for (int i = 0; i < namesAndData.length; i += 2) {
+        for (int i = 0; i < namesAndData.length; i += 3) {
             String sig = (String) namesAndData[i];
             Object data = namesAndData[i + 1];
             int middle = sig.indexOf("__");
@@ -88,7 +92,8 @@ public abstract class MethodImpl {
             }
             String name = sig.substring(0, middle);
             sig = sig.substring(middle + 2);
-            final Method m = INSTANCE.create(clazz, name, data, sig);
+            Class<?> cls = (Class<?>) namesAndData[i + 2];
+            final Method m = INSTANCE.create(cls, name, data, sig);
             if ((m.getModifiers() & mask) == 0) {
                 continue;
             }
@@ -99,6 +104,62 @@ public abstract class MethodImpl {
             arr[i] = (Method) namesAndData[i];
         }
         return arr;
+    }
+    static String toSignature(Method m) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(m.getName()).append("__");
+        appendType(sb, m.getReturnType());
+        Class<?>[] arr = m.getParameterTypes();
+        for (int i = 0; i < arr.length; i++) {
+            appendType(sb, arr[i]);
+        }
+        return sb.toString();
+    }
+    
+    private static void appendType(StringBuilder sb, Class<?> type) {
+        if (type == Integer.TYPE) {
+            sb.append('I');
+            return;
+        }
+        if (type == Long.TYPE) {
+            sb.append('J');
+            return;
+        }
+        if (type == Double.TYPE) {
+            sb.append('D');
+            return;
+        }
+        if (type == Float.TYPE) {
+            sb.append('F');
+            return;
+        }
+        if (type == Byte.TYPE) {
+            sb.append('B');
+            return;
+        }
+        if (type == Boolean.TYPE) {
+            sb.append('Z');
+            return;
+        }
+        if (type == Short.TYPE) {
+            sb.append('S');
+            return;
+        }
+        if (type == Void.TYPE) {
+            sb.append('V');
+            return;
+        }
+        if (type == Character.TYPE) {
+            sb.append('C');
+            return;
+        }
+        if (type.isArray()) {
+            sb.append("_3");
+            appendType(sb, type.getComponentType());
+            return;
+        }
+        sb.append('L').append(type.getName().replace('.', '_'));
+        sb.append("_2");
     }
 
     public static int signatureElements(String sig) {
@@ -141,13 +202,19 @@ public abstract class MethodImpl {
                         return Character.TYPE;
                     case 'L':
                         try {
-                            int up = sig.indexOf("_2");
-                            String type = sig.substring(1, up);
+                            int up = sig.indexOf("_2", pos);
+                            String type = sig.substring(pos, up);
                             pos = up + 2;
-                            return Class.forName(type);
+                            return Class.forName(type.replace('_', '.'));
                         } catch (ClassNotFoundException ex) {
-                            // should not happen
+                            throw new IllegalStateException(ex);
                         }
+                    case '_': {
+                        char nch = sig.charAt(pos++);
+                        assert nch == '3' : "Can't find '3' at " + sig.substring(pos - 1);
+                        final Class compType = nextElement();
+                        return Array.newInstance(compType, 0).getClass();
+                    }
                 }
                 throw new UnsupportedOperationException(sig + " at " + pos);
             }

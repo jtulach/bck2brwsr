@@ -25,7 +25,7 @@ import java.util.zip.ZipInputStream;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.vmtest.BrwsrTest;
 import org.apidesign.bck2brwsr.vmtest.Compare;
-import org.apidesign.bck2brwsr.vmtest.HttpResource;
+import org.apidesign.bck2brwsr.vmtest.Http;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
 
@@ -54,13 +54,15 @@ public class ZipFileTest {
     }
     
     @JavaScriptBody(args = { "res", "path" }, body = 
-          "var myvm = new bck2brwsr(path);\n"
+          "var myvm = bck2brwsr.apply(null, path);\n"
         + "var cls = myvm.loadClass('java.lang.String');\n"
         + "return cls.getClass__Ljava_lang_Class_2().getResourceAsStream__Ljava_io_InputStream_2Ljava_lang_String_2(res);\n"
     )
     private static native Object loadVMResource(String res, String...path);
 
-    @HttpResource(path = "/readAnEntry.jar", mimeType = "x-application/zip", content = "", resource="readAnEntry.zip")
+    @Http({
+        @Http.Resource(path = "/readAnEntry.jar", mimeType = "x-application/zip", content = "", resource="readAnEntry.zip")
+    })
     @BrwsrTest  public void canVmLoadResourceFromZip() throws IOException {
         Object res = loadVMResource("/my/main/file.txt", "/readAnEntry.jar");
         assert res instanceof InputStream : "Got array of bytes: " + res;
@@ -72,6 +74,28 @@ public class ZipFileTest {
         final String ret = new String(arr, 0, len, "UTF-8");
 
         assertEquals(ret, "Hello World!", "Can read the bytes");
+    }
+    
+    @GenerateZip(name = "cpattr.zip", contents = { 
+        "META-INF/MANIFEST.MF", "Manifest-Version: 1.0\n"
+        + "Created-By: hand\n"
+        + "Class-Path: realJar.jar\n\n\n"
+    })
+    @Http({
+        @Http.Resource(path = "/readComplexEntry.jar", mimeType = "x-application/zip", content = "", resource="cpattr.zip"),
+        @Http.Resource(path = "/realJar.jar", mimeType = "x-application/zip", content = "", resource="readAnEntry.zip"),
+    })
+    @BrwsrTest  public void understandsClassPathAttr() throws IOException {
+        Object res = loadVMResource("/my/main/file.txt", "/readComplexEntry.jar");
+        assert res instanceof InputStream : "Got array of bytes: " + res;
+        InputStream is = (InputStream)res;
+        
+        byte[] arr = new byte[4096];
+        int len = is.read(arr);
+        
+        final String ret = new String(arr, 0, len, "UTF-8");
+
+        assertEquals(ret, "Hello World!", "Can read the bytes from secondary JAR");
     }
     
     private static void assertEquals(Object real, Object exp, String msg) {

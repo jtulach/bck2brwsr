@@ -35,20 +35,35 @@ import java.io.IOException;
  */
 public class AnnotationParser {
     private final boolean textual;
+    private final boolean iterateArray;
     
-    protected AnnotationParser(boolean textual) {
+    protected AnnotationParser(boolean textual, boolean iterateArray) {
         this.textual = textual;
+        this.iterateArray = iterateArray;
     }
 
-    protected void visitAnnotationStart(String type) throws IOException {
+    protected void visitAnnotationStart(String type, boolean top) throws IOException {
     }
 
-    protected void visitAnnotationEnd(String type) throws IOException {
+    protected void visitAnnotationEnd(String type, boolean top) throws IOException {
     }
+
+    protected void visitValueStart(String attrName, char type) throws IOException {
+    }
+
+    protected void visitValueEnd(String attrName, char type) throws IOException {
+    }
+
     
     protected void visitAttr(
         String annoType, String attr, String attrType, String value
     ) throws IOException {
+    }
+    
+    protected void visitEnumAttr(
+        String annoType, String attr, String attrType, String value
+    ) throws IOException {
+        visitAttr(annoType, attr, attrType, value);
     }
     
     /** Initialize the parsing with constant pool from <code>cd</code>.
@@ -70,30 +85,32 @@ public class AnnotationParser {
     private void read(DataInputStream dis, ClassData cd) throws IOException {
     	int cnt = dis.readUnsignedShort();
         for (int i = 0; i < cnt; i++) {
-            readAnno(dis, cd);
+            readAnno(dis, cd, true);
         }
     }
 
-    private void readAnno(DataInputStream dis, ClassData cd) throws IOException {
+    private void readAnno(DataInputStream dis, ClassData cd, boolean top) throws IOException {
         int type = dis.readUnsignedShort();
         String typeName = cd.StringValue(type);
-        visitAnnotationStart(typeName);
+        visitAnnotationStart(typeName, top);
     	int cnt = dis.readUnsignedShort();
     	for (int i = 0; i < cnt; i++) {
             String attrName = cd.StringValue(dis.readUnsignedShort());
             readValue(dis, cd, typeName, attrName);
         }
-        visitAnnotationEnd(typeName);
+        visitAnnotationEnd(typeName, top);
         if (cnt == 0) {
             visitAttr(typeName, null, null, null);
         }
     }
 
-    private void readValue(DataInputStream dis, ClassData cd, String typeName, String attrName) 
-    throws IOException {
+    private void readValue(
+        DataInputStream dis, ClassData cd, String typeName, String attrName
+    ) throws IOException {
         char type = (char)dis.readByte();
+        visitValueStart(attrName, type);
         if (type == '@') {
-            readAnno(dis, cd);
+            readAnno(dis, cd, false);
         } else if ("CFJZsSIDB".indexOf(type) >= 0) { // NOI18N
             int primitive = dis.readUnsignedShort();
             String val = cd.stringValue(primitive, textual);
@@ -112,13 +129,17 @@ public class AnnotationParser {
         } else if (type == '[') {
             int cnt = dis.readUnsignedShort();
             for (int i = 0; i < cnt; i++) {
-                readValue(dis, cd, typeName, attrName);
+                readValue(dis, cd, typeName, iterateArray ? attrName : null);
             }
         } else if (type == 'e') {
             int enumT = dis.readUnsignedShort();
+            String attrType = cd.stringValue(enumT, textual);
             int enumN = dis.readUnsignedShort();
+            String val = cd.stringValue(enumN, textual);
+            visitEnumAttr(typeName, attrName, attrType, val);
         } else {
             throw new IOException("Unknown type " + type);
         }
+        visitValueEnd(attrName, type);
     }
 }

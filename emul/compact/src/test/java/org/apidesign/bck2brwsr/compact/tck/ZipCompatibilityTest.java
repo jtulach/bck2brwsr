@@ -15,29 +15,28 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.vmtest;
+package org.apidesign.bck2brwsr.compact.tck;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.io.IOException;
+import java.io.InputStream;
+import org.apidesign.bck2brwsr.vmtest.Compare;
+import org.apidesign.bck2brwsr.vmtest.VMTest;
+import org.testng.annotations.Factory;
 
-/** Exposes an HTTP page to the running {@link BrwsrTest}, so it can access
- * under the relative path.
+/**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD, ElementType.TYPE})
-public @interface HttpResource {
-    /** path on the server that the test can use to access the exposed resource */
-    String path();
-    /** the content of the HttpResource */
-    String content();
-    /** resource relative to the class that should be used instead of <code>content</code>.
-     * Leave content equal to empty string.
-     */
-    String resource() default "";
-    /** mime type of the resource */
-    String mimeType();
+public class ZipCompatibilityTest {
+    @Compare
+    public String testDemoStaticCalculator() throws IOException {
+        InputStream is = getClass().getResourceAsStream("demo.static.calculator-0.3-SNAPSHOT.jar");
+        ZipArchive zip = ZipArchive.createZip(is);
+        return zip.toString();
+    }
+    
+    @Factory
+    public static Object[] create() {
+        return VMTest.create(ZipCompatibilityTest.class);
+    }
 }

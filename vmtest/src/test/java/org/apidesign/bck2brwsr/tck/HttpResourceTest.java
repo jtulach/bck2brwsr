@@ -21,7 +21,7 @@ import java.io.InputStream;
 import java.net.URL;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.vmtest.BrwsrTest;
-import org.apidesign.bck2brwsr.vmtest.HttpResource;
+import org.apidesign.bck2brwsr.vmtest.Http;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
 
@@ -31,15 +31,21 @@ import org.testng.annotations.Factory;
  */
 public class HttpResourceTest {
     
-    @HttpResource(path = "/xhr", content = "Hello Brwsr!", mimeType = "text/plain")
+    @Http({
+        @Http.Resource(path = "/xhr", content = "Hello Brwsr!", mimeType = "text/plain")
+    })
     @BrwsrTest
+    
+    
     public String testReadContentViaXHR() throws Exception {
         String msg = read("/xhr");
         assert "Hello Brwsr!".equals(msg) : "The message was " + msg;
         return msg;
     }
 
-    @HttpResource(path = "/url", content = "Hello via URL!", mimeType = "text/plain")
+    @Http({
+        @Http.Resource(path = "/url", content = "Hello via URL!", mimeType = "text/plain")
+    })
     @BrwsrTest
     public String testReadContentViaURL() throws Exception {
         URL url = new URL("http:/url");
@@ -47,7 +53,9 @@ public class HttpResourceTest {
         assert "Hello via URL!".equals(msg) : "The message was " + msg;
         return msg;
     }
-    @HttpResource(path = "/url", content = "Hello via URL!", mimeType = "text/plain")
+    @Http({
+        @Http.Resource(path = "/url", content = "Hello via URL!", mimeType = "text/plain")
+    })
     @BrwsrTest
     public String testReadContentViaURLWithStringParam() throws Exception {
         URL url = new URL("http:/url");
@@ -56,7 +64,9 @@ public class HttpResourceTest {
         return msg;
     }
 
-    @HttpResource(path = "/bytes", content = "", resource = "0xfe", mimeType = "x-application/binary")
+    @Http({
+        @Http.Resource(path = "/bytes", content = "", resource = "0xfe", mimeType = "x-application/binary")
+    })
     @BrwsrTest
     public void testReadByte() throws Exception {
         URL url = new URL("http:/bytes");
@@ -67,7 +77,9 @@ public class HttpResourceTest {
         assert arr[0] == 0xfe : "It is 0xfe: " + Integer.toHexString(arr[0]);
     }
 
-    @HttpResource(path = "/bytes", content = "", resource = "0xfe", mimeType = "x-application/binary")
+    @Http({
+        @Http.Resource(path = "/bytes", content = "", resource = "0xfe", mimeType = "x-application/binary")
+    })
     @BrwsrTest
     public void testReadByteViaInputStream() throws Exception {
         URL url = new URL("http:/bytes");

@@ -17,7 +17,6 @@
  */
 package org.apidesign.vm4brwsr;
 
-import javax.script.Invocable;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
@@ -30,10 +29,7 @@ import org.testng.annotations.Test;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class VMLazyTest {
-
-    
-    private static CharSequence codeSeq;
-    private static Invocable code;
+    private static TestVM code;
 
     @BeforeClass
     public void compileTheCode() throws Exception {
@@ -50,11 +46,10 @@ public class VMLazyTest {
         sb.append("\n}");
        
         ScriptEngine[] arr = { null };
-        code = StaticMethodTest.compileClass(sb, arr,
+        code = TestVM.compileClass(sb, arr,
             new String[]{"org/apidesign/vm4brwsr/VM", "org/apidesign/vm4brwsr/StaticMethod"}
         );
         arr[0].getContext().setAttribute("loader", new BytesLoader(), ScriptContext.ENGINE_SCOPE);
-        codeSeq = sb;
     }
     
     @Test public void invokeStaticMethod() throws Exception {
@@ -83,9 +78,9 @@ public class VMLazyTest {
         try {
             ret = code.invokeFunction(methodName, args);
         } catch (ScriptException ex) {
-            fail("Execution failed in\n" + StaticMethodTest.dumpJS(codeSeq), ex);
+            fail("Execution failed in\n" + code.toString(), ex);
         } catch (NoSuchMethodException ex) {
-            fail("Cannot find method in\n" + StaticMethodTest.dumpJS(codeSeq), ex);
+            fail("Cannot find method in\n" + code.toString(), ex);
         }
         if (ret == null && expRes == null) {
             return;
@@ -93,6 +88,6 @@ public class VMLazyTest {
         if (expRes.equals(ret)) {
             return;
         }
-        assertEquals(ret, expRes, msg + "was: " + ret + "\n" + StaticMethodTest.dumpJS(codeSeq));
+        assertEquals(ret, expRes, msg + "was: " + ret + "\n" + code.toString());
     }
 }

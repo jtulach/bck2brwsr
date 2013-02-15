@@ -17,7 +17,6 @@
  */
 package org.apidesign.vm4brwsr;
 
-import javax.script.Invocable;
 import javax.script.ScriptException;
 import static org.testng.Assert.*;
 import org.testng.annotations.BeforeClass;
@@ -81,8 +80,7 @@ public class ExceptionsTest {
     }
     
     @Test public void testThreeCalls() throws Exception {
-        Object vm = code.invokeFunction("bck2brwsr");
-        Object clazz = code.invokeMethod(vm, "loadClass", Exceptions.class.getName());
+        Object clazz = code.loadClass("loadClass", Exceptions.class.getName());
         
         String method = "readCounter__ILjava_lang_String_2";
         
@@ -104,18 +102,13 @@ public class ExceptionsTest {
         }
     }
     
-    private static CharSequence codeSeq;
-    private static Invocable code;
+    private static TestVM code;
     
     @BeforeClass 
     public void compileTheCode() throws Exception {
-        StringBuilder sb = new StringBuilder();
-        code = StaticMethodTest.compileClass(sb, 
-            "org/apidesign/vm4brwsr/Exceptions"
-        );
-        codeSeq = sb;
+        code = TestVM.compileClass("org/apidesign/vm4brwsr/Exceptions");
     }
     private static void assertExec(String msg, Class clazz, String method, Object expRes, Object... args) throws Exception {
-        StaticMethodTest.assertExec(code, codeSeq, msg, clazz, method, expRes, args);
+        code.assertExec(msg, clazz, method, expRes, args);
     }
 }

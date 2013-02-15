@@ -12,7 +12,7 @@
   <version>0.3-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>Java VM for Browser</name>
+  <name>Virtual Machine for Browser</name>
   <url>http://bck2brwsr.apidesign.org</url>
 
   <properties>
@@ -68,6 +68,45 @@
                <target>1.7</target>
             </configuration>
          </plugin>
+         <plugin>
+             <groupId>org.codehaus.mojo</groupId>
+             <artifactId>exec-maven-plugin</artifactId>
+             <version>1.2.1</version>
+             <executions>
+                 <execution>
+                     <id>generate-js</id>
+                     <phase>process-classes</phase>
+                     <goals>
+                         <goal>java</goal>
+                     </goals>
+                 </execution>
+             </executions>
+             <configuration>
+                 <mainClass>org.apidesign.vm4brwsr.Main</mainClass>
+                 <arguments>
+                     <argument>${project.build.directory}/bck2brwsr.js</argument>
+                     <argument>org/apidesign/vm4brwsr/Bck2Brwsr</argument>
+                 </arguments>
+             </configuration>
+         </plugin>
+         <plugin>
+             <artifactId>maven-assembly-plugin</artifactId>
+             <version>2.4</version>
+             <executions>
+                 <execution>
+                     <id>js</id>
+                     <phase>package</phase>
+                     <goals>
+                         <goal>single</goal>
+                     </goals>
+                     <configuration>
+                         <descriptors>
+                             <descriptor>src/main/assembly/bck2brwsr.xml</descriptor>
+                         </descriptors>
+                     </configuration>
+                 </execution>
+             </executions>                
+         </plugin>      
       </plugins>
   </build>
   <dependencies>
@@ -85,19 +124,20 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>core</artifactId>
-      <version>0.3-SNAPSHOT</version>
+      <version>${project.version}</version>
       <type>jar</type>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>emul.mini</artifactId>
-      <version>0.3-SNAPSHOT</version>
-      <scope>test</scope>
+      <version>${project.version}</version>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>javap</artifactId>
-      <version>0.3-SNAPSHOT</version>
+      <version>${project.version}</version>
+      <scope>compile</scope>
     </dependency>
   </dependencies>
 </project>

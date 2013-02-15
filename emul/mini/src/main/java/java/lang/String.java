@@ -335,7 +335,7 @@ public final class String
                 value[i] = (char) (hibyte | (ascii[i + offset] & 0xff));
             }
         }
-        this.r = new String(value, 0, count);
+        initFromCharArray(value, offset, count);
     }
 
     /**

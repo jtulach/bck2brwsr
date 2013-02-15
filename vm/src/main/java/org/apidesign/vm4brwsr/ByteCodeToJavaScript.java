@@ -113,7 +113,7 @@ abstract class ByteCodeToJavaScript {
         final String className = className(jc);
         out.append("\n\n").append(assignClass(className));
         out.append("function CLS() {");
-        out.append("\n  if (!CLS.prototype.$instOf_").append(className).append(") {");
+        out.append("\n  if (!CLS.$class) {");
         if (proto == null) {
             String sc = jc.getSuperClassName(); // with _
             out.append("\n    var pp = ").
@@ -175,12 +175,14 @@ abstract class ByteCodeToJavaScript {
                 out.append("\n    };");
             }
             out.append(prefix).append(mn).append(".access = " + m.getAccess()).append(";");
+            out.append(prefix).append(mn).append(".cls = CLS;");
         }
         out.append("\n    c.constructor = CLS;");
         out.append("\n    c.$instOf_").append(className).append(" = true;");
         for (String superInterface : jc.getSuperInterfaces()) {
             out.append("\n    c.$instOf_").append(superInterface.replace('/', '_')).append(" = true;");
         }
+        out.append("\n    CLS.$class = 'temp';");
         out.append("\n    CLS.$class = ");
         out.append(accessClass("java_lang_Class(true);"));
         out.append("\n    CLS.$class.jvmName = '").append(jc.getClassName()).append("';");
@@ -1619,7 +1621,7 @@ abstract class ByteCodeToJavaScript {
         final String jvmType = "Lorg/apidesign/bck2brwsr/core/JavaScriptBody;";
         class P extends AnnotationParser {
             public P() {
-                super(false);
+                super(false, true);
             }
             
             int cnt;
@@ -1675,7 +1677,7 @@ abstract class ByteCodeToJavaScript {
         final String[] values = new String[attrNames.length];
         final boolean[] found = { false };
         final String jvmType = "L" + className.replace('.', '/') + ";";
-        AnnotationParser ap = new AnnotationParser(false) {
+        AnnotationParser ap = new AnnotationParser(false, true) {
             @Override
             protected void visitAttr(String type, String attr, String at, String value) {
                 if (type.equals(jvmType)) {
@@ -1712,35 +1714,71 @@ abstract class ByteCodeToJavaScript {
         return " = null;";
     }
 
-    private static void generateAnno(ClassData cd, final Appendable out, byte[] data) throws IOException {
-        AnnotationParser ap = new AnnotationParser(true) {
-            int anno;
-            int cnt;
+    private void generateAnno(ClassData cd, final Appendable out, byte[] data) throws IOException {
+        AnnotationParser ap = new AnnotationParser(true, false) {
+            int[] cnt = new int[32];
+            int depth;
             
             @Override
-            protected void visitAnnotationStart(String type) throws IOException {
-                if (anno++ > 0) {
+            protected void visitAnnotationStart(String attrType, boolean top) throws IOException {
+                final String slashType = attrType.substring(1, attrType.length() - 1);
+                requireReference(slashType);
+                
+                if (cnt[depth]++ > 0) {
                     out.append(",");
                 }
-                out.append('"').append(type).append("\" : {\n");
-                cnt = 0;
+                if (top) {
+                    out.append('"').append(attrType).append("\" : ");
+                }
+                out.append("{\n");
+                cnt[++depth] = 0;
             }
 
             @Override
-            protected void visitAnnotationEnd(String type) throws IOException {
+            protected void visitAnnotationEnd(String type, boolean top) throws IOException {
                 out.append("\n}\n");
+                depth--;
+            }
+
+            @Override
+            protected void visitValueStart(String attrName, char type) throws IOException {
+                if (cnt[depth]++ > 0) {
+                    out.append(",\n");
+                }
+                cnt[++depth] = 0;
+                if (attrName != null) {
+                    out.append(attrName).append(" : ");
+                }
+                if (type == '[') {
+                    out.append("[");
+                }
+            }
+
+            @Override
+            protected void visitValueEnd(String attrName, char type) throws IOException {
+                if (type == '[') {
+                    out.append("]");
+                }
+                depth--;
             }
             
             @Override
             protected void visitAttr(String type, String attr, String attrType, String value) 
             throws IOException {
-                if (attr == null) {
+                if (attr == null && value == null) {
                     return;
                 }
-                if (cnt++ > 0) {
-                    out.append(",\n");
-                }
-                out.append(attr).append("__").append(attrType).append(" : ").append(value);
+                out.append(value);
+            }
+
+            @Override
+            protected void visitEnumAttr(String type, String attr, String attrType, String value) 
+            throws IOException {
+                final String slashType = attrType.substring(1, attrType.length() - 1);
+                requireReference(slashType);
+                
+                out.append(accessClass(slashType.replace('/', '_')))
+                   .append("(false).constructor.").append(value);
             }
         };
         ap.parse(data, cd);

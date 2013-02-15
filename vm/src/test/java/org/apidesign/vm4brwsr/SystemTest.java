@@ -17,10 +17,8 @@
  */
 package org.apidesign.vm4brwsr;
 
-import javax.script.Invocable;
 import org.testng.annotations.BeforeClass;
 import static org.testng.Assert.*;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 /**
@@ -28,10 +26,12 @@ import org.testng.annotations.Test;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class SystemTest {
+    private static TestVM code;
+    
     @Test public void verifyJSTime() throws Exception {
         long now = System.currentTimeMillis();
         
-        Object js = TestUtils.execCode(code, codeSeq, "Get js time", 
+        Object js = code.execCode("Get js time", 
             org.apidesign.bck2brwsr.emul.lang.System.class, "currentTimeMillis__J",
             null
         );
@@ -45,14 +45,11 @@ public class SystemTest {
         assertTrue(time <= later, "Upper bound is OK: " + time + " <= " + later);
     }
     
-    private static CharSequence codeSeq;
-    private static Invocable code;
     
     @BeforeClass 
-    public void compileTheCode() throws Exception {
-        StringBuilder sb = new StringBuilder();
-        code = StaticMethodTest.compileClass(sb, "org/apidesign/bck2brwsr/emul/lang/System");
-        codeSeq = sb;
+    public static void compileTheCode() throws Exception {
+        code = TestVM.compileClass(
+            "org/apidesign/bck2brwsr/emul/lang/System");
     }
     
 }
