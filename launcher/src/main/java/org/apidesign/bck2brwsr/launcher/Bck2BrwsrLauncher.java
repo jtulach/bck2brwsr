@@ -95,10 +95,12 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
             startpage = "/" + startpage;
         }
         HttpServer s = initServer(".", true);
-        s.getServerConfiguration().addHttpHandler(new Page(resources, startpage), "/index.xhtml");
+        int last = startpage.lastIndexOf('/');
+        String simpleName = startpage.substring(last);
+        s.getServerConfiguration().addHttpHandler(new Page(resources, startpage), simpleName);
         s.getServerConfiguration().addHttpHandler(new Page(resources, null), "/");
         try {
-            launchServerAndBrwsr(s, "/index.xhtml");
+            launchServerAndBrwsr(s, simpleName);
         } catch (URISyntaxException | InterruptedException ex) {
             throw new IOException(ex);
         }
