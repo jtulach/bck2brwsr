@@ -61,11 +61,11 @@ final class Zips {
                     final byte[] man = z.findRes("META-INF/MANIFEST.MF");
                     if (man != null) {
                         String mainClass = processClassPathAttr(man, url, classpath);
-                        if (mainClass != null) {
-                            Class.forName(mainClass);
-                        }
+//                        if (mainClass != null) {
+//                            Class.forName(mainClass);
+//                        }
                     }
-                } catch (IOException | ClassNotFoundException ex) {
+                } catch (IOException ex) {
                     set(classpath, i, ex);
                     throw ex;
                 }

@@ -49,7 +49,6 @@
                      <manifest>
                          <addClasspath>true</addClasspath>
                          <classpathPrefix>lib/</classpathPrefix>
-                         <mainClass>org.apidesign.bck2brwsr.demo.calc.staticcompilation.Calc</mainClass>
                      </manifest>
                  </archive>
              </configuration>
