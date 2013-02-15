@@ -250,7 +250,25 @@ public class LongArithmeticTest {
     @Compare public long moduloWithCorrection() {
         return mod(0x7fff800000000000l, 0x800000000001l);
     }
-    
+
+    @Compare public boolean divByZeroThrowsArithmeticException() {
+        try {
+            div(1, 0);
+            return false;
+        } catch (final ArithmeticException e) {
+            return true;
+        }
+    }
+
+    @Compare public boolean modByZeroThrowsArithmeticException() {
+        try {
+            mod(1, 0);
+            return false;
+        } catch (final ArithmeticException e) {
+            return true;
+        }
+    }
+
     @Compare public long shiftL1() {
         return shl(0x00fa37d7763e0ca1l, 5);
     }

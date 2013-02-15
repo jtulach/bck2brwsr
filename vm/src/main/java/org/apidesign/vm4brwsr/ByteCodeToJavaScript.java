@@ -553,7 +553,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 *= @2;", smapper.getD(1), smapper.popD());
                     break;
                 case opc_idiv:
-                    emit(out, "@1 = Math.floor(@1 / @2);",
+                    emit(out, "@1 = @1.div32(@2);",
                          smapper.getI(1), smapper.popI());
                     break;
                 case opc_ldiv:
@@ -567,7 +567,8 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 /= @2;", smapper.getD(1), smapper.popD());
                     break;
                 case opc_irem:
-                    emit(out, "@1 %= @2;", smapper.getI(1), smapper.popI());
+                    emit(out, "@1 = @1.mod32(@2);",
+                         smapper.getI(1), smapper.popI());
                     break;
                 case opc_lrem:
                     emit(out, "@1 = @1.mod64(@2);",

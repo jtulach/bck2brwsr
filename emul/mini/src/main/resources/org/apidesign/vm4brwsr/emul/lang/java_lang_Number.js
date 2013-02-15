@@ -212,6 +212,14 @@ Number.prototype.neg64 = function() {
 };
 
 (function(numberPrototype) {
+    function __handleDivByZero() {
+        var exception = new vm.java_lang_ArithmeticException;
+        vm.java_lang_ArithmeticException(false).constructor
+          .cons__VLjava_lang_String_2.call(exception, "/ by zero");
+
+        throw exception;
+    }
+
     function __Int64(hi32, lo32) {
         this.hi32 = hi32 | 0;
         this.lo32 = lo32 | 0;
@@ -438,11 +446,27 @@ Number.prototype.neg64 = function() {
             r.setDigit(j + n, nrm, uj);
         }
     }
-    
+
+    numberPrototype.div32 = function(x) {
+        if (x === 0) {
+            __handleDivByZero();
+        }
+
+        return (this / x) | 0;
+    }
+
+    numberPrototype.mod32 = function(x) {
+        if (x === 0) {
+            __handleDivByZero();
+        }
+
+        return (this % x);
+    }
+
     numberPrototype.div64 = function(x) {
         var negateResult = false;
         var u, v;
-        
+
         if ((this.high32() & 0x80000000) != 0) {
             u = this.neg64();
             negateResult = !negateResult;
@@ -458,7 +482,7 @@ Number.prototype.neg64 = function() {
         }
 
         if ((v === 0) && (v.high32() === 0)) {
-            // TODO: throw
+            __handleDivByZero();
         }
 
         if (u.high32() === 0) {
@@ -499,7 +523,7 @@ Number.prototype.neg64 = function() {
         }
 
         if ((v === 0) && (v.high32() === 0)) {
-            // TODO: throw
+            __handleDivByZero();
         }
 
         if (u.high32() === 0) {
