@@ -39,7 +39,7 @@ public class ReaderTest {
             (byte)-120 
         };
         ByteArrayInputStream is = new ByteArrayInputStream(arr);
-        InputStreamReader r = new InputStreamReader(is);
+        InputStreamReader r = new InputStreamReader(is, "UTF-8");
         
         StringBuilder sb = new StringBuilder();
         for (;;) {
