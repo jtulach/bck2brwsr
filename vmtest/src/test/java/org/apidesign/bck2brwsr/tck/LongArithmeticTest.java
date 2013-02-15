@@ -47,19 +47,90 @@ public class LongArithmeticTest {
         return (x % y);
     }
     
+    private static long neg(long x) {
+        return (-x);
+    }
+    
+    private static long shl(long x, int b) {
+        return (x << b);
+    }
+    
+    private static long shr(long x, int b) {
+        return (x >> b);
+    }
+    
+    private static long ushr(long x, int b) {
+        return (x >>> b);
+    }
+    
+    private static long and(long x, long y) {
+        return (x & y);
+    }
+    
+    private static long or(long x, long y) {
+        return (x | y);
+    }
+    
+    private static long xor(long x, long y) {
+        return (x ^ y);
+    }
+    
+    public static int compare(long x, long y, int zero) {
+        final int xyResult = compareL(x, y, zero);
+        final int yxResult = compareL(y, x, zero);
+
+        return ((xyResult + yxResult) == 0) ? xyResult : -2;
+    }
+
+    private static int compareL(long x, long y, int zero) {
+        int result = -2;
+        int trueCount = 0;
+
+        x += zero;
+        if (x == y) {
+            result = 0;
+            ++trueCount;
+        }
+
+        x += zero;
+        if (x < y) {
+            result = -1;
+            ++trueCount;
+        }
+
+        x += zero;
+        if (x > y) {
+            result = 1;
+            ++trueCount;
+        }
+
+        return (trueCount == 1) ? result : -2;
+    }
+    
     @Compare public long conversion() {
         return Long.MAX_VALUE;
     }
     
-    /*
+    @Compare public long negate1() {
+        return neg(0x00fa37d7763e0ca1l);
+    }
+    
+    @Compare public long negate2() {
+        return neg(0x80fa37d7763e0ca1l);
+    }
+
+    @Compare public long negate3() {
+        return neg(0xfffffffffffffeddl);
+    }
+
     @Compare public long addOverflow() {
         return add(Long.MAX_VALUE, 1l);
     }
-    
+
     @Compare public long subUnderflow() {
         return sub(Long.MIN_VALUE, 1l);
     }
-    
+
     @Compare public long addMaxLongAndMaxLong() {
         return add(Long.MAX_VALUE, Long.MAX_VALUE);
     }
@@ -68,6 +139,10 @@ public class LongArithmeticTest {
         return sub(Long.MIN_VALUE, Long.MIN_VALUE);
     }
     
+    @Compare public long subMinLongAndMaxLong() {
+        return sub(Long.MIN_VALUE, Long.MAX_VALUE);
+    }
+
     @Compare public long multiplyMaxLong() {
         return mul(Long.MAX_VALUE, 2l);
     }
@@ -85,17 +160,172 @@ public class LongArithmeticTest {
     }
     
     @Compare public long multiplyPrecision() {
-        return mul(17638l, 1103l);
+        return mul(0x00fa37d7763e0ca1l, 0xa7b3432fff00123el);
     }
     
-    @Compare public long division() {
-        return div(1l, 2l);
+    @Compare public long divideSmallPositiveNumbers() {
+        return div(0xabcdef, 0x123);
+    }
+
+    @Compare public long divideSmallNegativeNumbers() {
+        return div(-0xabcdef, -0x123);
+    }
+
+    @Compare public long divideSmallMixedNumbers() {
+        return div(0xabcdef, -0x123);
+    }
+
+    @Compare public long dividePositiveNumbersOneDigitDenom() {
+        return div(0xabcdef0102ffffl, 0x654);
+    }
+
+    @Compare public long divideNegativeNumbersOneDigitDenom() {
+        return div(-0xabcdef0102ffffl, -0x654);
+    }
+
+    @Compare public long divideMixedNumbersOneDigitDenom() {
+        return div(-0xabcdef0102ffffl, 0x654);
+    }
+
+    @Compare public long dividePositiveNumbersMultiDigitDenom() {
+        return div(0x7ffefc003322aabbl, 0x89ab1000l);
+    }
+
+    @Compare public long divideNegativeNumbersMultiDigitDenom() {
+        return div(-0x7ffefc003322aabbl, -0x123489ab1001l);
+    }
+
+    @Compare public long divideMixedNumbersMultiDigitDenom() {
+        return div(0x7ffefc003322aabbl, -0x38f49b0b7574e36l);
+    }
+
+    @Compare public long divideWithOverflow() {
+        return div(0x8000fffe0000l, 0x8000ffffl);
+    }
+
+    @Compare public long divideWithCorrection() {
+        return div(0x7fff800000000000l, 0x800000000001l);
+    }
+
+    @Compare public long moduloSmallPositiveNumbers() {
+        return mod(0xabcdef, 0x123);
+    }
+
+    @Compare public long moduloSmallNegativeNumbers() {
+        return mod(-0xabcdef, -0x123);
+    }
+
+    @Compare public long moduloSmallMixedNumbers() {
+        return mod(0xabcdef, -0x123);
+    }
+
+    @Compare public long moduloPositiveNumbersOneDigitDenom() {
+        return mod(0xabcdef0102ffffl, 0x654);
+    }
+
+    @Compare public long moduloNegativeNumbersOneDigitDenom() {
+        return mod(-0xabcdef0102ffffl, -0x654);
+    }
+
+    @Compare public long moduloMixedNumbersOneDigitDenom() {
+        return mod(-0xabcdef0102ffffl, 0x654);
+    }
+
+    @Compare public long moduloPositiveNumbersMultiDigitDenom() {
+        return mod(0x7ffefc003322aabbl, 0x89ab1000l);
+    }
+
+    @Compare public long moduloNegativeNumbersMultiDigitDenom() {
+        return mod(-0x7ffefc003322aabbl, -0x123489ab1001l);
+    }
+
+    @Compare public long moduloMixedNumbersMultiDigitDenom() {
+        return mod(0x7ffefc003322aabbl, -0x38f49b0b7574e36l);
+    }
+
+    @Compare public long moduloWithOverflow() {
+        return mod(0x8000fffe0000l, 0x8000ffffl);
+    }
+
+    @Compare public long moduloWithCorrection() {
+        return mod(0x7fff800000000000l, 0x800000000001l);
     }
     
-    @Compare public long divisionReminder() {
-        return mod(1l, 2l);
+    @Compare public long shiftL1() {
+        return shl(0x00fa37d7763e0ca1l, 5);
     }
-    */
+    
+    @Compare public long shiftL2() {
+        return shl(0x00fa37d7763e0ca1l, 32);
+    }
+    
+    @Compare public long shiftL3() {
+        return shl(0x00fa37d7763e0ca1l, 45);
+    }
+    
+    @Compare public long shiftR1() {
+        return shr(0x00fa37d7763e0ca1l, 5);
+    }
+    
+    @Compare public long shiftR2() {
+        return shr(0x00fa37d7763e0ca1l, 32);
+    }
+    
+    @Compare public long shiftR3() {
+        return shr(0x00fa37d7763e0ca1l, 45);
+    }
+    
+    @Compare public long uShiftR1() {
+        return ushr(0x00fa37d7763e0ca1l, 5);
+    }
+    
+    @Compare public long uShiftR2() {
+        return ushr(0x00fa37d7763e0ca1l, 45);
+    }
+    
+    @Compare public long uShiftR3() {
+        return ushr(0xf0fa37d7763e0ca1l, 5);
+    }
+    
+    @Compare public long uShiftR4() {
+        return ushr(0xf0fa37d7763e0ca1l, 45);
+    }
+    
+    @Compare public long and1() {
+        return and(0x00fa37d7763e0ca1l, 0xa7b3432fff00123el);
+    }
+    
+    @Compare public long or1() {
+        return or(0x00fa37d7763e0ca1l, 0xa7b3432fff00123el);
+    }
+    
+    @Compare public long xor1() {
+        return xor(0x00fa37d7763e0ca1l, 0xa7b3432fff00123el);
+    }
+    
+    @Compare public long xor2() {
+        return xor(0x00fa37d7763e0ca1l, 0x00000000ff00123el);
+    }
+    
+    @Compare public long xor3() {
+        return xor(0x00000000763e0ca1l, 0x00000000ff00123el);
+    }
+    
+    @Compare public int compareSameNumbers() {
+        return compare(0x0000000000000000l, 0x0000000000000000l, 0);
+    }
+
+    @Compare public int comparePositiveNumbers() {
+        return compare(0x0000000000200000l, 0x0000000010000000l, 0);
+    }
+
+    @Compare public int compareNegativeNumbers() {
+        return compare(0xffffffffffffffffl, 0xffffffff00000000l, 0);
+    }
+
+    @Compare public int compareMixedNumbers() {
+        return compare(0x8000000000000000l, 0x7fffffffffffffffl, 0);
+    }
     
     @Factory
     public static Object[] create() {

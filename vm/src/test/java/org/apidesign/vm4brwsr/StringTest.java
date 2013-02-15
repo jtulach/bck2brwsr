@@ -75,7 +75,7 @@ public class StringTest {
     }
 
     @Test public void getBytes() throws Exception {
-        final String horse = "Žluťoučký kůň";
+        final String horse = "\u017dlu\u0165ou\u010dk\u00fd k\u016f\u0148";
         final String expected = StringSample.getBytes(horse);
         assertExec(
             "Bytes look simplar",

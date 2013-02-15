@@ -312,10 +312,10 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
             if (ch == '$' && params.length > 0) {
                 int cnt = is.read() - '0';
                 if (cnt == 'U' - '0') {
-                    os.write(baseURL.getBytes());
+                    os.write(baseURL.getBytes("UTF-8"));
                 }
                 if (cnt >= 0 && cnt < params.length) {
-                    os.write(params[cnt].getBytes());
+                    os.write(params[cnt].getBytes("UTF-8"));
                 }
             } else {
                 os.write(ch);

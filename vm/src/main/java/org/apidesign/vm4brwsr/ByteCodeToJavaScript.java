@@ -600,7 +600,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@1 = @1.xor64(@2);", smapper.getL(1), smapper.popL());
                     break;
                 case opc_ineg:
-                    emit(out, "@1 = -@1;", smapper.getI(0));
+                    emit(out, "@1 = @1.neg32();", smapper.getI(0));
                     break;
                 case opc_lneg:
                     emit(out, "@1 = @1.neg64();", smapper.getL(0));
@@ -634,7 +634,7 @@ abstract class ByteCodeToJavaScript {
                     final int varIndx = wide ? readUShort(byteCodes, i++)
                                              : readUByte(byteCodes, i);
                     ++i;
-                    final int incrBy = wide ? readIntArg(byteCodes, i++)
+                    final int incrBy = wide ? readShort(byteCodes, i++)
                                             : byteCodes[i];
                     wide = false;
                     if (incrBy == 1) {
@@ -1355,20 +1355,25 @@ abstract class ByteCodeToJavaScript {
         final int indxLo = byteCodes[offsetInstruction + 2];
         return (indxHi & 0xffffff00) | (indxLo & 0xff);
     }
-    private int readInt4(byte[] byteCodes, int offsetInstruction) {
-        final int d = byteCodes[offsetInstruction + 0] << 24;
-        final int c = byteCodes[offsetInstruction + 1] << 16;
-        final int b = byteCodes[offsetInstruction + 2] << 8;
-        final int a = byteCodes[offsetInstruction + 3];
+    private int readInt4(byte[] byteCodes, int offset) {
+        final int d = byteCodes[offset + 0] << 24;
+        final int c = byteCodes[offset + 1] << 16;
+        final int b = byteCodes[offset + 2] << 8;
+        final int a = byteCodes[offset + 3];
         return (d & 0xff000000) | (c & 0xff0000) | (b & 0xff00) | (a & 0xff);
     }
-    private int readUByte(byte[] byteCodes, int offsetInstruction) {
-        return byteCodes[offsetInstruction] & 0xff;
+    private int readUByte(byte[] byteCodes, int offset) {
+        return byteCodes[offset] & 0xff;
     }
 
-    private int readUShort(byte[] byteCodes, int offsetInstruction) {
-        return ((byteCodes[offsetInstruction] & 0xff) << 8)
-                    | (byteCodes[offsetInstruction + 1] & 0xff);
+    private int readUShort(byte[] byteCodes, int offset) {
+        return ((byteCodes[offset] & 0xff) << 8)
+                    | (byteCodes[offset + 1] & 0xff);
+    }
+
+    private int readShort(byte[] byteCodes, int offset) {
+        return (byteCodes[offset] << 8)
+                    | (byteCodes[offset + 1] & 0xff);
     }
 
     private static void countArgs(String descriptor, char[] returnType, StringBuilder sig, StringBuilder cnt) {

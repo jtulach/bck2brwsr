@@ -20,6 +20,7 @@ package org.apidesign.bck2brwsr.compact.tck;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
@@ -38,7 +39,7 @@ public class ReaderTest {
             (byte)-120 
         };
         ByteArrayInputStream is = new ByteArrayInputStream(arr);
-        InputStreamReader r = new InputStreamReader(is);
+        InputStreamReader r = new InputStreamReader(is, "UTF-8");
         
         StringBuilder sb = new StringBuilder();
         for (;;) {
@@ -50,8 +51,8 @@ public class ReaderTest {
         }
         return sb.toString().toString();
     }
-    @Compare public String stringToBytes() {
-        return Arrays.toString("Žluťoučký kůň".getBytes());
+    @Compare public String stringToBytes() throws UnsupportedEncodingException {
+        return Arrays.toString("\u017dlu\u0165ou\u010dk\u00fd k\u016f\u0148".getBytes("UTF-8"));
     }
     
     @Factory public static Object[] create() {

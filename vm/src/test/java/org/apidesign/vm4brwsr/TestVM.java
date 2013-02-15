@@ -58,7 +58,7 @@ final class TestVM {
         if (ret == null && expRes == null) {
             return null;
         }
-        if (expRes.equals(ret)) {
+        if (expRes != null && expRes.equals(ret)) {
             return null;
         }
         if (expRes instanceof Number) {
