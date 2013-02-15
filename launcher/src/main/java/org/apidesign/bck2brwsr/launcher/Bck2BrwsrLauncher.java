@@ -95,9 +95,10 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
             startpage = "/" + startpage;
         }
         HttpServer s = initServer(".", true);
+        s.getServerConfiguration().addHttpHandler(new Page(resources, startpage), "/index.xhtml");
         s.getServerConfiguration().addHttpHandler(new Page(resources, null), "/");
         try {
-            launchServerAndBrwsr(s, startpage);
+            launchServerAndBrwsr(s, "/index.xhtml");
         } catch (URISyntaxException | InterruptedException ex) {
             throw new IOException(ex);
         }
@@ -139,7 +140,7 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
 
         final ServerConfiguration conf = s.getServerConfiguration();
         if (addClasses) {
-            conf.addHttpHandler(new VM(resources), "/vm.js");
+            conf.addHttpHandler(new VM(resources), "/bck2brwsr.js");
             conf.addHttpHandler(new Classes(resources), "/classes/");
         }
         return s;
@@ -450,9 +451,9 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
             String r = resource;
             if (r == null) {
                 r = request.getHttpHandlerPath();
-                if (r.startsWith("/")) {
-                    r = r.substring(1);
-                }
+            }
+            if (r.startsWith("/")) {
+                r = r.substring(1);
             }
             String[] replace = {};
             if (r.endsWith(".html")) {
@@ -483,14 +484,19 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
             StringBuilder sb = new StringBuilder();
             Bck2Brwsr.generate(sb, loader);
             sb.append(
-                "function ldCls(res) {\n"
-                + "  var request = new XMLHttpRequest();\n"
-                + "  request.open('GET', '/classes/' + res, false);\n"
-                + "  request.send();\n"
-                + "  var arr = eval('(' + request.responseText + ')');\n"
-                + "  return arr;\n"
-                + "}\n"
-                + "var vm = new bck2brwsr(ldCls);\n"
+                  "(function WrapperVM(global) {"
+                + "  function ldCls(res) {\n"
+                + "    var request = new XMLHttpRequest();\n"
+                + "    request.open('GET', '/classes/' + res, false);\n"
+                + "    request.send();\n"
+                + "    var arr = eval('(' + request.responseText + ')');\n"
+                + "    return arr;\n"
+                + "  }\n"
+                + "  var prevvm = global.bck2brwsr;\n"
+                + "  global.bck2brwsr = function() {\n"
+                + "    return prevvm(ldCls);\n"
+                + "  };\n"
+                + "})(this);\n"
             );
             this.bck2brwsr = sb.toString();
         }
