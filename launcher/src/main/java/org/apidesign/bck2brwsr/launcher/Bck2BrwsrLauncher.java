@@ -48,6 +48,7 @@ import org.glassfish.grizzly.http.server.NetworkListener;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.grizzly.http.server.ServerConfiguration;
+import org.glassfish.grizzly.http.util.HttpStatus;
 
 /**
  * Lightweight server to launch Bck2Brwsr applications and tests.
@@ -491,12 +492,15 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
                 + "    var request = new XMLHttpRequest();\n"
                 + "    request.open('GET', '/classes/' + res, false);\n"
                 + "    request.send();\n"
+                + "    if (request.status !== 200) return null;\n"
                 + "    var arr = eval('(' + request.responseText + ')');\n"
                 + "    return arr;\n"
                 + "  }\n"
                 + "  var prevvm = global.bck2brwsr;\n"
                 + "  global.bck2brwsr = function() {\n"
-                + "    return prevvm(ldCls);\n"
+                + "    var args = Array.prototype.slice.apply(arguments);\n"
+                + "    args.unshift(ldCls);\n"
+                + "    return prevvm.apply(null, args);\n"
                 + "  };\n"
                 + "})(this);\n"
             );
@@ -546,6 +550,7 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
                 }
                 w.append("\n]");
             } catch (IOException ex) {
+                response.setStatus(HttpStatus.NOT_FOUND_404);
                 response.setError();
                 response.setDetailMessage(ex.getMessage());
             }
