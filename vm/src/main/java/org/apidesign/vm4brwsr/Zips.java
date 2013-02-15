@@ -67,7 +67,7 @@ final class Zips {
                     }
                 } catch (IOException ex) {
                     set(classpath, i, ex);
-                    throw ex;
+                    log("Cannot load " + c + " - " + ex.getClass().getName() + ":" + ex.getMessage());
                 }
             }
             if (res != null) {
