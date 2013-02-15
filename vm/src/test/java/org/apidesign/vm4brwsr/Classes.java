@@ -151,4 +151,20 @@ public class Classes {
         Method m = StaticMethod.class.getMethod("sum", int.class, int.class);
         return (int) m.invoke(null, a, b);
     }
+    
+    private abstract class Application {
+        public abstract int getID();
+    }
+
+    private class MyApplication extends Application {
+        @Override
+        public int getID() {
+            return 1;
+        }
+    }
+
+    public static boolean isClassAssignable() {
+        return Application.class.isAssignableFrom(MyApplication.class);
+    }
+    
 }

@@ -134,7 +134,7 @@ public class CompareStringsTest {
 
     @Compare
     public int stringToBytesLenght() throws UnsupportedEncodingException {
-        return "Žluťoučký kůň".getBytes("utf8").length;
+        return "\u017dlu\u0165ou\u010dk\u00fd k\u016f\u0148".getBytes("utf8").length;
     }
 
     @Factory

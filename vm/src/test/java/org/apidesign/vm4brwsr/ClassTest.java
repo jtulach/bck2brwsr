@@ -181,5 +181,11 @@ public class ClassTest {
     ) throws Exception {
         StaticMethodTest.assertExec(code, codeSeq, msg, clazz, method, expRes, args);
     }
+    @Test public void isClassAssignable() throws Exception {
+        assertExec("isAssignable works on subclasses", Classes.class, 
+            "isClassAssignable__Z", 
+            true
+        );
+    }
     
 }

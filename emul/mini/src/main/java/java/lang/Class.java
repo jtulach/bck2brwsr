@@ -401,10 +401,15 @@ public final
             return cmpType != null && getComponentType().isAssignableFrom(cmpType);
         }
         String prop = "$instOf_" + getName().replace('.', '_');
-        return hasProperty(cls, prop);
+        return hasCnstrProperty(cls, prop);
     }
 
-
+    @JavaScriptBody(args = { "who", "prop" }, body = 
+        "if (who.cnstr.prototype[prop]) return true; else return false;"
+    )
+    private static native boolean hasCnstrProperty(Object who, String prop);
+    
+    
     /**
      * Determines if the specified {@code Class} object represents an
      * interface type.
