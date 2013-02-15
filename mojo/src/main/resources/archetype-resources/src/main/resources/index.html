@@ -13,9 +13,9 @@
             </canvas>
         </p>
 
-        <script src="/bck2brwsr.js"></script>
-        <script src="/vm.js"></script>
+        <script src="bck2brwsr.js"></script>
         <script type="text/javascript">
+            var vm = bck2brwsr('${artifactId}-${version}.jar');
             vm.loadClass('${package}.App');
         </script>
     </body>
