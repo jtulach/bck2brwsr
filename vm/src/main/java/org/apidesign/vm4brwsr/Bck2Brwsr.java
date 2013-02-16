@@ -68,7 +68,13 @@ public final class Bck2Brwsr {
     public static void generate(Appendable out, Resources resources, String... classes) throws IOException {
         StringArray arr = StringArray.asList(classes);
         arr.add(VM.class.getName().replace('.', '/'));
-        VM.compile(resources, out, arr);
+        try {
+            ClosureWrapper.produceTo(out, resources, arr);
+        } catch (IOException ex) {
+            throw ex;
+        } catch (Throwable ex) {
+            VM.compile(resources, out, arr);
+        }
     }
     
     /** Generates virtual machine from bytes served by a class loader.
