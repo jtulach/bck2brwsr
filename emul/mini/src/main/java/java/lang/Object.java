@@ -117,7 +117,7 @@ public class Object {
     )
     public native int hashCode();
 
-    @JavaScriptBody(args = {}, body = "Math.random() * Math.pow(2, 32);")
+    @JavaScriptBody(args = {}, body = "return Math.random() * Math.pow(2, 32);")
     native int computeHashCode();
     
     /**

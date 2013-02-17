@@ -17,7 +17,6 @@
  */
 package org.apidesign.vm4brwsr;
 
-import javax.script.Invocable;
 import org.testng.annotations.Test;
 import org.testng.annotations.BeforeClass;
 
@@ -80,16 +79,23 @@ public class InstanceTest {
     @Test public void isInstanceOf() throws Exception {
         assertExec(
             "Yes, we are instance",
-            Instance.class, "instanceOf__ZZ",
-            Double.valueOf(1.0), true
+            Instance.class, "instanceOf__ZI",
+            Double.valueOf(1.0), 2
         );
     }
 
     @Test public void notInstanceOf() throws Exception {
         assertExec(
             "No, we are not an instance",
-            Instance.class, "instanceOf__ZZ",
-            Double.valueOf(0.0), false
+            Instance.class, "instanceOf__ZI",
+            Double.valueOf(0.0), 1
+        );
+    }
+    @Test public void nullInstanceOf() throws Exception {
+        assertExec(
+            "No, null is not an instance",
+            Instance.class, "instanceOf__ZI",
+            Double.valueOf(0.0), 0
         );
     }
     
@@ -144,22 +150,17 @@ public class InstanceTest {
         return "org/apidesign/vm4brwsr/Instance";
     }
     
-    private static CharSequence codeSeq;
-    private static Invocable code;
+    private static TestVM code;
     
     @BeforeClass
     public void compileTheCode() throws Exception {
-        if (codeSeq == null) {
-            StringBuilder sb = new StringBuilder();
-            code = StaticMethodTest.compileClass(sb, startCompilationWith());
-            codeSeq = sb;
-        }
+        code = TestVM.compileClass(startCompilationWith());
     }
     
     private void assertExec(
         String msg, Class clazz, String method, Object expRes, Object... args
     ) throws Exception {
-        StaticMethodTest.assertExec(code, codeSeq, msg, clazz, method, expRes, args);
+        code.assertExec(msg, clazz, method, expRes, args);
     }
     
 }

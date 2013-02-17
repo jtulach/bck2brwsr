@@ -16,34 +16,20 @@
   </properties>
   <build>
       <plugins>
-          <plugin>
-              <groupId>org.apidesign.bck2brwsr</groupId>
-              <artifactId>mojo</artifactId>
-              <version>0.3-SNAPSHOT</version>
-              <executions>
-                  <execution>
-                      <goals>
-                          <goal>j2js</goal>
-                      </goals>
-                  </execution>
-              </executions>
-          </plugin>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>1.2.1</version>
+                <groupId>org.apidesign.bck2brwsr</groupId>
+                <artifactId>mojo</artifactId>
+                <version>0.3-SNAPSHOT</version>
                 <executions>
                     <execution>
                         <goals>
-                            <goal>exec</goal>
+                            <goal>brwsr</goal>
                         </goals>
                     </execution>
                 </executions>
                 <configuration>
-                    <executable>xdg-open</executable>
-                    <arguments>
-                        <argument>${project.build.directory}/classes/org/apidesign/bck2brwsr/demo/calc/staticcompilation/Calculator.xhtml</argument>
-                    </arguments>
+                    <directory>${project.build.directory}/${project.build.finalName}-bck2brwsr/public_html/</directory>
+                    <startpage>index.xhtml</startpage>
                 </configuration>
             </plugin>
          <plugin>
@@ -55,19 +41,67 @@
                <target>1.7</target>
             </configuration>
          </plugin>
+         <plugin>
+             <groupId>org.apache.maven.plugins</groupId>
+             <artifactId>maven-jar-plugin</artifactId>
+             <version>2.4</version>
+             <configuration>
+                 <archive>
+                     <manifest>
+                         <addClasspath>true</addClasspath>
+                         <classpathPrefix>lib/</classpathPrefix>
+                     </manifest>
+                 </archive>
+             </configuration>
+         </plugin>
+         <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
+                    <execution>
+                        <id>distro-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>src/main/assembly/bck2brwsr.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>                
+            </plugin>      
+        <plugin>
+           <groupId>org.apache.maven.plugins</groupId>
+           <artifactId>maven-deploy-plugin</artifactId>
+           <version>2.7</version>
+           <configuration>
+             <skip>true</skip>
+           </configuration>
+         </plugin>      
       </plugins>
   </build>
 
   <dependencies>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
-      <artifactId>emul.mini</artifactId>
+      <artifactId>emul</artifactId>
       <version>0.3-SNAPSHOT</version>
+      <classifier>rt</classifier>
     </dependency>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>javaquery.api</artifactId>
       <version>0.3-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apidesign.bck2brwsr</groupId>
+      <artifactId>vm4brwsr</artifactId>
+      <classifier>js</classifier>
+      <type>zip</type>
+      <version>0.3-SNAPSHOT</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 </project>

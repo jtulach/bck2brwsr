@@ -17,16 +17,18 @@
  */
 package org.apidesign.bck2brwsr.vmtest.impl;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.WeakHashMap;
 import org.apidesign.bck2brwsr.launcher.Launcher;
-import org.apidesign.bck2brwsr.launcher.MethodInvocation;
+import org.apidesign.bck2brwsr.launcher.InvocationContext;
+import org.apidesign.bck2brwsr.vmtest.HtmlFragment;
+import org.apidesign.bck2brwsr.vmtest.Http;
 import org.testng.ITest;
 import org.testng.annotations.Test;
 
@@ -39,22 +41,38 @@ public final class Bck2BrwsrCase implements ITest {
     private final Launcher l;
     private final String type;
     private final boolean fail;
+    private final HtmlFragment html;
+    private final Http.Resource[] http;
     Object value;
-    private final String html;
 
-    Bck2BrwsrCase(Method m, String type, Launcher l, boolean fail, String html) {
+    Bck2BrwsrCase(Method m, String type, Launcher l, boolean fail, HtmlFragment html, Http.Resource[] http) {
         this.l = l;
         this.m = m;
         this.type = type;
         this.fail = fail;
         this.html = html;
+        this.http = http;
     }
 
     @Test(groups = "run")
     public void executeCode() throws Throwable {
         if (l != null) {
-            MethodInvocation c = l.invokeMethod(m.getDeclaringClass(), m.getName(), html);
-            String res = c.toString();
+            InvocationContext c = l.createInvocation(m.getDeclaringClass(), m.getName());
+            if (html != null) {
+                c.setHtmlFragment(html.value());
+            }
+            if (http != null) {
+                for (Http.Resource r : http) {
+                    if (!r.content().isEmpty()) {
+                        InputStream is = new ByteArrayInputStream(r.content().getBytes("UTF-8"));
+                        c.addHttpResource(r.path(), r.mimeType(), is);
+                    } else {
+                        InputStream is = m.getDeclaringClass().getResourceAsStream(r.resource());
+                        c.addHttpResource(r.path(), r.mimeType(), is);
+                    }
+                }
+            }
+            String res = c.invoke();
             value = res;
             if (fail) {
                 int idx = res.indexOf(':');
@@ -94,6 +112,9 @@ public final class Bck2BrwsrCase implements ITest {
             } catch (InvocationTargetException ex) {
                 Throwable t = ex.getTargetException();
                 value = t.getClass().getName() + ":" + t.getMessage();
+                if (t instanceof AssertionError) {
+                    throw t;
+                }
             }
         }
     }

@@ -20,6 +20,7 @@ package org.apidesign.vm4brwsr;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
@@ -38,23 +39,19 @@ final class VMLazy {
     static void init() {
     }
     
-    @JavaScriptBody(args={"l", "res", "args" }, body = ""
-        + "\ntry {"
-        + "\n  return args[0](res.toString());"
-        + "\n} catch (x) {"
-        + "\n  throw Object.getOwnPropertyNames(l.vm).toString() + x.toString();"
-        + "\n}")
-    private static native byte[] read(Object l, String res, Object[] args);
-    
     static Object load(Object loader, String name, Object[] arguments) 
     throws IOException, ClassNotFoundException {
         return new VMLazy(loader, arguments).load(name, false);
     }
     
+    static byte[] loadBytes(Object loader, String name, Object[] arguments) throws Exception {
+        return Zips.loadFromCp(arguments, name);
+    }
+    
     private Object load(String name, boolean instance)
     throws IOException, ClassNotFoundException {
         String res = name.replace('.', '/') + ".class";
-        byte[] arr = read(loader, res, args);
+        byte[] arr = Zips.loadFromCp(args, res);
         if (arr == null) {
             throw new ClassNotFoundException(name);
         }
@@ -117,8 +114,8 @@ final class VMLazy {
         body =
         "var cls = n.replace__Ljava_lang_String_2CC('/','_').toString();"
         + "\nvar dot = n.replace__Ljava_lang_String_2CC('/','.').toString();"
-        + "\nvar lazy = this.fld_lazy;"
-        + "\nvar loader = lazy.fld_loader;"
+        + "\nvar lazy = this._lazy();"
+        + "\nvar loader = lazy._loader();"
         + "\nvar vm = loader.vm;"
         + "\nif (vm[cls]) return false;"
         + "\nvm[cls] = function() {"

@@ -17,7 +17,6 @@
  */
 package org.apidesign.vm4brwsr;
 
-import javax.script.Invocable;
 import org.testng.annotations.Test;
 import static org.testng.Assert.*;
 import org.testng.annotations.BeforeClass;
@@ -72,6 +71,16 @@ public class StringTest {
             "It is string",
             StringSample.class, "isStringInstance__Z",
             Double.valueOf(1.0)
+        );
+    }
+
+    @Test public void getBytes() throws Exception {
+        final String horse = "\u017dlu\u0165ou\u010dk\u00fd k\u016f\u0148";
+        final String expected = StringSample.getBytes(horse);
+        assertExec(
+            "Bytes look simplar",
+            StringSample.class, "getBytes__Ljava_lang_String_2Ljava_lang_String_2",
+            expected, horse
         );
     }
 
@@ -184,23 +193,20 @@ public class StringTest {
         
     }
     
-    private static CharSequence codeSeq;
-    private static Invocable code;
+    private static TestVM code;
     
     @BeforeClass 
     public void compileTheCode() throws Exception {
-        StringBuilder sb = new StringBuilder();
-        code = StaticMethodTest.compileClass(sb, 
+        code = TestVM.compileClass(
             "org/apidesign/vm4brwsr/StringSample",
             "java/lang/String"
         );
-        codeSeq = sb;
     }
     
     private static void assertExec(String msg, 
         Class<?> clazz, String method, Object expRes, Object... args
     ) throws Exception {
-        StaticMethodTest.assertExec(code, codeSeq, msg, clazz, method, expRes, args);
+        code.assertExec(msg, clazz, method, expRes, args);
     }
     
 }

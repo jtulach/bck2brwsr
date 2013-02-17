@@ -77,78 +77,10 @@
             </tbody>
         </table>
         <div data-bind="text: displayPreview"></div>
-        <script src="bootjava.js"/>
-        
-        <hr/>
-    <pre>
-    <span class="keyword-directive">package</span> org.apidesign.bck2brwsr.mavenhtml;
-
-    <span class="keyword-directive">import</span> org.apidesign.bck2brwsr.htmlpage.api.OnClick;
-    <span class="keyword-directive">import</span> org.apidesign.bck2brwsr.htmlpage.api.Page;
-
-    <span class="comment">/**</span> <span class="comment">HTML5</span><span class="comment"> &amp; </span><span class="comment">Java</span> <span class="comment">demo</span> <span class="comment">showing</span> <span class="comment">the</span> <span class="comment">power</span> <span class="comment">of</span> <a href="http://wiki.apidesign.org/wiki/AnnotationProcessor">annotation processors</a>
-    <span class="comment"> * </span><span class="comment">as</span> <span class="comment">well</span> <span class="comment">as</span> <span class="comment">other</span> <span class="comment">goodies</span><span class="comment">, including type-safe association between</span>
-    <span class="comment"> * </span><span class="comment">an XHTML page and Java.</span>
-    <span class="comment"> * </span>
-    <span class="comment"> * </span><span class="ST1">@author</span> <span class="comment">Jaroslav</span> <span class="comment">Tulach</span> <span class="ST0">&lt;jaroslav.tulach@apidesign.org&gt;</span>
-     <span class="comment">*/</span>
-    @Page(xhtml=<span class="string">&quot;</span><span class="string">Calculator.xhtml</span><span class="string">&quot;</span>)
-    <span class="keyword-directive">public</span> <span class="keyword-directive">class</span> App {
-        <span class="keyword-directive">private</span> <span class="keyword-directive">static</span> <span class="keyword-directive">double</span> memory;
-        <span class="keyword-directive">private</span> <span class="keyword-directive">static</span> String operation;
-
-        @OnClick(id=<span class="string">&quot;</span><span class="string">clear</span><span class="string">&quot;</span>)
-        <span class="keyword-directive">static</span> <span class="keyword-directive">void</span> clear() {
-            memory = <span class="number">0</span>;
-            operation = <span class="keyword-directive">null</span>;
-            Calculator.DISPLAY.setValue(<span class="string">&quot;</span><span class="string">0</span><span class="string">&quot;</span>);
-        }
-
-        @OnClick(id= { <span class="string">&quot;</span><span class="string">plus</span><span class="string">&quot;</span>, <span class="string">&quot;</span><span class="string">minus</span><span class="string">&quot;</span>, <span class="string">&quot;</span><span class="string">mul</span><span class="string">&quot;</span>, <span class="string">&quot;</span><span class="string">div</span><span class="string">&quot;</span> })
-        <span class="keyword-directive">static</span> <span class="keyword-directive">void</span> applyOp(String op) {
-            memory = getValue();
-            operation = op;
-            Calculator.DISPLAY.setValue(<span class="string">&quot;</span><span class="string">0</span><span class="string">&quot;</span>);
-        }
-
-        @OnClick(id=<span class="string">&quot;</span><span class="string">result</span><span class="string">&quot;</span>)
-        <span class="keyword-directive">static</span> <span class="keyword-directive">void</span> computeTheValue() {
-            <span class="keyword-directive">switch</span> (operation) {
-                <span class="keyword-directive">case</span> <span class="string">&quot;</span><span class="string">plus</span><span class="string">&quot;</span>: setValue(memory + getValue()); <span class="keyword-directive">break</span>;
-                <span class="keyword-directive">case</span> <span class="string">&quot;</span><span class="string">minus</span><span class="string">&quot;</span>: setValue(memory - getValue()); <span class="keyword-directive">break</span>;
-                <span class="keyword-directive">case</span> <span class="string">&quot;</span><span class="string">mul</span><span class="string">&quot;</span>: setValue(memory * getValue()); <span class="keyword-directive">break</span>;
-                <span class="keyword-directive">case</span> <span class="string">&quot;</span><span class="string">div</span><span class="string">&quot;</span>: setValue(memory / getValue()); <span class="keyword-directive">break</span>;
-                <span class="keyword-directive">default</span>: <span class="keyword-directive">throw</span> <span class="keyword-directive">new</span> IllegalStateException(operation);
-            }
-        }
-
-        @OnClick(id={<span class="string">&quot;</span><span class="string">n0</span><span class="string">&quot;</span>, <span class="string">&quot;</span><span class="string">n1</span><span class="string">&quot;</span>, <span class="string">&quot;</span><span class="string">n2</span><span class="string">&quot;</span>, <span class="string">&quot;</span><span class="string">n3</span><span class="string">&quot;</span>, <span class="string">&quot;</span><span class="string">n4</span><span class="string">&quot;</span>, <span class="string">&quot;</span><span class="string">n5</span><span class="string">&quot;</span>, <span class="string">&quot;</span><span class="string">n6</span><span class="string">&quot;</span>, <span class="string">&quot;</span><span class="string">n7</span><span class="string">&quot;</span>, <span class="string">&quot;</span><span class="string">n8</span><span class="string">&quot;</span>, <span class="string">&quot;</span><span class="string">n9</span><span class="string">&quot;</span>}) 
-        <span class="keyword-directive">static</span> <span class="keyword-directive">void</span> addDigit(String digit) {
-            digit = digit.substring(<span class="number">1</span>);
-            String v = Calculator.DISPLAY.getValue();
-            <span class="keyword-directive">if</span> (getValue() == <span class="number">0.0</span>) {
-                Calculator.DISPLAY.setValue(digit);
-            } <span class="keyword-directive">else</span> {
-                Calculator.DISPLAY.setValue(v + digit);
-            }
-        }
-
-        <span class="keyword-directive">private</span> <span class="keyword-directive">static</span> <span class="keyword-directive">void</span> setValue(<span class="keyword-directive">double</span> v) {
-            StringBuilder sb = <span class="keyword-directive">new</span> StringBuilder();
-            sb.append(v);
-            Calculator.DISPLAY.setValue(sb.toString());
-        }
-
-        <span class="keyword-directive">private</span> <span class="keyword-directive">static</span> <span class="keyword-directive">double</span> getValue() {
-            <span class="keyword-directive">try</span> {
-                <span class="keyword-directive">return</span> Double.parseDouble(Calculator.DISPLAY.getValue());
-            } <span class="keyword-directive">catch</span> (NumberFormatException ex) {
-                Calculator.DISPLAY.setValue(<span class="string">&quot;</span><span class="string">err</span><span class="string">&quot;</span>);
-                <span class="keyword-directive">return</span> <span class="number">0.0</span>;
-            }
-        }
-    }
-
-    </pre>
+        <script src="bck2brwsr.js"/>
+        <script>
+            var vm = bck2brwsr('demo.static.calculator-0.3-SNAPSHOT.jar');
+            vm.loadClass('org.apidesign.bck2brwsr.demo.calc.staticcompilation.Calc');
+        </script>
     </body>
 </html>

@@ -31,7 +31,12 @@ class VM extends ByteCodeToJavaScript {
     
     static {
         // uses VMLazy to load dynamic classes
-        VMLazy.init();
+        boolean assertsOn = false;
+        assert assertsOn = true;
+        if (assertsOn) {
+            VMLazy.init();
+            Zips.init();
+        }
     }
 
     @Override
@@ -43,8 +48,7 @@ class VM extends ByteCodeToJavaScript {
         new VM(out).doCompile(l, names);
     }
     protected void doCompile(Bck2Brwsr.Resources l, StringArray names) throws IOException {
-        out.append("(function VM(global) {");
-        out.append("\n  var vm = {};");
+        out.append("(function VM(global) {var fillInVMSkeleton = function(vm) {");
         StringArray processed = new StringArray();
         StringArray initCode = new StringArray();
         for (String baseClass : names.toArray()) {
@@ -112,25 +116,31 @@ class VM extends ByteCodeToJavaScript {
             }
         }
         out.append(
-              "  global.bck2brwsr = function() {\n"
-            + "    var args = arguments;\n"
+              "  return vm;\n"
+            + "  };\n"
+            + "  global.bck2brwsr = function() {\n"
+            + "    var args = Array.prototype.slice.apply(arguments);\n"
+            + "    var vm = fillInVMSkeleton({});\n"
             + "    var loader = {};\n"
             + "    loader.vm = vm;\n"
             + "    loader.loadClass = function(name) {\n"
             + "      var attr = name.replace__Ljava_lang_String_2CC('.','_');\n"
             + "      var fn = vm[attr];\n"
             + "      if (fn) return fn(false);\n"
-            + "      if (!args[0]) throw 'bck2brwsr initialized without loader function, cannot load ' + name;\n"
             + "      return vm.org_apidesign_vm4brwsr_VMLazy(false).\n"
             + "        load__Ljava_lang_Object_2Ljava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2(loader, name, args);\n"
             + "    }\n"
-            + "    if (args[0]) {\n"
-            + "      vm.loadClass = loader.loadClass;\n"
-            + "      vm.loadBytes = function(name) {\n"
-            + "        if (!args[0]) throw 'bck2brwsr initialized without loader function, cannot load ' + name;\n"
-            + "        return args[0](name);\n"
-            + "      }\n"
+            + "    if (vm.loadClass) {\n"
+            + "      throw 'Cannot initialize the bck2brwsr VM twice!';\n"
             + "    }\n"
+            + "    vm.loadClass = loader.loadClass;\n"
+            + "    vm.loadBytes = function(name) {\n"
+            + "      return vm.org_apidesign_vm4brwsr_VMLazy(false).\n"
+            + "        loadBytes___3BLjava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2(loader, name, args);\n"
+            + "    }\n"
+            + "    vm.java_lang_reflect_Array(false);\n"
+            + "    vm.org_apidesign_vm4brwsr_VMLazy(false).\n"
+            + "      loadBytes___3BLjava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2(loader, null, args);\n"
             + "    return loader;\n"
             + "  };\n");
         out.append("}(this));");

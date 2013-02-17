@@ -17,6 +17,8 @@
  */
 package org.apidesign.vm4brwsr;
 
+import java.io.UnsupportedEncodingException;
+
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
@@ -66,6 +68,15 @@ public class StringSample {
     
     public static boolean isStringInstance() {
         return chars('a', (char)30, 'b') instanceof String;
+    }
+    
+    public static String getBytes(String s) throws UnsupportedEncodingException {
+        byte[] arr = s.getBytes("UTF-8");
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < arr.length; i++) {
+            sb.append(arr[i]).append(" ");
+        }
+        return sb.toString().toString();
     }
     
     public static String insertBuffer() {

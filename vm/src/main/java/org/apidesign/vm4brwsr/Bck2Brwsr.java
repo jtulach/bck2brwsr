@@ -40,6 +40,16 @@ import java.util.Enumeration;
  * In this scenario, when a request for an unknown class is made, the loader
  * function is asked for its byte code and the system dynamically transforms
  * it to JavaScript.
+ * <p>
+ * Instead of a loader function, one can also provide a URL to a JAR file.
+ * The <code>bck2brwsr</code> system will do its best to download the file
+ * and provide loader function for it automatically.
+ * <p>
+ * One can provide as many loader functions and JAR URL references as necessary.
+ * Then the initialization code would look like:<pre>
+ * var vm = bck2brwsr(url1, url2, fnctn1, url3, functn2);
+ * </pre>
+ * The provided URLs and loader functions will be consulted one by one.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */

@@ -25,7 +25,6 @@
 
 package java.util;
 
-import org.apidesign.bck2brwsr.emul.lang.System;
 
 /**
  * Resizable-array implementation of the <tt>List</tt> interface.  Implements

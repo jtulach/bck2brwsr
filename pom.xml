@@ -6,6 +6,11 @@
   <version>0.3-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Back 2 Browser</name>
+  <parent>
+    <groupId>net.java</groupId>
+    <artifactId>jvnet-parent</artifactId>
+    <version>3</version>
+  </parent>  
   <modules>
     <module>vm</module>
     <module>emul</module>
@@ -17,6 +22,7 @@
     <module>benchmarks</module>
     <module>launcher</module>
     <module>vmtest</module>
+    <module>ide</module>
   </modules>
   <licenses>
       <license>
@@ -29,6 +35,11 @@
       <name>API Design</name>
       <url>http://apidesign.org</url>
   </organization>
+  <scm>
+      <connection>scm:hg:http://source.apidesign.org/hg/bck2brwsr</connection>
+      <developerConnection>scm:hg:https://source.apidesign.org/hg/bck2brwsr</developerConnection>
+      <url>http://source.apidesign.org/hg/bck2brwsr</url>
+  </scm>
   <repositories>
       <repository>
           <id>netbeans</id>
@@ -82,6 +93,15 @@
               </configuration>
           </plugin>
       </plugins>
+      <pluginManagement>
+          <plugins>
+              <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.13</version>
+              </plugin>
+          </plugins>
+      </pluginManagement>
   </build>
   <dependencyManagement>
       <dependencies>

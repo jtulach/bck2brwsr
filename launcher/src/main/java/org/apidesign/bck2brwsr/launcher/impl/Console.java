@@ -15,7 +15,7 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.launcher;
+package org.apidesign.bck2brwsr.launcher.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,6 +31,8 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class Console {
+    private Console() {
+    }
     static {
         turnAssetionStatusOn();
     }
@@ -123,7 +125,7 @@ public class Console {
                 loadText(u, this, arr);
                 
             } catch (Exception ex) {
-                log(ex.getMessage());
+                log(ex.getClass().getName() + ":" + ex.getMessage());
             }
         }
     }

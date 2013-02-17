@@ -31,13 +31,19 @@ import org.testng.annotations.BeforeGroups;
 public final class LaunchSetup {
     static LaunchSetup INSTANCE = new LaunchSetup();
     
-    private final Launcher js = Launcher.createJavaScript();
+    private Launcher js;
     private final Map<String,Launcher> brwsrs = new LinkedHashMap<>();
     
     private LaunchSetup() {
     }
     
-    public  Launcher javaScript() {
+    public Launcher javaScript() {
+        return js(true);
+    } 
+    private synchronized  Launcher js(boolean create) {
+        if (js == null && create) {
+            js = Launcher.createJavaScript();
+        }
         return js;
     } 
     
@@ -52,7 +58,9 @@ public final class LaunchSetup {
 
     @BeforeGroups("run")
     public void initializeLauncher() throws IOException {
-        js.initialize();
+        if (js(false) != null) {
+            js(true).initialize();
+        }
         for (Launcher launcher : brwsrs.values()) {
             launcher.initialize();
         }
@@ -60,7 +68,9 @@ public final class LaunchSetup {
 
     @AfterGroups("run")
     public void shutDownLauncher() throws IOException, InterruptedException {
-        js.shutdown();
+        if (js(false) != null) {
+            js(true).shutdown();
+        }
         for (Launcher launcher : brwsrs.values()) {
             launcher.shutdown();
         }

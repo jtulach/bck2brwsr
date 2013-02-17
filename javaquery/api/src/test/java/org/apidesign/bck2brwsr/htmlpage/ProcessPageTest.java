@@ -128,6 +128,8 @@ public class ProcessPageTest {
             sb = new StringBuilder();
         }
         Bck2Brwsr.generate(sb, ProcessPageTest.class.getClassLoader(), names);
+        sb.append("var vm = this.bck2brwsr();\n");
+        
         ScriptEngineManager sem = new ScriptEngineManager();
         ScriptEngine js = sem.getEngineByExtension("js");
         try {

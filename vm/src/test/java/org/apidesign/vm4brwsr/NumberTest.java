@@ -17,8 +17,6 @@
  */
 package org.apidesign.vm4brwsr;
 
-import javax.script.Invocable;
-import javax.script.ScriptException;
 import static org.testng.Assert.*;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -143,45 +141,29 @@ public class NumberTest {
             s
         );
     }
-    
-    private static CharSequence codeSeq;
-    private static Invocable code;
+
+    private static TestVM code;
 
     @BeforeClass
     public void compileTheCode() throws Exception {
-        if (codeSeq == null) {
-            StringBuilder sb = new StringBuilder();
-            code = StaticMethodTest.compileClass(sb, "org/apidesign/vm4brwsr/Numbers");
-            codeSeq = sb;
-        }
+        code = TestVM.compileClass("org/apidesign/vm4brwsr/Numbers");
     }
 
     private static void assertExec(
-        String msg, Class<?> clazz, String method, Object expRes, Object... args) throws Exception {
-
-        Object ret = null;
-        try {
-            ret = code.invokeFunction("bck2brwsr");
-            ret = code.invokeMethod(ret, "loadClass", clazz.getName());
-            ret = code.invokeMethod(ret, method, args);
-        } catch (ScriptException ex) {
-            fail("Execution failed in\n" + StaticMethodTest.dumpJS(codeSeq), ex);
-        } catch (NoSuchMethodException ex) {
-            fail("Cannot find method in\n" + StaticMethodTest.dumpJS(codeSeq), ex);
-        }
-        if (ret == null && expRes == null) {
-            return;
-        }
-        if (expRes.equals(ret)) {
+        String msg, Class<?> clazz, String method, Object expRes, Object... args) throws Exception
+    {
+        Object ret = code.execCode(msg, clazz, method, expRes, args);
+        if (ret == null) {
             return;
         }
         if (expRes instanceof Double && ret instanceof Double) {
             double expD = ((Double)expRes).doubleValue();
             double retD = ((Double)ret).doubleValue();
-            assertEquals(retD, expD, 0.000004, msg + " was " + ret + "\n" + StaticMethodTest.dumpJS(codeSeq));
+            assertEquals(retD, expD, 0.000004, msg + " "
+                    + code.toString());
             return;
         }
-        assertEquals(ret, expRes, msg + "was: " + ret + "\n" + StaticMethodTest.dumpJS(codeSeq));
+        assertEquals(ret, expRes, msg + " " + code.toString());
     }
     
 }

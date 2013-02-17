@@ -40,14 +40,54 @@
                <target>1.7</target>
             </configuration>
          </plugin>
+         <plugin>
+             <groupId>org.apache.maven.plugins</groupId>
+             <artifactId>maven-jar-plugin</artifactId>
+             <version>2.4</version>
+             <configuration>
+                 <archive>
+                     <manifest>
+                         <addClasspath>true</addClasspath>
+                         <classpathPrefix>lib/</classpathPrefix>
+                     </manifest>
+                 </archive>
+             </configuration>
+         </plugin>
+         <plugin>
+           <groupId>org.apache.maven.plugins</groupId>
+           <artifactId>maven-deploy-plugin</artifactId>
+           <version>2.7</version>
+           <configuration>
+             <skip>true</skip>
+           </configuration>
+         </plugin>
+         <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
+                    <execution>
+                        <id>distro-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>src/main/assembly/bck2brwsr.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>                
+            </plugin>      
       </plugins>
   </build>
 
   <dependencies>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
-      <artifactId>emul.mini</artifactId>
+      <artifactId>emul</artifactId>
       <version>0.3-SNAPSHOT</version>
+      <classifier>rt</classifier>
     </dependency>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
@@ -59,6 +99,14 @@
       <artifactId>testng</artifactId>
       <version>6.5.2</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apidesign.bck2brwsr</groupId>
+      <artifactId>vm4brwsr</artifactId>
+      <classifier>js</classifier>
+      <type>zip</type>
+      <version>0.3-SNAPSHOT</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 </project>

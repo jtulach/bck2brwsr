@@ -17,6 +17,7 @@
  */
 package org.apidesign.bck2brwsr.tck;
 
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.apidesign.bck2brwsr.vmtest.Compare;
@@ -44,6 +45,19 @@ public class CompareStringsTest {
     
     @Compare public boolean equalToNull() {
         return "Ahoj".equals(null);
+    }
+    
+    @Compare public int highByteLenght() {
+        byte[] arr= { 77,97,110,105,102,101,115,116,45,86,101,114,115,105,111,110 };
+        return new String(arr, 0).length();
+    }
+    
+    @Compare public String highByte() {
+        byte[] arr= { 77,97,110,105,102,101,115,116,45,86,101,114,115,105,111,110 };
+        StringBuilder sb = new StringBuilder();
+        sb.append("pref:");
+        sb.append(new String(arr, 0));
+        return sb.toString();
     }
     
     @Compare public static Object compareURLs() throws MalformedURLException {
@@ -119,6 +133,21 @@ public class CompareStringsTest {
     public String nullFieldInitialized() {
         NullField nf = new NullField();
         return ("" + nf.name).toString();
+    }
+    @Compare
+    public String toUTFString() throws UnsupportedEncodingException {
+        byte[] arr = {
+            (byte) -59, (byte) -67, (byte) 108, (byte) 117, (byte) -59, (byte) -91,
+            (byte) 111, (byte) 117, (byte) -60, (byte) -115, (byte) 107, (byte) -61,
+            (byte) -67, (byte) 32, (byte) 107, (byte) -59, (byte) -81, (byte) -59,
+            (byte) -120
+        };
+        return new String(arr, "utf-8");
+    }
+
+    @Compare
+    public int stringToBytesLenght() throws UnsupportedEncodingException {
+        return "\u017dlu\u0165ou\u010dk\u00fd k\u016f\u0148".getBytes("utf8").length;
     }
 
     @Factory

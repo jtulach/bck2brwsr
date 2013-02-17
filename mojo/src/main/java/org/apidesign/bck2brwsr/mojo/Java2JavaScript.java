@@ -38,8 +38,8 @@ import org.apidesign.vm4brwsr.Bck2Brwsr;
 
 /** Compiles classes into JavaScript. */
 @Mojo(name="j2js", defaultPhase=LifecyclePhase.PROCESS_CLASSES)
-public class Bck2BrswrMojo extends AbstractMojo {
-    public Bck2BrswrMojo() {
+public class Java2JavaScript extends AbstractMojo {
+    public Java2JavaScript() {
     }
     /** Root of the class files */
     @Parameter(defaultValue="${project.build.directory}/classes")
@@ -117,6 +117,6 @@ public class Bck2BrswrMojo extends AbstractMojo {
         for (Artifact a : deps) {
             arr.add(a.getFile().toURI().toURL());
         }
-        return new URLClassLoader(arr.toArray(new URL[0]), Bck2BrswrMojo.class.getClassLoader());
+        return new URLClassLoader(arr.toArray(new URL[0]), Java2JavaScript.class.getClassLoader());
     }
 }

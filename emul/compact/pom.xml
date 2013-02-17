@@ -10,7 +10,7 @@
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>emul</artifactId>
   <version>0.3-SNAPSHOT</version>
-  <name>Compact API Profile</name>
+  <name>Bck2Brwsr API Profile</name>
   <url>http://maven.apache.org</url>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -20,11 +20,17 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>emul.mini</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>vmtest</artifactId>
       <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.api</groupId>
+      <artifactId>org-openide-util-lookup</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -42,6 +48,25 @@
                  <target>1.7</target>
               </configuration>
           </plugin>
+         <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
+                    <execution>
+                        <id>rt</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>src/main/assembly/rt.xml</descriptor>
+                            </descriptors>
+                            <finalName>bck2brwsr-${project.version}</finalName>
+                        </configuration>
+                    </execution>
+                </executions>                
+            </plugin>      
       </plugins>
   </build>
 </project>

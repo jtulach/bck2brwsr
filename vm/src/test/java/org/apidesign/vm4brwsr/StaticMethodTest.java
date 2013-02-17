@@ -17,16 +17,6 @@
  */
 package org.apidesign.vm4brwsr;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Enumeration;
-import javax.script.Invocable;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 import static org.testng.Assert.*;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -76,6 +66,89 @@ public class StaticMethodTest {
             StaticMethod.class, "minus__DDJ", 
             Double.valueOf(2),
             3.0d, 1l
+        );
+    }
+    
+    @Test public void rintNegativeUp() throws Exception {
+        final double cnts = -453904.634;
+        assertExec(
+            "Should round up to end with 5",
+            Math.class, "rint__DD", 
+            -453905.0, cnts
+        );
+    }
+
+    @Test public void rintNegativeDown() throws Exception {
+        final double cnts = -453904.434;
+        assertExec(
+            "Should round up to end with 4",
+            Math.class, "rint__DD", 
+            -453904.0, cnts
+        );
+    }
+
+    @Test public void rintPositiveUp() throws Exception {
+        final double cnts = 453904.634;
+        assertExec(
+            "Should round up to end with 5",
+            Math.class, "rint__DD", 
+            453905.0, cnts
+        );
+    }
+    @Test public void rintPositiveDown() throws Exception {
+        final double cnts = 453904.434;
+        assertExec(
+            "Should round up to end with 4",
+            Math.class, "rint__DD", 
+            453904.0, cnts
+        );
+    }
+    @Test public void rintOneHalf() throws Exception {
+        final double cnts = 1.5;
+        assertExec(
+            "Should round up to end with 2",
+            Math.class, "rint__DD", 
+            2.0, cnts
+        );
+    }
+    @Test public void rintNegativeOneHalf() throws Exception {
+        final double cnts = -1.5;
+        assertExec(
+            "Should round up to end with 2",
+            Math.class, "rint__DD", 
+            -2.0, cnts
+        );
+    }
+    @Test public void rintTwoAndHalf() throws Exception {
+        final double cnts = 2.5;
+        assertExec(
+            "Should round up to end with 2",
+            Math.class, "rint__DD", 
+            2.0, cnts
+        );
+    }
+    @Test public void rintNegativeTwoOneHalf() throws Exception {
+        final double cnts = -2.5;
+        assertExec(
+            "Should round up to end with 2",
+            Math.class, "rint__DD", 
+            -2.0, cnts
+        );
+    }
+
+    @Test public void ieeeReminder1() throws Exception {
+        assertExec(
+            "Same result 1",
+            Math.class, "IEEEremainder__DDD", 
+            Math.IEEEremainder(10.0, 4.5), 10.0, 4.5
+        );
+    }
+
+    @Test public void ieeeReminder2() throws Exception {
+        assertExec(
+            "Same result 1",
+            Math.class, "IEEEremainder__DDD", 
+            Math.IEEEremainder(Integer.MAX_VALUE, -4.5), Integer.MAX_VALUE, -4.5
         );
     }
 
@@ -248,97 +321,18 @@ public class StaticMethodTest {
         );
     }
     
-    private static CharSequence codeSeq;
-    private static Invocable code;
+    private static TestVM code;
     
     @BeforeClass 
     public void compileTheCode() throws Exception {
         StringBuilder sb = new StringBuilder();
-        code = compileClass(sb, "org/apidesign/vm4brwsr/StaticMethod");
-        codeSeq = sb;
-    }
-    
-    
-    private static void assertExec(
-        String msg, Class clazz, String method, 
-        Object expRes, Object... args
-    ) throws Exception {
-        assertExec(code, codeSeq, msg, clazz, method, expRes, args);
-    }
-    static void assertExec(
-        Invocable toRun, CharSequence theCode,
-        String msg, Class clazz, String method, 
-        Object expRes, Object... args
-    ) throws Exception {
-        Object ret = null;
-        try {
-            ret = toRun.invokeFunction("bck2brwsr");
-            ret = toRun.invokeMethod(ret, "loadClass", clazz.getName());
-            ret = toRun.invokeMethod(ret, method, args);
-        } catch (ScriptException ex) {
-            fail("Execution failed in\n" + dumpJS(theCode), ex);
-        } catch (NoSuchMethodException ex) {
-            fail("Cannot find method in\n" + dumpJS(theCode), ex);
-        }
-        if (ret == null && expRes == null) {
-            return;
-        }
-        if (expRes != null && expRes.equals(ret)) {
-            return;
-        }
-        assertEquals(ret, expRes, msg + "was: " + ret + "\n" + dumpJS(theCode));
-        
+        code = TestVM.compileClass(sb, "org/apidesign/vm4brwsr/StaticMethod");
     }
 
-    static Invocable compileClass(StringBuilder sb, String... names) throws ScriptException, IOException {
-        return compileClass(sb, null, names);
-    }
-    static Invocable compileClass(
-        StringBuilder sb, ScriptEngine[] eng, String... names
-    ) throws ScriptException, IOException {
-        if (sb == null) {
-            sb = new StringBuilder();
-        }
-        Bck2Brwsr.generate(sb, new EmulationResources(), names);
-        ScriptEngineManager sem = new ScriptEngineManager();
-        ScriptEngine js = sem.getEngineByExtension("js");
-        if (eng != null) {
-            eng[0] = js;
-        }
-        try {
-            Object res = js.eval(sb.toString());
-            assertTrue(js instanceof Invocable, "It is invocable object: " + res);
-            return (Invocable)js;
-        } catch (Exception ex) {
-            if (sb.length() > 2000) {
-                sb = dumpJS(sb);
-            }
-            fail("Could not evaluate:\n" + sb, ex);
-            return null;
-        }
-    }
-    static StringBuilder dumpJS(CharSequence sb) throws IOException {
-        File f = File.createTempFile("execution", ".js");
-        FileWriter w = new FileWriter(f);
-        w.append(sb);
-        w.close();
-        return new StringBuilder(f.getPath());
-    }
-    private static class EmulationResources implements Bck2Brwsr.Resources {
-        @Override
-        public InputStream get(String name) throws IOException {
-            Enumeration<URL> en = StaticMethodTest.class.getClassLoader().getResources(name);
-            URL u = null;
-            while (en.hasMoreElements()) {
-                u = en.nextElement();
-            }
-            if (u == null) {
-                throw new IOException("Can't find " + name);
-            }
-            if (u.toExternalForm().contains("rt.jar!")) {
-                throw new IOException("No emulation for " + u);
-            }
-            return u.openStream();
-        }
+    private void assertExec(
+        String msg, Class<?> clazz, String method, 
+        Object ret, Object... args
+    ) throws Exception {
+        code.assertExec(msg, clazz, method, ret, args);
     }
 }

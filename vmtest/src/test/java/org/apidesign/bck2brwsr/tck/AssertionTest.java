@@ -28,8 +28,12 @@ import org.testng.annotations.Factory;
 public class AssertionTest {
 
     @Compare public Object checkAssert() throws ClassNotFoundException {
-        assert false : "Is assertion status on?";
-        return null;
+        try {
+            assert false : "Is assertion status on?";
+            return null;
+        } catch (AssertionError ex) {
+            return ex.getClass().getName();
+        }
     }
     
     @Factory

@@ -19,6 +19,8 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
@@ -27,8 +29,11 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@ClassesMarker(number = 10)
-@ClassesNamer(name = "my text")
+@ClassesMarker(number = 10, nicknames = { "Ten", "Deset" }, count = ClassesMarker.E.TWO, subs = {
+    @ClassesMarker.Anno(Integer.SIZE),
+    @ClassesMarker.Anno(Integer.MIN_VALUE)
+})
+@ClassesNamer(name = "my text", anno = @ClassesMarker.Anno(333))
 public class Classes {
     public static String nameOfIO() {
         return nameFor(IOException.class);
@@ -37,6 +42,8 @@ public class Classes {
     private static String nameFor(Class<?> c) {
         return c.getName();
     }
+    
+    private static final Class<?> PRELOAD = Runnable.class;
     
     public static boolean isInterface(String s) throws ClassNotFoundException {
         return Class.forName(s).isInterface();
@@ -55,7 +62,7 @@ public class Classes {
         return new IOException().getClass().getName().toString();
     }
     
-    @ClassesMarker(number = 1)
+    @ClassesMarker(number = 1, nicknames = { "One", "Jedna" } )
     public static String name() {
         return IOException.class.getName().toString();
     }
@@ -65,6 +72,11 @@ public class Classes {
     public static String canonicalName() {
         return IOException.class.getCanonicalName();
     }
+    
+    public static String objectName() throws NoSuchMethodException {
+        return IOException.class.getMethod("wait").getDeclaringClass().getName();
+    }
+    
     public static boolean newInstance() throws Exception {
         IOException ioe = IOException.class.newInstance();
         if (ioe instanceof IOException) {
@@ -85,7 +97,44 @@ public class Classes {
             return -2;
         }
         ClassesMarker cm = Classes.class.getAnnotation(ClassesMarker.class);
+        assert cm instanceof Object : "Is object " + cm;
+        assert cm instanceof Annotation : "Is annotation " + cm;
+        assert !((Object)cm instanceof Class) : "Is not Class " + cm;
         return cm == null ? -1 : cm.number();
+    }
+    public static String getMarkerNicknames() {
+        ClassesMarker cm = Classes.class.getAnnotation(ClassesMarker.class);
+        if (cm == null) {
+            return null;
+        }
+        
+        final Object[] arr = cm.nicknames();
+        assert arr instanceof Object[] : "Instance of Object array: " + arr;
+        assert arr instanceof String[] : "Instance of String array: " + arr;
+        assert !(arr instanceof Integer[]) : "Not instance of Integer array: " + arr;
+        
+        StringBuilder sb = new StringBuilder();
+        for (String s : cm.nicknames()) {
+            sb.append(s).append("\n");
+        }
+        return sb.toString().toString();
+    }
+    @Retention(RetentionPolicy.CLASS)
+    @interface Ann {
+    }
+    
+    public static String getRetention() throws Exception {
+        Retention r = Ann.class.getAnnotation(Retention.class);
+        assert r != null : "Annotation is present";
+        assert r.value() == RetentionPolicy.CLASS : "Policy value is OK: " + r.value();
+        return r.annotationType().getName();
+    }
+    public static String getMarkerE() {
+        ClassesMarker cm = Classes.class.getAnnotation(ClassesMarker.class);
+        if (cm == null) {
+            return null;
+        }
+        return cm.count().name();
     }
     public static String getNamer(boolean direct) {
         if (direct) {
@@ -98,6 +147,20 @@ public class Classes {
             }
         }
         return null;
+    }
+    public static int getInnerNamer() {
+        ClassesNamer cm = Classes.class.getAnnotation(ClassesNamer.class);
+        assert cm != null : "ClassesNamer is present";
+        return cm.anno().value();
+    }
+    public static int getInnerNamers() {
+        ClassesMarker cm = Classes.class.getAnnotation(ClassesMarker.class);
+        assert cm != null : "ClassesNamer is present";
+        int sum = 0;
+        for (ClassesMarker.Anno anno : cm.subs()) {
+            sum += anno.value();
+        }
+        return sum;
     }
     
     public static String intType() {
@@ -151,4 +214,20 @@ public class Classes {
         Method m = StaticMethod.class.getMethod("sum", int.class, int.class);
         return (int) m.invoke(null, a, b);
     }
+    
+    private abstract class Application {
+        public abstract int getID();
+    }
+
+    private class MyApplication extends Application {
+        @Override
+        public int getID() {
+            return 1;
+        }
+    }
+
+    public static boolean isClassAssignable() {
+        return Application.class.isAssignableFrom(MyApplication.class);
+    }
+    
 }

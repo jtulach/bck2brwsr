@@ -15,45 +15,43 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.launcher;
+package org.apidesign.vm4brwsr;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import java.io.IOException;
+import java.io.InputStream;
+import org.apidesign.bck2brwsr.emul.lang.ManifestInputStream;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public final class MethodInvocation {
-    final CountDownLatch wait = new CountDownLatch(1);
-    final String className;
-    final String methodName;
-    final String html;
-    private String result;
-    private Throwable exception;
+final class ParseMan extends ManifestInputStream {
+    private String cp;
+    private String mc;
 
-    MethodInvocation(String className, String methodName, String html) {
-        this.className = className;
-        this.methodName = methodName;
-        this.html = html;
+    public ParseMan(InputStream is) throws IOException {
+        super(is);
+        readAttributes(new byte[512]);
+    }
+
+    @Override
+    protected String putValue(String key, String value) {
+        if ("Class-Path".equals(key)) {
+            cp = value;
+        }
+        if ("Main-Class".equals(key)) {
+            mc = value;
+        }
+        return null;
     }
     
-    void await(long timeOut) throws InterruptedException {
-        wait.await(timeOut, TimeUnit.MILLISECONDS);
-    }
-    
-    void result(String r, Throwable e) {
-        this.result = r;
-        this.exception = e;
-        wait.countDown();
+    String getMainClass() {
+        return mc;
     }
 
     @Override
     public String toString() {
-        if (exception != null) {
-            return exception.toString();
-        }
-        return result;
+        return cp;
     }
     
 }

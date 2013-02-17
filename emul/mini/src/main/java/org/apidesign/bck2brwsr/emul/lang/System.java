@@ -17,6 +17,7 @@
  */
 package org.apidesign.bck2brwsr.emul.lang;
 
+import java.lang.reflect.Method;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
@@ -38,5 +39,27 @@ public class System {
         "    }\n" +
         "}"
     )
-    public static native void arraycopy(Object value, int srcBegin, Object dst, int dstBegin, int count);
+    public static void arraycopy(Object src, int srcBegin, Object dst, int dstBegin, int count) {
+        try {
+            Class<?> system = Class.forName("java.lang.System");
+            Method m = system.getMethod("arraycopy", Object.class, int.class, Object.class, int.class, int.class);
+            m.invoke(null, src, srcBegin, dst, dstBegin, count);
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
+
+    @JavaScriptBody(args = { "arr", "expectedSize" }, body = 
+        "while (expectedSize-- > arr.length) { arr.push(0); }; return arr;"
+    )
+    public static native byte[] expandArray(byte[] arr, int expectedSize);
+
+    @JavaScriptBody(args = {}, body = "return new Date().getTime();")
+    public static native long currentTimeMillis();
+    
+    public static long nanoTime() {
+        return 1000000L * currentTimeMillis();
+    }
+    @JavaScriptBody(args = { "obj" }, body="return vm.java_lang_Object(false).hashCode__I.call(obj);")
+    public static native int identityHashCode(Object obj);
 }
