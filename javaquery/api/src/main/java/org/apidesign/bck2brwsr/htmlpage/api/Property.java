@@ -31,4 +31,5 @@ import java.lang.annotation.Target;
 public @interface Property {
     String name();
     Class<?> type();
+    boolean array() default false;
 }

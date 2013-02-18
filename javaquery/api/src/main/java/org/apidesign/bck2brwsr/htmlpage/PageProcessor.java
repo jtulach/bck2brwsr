@@ -317,26 +317,34 @@ public final class PageProcessor extends AbstractProcessor {
     ) throws IOException {
         for (Property p : properties) {
             final String tn = typeName(p);
-            String[] gs = toGetSet(p.name(), tn);
+            String[] gs = toGetSet(p.name(), tn, p.array());
 
-            w.write("private " + tn + " prop_" + p.name() + ";\n");
-            w.write("public " + tn + " " + gs[0] + "() {\n");
-            w.write("  if (locked) throw new IllegalStateException();\n");
-            w.write("  return prop_" + p.name() + ";\n");
-            w.write("}\n");
-            w.write("public void " + gs[1] + "(" + tn + " v) {\n");
-            w.write("  if (locked) throw new IllegalStateException();\n");
-            w.write("  prop_" + p.name() + " = v;\n");
-            w.write("  if (ko != null) {\n");
-            w.write("    ko.valueHasMutated(\"" + p.name() + "\");\n");
-            final Collection<String> dependants = deps.get(p.name());
-            if (dependants != null) {
-                for (String depProp : dependants) {
-                    w.write("    ko.valueHasMutated(\"" + depProp + "\");\n");
+            if (p.array()) {
+                w.write("private java.util.List<" + tn + "> prop_" + p.name() + " = new java.util.ArrayList<" + tn + ">();\n");
+                w.write("public java.util.List<" + tn + "> " + gs[0] + "() {\n");
+                w.write("  if (locked) throw new IllegalStateException();\n");
+                w.write("  return prop_" + p.name() + ";\n");
+                w.write("}\n");
+            } else {
+                w.write("private " + tn + " prop_" + p.name() + ";\n");
+                w.write("public " + tn + " " + gs[0] + "() {\n");
+                w.write("  if (locked) throw new IllegalStateException();\n");
+                w.write("  return prop_" + p.name() + ";\n");
+                w.write("}\n");
+                w.write("public void " + gs[1] + "(" + tn + " v) {\n");
+                w.write("  if (locked) throw new IllegalStateException();\n");
+                w.write("  prop_" + p.name() + " = v;\n");
+                w.write("  if (ko != null) {\n");
+                w.write("    ko.valueHasMutated(\"" + p.name() + "\");\n");
+                final Collection<String> dependants = deps.get(p.name());
+                if (dependants != null) {
+                    for (String depProp : dependants) {
+                        w.write("    ko.valueHasMutated(\"" + depProp + "\");\n");
+                    }
                 }
+                w.write("  }\n");
+                w.write("}\n");
             }
-            w.write("  }\n");
-            w.write("}\n");
             
             props.add(p.name());
             props.add(gs[2]);
@@ -359,7 +367,7 @@ public final class PageProcessor extends AbstractProcessor {
             ExecutableElement ee = (ExecutableElement)e;
             final String tn = ee.getReturnType().toString();
             final String sn = ee.getSimpleName().toString();
-            String[] gs = toGetSet(sn, tn);
+            String[] gs = toGetSet(sn, tn, false);
             
             w.write("public " + tn + " " + gs[0] + "() {\n");
             w.write("  if (locked) throw new IllegalStateException();\n");
@@ -367,7 +375,7 @@ public final class PageProcessor extends AbstractProcessor {
             for (VariableElement pe : ee.getParameters()) {
                 final String dn = pe.getSimpleName().toString();
                 final String dt = pe.asType().toString();
-                String[] call = toGetSet(dn, dt);
+                String[] call = toGetSet(dn, dt, false);
                 w.write("  " + dt + " arg" + (++arg) + " = ");
                 w.write(call[0] + "();\n");
                 
@@ -402,7 +410,7 @@ public final class PageProcessor extends AbstractProcessor {
         return true;
     }
 
-    private static String[] toGetSet(String name, String type) {
+    private static String[] toGetSet(String name, String type, boolean array) {
         String n = Character.toUpperCase(name.charAt(0)) + name.substring(1);
         String bck2brwsrType = "L" + type.replace('.', '_') + "_2";
         if ("int".equals(type)) {
@@ -417,6 +425,14 @@ public final class PageProcessor extends AbstractProcessor {
             bck2brwsrType = "Z";
         }
         final String nu = n.replace('.', '_');
+        if (array) {
+            return new String[] { 
+                "get" + n,
+                null,
+                "get" + nu + "___3" + bck2brwsrType,
+                null
+            };
+        }
         return new String[]{
             pref + n, 
             "set" + n, 

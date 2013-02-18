@@ -32,7 +32,8 @@ import org.testng.annotations.Test;
  */
 @Page(xhtml = "Empty.html", className = "Model", properties = {
     @Property(name = "value", type = int.class),
-    @Property(name = "unrelated", type = long.class)
+    @Property(name = "unrelated", type = long.class),
+    @Property(name = "names", type = String.class, array = true)
 })
 public class ModelTest {
     private Model model;
@@ -51,6 +52,12 @@ public class ModelTest {
     @Test public void computedMethod() {
         model.setValue(4);
         assertEquals(16, model.getPowerValue());
+    }
+    
+    @Test public void arrayIsMutable() {
+        assertEquals(model.getNames().size(), 0, "Is empty");
+        model.getNames().add("Jarda");
+        assertEquals(model.getNames().size(), 1, "One element");
     }
     
     @Test public void derivedPropertiesAreNotified() {
