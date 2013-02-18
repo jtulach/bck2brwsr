@@ -35,7 +35,8 @@ import org.testng.annotations.Test;
 @Page(xhtml = "Empty.html", className = "Model", properties = {
     @Property(name = "value", type = int.class),
     @Property(name = "unrelated", type = long.class),
-    @Property(name = "names", type = String.class, array = true)
+    @Property(name = "names", type = String.class, array = true),
+    @Property(name = "values", type = int.class, array = true)
 })
 public class ModelTest {
     private Model model;
@@ -89,6 +90,17 @@ public class ModelTest {
         
         assertFalse(my.mutated.isEmpty(), "There was a change" + my.mutated);
         assertTrue(my.mutated.contains("names"), "Change in names property: " + my.mutated);
+    }
+    
+    @Test public void autoboxedArray() {
+        MockKnockout my = new MockKnockout();
+        MockKnockout.next = my;
+        
+        model.applyBindings();
+        
+        model.getValues().add(10);
+        
+        assertEquals(model.getValues().get(0), Integer.valueOf(10), "Really ten");
     }
     
     @Test public void derivedPropertiesAreNotified() {

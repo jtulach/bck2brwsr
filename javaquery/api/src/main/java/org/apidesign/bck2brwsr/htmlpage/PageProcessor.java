@@ -458,10 +458,35 @@ public final class PageProcessor extends AbstractProcessor {
     }
 
     private static String typeName(Property p) {
+        String ret;
         try {
-            return p.type().getName();
+            ret = p.type().getName();
         } catch (MirroredTypeException ex) {
-            return ex.getTypeMirror().toString();
+            ret = ex.getTypeMirror().toString();
         }
+        if (p.array()) {
+            if (ret.equals("byte")) {
+                return Byte.class.getName();
+            }
+            if (ret.equals("short")) {
+                return Short.class.getName();
+            }
+            if (ret.equals("char")) {
+                return Character.class.getName();
+            }
+            if (ret.equals("int")) {
+                return Integer.class.getName();
+            }
+            if (ret.equals("long")) {
+                return Long.class.getName();
+            }
+            if (ret.equals("float")) {
+                return Float.class.getName();
+            }
+            if (ret.equals("double")) {
+                return Double.class.getName();
+            }
+        }
+        return ret;
     }
 }
