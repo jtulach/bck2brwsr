@@ -18,7 +18,9 @@
 package org.apidesign.bck2brwsr.htmlpage;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
 import org.apidesign.bck2brwsr.htmlpage.api.Page;
 import org.apidesign.bck2brwsr.htmlpage.api.Property;
@@ -58,6 +60,35 @@ public class ModelTest {
         assertEquals(model.getNames().size(), 0, "Is empty");
         model.getNames().add("Jarda");
         assertEquals(model.getNames().size(), 1, "One element");
+    }
+    
+    @Test public void arrayChangesNotified() {
+        MockKnockout my = new MockKnockout();
+        MockKnockout.next = my;
+        
+        model.applyBindings();
+        
+        model.getNames().add("Hello");
+        
+        assertFalse(my.mutated.isEmpty(), "There was a change" + my.mutated);
+        assertTrue(my.mutated.contains("names"), "Change in names property: " + my.mutated);
+
+        my.mutated.clear();
+        
+        Iterator<String> it = model.getNames().iterator();
+        assertEquals(it.next(), "Hello");
+        it.remove();
+        
+        assertFalse(my.mutated.isEmpty(), "There was a change" + my.mutated);
+        assertTrue(my.mutated.contains("names"), "Change in names property: " + my.mutated);
+
+        my.mutated.clear();
+        
+        ListIterator<String> lit = model.getNames().listIterator();
+        lit.add("Jarda");
+        
+        assertFalse(my.mutated.isEmpty(), "There was a change" + my.mutated);
+        assertTrue(my.mutated.contains("names"), "Change in names property: " + my.mutated);
     }
     
     @Test public void derivedPropertiesAreNotified() {

@@ -97,6 +97,7 @@ public final class PageProcessor extends AbstractProcessor {
                 try {
                     w.append("package " + pkg + ";\n");
                     w.append("import org.apidesign.bck2brwsr.htmlpage.api.*;\n");
+                    w.append("import org.apidesign.bck2brwsr.htmlpage.KOList;\n");
                     w.append("final class ").append(className).append(" {\n");
                     w.append("  private boolean locked;\n");
                     if (!initializeOnClick(className, (TypeElement) e, w, pp)) {
@@ -320,9 +321,21 @@ public final class PageProcessor extends AbstractProcessor {
             String[] gs = toGetSet(p.name(), tn, p.array());
 
             if (p.array()) {
-                w.write("private java.util.List<" + tn + "> prop_" + p.name() + " = new java.util.ArrayList<" + tn + ">();\n");
+                w.write("private KOList<" + tn + "> prop_" + p.name() + " = new KOList<" + tn + ">(\""
+                    + p.name() + "\"");
+                final Collection<String> dependants = deps.get(p.name());
+                if (dependants != null) {
+                    for (String depProp : dependants) {
+                        w.write(", ");
+                        w.write('\"');
+                        w.write(depProp);
+                        w.write('\"');
+                    }
+                }
+                w.write(");\n");
                 w.write("public java.util.List<" + tn + "> " + gs[0] + "() {\n");
                 w.write("  if (locked) throw new IllegalStateException();\n");
+                w.write("  prop_" + p.name() + ".assign(ko);\n");
                 w.write("  return prop_" + p.name() + ";\n");
                 w.write("}\n");
             } else {
