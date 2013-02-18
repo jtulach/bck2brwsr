@@ -17,6 +17,7 @@
  */
 package org.apidesign.bck2brwsr.htmlpage;
 
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
 import org.apidesign.bck2brwsr.htmlpage.api.OnEvent;
 import org.apidesign.bck2brwsr.htmlpage.api.Page;
@@ -31,7 +32,8 @@ import org.testng.annotations.Factory;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @Page(xhtml="Knockout.xhtml", className="KnockoutModel", properties={
-    @Property(name="name", type=String.class)
+    @Property(name="name", type=String.class),
+    @Property(name="results", type=String.class, array = true)
 }) 
 public class KnockoutTest {
     
@@ -50,6 +52,25 @@ public class KnockoutTest {
         assert "Jardo".equals(m.getName()) : "Name property updated: " + m.getName();
     }
     
+    @HtmlFragment(
+        "<ul id='ul' data-bind='foreach: results'>\n"
+        + "  <li><b data-bind='text: $data'></b></li>\n"
+        + "</ul>\n"
+    )
+    @BrwsrTest public void displayContentOfArray() {
+        KnockoutModel m = new KnockoutModel();
+        m.getResults().add("Ahoj");
+        m.applyBindings();
+        
+        int cnt = countChildren("ul");
+        assert cnt == 1 : "One child, but was " + cnt;
+        
+        m.getResults().add("hello");
+
+        cnt = countChildren("ul");
+        assert cnt == 2 : "Two children now, but was " + cnt;
+    }
+    
     @ComputedProperty
     static String helloMessage(String name) {
         return "Hello " + name + "!";
@@ -59,4 +80,11 @@ public class KnockoutTest {
     public static Object[] create() {
         return VMTest.create(KnockoutTest.class);
     }
+    
+    @JavaScriptBody(args = { "id" }, body = 
+          "var e = window.document.getElementById(id);\n "
+        + "if (typeof e === 'undefined') return -2;\n "
+        + "return e.children.length;\n "
+    )
+    private static native int countChildren(String id);
 }

@@ -338,6 +338,9 @@ public final class PageProcessor extends AbstractProcessor {
                 w.write("  prop_" + p.name() + ".assign(ko);\n");
                 w.write("  return prop_" + p.name() + ";\n");
                 w.write("}\n");
+                w.write("private Object[] " + gs[0] + "ToArray() {\n");
+                w.write("  return " + gs[0] + "().toArray(new Object[0]);\n");
+                w.write("}\n");
             } else {
                 w.write("private " + tn + " prop_" + p.name() + ";\n");
                 w.write("public " + tn + " " + gs[0] + "() {\n");
@@ -442,7 +445,7 @@ public final class PageProcessor extends AbstractProcessor {
             return new String[] { 
                 "get" + n,
                 null,
-                "get" + nu + "___3" + bck2brwsrType,
+                "get" + nu + "ToArray___3Ljava_lang_Object_2",
                 null
             };
         }

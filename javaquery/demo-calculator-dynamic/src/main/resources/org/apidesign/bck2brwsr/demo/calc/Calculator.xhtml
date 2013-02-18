@@ -78,6 +78,12 @@
         </table>
         <div data-bind="text: displayPreview"></div>
         
+        <h3>Results</h3>
+        
+        <ul data-bind="foreach : results">
+            <li>Item: <b data-bind="text: $data"></b></li>
+        </ul>
+        
         <script src="bck2brwsr.js"></script>
         <script type="text/javascript">
             var vm = bck2brwsr('demo.calculator-0.3-SNAPSHOT.jar');

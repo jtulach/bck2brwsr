@@ -33,11 +33,13 @@ import org.apidesign.bck2brwsr.htmlpage.api.Property;
     @Property(name = "memory", type = double.class),
     @Property(name = "display", type = double.class),
     @Property(name = "operation", type = String.class),
-    @Property(name = "hover", type = boolean.class)
+    @Property(name = "hover", type = boolean.class),
+    @Property(name = "results", type = String.class, array = true)
 })
 public class Calc {
     static {
-        new Calculator().applyBindings();
+        Calculator m = new Calculator();
+        m.applyBindings();
     }
     
     @On(event = CLICK, id="clear")
@@ -65,11 +67,13 @@ public class Calc {
     
     @On(event = CLICK, id="result")
     static void computeTheValue(Calculator c) {
-        c.setDisplay(compute(
+        final double val = compute(
             c.getOperation(), 
             c.getMemory(), 
             c.getDisplay()
-        ));
+        );
+        c.getResults().add("another result " + val);
+        c.setDisplay(val);
         c.setMemory(0);
     }
     
