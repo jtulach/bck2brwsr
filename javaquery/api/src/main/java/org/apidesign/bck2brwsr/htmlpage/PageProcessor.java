@@ -397,7 +397,9 @@ public final class PageProcessor extends AbstractProcessor {
                 continue;
             }
             ExecutableElement ee = (ExecutableElement)e;
-            final String tn = ee.getReturnType().toString();
+            final TypeMirror rt = ee.getReturnType();
+            TypeMirror ert = processingEnv.getTypeUtils().erasure(rt);
+            final String tn = ert.toString();
             final String sn = ee.getSimpleName().toString();
             String[] gs = toGetSet(sn, tn, false);
             

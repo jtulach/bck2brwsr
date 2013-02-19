@@ -17,6 +17,7 @@
  */
 package org.apidesign.bck2brwsr.htmlpage;
 
+import java.util.List;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
 import org.apidesign.bck2brwsr.htmlpage.api.OnEvent;
@@ -71,9 +72,33 @@ public class KnockoutTest {
         assert cnt == 2 : "Two children now, but was " + cnt;
     }
     
+    @HtmlFragment(
+        "<ul id='ul' data-bind='foreach: cmpResults'>\n"
+        + "  <li><b data-bind='text: $data'></b></li>\n"
+        + "</ul>\n"
+    )
+    @BrwsrTest public void displayContentOfDerivedArray() {
+        KnockoutModel m = new KnockoutModel();
+        m.getResults().add("Ahoj");
+        m.applyBindings();
+        
+        int cnt = countChildren("ul");
+        assert cnt == 1 : "One child, but was " + cnt;
+        
+        m.getResults().add("hello");
+
+        cnt = countChildren("ul");
+        assert cnt == 2 : "Two children now, but was " + cnt;
+    }
+    
     @ComputedProperty
     static String helloMessage(String name) {
         return "Hello " + name + "!";
+    }
+    
+    @ComputedProperty
+    static List<String> cmpResults(List<String> results) {
+        return results;
     }
     
     @Factory
