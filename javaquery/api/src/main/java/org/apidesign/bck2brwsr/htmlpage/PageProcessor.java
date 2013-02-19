@@ -46,6 +46,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
@@ -398,10 +399,16 @@ public final class PageProcessor extends AbstractProcessor {
             }
             ExecutableElement ee = (ExecutableElement)e;
             final TypeMirror rt = ee.getReturnType();
-            TypeMirror ert = processingEnv.getTypeUtils().erasure(rt);
-            final String tn = ert.toString();
+            final Types tu = processingEnv.getTypeUtils();
+            TypeMirror ert = tu.erasure(rt);
+            String tn = ert.toString();
+            boolean array = false;
+            if (tn.equals("java.util.List")) {
+                array = true;
+            }
+            
             final String sn = ee.getSimpleName().toString();
-            String[] gs = toGetSet(sn, tn, false);
+            String[] gs = toGetSet(sn, tn, array);
             
             w.write("public " + tn + " " + gs[0] + "() {\n");
             w.write("  if (locked) throw new IllegalStateException();\n");
@@ -439,7 +446,12 @@ public final class PageProcessor extends AbstractProcessor {
             w.write("    locked = false;\n");
             w.write("  }\n");
             w.write("}\n");
-            
+
+            if (array) {
+                w.write("private Object[] " + gs[0] + "ToArray() {\n");
+                w.write("  return " + gs[0] + "().toArray(new Object[0]);\n");
+                w.write("}\n");
+            }
             props.add(e.getSimpleName().toString());
             props.add(gs[2]);
             props.add(null);
