@@ -27,4 +27,5 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ClassesNamer {
     String name();
+    ClassesMarker.Anno anno();
 }

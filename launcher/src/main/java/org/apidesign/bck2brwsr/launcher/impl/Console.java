@@ -125,7 +125,7 @@ public class Console {
                 loadText(u, this, arr);
                 
             } catch (Exception ex) {
-                log(ex.getMessage());
+                log(ex.getClass().getName() + ":" + ex.getMessage());
             }
         }
     }

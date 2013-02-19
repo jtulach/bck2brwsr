@@ -25,6 +25,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.Filer;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
@@ -73,7 +74,8 @@ public class GenerateZipProcessor extends AbstractProcessor {
     }
 
     private void generateJar(PackageElement pe, GenerateZip gz, Element e) throws IOException {
-        FileObject res = processingEnv.getFiler().createResource(
+        final Filer filer = processingEnv.getFiler();
+        FileObject res = filer.createResource(
             StandardLocation.CLASS_OUTPUT, 
             pe.getQualifiedName().toString(), 
             gz.name(), e
@@ -93,6 +95,7 @@ public class GenerateZipProcessor extends AbstractProcessor {
             jar.write(arr[i + 1].getBytes("UTF-8"));
             jar.closeEntry();
         }
+        jar.close();
     }
-    
+
 }

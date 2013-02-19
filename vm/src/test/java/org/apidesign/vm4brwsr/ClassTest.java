@@ -17,7 +17,6 @@
  */
 package org.apidesign.vm4brwsr;
 
-import javax.script.Invocable;
 import org.testng.annotations.Test;
 import static org.testng.Assert.*;
 import org.testng.annotations.BeforeClass;
@@ -87,11 +86,26 @@ public class ClassTest {
     @Test public void jsAnnotation() throws Exception {
         assertExec("Check class annotation", Classes.class, "getMarker__I", Double.valueOf(10));
     }
+    @Test public void jsArrayAnnotation() throws Exception {
+        assertExec("Check array annotation", Classes.class, "getMarkerNicknames__Ljava_lang_String_2", Classes.getMarkerNicknames());
+    }
+    @Test public void jsEnumAnnotation() throws Exception {
+        assertExec("Check enum annotation", Classes.class, "getMarkerE__Ljava_lang_String_2", Classes.getMarkerE());
+    }
+    @Test public void jsRetentionAnnotation() throws Exception {
+        assertExec("Check enum annotation", Classes.class, "getRetention__Ljava_lang_String_2", Classes.getRetention());
+    }
     @Test public void jsStringAnnotation() throws Exception {
         assertExec("Check class annotation", Classes.class, "getNamer__Ljava_lang_String_2Z", "my text", true);
     }
     @Test public void jsStringAnnotationFromArray() throws Exception {
         assertExec("Check class annotation", Classes.class, "getNamer__Ljava_lang_String_2Z", "my text", false);
+    }
+    @Test public void jsInnerAnnotation() throws Exception {
+        assertExec("Check inner annotation", Classes.class, "getInnerNamer__I", Double.valueOf(Classes.getInnerNamer()));
+    }
+    @Test public void jsInnerAnnotationFromArray() throws Exception {
+        assertExec("Check inner annotation", Classes.class, "getInnerNamers__I", Double.valueOf(Classes.getInnerNamers()));
     }
     @Test public void javaInvokeMethod() throws Exception {
         assertEquals(Classes.reflectiveMethodCall(true, "name"), "java.io.IOException", "Calls the name() method via reflection");
@@ -102,6 +116,14 @@ public class ClassTest {
             "java.io.IOException", true, "name"
         );
     }
+    
+    @Test public void jsMethodDeclaredInObject() throws Exception {
+        assertExec("Defined in Object", Classes.class, 
+            "objectName__Ljava_lang_String_2", 
+            "java.lang.Object"
+        );
+    }
+    
     @Test public void jsInvokeParamMethod() throws Exception {
         assertExec("sums two numbers via reflection", Classes.class, 
             "reflectiveSum__III", Double.valueOf(5), 2, 3
@@ -149,14 +171,12 @@ public class ClassTest {
             0.0, "java.lang.String"
         );
     }
-    /*
     @Test public void isInterface() throws Exception {
         assertExec("Calls Class.isInterface", Classes.class, 
             "isInterface__ZLjava_lang_String_2", 
             1.0, "java.lang.Runnable"
         );
     }
-    */
     @Test public void integerType() throws Exception {
         assertExec("Computes the type", Classes.class, 
             "intType__Ljava_lang_String_2", 
@@ -164,22 +184,17 @@ public class ClassTest {
         );
     }
     
-    private static CharSequence codeSeq;
-    private static Invocable code;
+    private static TestVM code;
     
     @BeforeClass
     public void compileTheCode() throws Exception {
-        if (codeSeq == null) {
-            StringBuilder sb = new StringBuilder();
-            code = StaticMethodTest.compileClass(sb, "org/apidesign/vm4brwsr/Classes");
-            codeSeq = sb;
-        }
+        code = TestVM.compileClass("org/apidesign/vm4brwsr/Classes");
     }
     
     private void assertExec(
         String msg, Class clazz, String method, Object expRes, Object... args
     ) throws Exception {
-        StaticMethodTest.assertExec(code, codeSeq, msg, clazz, method, expRes, args);
+        code.assertExec(msg, clazz, method, expRes, args);
     }
     @Test public void isClassAssignable() throws Exception {
         assertExec("isAssignable works on subclasses", Classes.class, 

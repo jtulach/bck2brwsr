@@ -47,6 +47,19 @@ public class CompareStringsTest {
         return "Ahoj".equals(null);
     }
     
+    @Compare public int highByteLenght() {
+        byte[] arr= { 77,97,110,105,102,101,115,116,45,86,101,114,115,105,111,110 };
+        return new String(arr, 0).length();
+    }
+    
+    @Compare public String highByte() {
+        byte[] arr= { 77,97,110,105,102,101,115,116,45,86,101,114,115,105,111,110 };
+        StringBuilder sb = new StringBuilder();
+        sb.append("pref:");
+        sb.append(new String(arr, 0));
+        return sb.toString();
+    }
+    
     @Compare public static Object compareURLs() throws MalformedURLException {
         return new URL("http://apidesign.org:8080/wiki/").toExternalForm().toString();
     }

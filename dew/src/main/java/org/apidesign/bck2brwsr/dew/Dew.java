@@ -96,7 +96,9 @@ final class Dew extends HttpHandler implements Bck2Brwsr.Resources {
         }
         if (r.equals("/result.html")) {
             response.setContentType("text/html");
-            response.getOutputBuffer().write(data.getHtml());
+            if (data != null) {
+                response.getOutputBuffer().write(data.getHtml());
+            }
             response.setStatus(HttpStatus.OK_200);
             return;
         }
