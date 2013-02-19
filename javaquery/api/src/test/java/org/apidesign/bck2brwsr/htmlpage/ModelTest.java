@@ -18,6 +18,7 @@
 package org.apidesign.bck2brwsr.htmlpage;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -34,6 +35,7 @@ import org.testng.annotations.Test;
  */
 @Page(xhtml = "Empty.html", className = "Model", properties = {
     @Property(name = "value", type = int.class),
+    @Property(name = "count", type = int.class),
     @Property(name = "unrelated", type = long.class),
     @Property(name = "names", type = String.class, array = true),
     @Property(name = "values", type = int.class, array = true)
@@ -102,6 +104,29 @@ public class ModelTest {
         
         assertEquals(model.getValues().get(0), Integer.valueOf(10), "Really ten");
     }
+
+    @Test public void derivedArrayProp() {
+        MockKnockout my = new MockKnockout();
+        MockKnockout.next = my;
+        
+        model.applyBindings();
+        
+        model.setCount(10);
+        
+        List<String> arr = model.getRepeat();
+        assertEquals(arr.size(), 10, "Ten items: " + arr);
+        
+        my.mutated.clear();
+        
+        model.setCount(5);
+        
+        arr = model.getRepeat();
+        assertEquals(arr.size(), 5, "Five items: " + arr);
+
+        assertEquals(my.mutated.size(), 2, "Two properties changed: " + my.mutated);
+        assertTrue(my.mutated.contains("repeat"), "Array is in there: " + my.mutated);
+        assertTrue(my.mutated.contains("count"), "Count is in there: " + my.mutated);
+    }
     
     @Test public void derivedPropertiesAreNotified() {
         MockKnockout my = new MockKnockout();
@@ -156,6 +181,11 @@ public class ModelTest {
     static String notAllowedWrite() {
         leakedModel.setUnrelated(11);
         return "Not allowed callback!";
+    }
+    
+    @ComputedProperty
+    static List<String> repeat(int count) {
+        return Collections.nCopies(count, "Hello");
     }
     
     static class MockKnockout extends Knockout {
