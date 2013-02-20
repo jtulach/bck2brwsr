@@ -501,29 +501,45 @@ public final class PageProcessor extends AbstractProcessor {
             ret = tm.toString();
         }
         if (p.array()) {
-            if (ret.equals("byte")) {
-                return Byte.class.getName();
-            }
-            if (ret.equals("short")) {
-                return Short.class.getName();
-            }
-            if (ret.equals("char")) {
-                return Character.class.getName();
-            }
-            if (ret.equals("int")) {
-                return Integer.class.getName();
-            }
-            if (ret.equals("long")) {
-                return Long.class.getName();
-            }
-            if (ret.equals("float")) {
-                return Float.class.getName();
-            }
-            if (ret.equals("double")) {
-                return Double.class.getName();
+            String bt = findBoxedType(ret);
+            if (bt != null) {
+                return bt;
             }
         }
+        if ("java.lang.String".equals(ret)) {
+            return ret;
+        }
+        String bt = findBoxedType(ret);
+        if (bt != null) {
+            return ret;
+        }
+        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Only primitive types supported in the mapping. Not " + ret);
         return ret;
+    }
+    
+    private static String findBoxedType(String ret) {
+        if (ret.equals("byte")) {
+            return Byte.class.getName();
+        }
+        if (ret.equals("short")) {
+            return Short.class.getName();
+        }
+        if (ret.equals("char")) {
+            return Character.class.getName();
+        }
+        if (ret.equals("int")) {
+            return Integer.class.getName();
+        }
+        if (ret.equals("long")) {
+            return Long.class.getName();
+        }
+        if (ret.equals("float")) {
+            return Float.class.getName();
+        }
+        if (ret.equals("double")) {
+            return Double.class.getName();
+        }
+        return null;
     }
 
     private boolean verifyPropName(Element e, String propName, Property[] existingProps) {
