@@ -17,39 +17,27 @@
  */
 package org.apidesign.bck2brwsr.htmlpage.api;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.List;
 
-/** Represents a property. Either in a generated model of an HTML
- * {@link Page} or in a class defined by {@link Model}.
+/** Defines a model class named {@link #className()} which contains
+ * defined {@link #properties()}. This class can have methods 
+ * annotated by {@link ComputedProperty} which define derived
+ * properties in the model class.
+ * <p>
+ * The {@link #className() generated class} will have methods
+ * to convert the object <code>toJSON</code> and <code>fromJSON</code>.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @Retention(RetentionPolicy.SOURCE)
-@Target({})
-public @interface Property {
-    /** Name of the property. Will be used to define proper getter and setter
-     * in the associated class.
-     * 
-     * @return valid java identifier
+@Target(ElementType.TYPE)
+public @interface Model {
+    /** Name of the model class */
+    String className();
+    /** List of properties in the model.
      */
-    String name();
-    
-    /** Type of the property. Can either be primitive type (like <code>int.class</code>,
-     * <code>double.class</code>, etc.), {@link String} or complex model
-     * class (defined by {@link Model} property).
-     * 
-     * @return the class of the property
-     */
-    Class<?> type();
-    
-    /** Is this property an array of the {@link #type()} or a single value?
-     * If the property is an array, only its getter (returning mutable {@link List} of
-     * the boxed {@link #type()}).
-     * 
-     * @return true, if this is supposed to be an array of values.
-     */
-    boolean array() default false;
+    Property[] properties();
 }

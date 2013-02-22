@@ -20,7 +20,9 @@ package org.apidesign.bck2brwsr.htmlpage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.io.Writer;
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -37,6 +39,7 @@ import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -51,6 +54,7 @@ import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
+import org.apidesign.bck2brwsr.htmlpage.api.Model;
 import org.apidesign.bck2brwsr.htmlpage.api.On;
 import org.apidesign.bck2brwsr.htmlpage.api.Page;
 import org.apidesign.bck2brwsr.htmlpage.api.Property;
@@ -63,6 +67,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=Processor.class)
 @SupportedAnnotationTypes({
+    "org.apidesign.bck2brwsr.htmlpage.api.Model",
     "org.apidesign.bck2brwsr.htmlpage.api.Page",
     "org.apidesign.bck2brwsr.htmlpage.api.On"
 })
@@ -70,85 +75,14 @@ public final class PageProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         boolean ok = true;
-        for (Element e : roundEnv.getElementsAnnotatedWith(Page.class)) {
-            Page p = e.getAnnotation(Page.class);
-            if (p == null) {
-                continue;
-            }
-            PackageElement pe = (PackageElement)e.getEnclosingElement();
-            String pkg = pe.getQualifiedName().toString();
-            
-            ProcessPage pp;
-            try {
-                InputStream is = openStream(pkg, p.xhtml());
-                pp = ProcessPage.readPage(is);
-                is.close();
-            } catch (IOException iOException) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Can't read " + p.xhtml(), e);
+        for (Element e : roundEnv.getElementsAnnotatedWith(Model.class)) {
+            if (!processModel(e)) {
                 ok = false;
-                pp = null;
             }
-            Writer w;
-            String className = p.className();
-            if (className.isEmpty()) {
-                int indx = p.xhtml().indexOf('.');
-                className = p.xhtml().substring(0, indx);
-            }
-            try {
-                FileObject java = processingEnv.getFiler().createSourceFile(pkg + '.' + className, e);
-                w = new OutputStreamWriter(java.openOutputStream());
-                try {
-                    w.append("package " + pkg + ";\n");
-                    w.append("import org.apidesign.bck2brwsr.htmlpage.api.*;\n");
-                    w.append("import org.apidesign.bck2brwsr.htmlpage.KOList;\n");
-                    w.append("final class ").append(className).append(" {\n");
-                    w.append("  private boolean locked;\n");
-                    if (!initializeOnClick(className, (TypeElement) e, w, pp)) {
-                        ok = false;
-                    } else {
-                        for (String id : pp.ids()) {
-                            String tag = pp.tagNameForId(id);
-                            String type = type(tag);
-                            w.append("  ").append("public final ").
-                                append(type).append(' ').append(cnstnt(id)).append(" = new ").
-                                append(type).append("(\"").append(id).append("\");\n");
-                        }
-                    }
-                    List<String> propsGetSet = new ArrayList<String>();
-                    Map<String,Collection<String>> propsDeps = new HashMap<String, Collection<String>>();
-                    if (!generateComputedProperties(w, p.properties(), e.getEnclosedElements(), propsGetSet, propsDeps)) {
-                        ok = false;
-                    }
-                    generateProperties(w, p.properties(), propsGetSet, propsDeps);
-                    w.append("  private org.apidesign.bck2brwsr.htmlpage.Knockout ko;\n");
-                    if (!propsGetSet.isEmpty()) {
-                        w.write("public " + className + " applyBindings() {\n");
-                        w.write("  ko = org.apidesign.bck2brwsr.htmlpage.Knockout.applyBindings(");
-                        w.write(className + ".class, this, ");
-                        w.write("new String[] {\n");
-                        String sep = "";
-                        for (String n : propsGetSet) {
-                            w.write(sep);
-                            if (n == null) {
-                                w.write("    null");
-                            } else {
-                                w.write("    \"" + n + "\"");
-                            }
-                            sep = ",\n";
-                        }
-                        w.write("\n  });\n  return this;\n}\n");
-                        
-                        w.write("public void triggerEvent(Element e, OnEvent ev) {\n");
-                        w.write("  org.apidesign.bck2brwsr.htmlpage.Knockout.triggerEvent(e.getId(), ev.getElementPropertyName());\n");
-                        w.write("}\n");
-                    }
-                    w.append("}\n");
-                } finally {
-                    w.close();
-                }
-            } catch (IOException ex) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Can't create " + className + ".java", e);
-                return false;
+        }
+        for (Element e : roundEnv.getElementsAnnotatedWith(Page.class)) {
+            if (!processPage(e)) {
+                ok = false;
             }
         }
         return ok;
@@ -162,6 +96,134 @@ public final class PageProcessor extends AbstractProcessor {
         } catch (IOException ex) {
             return processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, pkg, name).openInputStream();
         }
+    }
+    
+    private boolean processModel(Element e) {
+        boolean ok = true;
+        Model m = e.getAnnotation(Model.class);
+        if (m == null) {
+            return true;
+        }
+        String pkg = findPkgName(e);
+        Writer w;
+        String className = m.className();
+        try {
+            StringWriter body = new StringWriter();
+            List<String> propsGetSet = new ArrayList<>();
+            Map<String, Collection<String>> propsDeps = new HashMap<>();
+            if (!generateComputedProperties(body, m.properties(), e.getEnclosedElements(), propsGetSet, propsDeps)) {
+                ok = false;
+            }
+            if (!generateProperties(body, m.properties(), propsGetSet, propsDeps)) {
+                ok = false;
+            }
+            FileObject java = processingEnv.getFiler().createSourceFile(pkg + '.' + className, e);
+            w = new OutputStreamWriter(java.openOutputStream());
+            try {
+                w.append("package " + pkg + ";\n");
+                w.append("import org.apidesign.bck2brwsr.htmlpage.api.*;\n");
+                w.append("import org.apidesign.bck2brwsr.htmlpage.KOList;\n");
+                w.append("final class ").append(className).append(" {\n");
+                w.append("  private Object json;\n");
+                w.append("  private boolean locked;\n");
+                w.append("  private org.apidesign.bck2brwsr.htmlpage.Knockout ko;\n");
+                w.append(body.toString());
+                w.append("}\n");
+            } finally {
+                w.close();
+            }
+        } catch (IOException ex) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Can't create " + className + ".java", e);
+            return false;
+        }
+        return ok;
+    }
+    
+    private boolean processPage(Element e) {
+        boolean ok = true;
+        Page p = e.getAnnotation(Page.class);
+        if (p == null) {
+            return true;
+        }
+        String pkg = findPkgName(e);
+
+        ProcessPage pp;
+        try (InputStream is = openStream(pkg, p.xhtml())) {
+            pp = ProcessPage.readPage(is);
+            is.close();
+        } catch (IOException iOException) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Can't read " + p.xhtml(), e);
+            ok = false;
+            pp = null;
+        }
+        Writer w;
+        String className = p.className();
+        if (className.isEmpty()) {
+            int indx = p.xhtml().indexOf('.');
+            className = p.xhtml().substring(0, indx);
+        }
+        try {
+            StringWriter body = new StringWriter();
+            List<String> propsGetSet = new ArrayList<>();
+            Map<String, Collection<String>> propsDeps = new HashMap<>();
+            if (!generateComputedProperties(body, p.properties(), e.getEnclosedElements(), propsGetSet, propsDeps)) {
+                ok = false;
+            }
+            if (!generateProperties(body, p.properties(), propsGetSet, propsDeps)) {
+                ok = false;
+            }
+            
+            FileObject java = processingEnv.getFiler().createSourceFile(pkg + '.' + className, e);
+            w = new OutputStreamWriter(java.openOutputStream());
+            try {
+                w.append("package " + pkg + ";\n");
+                w.append("import org.apidesign.bck2brwsr.htmlpage.api.*;\n");
+                w.append("import org.apidesign.bck2brwsr.htmlpage.KOList;\n");
+                w.append("final class ").append(className).append(" {\n");
+                w.append("  private boolean locked;\n");
+                if (!initializeOnClick(className, (TypeElement) e, w, pp)) {
+                    ok = false;
+                } else {
+                    for (String id : pp.ids()) {
+                        String tag = pp.tagNameForId(id);
+                        String type = type(tag);
+                        w.append("  ").append("public final ").
+                            append(type).append(' ').append(cnstnt(id)).append(" = new ").
+                            append(type).append("(\"").append(id).append("\");\n");
+                    }
+                }
+                w.append("  private org.apidesign.bck2brwsr.htmlpage.Knockout ko;\n");
+                w.append(body.toString());
+                if (!propsGetSet.isEmpty()) {
+                    w.write("public " + className + " applyBindings() {\n");
+                    w.write("  ko = org.apidesign.bck2brwsr.htmlpage.Knockout.applyBindings(");
+                    w.write(className + ".class, this, ");
+                    w.write("new String[] {\n");
+                    String sep = "";
+                    for (String n : propsGetSet) {
+                        w.write(sep);
+                        if (n == null) {
+                            w.write("    null");
+                        } else {
+                            w.write("    \"" + n + "\"");
+                        }
+                        sep = ",\n";
+                    }
+                    w.write("\n  });\n  return this;\n}\n");
+
+                    w.write("public void triggerEvent(Element e, OnEvent ev) {\n");
+                    w.write("  org.apidesign.bck2brwsr.htmlpage.Knockout.triggerEvent(e.getId(), ev.getElementPropertyName());\n");
+                    w.write("}\n");
+                }
+                w.append("}\n");
+            } finally {
+                w.close();
+            }
+        } catch (IOException ex) {
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Can't create " + className + ".java", e);
+            return false;
+        }
+        return ok;
     }
 
     private static String type(String tag) {
@@ -295,8 +357,7 @@ public final class PageProcessor extends AbstractProcessor {
         
         Element cls = findClass(element);
         Page p = cls.getAnnotation(Page.class);
-        PackageElement pe = (PackageElement) cls.getEnclosingElement();
-        String pkg = pe.getQualifiedName().toString();
+        String pkg = findPkgName(cls);
         ProcessPage pp;
         try {
             InputStream is = openStream(pkg, p.xhtml());
@@ -306,7 +367,7 @@ public final class PageProcessor extends AbstractProcessor {
             return Collections.emptyList();
         }
         
-        List<Completion> cc = new ArrayList<Completion>();
+        List<Completion> cc = new ArrayList<>();
         userText = userText.substring(1);
         for (String id : pp.ids()) {
             if (id.startsWith(userText)) {
@@ -327,12 +388,14 @@ public final class PageProcessor extends AbstractProcessor {
         return e.getEnclosingElement();
     }
 
-    private void generateProperties(
-        Writer w, Property[] properties, Collection<String> props,
-        Map<String,Collection<String>> deps
+    private boolean generateProperties(
+        Writer w, Property[] properties,
+        Collection<String> props, Map<String,Collection<String>> deps
     ) throws IOException {
+        boolean ok = true;
         for (Property p : properties) {
-            final String tn = typeName(p);
+            final String tn;
+            tn = typeName(p);
             String[] gs = toGetSet(p.name(), tn, p.array());
 
             if (p.array()) {
@@ -382,6 +445,7 @@ public final class PageProcessor extends AbstractProcessor {
             props.add(gs[3]);
             props.add(gs[0]);
         }
+        return ok;
     }
 
     private boolean generateComputedProperties(
@@ -427,7 +491,7 @@ public final class PageProcessor extends AbstractProcessor {
                 
                 Collection<String> depends = deps.get(dn);
                 if (depends == null) {
-                    depends = new LinkedHashSet<String>();
+                    depends = new LinkedHashSet<>();
                     deps.put(dn, depends);
                 }
                 depends.add(sn);
@@ -494,11 +558,19 @@ public final class PageProcessor extends AbstractProcessor {
 
     private String typeName(Property p) {
         String ret;
+        boolean isModel = false;
         try {
             ret = p.type().getName();
         } catch (MirroredTypeException ex) {
             TypeMirror tm = processingEnv.getTypeUtils().erasure(ex.getTypeMirror());
-            ret = tm.toString();
+            final Element e = processingEnv.getTypeUtils().asElement(tm);
+            final Model m = e == null ? null : e.getAnnotation(Model.class);
+            if (m != null) {
+                ret = findPkgName(e) + '.' + m.className();
+                isModel = true;
+            } else {
+                ret = tm.toString();
+            }
         }
         if (p.array()) {
             String bt = findBoxedType(ret);
@@ -506,14 +578,12 @@ public final class PageProcessor extends AbstractProcessor {
                 return bt;
             }
         }
-        if ("java.lang.String".equals(ret)) {
-            return ret;
+        if (!isModel && !"java.lang.String".equals(ret)) {
+            String bt = findBoxedType(ret);
+            if (bt == null) {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Only primitive types supported in the mapping. Not " + ret);
+            }
         }
-        String bt = findBoxedType(ret);
-        if (bt != null) {
-            return ret;
-        }
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Only primitive types supported in the mapping. Not " + ret);
         return ret;
     }
     
@@ -560,5 +630,14 @@ public final class PageProcessor extends AbstractProcessor {
             , e
         );
         return false;
+    }
+
+    private static String findPkgName(Element e) {
+        for (;;) {
+            if (e.getKind() == ElementKind.PACKAGE) {
+                return ((PackageElement)e).getQualifiedName().toString();
+            }
+            e = e.getEnclosingElement();
+        }
     }
 }

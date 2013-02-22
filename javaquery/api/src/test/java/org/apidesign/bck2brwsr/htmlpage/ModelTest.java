@@ -33,20 +33,21 @@ import org.testng.annotations.Test;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@Page(xhtml = "Empty.html", className = "Model", properties = {
+@Page(xhtml = "Empty.html", className = "Modelik", properties = {
     @Property(name = "value", type = int.class),
     @Property(name = "count", type = int.class),
     @Property(name = "unrelated", type = long.class),
     @Property(name = "names", type = String.class, array = true),
-    @Property(name = "values", type = int.class, array = true)
+    @Property(name = "values", type = int.class, array = true),
+    @Property(name = "people", type = PersonImpl.class, array = true)
 })
 public class ModelTest {
-    private Model model;
-    private static Model leakedModel;
+    private Modelik model;
+    private static Modelik leakedModel;
     
     @BeforeMethod
     public void createModel() {
-        model = new Model();
+        model = new Modelik();
     }
     
     @Test public void classGeneratedWithSetterGetter() {
@@ -189,11 +190,21 @@ public class ModelTest {
     }
     
     static class MockKnockout extends Knockout {
-        List<String> mutated = new ArrayList<String>();
+        List<String> mutated = new ArrayList<>();
         
         @Override
         public void valueHasMutated(String prop) {
             mutated.add(prop);
+        }
+    }
+    
+    public @Test void hasPersonPropertyAndComputedFullName() {
+        List<Person> arr = model.getPeople();
+        assertEquals(arr.size(), 0, "By default empty");
+        Person p = null;
+        if (p != null) {
+            String fullNameGenerated = p.getFullName();
+            assertNotNull(fullNameGenerated);
         }
     }
 }
