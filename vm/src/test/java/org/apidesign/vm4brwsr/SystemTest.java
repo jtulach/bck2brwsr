@@ -32,7 +32,7 @@ public class SystemTest {
         long now = System.currentTimeMillis();
         
         Object js = code.execCode("Get js time", 
-            org.apidesign.bck2brwsr.emul.lang.System.class, "currentTimeMillis__J",
+            org.apidesign.bck2brwsr.emul.lang.System.class, "currentTimeMillisDouble__D",
             null
         );
         
