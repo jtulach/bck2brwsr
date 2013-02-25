@@ -24,6 +24,7 @@ import java.util.Set;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Completion;
 import javax.annotation.processing.Completions;
+import javax.annotation.processing.Messager;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -32,6 +33,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.tools.Diagnostic;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.openide.util.lookup.ServiceProvider;
@@ -51,6 +53,7 @@ public final class JavaScriptProcesor extends AbstractProcessor {
     
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        final Messager msg = processingEnv.getMessager();
         for (Element e : roundEnv.getElementsAnnotatedWith(JavaScriptBody.class)) {
             if (e.getKind() != ElementKind.METHOD && e.getKind() != ElementKind.CONSTRUCTOR) {
                 continue;
@@ -64,7 +67,10 @@ public final class JavaScriptProcesor extends AbstractProcessor {
             }
             String[] arr = jsb.args();
             if (params.size() != arr.length) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Number of args arguments does not match real arguments!", e);
+                msg.printMessage(Diagnostic.Kind.ERROR, "Number of args arguments does not match real arguments!", e);
+            }
+            if (ee.getReturnType().getKind() == TypeKind.LONG) {
+                msg.printMessage(Diagnostic.Kind.WARNING, "Don't return long. Return double and convert it to long in Java code.", e);
             }
         }
         return true;
