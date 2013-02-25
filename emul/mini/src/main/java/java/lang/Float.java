@@ -819,11 +819,15 @@ public final class Float extends Number implements Comparable<Float> {
      */
     @JavaScriptBody(args = "bits",
         body = 
-          "if (bits === 0x7f800000) return Number.POSITIVE_INFINITY;\n"
-        + "if (bits === 0xff800000) return Number.NEGATIVE_INFINITY;\n"
-        + "if (bits >= 0x7f800001 && bits <= 0xffffffff) return Number.NaN;\n"
-        + "var s = ((bits >> 31) == 0) ? 1 : -1;\n"
+          "var s = ((bits >> 31) == 0) ? 1 : -1;\n"
         + "var e = ((bits >> 23) & 0xff);\n"
+        + "if (e === 0xff) {\n"
+        + "    if ((bits & 0x7fffff) === 0) {\n"
+        + "        return (s > 0) ? Number.POSITIVE_INFINITY"
+                              + " : Number.NEGATIVE_INFINITY;\n"
+        + "    }\n"
+        + "    return Number.NaN;\n"
+        + "}\n"
         + "var m = (e == 0) ?\n"
         + "  (bits & 0x7fffff) << 1 :\n"
         + "  (bits & 0x7fffff) | 0x800000;\n"

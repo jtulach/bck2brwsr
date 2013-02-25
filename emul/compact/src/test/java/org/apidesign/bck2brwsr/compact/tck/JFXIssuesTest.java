@@ -39,7 +39,15 @@ public class JFXIssuesTest {
     @Compare public boolean isClassAssignable() {
         return Application.class.isAssignableFrom(MyApplication.class);
     }
-    
+
+    @Compare public boolean isNaN() {
+        return Double.isNaN(Double.NaN);
+    }
+
+    @Compare public boolean isInfinite() {
+        return Float.isInfinite(Float.NEGATIVE_INFINITY);
+    }
+
     @Factory public static Object[] create() {
         return VMTest.create(JFXIssuesTest.class);
     }

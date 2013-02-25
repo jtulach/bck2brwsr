@@ -94,7 +94,33 @@ public class IntegerArithmeticTest {
     @Compare public int divisionReminder() {
         return mod(1, 2);
     }
-    
+
+    @Compare public int negativeDivision() {
+        return div(-7, 3);
+    }
+
+    @Compare public int negativeDivisionReminder() {
+        return mod(-7, 3);
+    }
+
+    @Compare public boolean divByZeroThrowsArithmeticException() {
+        try {
+            div(1, 0);
+            return false;
+        } catch (final ArithmeticException e) {
+            return true;
+        }
+    }
+
+    @Compare public boolean modByZeroThrowsArithmeticException() {
+        try {
+            mod(1, 0);
+            return false;
+        } catch (final ArithmeticException e) {
+            return true;
+        }
+    }
+
     @Compare public int negate() {
         return neg(123456);
     }
