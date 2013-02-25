@@ -55,8 +55,12 @@ public class System {
     public static native byte[] expandArray(byte[] arr, int expectedSize);
 
     @JavaScriptBody(args = {}, body = "return new Date().getTime();")
-    public static native long currentTimeMillis();
-    
+    private static native double currentTimeMillisDouble();
+
+    public static long currentTimeMillis() {
+        return (long) currentTimeMillisDouble();
+    }
+
     public static long nanoTime() {
         return 1000000L * currentTimeMillis();
     }

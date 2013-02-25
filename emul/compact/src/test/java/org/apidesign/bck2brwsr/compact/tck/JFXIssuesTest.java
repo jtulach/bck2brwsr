@@ -48,6 +48,13 @@ public class JFXIssuesTest {
         return Float.isInfinite(Float.NEGATIVE_INFINITY);
     }
 
+    @Compare public boolean areTimesEqual() {
+        long l1 = System.currentTimeMillis();
+        long l2 = l1 + 0;
+
+        return l1 == l2;
+    }
+
     @Factory public static Object[] create() {
         return VMTest.create(JFXIssuesTest.class);
     }
