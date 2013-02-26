@@ -54,7 +54,30 @@ public class JFXIssuesTest {
 
         return l1 == l2;
     }
+    
+    @Compare public boolean roundOnDouble() {
+        long l1 = Math.round(System.currentTimeMillis() / 1.1);
+        long l2 = l1 + 0;
+        
+        return l1 == l2;
+    }
 
+    private static long val = 1238078409318L;
+    
+    @Compare public int valueConvertedToString() {
+        return (int) val++;
+    }
+    
+    @Compare public boolean roundOnFloat() {
+        final float f = System.currentTimeMillis() / 1.1f;
+        int l1 = Math.round(f);
+        int l2 = l1 + 0;
+        
+        assert l1 == l2 : "Round " + l1 + " == " + l2;
+        
+        return l1 == l2;
+    }
+    
     @Factory public static Object[] create() {
         return VMTest.create(JFXIssuesTest.class);
     }

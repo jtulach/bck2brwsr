@@ -643,9 +643,8 @@ public final class Math {
      * @see     java.lang.Integer#MAX_VALUE
      * @see     java.lang.Integer#MIN_VALUE
      */
-    @JavaScriptBody(args="a", body="return Math.round(a);")
     public static int round(float a) {
-        throw new UnsupportedOperationException();
+        return (int)roundDbl(a);
     }
 
     /**
@@ -668,10 +667,12 @@ public final class Math {
      * @see     java.lang.Long#MAX_VALUE
      * @see     java.lang.Long#MIN_VALUE
      */
-    @JavaScriptBody(args="a", body="return Math.round(a);")
     public static long round(double a) {
-        throw new UnsupportedOperationException();
+        return (long)roundDbl(a);
     }
+    
+    @JavaScriptBody(args="a", body="return Math.round(a);")
+    private static native double roundDbl(double d);
 
 //    private static Random randomNumberGenerator;
 //

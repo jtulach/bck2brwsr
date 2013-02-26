@@ -691,7 +691,7 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "var @2 = @1;", smapper.popD(), smapper.pushF());
                     break;
                 case opc_f2i:
-                    emit(out, "var @2 = Math.floor(@1);",
+                    emit(out, "var @2 = Math.floor(@1).toInt32();",
                          smapper.popF(), smapper.pushI());
                     break;
                 case opc_f2l:
@@ -699,7 +699,7 @@ abstract class ByteCodeToJavaScript {
                          smapper.popF(), smapper.pushL());
                     break;
                 case opc_d2i:
-                    emit(out, "var @2 = Math.floor(@1);",
+                    emit(out, "var @2 = Math.floor(@1).toInt32();",
                          smapper.popD(), smapper.pushI());
                     break;
                 case opc_d2l:
