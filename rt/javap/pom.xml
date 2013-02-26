@@ -3,14 +3,14 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.apidesign</groupId>
-    <artifactId>bck2brwsr</artifactId>
+    <groupId>org.apidesign.bck2brwsr</groupId>
+    <artifactId>rt</artifactId>
     <version>0.3-SNAPSHOT</version>
   </parent>
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>javap</artifactId>
   <version>0.3-SNAPSHOT</version>
-  <name>javap</name>
+  <name>ByteCode Parser</name>
   <url>http://maven.apache.org</url>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

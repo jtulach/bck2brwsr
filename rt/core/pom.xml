@@ -3,16 +3,15 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.apidesign</groupId>
-    <artifactId>bck2brwsr</artifactId>
+    <groupId>org.apidesign.bck2brwsr</groupId>
+    <artifactId>rt</artifactId>
     <version>0.3-SNAPSHOT</version>
   </parent>
   <groupId>org.apidesign.bck2brwsr</groupId>
-  <artifactId>vmtest</artifactId>
+  <artifactId>core</artifactId>
   <version>0.3-SNAPSHOT</version>
-  
-  <name>VM Testing APIs</name>
-  <url>http://bck2brwsr.apidesign.org</url>
+  <name>Bck2Brwsr Native Annotations</name>
+  <url>http://maven.apache.org</url>
     <build>
         <plugins>
             <plugin>
@@ -31,32 +30,10 @@
   </properties>
   <dependencies>
     <dependency>
-      <groupId>org.testng</groupId>
-      <artifactId>testng</artifactId>
-      <scope>compile</scope>
-      <exclusions>
-        <exclusion>
-          <artifactId>junit</artifactId>
-          <groupId>junit</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>vm4brwsr</artifactId>
-      <version>${project.version}</version>
-      <type>jar</type>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>emul.mini</artifactId>
-      <version>${project.version}</version>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>launcher</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.netbeans.api</groupId>
@@ -64,4 +41,6 @@
       <scope>provided</scope>
     </dependency>
   </dependencies>
+    <description>Contains esential annotations for associating JavaScript code with
+methods and classes.</description>
 </project>

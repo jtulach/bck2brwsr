@@ -12,17 +12,11 @@
     <version>3</version>
   </parent>  
   <modules>
-    <module>vm</module>
-    <module>emul</module>
-    <module>core</module>
     <module>dew</module>
-    <module>mojo</module>
     <module>javaquery</module>
-    <module>javap</module>
     <module>benchmarks</module>
-    <module>launcher</module>
-    <module>vmtest</module>
     <module>ide</module>
+    <module>rt</module>
   </modules>
   <licenses>
       <license>
@@ -81,13 +75,13 @@
                   <header>COPYING</header>
                   <strictCheck>true</strictCheck>
                   <excludes>
-                       <exclude>emul/*/src/main/**</exclude>
-                       <exclude>javap/**</exclude>
                        <exclude>*</exclude>
                        <exclude>.*/**</exclude>
-                       <exclude>mojo/src/main/resources/archetype-resources/**</exclude>
+                       <exclude>rt/emul/*/src/main/**</exclude>
+                       <exclude>rt/javap/**</exclude>
+                       <exclude>rt/mojo/src/main/resources/archetype-resources/**</exclude>
+                       <exclude>rt/vmtest/src/test/resources/**</exclude>
                        <exclude>dew/src/main/resources/org/apidesign/bck2brwsr/dew/**</exclude>
-                       <exclude>vmtest/src/test/resources/**</exclude>
                        <exclude>javaquery/api/src/main/resources/org/apidesign/bck2brwsr/htmlpage/knockout*.js</exclude>
                   </excludes>
               </configuration>

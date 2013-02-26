@@ -3,14 +3,14 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.apidesign</groupId>
-    <artifactId>bck2brwsr</artifactId>
+    <groupId>org.apidesign.bck2brwsr</groupId>
+    <artifactId>rt</artifactId>
     <version>0.3-SNAPSHOT</version>
   </parent>
   <groupId>org.apidesign.bck2brwsr</groupId>
-  <artifactId>core</artifactId>
+  <artifactId>launcher</artifactId>
   <version>0.3-SNAPSHOT</version>
-  <name>Core JS Annotations</name>
+  <name>Bck2Brwsr Launcher</name>
   <url>http://maven.apache.org</url>
     <build>
         <plugins>
@@ -21,6 +21,14 @@
                 <configuration>
                     <source>1.7</source>
                     <target>1.7</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.8.1</version>
+                <configuration>
+                    <excludePackageNames>org.apidesign.bck2brwsr.launcher.impl</excludePackageNames>
                 </configuration>
             </plugin>
         </plugins>
@@ -36,11 +44,14 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.netbeans.api</groupId>
-      <artifactId>org-openide-util-lookup</artifactId>
-      <scope>provided</scope>
+      <groupId>org.glassfish.grizzly</groupId>
+      <artifactId>grizzly-http-server</artifactId>
+      <version>2.2.19</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>vm4brwsr</artifactId>
+      <version>${project.version}</version>
     </dependency>
   </dependencies>
-    <description>Contains esential annotations for associating JavaScript code with
-methods and classes.</description>
 </project>
