@@ -51,7 +51,7 @@ final class TestVM {
             ret = code.invokeMethod(bck2brwsr, "loadClass", clazz.getName());
             ret = code.invokeMethod(ret, method, args);
         } catch (ScriptException ex) {
-            fail("Execution failed in " + dumpJS(codeSeq), ex);
+            fail("Execution failed in " + dumpJS(codeSeq) + ": " + ex.getMessage(), ex);
         } catch (NoSuchMethodException ex) {
             fail("Cannot find method in " + dumpJS(codeSeq), ex);
         }
