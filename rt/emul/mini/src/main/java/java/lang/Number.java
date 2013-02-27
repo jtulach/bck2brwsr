@@ -26,6 +26,9 @@
 package java.lang;
 
 import org.apidesign.bck2brwsr.core.ExtraJavaScript;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+import org.apidesign.bck2brwsr.core.JavaScriptOnly;
+import org.apidesign.bck2brwsr.core.JavaScriptPrototype;
 
 /**
  * The abstract class <code>Number</code> is the superclass of classes
@@ -52,6 +55,7 @@ import org.apidesign.bck2brwsr.core.ExtraJavaScript;
     resource="/org/apidesign/vm4brwsr/emul/lang/java_lang_Number.js",
     processByteCode=true
 )
+@JavaScriptPrototype(container = "Number.prototype", prototype = "new Number")
 public abstract class Number implements java.io.Serializable {
     /**
      * Returns the value of the specified number as an <code>int</code>.
@@ -60,6 +64,7 @@ public abstract class Number implements java.io.Serializable {
      * @return  the numeric value represented by this object after conversion
      *          to type <code>int</code>.
      */
+    @JavaScriptBody(args = {}, body = "return this | 0;")
     public abstract int intValue();
 
     /**
@@ -69,6 +74,7 @@ public abstract class Number implements java.io.Serializable {
      * @return  the numeric value represented by this object after conversion
      *          to type <code>long</code>.
      */
+    @JavaScriptBody(args = {}, body = "return this.toLong();")
     public abstract long longValue();
 
     /**
@@ -78,6 +84,7 @@ public abstract class Number implements java.io.Serializable {
      * @return  the numeric value represented by this object after conversion
      *          to type <code>float</code>.
      */
+    @JavaScriptBody(args = {}, body = "return this;")
     public abstract float floatValue();
 
     /**
@@ -87,6 +94,7 @@ public abstract class Number implements java.io.Serializable {
      * @return  the numeric value represented by this object after conversion
      *          to type <code>double</code>.
      */
+    @JavaScriptBody(args = {}, body = "return this;")
     public abstract double doubleValue();
 
     /**
@@ -115,4 +123,15 @@ public abstract class Number implements java.io.Serializable {
 
     /** use serialVersionUID from JDK 1.0.2 for interoperability */
     private static final long serialVersionUID = -8742448824652078965L;
+    
+    static {
+        // as last step of initialization, initialize valueOf method
+        initValueOf();
+    }
+    @JavaScriptBody(args = {  }, body = 
+        "var p = vm.java_lang_Number(false);\n" +
+        "p.valueOf = function() { return this.doubleValue__D(); };\n" +
+        "p.toString = function() { return this.toString__Ljava_lang_String_2(); };"
+    )
+    private native static void initValueOf();
 }

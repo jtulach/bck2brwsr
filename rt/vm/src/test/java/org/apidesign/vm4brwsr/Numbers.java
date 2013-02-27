@@ -20,6 +20,7 @@ package org.apidesign.vm4brwsr;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
  *
@@ -67,4 +68,23 @@ public class Numbers {
     static String floatToString() {
         return new Float(7.0).toString().toString();
     }
+    
+    static double seven(int todo) {
+        switch (todo) {
+            case 0: return sevenNew().doubleValue();
+            case 1: return sevenNew().intValue();
+            case 2: return sevenNew().longValue();
+            case 3: return sevenNew().shortValue();
+            case 4: return sevenNew().byteValue();
+            case 8: return valueOf(Double.valueOf(7.0));
+            case 9: return valueOf(Long.valueOf(Long.MAX_VALUE / 5));
+            default: throw new IllegalStateException();
+        }
+    }
+    
+    @JavaScriptBody(args = {}, body = "return 7;")
+    private static native Number sevenNew();
+    
+    @JavaScriptBody(args = { "o" }, body = "return o.valueOf();")
+    private static native double valueOf(Object o);
 }
