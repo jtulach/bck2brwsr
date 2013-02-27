@@ -51,7 +51,7 @@ public class Object {
         }
     }
     @JavaScriptBody(args = {}, body = "var p = vm.java_lang_Object(false);" +
-        "p.toString = Object.prototype.toString__Ljava_lang_String_2;"
+        "p.toString = function() { return this.toString__Ljava_lang_String_2(); };"
     )
     private static native void registerToString();
     static {
