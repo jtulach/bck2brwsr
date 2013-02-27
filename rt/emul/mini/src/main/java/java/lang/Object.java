@@ -42,7 +42,9 @@ import org.apidesign.bck2brwsr.core.JavaScriptPrototype;
 public class Object {
 
     private static void registerNatives() {
-        try {
+        boolean assertsOn = false;
+        assert assertsOn = false;
+        if (assertsOn) try {
             Array.get(null, 0);
         } catch (Throwable ex) {
             // ignore
