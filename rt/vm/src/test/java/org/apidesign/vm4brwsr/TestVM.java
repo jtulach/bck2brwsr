@@ -68,9 +68,9 @@ final class TestVM {
                 ret = code.invokeMethod(ret, "toFP");
                 ret = code.invokeFunction("Number", ret);
             } catch (ScriptException ex) {
-                fail("Conversion to number failed in " + dumpJS(codeSeq), ex);
+                fail("Conversion to number failed in " + dumpJS(codeSeq) + ": " + ex.getMessage(), ex);
             } catch (NoSuchMethodException ex) {
-                fail("Cannot find global Number(x) function in " + dumpJS(codeSeq), ex);
+                fail("Cannot find global Number(x) function in " + dumpJS(codeSeq) + ": " + ex.getMessage(), ex);
             }
         }
         return ret;
