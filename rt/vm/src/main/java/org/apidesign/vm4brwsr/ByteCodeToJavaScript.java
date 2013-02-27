@@ -132,6 +132,10 @@ abstract class ByteCodeToJavaScript {
         for (FieldData v : jc.getFields()) {
             if (v.isStatic()) {
                 out.append("\n  CLS.").append(v.getName()).append(initField(v));
+                out.append("\n  c._").append(v.getName()).append(" = function (v) {")
+                   .append("  if (arguments.length == 1) CLS.").append(v.getName())
+                   .append(" = v; return CLS.").
+                    append(v.getName()).append("; };");
             } else {
                 out.append("\n  c._").append(v.getName()).append(" = function (v) {")
                    .append("  if (arguments.length == 1) this.fld_").
@@ -1244,7 +1248,7 @@ abstract class ByteCodeToJavaScript {
                     int indx = readIntArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
-                    emit(out, "var @1 = @2(false).constructor.@3;",
+                    emit(out, "var @1 = @2(false)._@3();",
                          smapper.pushT(type),
                          accessClass(fi[0].replace('/', '_')), fi[1]);
                     i += 2;
@@ -1255,7 +1259,7 @@ abstract class ByteCodeToJavaScript {
                     int indx = readIntArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
-                    emit(out, "@1(false).constructor.@2 = @3;",
+                    emit(out, "@1(false)._@2(@3);",
                          accessClass(fi[0].replace('/', '_')), fi[1],
                          smapper.popT(type));
                     i += 2;

@@ -15,17 +15,10 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.tck;
+package org.apidesign.vm4brwsr;
 
-class StaticUse {
-    public static final Object NON_NULL = new Object();
-    StaticUse() {
-    }
-    
-    public void instanceMethod() {
-    }
-
-    public static int plus(int a, int b) {
-        return a + b;
+public class StaticUseSub extends StaticUse {
+    public static String getNonNull() {
+        return NON_NULL.getClass().getName();
     }
 }

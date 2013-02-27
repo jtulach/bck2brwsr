@@ -17,15 +17,21 @@
  */
 package org.apidesign.bck2brwsr.tck;
 
-class StaticUse {
-    public static final Object NON_NULL = new Object();
-    StaticUse() {
-    }
-    
-    public void instanceMethod() {
+import org.apidesign.bck2brwsr.vmtest.Compare;
+import org.apidesign.bck2brwsr.vmtest.VMTest;
+import org.testng.annotations.Factory;
+
+/**
+ *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
+ */
+public class StaticUseSubTest {
+    @Compare public String staticFieldInitializationInSuperClass() throws Exception {
+        Object ret = StaticUseSub.getNonNull();
+        return ret.getClass().getName();
     }
 
-    public static int plus(int a, int b) {
-        return a + b;
+    @Factory public static Object[] create() {
+        return VMTest.create(StaticUseSubTest.class);
     }
 }

@@ -17,15 +17,11 @@
  */
 package org.apidesign.bck2brwsr.tck;
 
-class StaticUse {
-    public static final Object NON_NULL = new Object();
-    StaticUse() {
+public class StaticUseSub extends StaticUse {
+    private StaticUseSub() {
     }
     
-    public void instanceMethod() {
-    }
-
-    public static int plus(int a, int b) {
-        return a + b;
+    public static Object getNonNull() {
+        return NON_NULL;
     }
 }

@@ -123,7 +123,7 @@ public class ReflectionTest {
     
     @Compare public String newInstanceFails() throws InstantiationException {
         try {
-            return "success: " + StaticUse.class.newInstance();
+            return "success: " + StaticUseSub.class.newInstance();
         } catch (IllegalAccessException ex) {
             return ex.getClass().getName();
         }
