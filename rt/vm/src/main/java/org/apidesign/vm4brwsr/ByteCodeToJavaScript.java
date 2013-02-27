@@ -808,7 +808,7 @@ abstract class ByteCodeToJavaScript {
                     break;
                 case opc_if_acmpne:
                     i = generateIf(byteCodes, i, smapper.popA(), smapper.popA(),
-                                   "!=");
+                                   "!==");
                     break;
                 case opc_if_icmpeq:
                     i = generateIf(byteCodes, i, smapper.popI(), smapper.popI(),
