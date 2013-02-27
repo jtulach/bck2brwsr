@@ -115,15 +115,17 @@ public final class String
 
     /** use serialVersionUID from JDK 1.0.2 for interoperability */
     private static final long serialVersionUID = -6849794470754667710L;
-    
-    @JavaScriptOnly(name="toString", value="String.prototype._r")
-    private static void jsToString() {
-    }
-    
-    @JavaScriptOnly(name="valueOf", value="function() { return this.toString().valueOf(); }")
-    private static void jsValudOf() {
-    }
 
+    static {
+        registerToString();
+    }
+    @JavaScriptBody(args = {}, body = 
+          "var p = vm.java_lang_String(false);\n"
+        + "p.toString = function() {\nreturn this._r().toString();\n};\n"
+        + "p.valueOf = function() {\nreturn this._r().valueOf();\n}\n"
+    )
+    private static native void registerToString();
+    
     /**
      * Class String is special cased within the Serialization Stream Protocol.
      *
