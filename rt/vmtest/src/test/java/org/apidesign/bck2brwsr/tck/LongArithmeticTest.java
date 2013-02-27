@@ -26,55 +26,63 @@ import org.testng.annotations.Factory;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class LongArithmeticTest {
-    
+
     private static long add(long x, long y) {
         return (x + y);
     }
-    
+
     private static long sub(long x, long y) {
         return (x - y);
     }
-    
+
     private static long mul(long x, long y) {
         return (x * y);
     }
-    
+
     private static long div(long x, long y) {
         return (x / y);
     }
-    
+
     private static long mod(long x, long y) {
         return (x % y);
     }
-    
+
     private static long neg(long x) {
         return (-x);
     }
-    
+
     private static long shl(long x, int b) {
         return (x << b);
     }
-    
+
     private static long shr(long x, int b) {
         return (x >> b);
     }
-    
+
     private static long ushr(long x, int b) {
         return (x >>> b);
     }
-    
+
     private static long and(long x, long y) {
         return (x & y);
     }
-    
+
     private static long or(long x, long y) {
         return (x | y);
     }
-    
+
     private static long xor(long x, long y) {
         return (x ^ y);
     }
-    
+
+    private static float fadd(float x, float y) {
+        return x + y;
+    }
+
+    private static double dadd(double x, double y) {
+        return x + y;
+    }
+
     public static int compare(long x, long y, int zero) {
         final int xyResult = compareL(x, y, zero);
         final int yxResult = compareL(y, x, zero);
@@ -106,15 +114,15 @@ public class LongArithmeticTest {
 
         return (trueCount == 1) ? result : -2;
     }
-    
+
     @Compare public long conversion() {
         return Long.MAX_VALUE;
     }
-    
+
     @Compare public long negate1() {
         return neg(0x00fa37d7763e0ca1l);
     }
-    
+
     @Compare public long negate2() {
         return neg(0x80fa37d7763e0ca1l);
     }
@@ -134,11 +142,11 @@ public class LongArithmeticTest {
     @Compare public long addMaxLongAndMaxLong() {
         return add(Long.MAX_VALUE, Long.MAX_VALUE);
     }
-    
+
     @Compare public long subMinLongAndMinLong() {
         return sub(Long.MIN_VALUE, Long.MIN_VALUE);
     }
-    
+
     @Compare public long subMinLongAndMaxLong() {
         return sub(Long.MIN_VALUE, Long.MAX_VALUE);
     }
@@ -146,23 +154,23 @@ public class LongArithmeticTest {
     @Compare public long multiplyMaxLong() {
         return mul(Long.MAX_VALUE, 2l);
     }
-    
+
     @Compare public long multiplyMaxLongAndMaxLong() {
         return mul(Long.MAX_VALUE, Long.MAX_VALUE);
     }
-    
+
     @Compare public long multiplyMinLong() {
         return mul(Long.MIN_VALUE, 2l);
     }
-    
+
     @Compare public long multiplyMinLongAndMinLong() {
         return mul(Long.MIN_VALUE, Long.MIN_VALUE);
     }
-    
+
     @Compare public long multiplyPrecision() {
         return mul(0x00fa37d7763e0ca1l, 0xa7b3432fff00123el);
     }
-    
+
     @Compare public long divideSmallPositiveNumbers() {
         return div(0xabcdef, 0x123);
     }
@@ -251,6 +259,22 @@ public class LongArithmeticTest {
         return mod(0x7fff800000000000l, 0x800000000001l);
     }
 
+    @Compare public long conversionFromFloatPositive() {
+        return (long) fadd(2, 0.6f);
+    }
+
+    @Compare public long conversionFromFloatNegative() {
+        return (long) fadd(-2, -0.6f);
+    }
+
+    @Compare public long conversionFromDoublePositive() {
+        return (long) dadd(0x20ffff0000L, 0.6);
+    }
+
+    @Compare public long conversionFromDoubleNegative() {
+        return (long) dadd(-0x20ffff0000L, -0.6);
+    }
+
     @Compare public boolean divByZeroThrowsArithmeticException() {
         try {
             div(1, 0);
@@ -272,63 +296,63 @@ public class LongArithmeticTest {
     @Compare public long shiftL1() {
         return shl(0x00fa37d7763e0ca1l, 5);
     }
-    
+
     @Compare public long shiftL2() {
         return shl(0x00fa37d7763e0ca1l, 32);
     }
-    
+
     @Compare public long shiftL3() {
         return shl(0x00fa37d7763e0ca1l, 45);
     }
-    
+
     @Compare public long shiftR1() {
         return shr(0x00fa37d7763e0ca1l, 5);
     }
-    
+
     @Compare public long shiftR2() {
         return shr(0x00fa37d7763e0ca1l, 32);
     }
-    
+
     @Compare public long shiftR3() {
         return shr(0x00fa37d7763e0ca1l, 45);
     }
-    
+
     @Compare public long uShiftR1() {
         return ushr(0x00fa37d7763e0ca1l, 5);
     }
-    
+
     @Compare public long uShiftR2() {
         return ushr(0x00fa37d7763e0ca1l, 45);
     }
-    
+
     @Compare public long uShiftR3() {
         return ushr(0xf0fa37d7763e0ca1l, 5);
     }
-    
+
     @Compare public long uShiftR4() {
         return ushr(0xf0fa37d7763e0ca1l, 45);
     }
-    
+
     @Compare public long and1() {
         return and(0x00fa37d7763e0ca1l, 0xa7b3432fff00123el);
     }
-    
+
     @Compare public long or1() {
         return or(0x00fa37d7763e0ca1l, 0xa7b3432fff00123el);
     }
-    
+
     @Compare public long xor1() {
         return xor(0x00fa37d7763e0ca1l, 0xa7b3432fff00123el);
     }
-    
+
     @Compare public long xor2() {
         return xor(0x00fa37d7763e0ca1l, 0x00000000ff00123el);
     }
-    
+
     @Compare public long xor3() {
         return xor(0x00000000763e0ca1l, 0x00000000ff00123el);
     }
-    
+
     @Compare public int compareSameNumbers() {
         return compare(0x0000000000000000l, 0x0000000000000000l, 0);
     }

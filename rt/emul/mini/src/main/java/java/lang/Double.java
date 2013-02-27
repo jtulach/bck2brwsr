@@ -920,6 +920,26 @@ public final class Double extends Number implements Comparable<Double> {
      * @return  the {@code double} floating-point value with the same
      *          bit pattern.
      */
+    @JavaScriptBody(args={ "bits" },
+        body=
+          "var hi = bits.high32();\n"
+        + "var s = (hi & 0x80000000) === 0 ? 1 : -1;\n"
+        + "var e = (hi >> 20) & 0x7ff;\n"
+        + "if (e === 0x7ff) {\n"
+        + "  if ((bits == 0) && ((hi & 0xfffff) === 0)) {\n"
+        + "    return (s > 0) ? Number.POSITIVE_INFINITY"
+                          + " : Number.NEGATIVE_INFINITY;\n"
+        + "  }\n"
+        + "  return Number.NaN;\n"
+        + "}\n"
+        + "var m = (hi & 0xfffff).next32(bits);\n"
+        + "if (e === 0) {\n"
+        + "  m = m.shl64(1);\n"
+        + "} else {\n"
+        + "  m.hi = m.high32() | 0x100000;\n"
+        + "}\n"
+        + "return s * m.toFP() * Math.pow(2.0, e - 1075);\n"
+    )
     public static native double longBitsToDouble(long bits);
 
     /**
