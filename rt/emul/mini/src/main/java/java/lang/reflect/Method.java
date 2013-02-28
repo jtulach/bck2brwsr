@@ -512,8 +512,8 @@ public final
             args = args.clone();
             for (int i = 0; i < types.length; i++) {
                 Class c = types[i];
-                if (c.isPrimitive()) {
-                    args[i] = toPrimitive(c, args[i]);
+                if (c.isPrimitive() && args[i] != null) {
+                    args[i] = toPrimitive(args[i]);
                 }
             }
         }
@@ -573,41 +573,8 @@ public final
     )
     private static native Integer fromRaw(Class<?> cls, String m, Object o);
 
-    private static Object toPrimitive(Class<?> type, Object o) {
-        if (type == Integer.TYPE) {
-            return toRaw("intValue__I", o);
-        }
-        if (type == Long.TYPE) {
-            return toRaw("longValue__J", o);
-        }
-        if (type == Double.TYPE) {
-            return toRaw("doubleValue__D", o);
-        }
-        if (type == Float.TYPE) {
-            return toRaw("floatValue__F", o);
-        }
-        if (type == Byte.TYPE) {
-            return toRaw("byteValue__B", o);
-        }
-        if (type == Boolean.TYPE) {
-            return toRaw("booleanValue__Z", o);
-        }
-        if (type == Short.TYPE) {
-            return toRaw("shortValue__S", o);
-        }
-        if (type == Character.TYPE) {
-            return toRaw("charValue__C", o);
-        }
-        if (type.getName().equals("void")) {
-            return o;
-        }
-        throw new IllegalStateException("Can't convert " + o);
-    }
-    
-    @JavaScriptBody(args = { "m", "o" }, 
-        body = "return o[m](o);"
-    )
-    private static native Object toRaw(String m, Object o);
+    @JavaScriptBody(args = { "o" }, body = "return o.valueOf();")
+    private static native Object toPrimitive(Object o);
     
     /**
      * Returns {@code true} if this method is a bridge
