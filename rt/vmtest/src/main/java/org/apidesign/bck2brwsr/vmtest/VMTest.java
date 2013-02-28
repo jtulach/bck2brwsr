@@ -17,22 +17,35 @@
  */
 package org.apidesign.bck2brwsr.vmtest;
 
+import org.apidesign.bck2brwsr.launcher.Launcher;
 import org.apidesign.bck2brwsr.vmtest.impl.CompareCase;
 import org.testng.annotations.Factory;
 
-/** A TestNG {@link Factory} that seeks for {@link Compare} annotations
- * in provided class and builds set of tests that compare the computations
- * in real as well as JavaScript virtual machines. Use as:<pre>
+/** A TestNG {@link Factory} that seeks for {@link Compare} and {@link BrwsrTest} annotations
+ * in provided class and builds set of tests that verify the functionality of <b>Bck2Brwsr</b> 
+ * based system. Use as:
+ * <pre>
  * {@code @}{@link Factory} public static create() {
- *   return @{link VMTest}.{@link #create(YourClass.class);
+ *   return @{link VMTest}.{@link #create(java.lang.Class) create}(YourClass.class);
  * }</pre>
- *
+ * where <code>YourClass</code> contains methods annotated with
+ * {@link Compare} and {@link BrwsrTest} annotations.
+ * 
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public final class VMTest {
-    /** Inspects <code>clazz</code> and for each {@lik Compare} method creates
-     * instances of tests. Each instance runs the test in different virtual
+    private VMTest() {
+    }
+    
+    /** Inspects <code>clazz</code> and for each method annotated by
+     * {@link Compare} or {@link BrwsrTest} creates
+     * instances of tests. 
+     * <p>
+     * Each {@link Compare} instance runs the test in different virtual
      * machine and at the end they compare the results.
+     * <p>
+     * Each {@link BrwsrTest} annotated method is executed once in {@link Launcher started
+     * browser}.
      * 
      * @param clazz the class to inspect
      * @return the set of created tests

@@ -23,8 +23,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Exposes HTTP page or pages to the running {@link BrwsrTest}, so it can access under
- * the relative path.
+ * Exposes an {@link Resource HTTP page} or a set of {@link #value() pages} to the running {@link BrwsrTest}.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
@@ -34,8 +33,10 @@ public @interface Http {
     /** Set of pages to make available */
     public Resource[] value();
     
-    /** Exposes an HTTP page to the running {@link BrwsrTest}, so it can access
-     * under the relative path.
+    /** Describes single HTTP page to the running {@link BrwsrTest}, so it can be 
+     * accessed under the specified {@link #path() relative path}. The page
+     * content can either be specified inline via {@link #content()} or as
+     * an external {@link #resource() resource}.
      *
      * @author Jaroslav Tulach <jtulach@netbeans.org>
      */
@@ -44,7 +45,7 @@ public @interface Http {
     public @interface Resource {
         /** path on the server that the test can use to access the exposed resource */
         String path();
-        /** the content of the HttpResource */
+        /** the content of the <code>Http.Resource</code> */
         String content();
         /** resource relative to the class that should be used instead of <code>content</code>.
          * Leave content equal to empty string.
