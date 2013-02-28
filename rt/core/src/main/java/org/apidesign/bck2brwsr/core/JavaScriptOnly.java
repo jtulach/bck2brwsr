@@ -22,16 +22,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Don't include given field or method in generated JavaScript. Rather
- * generate completely independent JavaScript code.
+/** Don't include given method in the generated JavaScript at all. Rather
+ * generate completely independent JavaScript code consisting of
+ * <code>"{@link #name()}" = "{@link #value()}"</code>.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @Retention(RetentionPolicy.CLASS)
-@Target({ ElementType.METHOD, ElementType.FIELD })
+@Target({ ElementType.METHOD })
 public @interface JavaScriptOnly {
     /** name of the variable to assign given value to */
     String name() default "";
-    /** value to assign to given field */
+    /** value to assign to the {@link #name()} variable */
     String value() default "";
 }

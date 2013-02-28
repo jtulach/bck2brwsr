@@ -22,14 +22,16 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
+/** A way to include pre-made JavaScript scripts and libraries.
+ * The {@link #resource()} is loaded into the JavaScript VM and its object
+ * can be referenced from the class annotated by this annotation.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)
 public @interface ExtraJavaScript {
-    /** location of a script to load */
+    /** fully qualified location of a script to load. Start the path with slash. */
     String resource();
     /** should the class file still be processed or not? */
     boolean processByteCode() default true;

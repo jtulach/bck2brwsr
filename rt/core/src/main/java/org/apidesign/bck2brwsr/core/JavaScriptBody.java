@@ -22,22 +22,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Put this method on a method in case it should have a special
- * body in the <em>JavaScript</em>.
+/** Put this annotation on a method to provide its special implementation
+ * in JavaScript. This is a way to define <em>native</em> methods that 
+ * interact with the surrounding environment.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @Retention(RetentionPolicy.CLASS)
 @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
 public @interface JavaScriptBody {
-    /** Names of parameters for the method. 
-     * 
-     * <!--
-     * If not specified
-     * it will be <code>arg0, arg1, arg2</code>. In case of
-     * instance methods, the <code>arg0</code> is reference
-     * to <code>this</code>.
-     * -->
+    /** Names of parameters for the method generated method that can
+     * be referenced from {@link #body()}.
      * 
      * @return array of the names of parameters for the method
      *    in JavaScript
@@ -46,6 +41,12 @@ public @interface JavaScriptBody {
     
     /** The actual body of the method in JavaScript. This string will be
      * put into generated header (ends with '{') and footer (ends with '}').
+     * The body can reference provided arguments. In case of non-static
+     * instance method it may reference <code>this</code>. It can also 
+     * call methods and access fields - if 
+     * <a href="http://wiki.apidesign.org/wiki/Bck2BrwsrMangling">proper mangling</a> 
+     * is used. Methods that return some value should end with <code>return</code> 
+     * statement.
      */
     public String body();
 }
