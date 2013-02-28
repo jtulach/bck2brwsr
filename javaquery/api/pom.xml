@@ -23,6 +23,13 @@
                     <target>1.6</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <subpackages>org.apidesign.bck2brwsr.htmlpage.api</subpackages>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     <properties>
