@@ -50,6 +50,14 @@ public class IntegerArithmeticTest {
     private static int neg(int x) {
         return (-x);
     }
+
+    private static float fadd(float x, float y) {
+        return x + y;
+    }
+
+    private static double dadd(double x, double y) {
+        return x + y;
+    }
     
     @Compare public int addOverflow() {
         return add(Integer.MAX_VALUE, 1);
@@ -90,7 +98,7 @@ public class IntegerArithmeticTest {
     @Compare public int division() {
         return div(1, 2);
     }
-    
+
     @Compare public int divisionReminder() {
         return mod(1, 2);
     }
@@ -101,6 +109,14 @@ public class IntegerArithmeticTest {
 
     @Compare public int negativeDivisionReminder() {
         return mod(-7, 3);
+    }
+
+    @Compare public int conversionFromFloat() {
+        return (int) fadd(-2, -0.6f);
+    }
+
+    @Compare public int conversionFromDouble() {
+        return (int) dadd(-2, -0.6);
     }
 
     @Compare public boolean divByZeroThrowsArithmeticException() {

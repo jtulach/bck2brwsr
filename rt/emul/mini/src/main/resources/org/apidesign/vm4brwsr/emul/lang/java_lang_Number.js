@@ -28,8 +28,17 @@ Number.prototype.toFP = function() {
     return this.hi ? this.hi * (__m32+1) + this : this;
 };
 Number.prototype.toLong = function() {
-    var hi = (this > __m32) ? (Math.floor(this / (__m32+1))) | 0 : 0;
-    return hi.next32(Math.floor(this % (__m32+1)));
+    var hi = (this / (__m32+1)) | 0;
+    var low = (this % (__m32+1)) | 0;
+    if (low < 0) {
+        low += __m32+1;
+    }
+        
+    if (this < 0) {
+        hi -= 1;
+    }
+
+    return hi.next32(low);
 };
 
 Number.prototype.toExactString = function() {
@@ -481,7 +490,7 @@ Number.prototype.neg64 = function() {
             v = x;
         }
 
-        if ((v === 0) && (v.high32() === 0)) {
+        if ((v == 0) && (v.high32() === 0)) {
             __handleDivByZero();
         }
 
@@ -522,7 +531,7 @@ Number.prototype.neg64 = function() {
             v = x;
         }
 
-        if ((v === 0) && (v.high32() === 0)) {
+        if ((v == 0) && (v.high32() === 0)) {
             __handleDivByZero();
         }
 

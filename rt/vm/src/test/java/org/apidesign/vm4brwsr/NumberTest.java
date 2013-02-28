@@ -143,6 +143,49 @@ public class NumberTest {
         );
     }
 
+    @Test public void everyNumberHasJavaLangNumberMethods() throws Exception {
+        assertExec("Can we call doubleValue?", 
+            Numbers.class, "seven__DI", 
+            Double.valueOf(7.0), 0
+        );
+    }
+    @Test public void everyNumberHasJavaLangNumberMethodsInt() throws Exception {
+        assertExec("Can we call doubleValue?", 
+            Numbers.class, "seven__DI", 
+            Double.valueOf(7.0), 1
+        );
+    }
+    @Test public void everyNumberHasJavaLangNumberMethodsLong() throws Exception {
+        assertExec("Can we call doubleValue?", 
+            Numbers.class, "seven__DI", 
+            Double.valueOf(7.0), 2
+        );
+    }
+    @Test public void everyNumberHasJavaLangNumberMethodsShort() throws Exception {
+        assertExec("Can we call doubleValue?", 
+            Numbers.class, "seven__DI", 
+            Double.valueOf(7.0), 3
+        );
+    }
+    @Test public void everyNumberHasJavaLangNumberMethodsByte() throws Exception {
+        assertExec("Can we call doubleValue?", 
+            Numbers.class, "seven__DI", 
+            Double.valueOf(7.0), 4
+        );
+    }
+    @Test public void valueOfNumber() throws Exception {
+        assertExec("Can we call JavaScripts valueOf?", 
+            Numbers.class, "seven__DI", 
+            Double.valueOf(7.0), 8
+        );
+    }
+    @Test public void valueOfLongNumber() throws Exception {
+        assertExec("Can we call JavaScripts valueOf?", 
+            Numbers.class, "seven__DI", 
+            Double.valueOf(Long.MAX_VALUE / 5), 9
+        );
+    }
+
     private static TestVM code;
 
     @BeforeClass
