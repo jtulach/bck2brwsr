@@ -185,6 +185,25 @@ public class NumberTest {
             Double.valueOf(Long.MAX_VALUE / 5), 9
         );
     }
+    @Test public void valueOfLongCharA() throws Exception {
+        assertExec("Can we call JavaScripts valueOf on Character?", 
+            Numbers.class, "seven__DI", 
+            Double.valueOf('A'), 65
+        );
+    }
+
+    @Test public void valueOfLongBooleanTrue() throws Exception {
+        assertExec("Can we call JavaScripts valueOf on Boolean?", 
+            Numbers.class, "seven__DI", 
+            Double.valueOf(1), 31
+        );
+    }
+    @Test public void valueOfLongBooleanFalse() throws Exception {
+        assertExec("Can we call JavaScripts valueOf on Boolean?", 
+            Numbers.class, "seven__DI", 
+            Double.valueOf(0), 30
+        );
+    }
 
     private static TestVM code;
 

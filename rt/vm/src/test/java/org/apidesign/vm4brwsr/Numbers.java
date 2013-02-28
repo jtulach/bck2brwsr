@@ -78,6 +78,9 @@ public class Numbers {
             case 4: return sevenNew().byteValue();
             case 8: return valueOf(Double.valueOf(7.0));
             case 9: return valueOf(Long.valueOf(Long.MAX_VALUE / 5));
+            case 30: return valueOf(Boolean.FALSE);
+            case 31: return valueOf(Boolean.TRUE);
+            case 65: return valueOf(Character.valueOf('A'));
             default: throw new IllegalStateException();
         }
     }

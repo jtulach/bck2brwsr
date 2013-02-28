@@ -25,6 +25,8 @@
 
 package java.lang;
 
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+
 /**
  * The Boolean class wraps a value of the primitive type
  * {@code boolean} in an object. An object of type
@@ -279,4 +281,13 @@ public final class Boolean implements java.io.Serializable,
     private static boolean toBoolean(String name) {
         return ((name != null) && name.equalsIgnoreCase("true"));
     }
+    static {
+        // as last step of initialization, initialize valueOf method
+        initValueOf();
+    }
+    @JavaScriptBody(args = {  }, body = 
+        "vm.java_lang_Boolean(false)" +
+        ".valueOf = function() { return this._value(); };"
+    )
+    private native static void initValueOf();
 }

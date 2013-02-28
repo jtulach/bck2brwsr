@@ -27,7 +27,6 @@ package java.lang;
 
 import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
-import org.apidesign.bck2brwsr.core.JavaScriptOnly;
 import org.apidesign.bck2brwsr.core.JavaScriptPrototype;
 
 /**

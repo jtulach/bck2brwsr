@@ -2516,4 +2516,14 @@ class Character implements java.io.Serializable, Comparable<Character> {
         return (char) (((ch & 0xFF00) >> 8) | (ch << 8));
     }
 
+    static {
+        // as last step of initialization, initialize valueOf method
+        initValueOf();
+    }
+    @JavaScriptBody(args = {}, body = 
+        "vm.java_lang_Character(false)." +
+        "valueOf = function() { return this._value(); };"
+    )
+    private native static void initValueOf();
+    
 }
