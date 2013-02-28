@@ -26,6 +26,9 @@ import org.apidesign.vm4brwsr.Bck2Brwsr;
 /** An abstraction for executing tests in a Bck2Brwsr virtual machine.
  * Either in {@linkm Launcher#createJavaScript JavaScript engine}, 
  * or in {@linkm Launcher#createBrowser external browser}.
+ * <p>
+ * There also are methods to {@link #showDir(java.io.File, java.lang.String) display pages} 
+ * in an external browser served by internal HTTP server.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
@@ -98,11 +101,10 @@ public abstract class Launcher {
     }
     /** Starts an HTTP server which provides access to certain directory.
      * The <code>startpage</code> should be relative location inside the root 
-     * driecotry
-     * Opens a browser with URL showing the start page.
+     * directory. Opens a browser with URL showing the start page.
      * 
      * @param directory the root directory on disk
-     * @praam startpage relative path from the root to the page
+     * @param startpage relative path from the root to the page
      * @exception IOException if something goes wrong.
      */
     public static Closeable showDir(File directory, String startpage) throws IOException {
