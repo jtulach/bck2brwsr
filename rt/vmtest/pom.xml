@@ -29,6 +29,7 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
                     <excludePackageNames>org.apidesign.bck2brwsr.vmtest.impl</excludePackageNames>
+                    <skip>false</skip>
                 </configuration>
             </plugin>
         </plugins>

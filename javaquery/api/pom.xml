@@ -28,6 +28,7 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
                     <subpackages>org.apidesign.bck2brwsr.htmlpage.api</subpackages>
+                    <skip>false</skip>
                 </configuration>
             </plugin>
         </plugins>
