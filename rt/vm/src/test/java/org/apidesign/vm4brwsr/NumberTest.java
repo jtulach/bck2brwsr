@@ -18,6 +18,7 @@
 package org.apidesign.vm4brwsr;
 
 import static org.testng.Assert.*;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -145,8 +146,12 @@ public class NumberTest {
     private static TestVM code;
 
     @BeforeClass
-    public void compileTheCode() throws Exception {
+    public static void compileTheCode() throws Exception {
         code = TestVM.compileClass("org/apidesign/vm4brwsr/Numbers");
+    }
+    @AfterClass
+    public static void releaseTheCode() {
+        code = null;
     }
 
     private static void assertExec(

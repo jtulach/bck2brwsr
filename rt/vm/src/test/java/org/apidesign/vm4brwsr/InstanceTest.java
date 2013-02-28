@@ -17,6 +17,7 @@
  */
 package org.apidesign.vm4brwsr;
 
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 import org.testng.annotations.BeforeClass;
 
@@ -155,6 +156,10 @@ public class InstanceTest {
     @BeforeClass
     public void compileTheCode() throws Exception {
         code = TestVM.compileClass(startCompilationWith());
+    }
+    @AfterClass
+    public static void releaseTheCode() {
+        code = null;
     }
     
     private void assertExec(

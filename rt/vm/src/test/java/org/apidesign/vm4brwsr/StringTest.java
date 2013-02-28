@@ -19,6 +19,7 @@ package org.apidesign.vm4brwsr;
 
 import org.testng.annotations.Test;
 import static org.testng.Assert.*;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
 /**
@@ -196,11 +197,15 @@ public class StringTest {
     private static TestVM code;
     
     @BeforeClass 
-    public void compileTheCode() throws Exception {
+    public static void compileTheCode() throws Exception {
         code = TestVM.compileClass(
             "org/apidesign/vm4brwsr/StringSample",
             "java/lang/String"
         );
+    }
+    @AfterClass
+    public static void releaseTheCode() {
+        code = null;
     }
     
     private static void assertExec(String msg, 

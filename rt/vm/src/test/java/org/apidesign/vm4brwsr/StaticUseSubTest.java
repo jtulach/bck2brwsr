@@ -17,6 +17,7 @@
  */
 package org.apidesign.vm4brwsr;
 
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -31,6 +32,10 @@ public class StaticUseSubTest {
     public static void compileTheCode() throws Exception {
         StringBuilder sb = new StringBuilder();
         code = TestVM.compileClass(sb, "org/apidesign/vm4brwsr/StaticUseSub");
+    }
+    @AfterClass
+    public static void releaseTheCode() {
+        code = null;
     }
     
     @Test public void getInheritedStaticField() throws Exception {

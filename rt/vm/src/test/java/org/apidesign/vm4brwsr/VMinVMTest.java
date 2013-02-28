@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import static org.testng.Assert.*;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -40,8 +41,12 @@ public class VMinVMTest {
     }
 
     @BeforeClass
-    public void compileTheCode() throws Exception {
+    public static void compileTheCode() throws Exception {
         code = TestVM.compileClass("org/apidesign/vm4brwsr/VMinVM");
+    }
+    @AfterClass
+    public static void releaseTheCode() {
+        code = null;
     }
     
     private void compareCode(final String nm) throws Exception, IOException {
