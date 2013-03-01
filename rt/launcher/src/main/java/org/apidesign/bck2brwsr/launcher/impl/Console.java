@@ -19,6 +19,7 @@ package org.apidesign.bck2brwsr.launcher.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -131,12 +132,15 @@ public class Console {
         }
     }
     
-    private static String encodeURL(String r) {
+    private static String encodeURL(String r) throws UnsupportedEncodingException {
+        final String SPECIAL = "%$&+,/:;=?@";
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < r.length(); i++) {
-            int ch = r.charAt(i);
-            if (ch < 32 || ch == '%' || ch == '+') {
-                sb.append("%").append(("0" + Integer.toHexString(ch)).substring(0, 2));
+        byte[] utf8 = r.getBytes("UTF-8");
+        for (int i = 0; i < utf8.length; i++) {
+            int ch = utf8[i] & 0xff;
+            if (ch < 32 || ch > 127 || SPECIAL.indexOf(ch) >= 0) {
+                final String numbers = "0" + Integer.toHexString(ch);
+                sb.append("%").append(numbers.substring(numbers.length() - 2));
             } else {
                 if (ch == 32) {
                     sb.append("+");
