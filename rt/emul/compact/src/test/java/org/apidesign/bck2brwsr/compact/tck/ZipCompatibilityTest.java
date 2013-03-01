@@ -32,7 +32,8 @@ public class ZipCompatibilityTest {
     public String testDemoStaticCalculator() throws IOException {
         InputStream is = getClass().getResourceAsStream("demo.static.calculator-0.3-SNAPSHOT.jar");
         ZipArchive zip = ZipArchive.createZip(is);
-        return zip.toString();
+        final String ts = zip.toString();
+        return ts.substring(0, 4096) + ts.hashCode();
     }
     
     @Factory
