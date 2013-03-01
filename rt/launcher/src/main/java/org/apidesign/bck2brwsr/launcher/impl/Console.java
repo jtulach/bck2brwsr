@@ -65,6 +65,7 @@ public class Console {
     @JavaScriptBody(args = { "url", "callback", "arr" }, body = ""
         + "var request = new XMLHttpRequest();\n"
         + "request.open('GET', url, true);\n"
+        + "request.setRequestHeader('Content-Type', 'text/plain; charset=utf-8');\n"
         + "request.onreadystatechange = function() {\n"
         + "  if (this.readyState!==4) return;\n"
         + "  arr[0] = this.responseText;\n"
