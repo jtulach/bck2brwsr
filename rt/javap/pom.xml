@@ -4,11 +4,11 @@
   <parent>
     <groupId>org.apidesign.bck2brwsr</groupId>
     <artifactId>rt</artifactId>
-    <version>0.3</version>
+    <version>0.4-SNAPSHOT</version>
   </parent>
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>javap</artifactId>
-  <version>0.3</version>
+  <version>0.4-SNAPSHOT</version>
   <name>ByteCode Parser</name>
   <url>http://maven.apache.org</url>
   <properties>
@@ -34,7 +34,7 @@
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>emul.mini</artifactId>
-      <version>0.3</version>
+      <version>0.4-SNAPSHOT</version>
     </dependency>
   </dependencies>
 </project>
