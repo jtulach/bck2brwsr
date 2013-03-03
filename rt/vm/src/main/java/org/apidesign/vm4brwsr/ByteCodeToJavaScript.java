@@ -994,9 +994,9 @@ abstract class ByteCodeToJavaScript {
                     dims.append('[');
                     for (int d = 0; d < dim; d++) {
                         if (d != 0) {
-                            dims.append(",");
+                            dims.insert(1, ",");
                         }
-                        dims.append(smapper.popI());
+                        dims.insert(1, smapper.popI());
                     }
                     dims.append(']');
                     emit(out, "var @2 = Array.prototype.multiNewArray__Ljava_lang_Object_2Ljava_lang_String_2_3II('@3', @1, 0);",

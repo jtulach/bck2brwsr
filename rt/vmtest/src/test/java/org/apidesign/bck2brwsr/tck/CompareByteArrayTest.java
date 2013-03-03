@@ -68,6 +68,16 @@ public class CompareByteArrayTest {
     @Compare public String toOfBoundsMinus() {
         return toIndex(-1);
     }
+    
+    @Compare public int multiArrayLength() {
+         int[][] arr = new int[1][0];
+         return arr[0].length;
+    }
+
+    @Compare public int multiObjectArrayLength() {
+         Object[][] arr = new Object[1][0];
+         return arr[0].length;
+    }
 
     private static final int[] arr = { 0, 1, 2 };
     public static String atIndex(int at) {

@@ -75,6 +75,9 @@ public class ArrayTest {
     @Test public void verifyInstanceOfArray() throws Exception {
         assertExec("Returns 'false'", Array.class, "instanceOfArray__ZLjava_lang_Object_2", Double.valueOf(0), "non-array");
     }
+    @Test public void verifyMultiLen() throws Exception {
+        assertExec("Multi len is one", Array.class, "multiLen__I", Double.valueOf(1));
+    }
     
     private static TestVM code;
     
