@@ -112,7 +112,7 @@ function DevCtrl( $scope, $http ) {
 "     var arr = eval('(' + request.responseText + ')');\n" +
 "     return arr;\n" +
 "   }\n" +
-"   var vm = new bck2brwsr(ldCls);\n" +
+"   var vm = bck2brwsr(ldCls);\n" +
 "   vm.loadClass('${fqn}');\n" +
 " </script>\n" +
 "</body></html>";
