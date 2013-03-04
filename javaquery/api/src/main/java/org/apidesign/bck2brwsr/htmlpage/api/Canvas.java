@@ -18,6 +18,7 @@
 package org.apidesign.bck2brwsr.htmlpage.api;
 
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
+import static org.apidesign.bck2brwsr.htmlpage.api.Element.getAttribute;
 
 /**
  *
@@ -34,15 +35,17 @@ public class Canvas extends Element {
     }
 
     public int getHeight() {
-        return (Integer) getAttribute(this, "height");
+       Object ret =  getAttribute(this, "height");
+       return (ret instanceof Number) ? ((Number)ret).intValue(): Integer.MIN_VALUE;
     }
     
     public void setWidth(int width) {
         setAttribute(this, "width", width);
     }
 
-    public int getWidth() {
-        return (Integer) getAttribute(this, "width");
+    public int getwidtht() {
+       Object ret =  getAttribute(this, "width");
+       return (ret instanceof Number) ? ((Number)ret).intValue(): Integer.MIN_VALUE;
     }
 
     @JavaScriptBody(
