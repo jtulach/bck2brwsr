@@ -78,7 +78,7 @@
                        <exclude>*</exclude>
                        <exclude>.*/**</exclude>
                        <exclude>rt/emul/*/src/main/**</exclude>
-                       <exclude>rt/javap/**</exclude>
+                       <exclude>rt/vm/src/main/java/org/apidesign/vm4brwsr/ByteCodeParser.java</exclude>
                        <exclude>rt/mojo/src/main/resources/archetype-resources/**</exclude>
                        <exclude>rt/vmtest/src/test/resources/**</exclude>
                        <exclude>dew/src/main/resources/org/apidesign/bck2brwsr/dew/**</exclude>

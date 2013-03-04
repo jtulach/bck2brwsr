@@ -19,15 +19,7 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
-import org.apidesign.bck2brwsr.core.JavaScriptBody;
-import org.apidesign.javap.AnnotationParser;
-import org.apidesign.javap.ClassData;
-import org.apidesign.javap.FieldData;
-import org.apidesign.javap.MethodData;
-import org.apidesign.javap.StackMapIterator;
-import static org.apidesign.javap.RuntimeConstants.*;
-import org.apidesign.javap.TrapData;
-import org.apidesign.javap.TrapDataIterator;
+import static org.apidesign.vm4brwsr.ByteCodeParser.*;
 
 /** Translator of the code inside class files to JavaScript.
  *
