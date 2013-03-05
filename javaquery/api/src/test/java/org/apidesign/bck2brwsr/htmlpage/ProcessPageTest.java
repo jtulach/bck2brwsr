@@ -36,11 +36,12 @@ public class ProcessPageTest {
         assertNotNull(is, "Sample HTML page found");
         ProcessPage res = ProcessPage.readPage(is);
         final Set<String> ids = res.ids();
-        assertEquals(ids.size(), 3, "Three ids found: " + ids);
+        assertEquals(ids.size(), 4, "Four ids found: " + ids);
         
         assertEquals(res.tagNameForId("pg.title"), "title");
         assertEquals(res.tagNameForId("pg.button"), "button");
         assertEquals(res.tagNameForId("pg.text"), "input");
+        assertEquals(res.tagNameForId("pg.canvas"), "canvas");
     }
     
     @Test public void testCompileAndRunPageController() throws Exception {
@@ -53,11 +54,13 @@ public class ProcessPageTest {
             + "doc.title.innerHTML = 'nothing';\n"
             + "doc.text = new Object();\n"
             + "doc.text.value = 'something';\n"
+            + "doc.canvas = new Object();\n"
             + "doc.getElementById = function(id) {\n"
             + "    switch(id) {\n"
             + "      case 'pg.button': return doc.button;\n"
             + "      case 'pg.title': return doc.title;\n"
             + "      case 'pg.text': return doc.text;\n"
+            + "      case 'pg.canvas': return doc.canvas;\n"
             + "    }\n"
             + "    throw id;\n"
             + "  }\n"
@@ -92,11 +95,13 @@ public class ProcessPageTest {
             + "doc.title.innerHTML = 'nothing';\n"
             + "doc.text = new Object();\n"
             + "doc.text.value = 'something';\n"
+            + "doc.canvas = new Object();\n"
             + "doc.getElementById = function(id) {\n"
             + "    switch(id) {\n"
             + "      case 'pg.button': return doc.button;\n"
             + "      case 'pg.title': return doc.title;\n"
             + "      case 'pg.text': return doc.text;\n"
+            + "      case 'pg.canvas': return doc.canvas;\n"
             + "    }\n"
             + "    throw id;\n"
             + "  }\n"
@@ -123,6 +128,52 @@ public class ProcessPageTest {
         assertEquals(ret, "pg.title", "Title has been passed to the method argument");
     }
 
+    @Test public void clickWithArgumentAndParameterCalled() throws Exception {
+        StringBuilder sb = new StringBuilder();
+        sb.append(
+              "var window = new Object();\n"
+            + "var doc = new Object();\n"
+            + "var eventObject = new Object();\n"
+            + "eventObject.layerX = 100;\n"
+            + "doc.button = new Object();\n"
+            + "doc.title = new Object();\n"
+            + "doc.title.innerHTML = 'nothing';\n"
+            + "doc.text = new Object();\n"
+            + "doc.text.value = 'something';\n"
+            + "doc.canvas = new Object();\n"
+            + "doc.canvas.width = 200;\n"                
+            + "doc.getElementById = function(id) {\n"
+            + "    switch(id) {\n"
+            + "      case 'pg.button': return doc.button;\n"
+            + "      case 'pg.title': return doc.title;\n"
+            + "      case 'pg.text': return doc.text;\n"
+            + "      case 'pg.canvas': return doc.canvas;\n"
+            + "    }\n"
+            + "    throw id;\n"
+            + "  }\n"
+            + "\n"
+            + "function clickAndCheck() {\n"
+            + "  doc.canvas.onclick(eventObject);\n"
+            + "  return doc.canvas.width.toString();\n"
+            + "};\n"
+            + "\n"
+            + "window.document = doc;\n"
+        );
+        Invocable i = compileClass(sb, 
+            "org/apidesign/bck2brwsr/htmlpage/PageController"
+        );
+
+        Object ret = null;
+        try {
+            ret = i.invokeFunction("clickAndCheck");
+        } catch (ScriptException ex) {
+            fail("Execution failed in " + sb, ex);
+        } catch (NoSuchMethodException ex) {
+            fail("Cannot find method in " + sb, ex);
+        }
+       assertEquals(ret, "100", "layerX has been passed to the method argument");
+    }
+    
     static Invocable compileClass(StringBuilder sb, String... names) throws ScriptException, IOException {
         if (sb == null) {
             sb = new StringBuilder();

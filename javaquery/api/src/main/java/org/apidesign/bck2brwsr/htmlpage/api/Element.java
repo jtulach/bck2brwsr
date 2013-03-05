@@ -61,14 +61,18 @@ public abstract class Element {
     
     /** Executes given runnable when user performs a "click" on the given
      * element.
+     * @param data an array of one element to fill with event parameter (if any)
      * @param r the runnable to execute, never null
      */
     @JavaScriptBody(
         args={ "ev", "r" },
         body="var e = window.document.getElementById(this._id());\n"
-           + "e[ev._id()] = function() { r.run__V(); };\n"
+           + "e[ev._id()] = function(ev) {\n"
+        + "  var d = ev ? ev : null;\n"
+        + "  r.onEvent__VLjava_lang_Object_2(d);\n"
+        + "};\n"
     )
-    final void on(OnEvent ev, Runnable r) {
+    final void on(OnEvent ev, OnHandler r) {
     }
 
     /** Shows alert message dialog in a browser.
