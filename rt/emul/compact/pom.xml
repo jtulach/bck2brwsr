@@ -52,8 +52,8 @@
               <artifactId>maven-javadoc-plugin</artifactId>
               <configuration>
                   <excludePackageNames>org.apidesign.bck2brwsr.emul.*</excludePackageNames>
-                  <aggregate>true</aggregate>
                   <skip>false</skip>
+                  <includeDependencySources>true</includeDependencySources>
               </configuration>
           </plugin>
          <plugin>
