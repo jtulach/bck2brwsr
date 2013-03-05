@@ -43,7 +43,7 @@ public class Canvas extends Element {
         setAttribute(this, "width", width);
     }
 
-    public int getwidtht() {
+    public int getWidth() {
        Object ret =  getAttribute(this, "width");
        return (ret instanceof Number) ? ((Number)ret).intValue(): Integer.MIN_VALUE;
     }
