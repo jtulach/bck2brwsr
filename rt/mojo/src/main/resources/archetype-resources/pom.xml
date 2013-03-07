@@ -14,7 +14,7 @@
       <repository>
           <id>java.net</id>
           <name>Java.net</name>
-          <url>https://maven.java.net/content/repositories/snapshots/</url>
+          <url>https://maven.java.net/content/repositories/releases/</url>
           <snapshots>
               <enabled>true</enabled>
           </snapshots>
@@ -28,8 +28,8 @@
   <pluginRepositories>
       <pluginRepository>
           <id>java.net</id>
-          <name>Local Maven repository of releases</name>
-          <url>https://maven.java.net/content/repositories/snapshots/</url>
+          <name>Java.net</name>
+          <url>https://maven.java.net/content/repositories/releases/</url>
           <snapshots>
               <enabled>true</enabled>
           </snapshots>
@@ -44,7 +44,7 @@
             <plugin>
                 <groupId>org.apidesign.bck2brwsr</groupId>
                 <artifactId>mojo</artifactId>
-                <version>0.4-SNAPSHOT</version>
+                <version>0.5-SNAPSHOT</version>
                 <executions>
                     <execution>
                         <goals>
@@ -103,13 +103,13 @@
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>emul</artifactId>
-      <version>0.4-SNAPSHOT</version>
+      <version>0.5-SNAPSHOT</version>
       <classifier>rt</classifier>
     </dependency>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>javaquery.api</artifactId>
-      <version>0.4-SNAPSHOT</version>
+      <version>0.5-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.testng</groupId>
@@ -122,13 +122,13 @@
       <artifactId>vm4brwsr</artifactId>
       <classifier>js</classifier>
       <type>zip</type>
-      <version>0.4-SNAPSHOT</version>
+      <version>0.5-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>vmtest</artifactId>
-      <version>0.4-SNAPSHOT</version>
+      <version>0.5-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

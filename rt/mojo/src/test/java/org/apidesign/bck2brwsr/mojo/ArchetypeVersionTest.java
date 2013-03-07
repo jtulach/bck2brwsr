@@ -26,6 +26,7 @@ import javax.xml.xpath.XPathFactory;
 import org.testng.annotations.Test;
 import org.xml.sax.InputSource;
 import static org.testng.Assert.*;
+import org.testng.annotations.BeforeClass;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
@@ -34,26 +35,32 @@ import org.w3c.dom.NodeList;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class ArchetypeVersionTest {
+    private String version;
     
     public ArchetypeVersionTest() {
     }
-
-    @Test public void testCompareOwnAndArchtetypeVersion() throws Exception {
+    
+    @BeforeClass public void readCurrentVersion() throws Exception {
         final ClassLoader l = ArchetypeVersionTest.class.getClassLoader();
         URL u = l.getResource("META-INF/maven/org.apidesign.bck2brwsr/mojo/plugin-help.xml");
         assertNotNull(u, "Own pom found");
-        
+
         final XPathFactory fact = XPathFactory.newInstance();
         fact.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        
+
         XPathExpression xp = fact.newXPath().compile("plugin/version/text()");
-        String version = xp.evaluate(new InputSource(u.openStream()));
-        
+        version = xp.evaluate(new InputSource(u.openStream()));
+
         assertFalse(version.isEmpty(), "There should be some version string");
-        
+    }
+    
+
+    @Test public void testComparePomDepsVersions() throws Exception {
+        final ClassLoader l = ArchetypeVersionTest.class.getClassLoader();
         URL r = l.getResource("archetype-resources/pom.xml");
         assertNotNull(r, "Archetype pom found");
         
+        final XPathFactory fact = XPathFactory.newInstance();
         XPathExpression xp2 = fact.newXPath().compile(
             "//version[../groupId/text() = 'org.apidesign.bck2brwsr']/text()"
         );
@@ -67,6 +74,29 @@ public class ArchetypeVersionTest {
         
         for (int i = 0; i < arch.getLength(); i++) {
             assertEquals(arch.item(i).getTextContent(), version, i + "th dependency needs to be on latest version of bck2brwsr");
+        }
+    }
+    
+    @Test public void testNbActions() throws Exception {
+        final ClassLoader l = ArchetypeVersionTest.class.getClassLoader();
+        URL r = l.getResource("archetype-resources/nbactions.xml");
+        assertNotNull(r, "Archetype nb file found");
+        
+        final XPathFactory fact = XPathFactory.newInstance();
+        XPathExpression xp2 = fact.newXPath().compile(
+            "//goal/text()"
+        );
+        
+        Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(r.openStream());
+        NodeList goals = (NodeList) xp2.evaluate(dom, XPathConstants.NODESET);
+        
+        for (int i = 0; i < goals.getLength(); i++) {
+            String s = goals.item(i).getTextContent();
+            if (s.contains("bck2brwsr")) {
+                String[] arr = s.split(":");
+                assertEquals(arr.length, 4, "Three :");
+                assertEquals(arr[2], version, "Proper version is used");
+            }
         }
     }
 }
