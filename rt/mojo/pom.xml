@@ -81,5 +81,11 @@
         <artifactId>launcher</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+        <groupId>org.testng</groupId>
+        <artifactId>testng</artifactId>
+      <version>6.5.2</version>
+      <scope>test</scope>
+    </dependency>
 </dependencies>
 </project>
