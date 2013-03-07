@@ -4,12 +4,12 @@
     <parent>
         <artifactId>ide</artifactId>
         <groupId>org.apidesign.bck2brwsr</groupId>
-        <version>0.4-SNAPSHOT</version>
+        <version>0.4</version>
     </parent>
 
     <groupId>org.apidesign.bck2brwsr.ide.editor</groupId>
     <artifactId>editor</artifactId>
-    <version>0.4-SNAPSHOT</version>
+    <version>0.4</version>
     <packaging>nbm</packaging>
 
     <name>Editor Support for Bck2Brwsr</name>
@@ -85,7 +85,7 @@
         <dependency>
             <groupId>org.apidesign.bck2brwsr</groupId>
             <artifactId>core</artifactId>
-            <version>0.4-SNAPSHOT</version>
+            <version>0.4</version>
             <type>jar</type>
             <scope>test</scope>
         </dependency>

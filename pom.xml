@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apidesign</groupId>
   <artifactId>bck2brwsr</artifactId>
-  <version>0.4-SNAPSHOT</version>
+  <version>0.4</version>
   <packaging>pom</packaging>
   <name>Back 2 Browser</name>
   <parent>
@@ -33,6 +33,7 @@
       <connection>scm:hg:http://source.apidesign.org/hg/bck2brwsr</connection>
       <developerConnection>scm:hg:https://source.apidesign.org/hg/bck2brwsr</developerConnection>
       <url>http://source.apidesign.org/hg/bck2brwsr</url>
+    <tag>release-${releaseVersion}</tag>
   </scm>
   <repositories>
       <repository>
@@ -86,7 +87,14 @@
                   </excludes>
               </configuration>
           </plugin>
-      </plugins>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-release-plugin</artifactId>
+              <version>2.4</version>
+              <configuration>
+                  <tag>release-${releaseVersion}</tag>
+              </configuration>
+          </plugin>      </plugins>
       <pluginManagement>
           <plugins>
               <plugin>

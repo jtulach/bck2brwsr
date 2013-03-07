@@ -4,11 +4,11 @@
   <parent>
     <groupId>org.apidesign.bck2brwsr</groupId>
     <artifactId>rt</artifactId>
-    <version>0.4-SNAPSHOT</version>
+    <version>0.4</version>
   </parent>
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>mojo</artifactId>
-  <version>0.4-SNAPSHOT</version>
+  <version>0.4</version>
   <packaging>maven-plugin</packaging>
   <name>Bck2Brwsr Maven Project</name>
   <url>http://maven.apache.org</url>
@@ -62,7 +62,7 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>vm4brwsr</artifactId>
-      <version>0.4-SNAPSHOT</version>
+      <version>0.4</version>
       <exclusions>
         <exclusion>
           <artifactId>emul.mini</artifactId>
