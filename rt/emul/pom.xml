@@ -4,11 +4,11 @@
   <parent>
     <groupId>org.apidesign.bck2brwsr</groupId>
     <artifactId>rt</artifactId>
-    <version>0.4</version>
+    <version>0.5-SNAPSHOT</version>
   </parent>
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>emul.pom</artifactId>
-  <version>0.4</version>
+  <version>0.5-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Emulation of Core Libraries</name>
   <modules>
