@@ -18,7 +18,7 @@
     If not, see http://opensource.org/licenses/GPL-2.0.
 
 -->
-<archetype-descriptor name="bck2brwsr">
+<archetype-descriptor name="Get Java Bck2Brwsr!">
   <fileSets>
     <fileSet filtered="true" packaged="true">
       <directory>src/main/java</directory>
