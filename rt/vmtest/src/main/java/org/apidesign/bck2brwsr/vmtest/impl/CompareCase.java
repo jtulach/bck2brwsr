@@ -83,10 +83,23 @@ public final class CompareCase implements ITest {
     @Test(dependsOnGroups = "run") public void compareResults() throws Throwable {
         Object v1 = first.value;
         Object v2 = second.value;
-        if (v1 != null) {
-            v1 = v1.toString();
+        if (v1 instanceof Number) {
+            try {
+                v1 = Double.parseDouble(v1.toString());
+            } catch (NumberFormatException nfe) {
+                v1 = "Can't parse " + v1.toString();
+            }
+            try {
+                v2 = Double.parseDouble(v2.toString());
+            } catch (NumberFormatException nfe) {
+                v2 = "Can't parse " + v2.toString();
+            }
         } else {
-            v1 = "null";
+            if (v1 != null) {
+                v1 = v1.toString();
+            } else {
+                v1 = "null";
+            }
         }
         try {
             Assert.assertEquals(v2, v1, "Comparing results");

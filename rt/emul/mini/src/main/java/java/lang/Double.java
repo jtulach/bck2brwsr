@@ -190,12 +190,11 @@ public final class Double extends Number implements Comparable<Double> {
      * @param   d   the {@code double} to be converted.
      * @return a string representation of the argument.
      */
-    @JavaScriptBody(args="d", body="var r = d.toString();"
-        + "if (isFinite(d) && (r.indexOf('.') === -1)) r = r + '.0';"
-        + "return r;")
-    public static String toString(double d) {
-        throw new UnsupportedOperationException();
-    }
+    @JavaScriptBody(args="d", body="var f = Math.floor(d);\n" +
+        "if (f === d && isFinite(d)) return d.toString() + '.0';\n" +
+        "else return d.toString();"
+    )
+    public static native String toString(double d);
 
     /**
      * Returns a hexadecimal string representation of the
