@@ -83,7 +83,18 @@ public final class CompareCase implements ITest {
     @Test(dependsOnGroups = "run") public void compareResults() throws Throwable {
         Object v1 = first.value;
         Object v2 = second.value;
-        if (v1 instanceof Number) {
+        if (v1 instanceof Integer || v1 instanceof Long || v1 instanceof Byte || v1 instanceof Short) {
+            try {
+                v1 = Long.parseLong(v1.toString());
+            } catch (NumberFormatException nfe) {
+                v1 = "Can't parse " + v1.toString();
+            }
+            try {
+                v2 = Long.parseLong(v2.toString());
+            } catch (NumberFormatException nfe) {
+                v2 = "Can't parse " + v2.toString();
+            }
+        } else if (v1 instanceof Number) {
             try {
                 v1 = Double.parseDouble(v1.toString());
             } catch (NumberFormatException nfe) {
