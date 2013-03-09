@@ -56,7 +56,7 @@ final class VMLazy {
             throw new ClassNotFoundException(name);
         }
 //        beingDefined(loader, name);
-        StringBuilder out = new StringBuilder();
+        StringBuilder out = new StringBuilder(65535);
         out.append("var loader = arguments[0];\n");
         out.append("var vm = loader.vm;\n");
         int prelude = out.length();
