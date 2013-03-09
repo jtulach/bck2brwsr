@@ -14,5 +14,6 @@
   <modules>
     <module>mini</module>
     <module>compact</module>
+    <module>brwsrtest</module>
   </modules>
 </project>
