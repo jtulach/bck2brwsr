@@ -191,8 +191,9 @@ public final class Double extends Number implements Comparable<Double> {
      * @return a string representation of the argument.
      */
     @JavaScriptBody(args="d", body="var f = Math.floor(d);\n" +
-        "if (f === d && isFinite(d)) return d.toString() + '.0';\n" +
-        "else return d.toString();"
+        "var r = d.toString();" +
+        "if (f === d && isFinite(d) && r.indexOf('e') === -1) return r + '.0';\n" +
+        " else return r;"
     )
     public static native String toString(double d);
 

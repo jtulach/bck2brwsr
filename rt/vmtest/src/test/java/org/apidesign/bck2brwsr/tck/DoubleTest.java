@@ -50,6 +50,10 @@ public class DoubleTest {
         return Double.parseDouble(toStr(Long.MIN_VALUE / 10));
     }
     
+    @Compare public double canParseExp() {
+        return Double.parseDouble(toStr(1.7976931348623157e+308));
+    }
+    
     private static String toStr(double d) {
         return Double.toString(d);
     }
