@@ -10,7 +10,7 @@
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>brwsrtest</artifactId>
   <version>0.5-SNAPSHOT</version>
-  <name>brwsrtest</name>
+  <name>Tests Inside Real Browser</name>
   <url>http://maven.apache.org</url>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -29,9 +29,9 @@
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-surefire-plugin</artifactId>
               <configuration>
-                  <systemProperties>
+                  <systemPropertyVariables>
                       <vmtest.js>brwsr</vmtest.js>
-                  </systemProperties>
+                  </systemPropertyVariables>
               </configuration>
           </plugin>
       </plugins>
