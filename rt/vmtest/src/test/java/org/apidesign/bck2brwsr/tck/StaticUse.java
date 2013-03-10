@@ -19,6 +19,13 @@ package org.apidesign.bck2brwsr.tck;
 
 class StaticUse {
     public static final Object NON_NULL = new Object();
+    public static int cnt;
+    static {
+        if (cnt++ != 0) {
+            throw new IllegalStateException("Multiple initialization of a <cinit>");
+        }
+    }
+    
     StaticUse() {
     }
     

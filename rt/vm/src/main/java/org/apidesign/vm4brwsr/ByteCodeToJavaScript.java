@@ -191,6 +191,9 @@ abstract class ByteCodeToJavaScript {
             generateAnno(jc, out, classAnno);
             out.append("\n    };");
         }
+        for (String init : toInitilize.toArray()) {
+            out.append("\n    ").append(init).append("();");
+        }
         out.append("\n  }");
         out.append("\n  if (arguments.length === 0) {");
         out.append("\n    if (!(this instanceof CLS)) {");
@@ -219,11 +222,11 @@ abstract class ByteCodeToJavaScript {
         out.append("\n  }");
         out.append("\n  return arguments[0] ? new CLS() : CLS.prototype;");
         out.append("\n};");
-        StringBuilder sb = new StringBuilder();
-        for (String init : toInitilize.toArray()) {
-            sb.append("\n").append(init).append("();");
-        }
-        return sb.toString();
+//        StringBuilder sb = new StringBuilder();
+//        for (String init : toInitilize.toArray()) {
+//            sb.append("\n").append(init).append("();");
+//        }
+        return "";
     }
     private String generateStaticMethod(String prefix, MethodData m, StringArray toInitilize) throws IOException {
         String jsb = javaScriptBody(prefix, m, true);
