@@ -126,7 +126,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
                 throw new OutOfMemoryError();
             newCapacity = Integer.MAX_VALUE;
         }
-        value = copyOf(value, newCapacity);
+        value = System.expandArray(value, newCapacity);
     }
 
     /**
