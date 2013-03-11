@@ -28,11 +28,17 @@
         
     
     <xsl:template match="testcase">
-        <xsl:text>
+      <xsl:if test="contains(@name,'tenThousand')">
+        <xsl:if test="not(contains(@name, '[Java]'))">
+          <xsl:if test="not(contains(@name, '[Compare'))">
+            <xsl:text>
 </xsl:text>
-        <xsl:value-of select="@name"/>
-        <xsl:text>=</xsl:text>
-        <xsl:value-of select="@time"/>
+            <xsl:value-of select="@name"/>
+            <xsl:text>=</xsl:text>
+            <xsl:value-of select="@time"/>
+          </xsl:if>
+        </xsl:if>
+      </xsl:if>
     </xsl:template>
 
 </xsl:stylesheet>
