@@ -31,6 +31,22 @@ public class MatrixTest {
     }
 
     @Compare(scripting = false) 
+    public String oneIteration() throws IOException {
+    
+        Matrix m1 = new Matrix(5);
+        Matrix m2 = new Matrix(5);
+        
+        m1.generateData();
+        m2.generateData();
+        
+        Matrix res = m1.multiply(m2);
+        
+        StringBuilder sb = new StringBuilder();
+        res.printOn(sb);
+        return sb.toString();
+    }
+    
+    @Compare(scripting = false) 
     public String tenThousandIterations() throws IOException {
     
         Matrix m1 = new Matrix(5);
@@ -49,6 +65,27 @@ public class MatrixTest {
         res.printOn(sb);
         return sb.toString();
     }
+    
+    @Compare(scripting = false) 
+    public String tenUselessIterations() throws IOException {
+    
+        Matrix m1 = new Matrix(5);
+        Matrix m2 = new Matrix(5);
+        
+        m1.generateData();
+        m2.generateData();
+        
+        Matrix res = null;
+        for (int i = 0; i < 10; i++) {
+            res = m1.multiply(m2);
+            m1 = res;
+        }
+        
+        StringBuilder sb = new StringBuilder();
+        res.printOn(sb);
+        return sb.toString();
+    }
+
     
     @Factory
     public static Object[] create() {
