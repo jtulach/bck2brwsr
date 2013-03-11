@@ -23,19 +23,30 @@
     <xsl:output method="text"/>
 
     <xsl:template match="/">
-        <xsl:apply-templates select="testsuite/testcase"/>
+        <xsl:apply-templates mode="header" select="testsuite/testcase"/><xsl:text>End
+</xsl:text>
+        <xsl:apply-templates mode="value" select="testsuite/testcase"/><xsl:text>NaN
+</xsl:text>
     </xsl:template>
         
     
-    <xsl:template match="testcase">
+    <xsl:template match="testcase" mode="header">
       <xsl:if test="contains(@name,'tenThousand')">
         <xsl:if test="not(contains(@name, '[Java]'))">
           <xsl:if test="not(contains(@name, '[Compare'))">
-            <xsl:text>
-</xsl:text>
-            <xsl:value-of select="@name"/>
-            <xsl:text>=</xsl:text>
+              <xsl:value-of select="@name"/>
+              <xsl:text>,</xsl:text>
+          </xsl:if>
+        </xsl:if>
+      </xsl:if>
+    </xsl:template>
+
+    <xsl:template match="testcase" mode="value">
+      <xsl:if test="contains(@name,'tenThousand')">
+        <xsl:if test="not(contains(@name, '[Java]'))">
+          <xsl:if test="not(contains(@name, '[Compare'))">
             <xsl:value-of select="@time"/>
+            <xsl:text>,</xsl:text>
           </xsl:if>
         </xsl:if>
       </xsl:if>

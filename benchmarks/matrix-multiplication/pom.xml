@@ -60,7 +60,7 @@
                           <stylesheet>src/main/select-time.xsl</stylesheet>
                           <fileMappers>
                               <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
-                                  <targetExtension>.properties</targetExtension>
+                                  <targetExtension>.csv</targetExtension>
                               </fileMapper>
                           </fileMappers>                          
                       </transformationSet>
