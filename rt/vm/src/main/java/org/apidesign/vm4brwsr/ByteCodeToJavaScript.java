@@ -281,22 +281,28 @@ abstract class ByteCodeToJavaScript {
         TrapData[] previousTrap = null;
         boolean wide = false;
         
-        out.append("\n  var gt = 0;\n  for(;;) switch(gt) {\n");
+        out.append("\n  var gt = 0;\n");
+        int openBraces = 0;
         for (int i = 0; i < byteCodes.length; i++) {
             int prev = i;
             stackMapIterator.advanceTo(i);
             boolean changeInCatch = trap.advanceTo(i);
             if (changeInCatch || lastStackFrame != stackMapIterator.getFrameIndex()) {
                 if (previousTrap != null) {
-                    generateCatch(previousTrap);
+                    generateCatch(previousTrap, i);
                     previousTrap = null;
                 }
             }
             if (lastStackFrame != stackMapIterator.getFrameIndex()) {
+                if (i != 0) {
+                    out.append("    }\n");
+                }
+                
                 lastStackFrame = stackMapIterator.getFrameIndex();
                 lmapper.syncWithFrameLocals(stackMapIterator.getFrameLocals());
                 smapper.syncWithFrameStack(stackMapIterator.getFrameStack());
-                out.append("    case " + i).append(": ");            
+                out.append("    X_" + i).append(": for (;;) { IF: if (gt <= " + i + ") {\n");
+                openBraces++;
                 changeInCatch = true;
             } else {
                 debug("    /* " + i + " */ ");
@@ -811,57 +817,57 @@ abstract class ByteCodeToJavaScript {
                     break;
                 case opc_ifeq: {
                     int indx = i + readIntArg(byteCodes, i);
-                    emit(out, "if (@1 == 0) { gt = @2; continue; }",
-                         smapper.popI(), Integer.toString(indx));
+                    emitIf(out, "if (@1 == 0) ",
+                         smapper.popI(), i, indx);
                     i += 2;
                     break;
                 }
                 case opc_ifne: {
                     int indx = i + readIntArg(byteCodes, i);
-                    emit(out, "if (@1 != 0) { gt = @2; continue; }",
-                         smapper.popI(), Integer.toString(indx));
+                    emitIf(out, "if (@1 != 0) ",
+                         smapper.popI(), i, indx);
                     i += 2;
                     break;
                 }
                 case opc_iflt: {
                     int indx = i + readIntArg(byteCodes, i);
-                    emit(out, "if (@1 < 0) { gt = @2; continue; }",
-                         smapper.popI(), Integer.toString(indx));
+                    emitIf(out, "if (@1 < 0) ",
+                         smapper.popI(), i, indx);
                     i += 2;
                     break;
                 }
                 case opc_ifle: {
                     int indx = i + readIntArg(byteCodes, i);
-                    emit(out, "if (@1 <= 0) { gt = @2; continue; }",
-                         smapper.popI(), Integer.toString(indx));
+                    emitIf(out, "if (@1 <= 0) ",
+                         smapper.popI(), i, indx);
                     i += 2;
                     break;
                 }
                 case opc_ifgt: {
                     int indx = i + readIntArg(byteCodes, i);
-                    emit(out, "if (@1 > 0) { gt = @2; continue; }",
-                         smapper.popI(), Integer.toString(indx));
+                    emitIf(out, "if (@1 > 0) ",
+                         smapper.popI(), i, indx);
                     i += 2;
                     break;
                 }
                 case opc_ifge: {
                     int indx = i + readIntArg(byteCodes, i);
-                    emit(out, "if (@1 >= 0) { gt = @2; continue; }",
-                         smapper.popI(), Integer.toString(indx));
+                    emitIf(out, "if (@1 >= 0) ",
+                         smapper.popI(), i, indx);
                     i += 2;
                     break;
                 }
                 case opc_ifnonnull: {
                     int indx = i + readIntArg(byteCodes, i);
-                    emit(out, "if (@1 !== null) { gt = @2; continue; }",
-                         smapper.popA(), Integer.toString(indx));
+                    emitIf(out, "if (@1 !== null) ",
+                         smapper.popA(), i, indx);
                     i += 2;
                     break;
                 }
                 case opc_ifnull: {
                     int indx = i + readIntArg(byteCodes, i);
-                    emit(out, "if (@1 === null) { gt = @2; continue; }",
-                         smapper.popA(), Integer.toString(indx));
+                    emitIf(out, "if (@1 === null) ",
+                         smapper.popA(), i, indx);
                     i += 2;
                     break;
                 }
@@ -887,7 +893,7 @@ abstract class ByteCodeToJavaScript {
                     break;
                 case opc_goto: {
                     int indx = i + readIntArg(byteCodes, i);
-                    emit(out, "gt = @1; continue;", Integer.toString(indx));
+                    goTo(out, i, indx);
                     i += 2;
                     break;
                 }
@@ -903,9 +909,9 @@ abstract class ByteCodeToJavaScript {
                         table += 4;
                         int offset = i + readInt4(byteCodes, table);
                         table += 4;
-                        out.append("  case " + cnstnt).append(": gt = " + offset).append("; continue;\n");
+                        out.append("  case " + cnstnt).append(": "); goTo(out, i, offset); out.append('\n');
                     }
-                    out.append("  default: gt = " + dflt).append("; continue;\n}");
+                    out.append("  default: "); goTo(out, i, dflt); out.append("\n}");
                     i = table - 1;
                     break;
                 }
@@ -921,10 +927,10 @@ abstract class ByteCodeToJavaScript {
                     while (low <= high) {
                         int offset = i + readInt4(byteCodes, table);
                         table += 4;
-                        out.append("  case " + low).append(": gt = " + offset).append("; continue;\n");
+                        out.append("  case " + low).append(":"); goTo(out, i, offset); out.append('\n');
                         low++;
                     }
-                    out.append("  default: gt = " + dflt).append("; continue;\n}");
+                    out.append("  default: "); goTo(out, i, dflt); out.append("\n}");
                     i = table - 1;
                     break;
                 }
@@ -1333,10 +1339,13 @@ abstract class ByteCodeToJavaScript {
             out.append("\n");            
         }
         if (previousTrap != null) {
-            generateCatch(previousTrap);
+            generateCatch(previousTrap, byteCodes.length);
         }
-        out.append("  }\n");
-        out.append("};");
+        out.append("\n    }\n");
+        while (openBraces-- > 0) {
+            out.append('}');
+        }
+        out.append("\n};");
     }
 
     private int generateIf(byte[] byteCodes, int i,
@@ -1345,11 +1354,11 @@ abstract class ByteCodeToJavaScript {
         int indx = i + readIntArg(byteCodes, i);
         out.append("if (").append(v1)
            .append(' ').append(test).append(' ')
-           .append(v2).append(") { gt = " + indx)
-           .append("; continue; }");
+           .append(v2).append(") ");
+        goTo(out, i, indx);
         return i + 2;
     }
-
+    
     private int readIntArg(byte[] byteCodes, int offsetInstruction) {
         final int indxHi = byteCodes[offsetInstruction + 1] << 8;
         final int indxLo = byteCodes[offsetInstruction + 2];
@@ -1821,7 +1830,7 @@ abstract class ByteCodeToJavaScript {
         out.append(format, processed, length);
     }
 
-    private void generateCatch(TrapData[] traps) throws IOException {
+    private void generateCatch(TrapData[] traps, int current) throws IOException {
         out.append("} catch (e) {\n");
         int finallyPC = -1;
         for (TrapData e : traps) {
@@ -1838,10 +1847,11 @@ abstract class ByteCodeToJavaScript {
                     out.append("  var stA0 = vm.java_lang_Throwable(true);");
                     out.append("  vm.java_lang_Throwable.cons__VLjava_lang_String_2.call(stA0, e.toString());");
                     out.append("}");
-                    out.append("gt=" + e.handler_pc + "; continue;");
+                    goTo(out, current, e.handler_pc);
                 } else {
                     out.append("if (e.$instOf_" + classInternalName.replace('/', '_') + ") {");
-                    out.append("gt=" + e.handler_pc + "; var stA0 = e; continue;");
+                    out.append("var stA0 = e;");
+                    goTo(out, current, e.handler_pc);
                     out.append("}\n");
                 }
             } else {
@@ -1851,8 +1861,22 @@ abstract class ByteCodeToJavaScript {
         if (finallyPC == -1) {
             out.append("throw e;");
         } else {
-            out.append("gt=" + finallyPC + "; var stA0 = e; continue;");
+            out.append("var stA0 = e;");
+            goTo(out, current, finallyPC);
         }
         out.append("\n}");
+    }
+
+    private static void goTo(Appendable out, int current, int to) throws IOException {
+        if (to < current) {
+            out.append("{ gt = 0; continue X_" + to + "; }");
+        } else {
+            out.append("{ gt = " + to + "; break IF; }");
+        }
+    }
+
+    private static void emitIf(Appendable out, String pattern, Variable param, int current, int to) throws IOException {
+        emit(out, pattern, param);
+        goTo(out, current, to);
     }
 }
