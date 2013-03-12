@@ -283,19 +283,27 @@ abstract class ByteCodeToJavaScript {
         
         out.append("\n  var gt = 0;\n");
         int openBraces = 0;
+        int topMostLabel = 0;
         for (int i = 0; i < byteCodes.length; i++) {
             int prev = i;
             stackMapIterator.advanceTo(i);
             boolean changeInCatch = trap.advanceTo(i);
             if (changeInCatch || lastStackFrame != stackMapIterator.getFrameIndex()) {
                 if (previousTrap != null) {
-                    generateCatch(previousTrap, i);
+                    generateCatch(previousTrap, i, topMostLabel);
                     previousTrap = null;
                 }
             }
             if (lastStackFrame != stackMapIterator.getFrameIndex()) {
                 if (i != 0) {
                     out.append("    }\n");
+                }
+                if (openBraces > 64) {
+                    for (int c = 0; c < 64; c++) {
+                        out.append("break;}\n");
+                    }
+                    openBraces = 1;
+                    topMostLabel = i;
                 }
                 
                 lastStackFrame = stackMapIterator.getFrameIndex();
@@ -805,104 +813,104 @@ abstract class ByteCodeToJavaScript {
                     break;
                 case opc_if_acmpeq:
                     i = generateIf(byteCodes, i, smapper.popA(), smapper.popA(),
-                                   "===");
+                                   "===", topMostLabel);
                     break;
                 case opc_if_acmpne:
                     i = generateIf(byteCodes, i, smapper.popA(), smapper.popA(),
-                                   "!==");
+                                   "!==", topMostLabel);
                     break;
                 case opc_if_icmpeq:
                     i = generateIf(byteCodes, i, smapper.popI(), smapper.popI(),
-                                   "==");
+                                   "==", topMostLabel);
                     break;
                 case opc_ifeq: {
                     int indx = i + readIntArg(byteCodes, i);
                     emitIf(out, "if (@1 == 0) ",
-                         smapper.popI(), i, indx);
+                         smapper.popI(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_ifne: {
                     int indx = i + readIntArg(byteCodes, i);
                     emitIf(out, "if (@1 != 0) ",
-                         smapper.popI(), i, indx);
+                         smapper.popI(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_iflt: {
                     int indx = i + readIntArg(byteCodes, i);
                     emitIf(out, "if (@1 < 0) ",
-                         smapper.popI(), i, indx);
+                         smapper.popI(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_ifle: {
                     int indx = i + readIntArg(byteCodes, i);
                     emitIf(out, "if (@1 <= 0) ",
-                         smapper.popI(), i, indx);
+                         smapper.popI(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_ifgt: {
                     int indx = i + readIntArg(byteCodes, i);
                     emitIf(out, "if (@1 > 0) ",
-                         smapper.popI(), i, indx);
+                         smapper.popI(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_ifge: {
                     int indx = i + readIntArg(byteCodes, i);
                     emitIf(out, "if (@1 >= 0) ",
-                         smapper.popI(), i, indx);
+                         smapper.popI(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_ifnonnull: {
                     int indx = i + readIntArg(byteCodes, i);
                     emitIf(out, "if (@1 !== null) ",
-                         smapper.popA(), i, indx);
+                         smapper.popA(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_ifnull: {
                     int indx = i + readIntArg(byteCodes, i);
                     emitIf(out, "if (@1 === null) ",
-                         smapper.popA(), i, indx);
+                         smapper.popA(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_if_icmpne:
                     i = generateIf(byteCodes, i, smapper.popI(), smapper.popI(),
-                                   "!=");
+                                   "!=", topMostLabel);
                     break;
                 case opc_if_icmplt:
                     i = generateIf(byteCodes, i, smapper.popI(), smapper.popI(),
-                                   "<");
+                                   "<", topMostLabel);
                     break;
                 case opc_if_icmple:
                     i = generateIf(byteCodes, i, smapper.popI(), smapper.popI(),
-                                   "<=");
+                                   "<=", topMostLabel);
                     break;
                 case opc_if_icmpgt:
                     i = generateIf(byteCodes, i, smapper.popI(), smapper.popI(),
-                                   ">");
+                                   ">", topMostLabel);
                     break;
                 case opc_if_icmpge:
                     i = generateIf(byteCodes, i, smapper.popI(), smapper.popI(),
-                                   ">=");
+                                   ">=", topMostLabel);
                     break;
                 case opc_goto: {
                     int indx = i + readIntArg(byteCodes, i);
-                    goTo(out, i, indx);
+                    goTo(out, i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_lookupswitch: {
-                    i = generateLookupSwitch(i, byteCodes, smapper);
+                    i = generateLookupSwitch(i, byteCodes, smapper, topMostLabel);
                     break;
                 }
                 case opc_tableswitch: {
-                    i = generateTableSwitch(i, byteCodes, smapper);
+                    i = generateTableSwitch(i, byteCodes, smapper, topMostLabel);
                     break;
                 }
                 case opc_invokeinterface: {
@@ -1255,7 +1263,7 @@ abstract class ByteCodeToJavaScript {
             out.append("\n");            
         }
         if (previousTrap != null) {
-            generateCatch(previousTrap, byteCodes.length);
+            generateCatch(previousTrap, byteCodes.length, topMostLabel);
         }
         out.append("\n    }\n");
         while (openBraces-- > 0) {
@@ -1264,14 +1272,12 @@ abstract class ByteCodeToJavaScript {
         out.append("\n};");
     }
 
-    private int generateIf(byte[] byteCodes, int i,
-                           final Variable v2, final Variable v1,
-                           final String test) throws IOException {
+    private int generateIf(byte[] byteCodes, int i, final Variable v2, final Variable v1, final String test, int topMostLabel) throws IOException {
         int indx = i + readIntArg(byteCodes, i);
         out.append("if (").append(v1)
            .append(' ').append(test).append(' ')
            .append(v2).append(") ");
-        goTo(out, i, indx);
+        goTo(out, i, indx, topMostLabel);
         return i + 2;
     }
     
@@ -1746,7 +1752,7 @@ abstract class ByteCodeToJavaScript {
         out.append(format, processed, length);
     }
 
-    private void generateCatch(TrapData[] traps, int current) throws IOException {
+    private void generateCatch(TrapData[] traps, int current, int topMostLabel) throws IOException {
         out.append("} catch (e) {\n");
         int finallyPC = -1;
         for (TrapData e : traps) {
@@ -1763,11 +1769,11 @@ abstract class ByteCodeToJavaScript {
                     out.append("  var stA0 = vm.java_lang_Throwable(true);");
                     out.append("  vm.java_lang_Throwable.cons__VLjava_lang_String_2.call(stA0, e.toString());");
                     out.append("}");
-                    goTo(out, current, e.handler_pc);
+                    goTo(out, current, e.handler_pc, topMostLabel);
                 } else {
                     out.append("if (e.$instOf_" + classInternalName.replace('/', '_') + ") {");
                     out.append("var stA0 = e;");
-                    goTo(out, current, e.handler_pc);
+                    goTo(out, current, e.handler_pc, topMostLabel);
                     out.append("}\n");
                 }
             } else {
@@ -1778,22 +1784,29 @@ abstract class ByteCodeToJavaScript {
             out.append("throw e;");
         } else {
             out.append("var stA0 = e;");
-            goTo(out, current, finallyPC);
+            goTo(out, current, finallyPC, topMostLabel);
         }
         out.append("\n}");
     }
 
-    private static void goTo(Appendable out, int current, int to) throws IOException {
+    private static void goTo(Appendable out, int current, int to, int canBack) throws IOException {
         if (to < current) {
-            out.append("{ gt = 0; continue X_" + to + "; }");
+            if (canBack < to) {
+                out.append("{ gt = 0; continue X_" + to + "; }");
+            } else {
+                out.append("{ gt = " + to + "; continue X_0; }");
+            }
         } else {
             out.append("{ gt = " + to + "; break IF; }");
         }
     }
 
-    private static void emitIf(Appendable out, String pattern, Variable param, int current, int to) throws IOException {
+    private static void emitIf(
+        Appendable out, String pattern, Variable param, 
+        int current, int to, int canBack
+    ) throws IOException {
         emit(out, pattern, param);
-        goTo(out, current, to);
+        goTo(out, current, to, canBack);
     }
 
     private void generateNewArray(int atype, final StackMapper smapper) throws IOException, IllegalStateException {
@@ -1841,7 +1854,7 @@ abstract class ByteCodeToJavaScript {
         return i;
     }
 
-    private int generateTableSwitch(int i, final byte[] byteCodes, final StackMapper smapper) throws IOException {
+    private int generateTableSwitch(int i, final byte[] byteCodes, final StackMapper smapper, int topMostLabel) throws IOException {
         int table = i / 4 * 4 + 4;
         int dflt = i + readInt4(byteCodes, table);
         table += 4;
@@ -1853,17 +1866,17 @@ abstract class ByteCodeToJavaScript {
         while (low <= high) {
             int offset = i + readInt4(byteCodes, table);
             table += 4;
-            out.append("  case " + low).append(":"); goTo(out, i, offset); out.append('\n');
+            out.append("  case " + low).append(":"); goTo(out, i, offset, topMostLabel); out.append('\n');
             low++;
         }
         out.append("  default: ");
-        goTo(out, i, dflt);
+        goTo(out, i, dflt, topMostLabel);
         out.append("\n}");
         i = table - 1;
         return i;
     }
 
-    private int generateLookupSwitch(int i, final byte[] byteCodes, final StackMapper smapper) throws IOException {
+    private int generateLookupSwitch(int i, final byte[] byteCodes, final StackMapper smapper, int topMostLabel) throws IOException {
         int table = i / 4 * 4 + 4;
         int dflt = i + readInt4(byteCodes, table);
         table += 4;
@@ -1875,10 +1888,10 @@ abstract class ByteCodeToJavaScript {
             table += 4;
             int offset = i + readInt4(byteCodes, table);
             table += 4;
-            out.append("  case " + cnstnt).append(": "); goTo(out, i, offset); out.append('\n');
+            out.append("  case " + cnstnt).append(": "); goTo(out, i, offset, topMostLabel); out.append('\n');
         }
         out.append("  default: ");
-        goTo(out, i, dflt);
+        goTo(out, i, dflt, topMostLabel);
         out.append("\n}");
         i = table - 1;
         return i;
