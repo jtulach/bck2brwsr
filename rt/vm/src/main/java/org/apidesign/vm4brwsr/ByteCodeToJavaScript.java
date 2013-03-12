@@ -898,40 +898,11 @@ abstract class ByteCodeToJavaScript {
                     break;
                 }
                 case opc_lookupswitch: {
-                    int table = i / 4 * 4 + 4;
-                    int dflt = i + readInt4(byteCodes, table);
-                    table += 4;
-                    int n = readInt4(byteCodes, table);
-                    table += 4;
-                    out.append("switch (").append(smapper.popI()).append(") {\n");
-                    while (n-- > 0) {
-                        int cnstnt = readInt4(byteCodes, table);
-                        table += 4;
-                        int offset = i + readInt4(byteCodes, table);
-                        table += 4;
-                        out.append("  case " + cnstnt).append(": "); goTo(out, i, offset); out.append('\n');
-                    }
-                    out.append("  default: "); goTo(out, i, dflt); out.append("\n}");
-                    i = table - 1;
+                    i = generateLookupSwitch(i, byteCodes, smapper);
                     break;
                 }
                 case opc_tableswitch: {
-                    int table = i / 4 * 4 + 4;
-                    int dflt = i + readInt4(byteCodes, table);
-                    table += 4;
-                    int low = readInt4(byteCodes, table);
-                    table += 4;
-                    int high = readInt4(byteCodes, table);
-                    table += 4;
-                    out.append("switch (").append(smapper.popI()).append(") {\n");
-                    while (low <= high) {
-                        int offset = i + readInt4(byteCodes, table);
-                        table += 4;
-                        out.append("  case " + low).append(":"); goTo(out, i, offset); out.append('\n');
-                        low++;
-                    }
-                    out.append("  default: "); goTo(out, i, dflt); out.append("\n}");
-                    i = table - 1;
+                    i = generateTableSwitch(i, byteCodes, smapper);
                     break;
                 }
                 case opc_invokeinterface: {
@@ -958,50 +929,18 @@ abstract class ByteCodeToJavaScript {
                 }
                 case opc_newarray:
                     int atype = readUByte(byteCodes, ++i);
-                    String jvmType;
-                    switch (atype) {
-                        case 4: jvmType = "[Z"; break;
-                        case 5: jvmType = "[C"; break;
-                        case 6: jvmType = "[F"; break;
-                        case 7: jvmType = "[D"; break;
-                        case 8: jvmType = "[B"; break;
-                        case 9: jvmType = "[S"; break;
-                        case 10: jvmType = "[I"; break;
-                        case 11: jvmType = "[J"; break;
-                        default: throw new IllegalStateException("Array type: " + atype);
-                    }
-                    emit(out, "var @2 = Array.prototype.newArray__Ljava_lang_Object_2ZLjava_lang_String_2I(true, '@3', @1);",
-                         smapper.popI(), smapper.pushA(), jvmType);
+                    generateNewArray(atype, smapper);
                     break;
                 case opc_anewarray: {
                     int type = readIntArg(byteCodes, i);
                     i += 2;
-                    String typeName = jc.getClassName(type);
-                    if (typeName.startsWith("[")) {
-                        typeName = "[" + typeName;
-                    } else {
-                        typeName = "[L" + typeName + ";";
-                    }
-                    emit(out, "var @2 = Array.prototype.newArray__Ljava_lang_Object_2ZLjava_lang_String_2I(false, '@3', @1);",
-                         smapper.popI(), smapper.pushA(), typeName);
+                    generateANewArray(type, smapper);
                     break;
                 }
                 case opc_multianewarray: {
                     int type = readIntArg(byteCodes, i);
                     i += 2;
-                    String typeName = jc.getClassName(type);
-                    int dim = readUByte(byteCodes, ++i);
-                    StringBuilder dims = new StringBuilder();
-                    dims.append('[');
-                    for (int d = 0; d < dim; d++) {
-                        if (d != 0) {
-                            dims.insert(1, ",");
-                        }
-                        dims.insert(1, smapper.popI());
-                    }
-                    dims.append(']');
-                    emit(out, "var @2 = Array.prototype.multiNewArray__Ljava_lang_Object_2Ljava_lang_String_2_3II('@3', @1, 0);",
-                         dims.toString(), smapper.pushA(), typeName);
+                    i = generateMultiANewArray(type, byteCodes, i, smapper);
                     break;
                 }
                 case opc_arraylength:
@@ -1269,32 +1208,13 @@ abstract class ByteCodeToJavaScript {
                 }
                 case opc_checkcast: {
                     int indx = readIntArg(byteCodes, i);
-                    final String type = jc.getClassName(indx);
-                    if (!type.startsWith("[")) {
-                        emit(out,
-                             "if (@1 !== null && !@1.$instOf_@2) throw {};",
-                             smapper.getA(0), type.replace('/', '_'));
-                    } else {
-                        emit(out, "vm.java_lang_Class(false).forName__Ljava_lang_Class_2Ljava_lang_String_2('@2').cast__Ljava_lang_Object_2Ljava_lang_Object_2(@1);",
-                             smapper.getA(0), type
-                        );
-                    }
+                    generateCheckcast(indx, smapper);
                     i += 2;
                     break;
                 }
                 case opc_instanceof: {
                     int indx = readIntArg(byteCodes, i);
-                    final String type = jc.getClassName(indx);
-                    if (!type.startsWith("[")) {
-                        emit(out, "var @2 = @1 != null && @1.$instOf_@3 ? 1 : 0;",
-                             smapper.popA(), smapper.pushI(),
-                             type.replace('/', '_'));
-                    } else {
-                        emit(out, "var @2 = vm.java_lang_Class(false).forName__Ljava_lang_Class_2Ljava_lang_String_2('@3').isInstance__ZLjava_lang_Object_2(@1);",
-                            smapper.popA(), smapper.pushI(),
-                            type
-                        );
-                    }
+                    generateInstanceOf(indx, smapper);
                     i += 2;
                     break;
                 }
@@ -1330,11 +1250,7 @@ abstract class ByteCodeToJavaScript {
                 }
             }
             if (debug(" //")) {
-                for (int j = prev; j <= i; j++) {
-                    out.append(" ");
-                    final int cc = readUByte(byteCodes, j);
-                    out.append(Integer.toString(cc));
-                }
+                generateByteCodeComment(prev, i, byteCodes);
             }
             out.append("\n");            
         }
@@ -1878,5 +1794,128 @@ abstract class ByteCodeToJavaScript {
     private static void emitIf(Appendable out, String pattern, Variable param, int current, int to) throws IOException {
         emit(out, pattern, param);
         goTo(out, current, to);
+    }
+
+    private void generateNewArray(int atype, final StackMapper smapper) throws IOException, IllegalStateException {
+        String jvmType;
+        switch (atype) {
+            case 4: jvmType = "[Z"; break;
+            case 5: jvmType = "[C"; break;
+            case 6: jvmType = "[F"; break;
+            case 7: jvmType = "[D"; break;
+            case 8: jvmType = "[B"; break;
+            case 9: jvmType = "[S"; break;
+            case 10: jvmType = "[I"; break;
+            case 11: jvmType = "[J"; break;
+            default: throw new IllegalStateException("Array type: " + atype);
+        }
+        emit(out, "var @2 = Array.prototype.newArray__Ljava_lang_Object_2ZLjava_lang_String_2I(true, '@3', @1);",
+             smapper.popI(), smapper.pushA(), jvmType);
+    }
+
+    private void generateANewArray(int type, final StackMapper smapper) throws IOException {
+        String typeName = jc.getClassName(type);
+        if (typeName.startsWith("[")) {
+            typeName = "[" + typeName;
+        } else {
+            typeName = "[L" + typeName + ";";
+        }
+        emit(out, "var @2 = Array.prototype.newArray__Ljava_lang_Object_2ZLjava_lang_String_2I(false, '@3', @1);",
+             smapper.popI(), smapper.pushA(), typeName);
+    }
+
+    private int generateMultiANewArray(int type, final byte[] byteCodes, int i, final StackMapper smapper) throws IOException {
+        String typeName = jc.getClassName(type);
+        int dim = readUByte(byteCodes, ++i);
+        StringBuilder dims = new StringBuilder();
+        dims.append('[');
+        for (int d = 0; d < dim; d++) {
+            if (d != 0) {
+                dims.insert(1, ",");
+            }
+            dims.insert(1, smapper.popI());
+        }
+        dims.append(']');
+        emit(out, "var @2 = Array.prototype.multiNewArray__Ljava_lang_Object_2Ljava_lang_String_2_3II('@3', @1, 0);",
+             dims.toString(), smapper.pushA(), typeName);
+        return i;
+    }
+
+    private int generateTableSwitch(int i, final byte[] byteCodes, final StackMapper smapper) throws IOException {
+        int table = i / 4 * 4 + 4;
+        int dflt = i + readInt4(byteCodes, table);
+        table += 4;
+        int low = readInt4(byteCodes, table);
+        table += 4;
+        int high = readInt4(byteCodes, table);
+        table += 4;
+        out.append("switch (").append(smapper.popI()).append(") {\n");
+        while (low <= high) {
+            int offset = i + readInt4(byteCodes, table);
+            table += 4;
+            out.append("  case " + low).append(":"); goTo(out, i, offset); out.append('\n');
+            low++;
+        }
+        out.append("  default: ");
+        goTo(out, i, dflt);
+        out.append("\n}");
+        i = table - 1;
+        return i;
+    }
+
+    private int generateLookupSwitch(int i, final byte[] byteCodes, final StackMapper smapper) throws IOException {
+        int table = i / 4 * 4 + 4;
+        int dflt = i + readInt4(byteCodes, table);
+        table += 4;
+        int n = readInt4(byteCodes, table);
+        table += 4;
+        out.append("switch (").append(smapper.popI()).append(") {\n");
+        while (n-- > 0) {
+            int cnstnt = readInt4(byteCodes, table);
+            table += 4;
+            int offset = i + readInt4(byteCodes, table);
+            table += 4;
+            out.append("  case " + cnstnt).append(": "); goTo(out, i, offset); out.append('\n');
+        }
+        out.append("  default: ");
+        goTo(out, i, dflt);
+        out.append("\n}");
+        i = table - 1;
+        return i;
+    }
+
+    private void generateInstanceOf(int indx, final StackMapper smapper) throws IOException {
+        final String type = jc.getClassName(indx);
+        if (!type.startsWith("[")) {
+            emit(out, "var @2 = @1 != null && @1.$instOf_@3 ? 1 : 0;",
+                 smapper.popA(), smapper.pushI(),
+                 type.replace('/', '_'));
+        } else {
+            emit(out, "var @2 = vm.java_lang_Class(false).forName__Ljava_lang_Class_2Ljava_lang_String_2('@3').isInstance__ZLjava_lang_Object_2(@1);",
+                smapper.popA(), smapper.pushI(),
+                type
+            );
+        }
+    }
+
+    private void generateCheckcast(int indx, final StackMapper smapper) throws IOException {
+        final String type = jc.getClassName(indx);
+        if (!type.startsWith("[")) {
+            emit(out,
+                 "if (@1 !== null && !@1.$instOf_@2) throw {};",
+                 smapper.getA(0), type.replace('/', '_'));
+        } else {
+            emit(out, "vm.java_lang_Class(false).forName__Ljava_lang_Class_2Ljava_lang_String_2('@2').cast__Ljava_lang_Object_2Ljava_lang_Object_2(@1);",
+                 smapper.getA(0), type
+            );
+        }
+    }
+
+    private void generateByteCodeComment(int prev, int i, final byte[] byteCodes) throws IOException {
+        for (int j = prev; j <= i; j++) {
+            out.append(" ");
+            final int cc = readUByte(byteCodes, j);
+            out.append(Integer.toString(cc));
+        }
     }
 }
