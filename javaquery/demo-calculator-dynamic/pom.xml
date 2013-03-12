@@ -1,11 +1,10 @@
 <?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>demo.calculator</artifactId>
-  <version>0.3-SNAPSHOT</version>
+  <version>0.5-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>JavaQuery Demo - Calculator</name>
@@ -19,7 +18,7 @@
             <plugin>
                 <groupId>org.apidesign.bck2brwsr</groupId>
                 <artifactId>mojo</artifactId>
-                <version>0.3-SNAPSHOT</version>
+                <version>0.5-SNAPSHOT</version>
                 <executions>
                     <execution>
                         <goals>
@@ -62,6 +61,14 @@
            </configuration>
          </plugin>
          <plugin>
+           <groupId>org.apache.maven.plugins</groupId>
+           <artifactId>maven-javadoc-plugin</artifactId>
+           <version>2.9</version>
+           <configuration>
+             <skip>true</skip>
+           </configuration>
+         </plugin>
+         <plugin>
             <artifactId>maven-assembly-plugin</artifactId>
                 <version>2.4</version>
                 <executions>
@@ -86,13 +93,13 @@
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>emul</artifactId>
-      <version>0.3-SNAPSHOT</version>
+      <version>0.5-SNAPSHOT</version>
       <classifier>rt</classifier>
     </dependency>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>javaquery.api</artifactId>
-      <version>0.3-SNAPSHOT</version>
+      <version>0.5-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.testng</groupId>
@@ -105,7 +112,7 @@
       <artifactId>vm4brwsr</artifactId>
       <classifier>js</classifier>
       <type>zip</type>
-      <version>0.3-SNAPSHOT</version>
+      <version>0.5-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>

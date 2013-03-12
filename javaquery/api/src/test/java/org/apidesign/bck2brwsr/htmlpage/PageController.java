@@ -60,4 +60,9 @@ public class PageController {
         }
         PAGE.PG_TITLE.setText(id);
     }
+    
+    @On(event = CLICK, id={ "pg.canvas" })
+    static void clickCanvas(String id, double layerX) {
+        PAGE.PG_CANVAS.setWidth((int) layerX);
+    }
 }

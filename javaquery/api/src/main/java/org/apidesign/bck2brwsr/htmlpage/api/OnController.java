@@ -30,14 +30,33 @@ public final class OnController {
         this.arr = arr;
     }
     
+    /** Registers an event handler on associated {@link OnEvent}
+     * and {@link Element}
+     * 
+     * @param handler the handler to be called when the event occurs
+     */
+    public void perform(final OnHandler handler) {
+        for (Element e : arr) {
+            e.on(event, handler);
+        }
+    }
+    
     /** Registers a runnable to be performed on associated {@link OnEvent} 
      * and {@link Element}.
      * 
      * @see OnEvent#of
      */
-    public void perform(Runnable r) {
+    public void perform(final Runnable r) {
+        class W implements OnHandler {
+            @Override
+            public void onEvent(Object event) throws Exception {
+                r.run();
+            }
+        }
+        perform(new W());
+        OnHandler w = new W();
         for (Element e : arr) {
-            e.on(event, r);
+            e.on(event, w);
         }
     }
 }

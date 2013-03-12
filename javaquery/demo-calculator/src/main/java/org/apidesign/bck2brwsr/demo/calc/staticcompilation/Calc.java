@@ -48,18 +48,18 @@ public class Calc {
     }
     
     @On(event = CLICK, id= { "plus", "minus", "mul", "div" })
-    static void applyOp(Calculator c, String op) {
+    static void applyOp(Calculator c, String id) {
         c.setMemory(c.getDisplay());
-        c.setOperation(op);
+        c.setOperation(id);
         c.setDisplay(0);
     }
 
     @On(event = MOUSE_OVER, id= { "result" })
-    static void attemptingIn(Calculator c, String op) {
+    static void attemptingIn(Calculator c) {
         c.setHover(true);
     }
     @On(event = MOUSE_OUT, id= { "result" })
-    static void attemptingOut(Calculator c, String op) {
+    static void attemptingOut(Calculator c) {
         c.setHover(false);
     }
     
@@ -84,18 +84,18 @@ public class Calc {
     }
     
     @On(event = CLICK, id={"n0", "n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9"}) 
-    static void addDigit(String digit, Calculator c) {
-        digit = digit.substring(1);
+    static void addDigit(String id, Calculator c) {
+        id = id.substring(1);
         
         double v = c.getDisplay();
         if (v == 0.0) {
-            c.setDisplay(Integer.parseInt(digit));
+            c.setDisplay(Integer.parseInt(id));
         } else {
             String txt = Double.toString(v);
             if (txt.endsWith(".0")) {
                 txt = txt.substring(0, txt.length() - 2);
             }
-            txt = txt + digit;
+            txt = txt + id;
             c.setDisplay(Double.parseDouble(txt));
         }
     }
