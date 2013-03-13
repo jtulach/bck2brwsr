@@ -56,35 +56,69 @@ import java.util.Enumeration;
 public final class Bck2Brwsr {
     private Bck2Brwsr() {
     }
-    
+
     /** Generates virtual machine from bytes served by a <code>resources</code>
      * provider.
-     * 
+     *
      * @param out the output to write the generated JavaScript to
      * @param resources provider of class files to use
      * @param classes additional classes to include in the generated script
      * @throws IOException I/O exception can be thrown when something goes wrong
      */
     public static void generate(Appendable out, Resources resources, String... classes) throws IOException {
-        StringArray arr = StringArray.asList(classes);
-        arr.add(VM.class.getName().replace('.', '/'));
-        try {
-            ClosureWrapper.produceTo(out, resources, arr);
-        } catch (IOException ex) {
-            throw ex;
-        } catch (Throwable ex) {
-            VM.compile(resources, out, arr);
-        }
+        generate(out, ObfuscationLevel.NONE, resources, classes);
     }
-    
+
     /** Generates virtual machine from bytes served by a class loader.
-     * 
+     *
      * @param out the output to write the generated JavaScript to
      * @param loader class loader to load needed classes from
      * @param classes additional classes to include in the generated script
      * @throws IOException I/O exception can be thrown when something goes wrong
      */
-    public static void generate(Appendable out, final ClassLoader loader, String... classes) throws IOException {
+    public static void generate(Appendable out, ClassLoader loader, String... classes) throws IOException {
+        generate(out, ObfuscationLevel.NONE, loader, classes);
+    }
+
+    /** Generates virtual machine from bytes served by a <code>resources</code>
+     * provider.
+     * 
+     * @param out the output to write the generated JavaScript to
+     * @param obfuscationLevel the obfuscation level for the generated
+     *                         JavaScript
+     * @param resources provider of class files to use
+     * @param classes additional classes to include in the generated script
+     * @throws IOException I/O exception can be thrown when something goes wrong
+     */
+    public static void generate(Appendable out, ObfuscationLevel obfuscationLevel, Resources resources, String... classes) throws IOException {
+        StringArray arr = StringArray.asList(classes);
+        arr.add(VM.class.getName().replace('.', '/'));
+
+        if (obfuscationLevel != ObfuscationLevel.NONE) {
+            try {
+                ClosureWrapper.produceTo(out, obfuscationLevel, resources, arr);
+                return;
+            } catch (IOException ex) {
+                throw ex;
+            } catch (Throwable ex) {
+                out.append("/* Failed to obfuscate: " + ex.getMessage()
+                               + " */\n");
+            }
+        }
+
+        VM.compile(resources, out, arr);
+    }
+    
+    /** Generates virtual machine from bytes served by a class loader.
+     * 
+     * @param out the output to write the generated JavaScript to
+     * @param obfuscationLevel the obfuscation level for the generated
+     *                         JavaScript
+     * @param loader class loader to load needed classes from
+     * @param classes additional classes to include in the generated script
+     * @throws IOException I/O exception can be thrown when something goes wrong
+     */
+    public static void generate(Appendable out, ObfuscationLevel obfuscationLevel, final ClassLoader loader, String... classes) throws IOException {
         class R implements Resources {
             @Override
             public InputStream get(String name) throws IOException {
@@ -99,7 +133,7 @@ public final class Bck2Brwsr {
                 return u.openStream();
             }
         }
-        generate(out, new R(), classes);
+        generate(out, obfuscationLevel, new R(), classes);
     }
     
     /** Provider of resources (classes and other files). The 

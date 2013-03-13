@@ -35,6 +35,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
+import org.apidesign.vm4brwsr.ObfuscationLevel;
 
 /** Compiles classes into JavaScript. */
 @Mojo(name="j2js", defaultPhase=LifecyclePhase.PROCESS_CLASSES)
@@ -48,11 +49,12 @@ public class Java2JavaScript extends AbstractMojo {
      package under the classes directory */
     @Parameter
     private File javascript;
-    
+
     @Parameter(defaultValue="${project}")
     private MavenProject prj;
-    
-    
+
+    @Parameter(defaultValue="NONE")
+    private ObfuscationLevel obfuscation;
 
     @Override
     public void execute() throws MojoExecutionException {
@@ -74,7 +76,7 @@ public class Java2JavaScript extends AbstractMojo {
         try {
             URLClassLoader url = buildClassLoader(classes, prj.getDependencyArtifacts());
             FileWriter w = new FileWriter(javascript);
-            Bck2Brwsr.generate(w, url, arr.toArray(new String[0]));
+            Bck2Brwsr.generate(w, obfuscation, url, arr.toArray(new String[0]));
             w.close();
         } catch (IOException ex) {
             throw new MojoExecutionException("Can't compile", ex);

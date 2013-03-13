@@ -37,9 +37,10 @@ final class ClosureWrapper extends CommandLineRunner implements SourceFile.Gener
     private String code;
     private final Bck2Brwsr.Resources res;
     private final StringArray classes;
-    private ClosureWrapper(Appendable out, Bck2Brwsr.Resources res, StringArray classes) {
+    private ClosureWrapper(Appendable out, ObfuscationLevel obfuscationLevel,
+                           Bck2Brwsr.Resources res, StringArray classes) {
         super(
-            ARGS, 
+            generateArguments(obfuscationLevel),
             new PrintStream(new APS(out)), System.err
         );
         this.res = res;
@@ -67,7 +68,7 @@ final class ClosureWrapper extends CommandLineRunner implements SourceFile.Gener
         }
         return code;
     }
-    
+
     private static final class APS extends OutputStream {
         private final Appendable out;
 
@@ -79,8 +80,18 @@ final class ClosureWrapper extends CommandLineRunner implements SourceFile.Gener
             out.append((char)b);
         }
     }
-    static int produceTo(Appendable w, Bck2Brwsr.Resources resources, StringArray arr) throws IOException {
-        ClosureWrapper cw = new ClosureWrapper(w, resources, arr);
+
+    private static String[] generateArguments(
+            ObfuscationLevel obfuscationLevel) {
+        String[] finalArgs = ARGS.clone();
+        finalArgs[1] = obfuscationLevel.toString();
+
+        return finalArgs;
+    }
+
+    static int produceTo(Appendable w, ObfuscationLevel obfuscationLevel, Bck2Brwsr.Resources resources, StringArray arr) throws IOException {
+        ClosureWrapper cw = new ClosureWrapper(w, obfuscationLevel, resources,
+                                               arr);
         try {
             return cw.doRun();
         } catch (FlagUsageException ex) {
