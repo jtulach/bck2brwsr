@@ -92,7 +92,9 @@ abstract class ByteCodeToJavaScript {
             "resource", "processByteCode"
         );
         if (arr != null) {
-            requireScript(arr[0]);
+            if (!arr[0].isEmpty()) {
+                requireScript(arr[0]);
+            }
             if ("0".equals(arr[1])) {
                 return null;
             }
