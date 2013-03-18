@@ -37,19 +37,14 @@
             <include>*:rt</include>
         </includes>
     </dependencySet>
-    <dependencySet>
-        <useProjectArtifact>false</useProjectArtifact>
-        <scope>provided</scope>
-        <includes>
-            <include>*:js</include>
-        </includes>
-        <unpack>true</unpack>
-        <outputDirectory>/</outputDirectory>
-    </dependencySet>
   </dependencySets> 
   <files>
     <file>
       <source>${project.build.directory}/${project.build.finalName}.jar</source>
+      <outputDirectory>/</outputDirectory>
+    </file>
+    <file>
+      <source>${project.build.directory}/bck2brwsr.js</source>
       <outputDirectory>/</outputDirectory>
     </file>
     <file>

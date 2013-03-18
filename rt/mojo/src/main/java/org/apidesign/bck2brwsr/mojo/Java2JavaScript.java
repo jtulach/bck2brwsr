@@ -44,10 +44,16 @@ public class Java2JavaScript extends AbstractMojo {
     /** Root of the class files */
     @Parameter(defaultValue="${project.build.directory}/classes")
     private File classes;
-    /** File to generate. Defaults bootjava.js in the first non-empty 
-     package under the classes directory */
+    /** JavaScript file to generate */
     @Parameter
     private File javascript;
+    
+    /** Additional classes that should be pre-compiled into the javascript 
+     * file. By default compiles all classes found under <code>classes</code>
+     * directory and their transitive closure.
+     */
+    @Parameter
+    private List<String> compileclasses;
     
     @Parameter(defaultValue="${project}")
     private MavenProject prj;
@@ -60,12 +66,13 @@ public class Java2JavaScript extends AbstractMojo {
             throw new MojoExecutionException("Can't find " + classes);
         }
 
-        if (javascript == null) {
-            javascript = new File(findNonEmptyFolder(classes), "bootjava.js");
-        }
-
         List<String> arr = new ArrayList<String>();
         long newest = collectAllClasses("", classes, arr);
+        
+        if (compileclasses != null) {
+            arr.retainAll(compileclasses);
+            arr.addAll(compileclasses);
+        }
         
         if (javascript.lastModified() > newest) {
             return;
@@ -81,17 +88,6 @@ public class Java2JavaScript extends AbstractMojo {
         }
     }
 
-    private static File findNonEmptyFolder(File dir) throws MojoExecutionException {
-        if (!dir.isDirectory()) {
-            throw new MojoExecutionException("Not a directory " + dir);
-        }
-        File[] arr = dir.listFiles();
-        if (arr.length == 1 && arr[0].isDirectory()) {
-            return findNonEmptyFolder(arr[0]);
-        }
-        return dir;
-    }
-
     private static long collectAllClasses(String prefix, File toCheck, List<String> arr) {
         File[] files = toCheck.listFiles();
         if (files != null) {
@@ -104,7 +100,8 @@ public class Java2JavaScript extends AbstractMojo {
             }
             return newest;
         } else if (toCheck.getName().endsWith(".class")) {
-            arr.add(prefix.substring(0, prefix.length() - 7));
+            final String cls = prefix.substring(0, prefix.length() - 7);
+            arr.add(cls);
             return toCheck.lastModified();
         } else {
             return 0L;
@@ -115,7 +112,9 @@ public class Java2JavaScript extends AbstractMojo {
         List<URL> arr = new ArrayList<URL>();
         arr.add(root.toURI().toURL());
         for (Artifact a : deps) {
-            arr.add(a.getFile().toURI().toURL());
+            if (a.getFile() != null) {
+                arr.add(a.getFile().toURI().toURL());
+            }
         }
         return new URLClassLoader(arr.toArray(new URL[0]), Java2JavaScript.class.getClassLoader());
     }
