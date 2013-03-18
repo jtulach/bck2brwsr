@@ -40,6 +40,15 @@ public class VMinVMTest {
         compareCode("org/apidesign/vm4brwsr/Classes.class");
     }
 
+    @Test public void compareGeneratedCodeForToolkitClass() throws Exception {
+        String genCode = compareCode("org/apidesign/vm4brwsr/Bck2BrwsrToolkit.class");
+        int indx = genCode.indexOf("gt = 65604");
+        if (indx >= 0) {
+            fail("Goto to an invalid label:\n...." + genCode.substring(indx - 30, indx + 30) + "....");
+        }
+        fail(genCode);
+    }
+
     @BeforeClass
     public static void compileTheCode() throws Exception {
         code = TestVM.compileClass("org/apidesign/vm4brwsr/VMinVM");
@@ -49,7 +58,7 @@ public class VMinVMTest {
         code = null;
     }
     
-    private void compareCode(final String nm) throws Exception, IOException {
+    private String compareCode(final String nm) throws Exception, IOException {
         byte[] arr = BytesLoader.readClass(nm);
         String ret1 = VMinVM.toJavaScript(arr);
         
@@ -88,5 +97,7 @@ public class VMinVMTest {
             msg.append(code.toString());
             fail(msg.toString());
         }
+        
+        return ret1;
     }
 }
