@@ -115,7 +115,7 @@ final class TestVM {
             if (sb.length() > 2000) {
                 sb = dumpJS(sb);
             }
-            fail("Could not evaluate:\n" + sb, ex);
+            fail("Could not evaluate:" + ex.getClass() + ":" + ex.getMessage() + "\n" + sb, ex);
             return null;
         }
     }

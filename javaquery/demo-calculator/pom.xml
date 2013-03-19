@@ -22,6 +22,7 @@
                 <executions>
                     <execution>
                         <goals>
+                            <goal>j2js</goal>
                             <goal>brwsr</goal>
                         </goals>
                     </execution>
@@ -29,6 +30,7 @@
                 <configuration>
                     <directory>${project.build.directory}/${project.build.finalName}-bck2brwsr/public_html/</directory>
                     <startpage>index.xhtml</startpage>
+                    <javascript>${project.build.directory}/bck2brwsr.js</javascript>
                 </configuration>
             </plugin>
          <plugin>
@@ -101,14 +103,6 @@
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>javaquery.api</artifactId>
       <version>0.5-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apidesign.bck2brwsr</groupId>
-      <artifactId>vm4brwsr</artifactId>
-      <classifier>js</classifier>
-      <type>zip</type>
-      <version>0.5-SNAPSHOT</version>
-      <scope>provided</scope>
     </dependency>
   </dependencies>
 </project>
