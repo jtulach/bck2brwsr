@@ -89,6 +89,7 @@ public final class Bck2Brwsr {
      * @param resources provider of class files to use
      * @param classes additional classes to include in the generated script
      * @throws IOException I/O exception can be thrown when something goes wrong
+     * @since 0.5
      */
     public static void generate(Appendable out, ObfuscationLevel obfuscationLevel, Resources resources, String... classes) throws IOException {
         StringArray arr = StringArray.asList(classes);
@@ -117,6 +118,7 @@ public final class Bck2Brwsr {
      * @param loader class loader to load needed classes from
      * @param classes additional classes to include in the generated script
      * @throws IOException I/O exception can be thrown when something goes wrong
+     * @since 0.5
      */
     public static void generate(Appendable out, ObfuscationLevel obfuscationLevel, final ClassLoader loader, String... classes) throws IOException {
         class R implements Resources {

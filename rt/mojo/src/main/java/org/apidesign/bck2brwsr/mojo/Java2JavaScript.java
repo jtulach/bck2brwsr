@@ -53,6 +53,11 @@ public class Java2JavaScript extends AbstractMojo {
     @Parameter(defaultValue="${project}")
     private MavenProject prj;
 
+    /**
+     * The obfuscation level for the generated JavaScript file.
+     *
+     * @since 0.5
+     */
     @Parameter(defaultValue="NONE")
     private ObfuscationLevel obfuscation;
 

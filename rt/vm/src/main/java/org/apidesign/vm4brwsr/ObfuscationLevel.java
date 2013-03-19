@@ -20,6 +20,8 @@ package org.apidesign.vm4brwsr;
 /**
  * Defines obfuscation level of produced JavaScript files. Corresponds to the
  * closure compiler compilation level.
+ *
+ * @since 0.5
  */
 public enum ObfuscationLevel {
     NONE,
