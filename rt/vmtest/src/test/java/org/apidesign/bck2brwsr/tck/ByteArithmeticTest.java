@@ -17,6 +17,7 @@
  */
 package org.apidesign.bck2brwsr.tck;
 
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
@@ -93,6 +94,50 @@ public class ByteArithmeticTest {
     
     @Compare public byte divisionReminder() {
         return mod((byte)1, (byte)2);
+    }
+
+    private static int readShort(byte[] byteCodes, int offset) {
+        int signed = byteCodes[offset];
+        byte b0 = (byte)signed;
+        return (b0 << 8) | (byteCodes[offset + 1] & 0xff);
+    }
+    
+    private static int readShortArg(byte[] byteCodes, int offsetInstruction) {
+        return readShort(byteCodes, offsetInstruction + 1);
+    }
+    
+    @Compare public int readIntArgs255and156() {
+        final byte[] arr = new byte[] { (byte)0, (byte)255, (byte)156 };
+        
+        assert arr[1] == -1 : "First byte: " + arr[1];
+        assert arr[2] == -100 : "Second byte: " + arr[2];
+        final int ret = readShortArg(arr, 0);
+        assert ret < 65000: "Value: " + ret;
+        return ret;
+    }
+    
+    @JavaScriptBody(args = { "arr" }, body = "arr[1] = 255; arr[2] = 156; return arr;")
+    private static byte[] fill255and156(byte[] arr) {
+        arr[1] = (byte)255;
+        arr[2] = (byte)156;
+        return arr;
+    }
+
+    @Compare public int readIntArgs255and156JSArray() {
+        final byte[] arr = fill255and156(new byte[] { 0, 0, 0 });
+        
+        final int ret = readShortArg(arr, 0);
+        assert ret < 65000: "Value: " + ret;
+        return ret;
+    }
+    
+    @Compare public int readIntArgsMinus1andMinus100() {
+        final byte[] arr = new byte[] { (byte)0, (byte)-1, (byte)-100 };
+        
+        assert arr[1] == -1 : "First byte: " + arr[1];
+        assert arr[2] == -100 : "Second byte: " + arr[2];
+        
+        return readShortArg(arr, 0);
     }
     
     @Factory
