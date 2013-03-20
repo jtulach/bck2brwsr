@@ -46,7 +46,6 @@ public class VMinVMTest {
         if (indx >= 0) {
             fail("Goto to an invalid label:\n...." + genCode.substring(indx - 30, indx + 30) + "....");
         }
-        fail(genCode);
     }
 
     @BeforeClass
