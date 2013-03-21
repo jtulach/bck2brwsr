@@ -15,7 +15,7 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.mojo;
+package org.apidesign.bck2brwsr.archetype;
 
 import java.net.URL;
 import javax.xml.XMLConstants;
@@ -42,14 +42,16 @@ public class ArchetypeVersionTest {
     
     @BeforeClass public void readCurrentVersion() throws Exception {
         final ClassLoader l = ArchetypeVersionTest.class.getClassLoader();
-        URL u = l.getResource("META-INF/maven/org.apidesign.bck2brwsr/mojo/plugin-help.xml");
-        assertNotNull(u, "Own pom found");
+        URL u = l.getResource("META-INF/maven/org.apidesign.bck2brwsr/bck2brwsr-archetype-html-sample/pom.xml");
+        assertNotNull(u, "Own pom found: " + System.getProperty("java.class.path"));
 
         final XPathFactory fact = XPathFactory.newInstance();
         fact.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 
-        XPathExpression xp = fact.newXPath().compile("plugin/version/text()");
-        version = xp.evaluate(new InputSource(u.openStream()));
+        XPathExpression xp = fact.newXPath().compile("project/version/text()");
+        
+        Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(u.openStream());
+        version = xp.evaluate(dom);
 
         assertFalse(version.isEmpty(), "There should be some version string");
     }

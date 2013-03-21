@@ -15,6 +15,7 @@
     <module>core</module>
     <module>emul</module>
     <module>launcher</module>
+    <module>archetype</module>
     <module>mojo</module>
     <module>vm</module>
     <module>vmtest</module>

@@ -10,7 +10,7 @@
   <artifactId>mojo</artifactId>
   <version>0.5-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
-  <name>Bck2Brwsr Maven Project</name>
+  <name>Bck2Brwsr Maven Plugins</name>
   <url>http://maven.apache.org</url>
       <build>
         <plugins>
@@ -62,7 +62,7 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>vm4brwsr</artifactId>
-      <version>0.5-SNAPSHOT</version>
+      <version>${project.version}</version>
       <exclusions>
         <exclusion>
           <artifactId>emul.mini</artifactId>
@@ -80,12 +80,6 @@
         <groupId>${project.groupId}</groupId>
         <artifactId>launcher</artifactId>
       <version>${project.version}</version>
-    </dependency>
-    <dependency>
-        <groupId>org.testng</groupId>
-        <artifactId>testng</artifactId>
-      <version>6.5.2</version>
-      <scope>test</scope>
     </dependency>
 </dependencies>
 </project>
