@@ -70,18 +70,18 @@ public class Knockout {
     
     @JavaScriptBody(args = { "bindings", "model", "prop", "getter", "setter", "primitive" }, body =
           "var bnd = {\n"
-        + "  read: function() {\n"
+        + "  'read': function() {\n"
         + "    var v = model[getter]();\n"
         + "    return v;\n"
         + "  },\n"
-        + "  owner: bindings\n"
+        + "  'owner': bindings\n"
         + "};\n"
         + "if (setter != null) {\n"
-        + "  bnd.write = function(val) {\n"
+        + "  bnd['write'] = function(val) {\n"
         + "    model[setter](primitive ? new Number(val) : val);\n"
         + "  };\n"
         + "}\n"
-        + "bindings[prop] = ko.computed(bnd);"
+        + "bindings[prop] = ko['computed'](bnd);"
     )
     private static void bind(
         Object bindings, Object model, String prop, String getter, String setter, boolean primitive

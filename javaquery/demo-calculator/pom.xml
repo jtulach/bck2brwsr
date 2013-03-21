@@ -31,7 +31,7 @@
                     <directory>${project.build.directory}/${project.build.finalName}-bck2brwsr/public_html/</directory>
                     <startpage>index.xhtml</startpage>
                     <javascript>${project.build.directory}/bck2brwsr.js</javascript>
-                    <obfuscation>SIMPLE_OPTIMIZATIONS</obfuscation>
+                    <obfuscation>FULL</obfuscation>
                 </configuration>
             </plugin>
          <plugin>

@@ -28,9 +28,16 @@ import static org.apidesign.vm4brwsr.ByteCodeParser.*;
 abstract class ByteCodeToJavaScript {
     private ClassData jc;
     final Appendable out;
+    final ObfuscationDelegate obfuscationDelegate;
 
     protected ByteCodeToJavaScript(Appendable out) {
+        this(out, ObfuscationDelegate.NULL);
+    }
+
+    protected ByteCodeToJavaScript(
+            Appendable out, ObfuscationDelegate obfuscationDelegate) {
         this.out = out;
+        this.obfuscationDelegate = obfuscationDelegate;
     }
     
     /* Collects additional required resources.
@@ -58,7 +65,9 @@ abstract class ByteCodeToJavaScript {
     /* protected */ String accessClass(String classOperation) {
         return classOperation;
     }
-    
+
+    abstract String getVMObject();
+
     /** Prints out a debug message. 
      * 
      * @param msg the message
@@ -138,6 +147,8 @@ abstract class ByteCodeToJavaScript {
                     append(className).append('_').append(v.getName())
                    .append("; };");
             }
+
+            obfuscationDelegate.exportField(out, "c", "_" + v.getName(), v);
         }
         for (MethodData m : jc.getMethods()) {
             byte[] onlyArr = m.findAnnotationData(true);
@@ -152,33 +163,39 @@ abstract class ByteCodeToJavaScript {
                 }
                 continue;
             }
-            String prefix;
+            String destObject;
             String mn;
+            out.append("\n    ");
             if (m.isStatic()) {
-                prefix = "\n    c.";
-                mn = generateStaticMethod(prefix, m, toInitilize);
+                destObject = "c";
+                mn = generateStaticMethod(destObject, m, toInitilize);
             } else {
                 if (m.isConstructor()) {
-                    prefix = "\n    CLS.";
-                    mn = generateInstanceMethod(prefix, m);
+                    destObject = "CLS";
+                    mn = generateInstanceMethod(destObject, m);
                 } else {
-                    prefix = "\n    c.";
-                    mn = generateInstanceMethod(prefix, m);
+                    destObject = "c";
+                    mn = generateInstanceMethod(destObject, m);
                 }
             }
+            obfuscationDelegate.exportMethod(out, destObject, mn, m);
             byte[] runAnno = m.findAnnotationData(false);
             if (runAnno != null) {
-                out.append(prefix).append(mn).append(".anno = {");
+                out.append("\n    ").append(destObject).append(".").append(mn).append(".anno = {");
                 generateAnno(jc, out, runAnno);
                 out.append("\n    };");
             }
-            out.append(prefix).append(mn).append(".access = " + m.getAccess()).append(";");
-            out.append(prefix).append(mn).append(".cls = CLS;");
+            out.append("\n    ").append(destObject).append(".").append(mn).append(".access = " + m.getAccess()).append(";");
+            out.append("\n    ").append(destObject).append(".").append(mn).append(".cls = CLS;");
         }
         out.append("\n    c.constructor = CLS;");
-        out.append("\n    c.$instOf_").append(className).append(" = true;");
+        String instOfName = "$instOf_" + className;
+        out.append("\n    c.").append(instOfName).append(" = true;");
+        obfuscationDelegate.exportJSProperty(out, "c", instOfName);
         for (String superInterface : jc.getSuperInterfaces()) {
-            out.append("\n    c.$instOf_").append(superInterface.replace('/', '_')).append(" = true;");
+            instOfName = "$instOf_" + superInterface.replace('/', '_');
+            out.append("\n    c.").append(instOfName).append(" = true;");
+            obfuscationDelegate.exportJSProperty(out, "c", instOfName);
         }
         out.append("\n    CLS.$class = 'temp';");
         out.append("\n    CLS.$class = ");
@@ -224,14 +241,17 @@ abstract class ByteCodeToJavaScript {
         out.append("\n  }");
         out.append("\n  return arguments[0] ? new CLS() : CLS.prototype;");
         out.append("\n};");
+
+        obfuscationDelegate.exportClass(out, getVMObject(), className, jc);
+
 //        StringBuilder sb = new StringBuilder();
 //        for (String init : toInitilize.toArray()) {
 //            sb.append("\n").append(init).append("();");
 //        }
         return "";
     }
-    private String generateStaticMethod(String prefix, MethodData m, StringArray toInitilize) throws IOException {
-        String jsb = javaScriptBody(prefix, m, true);
+    private String generateStaticMethod(String destObject, MethodData m, StringArray toInitilize) throws IOException {
+        String jsb = javaScriptBody(destObject, m, true);
         if (jsb != null) {
             return jsb;
         }
@@ -239,28 +259,28 @@ abstract class ByteCodeToJavaScript {
         if (mn.equals("class__V")) {
             toInitilize.add(accessClass(className(jc)) + "(false)." + mn);
         }
-        generateMethod(prefix, mn, m);
+        generateMethod(destObject, mn, m);
         return mn;
     }
 
-    private String generateInstanceMethod(String prefix, MethodData m) throws IOException {
-        String jsb = javaScriptBody(prefix, m, false);
+    private String generateInstanceMethod(String destObject, MethodData m) throws IOException {
+        String jsb = javaScriptBody(destObject, m, false);
         if (jsb != null) {
             return jsb;
         }
         final String mn = findMethodName(m, new StringBuilder());
-        generateMethod(prefix, mn, m);
+        generateMethod(destObject, mn, m);
         return mn;
     }
 
-    private void generateMethod(String prefix, String name, MethodData m)
+    private void generateMethod(String destObject, String name, MethodData m)
             throws IOException {
         final StackMapIterator stackMapIterator = m.createStackMapIterator();
         TrapDataIterator trap = m.getTrapDataIterator();
         final LocalsMapper lmapper =
                 new LocalsMapper(stackMapIterator.getArguments());
 
-        out.append(prefix).append(name).append(" = function(");
+        out.append(destObject).append(".").append(name).append(" = function(");
         lmapper.outputArguments(out, m.isStatic());
         out.append(") {").append("\n");
 
@@ -1546,7 +1566,7 @@ abstract class ByteCodeToJavaScript {
         return s;
     }
 
-    private String javaScriptBody(String prefix, MethodData m, boolean isStatic) throws IOException {
+    private String javaScriptBody(String destObject, MethodData m, boolean isStatic) throws IOException {
         byte[] arr = m.findAnnotationData(true);
         if (arr == null) {
             return null;
@@ -1581,7 +1601,7 @@ abstract class ByteCodeToJavaScript {
         }
         StringBuilder cnt = new StringBuilder();
         final String mn = findMethodName(m, cnt);
-        out.append(prefix).append(mn);
+        out.append(destObject).append(".").append(mn);
         out.append(" = function(");
         String space = "";
         int index = 0;
