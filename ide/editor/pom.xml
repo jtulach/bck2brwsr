@@ -16,7 +16,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <netbeans.version>RELEASE72</netbeans.version>
+        <netbeans.version>RELEASE73</netbeans.version>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
     </properties>
 
