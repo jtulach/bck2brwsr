@@ -15,22 +15,21 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.htmlpage.api;
+package org.apidesign.bck2brwsr.htmlpage;
+
+import java.util.Map;
+import static org.testng.Assert.*;
+import org.testng.annotations.Test;
 
 /**
  *
- * @author Anton Epple <toni.epple@eppleton.de>
+ * @author Jan Horvath <jhorvath@netbeans.org>
  */
-public class Image extends Element{
-
-    public Image(String id) {
-        super(id);
+public class ElementGeneratorTest {
+    
+    @Test public void testGetAttributes() {
+        ElementGenerator gen = new ElementGenerator(null);
+        Map<String, String> attrs = gen.getAttributes("input");
+        assertEquals(attrs.get("width"), "Integer", "Expected type of width attribute is Integer");
     }
-
-    
-    
-    @Override
-    void dontSubclass() {
-    }
-    
 }

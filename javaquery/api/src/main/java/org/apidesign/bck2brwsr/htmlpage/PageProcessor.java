@@ -78,6 +78,7 @@ public final class PageProcessor extends AbstractProcessor {
             String pkg = pe.getQualifiedName().toString();
             
             ProcessPage pp;
+            ElementGenerator eGen = new ElementGenerator(processingEnv);
             try {
                 InputStream is = openStream(pkg, p.xhtml());
                 pp = ProcessPage.readPage(is);
@@ -105,7 +106,7 @@ public final class PageProcessor extends AbstractProcessor {
                     }
                     for (String id : pp.ids()) {
                         String tag = pp.tagNameForId(id);
-                        String type = type(tag);
+                        String type = eGen.getType(pkg, tag, e);
                         w.append("  ").append("public final ").
                             append(type).append(' ').append(cnstnt(id)).append(" = new ").
                             append(type).append("(\"").append(id).append("\");\n");
@@ -156,25 +157,6 @@ public final class PageProcessor extends AbstractProcessor {
         } catch (IOException ex) {
             return processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, pkg, name).openInputStream();
         }
-    }
-
-    private static String type(String tag) {
-        if (tag.equals("title")) {
-            return "Title";
-        }
-        if (tag.equals("button")) {
-            return "Button";
-        }
-        if (tag.equals("input")) {
-            return "Input";
-        }
-        if (tag.equals("canvas")) {
-            return "Canvas";
-        }
-        if (tag.equals("img")) {
-            return "Image";
-        }
-        return "Element";
     }
 
     private static String cnstnt(String id) {

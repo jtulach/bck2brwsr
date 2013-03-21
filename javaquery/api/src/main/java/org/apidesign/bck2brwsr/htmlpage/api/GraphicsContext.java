@@ -27,7 +27,7 @@ public class GraphicsContext {
 
     Object context;
 
-    GraphicsContext(Object contextImpl) {
+    public GraphicsContext(Object contextImpl) {
         this.context = contextImpl;
     }
 
@@ -113,15 +113,15 @@ public class GraphicsContext {
     @JavaScriptBody(args = {"x", "y"}, body = "this._context().scale(x,y);")
     public native void scale(double x, double y);
 
-    public void drawImage(Image image, double x, double y) {
+    public void drawImage(Element image, double x, double y) {
         drawImageImpl(context, Element.getElementById(image), x, y);
     }
 
-    public void drawImage(Image image, double x, double y, double width, double height) {
+    public void drawImage(Element image, double x, double y, double width, double height) {
         drawImageImpl(context, Element.getElementById(image), x, y, width, height);
     }
 
-    public void drawImage(Image image, double sx, double sy, double sWidth, double sHeight, double x, double y, double width, double height) {
+    public void drawImage(Element image, double sx, double sy, double sWidth, double sHeight, double x, double y, double width, double height) {
         drawImageImpl(context, Element.getElementById(image), sx, sy, sWidth, sHeight, x, y, width, height);
     }
 
@@ -319,12 +319,12 @@ public class GraphicsContext {
     @JavaScriptBody(args = {"context", "x0", "y0", "x1", "y1"}, body = "return context.createLinearGradient(x0,y0,x1,y1);")
     private  native Object createLinearGradientImpl(Object context, double x0, double y0, double x1, double y1);
 
-    public Pattern createPattern(Image image, String repeat) {
+    public Pattern createPattern(Element image, String repeat) {
         return new Pattern(createPatternImpl(context, image, repeat));
     }
 
     @JavaScriptBody(args = {"context", "image", "repeat"}, body = "return context.createPattern(image, repeat);")
-    private static native Object createPatternImpl(Object context, Image image, String repeat);
+    private static native Object createPatternImpl(Object context, Element image, String repeat);
 
     public RadialGradient createRadialGradient(double x0, double y0, double r0, double x1, double y1, double r1) {
         return new RadialGradient(createRadialGradientImpl(context, x0, y0, r0, x1, y1, r1));

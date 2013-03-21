@@ -37,7 +37,13 @@ public abstract class Element {
         return id;
     }
     
-    abstract void dontSubclass();
+    public String getText() {
+        return (String)getAttribute("innerHTML");
+    }
+
+    public void setText(String text) {
+        setAttribute("innerHTML", text);
+    }
     
     @JavaScriptBody(
         args={"el", "property", "value"},

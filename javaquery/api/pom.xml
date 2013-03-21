@@ -73,5 +73,10 @@
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.netbeans.modules</groupId>
+      <artifactId>org-netbeans-modules-html-parser</artifactId>
+      <version>RELEASE73</version>
+    </dependency>
   </dependencies>
 </project>
