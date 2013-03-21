@@ -110,7 +110,10 @@ class VM extends ByteCodeToJavaScript {
             for (String ic : toInit.toArray()) {
                 int indx = processed.indexOf(ic);
                 if (indx >= 0) {
-                    out.append(initCode.toArray()[indx]).append("\n");
+                    final String theCode = initCode.toArray()[indx];
+                    if (!theCode.isEmpty()) {
+                        out.append(theCode).append("\n");
+                    }
                     initCode.toArray()[indx] = "";
                 }
             }

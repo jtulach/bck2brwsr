@@ -37,6 +37,36 @@
                   <skip>true</skip>
               </configuration>
           </plugin>      
+          <plugin>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>xml-maven-plugin</artifactId>
+              <version>1.0</version>
+              <executions>
+                  <execution>
+                      <goals>
+                          <goal>transform</goal>
+                      </goals>
+                      <phase>install</phase>
+                  </execution>
+              </executions>
+              <configuration>
+                  <transformationSets>
+                      <transformationSet>
+                          <dir>target/surefire-reports</dir>
+                          <outputDir>target/surefire-reports</outputDir>
+                          <includes>
+                              <include>TEST*.xml</include>
+                          </includes>
+                          <stylesheet>src/main/select-time.xsl</stylesheet>
+                          <fileMappers>
+                              <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
+                                  <targetExtension>.csv</targetExtension>
+                              </fileMapper>
+                          </fileMappers>                          
+                      </transformationSet>
+                  </transformationSets>
+              </configuration>
+          </plugin>
       </plugins>
   </build>
   

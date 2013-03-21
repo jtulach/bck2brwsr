@@ -551,3 +551,5 @@ Number.prototype.neg64 = function() {
         return negateResult ? result.neg64() : result; 
     }
 })(Number.prototype);
+
+vm.java_lang_Number(false);

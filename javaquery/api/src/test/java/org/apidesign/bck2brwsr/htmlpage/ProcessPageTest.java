@@ -180,6 +180,9 @@ public class ProcessPageTest {
         }
         Bck2Brwsr.generate(sb, ProcessPageTest.class.getClassLoader(), names);
         sb.append("var vm = this.bck2brwsr();\n");
+        for (String c : names) {
+            sb.append("vm.loadClass('").append(c.replace('/', '.')).append("');\n");
+        }
         
         ScriptEngineManager sem = new ScriptEngineManager();
         ScriptEngine js = sem.getEngineByExtension("js");
