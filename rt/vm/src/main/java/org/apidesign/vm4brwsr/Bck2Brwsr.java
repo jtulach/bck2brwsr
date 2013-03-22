@@ -54,10 +54,17 @@ import java.util.Enumeration;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public final class Bck2Brwsr {
-    private Bck2Brwsr() {
-    }
+    private final ObfuscationLevel level;
+    private final StringArray classes;
+    private final Resources res;
 
-    /** Generates virtual machine from bytes served by a <code>resources</code>
+    private Bck2Brwsr(ObfuscationLevel level, StringArray classes, Resources resources) {
+        this.level = level;
+        this.classes = classes;
+        this.res = resources;
+    }
+    
+    /** Helper method to generate virtual machine from bytes served by a <code>resources</code>
      * provider.
      *
      * @param out the output to write the generated JavaScript to
@@ -66,10 +73,10 @@ public final class Bck2Brwsr {
      * @throws IOException I/O exception can be thrown when something goes wrong
      */
     public static void generate(Appendable out, Resources resources, String... classes) throws IOException {
-        generate(out, ObfuscationLevel.NONE, resources, classes);
+        newCompiler().resources(resources).addRootClasses(classes).generate(out);
     }
 
-    /** Generates virtual machine from bytes served by a class loader.
+    /** Helper method to generate virtual machine from bytes served by a class loader.
      *
      * @param out the output to write the generated JavaScript to
      * @param loader class loader to load needed classes from
@@ -77,27 +84,87 @@ public final class Bck2Brwsr {
      * @throws IOException I/O exception can be thrown when something goes wrong
      */
     public static void generate(Appendable out, ClassLoader loader, String... classes) throws IOException {
-        generate(out, ObfuscationLevel.NONE, loader, classes);
+        newCompiler().resources(loader).addRootClasses(classes).generate(out);
     }
-
-    /** Generates virtual machine from bytes served by a <code>resources</code>
-     * provider.
+    
+    /** Creates new instance of Bck2Brwsr compiler which is ready to generate
+     * empty Bck2Brwsr virtual machine. The instance can be further
+     * configured by calling chain of methods. For example: 
+     * <pre>
+     * {@link #createCompiler()}.{@link #resources(org.apidesign.vm4brwsr.Bck2Brwsr.Resources) resources(loader)}.{@link #addRootClasses(java.lang.String[]) addRootClasses("your/Clazz")}.{@link #generate(java.lang.Appendable) generate(out)};
+     * </pre>
      * 
-     * @param out the output to write the generated JavaScript to
-     * @param obfuscationLevel the obfuscation level for the generated
-     *                         JavaScript
-     * @param resources provider of class files to use
-     * @param classes additional classes to include in the generated script
-     * @throws IOException I/O exception can be thrown when something goes wrong
+     * @return new instance of the Bck2Brwsr compiler
      * @since 0.5
      */
-    public static void generate(Appendable out, ObfuscationLevel obfuscationLevel, Resources resources, String... classes) throws IOException {
-        StringArray arr = StringArray.asList(classes);
-        arr.add(VM.class.getName().replace('.', '/'));
+    public static Bck2Brwsr newCompiler() {
+        StringArray arr = StringArray.asList(VM.class.getName().replace('.', '/'));
+        return new Bck2Brwsr(ObfuscationLevel.NONE, arr, null);
+    }
 
-        if (obfuscationLevel != ObfuscationLevel.NONE) {
+    /** Creates new instance of the Bck2Brwsr compiler which inherits
+     * all values from <code>this</code> instance and adds additional classes 
+     * to the list of those that should be compiled by the {@link #generate(java.lang.Appendable)} 
+     * method.
+     * 
+     * @param classes the classes to add to the compilation
+     * @return new instance of the compiler
+     */
+    public Bck2Brwsr addRootClasses(String... classes) {
+        if (classes.length == 0) {
+            return this;
+        } else {
+            return new Bck2Brwsr(level, this.classes.addAndNew(classes), res);
+        }
+    }
+    
+    /** Changes the obfuscation level for the compiler by creating new instance
+     * which inherits all values from <code>this</code> and adjust the level
+     * of obfuscation.
+     * 
+     * @param level the new level of obfuscation
+     * @return new instance of the compiler with changed level of obfuscation
+     * @since 0.5
+     */
+    public Bck2Brwsr obfuscation(ObfuscationLevel level) {
+        return new Bck2Brwsr(level, classes, res);
+    }
+    
+    /** A way to change the provider of additional resources (classes) for the 
+     * compiler. 
+     * 
+     * @param res the implementation of resources provider
+     * @return new instance of the compiler with all values remaining the same, just 
+     *   with different resources provider
+     * @since 0.5
+     */
+    public Bck2Brwsr resources(Resources res) {
+        return new Bck2Brwsr(level, classes, res);
+    }
+
+    /** A way to change the provider of additional resources (classes) for the 
+     * compiler by specifying classloader to use for loading them.
+     * 
+     * @param loader class loader to load the resources from
+     * @return new instance of the compiler with all values being the same, just 
+     *   different resources provider
+     * @since 0.5
+     */
+    public Bck2Brwsr resources(final ClassLoader loader) {
+        return resources(new LdrRsrcs(loader));
+    }
+    
+    /** Generates virtual machine based on previous configuration of the 
+     * compiler.
+     * 
+     * @param out the output to write the generated JavaScript to
+     * @since 0.5
+     */
+    public void generate(Appendable out) throws IOException {
+        Resources r = res != null ? res : new LdrRsrcs(Bck2Brwsr.class.getClassLoader());
+        if (level != ObfuscationLevel.NONE) {
             try {
-                ClosureWrapper.produceTo(out, obfuscationLevel, resources, arr);
+                ClosureWrapper.produceTo(out, level, r, classes);
                 return;
             } catch (IOException ex) {
                 throw ex;
@@ -107,35 +174,7 @@ public final class Bck2Brwsr {
             }
         }
 
-        VM.compile(resources, out, arr);
-    }
-    
-    /** Generates virtual machine from bytes served by a class loader.
-     * 
-     * @param out the output to write the generated JavaScript to
-     * @param obfuscationLevel the obfuscation level for the generated
-     *                         JavaScript
-     * @param loader class loader to load needed classes from
-     * @param classes additional classes to include in the generated script
-     * @throws IOException I/O exception can be thrown when something goes wrong
-     * @since 0.5
-     */
-    public static void generate(Appendable out, ObfuscationLevel obfuscationLevel, final ClassLoader loader, String... classes) throws IOException {
-        class R implements Resources {
-            @Override
-            public InputStream get(String name) throws IOException {
-                Enumeration<URL> en = loader.getResources(name);
-                URL u = null;
-                while (en.hasMoreElements()) {
-                    u = en.nextElement();
-                }
-                if (u == null) {
-                    throw new IOException("Can't find " + name);
-                }
-                return u.openStream();
-            }
-        }
-        generate(out, obfuscationLevel, new R(), classes);
+        VM.compile(r, out, classes);
     }
     
     /** Provider of resources (classes and other files). The 
