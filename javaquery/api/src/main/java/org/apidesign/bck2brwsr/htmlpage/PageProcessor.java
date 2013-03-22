@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -39,7 +38,6 @@ import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -114,7 +112,7 @@ public final class PageProcessor extends AbstractProcessor {
             if (!generateComputedProperties(body, m.properties(), e.getEnclosedElements(), propsGetSet, propsDeps)) {
                 ok = false;
             }
-            if (!generateProperties(body, m.properties(), propsGetSet, propsDeps)) {
+            if (!generateProperties(e, body, m.properties(), propsGetSet, propsDeps)) {
                 ok = false;
             }
             FileObject java = processingEnv.getFiler().createSourceFile(pkg + '.' + className, e);
@@ -169,7 +167,7 @@ public final class PageProcessor extends AbstractProcessor {
             if (!generateComputedProperties(body, p.properties(), e.getEnclosedElements(), propsGetSet, propsDeps)) {
                 ok = false;
             }
-            if (!generateProperties(body, p.properties(), propsGetSet, propsDeps)) {
+            if (!generateProperties(e, body, p.properties(), propsGetSet, propsDeps)) {
                 ok = false;
             }
             
@@ -389,13 +387,14 @@ public final class PageProcessor extends AbstractProcessor {
     }
 
     private boolean generateProperties(
+        Element where,
         Writer w, Property[] properties,
         Collection<String> props, Map<String,Collection<String>> deps
     ) throws IOException {
         boolean ok = true;
         for (Property p : properties) {
             final String tn;
-            tn = typeName(p);
+            tn = typeName(where, p);
             String[] gs = toGetSet(p.name(), tn, p.array());
 
             if (p.array()) {
@@ -556,7 +555,7 @@ public final class PageProcessor extends AbstractProcessor {
         };
     }
 
-    private String typeName(Property p) {
+    private String typeName(Element where, Property p) {
         String ret;
         boolean isModel = false;
         try {
@@ -581,7 +580,11 @@ public final class PageProcessor extends AbstractProcessor {
         if (!isModel && !"java.lang.String".equals(ret)) {
             String bt = findBoxedType(ret);
             if (bt == null) {
-                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Only primitive types supported in the mapping. Not " + ret);
+                processingEnv.getMessager().printMessage(
+                    Diagnostic.Kind.ERROR, 
+                    "Only primitive types supported in the mapping. Not " + ret,
+                    where
+                );
             }
         }
         return ret;
