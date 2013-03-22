@@ -591,6 +591,9 @@ public final class PageProcessor extends AbstractProcessor {
     }
     
     private static String findBoxedType(String ret) {
+        if (ret.equals("boolean")) {
+            return Boolean.class.getName();
+        }
         if (ret.equals("byte")) {
             return Byte.class.getName();
         }

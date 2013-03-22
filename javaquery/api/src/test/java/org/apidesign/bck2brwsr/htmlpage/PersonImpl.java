@@ -27,11 +27,17 @@ import org.apidesign.bck2brwsr.htmlpage.api.Property;
  */
 @Model(className = "Person", properties = {
     @Property(name = "firstName", type = String.class),
-    @Property(name = "lastName", type = String.class)
+    @Property(name = "lastName", type = String.class),
+    @Property(name = "male", type = boolean.class)
 })
 final class PersonImpl {
     @ComputedProperty 
     public static String fullName(String firstName, String lastName) {
         return firstName + " " + lastName;
+    }
+    
+    @ComputedProperty
+    public static String sex(boolean male) {
+        return male ? "Male" : "Female";
     }
 }
