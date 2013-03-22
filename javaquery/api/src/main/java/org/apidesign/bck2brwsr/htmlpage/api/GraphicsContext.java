@@ -134,7 +134,7 @@ public class GraphicsContext {
     @JavaScriptBody(args = {"ctx", "img", "x", "y"}, body = "ctx.drawImage(img,x,y);")
     private native static void drawImageImpl(Object ctx, Object img, double x, double y);
 
-    @JavaScriptBody(args = {"style"}, body = "this._context().fillStyle=style;")
+    @JavaScriptBody(args = {"style"}, body = "this._context().fillStyle=style.valueOf();")
     public native void setFillStyle(String style);
 
     @JavaScriptBody(args = {}, body = "return this._context().fillStyle;")
@@ -155,7 +155,7 @@ public class GraphicsContext {
     @JavaScriptBody(args = {"context","obj"}, body = "context.fillStyle=obj;")
     private native void setFillStyleImpl(Object context, Object obj);
 
-    @JavaScriptBody(args = {"style"}, body = "this._context().strokeStyle=style;")
+    @JavaScriptBody(args = {"style"}, body = "this._context().strokeStyle=style.valueOf();")
     public native void setStrokeStyle(String style);
 
     public void setStrokeStyle(LinearGradient style) {
@@ -174,7 +174,7 @@ public class GraphicsContext {
     @JavaScriptBody(args = {"context","obj"}, body = "context.strokeStyle=obj;")
     private native void setStrokeStyleImpl(Object context, Object obj);
 
-    @JavaScriptBody(args = {"color"}, body = "this._context().shadowColor=color;")
+    @JavaScriptBody(args = {"color"}, body = "this._context().shadowColor=color.valueOf();")
     public native void setShadowColor(String color);
 
     @JavaScriptBody(args = {"blur"}, body = "this._context().shadowBlur=blur;")
@@ -204,19 +204,19 @@ public class GraphicsContext {
     @JavaScriptBody(args = {}, body = "return this._context().lineCap;")
     public native String getLineCap();
 
-    @JavaScriptBody(args = {"style"}, body = "this._context().lineCap=style;")
+    @JavaScriptBody(args = {"style"}, body = "this._context().lineCap=style.valueOf();")
     public native void setLineCap(String style);
 
     @JavaScriptBody(args = {}, body = "return this._context().lineJoin;")
     public native String getLineJoin();
 
-    @JavaScriptBody(args = {"style"}, body = "this._context().lineJoin=style;")
+    @JavaScriptBody(args = {"style"}, body = "this._context().lineJoin=style.valueOf();")
     public native void setLineJoin(String style) ;
 
     @JavaScriptBody(args = {}, body = "return this._context().lineWidth;")
     public native double getLineWidth();
 
-    @JavaScriptBody(args = {"width"}, body = "this._context().lineJoin=width;")
+    @JavaScriptBody(args = {"width"}, body = "this._context().lineWidth=width;")
     public native void setLineWidth(double width);
 
     @JavaScriptBody(args = {}, body = "return this._context().miterLimit;")
@@ -228,19 +228,19 @@ public class GraphicsContext {
     @JavaScriptBody(args = {}, body = "return this._context().font;")
     public native String getFont();
 
-    @JavaScriptBody(args = {"font"}, body = "this._context().font=font;")
+    @JavaScriptBody(args = {"font"}, body = "this._context().font=font.valueOf();")
     public native void setFont(String font);
 
     @JavaScriptBody(args = {}, body = "return this._context().textAlign;")
     public native String getTextAlign();
 
-    @JavaScriptBody(args = {"textalign"}, body = "this._context().textAlign=textalign;")
+    @JavaScriptBody(args = {"textalign"}, body = "this._context().textAlign=textalign.valueOf();")
     public native void setTextAlign(String textAlign);
 
     @JavaScriptBody(args = {}, body = "return this._context().textBaseline;")
     public native String getTextBaseline();
 
-    @JavaScriptBody(args = {"textbaseline"}, body = "this._context().textBaseline=textbaseline;")
+    @JavaScriptBody(args = {"textbaseline"}, body = "this._context().textBaseline=textbaseline.valueOf();")
     public native void setTextBaseline(String textbaseline);
 
     @JavaScriptBody(args = {"text", "x", "y"}, body = "this._context().fillText(text,x,y);")
@@ -306,7 +306,7 @@ public class GraphicsContext {
     @JavaScriptBody(args = {}, body = "return this._context().globalAlpha;")
     public native double getGlobalAlpha();
 
-    @JavaScriptBody(args = {"operation"}, body = "this._context().globalCompositeOperation=operation;")
+    @JavaScriptBody(args = {"operation"}, body = "this._context().globalCompositeOperation=operation.valueOf();")
     public native void setGlobalCompositeOperation(String operation);
 
     @JavaScriptBody(args = {}, body = "return this._context().globalCompositeOperation;")

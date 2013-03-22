@@ -1,16 +1,15 @@
 <?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>matrix.multiplication</artifactId>
-  <version>0.3-SNAPSHOT</version>
+  <version>0.5-SNAPSHOT</version>
   <packaging>jar</packaging>
   <parent>
     <artifactId>benchmarks</artifactId>
     <groupId>org.apidesign.bck2brwsr</groupId>
-    <version>0.3-SNAPSHOT</version>
+    <version>0.5-SNAPSHOT</version>
   </parent>
 
   <name>Matrix multiplication</name>
@@ -38,6 +37,36 @@
                   <skip>true</skip>
               </configuration>
           </plugin>      
+          <plugin>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>xml-maven-plugin</artifactId>
+              <version>1.0</version>
+              <executions>
+                  <execution>
+                      <goals>
+                          <goal>transform</goal>
+                      </goals>
+                      <phase>install</phase>
+                  </execution>
+              </executions>
+              <configuration>
+                  <transformationSets>
+                      <transformationSet>
+                          <dir>target/surefire-reports</dir>
+                          <outputDir>target/surefire-reports</outputDir>
+                          <includes>
+                              <include>TEST*.xml</include>
+                          </includes>
+                          <stylesheet>src/main/select-time.xsl</stylesheet>
+                          <fileMappers>
+                              <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
+                                  <targetExtension>.csv</targetExtension>
+                              </fileMapper>
+                          </fileMappers>                          
+                      </transformationSet>
+                  </transformationSets>
+              </configuration>
+          </plugin>
       </plugins>
   </build>
   
@@ -45,7 +74,7 @@
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>emul.mini</artifactId>
-      <version>0.3-SNAPSHOT</version>
+      <version>0.5-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.testng</groupId>
@@ -62,7 +91,7 @@
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>vmtest</artifactId>
-      <version>0.3-SNAPSHOT</version>
+      <version>0.5-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

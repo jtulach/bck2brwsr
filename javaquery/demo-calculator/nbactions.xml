@@ -23,7 +23,7 @@
             <actionName>run</actionName>
             <goals>
                 <goal>package</goal>
-                <goal>org.apidesign.bck2brwsr:mojo:0.3-SNAPSHOT:brwsr</goal>
+                <goal>org.apidesign.bck2brwsr:mojo:0.5-SNAPSHOT:brwsr</goal>
             </goals>
             <properties>
                 <skipTests>true</skipTests>

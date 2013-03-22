@@ -1,11 +1,10 @@
 <?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>demo.static.calculator</artifactId>
-  <version>0.3-SNAPSHOT</version>
+  <version>0.5-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>JavaQuery Demo - Calculator - Static Compilation</name>
@@ -19,10 +18,11 @@
             <plugin>
                 <groupId>org.apidesign.bck2brwsr</groupId>
                 <artifactId>mojo</artifactId>
-                <version>0.3-SNAPSHOT</version>
+                <version>0.5-SNAPSHOT</version>
                 <executions>
                     <execution>
                         <goals>
+                            <goal>j2js</goal>
                             <goal>brwsr</goal>
                         </goals>
                     </execution>
@@ -30,6 +30,7 @@
                 <configuration>
                     <directory>${project.build.directory}/${project.build.finalName}-bck2brwsr/public_html/</directory>
                     <startpage>index.xhtml</startpage>
+                    <javascript>${project.build.directory}/bck2brwsr.js</javascript>
                 </configuration>
             </plugin>
          <plugin>
@@ -80,6 +81,14 @@
              <skip>true</skip>
            </configuration>
          </plugin>      
+         <plugin>
+           <groupId>org.apache.maven.plugins</groupId>
+           <artifactId>maven-javadoc-plugin</artifactId>
+           <version>2.9</version>
+           <configuration>
+             <skip>true</skip>
+           </configuration>
+         </plugin>
       </plugins>
   </build>
 
@@ -87,21 +96,13 @@
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>emul</artifactId>
-      <version>0.3-SNAPSHOT</version>
+      <version>0.5-SNAPSHOT</version>
       <classifier>rt</classifier>
     </dependency>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>javaquery.api</artifactId>
-      <version>0.3-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apidesign.bck2brwsr</groupId>
-      <artifactId>vm4brwsr</artifactId>
-      <classifier>js</classifier>
-      <type>zip</type>
-      <version>0.3-SNAPSHOT</version>
-      <scope>provided</scope>
+      <version>0.5-SNAPSHOT</version>
     </dependency>
   </dependencies>
 </project>

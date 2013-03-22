@@ -46,6 +46,7 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.MirroredTypeException;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
@@ -283,7 +284,19 @@ public final class PageProcessor extends AbstractProcessor {
                                 }
                                 first = false;
                                 if (ve.asType() == stringType) {
-                                    params.append('"').append(id).append('"');
+                                    if (ve.getSimpleName().contentEquals("id")) {
+                                        params.append('"').append(id).append('"');
+                                        continue;
+                                    }
+                                    params.append("org.apidesign.bck2brwsr.htmlpage.ConvertTypes.toString(ev, \"");
+                                    params.append(ve.getSimpleName().toString());
+                                    params.append("\")");
+                                    continue;
+                                }
+                                if (processingEnv.getTypeUtils().getPrimitiveType(TypeKind.DOUBLE) == ve.asType()) {
+                                    params.append("org.apidesign.bck2brwsr.htmlpage.ConvertTypes.toDouble(ev, \"");
+                                    params.append(ve.getSimpleName().toString());
+                                    params.append("\")");
                                     continue;
                                 }
                                 String rn = ve.asType().toString();
@@ -296,7 +309,7 @@ public final class PageProcessor extends AbstractProcessor {
                                     continue;
                                 }
                                 processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, 
-                                    "@On method can only accept String or " + className + " arguments",
+                                    "@On method can only accept String named 'id' or " + className + " arguments",
                                     ee
                                 );
                                 return false;
@@ -328,10 +341,10 @@ public final class PageProcessor extends AbstractProcessor {
             }
             w.append("  }\n");
             if (dispatchCnt > 0) {
-                w.append("class OnDispatch implements Runnable {\n");
+                w.append("class OnDispatch implements OnHandler {\n");
                 w.append("  private final int dispatch;\n");
                 w.append("  OnDispatch(int d) { dispatch = d; }\n");
-                w.append("  public void run() {\n");
+                w.append("  public void onEvent(Object ev) {\n");
                 w.append("    switch (dispatch) {\n");
                 w.append(dispatch);
                 w.append("    }\n");
