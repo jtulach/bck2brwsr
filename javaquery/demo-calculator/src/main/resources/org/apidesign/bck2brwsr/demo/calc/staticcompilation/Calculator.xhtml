@@ -76,6 +76,13 @@
                 </tr>
             </tbody>
         </table>
+        
+        <h4>Previous Results</h4>
+        
+        <ul data-bind="foreach: history">
+            <li data-bind="text: $data"/>
+        </ul>
+        
         <div data-bind="text: displayPreview"></div>
         <script src="bck2brwsr.js"/>
         <script>
