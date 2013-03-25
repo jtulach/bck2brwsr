@@ -12,6 +12,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <bck2brwsr.obfuscationlevel>FULL</bck2brwsr.obfuscationlevel>
   </properties>
   <build>
       <plugins>
@@ -31,7 +32,7 @@
                     <directory>${project.build.directory}/${project.build.finalName}-bck2brwsr/public_html/</directory>
                     <startpage>index.xhtml</startpage>
                     <javascript>${project.build.directory}/bck2brwsr.js</javascript>
-                    <obfuscation>FULL</obfuscation>
+                    <obfuscation>${bck2brwsr.obfuscationlevel}</obfuscation>
                 </configuration>
             </plugin>
          <plugin>
