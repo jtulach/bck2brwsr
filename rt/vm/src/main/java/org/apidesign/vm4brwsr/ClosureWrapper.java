@@ -160,10 +160,12 @@ final class ClosureWrapper extends CommandLineRunner {
                 return new ClosureWrapper(w, "SIMPLE_OPTIMIZATIONS",
                                           new SimpleObfuscationDelegate(),
                                           resources, arr);
+/*                
             case MEDIUM:
                 return new ClosureWrapper(w, "ADVANCED_OPTIMIZATIONS",
                                           new MediumObfuscationDelegate(),
                                           resources, arr);
+*/
             case FULL:
                 return new ClosureWrapper(w, "ADVANCED_OPTIMIZATIONS",
                                           new FullObfuscationDelegate(),

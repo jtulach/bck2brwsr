@@ -23,8 +23,19 @@ package org.apidesign.vm4brwsr;
  * @since 0.5
  */
 public enum ObfuscationLevel {
+    /** Generated JavaScript is (sort of) human readable. Useful for debugging.
+     * Dynamic capabilities of the virtual machine work on all classes.
+     */
     NONE,
+    /** White spaces are removed. Names of external symbols remain unchanged.
+     * Dynamic capabilities of the virtual machine work on all classes.
+     */
     MINIMAL,
-    MEDIUM,
+// temporarily commented out before merge. not well defined yet:
+//    MEDIUM,
+    /** Aggressive obfuscation of everything. Compact, unreadable "one-liner".
+     * One cannot load classes dynamically. Useful mostly for static compilation
+     * of self contained application.
+     */
     FULL
 }
