@@ -19,6 +19,7 @@ package org.apidesign.bck2brwsr.htmlpage;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import org.apidesign.bck2brwsr.core.JavaScriptOnly;
 
 /**
  *
@@ -91,6 +92,11 @@ public final class KOList<T> extends ArrayList<T> {
         notifyChange();
         return ret;
     }
+    
+    
+    
+    @JavaScriptOnly(name = "koArray", value = "function() { return this.toArray___3Ljava_lang_Object_2(); }")
+    private static native int koArray();
 
     private void notifyChange() {
         Knockout m = model;

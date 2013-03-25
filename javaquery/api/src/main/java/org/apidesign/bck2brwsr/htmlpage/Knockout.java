@@ -18,6 +18,7 @@
 package org.apidesign.bck2brwsr.htmlpage;
 
 import java.lang.reflect.Method;
+import java.util.List;
 import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
@@ -48,7 +49,8 @@ public class Knockout {
                 bind(bindings, model, propsGettersAndSetters[i],
                     propsGettersAndSetters[i + 1],
                     propsGettersAndSetters[i + 2],
-                    getter.getReturnType().isPrimitive()
+                    getter.getReturnType().isPrimitive(),
+                    List.class.isAssignableFrom(getter.getReturnType())
                 );
             } catch (NoSuchMethodException ex) {
                 throw new IllegalStateException(ex.getMessage());
@@ -74,10 +76,11 @@ public class Knockout {
     public static void triggerEvent(String id, String ev) {
     }
     
-    @JavaScriptBody(args = { "bindings", "model", "prop", "getter", "setter", "primitive" }, body =
+    @JavaScriptBody(args = { "bindings", "model", "prop", "getter", "setter", "primitive", "array" }, body =
           "var bnd = {\n"
         + "  'read': function() {\n"
         + "    var v = model[getter]();\n"
+        + "    if (array) v = v.koArray();\n"
         + "    return v;\n"
         + "  },\n"
         + "  'owner': bindings\n"
@@ -90,7 +93,7 @@ public class Knockout {
         + "bindings[prop] = ko['computed'](bnd);"
     )
     private static void bind(
-        Object bindings, Object model, String prop, String getter, String setter, boolean primitive
+        Object bindings, Object model, String prop, String getter, String setter, boolean primitive, boolean array
     ) {
     }
 
