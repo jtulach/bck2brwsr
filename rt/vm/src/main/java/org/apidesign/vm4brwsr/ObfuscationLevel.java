@@ -17,35 +17,25 @@
  */
 package org.apidesign.vm4brwsr;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-
 /**
+ * Defines obfuscation level of produced JavaScript files.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @since 0.5
  */
-class VMinVM extends ByteCodeToJavaScript {
-    private VMinVM(Appendable out) {
-        super(out);
-    }
-    
-    static String toJavaScript(byte[] is) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        new VMinVM(sb).compile(new ByteArrayInputStream(is));
-        return sb.toString().toString();
-    }
-
-    @Override
-    protected boolean requireReference(String internalClassName) {
-        return false;
-    }
-
-    @Override
-    protected void requireScript(String resourcePath) {
-    }
-
-    @Override
-    String getVMObject() {
-        return "global";
-    }
+public enum ObfuscationLevel {
+    /** Generated JavaScript is (sort of) human readable. Useful for debugging.
+     * Dynamic capabilities of the virtual machine work on all classes.
+     */
+    NONE,
+    /** White spaces are removed. Names of external symbols remain unchanged.
+     * Dynamic capabilities of the virtual machine work on all classes.
+     */
+    MINIMAL,
+// temporarily commented out before merge. not well defined yet:
+//    MEDIUM,
+    /** Aggressive obfuscation of everything. Compact, unreadable "one-liner".
+     * One cannot load classes dynamically. Useful mostly for static compilation
+     * of self contained application.
+     */
+    FULL
 }

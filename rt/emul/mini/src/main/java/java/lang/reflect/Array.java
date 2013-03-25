@@ -636,9 +636,9 @@ class Array {
         + "arr.jvmName = sig;\n"
         + "return arr;"
     )
-    private static native Object newArray(boolean primitive, String sig, int length);
+    static native Object newArray(boolean primitive, String sig, int length);
 
-    private static Object multiNewArray(String sig, int[] dims, int index)
+    static Object multiNewArray(String sig, int[] dims, int index)
     throws IllegalArgumentException, NegativeArraySizeException {
         if (dims.length == index + 1) {
             return newArray(sig.length() == 2, sig, dims[index]);
