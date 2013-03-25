@@ -84,14 +84,19 @@
                      <id>generate-js</id>
                      <phase>process-classes</phase>
                      <configuration>
-                        <mainClass>org.apidesign.vm4brwsr.Main</mainClass>
+                         <executable>java</executable>
                         <arguments>
+                            <argument>-cp</argument>
+                            <classpath/>
+                            <argument>org.apidesign.vm4brwsr.Main</argument>
+                            <argument>--obfuscatelevel</argument>
+                            <argument>MINIMAL</argument>
                             <argument>${project.build.directory}/bck2brwsr.js</argument>
                             <argument>org/apidesign/vm4brwsr/Bck2Brwsr</argument>
                         </arguments>
                      </configuration>
                      <goals>
-                         <goal>java</goal>
+                         <goal>exec</goal>
                      </goals>
                  </execution>
              </executions>
