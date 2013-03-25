@@ -115,7 +115,8 @@ abstract class ByteCodeToJavaScript {
         StringArray toInitilize = new StringArray();
         final String className = className(jc);
         out.append("\n\n").append(assignClass(className));
-        out.append("function CLS() {");
+        out.append("function ").append(className).append("() {");
+        out.append("\n  var CLS = ").append(className).append(';');
         out.append("\n  if (!CLS.$class) {");
         if (proto == null) {
             String sc = jc.getSuperClassName(); // with _
