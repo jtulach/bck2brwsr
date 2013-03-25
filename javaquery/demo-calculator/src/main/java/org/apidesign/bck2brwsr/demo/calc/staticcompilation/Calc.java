@@ -74,7 +74,9 @@ public class Calc {
             c.getDisplay()
         );
         c.setDisplay(newValue);
-        c.getHistory().add(newValue);
+        if (!c.getHistory().contains(newValue)) {
+            c.getHistory().add(newValue);
+        }
         c.setMemory(0);
     }
     
