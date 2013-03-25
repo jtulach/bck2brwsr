@@ -402,8 +402,15 @@ public final
             }
             return cmpType != null && getComponentType().isAssignableFrom(cmpType);
         }
-        String prop = "$instOf_" + getName().replace('.', '_');
-        return hasCnstrProperty(cls, prop);
+        if (isPrimitive()) {
+            return false;
+        } else {
+            if (cls.isPrimitive()) {
+                return false;
+            }
+            String prop = "$instOf_" + getName().replace('.', '_');
+            return hasCnstrProperty(cls, prop);
+        }
     }
 
     @JavaScriptBody(args = { "who", "prop" }, body = 

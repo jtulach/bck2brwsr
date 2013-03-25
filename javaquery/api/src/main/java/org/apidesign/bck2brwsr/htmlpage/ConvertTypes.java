@@ -43,7 +43,8 @@ public final class ConvertTypes {
     }
     
     @JavaScriptBody(args = { "object", "property" },
-        body = "var p = object[property]; return p ? p : null;"
+        body = "if (property === null) return object;\n"
+        + "var p = object[property]; return p ? p : null;"
     )
     private static Object getProperty(Object object, String property) {
         return null;

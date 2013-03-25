@@ -18,8 +18,12 @@
 package org.apidesign.bck2brwsr.htmlpage;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
+import org.apidesign.bck2brwsr.htmlpage.api.OnFunction;
 import org.apidesign.bck2brwsr.htmlpage.api.Page;
 import org.apidesign.bck2brwsr.htmlpage.api.Property;
 import static org.testng.Assert.*;
@@ -30,17 +34,21 @@ import org.testng.annotations.Test;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@Page(xhtml = "Empty.html", className = "Model", properties = {
+@Page(xhtml = "Empty.html", className = "Modelik", properties = {
     @Property(name = "value", type = int.class),
-    @Property(name = "unrelated", type = long.class)
+    @Property(name = "count", type = int.class),
+    @Property(name = "unrelated", type = long.class),
+    @Property(name = "names", type = String.class, array = true),
+    @Property(name = "values", type = int.class, array = true),
+    @Property(name = "people", type = PersonImpl.class, array = true)
 })
 public class ModelTest {
-    private Model model;
-    private static Model leakedModel;
+    private Modelik model;
+    private static Modelik leakedModel;
     
     @BeforeMethod
     public void createModel() {
-        model = new Model();
+        model = new Modelik();
     }
     
     @Test public void classGeneratedWithSetterGetter() {
@@ -51,6 +59,75 @@ public class ModelTest {
     @Test public void computedMethod() {
         model.setValue(4);
         assertEquals(16, model.getPowerValue());
+    }
+    
+    @Test public void arrayIsMutable() {
+        assertEquals(model.getNames().size(), 0, "Is empty");
+        model.getNames().add("Jarda");
+        assertEquals(model.getNames().size(), 1, "One element");
+    }
+    
+    @Test public void arrayChangesNotified() {
+        MockKnockout my = new MockKnockout();
+        MockKnockout.next = my;
+        
+        model.applyBindings();
+        
+        model.getNames().add("Hello");
+        
+        assertFalse(my.mutated.isEmpty(), "There was a change" + my.mutated);
+        assertTrue(my.mutated.contains("names"), "Change in names property: " + my.mutated);
+
+        my.mutated.clear();
+        
+        Iterator<String> it = model.getNames().iterator();
+        assertEquals(it.next(), "Hello");
+        it.remove();
+        
+        assertFalse(my.mutated.isEmpty(), "There was a change" + my.mutated);
+        assertTrue(my.mutated.contains("names"), "Change in names property: " + my.mutated);
+
+        my.mutated.clear();
+        
+        ListIterator<String> lit = model.getNames().listIterator();
+        lit.add("Jarda");
+        
+        assertFalse(my.mutated.isEmpty(), "There was a change" + my.mutated);
+        assertTrue(my.mutated.contains("names"), "Change in names property: " + my.mutated);
+    }
+    
+    @Test public void autoboxedArray() {
+        MockKnockout my = new MockKnockout();
+        MockKnockout.next = my;
+        
+        model.applyBindings();
+        
+        model.getValues().add(10);
+        
+        assertEquals(model.getValues().get(0), Integer.valueOf(10), "Really ten");
+    }
+
+    @Test public void derivedArrayProp() {
+        MockKnockout my = new MockKnockout();
+        MockKnockout.next = my;
+        
+        model.applyBindings();
+        
+        model.setCount(10);
+        
+        List<String> arr = model.getRepeat();
+        assertEquals(arr.size(), 10, "Ten items: " + arr);
+        
+        my.mutated.clear();
+        
+        model.setCount(5);
+        
+        arr = model.getRepeat();
+        assertEquals(arr.size(), 5, "Five items: " + arr);
+
+        assertEquals(my.mutated.size(), 2, "Two properties changed: " + my.mutated);
+        assertTrue(my.mutated.contains("repeat"), "Array is in there: " + my.mutated);
+        assertTrue(my.mutated.contains("count"), "Count is in there: " + my.mutated);
     }
     
     @Test public void derivedPropertiesAreNotified() {
@@ -92,6 +169,10 @@ public class ModelTest {
         }
     }
     
+    @OnFunction 
+    static void doSomething() {
+    }
+    
     @ComputedProperty
     static int powerValue(int value) {
         return value * value;
@@ -108,12 +189,27 @@ public class ModelTest {
         return "Not allowed callback!";
     }
     
+    @ComputedProperty
+    static List<String> repeat(int count) {
+        return Collections.nCopies(count, "Hello");
+    }
+    
     static class MockKnockout extends Knockout {
-        List<String> mutated = new ArrayList<String>();
+        List<String> mutated = new ArrayList<>();
         
         @Override
         public void valueHasMutated(String prop) {
             mutated.add(prop);
+        }
+    }
+    
+    public @Test void hasPersonPropertyAndComputedFullName() {
+        List<Person> arr = model.getPeople();
+        assertEquals(arr.size(), 0, "By default empty");
+        Person p = null;
+        if (p != null) {
+            String fullNameGenerated = p.getFullName();
+            assertNotNull(fullNameGenerated);
         }
     }
 }

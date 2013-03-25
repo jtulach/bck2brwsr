@@ -27,8 +27,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <directory>${project.build.directory}/${project.build.finalName}-bck2brwsr/public_html</directory>
-                    <startpage>index.xhtml</startpage>
+                    <startpage>org/apidesign/bck2brwsr/demo/calc/Calculator.xhtml</startpage>
                 </configuration>
             </plugin>
          <plugin>

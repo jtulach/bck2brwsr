@@ -17,8 +17,11 @@
  */
 package org.apidesign.bck2brwsr.htmlpage;
 
+import java.util.List;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
 import org.apidesign.bck2brwsr.htmlpage.api.OnEvent;
+import org.apidesign.bck2brwsr.htmlpage.api.OnFunction;
 import org.apidesign.bck2brwsr.htmlpage.api.Page;
 import org.apidesign.bck2brwsr.htmlpage.api.Property;
 import org.apidesign.bck2brwsr.vmtest.BrwsrTest;
@@ -31,7 +34,9 @@ import org.testng.annotations.Factory;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @Page(xhtml="Knockout.xhtml", className="KnockoutModel", properties={
-    @Property(name="name", type=String.class)
+    @Property(name="name", type=String.class),
+    @Property(name="results", type=String.class, array = true),
+    @Property(name="callbackCount", type=int.class)
 }) 
 public class KnockoutTest {
     
@@ -50,13 +55,82 @@ public class KnockoutTest {
         assert "Jardo".equals(m.getName()) : "Name property updated: " + m.getName();
     }
     
+    @HtmlFragment(
+        "<ul id='ul' data-bind='foreach: results'>\n"
+        + "  <li data-bind='text: $data, click: $root.call'/>\n"
+        + "</ul>\n"
+    )
+    @BrwsrTest public void displayContentOfArray() {
+        KnockoutModel m = new KnockoutModel();
+        m.getResults().add("Ahoj");
+        m.applyBindings();
+        
+        int cnt = countChildren("ul");
+        assert cnt == 1 : "One child, but was " + cnt;
+        
+        m.getResults().add("Hi");
+
+        cnt = countChildren("ul");
+        assert cnt == 2 : "Two children now, but was " + cnt;
+        
+        triggerChildClick("ul", 1);
+        
+        assert 1 == m.getCallbackCount() : "One callback " + m.getCallbackCount();
+        assert "Hi".equals(m.getName()) : "We got callback from 2nd child " + m.getName();
+    }
+    
+    @HtmlFragment(
+        "<ul id='ul' data-bind='foreach: cmpResults'>\n"
+        + "  <li><b data-bind='text: $data'></b></li>\n"
+        + "</ul>\n"
+    )
+    @BrwsrTest public void displayContentOfDerivedArray() {
+        KnockoutModel m = new KnockoutModel();
+        m.getResults().add("Ahoj");
+        m.applyBindings();
+        
+        int cnt = countChildren("ul");
+        assert cnt == 1 : "One child, but was " + cnt;
+        
+        m.getResults().add("hello");
+
+        cnt = countChildren("ul");
+        assert cnt == 2 : "Two children now, but was " + cnt;
+    }
+    
+    @OnFunction
+    static void call(KnockoutModel m, String data) {
+        m.setName(data);
+        m.setCallbackCount(m.getCallbackCount() + 1);
+    }
+    
     @ComputedProperty
     static String helloMessage(String name) {
         return "Hello " + name + "!";
+    }
+    
+    @ComputedProperty
+    static List<String> cmpResults(List<String> results) {
+        return results;
     }
     
     @Factory
     public static Object[] create() {
         return VMTest.create(KnockoutTest.class);
     }
+    
+    @JavaScriptBody(args = { "id" }, body = 
+          "var e = window.document.getElementById(id);\n "
+        + "if (typeof e === 'undefined') return -2;\n "
+        + "return e.children.length;\n "
+    )
+    private static native int countChildren(String id);
+
+    @JavaScriptBody(args = { "id", "pos" }, body = 
+          "var e = window.document.getElementById(id);\n "
+        + "var ev = window.document.createEvent('MouseEvents');\n "
+        + "ev.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);\n "
+        + "e.children[pos].dispatchEvent(ev);\n "
+    )
+    private static native void triggerChildClick(String id, int pos);
 }

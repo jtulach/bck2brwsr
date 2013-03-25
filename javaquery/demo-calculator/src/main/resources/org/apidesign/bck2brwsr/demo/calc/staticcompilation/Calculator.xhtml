@@ -76,6 +76,18 @@
                 </tr>
             </tbody>
         </table>
+        
+        <h4>Previous Results</h4>
+        
+        <div data-bind="if: emptyHistory">No results yet.</div>
+        <ul data-bind="foreach: history">
+            <li>
+                <span data-bind="text: $data"/> -
+                <a href="#" data-bind="click: $root.recoverMemory">Use</a>
+                <a href="#" data-bind="click: $root.removeMemory">Remove</a>
+            </li>
+        </ul>
+        
         <div data-bind="text: displayPreview"></div>
         <script src="bck2brwsr.js"/>
         <script>
