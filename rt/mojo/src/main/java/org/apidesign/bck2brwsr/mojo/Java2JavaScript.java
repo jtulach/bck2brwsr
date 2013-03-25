@@ -35,6 +35,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
+import org.apidesign.vm4brwsr.ObfuscationLevel;
 
 /** Compiles classes into JavaScript. */
 @Mojo(name="j2js", defaultPhase=LifecyclePhase.PROCESS_CLASSES)
@@ -47,7 +48,7 @@ public class Java2JavaScript extends AbstractMojo {
     /** JavaScript file to generate */
     @Parameter
     private File javascript;
-    
+
     /** Additional classes that should be pre-compiled into the javascript 
      * file. By default compiles all classes found under <code>classes</code>
      * directory and their transitive closure.
@@ -57,8 +58,14 @@ public class Java2JavaScript extends AbstractMojo {
     
     @Parameter(defaultValue="${project}")
     private MavenProject prj;
-    
-    
+
+    /**
+     * The obfuscation level for the generated JavaScript file.
+     *
+     * @since 0.5
+     */
+    @Parameter(defaultValue="NONE")
+    private ObfuscationLevel obfuscation;
 
     @Override
     public void execute() throws MojoExecutionException {
@@ -81,7 +88,11 @@ public class Java2JavaScript extends AbstractMojo {
         try {
             URLClassLoader url = buildClassLoader(classes, prj.getDependencyArtifacts());
             FileWriter w = new FileWriter(javascript);
-            Bck2Brwsr.generate(w, url, arr.toArray(new String[0]));
+            Bck2Brwsr.newCompiler().
+                obfuscation(obfuscation).
+                resources(url).
+                addRootClasses(arr.toArray(new String[0])).
+                generate(w);
             w.close();
         } catch (IOException ex) {
             throw new MojoExecutionException("Can't compile", ex);

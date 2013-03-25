@@ -151,5 +151,10 @@ final class VMLazy {
         String accessClass(String classOperation) {
             return "vm." + classOperation;
         }
+
+        @Override
+        String getVMObject() {
+            return "vm";
+        }
     }
 }

@@ -17,35 +17,32 @@
  */
 package org.apidesign.vm4brwsr;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Enumeration;
 
-/**
+/** Implementation of Resources that delegates to some class loader.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-class VMinVM extends ByteCodeToJavaScript {
-    private VMinVM(Appendable out) {
-        super(out);
-    }
-    
-    static String toJavaScript(byte[] is) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        new VMinVM(sb).compile(new ByteArrayInputStream(is));
-        return sb.toString().toString();
+final class LdrRsrcs implements Bck2Brwsr.Resources {
+    private final ClassLoader loader;
+
+    LdrRsrcs(ClassLoader loader) {
+        this.loader = loader;
     }
 
     @Override
-    protected boolean requireReference(String internalClassName) {
-        return false;
-    }
-
-    @Override
-    protected void requireScript(String resourcePath) {
-    }
-
-    @Override
-    String getVMObject() {
-        return "global";
+    public InputStream get(String name) throws IOException {
+        Enumeration<URL> en = loader.getResources(name);
+        URL u = null;
+        while (en.hasMoreElements()) {
+            u = en.nextElement();
+        }
+        if (u == null) {
+            throw new IOException("Can't find " + name);
+        }
+        return u.openStream();
     }
 }

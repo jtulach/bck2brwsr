@@ -83,18 +83,23 @@
                  <execution>
                      <id>generate-js</id>
                      <phase>process-classes</phase>
+                     <configuration>
+                         <executable>java</executable>
+                        <arguments>
+                            <argument>-cp</argument>
+                            <classpath/>
+                            <argument>org.apidesign.vm4brwsr.Main</argument>
+                            <argument>--obfuscatelevel</argument>
+                            <argument>MINIMAL</argument>
+                            <argument>${project.build.directory}/bck2brwsr.js</argument>
+                            <argument>org/apidesign/vm4brwsr/Bck2Brwsr</argument>
+                        </arguments>
+                     </configuration>
                      <goals>
-                         <goal>java</goal>
+                         <goal>exec</goal>
                      </goals>
                  </execution>
              </executions>
-             <configuration>
-                 <mainClass>org.apidesign.vm4brwsr.Main</mainClass>
-                 <arguments>
-                     <argument>${project.build.directory}/bck2brwsr.js</argument>
-                     <argument>org/apidesign/vm4brwsr/Bck2Brwsr</argument>
-                 </arguments>
-             </configuration>
          </plugin>
          <plugin>
              <artifactId>maven-assembly-plugin</artifactId>
@@ -140,5 +145,11 @@
       <version>${project.version}</version>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>com.google.javascript</groupId>
+      <artifactId>closure-compiler</artifactId>
+      <version>r2388</version>
+      <scope>compile</scope>
+    </dependency>  
   </dependencies>
 </project>
