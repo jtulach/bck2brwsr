@@ -53,6 +53,22 @@ public class ReflectionTest {
         return Runnable.class.isInterface();
     }
 
+    @Compare public boolean isAssignableToPrimitiveType() {
+        return boolean.class.isAssignableFrom(Runnable.class);
+    }
+
+    @Compare public boolean isAssignableFromPrimitiveType() {
+        return Runnable.class.isAssignableFrom(boolean.class);
+    }
+
+    @Compare public boolean isAssignableLongFromInt() {
+        return long.class.isAssignableFrom(int.class);
+    }
+
+    @Compare public boolean isAssignableIntFromLong() {
+        return int.class.isAssignableFrom(long.class);
+    }
+
     @Compare public String isRunnableHasRunMethod() throws NoSuchMethodException {
         return Runnable.class.getMethod("run").getName();
     }
