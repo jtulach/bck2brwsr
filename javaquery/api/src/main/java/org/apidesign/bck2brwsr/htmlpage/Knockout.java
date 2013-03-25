@@ -29,12 +29,13 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
 public class Knockout {
     /** used by tests */
     static Knockout next;
-    
+
     Knockout() {
     }
     
     public static <M> Knockout applyBindings(
-        Class<M> modelClass, M model, String[] propsGettersAndSetters
+        Class<M> modelClass, M model, String[] propsGettersAndSetters,
+        String[] methodsAndSignatures
     ) {
         Knockout bindings = next;
         next = null;
@@ -52,6 +53,11 @@ public class Knockout {
             } catch (NoSuchMethodException ex) {
                 throw new IllegalStateException(ex.getMessage());
             }
+        }
+        for (int i = 0; i < methodsAndSignatures.length; i += 2) {
+            expose(
+                bindings, model, methodsAndSignatures[i], methodsAndSignatures[i + 1]
+            );
         }
         applyBindings(bindings);
         return bindings;
@@ -85,6 +91,14 @@ public class Knockout {
     )
     private static void bind(
         Object bindings, Object model, String prop, String getter, String setter, boolean primitive
+    ) {
+    }
+
+    @JavaScriptBody(args = { "bindings", "model", "prop", "sig" }, body = 
+        "bindings[prop] = function(data, ev) { model[sig](data, ev); };"
+    )
+    private static void expose(
+        Object bindings, Object model, String prop, String sig
     ) {
     }
     

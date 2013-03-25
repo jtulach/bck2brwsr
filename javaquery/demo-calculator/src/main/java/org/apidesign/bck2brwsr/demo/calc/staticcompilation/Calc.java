@@ -17,9 +17,11 @@
  */
 package org.apidesign.bck2brwsr.demo.calc.staticcompilation;
 
+import java.util.List;
 import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
 import org.apidesign.bck2brwsr.htmlpage.api.On;
 import static org.apidesign.bck2brwsr.htmlpage.api.OnEvent.*;
+import org.apidesign.bck2brwsr.htmlpage.api.OnFunction;
 import org.apidesign.bck2brwsr.htmlpage.api.Page;
 import org.apidesign.bck2brwsr.htmlpage.api.Property;
 
@@ -38,7 +40,7 @@ import org.apidesign.bck2brwsr.htmlpage.api.Property;
 })
 public class Calc {
     static {
-        new Calculator().applyBindings();
+        new Calculator().applyBindings().setOperation("plus");
     }
     
     @On(event = CLICK, id="clear")
@@ -76,6 +78,16 @@ public class Calc {
         c.setMemory(0);
     }
     
+    @OnFunction
+    static void recoverMemory(Calculator c, double data) {
+        c.setDisplay(data);
+    }
+
+    @OnFunction
+    static void removeMemory(Calculator c, double data) {
+        c.getHistory().remove(data);
+    }
+    
     private static double compute(String op, double memory, double display) {
         switch (op) {
             case "plus": return memory + display;
@@ -111,5 +123,10 @@ public class Calc {
             return "Type numbers and perform simple operations! Press '=' to get result.";
         }
         return "Attempt to compute " + memory + " " + operation + " " + display + " = " + compute(operation, memory, display);
+    }
+    
+    @ComputedProperty
+    static boolean emptyHistory(List<?> history) {
+        return history.isEmpty();
     }
 }

@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
+import org.apidesign.bck2brwsr.htmlpage.api.OnFunction;
 import org.apidesign.bck2brwsr.htmlpage.api.Page;
 import org.apidesign.bck2brwsr.htmlpage.api.Property;
 import static org.testng.Assert.*;
@@ -166,6 +167,10 @@ public class ModelTest {
         } catch (IllegalStateException ex) {
             // OK, we can't read
         }
+    }
+    
+    @OnFunction 
+    static void doSomething() {
     }
     
     @ComputedProperty

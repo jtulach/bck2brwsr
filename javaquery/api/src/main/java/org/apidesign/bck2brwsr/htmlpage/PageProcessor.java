@@ -55,6 +55,7 @@ import javax.tools.StandardLocation;
 import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
 import org.apidesign.bck2brwsr.htmlpage.api.Model;
 import org.apidesign.bck2brwsr.htmlpage.api.On;
+import org.apidesign.bck2brwsr.htmlpage.api.OnFunction;
 import org.apidesign.bck2brwsr.htmlpage.api.Page;
 import org.apidesign.bck2brwsr.htmlpage.api.Property;
 import org.openide.util.lookup.ServiceProvider;
@@ -68,6 +69,7 @@ import org.openide.util.lookup.ServiceProvider;
 @SupportedAnnotationTypes({
     "org.apidesign.bck2brwsr.htmlpage.api.Model",
     "org.apidesign.bck2brwsr.htmlpage.api.Page",
+    "org.apidesign.bck2brwsr.htmlpage.api.OnFunction",
     "org.apidesign.bck2brwsr.htmlpage.api.On"
 })
 public final class PageProcessor extends AbstractProcessor {
@@ -164,11 +166,15 @@ public final class PageProcessor extends AbstractProcessor {
         try {
             StringWriter body = new StringWriter();
             List<String> propsGetSet = new ArrayList<>();
+            List<String> functions = new ArrayList<>();
             Map<String, Collection<String>> propsDeps = new HashMap<>();
             if (!generateComputedProperties(body, p.properties(), e.getEnclosedElements(), propsGetSet, propsDeps)) {
                 ok = false;
             }
             if (!generateProperties(e, body, p.properties(), propsGetSet, propsDeps)) {
+                ok = false;
+            }
+            if (!generateFunctions(e, body, className, e.getEnclosedElements(), functions)) {
                 ok = false;
             }
             
@@ -206,6 +212,13 @@ public final class PageProcessor extends AbstractProcessor {
                         } else {
                             w.write("    \"" + n + "\"");
                         }
+                        sep = ",\n";
+                    }
+                    w.write("\n  }, new String[] {\n");
+                    sep = "";
+                    for (String n : functions) {
+                        w.write(sep);
+                        w.write(n);
                         sep = ",\n";
                     }
                     w.write("\n  });\n  return this;\n}\n");
@@ -275,46 +288,7 @@ public final class PageProcessor extends AbstractProcessor {
                             continue;
                         }
                         ExecutableElement ee = (ExecutableElement)method;
-                        StringBuilder params = new StringBuilder();
-                        {
-                            boolean first = true;
-                            for (VariableElement ve : ee.getParameters()) {
-                                if (!first) {
-                                    params.append(", ");
-                                }
-                                first = false;
-                                if (ve.asType() == stringType) {
-                                    if (ve.getSimpleName().contentEquals("id")) {
-                                        params.append('"').append(id).append('"');
-                                        continue;
-                                    }
-                                    params.append("org.apidesign.bck2brwsr.htmlpage.ConvertTypes.toString(ev, \"");
-                                    params.append(ve.getSimpleName().toString());
-                                    params.append("\")");
-                                    continue;
-                                }
-                                if (processingEnv.getTypeUtils().getPrimitiveType(TypeKind.DOUBLE) == ve.asType()) {
-                                    params.append("org.apidesign.bck2brwsr.htmlpage.ConvertTypes.toDouble(ev, \"");
-                                    params.append(ve.getSimpleName().toString());
-                                    params.append("\")");
-                                    continue;
-                                }
-                                String rn = ve.asType().toString();
-                                int last = rn.lastIndexOf('.');
-                                if (last >= 0) {
-                                    rn = rn.substring(last + 1);
-                                }
-                                if (rn.equals(className)) {
-                                    params.append(className).append(".this");
-                                    continue;
-                                }
-                                processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, 
-                                    "@On method can only accept String named 'id' or " + className + " arguments",
-                                    ee
-                                );
-                                return false;
-                            }
-                        }
+                        CharSequence params = wrapParams(ee, id, className, "ev", null);
                         if (!ee.getModifiers().contains(Modifier.STATIC)) {
                             processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@On method has to be static", ee);
                             ok = false;
@@ -658,5 +632,106 @@ public final class PageProcessor extends AbstractProcessor {
             }
             e = e.getEnclosingElement();
         }
+    }
+
+    private boolean generateFunctions(
+        Element clazz, StringWriter body, String className, 
+        List<? extends Element> enclosedElements, List<String> functions
+    ) {
+        for (Element m : enclosedElements) {
+            if (m.getKind() != ElementKind.METHOD) {
+                continue;
+            }
+            ExecutableElement e = (ExecutableElement)m;
+            OnFunction onF = e.getAnnotation(OnFunction.class);
+            if (onF == null) {
+                continue;
+            }
+            if (!e.getModifiers().contains(Modifier.STATIC)) {
+                processingEnv.getMessager().printMessage(
+                    Diagnostic.Kind.ERROR, "@OnFunction method needs to be static", e
+                );
+                return false;
+            }
+            if (e.getModifiers().contains(Modifier.PRIVATE)) {
+                processingEnv.getMessager().printMessage(
+                    Diagnostic.Kind.ERROR, "@OnFunction method cannot be private", e
+                );
+                return false;
+            }
+            if (e.getReturnType().getKind() != TypeKind.VOID) {
+                processingEnv.getMessager().printMessage(
+                    Diagnostic.Kind.ERROR, "@OnFunction method should return void", e
+                );
+                return false;
+            }
+            String n = e.getSimpleName().toString();
+            body.append("private void ").append(n).append("(Object data, Object ev) {\n");
+            body.append("  ").append(clazz.getSimpleName()).append(".").append(n).append("(");
+            body.append(wrapParams(e, null, className, "ev", "data"));
+            body.append(");\n");
+            body.append("}\n");
+            
+            functions.add('\"' + n + '\"');
+            functions.add('\"' + n + "__VLjava_lang_Object_2Ljava_lang_Object_2" + '\"');
+        }
+        return true;
+    }
+
+    private CharSequence wrapParams(
+        ExecutableElement ee, String id, String className, String evName, String dataName
+    ) {
+        TypeMirror stringType = processingEnv.getElementUtils().getTypeElement("java.lang.String").asType();
+        StringBuilder params = new StringBuilder();
+        boolean first = true;
+        for (VariableElement ve : ee.getParameters()) {
+            if (!first) {
+                params.append(", ");
+            }
+            first = false;
+            String toCall = null;
+            if (ve.asType() == stringType) {
+                if (ve.getSimpleName().contentEquals("id")) {
+                    params.append('"').append(id).append('"');
+                    continue;
+                }
+                toCall = "org.apidesign.bck2brwsr.htmlpage.ConvertTypes.toString";
+            }
+            if (ve.asType().getKind() == TypeKind.DOUBLE) {
+                toCall = "org.apidesign.bck2brwsr.htmlpage.ConvertTypes.toDouble";
+            }
+            if (ve.asType().getKind() == TypeKind.INT) {
+                toCall = "org.apidesign.bck2brwsr.htmlpage.ConvertTypes.toInt";
+            }
+
+            if (toCall != null) {
+                params.append(toCall).append('(');
+                if (dataName != null && ve.getSimpleName().contentEquals("data")) {
+                    params.append(dataName);
+                    params.append(", null");
+                } else {
+                    params.append(evName);
+                    params.append(", \"");
+                    params.append(ve.getSimpleName().toString());
+                    params.append("\"");
+                }
+                params.append(")");
+                continue;
+            }
+            String rn = ve.asType().toString();
+            int last = rn.lastIndexOf('.');
+            if (last >= 0) {
+                rn = rn.substring(last + 1);
+            }
+            if (rn.equals(className)) {
+                params.append(className).append(".this");
+                continue;
+            }
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, 
+                "@On method can only accept String named 'id' or " + className + " arguments",
+                ee
+            );
+        }
+        return params;
     }
 }
