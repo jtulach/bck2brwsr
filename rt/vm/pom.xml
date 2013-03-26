@@ -3,12 +3,12 @@
   <parent>
     <groupId>org.apidesign.bck2brwsr</groupId>
     <artifactId>rt</artifactId>
-    <version>0.5-SNAPSHOT</version>
+    <version>0.5</version>
   </parent>
 
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>vm4brwsr</artifactId>
-  <version>0.5-SNAPSHOT</version>
+  <version>0.5</version>
   <packaging>jar</packaging>
 
   <name>Virtual Machine for Browser</name>
@@ -87,7 +87,7 @@
                          <executable>java</executable>
                         <arguments>
                             <argument>-cp</argument>
-                            <classpath/>
+                            <classpath />
                             <argument>org.apidesign.vm4brwsr.Main</argument>
                             <argument>--obfuscatelevel</argument>
                             <argument>MINIMAL</argument>
