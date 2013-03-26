@@ -258,7 +258,7 @@ public final class PageProcessor extends AbstractProcessor {
     }
 
     private static String cnstnt(String id) {
-        return id.toUpperCase(Locale.ENGLISH).replace('.', '_').replace('-', '_');
+        return id.replace('.', '_').replace('-', '_');
     }
 
     private boolean initializeOnClick(
