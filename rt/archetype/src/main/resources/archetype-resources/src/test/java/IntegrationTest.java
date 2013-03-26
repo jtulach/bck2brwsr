@@ -32,9 +32,9 @@ public class IntegrationTest {
         Index m = new Index();
         m.setName("Joe Hacker");
         m.applyBindings();
-        assert "Joe Hacker".equals(m.INPUT.getValue()) : "Value is really Joe Hacker: " + m.INPUT.getValue();
-        m.INPUT.setValue("Happy Joe");
-        m.triggerEvent(m.INPUT, OnEvent.CHANGE);
+        assert "Joe Hacker".equals(m.input.getValue()) : "Value is really Joe Hacker: " + m.input.getValue();
+        m.input.setValue("Happy Joe");
+        m.triggerEvent(m.input, OnEvent.CHANGE);
         assert "Happy Joe".equals(m.getName()) : "Name property updated to Happy Joe: " + m.getName();
     }
 
