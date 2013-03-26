@@ -94,7 +94,17 @@
               <configuration>
                   <tag>release-${releaseVersion}</tag>
               </configuration>
-          </plugin>      </plugins>
+          </plugin>      
+           <plugin>
+            <artifactId>maven-release-plugin</artifactId>
+            <version>2.1</version>
+            <configuration>
+              <mavenExecutorId>forked-path</mavenExecutorId>
+              <useReleaseProfile>false</useReleaseProfile>
+              <arguments>-Pjvnet-release -Pgpg</arguments>
+            </configuration>
+          </plugin>
+      </plugins>
       <pluginManagement>
           <plugins>
               <plugin>
