@@ -49,9 +49,9 @@ public class KnockoutTest {
         KnockoutModel m = new KnockoutModel();
         m.setName("Kukuc");
         m.applyBindings();
-        assert "Kukuc".equals(m.INPUT.getValue()) : "Value is really kukuc: " + m.INPUT.getValue();
-        m.INPUT.setValue("Jardo");
-        m.triggerEvent(m.INPUT, OnEvent.CHANGE);
+        assert "Kukuc".equals(m.input.getValue()) : "Value is really kukuc: " + m.input.getValue();
+        m.input.setValue("Jardo");
+        m.triggerEvent(m.input, OnEvent.CHANGE);
         assert "Jardo".equals(m.getName()) : "Name property updated: " + m.getName();
     }
     

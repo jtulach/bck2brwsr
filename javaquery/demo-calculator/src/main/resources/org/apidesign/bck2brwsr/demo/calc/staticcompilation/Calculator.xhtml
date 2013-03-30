@@ -82,14 +82,14 @@
         <div data-bind="if: emptyHistory">No results yet.</div>
         <ul data-bind="foreach: history">
             <li>
-                <span data-bind="text: $data"/> -
+                <span data-bind="text: $data"></span> -
                 <a href="#" data-bind="click: $root.recoverMemory">Use</a>
                 <a href="#" data-bind="click: $root.removeMemory">Remove</a>
             </li>
         </ul>
         
         <div data-bind="text: displayPreview"></div>
-        <script src="bck2brwsr.js"/>
+        <script src="bck2brwsr.js"></script>
         <script>
             var vm = bck2brwsr('demo.static.calculator-0.5-SNAPSHOT.jar');
             vm.loadClass('org.apidesign.bck2brwsr.demo.calc.staticcompilation.Calc');
