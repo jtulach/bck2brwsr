@@ -197,6 +197,10 @@ public class ModelTest {
     static class MockKnockout extends Knockout {
         List<String> mutated = new ArrayList<>();
         
+        MockKnockout() {
+            super(null);
+        }
+        
         @Override
         public void valueHasMutated(String prop) {
             mutated.add(prop);

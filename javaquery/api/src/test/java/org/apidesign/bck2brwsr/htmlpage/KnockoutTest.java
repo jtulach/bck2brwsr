@@ -101,7 +101,7 @@ public class KnockoutTest {
     
     @HtmlFragment(
         "<ul id='ul' data-bind='foreach: people'>\n"
-        + "  <li data-bind='text: $data.firstName(), click: $root.removePerson'></li>\n"
+        + "  <li data-bind='text: $data.firstName, click: $root.removePerson'></li>\n"
         + "</ul>\n"
     )
     @BrwsrTest public void displayContentOfArrayOfPeople() {
@@ -132,6 +132,11 @@ public class KnockoutTest {
         
         String txt = childText("ul", 0);
         assert "first".equals(txt) : "Expecting 'first': " + txt;
+        
+        first.setFirstName("changed");
+        
+        txt = childText("ul", 0);
+        assert "changed".equals(txt) : "Expecting 'changed': " + txt;
     }
      
     @OnFunction

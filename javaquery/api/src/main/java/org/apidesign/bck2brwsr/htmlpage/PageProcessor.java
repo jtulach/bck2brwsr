@@ -135,16 +135,13 @@ public final class PageProcessor extends AbstractProcessor {
                 w.append("  private org.apidesign.bck2brwsr.htmlpage.Knockout ko;\n");
                 w.append(body.toString());
                 w.append("  private static Class<" + e.getSimpleName() + "> modelFor() { return null; }\n");
-                for (int i = 0; i < propsGetSet.size(); i += 4) {
-                    w.append("  @JavaScriptOnly(name=\"" + propsGetSet.get(i) + "\",\n");
-                    w.append("    value=\"function() { ");
-                    final String setter = propsGetSet.get(i + 2);
-                    if (setter != null) {
-                        w.append("if (arguments.length == 1) this." + setter + "(arguments[0]); ");
-                    }
-                    w.append("return this." + propsGetSet.get(i + 1) + "();}\")\n");
-                    w.append("  private static native void __accessor" + i + "();");
-                }
+                w.append("  public ").append(className).append("() {\n");
+                w.append("    ko = org.apidesign.bck2brwsr.htmlpage.Knockout.applyBindings(this, ");
+                writeStringArray(propsGetSet, w);
+                w.append(", ");
+                writeStringArray(Collections.<String>emptyList(), w);
+                w.append("    );\n");
+                w.append("  };\n");
                 w.append("}\n");
             } finally {
                 w.close();
@@ -219,25 +216,10 @@ public final class PageProcessor extends AbstractProcessor {
                     w.write("public " + className + " applyBindings() {\n");
                     w.write("  ko = org.apidesign.bck2brwsr.htmlpage.Knockout.applyBindings(");
                     w.write(className + ".class, this, ");
-                    w.write("new String[] {\n");
-                    String sep = "";
-                    for (String n : propsGetSet) {
-                        w.write(sep);
-                        if (n == null) {
-                            w.write("    null");
-                        } else {
-                            w.write("    \"" + n + "\"");
-                        }
-                        sep = ",\n";
-                    }
-                    w.write("\n  }, new String[] {\n");
-                    sep = "";
-                    for (String n : functions) {
-                        w.write(sep);
-                        w.write(n);
-                        sep = ",\n";
-                    }
-                    w.write("\n  });\n  return this;\n}\n");
+                    writeStringArray(propsGetSet, w);
+                    w.append(", ");
+                    writeStringArray(functions, w);
+                    w.write(");\n  return this;\n}\n");
 
                     w.write("public void triggerEvent(Element e, OnEvent ev) {\n");
                     w.write("  org.apidesign.bck2brwsr.htmlpage.Knockout.triggerEvent(e.getId(), ev.getElementPropertyName());\n");
@@ -681,8 +663,8 @@ public final class PageProcessor extends AbstractProcessor {
             body.append(");\n");
             body.append("}\n");
             
-            functions.add('\"' + n + '\"');
-            functions.add('\"' + n + "__VLjava_lang_Object_2Ljava_lang_Object_2" + '\"');
+            functions.add(n);
+            functions.add(n + "__VLjava_lang_Object_2Ljava_lang_Object_2");
         }
         return true;
     }
@@ -761,5 +743,20 @@ public final class PageProcessor extends AbstractProcessor {
             }
         }
         return models.values().contains(e.getSimpleName().toString());
+    }
+
+    private void writeStringArray(List<String> strings, Writer w) throws IOException {
+        w.write("new String[] {\n");
+        String sep = "";
+        for (String n : strings) {
+            w.write(sep);
+            if (n == null) {
+                w.write("    null");
+            } else {
+                w.write("    \"" + n + "\"");
+            }
+            sep = ",\n";
+        }
+        w.write("\n  }");
     }
 }
