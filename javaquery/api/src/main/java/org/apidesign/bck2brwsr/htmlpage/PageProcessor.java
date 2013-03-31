@@ -738,6 +738,9 @@ public final class PageProcessor extends AbstractProcessor {
     
     private boolean isModel(TypeMirror tm) {
         final Element e = processingEnv.getTypeUtils().asElement(tm);
+        if (e == null) {
+            return false;
+        }
         for (Element ch : e.getEnclosedElements()) {
             if (ch.getKind() == ElementKind.METHOD) {
                 ExecutableElement ee = (ExecutableElement)ch;
