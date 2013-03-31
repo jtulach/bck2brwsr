@@ -17,27 +17,10 @@
  */
 package org.apidesign.bck2brwsr.htmlpage;
 
-import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
-import org.apidesign.bck2brwsr.htmlpage.api.Model;
-import org.apidesign.bck2brwsr.htmlpage.api.Property;
-
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@Model(className = "Person", properties = {
-    @Property(name = "firstName", type = String.class),
-    @Property(name = "lastName", type = String.class),
-    @Property(name = "sex", type = Sex.class)
-})
-final class PersonImpl {
-    @ComputedProperty 
-    public static String fullName(String firstName, String lastName) {
-        return firstName + " " + lastName;
-    }
-    
-    @ComputedProperty
-    public static String sexType(Sex sex) {
-        return sex == null ? "unknown" : sex.toString();
-    }
+public enum Sex {
+    MALE, FEMALE;
 }

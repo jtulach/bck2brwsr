@@ -535,6 +535,7 @@ public final class PageProcessor extends AbstractProcessor {
     private String typeName(Element where, Property p) {
         String ret;
         boolean isModel = false;
+        boolean isEnum = false;
         try {
             ret = p.type().getName();
         } catch (MirroredTypeException ex) {
@@ -548,6 +549,9 @@ public final class PageProcessor extends AbstractProcessor {
             } else {
                 ret = tm.toString();
             }
+            TypeMirror enm = processingEnv.getElementUtils().getTypeElement("java.lang.Enum").asType();
+            enm = processingEnv.getTypeUtils().erasure(enm);
+            isEnum = processingEnv.getTypeUtils().isSubtype(tm, enm);
         }
         if (p.array()) {
             String bt = findBoxedType(ret);
@@ -555,7 +559,7 @@ public final class PageProcessor extends AbstractProcessor {
                 return bt;
             }
         }
-        if (!isModel && !"java.lang.String".equals(ret)) {
+        if (!isModel && !"java.lang.String".equals(ret) && !isEnum) {
             String bt = findBoxedType(ret);
             if (bt == null) {
                 processingEnv.getMessager().printMessage(
