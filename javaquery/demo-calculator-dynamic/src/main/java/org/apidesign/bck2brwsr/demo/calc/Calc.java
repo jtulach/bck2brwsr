@@ -36,7 +36,7 @@ import org.apidesign.bck2brwsr.htmlpage.api.Property;
     @Property(name = "display", type = double.class),
     @Property(name = "operation", type = String.class),
     @Property(name = "hover", type = boolean.class),
-    @Property(name = "history", type = double.class, array = true)
+    @Property(name = "history", type = HistoryImpl.class, array = true)
 })
 public class Calc {
     static {
@@ -74,19 +74,22 @@ public class Calc {
             c.getDisplay()
         );
         c.setDisplay(newValue);
-        if (!c.getHistory().contains(newValue)) {
-            c.getHistory().add(newValue);
+        if (!containsValue(c.getHistory(), newValue)) {
+            History h = new History();
+            h.setValue(newValue);
+            h.setOperation(c.getOperation());
+            c.getHistory().add(h);
         }
         c.setMemory(0);
     }
     
     @OnFunction
-    static void recoverMemory(Calculator c, double data) {
-        c.setDisplay(data);
+    static void recoverMemory(Calculator c, History data) {
+        c.setDisplay(data.getValue());
     }
 
     @OnFunction
-    static void removeMemory(Calculator c, double data) {
+    static void removeMemory(Calculator c, History data) {
         c.getHistory().remove(data);
     }
     
@@ -130,5 +133,14 @@ public class Calc {
     @ComputedProperty
     static boolean emptyHistory(List<?> history) {
         return history.isEmpty();
+    }
+
+    private static boolean containsValue(List<History> arr, final double newValue) {
+        for (History history : arr) {
+            if (history.getValue() == newValue) {
+                return true;
+            }
+        }
+        return false;
     }
 }

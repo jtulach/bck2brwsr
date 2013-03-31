@@ -83,9 +83,10 @@
         <div data-bind="if: emptyHistory">No results yet.</div>
         <ul data-bind="foreach: history">
             <li>
-                <span data-bind="text: $data"></span> -
+                <span data-bind="text: $data.value"></span> -
                 <a href="#" data-bind="click: $root.recoverMemory">Use</a>
-                <a href="#" data-bind="click: $root.removeMemory">Remove</a>
+                <a href="#" data-bind="click: $root.removeMemory">Remove</a> -
+                <span data-bind="text: $data.resultOf"></span>
             </li>
         </ul>
         
