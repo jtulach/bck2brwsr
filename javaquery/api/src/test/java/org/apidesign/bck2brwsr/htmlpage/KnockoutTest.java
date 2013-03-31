@@ -101,18 +101,24 @@ public class KnockoutTest {
     
     @HtmlFragment(
         "<ul id='ul' data-bind='foreach: people'>\n"
-        + "  <li data-bind='text: $data.firstName, click: $root.removePerson'></li>\n"
+        + "  <li data-bind='text: $data.firstName(), click: $root.removePerson'></li>\n"
         + "</ul>\n"
     )
     @BrwsrTest public void displayContentOfArrayOfPeople() {
         KnockoutModel m = new KnockoutModel();
-        m.getPeople().add(new Person());
+        
+        final Person first = new Person();
+        first.setFirstName("first");
+        m.getPeople().add(first);
+        
         m.applyBindings();
         
         int cnt = countChildren("ul");
         assert cnt == 1 : "One child, but was " + cnt;
         
-        m.getPeople().add(new Person());
+        final Person second = new Person();
+        second.setFirstName("second");
+        m.getPeople().add(second);
 
         cnt = countChildren("ul");
         assert cnt == 2 : "Two children now, but was " + cnt;
@@ -123,6 +129,9 @@ public class KnockoutTest {
 
         cnt = countChildren("ul");
         assert cnt == 1 : "Again one child, but was " + cnt;
+        
+        String txt = childText("ul", 0);
+        assert "first".equals(txt) : "Expecting 'first': " + txt;
     }
      
     @OnFunction
@@ -167,4 +176,11 @@ public class KnockoutTest {
         + "e.children[pos].dispatchEvent(ev);\n "
     )
     private static native void triggerChildClick(String id, int pos);
+
+    @JavaScriptBody(args = { "id", "pos" }, body = 
+          "var e = window.document.getElementById(id);\n "
+        + "var t = e.children[pos].innerHTML;\n "
+        + "return t ? t : null;"
+    )
+    private static native String childText(String id, int pos);
 }

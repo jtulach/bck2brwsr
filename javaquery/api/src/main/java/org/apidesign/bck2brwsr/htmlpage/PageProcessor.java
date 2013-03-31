@@ -128,12 +128,23 @@ public final class PageProcessor extends AbstractProcessor {
                 w.append("package " + pkg + ";\n");
                 w.append("import org.apidesign.bck2brwsr.htmlpage.api.*;\n");
                 w.append("import org.apidesign.bck2brwsr.htmlpage.KOList;\n");
+                w.append("import org.apidesign.bck2brwsr.core.JavaScriptOnly;\n");
                 w.append("final class ").append(className).append(" {\n");
                 w.append("  private Object json;\n");
                 w.append("  private boolean locked;\n");
                 w.append("  private org.apidesign.bck2brwsr.htmlpage.Knockout ko;\n");
                 w.append(body.toString());
                 w.append("  private static Class<" + e.getSimpleName() + "> modelFor() { return null; }\n");
+                for (int i = 0; i < propsGetSet.size(); i += 4) {
+                    w.append("  @JavaScriptOnly(name=\"" + propsGetSet.get(i) + "\",\n");
+                    w.append("    value=\"function() { ");
+                    final String setter = propsGetSet.get(i + 2);
+                    if (setter != null) {
+                        w.append("if (arguments.length == 1) this." + setter + "(arguments[0]); ");
+                    }
+                    w.append("return this." + propsGetSet.get(i + 1) + "();}\")\n");
+                    w.append("  private static native void __accessor" + i + "();");
+                }
                 w.append("}\n");
             } finally {
                 w.close();
