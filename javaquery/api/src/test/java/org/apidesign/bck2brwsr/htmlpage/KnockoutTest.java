@@ -36,7 +36,8 @@ import org.testng.annotations.Factory;
 @Page(xhtml="Knockout.xhtml", className="KnockoutModel", properties={
     @Property(name="name", type=String.class),
     @Property(name="results", type=String.class, array = true),
-    @Property(name="callbackCount", type=int.class)
+    @Property(name="callbackCount", type=int.class),
+    @Property(name="people", type=PersonImpl.class, array = true)
 }) 
 public class KnockoutTest {
     
@@ -98,11 +99,44 @@ public class KnockoutTest {
         assert cnt == 2 : "Two children now, but was " + cnt;
     }
     
+    @HtmlFragment(
+        "<ul id='ul' data-bind='foreach: people'>\n"
+        + "  <li data-bind='text: $data.firstName, click: $root.removePerson'></li>\n"
+        + "</ul>\n"
+    )
+    @BrwsrTest public void displayContentOfArrayOfPeople() {
+        KnockoutModel m = new KnockoutModel();
+        m.getPeople().add(new Person());
+        m.applyBindings();
+        
+        int cnt = countChildren("ul");
+        assert cnt == 1 : "One child, but was " + cnt;
+        
+        m.getPeople().add(new Person());
+
+        cnt = countChildren("ul");
+        assert cnt == 2 : "Two children now, but was " + cnt;
+
+        triggerChildClick("ul", 1);
+        
+        assert 1 == m.getCallbackCount() : "One callback " + m.getCallbackCount();
+
+        cnt = countChildren("ul");
+        assert cnt == 1 : "Again one child, but was " + cnt;
+    }
+     
     @OnFunction
     static void call(KnockoutModel m, String data) {
         m.setName(data);
         m.setCallbackCount(m.getCallbackCount() + 1);
     }
+
+    @OnFunction
+    static void removePerson(KnockoutModel model, Person data) {
+        model.setCallbackCount(model.getCallbackCount() + 1);
+        model.getPeople().remove(data);
+    }
+    
     
     @ComputedProperty
     static String helloMessage(String name) {
