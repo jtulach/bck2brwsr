@@ -115,11 +115,15 @@ public final class PageProcessor extends AbstractProcessor {
         try {
             StringWriter body = new StringWriter();
             List<String> propsGetSet = new ArrayList<>();
+            List<String> functions = new ArrayList<>();
             Map<String, Collection<String>> propsDeps = new HashMap<>();
             if (!generateComputedProperties(body, m.properties(), e.getEnclosedElements(), propsGetSet, propsDeps)) {
                 ok = false;
             }
             if (!generateProperties(e, body, m.properties(), propsGetSet, propsDeps)) {
+                ok = false;
+            }
+            if (!generateFunctions(e, body, className, e.getEnclosedElements(), functions)) {
                 ok = false;
             }
             FileObject java = processingEnv.getFiler().createSourceFile(pkg + '.' + className, e);
@@ -139,7 +143,7 @@ public final class PageProcessor extends AbstractProcessor {
                 w.append("    ko = org.apidesign.bck2brwsr.htmlpage.Knockout.applyBindings(this, ");
                 writeStringArray(propsGetSet, w);
                 w.append(", ");
-                writeStringArray(Collections.<String>emptyList(), w);
+                writeStringArray(functions, w);
                 w.append("    );\n");
                 w.append("  };\n");
                 w.append("}\n");

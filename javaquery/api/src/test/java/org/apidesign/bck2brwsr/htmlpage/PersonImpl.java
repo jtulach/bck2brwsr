@@ -19,6 +19,7 @@ package org.apidesign.bck2brwsr.htmlpage;
 
 import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
 import org.apidesign.bck2brwsr.htmlpage.api.Model;
+import org.apidesign.bck2brwsr.htmlpage.api.OnFunction;
 import org.apidesign.bck2brwsr.htmlpage.api.Property;
 
 /**
@@ -39,5 +40,14 @@ final class PersonImpl {
     @ComputedProperty
     public static String sexType(Sex sex) {
         return sex == null ? "unknown" : sex.toString();
+    }
+    
+    @OnFunction
+    static void changeSex(Person p) {
+        if (p.getSex() == Sex.MALE) {
+            p.setSex(Sex.FEMALE);
+        } else {
+            p.setSex(Sex.MALE);
+        }
     }
 }

@@ -138,6 +138,31 @@ public class KnockoutTest {
         txt = childText("ul", 0);
         assert "changed".equals(txt) : "Expecting 'changed': " + txt;
     }
+    
+    @HtmlFragment(
+        "<ul id='ul' data-bind='foreach: people'>\n"
+        + "  <li data-bind='text: $data.firstName, click: changeSex'></li>\n"
+        + "</ul>\n"
+    )
+    @BrwsrTest public void onPersonFunction() {
+        KnockoutModel m = new KnockoutModel();
+        
+        final Person first = new Person();
+        first.setFirstName("first");
+        first.setSex(Sex.MALE);
+        m.getPeople().add(first);
+        
+        
+        m.applyBindings();
+        
+        int cnt = countChildren("ul");
+        assert cnt == 1 : "One child, but was " + cnt;
+        
+        
+        triggerChildClick("ul", 0);
+        
+        assert first.getSex() == Sex.FEMALE : "Transverted to female: " + first.getSex();
+    }
      
     @OnFunction
     static void call(KnockoutModel m, String data) {
