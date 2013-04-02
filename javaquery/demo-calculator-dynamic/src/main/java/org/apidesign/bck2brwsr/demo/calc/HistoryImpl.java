@@ -19,6 +19,7 @@ package org.apidesign.bck2brwsr.demo.calc;
 
 import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
 import org.apidesign.bck2brwsr.htmlpage.api.Model;
+import org.apidesign.bck2brwsr.htmlpage.api.OnFunction;
 import org.apidesign.bck2brwsr.htmlpage.api.Property;
 
 /**
@@ -33,5 +34,10 @@ public class HistoryImpl {
     @ComputedProperty
     static String resultOf(String operation) {
         return "result of " + operation;
+    }
+    
+    @OnFunction
+    static void twice(History data) {
+        data.setValue(2.0 * data.getValue());
     }
 }
