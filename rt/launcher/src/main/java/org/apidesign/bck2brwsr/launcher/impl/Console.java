@@ -41,20 +41,72 @@ public class Console {
     @JavaScriptBody(args = {"id", "attr"}, body = 
         "return window.document.getElementById(id)[attr].toString();")
     private static native Object getAttr(String id, String attr);
+    @JavaScriptBody(args = {"elem", "attr"}, body = 
+        "return elem[attr].toString();")
+    private static native Object getAttr(Object elem, String attr);
 
     @JavaScriptBody(args = {"id", "attr", "value"}, body = 
         "window.document.getElementById(id)[attr] = value;")
     private static native void setAttr(String id, String attr, Object value);
+    @JavaScriptBody(args = {"elem", "attr", "value"}, body = 
+        "elem[attr] = value;")
+    private static native void setAttr(Object id, String attr, Object value);
     
     @JavaScriptBody(args = {}, body = "return; window.close();")
     private static native void closeWindow();
 
+    private static Object textArea;
+    private static Object statusArea;
+    
     private static void log(String newText) {
-        String id = "bck2brwsr.result";
+        if (textArea == null) {
+            return;
+        }
         String attr = "value";
-        setAttr(id, attr, getAttr(id, attr) + "\n" + newText);
-        setAttr(id, "scrollTop", getAttr(id, "scrollHeight"));
+        setAttr(textArea, attr, getAttr(textArea, attr) + "\n" + newText);
+        setAttr(textArea, "scrollTop", getAttr(textArea, "scrollHeight"));
     }
+    
+    private static void beginTest(Case c) {
+        Object[] arr = new Object[2];
+        beginTest(c.getClassName() + "." + c.getMethodName(), c, arr);
+        textArea = arr[0];
+        statusArea = arr[1];
+    }
+    
+    private static void finishTest(Case c, Object res) {
+        if ("null".equals(res)) {
+            setAttr(statusArea, "innerHTML", "OK");
+            setAttr(statusArea, "href", null);
+        } else {
+            setAttr(statusArea, "innerHTML", "run again");
+        }
+        statusArea = null;
+        textArea = null;
+    }
+
+    @JavaScriptBody(args = { "test", "c", "arr" }, body = 
+          "var ul = window.document.getElementById('bck2brwsr.result');\n"
+        + "var li = window.document.createElement('li');\n"
+        + "var span = window.document.createElement('span');\n"
+        + "span.innerHTML = test + ' - ';\n"
+        + "var p = window.document.createElement('p');\n"
+        + "var status = window.document.createElement('a');\n"
+        + "status.innerHTML = 'running';"
+        + "status.href = '#';\n"
+        + "status.onclick = function() { c.again__V_3Ljava_lang_Object_2(arr); }\n"
+        + "var pre = window.document.createElement('textarea');\n"
+        + "pre.width = '90%';"
+        + "pre.height = 100;"
+        + "li.appendChild(span);\n"
+        + "li.appendChild(status);\n"
+        + "li.appendChild(p);\n"
+        + "p.appendChild(pre);\n"
+        + "ul.appendChild(li);\n"
+        + "arr[0] = pre;\n"
+        + "arr[1] = status;\n"
+    )
+    private static native void beginTest(String test, Case c, Object[] arr);
     
     public static void execute() throws Exception {
         String clazz = (String) getAttr("clazz", "value");
@@ -109,19 +161,9 @@ public class Console {
                 }
                 
                 Case c = Case.parseData(data);
-                if (c.getHtmlFragment() != null) {
-                    setAttr("bck2brwsr.fragment", "innerHTML", c.getHtmlFragment());
-                }
-                log("Invoking " + c.getClassName() + '.' + c.getMethodName() + " as request: " + c.getRequestId());
-
-                Object result = invokeMethod(c.getClassName(), c.getMethodName());
-                
-                setAttr("bck2brwsr.fragment", "innerHTML", "");
-                log("Result: " + result);
-                
-                result = encodeURL("" + result);
-                
-                log("Sending back: " + url + "?request=" + c.getRequestId() + "&result=" + result);
+                beginTest(c);
+                Object result = c.runTest();
+                finishTest(c, result);
                 String u = url + "?request=" + c.getRequestId() + "&result=" + result;
                 
                 loadText(u, this, arr);
@@ -245,6 +287,30 @@ public class Console {
 
         public String getHtmlFragment() {
             return value("html", data);
+        }
+        
+        void again(Object[] arr) {
+            try {
+                textArea = arr[0];
+                statusArea = arr[1];
+                setAttr(textArea, "value", "");
+                runTest();
+            } catch (Exception ex) {
+                log(ex.getClass().getName() + ":" + ex.getMessage());
+            }
+        }
+
+        private Object runTest() throws IllegalAccessException, IllegalArgumentException, ClassNotFoundException, UnsupportedEncodingException, InvocationTargetException, InstantiationException, SecurityException {
+            if (this.getHtmlFragment() != null) {
+                setAttr("bck2brwsr.fragment", "innerHTML", this.getHtmlFragment());
+            }
+            log("Invoking " + this.getClassName() + '.' + this.getMethodName() + " as request: " + this.getRequestId());
+            Object result = invokeMethod(this.getClassName(), this.getMethodName());
+            setAttr("bck2brwsr.fragment", "innerHTML", "");
+            log("Result: " + result);
+            result = encodeURL("" + result);
+            log("Sending back: ...?request=" + this.getRequestId() + "&result=" + result);
+            return result;
         }
         
         @JavaScriptBody(args = "s", body = "return eval('(' + s + ')');")
