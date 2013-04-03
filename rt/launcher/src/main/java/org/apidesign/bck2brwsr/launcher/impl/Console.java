@@ -76,10 +76,9 @@ public class Console {
     
     private static void finishTest(Case c, Object res) {
         if ("null".equals(res)) {
-            setAttr(statusArea, "innerHTML", "OK");
-            setAttr(statusArea, "href", null);
+            setAttr(statusArea, "innerHTML", "Success");
         } else {
-            setAttr(statusArea, "innerHTML", "run again");
+            setAttr(statusArea, "innerHTML", "Result " + res);
         }
         statusArea = null;
         textArea = null;
@@ -88,19 +87,25 @@ public class Console {
     @JavaScriptBody(args = { "test", "c", "arr" }, body = 
           "var ul = window.document.getElementById('bck2brwsr.result');\n"
         + "var li = window.document.createElement('li');\n"
-        + "var span = window.document.createElement('span');\n"
+        + "var span = window.document.createElement('span');"
         + "span.innerHTML = test + ' - ';\n"
+        + "var details = window.document.createElement('a');\n"
+        + "details.innerHTML = 'Details';\n"
+        + "details.href = '#';\n"
         + "var p = window.document.createElement('p');\n"
         + "var status = window.document.createElement('a');\n"
         + "status.innerHTML = 'running';"
-        + "status.href = '#';\n"
+        + "details.onclick = function() { li.appendChild(p); li.removeChild(details); status.innerHTML = 'Run Again'; status.href = '#'; };\n"
         + "status.onclick = function() { c.again__V_3Ljava_lang_Object_2(arr); }\n"
         + "var pre = window.document.createElement('textarea');\n"
-        + "pre.width = '90%';"
-        + "pre.height = 100;"
+        + "pre.cols = 100;"
+        + "pre.rows = 10;"
         + "li.appendChild(span);\n"
         + "li.appendChild(status);\n"
-        + "li.appendChild(p);\n"
+        + "var span = window.document.createElement('span');"
+        + "span.innerHTML = ' ';\n"
+        + "li.appendChild(span);\n"
+        + "li.appendChild(details);\n"
         + "p.appendChild(pre);\n"
         + "ul.appendChild(li);\n"
         + "arr[0] = pre;\n"
