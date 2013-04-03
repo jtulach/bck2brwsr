@@ -146,6 +146,7 @@ public final class PageProcessor extends AbstractProcessor {
                 writeStringArray(functions, w);
                 w.append("    );\n");
                 w.append("  };\n");
+                writeToString(m.properties(), w);
                 w.append("}\n");
             } finally {
                 w.close();
@@ -766,5 +767,23 @@ public final class PageProcessor extends AbstractProcessor {
             sep = ",\n";
         }
         w.write("\n  }");
+    }
+    
+    private void writeToString(Property[] props, Writer w) throws IOException {
+        w.write("  public String toString() {\n");
+        w.write("    StringBuilder sb = new StringBuilder();\n");
+        w.write("    sb.append('{');\n");
+        String sep = "";
+        for (Property p : props) {
+            w.write(sep);
+            w.append("    sb.append(\"" + p.name() + ": \");\n");
+            w.append("    sb.append('\"');");
+            w.append("    sb.append(prop_").append(p.name()).append(");\n");
+            w.append("    sb.append('\"');");
+            sep =    "    sb.append(',');\n";
+        }
+        w.write("    sb.append('}');\n");
+        w.write("    return sb.toString();\n");
+        w.write("  }\n");
     }
 }
