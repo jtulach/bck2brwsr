@@ -41,6 +41,14 @@ public final class ConvertTypes {
         Object ret = getProperty(object, property);
         return ret instanceof Number ? ((Number)ret).intValue() : Integer.MIN_VALUE;
     }
+
+    public static <T> T toModel(Class<T> modelClass, Object object, String property) {
+        Object ret = getProperty(object, property);
+        if (ret == null || modelClass.isInstance(ret)) {
+            return modelClass.cast(ret);
+        }
+        throw new IllegalStateException("Value " + ret + " is not of type " + modelClass);
+    }
     
     @JavaScriptBody(args = { "object", "property" },
         body = "if (property === null) return object;\n"

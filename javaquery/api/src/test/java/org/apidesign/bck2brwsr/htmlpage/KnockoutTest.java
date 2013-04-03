@@ -36,7 +36,8 @@ import org.testng.annotations.Factory;
 @Page(xhtml="Knockout.xhtml", className="KnockoutModel", properties={
     @Property(name="name", type=String.class),
     @Property(name="results", type=String.class, array = true),
-    @Property(name="callbackCount", type=int.class)
+    @Property(name="callbackCount", type=int.class),
+    @Property(name="people", type=PersonImpl.class, array = true)
 }) 
 public class KnockoutTest {
     
@@ -98,11 +99,83 @@ public class KnockoutTest {
         assert cnt == 2 : "Two children now, but was " + cnt;
     }
     
+    @HtmlFragment(
+        "<ul id='ul' data-bind='foreach: people'>\n"
+        + "  <li data-bind='text: $data.firstName, click: $root.removePerson'></li>\n"
+        + "</ul>\n"
+    )
+    @BrwsrTest public void displayContentOfArrayOfPeople() {
+        KnockoutModel m = new KnockoutModel();
+        
+        final Person first = new Person();
+        first.setFirstName("first");
+        m.getPeople().add(first);
+        
+        m.applyBindings();
+        
+        int cnt = countChildren("ul");
+        assert cnt == 1 : "One child, but was " + cnt;
+        
+        final Person second = new Person();
+        second.setFirstName("second");
+        m.getPeople().add(second);
+
+        cnt = countChildren("ul");
+        assert cnt == 2 : "Two children now, but was " + cnt;
+
+        triggerChildClick("ul", 1);
+        
+        assert 1 == m.getCallbackCount() : "One callback " + m.getCallbackCount();
+
+        cnt = countChildren("ul");
+        assert cnt == 1 : "Again one child, but was " + cnt;
+        
+        String txt = childText("ul", 0);
+        assert "first".equals(txt) : "Expecting 'first': " + txt;
+        
+        first.setFirstName("changed");
+        
+        txt = childText("ul", 0);
+        assert "changed".equals(txt) : "Expecting 'changed': " + txt;
+    }
+    
+    @HtmlFragment(
+        "<ul id='ul' data-bind='foreach: people'>\n"
+        + "  <li data-bind='text: $data.firstName, click: changeSex'></li>\n"
+        + "</ul>\n"
+    )
+    @BrwsrTest public void onPersonFunction() {
+        KnockoutModel m = new KnockoutModel();
+        
+        final Person first = new Person();
+        first.setFirstName("first");
+        first.setSex(Sex.MALE);
+        m.getPeople().add(first);
+        
+        
+        m.applyBindings();
+        
+        int cnt = countChildren("ul");
+        assert cnt == 1 : "One child, but was " + cnt;
+        
+        
+        triggerChildClick("ul", 0);
+        
+        assert first.getSex() == Sex.FEMALE : "Transverted to female: " + first.getSex();
+    }
+     
     @OnFunction
     static void call(KnockoutModel m, String data) {
         m.setName(data);
         m.setCallbackCount(m.getCallbackCount() + 1);
     }
+
+    @OnFunction
+    static void removePerson(KnockoutModel model, Person data) {
+        model.setCallbackCount(model.getCallbackCount() + 1);
+        model.getPeople().remove(data);
+    }
+    
     
     @ComputedProperty
     static String helloMessage(String name) {
@@ -133,4 +206,11 @@ public class KnockoutTest {
         + "e.children[pos].dispatchEvent(ev);\n "
     )
     private static native void triggerChildClick(String id, int pos);
+
+    @JavaScriptBody(args = { "id", "pos" }, body = 
+          "var e = window.document.getElementById(id);\n "
+        + "var t = e.children[pos].innerHTML;\n "
+        + "return t ? t : null;"
+    )
+    private static native String childText(String id, int pos);
 }

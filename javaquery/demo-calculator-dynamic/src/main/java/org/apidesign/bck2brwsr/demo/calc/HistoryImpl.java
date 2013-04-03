@@ -15,7 +15,7 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.htmlpage;
+package org.apidesign.bck2brwsr.demo.calc;
 
 import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
 import org.apidesign.bck2brwsr.htmlpage.api.Model;
@@ -26,28 +26,18 @@ import org.apidesign.bck2brwsr.htmlpage.api.Property;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@Model(className = "Person", properties = {
-    @Property(name = "firstName", type = String.class),
-    @Property(name = "lastName", type = String.class),
-    @Property(name = "sex", type = Sex.class)
+@Model(className = "History", properties = {
+    @Property(name = "value", type = double.class),
+    @Property(name = "operation", type = String.class)
 })
-final class PersonImpl {
-    @ComputedProperty 
-    public static String fullName(String firstName, String lastName) {
-        return firstName + " " + lastName;
-    }
-    
+public class HistoryImpl {
     @ComputedProperty
-    public static String sexType(Sex sex) {
-        return sex == null ? "unknown" : sex.toString();
+    static String resultOf(String operation) {
+        return "result of " + operation;
     }
     
     @OnFunction
-    static void changeSex(Person p) {
-        if (p.getSex() == Sex.MALE) {
-            p.setSex(Sex.FEMALE);
-        } else {
-            p.setSex(Sex.MALE);
-        }
+    static void twice(History data) {
+        data.setValue(2.0 * data.getValue());
     }
 }

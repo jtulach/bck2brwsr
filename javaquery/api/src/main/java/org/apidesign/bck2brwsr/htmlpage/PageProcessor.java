@@ -28,9 +28,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Completion;
 import javax.annotation.processing.Completions;
@@ -73,6 +73,7 @@ import org.openide.util.lookup.ServiceProvider;
     "org.apidesign.bck2brwsr.htmlpage.api.On"
 })
 public final class PageProcessor extends AbstractProcessor {
+    private final Map<Element,String> models = new WeakHashMap<>();
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         boolean ok = true;
@@ -85,6 +86,9 @@ public final class PageProcessor extends AbstractProcessor {
             if (!processPage(e)) {
                 ok = false;
             }
+        }
+        if (roundEnv.processingOver()) {
+            models.clear();
         }
         return ok;
     }
@@ -111,11 +115,15 @@ public final class PageProcessor extends AbstractProcessor {
         try {
             StringWriter body = new StringWriter();
             List<String> propsGetSet = new ArrayList<>();
+            List<String> functions = new ArrayList<>();
             Map<String, Collection<String>> propsDeps = new HashMap<>();
             if (!generateComputedProperties(body, m.properties(), e.getEnclosedElements(), propsGetSet, propsDeps)) {
                 ok = false;
             }
             if (!generateProperties(e, body, m.properties(), propsGetSet, propsDeps)) {
+                ok = false;
+            }
+            if (!generateFunctions(e, body, className, e.getEnclosedElements(), functions)) {
                 ok = false;
             }
             FileObject java = processingEnv.getFiler().createSourceFile(pkg + '.' + className, e);
@@ -124,11 +132,20 @@ public final class PageProcessor extends AbstractProcessor {
                 w.append("package " + pkg + ";\n");
                 w.append("import org.apidesign.bck2brwsr.htmlpage.api.*;\n");
                 w.append("import org.apidesign.bck2brwsr.htmlpage.KOList;\n");
+                w.append("import org.apidesign.bck2brwsr.core.JavaScriptOnly;\n");
                 w.append("final class ").append(className).append(" {\n");
                 w.append("  private Object json;\n");
                 w.append("  private boolean locked;\n");
                 w.append("  private org.apidesign.bck2brwsr.htmlpage.Knockout ko;\n");
                 w.append(body.toString());
+                w.append("  private static Class<" + e.getSimpleName() + "> modelFor() { return null; }\n");
+                w.append("  public ").append(className).append("() {\n");
+                w.append("    ko = org.apidesign.bck2brwsr.htmlpage.Knockout.applyBindings(this, ");
+                writeStringArray(propsGetSet, w);
+                w.append(", ");
+                writeStringArray(functions, w);
+                w.append("    );\n");
+                w.append("  };\n");
                 w.append("}\n");
             } finally {
                 w.close();
@@ -203,25 +220,10 @@ public final class PageProcessor extends AbstractProcessor {
                     w.write("public " + className + " applyBindings() {\n");
                     w.write("  ko = org.apidesign.bck2brwsr.htmlpage.Knockout.applyBindings(");
                     w.write(className + ".class, this, ");
-                    w.write("new String[] {\n");
-                    String sep = "";
-                    for (String n : propsGetSet) {
-                        w.write(sep);
-                        if (n == null) {
-                            w.write("    null");
-                        } else {
-                            w.write("    \"" + n + "\"");
-                        }
-                        sep = ",\n";
-                    }
-                    w.write("\n  }, new String[] {\n");
-                    sep = "";
-                    for (String n : functions) {
-                        w.write(sep);
-                        w.write(n);
-                        sep = ",\n";
-                    }
-                    w.write("\n  });\n  return this;\n}\n");
+                    writeStringArray(propsGetSet, w);
+                    w.append(", ");
+                    writeStringArray(functions, w);
+                    w.write(");\n  return this;\n}\n");
 
                     w.write("public void triggerEvent(Element e, OnEvent ev) {\n");
                     w.write("  org.apidesign.bck2brwsr.htmlpage.Knockout.triggerEvent(e.getId(), ev.getElementPropertyName());\n");
@@ -537,6 +539,7 @@ public final class PageProcessor extends AbstractProcessor {
     private String typeName(Element where, Property p) {
         String ret;
         boolean isModel = false;
+        boolean isEnum = false;
         try {
             ret = p.type().getName();
         } catch (MirroredTypeException ex) {
@@ -546,9 +549,13 @@ public final class PageProcessor extends AbstractProcessor {
             if (m != null) {
                 ret = findPkgName(e) + '.' + m.className();
                 isModel = true;
+                models.put(e, m.className());
             } else {
                 ret = tm.toString();
             }
+            TypeMirror enm = processingEnv.getElementUtils().getTypeElement("java.lang.Enum").asType();
+            enm = processingEnv.getTypeUtils().erasure(enm);
+            isEnum = processingEnv.getTypeUtils().isSubtype(tm, enm);
         }
         if (p.array()) {
             String bt = findBoxedType(ret);
@@ -556,7 +563,7 @@ public final class PageProcessor extends AbstractProcessor {
                 return bt;
             }
         }
-        if (!isModel && !"java.lang.String".equals(ret)) {
+        if (!isModel && !"java.lang.String".equals(ret) && !isEnum) {
             String bt = findBoxedType(ret);
             if (bt == null) {
                 processingEnv.getMessager().printMessage(
@@ -664,8 +671,8 @@ public final class PageProcessor extends AbstractProcessor {
             body.append(");\n");
             body.append("}\n");
             
-            functions.add('\"' + n + '\"');
-            functions.add('\"' + n + "__VLjava_lang_Object_2Ljava_lang_Object_2" + '\"');
+            functions.add(n);
+            functions.add(n + "__VLjava_lang_Object_2Ljava_lang_Object_2");
         }
         return true;
     }
@@ -687,18 +694,21 @@ public final class PageProcessor extends AbstractProcessor {
                     params.append('"').append(id).append('"');
                     continue;
                 }
-                toCall = "org.apidesign.bck2brwsr.htmlpage.ConvertTypes.toString";
+                toCall = "org.apidesign.bck2brwsr.htmlpage.ConvertTypes.toString(";
             }
             if (ve.asType().getKind() == TypeKind.DOUBLE) {
-                toCall = "org.apidesign.bck2brwsr.htmlpage.ConvertTypes.toDouble";
+                toCall = "org.apidesign.bck2brwsr.htmlpage.ConvertTypes.toDouble(";
             }
             if (ve.asType().getKind() == TypeKind.INT) {
-                toCall = "org.apidesign.bck2brwsr.htmlpage.ConvertTypes.toInt";
+                toCall = "org.apidesign.bck2brwsr.htmlpage.ConvertTypes.toInt(";
+            }
+            if (dataName != null && ve.getSimpleName().contentEquals(dataName) && isModel(ve.asType())) {
+                toCall = "org.apidesign.bck2brwsr.htmlpage.ConvertTypes.toModel(" + ve.asType() + ".class, ";
             }
 
             if (toCall != null) {
-                params.append(toCall).append('(');
-                if (dataName != null && ve.getSimpleName().contentEquals("data")) {
+                params.append(toCall);
+                if (dataName != null && ve.getSimpleName().contentEquals(dataName)) {
                     params.append(dataName);
                     params.append(", null");
                 } else {
@@ -725,5 +735,36 @@ public final class PageProcessor extends AbstractProcessor {
             );
         }
         return params;
+    }
+    
+    private boolean isModel(TypeMirror tm) {
+        final Element e = processingEnv.getTypeUtils().asElement(tm);
+        if (e == null) {
+            return false;
+        }
+        for (Element ch : e.getEnclosedElements()) {
+            if (ch.getKind() == ElementKind.METHOD) {
+                ExecutableElement ee = (ExecutableElement)ch;
+                if (ee.getParameters().isEmpty() && ee.getSimpleName().contentEquals("modelFor")) {
+                    return true;
+                }
+            }
+        }
+        return models.values().contains(e.getSimpleName().toString());
+    }
+
+    private void writeStringArray(List<String> strings, Writer w) throws IOException {
+        w.write("new String[] {\n");
+        String sep = "";
+        for (String n : strings) {
+            w.write(sep);
+            if (n == null) {
+                w.write("    null");
+            } else {
+                w.write("    \"" + n + "\"");
+            }
+            sep = ",\n";
+        }
+        w.write("\n  }");
     }
 }
