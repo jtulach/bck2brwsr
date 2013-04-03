@@ -171,7 +171,7 @@ public final class PageProcessor extends AbstractProcessor {
             pp = ProcessPage.readPage(is);
             is.close();
         } catch (IOException iOException) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Can't read " + p.xhtml(), e);
+            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Can't read " + p.xhtml() + " as " + iOException.getMessage(), e);
             ok = false;
             pp = null;
         }
@@ -207,7 +207,7 @@ public final class PageProcessor extends AbstractProcessor {
                 if (!initializeOnClick(className, (TypeElement) e, w, pp)) {
                     ok = false;
                 } else {
-                    for (String id : pp.ids()) {
+                    if (pp != null) for (String id : pp.ids()) {
                         String tag = pp.tagNameForId(id);
                         String type = type(tag);
                         w.append("  ").append("public final ").
