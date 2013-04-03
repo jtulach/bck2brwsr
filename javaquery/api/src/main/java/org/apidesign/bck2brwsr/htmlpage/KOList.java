@@ -19,6 +19,7 @@ package org.apidesign.bck2brwsr.htmlpage;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import org.apidesign.bck2brwsr.core.JavaScriptOnly;
 
 /**
@@ -92,7 +93,25 @@ public final class KOList<T> extends ArrayList<T> {
         notifyChange();
         return ret;
     }
-    
+
+    @Override
+    public String toString() {
+        Iterator<T> it = iterator();
+        if (!it.hasNext()) {
+            return "[]";
+        }
+        String sep = "";
+        StringBuilder sb = new StringBuilder();
+        sb.append('[');
+        while (it.hasNext()) {
+            T t = it.next();
+            sb.append(sep);
+            sb.append(ConvertTypes.toJSON(t));
+            sep = ",";
+        }
+        sb.append(']');
+        return sb.toString();
+    }
     
     
     @JavaScriptOnly(name = "koArray", value = "function() { return this.toArray___3Ljava_lang_Object_2(); }")
