@@ -54,5 +54,28 @@ public class JSONTest {
         assertEquals(o.getString("sex"), "MALE");
     }
     
+    @Test public void personWithWildCharactersAndNulls() throws JSONException {
+        Person p = new Person();
+        p.setFirstName("'\"\n");
+        p.setLastName("\t\r\u0002");
+        
+        JSONTokener t = new JSONTokener(p.toString());
+        JSONObject o;
+        try {
+            o = new JSONObject(t);
+        } catch (JSONException ex) {
+            throw new AssertionError("Can't parse " + p.toString(), ex);
+        }
+        
+        Iterator it = o.sortedKeys();
+        assertEquals(it.next(), "firstName");
+        assertEquals(it.next(), "lastName");
+        assertEquals(it.next(), "sex");
+        
+        assertEquals(o.getString("firstName"), p.getFirstName());
+        assertEquals(o.getString("lastName"), p.getLastName());
+        assertEquals(o.get("sex"), JSONObject.NULL);
+    }
+    
     
 }

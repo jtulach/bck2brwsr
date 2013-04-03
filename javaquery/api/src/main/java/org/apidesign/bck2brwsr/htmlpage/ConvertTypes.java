@@ -50,6 +50,22 @@ public final class ConvertTypes {
         throw new IllegalStateException("Value " + ret + " is not of type " + modelClass);
     }
     
+    public static String toJSON(Object value) {
+        if (value == null) {
+            return "null";
+        }
+        if (value instanceof String) {
+            return '"' + 
+                ((String)value).
+                    replace("\"", "\\\"").
+                    replace("\n", "\\n").
+                    replace("\r", "\\r").
+                    replace("\t", "\\t")
+                + '"';
+        }
+        return value.toString();
+    }
+    
     @JavaScriptBody(args = { "object", "property" },
         body = "if (property === null) return object;\n"
         + "var p = object[property]; return p ? p : null;"
