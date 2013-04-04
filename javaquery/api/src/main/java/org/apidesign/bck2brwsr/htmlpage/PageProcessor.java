@@ -138,7 +138,7 @@ public final class PageProcessor extends AbstractProcessor {
                 w.append("  private boolean locked;\n");
                 w.append("  private org.apidesign.bck2brwsr.htmlpage.Knockout ko;\n");
                 w.append(body.toString());
-                w.append("  private static Class<" + e.getSimpleName() + "> modelFor() { return null; }\n");
+                w.append("  private static Class<" + inPckName(e) + "> modelFor() { return null; }\n");
                 w.append("  public ").append(className).append("() {\n");
                 w.append("    ko = org.apidesign.bck2brwsr.htmlpage.Knockout.applyBindings(this, ");
                 writeStringArray(propsGetSet, w);
@@ -784,5 +784,19 @@ public final class PageProcessor extends AbstractProcessor {
         w.write("    sb.append('}');\n");
         w.write("    return sb.toString();\n");
         w.write("  }\n");
+    }
+
+    private String inPckName(Element e) {
+        StringBuilder sb = new StringBuilder();
+        while (e.getKind() != ElementKind.PACKAGE) {
+            if (sb.length() == 0) {
+                sb.append(e.getSimpleName());
+            } else {
+                sb.insert(0, '.');
+                sb.insert(0, e.getSimpleName());
+            }
+            e = e.getEnclosingElement();
+        }
+        return sb.toString();
     }
 }

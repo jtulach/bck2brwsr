@@ -50,4 +50,11 @@ final class PersonImpl {
             p.setSex(Sex.MALE);
         }
     }
+    
+    @Model(className = "People", properties = {
+        @Property(array = true, name = "info", type = PersonImpl.class),
+        @Property(array = true, name = "nicknames", type = String.class),
+        @Property(array = true, name = "age", type = int.class),})
+    public class PeopleImpl {
+    }
 }
