@@ -48,6 +48,20 @@ public final class KOList<T> extends ArrayList<T> {
     }
 
     @Override
+    public boolean addAll(Collection<? extends T> c) {
+        boolean ret = super.addAll(c);
+        notifyChange();
+        return ret;
+    }
+
+    @Override
+    public boolean addAll(int index, Collection<? extends T> c) {
+        boolean ret = super.addAll(index, c);
+        notifyChange();
+        return ret;
+    }
+
+    @Override
     public boolean remove(Object o) {
         boolean ret = super.remove(o);
         notifyChange();
