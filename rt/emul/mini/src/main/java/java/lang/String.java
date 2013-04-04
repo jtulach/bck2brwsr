@@ -2220,9 +2220,19 @@ public final class String
      *         <code>replacement</code> is <code>null</code>.
      * @since 1.5
      */
-    public String replace(CharSequence target, CharSequence replacement) {
-        throw new UnsupportedOperationException("This one should be supported, but without dep on rest of regexp");
-    }
+    @JavaScriptBody(args = { "target", "replacement" }, body = 
+          "var s = this.toString();\n"
+        + "target = target.toString();\n"
+        + "replacement = replacement.toString();\n"
+        + "for (;;) {\n"
+        + "  var ret = s.replace(target, replacement);\n"
+        + "  if (ret === s) {\n"
+        + "    return ret;\n"
+        + "  }\n"
+        + "  s = ret;\n"
+        + "}"
+    )
+    public native String replace(CharSequence target, CharSequence replacement);
 
     /**
      * Splits this string around matches of the given
