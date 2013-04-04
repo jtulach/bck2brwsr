@@ -666,7 +666,7 @@ public final class PageProcessor extends AbstractProcessor {
                 return false;
             }
             String n = e.getSimpleName().toString();
-            body.append("void ").append(n).append("(Object data, Object ev) {\n");
+            body.append("private void ").append(n).append("(Object data, Object ev) {\n");
             body.append("  ").append(clazz.getSimpleName()).append(".").append(n).append("(");
             body.append(wrapParams(e, null, className, "ev", "data"));
             body.append(");\n");
