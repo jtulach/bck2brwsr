@@ -48,6 +48,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
@@ -451,7 +452,7 @@ public final class PageProcessor extends AbstractProcessor {
             final TypeMirror rt = ee.getReturnType();
             final Types tu = processingEnv.getTypeUtils();
             TypeMirror ert = tu.erasure(rt);
-            String tn = ert.toString();
+            String tn = fqn(ert, ee);
             boolean array = false;
             if (tn.equals("java.util.List")) {
                 array = true;
@@ -470,7 +471,7 @@ public final class PageProcessor extends AbstractProcessor {
                     ok = false;
                 }
                 
-                final String dt = pe.asType().toString();
+                final String dt = fqn(pe.asType(), ee);
                 String[] call = toGetSet(dn, dt, false);
                 w.write("  " + dt + " arg" + (++arg) + " = ");
                 w.write(call[0] + "();\n");
@@ -721,7 +722,7 @@ public final class PageProcessor extends AbstractProcessor {
                 params.append(")");
                 continue;
             }
-            String rn = ve.asType().toString();
+            String rn = fqn(ve.asType(), ee);
             int last = rn.lastIndexOf('.');
             if (last >= 0) {
                 rn = rn.substring(last + 1);
@@ -798,5 +799,14 @@ public final class PageProcessor extends AbstractProcessor {
             e = e.getEnclosingElement();
         }
         return sb.toString();
+    }
+
+    private String fqn(TypeMirror pt, Element relative) {
+        if (pt.getKind() == TypeKind.ERROR) {
+            final Elements eu = processingEnv.getElementUtils();
+            PackageElement pckg = eu.getPackageOf(relative);
+            return pckg.getQualifiedName() + "." + pt.toString();
+        }
+        return pt.toString();
     }
 }

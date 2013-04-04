@@ -139,28 +139,46 @@ public class KnockoutTest {
         assert "changed".equals(txt) : "Expecting 'changed': " + txt;
     }
     
+    @ComputedProperty
+    static Person firstPerson(List<Person> people) {
+        return people.isEmpty() ? null : people.get(0);
+    }
+    
+    @HtmlFragment(
+        "<p id='ul' data-bind='with: firstPerson'>\n"
+        + "  <span data-bind='text: firstName, click: changeSex'></span>\n"
+        + "</p>\n"
+    )
+    @BrwsrTest public void accessFirstPersonWithOnFunction() {
+        trasfertToFemale();
+    }
+    
     @HtmlFragment(
         "<ul id='ul' data-bind='foreach: people'>\n"
         + "  <li data-bind='text: $data.firstName, click: changeSex'></li>\n"
         + "</ul>\n"
     )
     @BrwsrTest public void onPersonFunction() {
+        trasfertToFemale();
+    }
+    
+    private void trasfertToFemale() {
         KnockoutModel m = new KnockoutModel();
-        
+
         final Person first = new Person();
         first.setFirstName("first");
         first.setSex(Sex.MALE);
         m.getPeople().add(first);
-        
-        
+
+
         m.applyBindings();
-        
+
         int cnt = countChildren("ul");
         assert cnt == 1 : "One child, but was " + cnt;
-        
-        
+
+
         triggerChildClick("ul", 0);
-        
+
         assert first.getSex() == Sex.FEMALE : "Transverted to female: " + first.getSex();
     }
      
