@@ -141,6 +141,10 @@ public final class KOList<T> extends ArrayList<T> {
             m.valueHasMutated(dependant);
         }
     }
-    
+
+    @Override
+    public KOList clone() {
+        return (KOList)super.clone();
+    }
     
 }

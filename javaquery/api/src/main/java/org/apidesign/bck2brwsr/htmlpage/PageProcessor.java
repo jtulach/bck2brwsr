@@ -134,7 +134,7 @@ public final class PageProcessor extends AbstractProcessor {
                 w.append("import org.apidesign.bck2brwsr.htmlpage.api.*;\n");
                 w.append("import org.apidesign.bck2brwsr.htmlpage.KOList;\n");
                 w.append("import org.apidesign.bck2brwsr.core.JavaScriptOnly;\n");
-                w.append("final class ").append(className).append(" {\n");
+                w.append("final class ").append(className).append(" implements Cloneable {\n");
                 w.append("  private Object json;\n");
                 w.append("  private boolean locked;\n");
                 w.append("  private org.apidesign.bck2brwsr.htmlpage.Knockout ko;\n");
@@ -148,6 +148,7 @@ public final class PageProcessor extends AbstractProcessor {
                 w.append("    );\n");
                 w.append("  };\n");
                 writeToString(m.properties(), w);
+                writeClone(className, m.properties(), w);
                 w.append("}\n");
             } finally {
                 w.close();
@@ -540,32 +541,16 @@ public final class PageProcessor extends AbstractProcessor {
 
     private String typeName(Element where, Property p) {
         String ret;
-        boolean isModel = false;
-        boolean isEnum = false;
-        try {
-            ret = p.type().getName();
-        } catch (MirroredTypeException ex) {
-            TypeMirror tm = processingEnv.getTypeUtils().erasure(ex.getTypeMirror());
-            final Element e = processingEnv.getTypeUtils().asElement(tm);
-            final Model m = e == null ? null : e.getAnnotation(Model.class);
-            if (m != null) {
-                ret = findPkgName(e) + '.' + m.className();
-                isModel = true;
-                models.put(e, m.className());
-            } else {
-                ret = tm.toString();
-            }
-            TypeMirror enm = processingEnv.getElementUtils().getTypeElement("java.lang.Enum").asType();
-            enm = processingEnv.getTypeUtils().erasure(enm);
-            isEnum = processingEnv.getTypeUtils().isSubtype(tm, enm);
-        }
+        boolean[] isModel = { false };
+        boolean[] isEnum = { false };
+        ret = checkType(p, isModel, isEnum);
         if (p.array()) {
             String bt = findBoxedType(ret);
             if (bt != null) {
                 return bt;
             }
         }
-        if (!isModel && !"java.lang.String".equals(ret) && !isEnum) {
+        if (!isModel[0] && !"java.lang.String".equals(ret) && !isEnum[0]) {
             String bt = findBoxedType(ret);
             if (bt == null) {
                 processingEnv.getMessager().printMessage(
@@ -786,6 +771,25 @@ public final class PageProcessor extends AbstractProcessor {
         w.write("    return sb.toString();\n");
         w.write("  }\n");
     }
+    private void writeClone(String className, Property[] props, Writer w) throws IOException {
+        w.write("  public " + className + " clone() {\n");
+        w.write("    " + className + " ret = new " + className + "();\n");
+        for (Property p : props) {
+            if (!p.array()) {
+                boolean isModel[] = { false };
+                boolean isEnum[] = { false };
+                checkType(p, isModel, isEnum);
+                if (!isModel[0]) {
+                    w.write("    ret.prop_" + p.name() + " = prop_" + p.name() + ";\n");
+                    continue;
+                }
+            }
+            w.write("    ret.prop_" + p.name() + " = prop_" + p.name() + ".clone();\n");
+        }
+        
+        w.write("    return ret;\n");
+        w.write("  }\n");
+    }
 
     private String inPckName(Element e) {
         StringBuilder sb = new StringBuilder();
@@ -808,5 +812,27 @@ public final class PageProcessor extends AbstractProcessor {
             return pckg.getQualifiedName() + "." + pt.toString();
         }
         return pt.toString();
+    }
+
+    private String checkType(Property p, boolean[] isModel, boolean[] isEnum) {
+        String ret;
+        try {
+            ret = p.type().getName();
+        } catch (MirroredTypeException ex) {
+            TypeMirror tm = processingEnv.getTypeUtils().erasure(ex.getTypeMirror());
+            final Element e = processingEnv.getTypeUtils().asElement(tm);
+            final Model m = e == null ? null : e.getAnnotation(Model.class);
+            if (m != null) {
+                ret = findPkgName(e) + '.' + m.className();
+                isModel[0] = true;
+                models.put(e, m.className());
+            } else {
+                ret = tm.toString();
+            }
+            TypeMirror enm = processingEnv.getElementUtils().getTypeElement("java.lang.Enum").asType();
+            enm = processingEnv.getTypeUtils().erasure(enm);
+            isEnum[0] = processingEnv.getTypeUtils().isSubtype(tm, enm);
+        }
+        return ret;
     }
 }
