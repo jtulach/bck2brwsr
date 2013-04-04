@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Back 2 Browser Bytecode Translator
+    Copyright (C) 2012 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, version 2 of the License.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program. Look for COPYING file in the top folder.
+    If not, see http://opensource.org/licenses/GPL-2.0.
+
+-->
+
+<!--
+    Copied from knockout.js Twitter example:
+    http://knockoutjs.com/examples/twitter.html
+-->
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>Bck2Brwsr's Twitter</title>
+    </head>
+    <body>
+        <link href='twitterExample.css' rel='Stylesheet' ></link>
+        
+        <script src='twitterApi.js' type='text/javascript'> </script>
+        
+        <style type='text/css'>
+           .liveExample select { height: 1.7em; }
+           .liveExample button { height: 2em; }
+        </style>
+        
+        
+        <h2>Bck2Brwsr's Twitter</h2>
+        
+        <p>
+        This code based on original <a href="http://knockoutjs.com/examples/twitter.html">knockout.js Twitter example</a> and
+        uses almost unmodified HTML code. It just changes the model. It 
+        is written in Java language and it is executed using <a href="http://bck2brwsr.apidesign.org">Bck2Brwsr</a>
+        virtual machine.
+        </p>
+        
+        <div class='liveExample'>
+            <div class='configuration'>
+                <div class='listChooser'>
+                    <button data-bind='click: deleteList, enable: activeTweeters.name'>Delete</button>
+                    <button data-bind='click: saveChanges, enable: hasUnsavedChanges'>Save</button> 
+                    <select data-bind='options: savedLists, optionsValue: "name", value: activeTweetersName'> </select>
+                </div>
+
+                <p>Currently viewing <span data-bind='text: activeTweeters().userNames().length'> </span> user(s):</p>
+                <div class='currentUsers' data-bind='with: activeTweeters'>
+                    <ul data-bind='foreach: userNames'>
+                        <li>
+                            <button data-bind='click: $root.removeUser'>Remove</button>
+                            <div data-bind='text: $data'> </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <form data-bind='submit: addUser'>
+                    <label>Add user:</label>
+                    <input data-bind='value: userNameToAdd, valueUpdate: "keyup", css: { invalid: !userNameToAddIsValid() }' />
+                    <button data-bind='enable: userNameToAddIsValid' type='submit'>Add</button>
+                </form>
+            </div>
+            <div class='tweets'>
+                <div class='loadingIndicator'>Loading...</div>
+                <table data-bind='foreach: currentTweets' width='100%'>
+                    <tr>
+                        <td><img data-bind='attr: { src: profile_image_url }' /></td>
+                        <td>
+                            <a href='http://twitter.com/${ from_user }' class='twitterUser' data-bind='attr: { href: "http://twitter.com/" + from_user }, text: from_user'> </a>
+                            <span data-bind='text: text'> </span>
+                            <div class='tweetInfo' data-bind='text: created_at'> </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <script src="bck2brwsr.js"></script>
+        <script type="text/javascript">
+            var vm = bck2brwsr('demo-twitter-0.6-SNAPSHOT.jar');
+            vm.loadClass('org.apidesign.bck2brwsr.demo.twitter.TwitterClient');
+        </script>
+
+
+    </body>
+</html>
