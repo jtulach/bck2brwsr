@@ -17,7 +17,9 @@
  */
 package org.apidesign.bck2brwsr.htmlpage;
 
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import org.apidesign.bck2brwsr.htmlpage.api.OnReceive;
 import org.apidesign.bck2brwsr.htmlpage.api.Page;
 import org.apidesign.bck2brwsr.htmlpage.api.Property;
@@ -36,7 +38,8 @@ import org.testng.annotations.Factory;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @Page(xhtml = "Empty.html", className = "JSONik", properties = {
-    @Property(name = "fetched", type = PersonImpl.class)
+    @Property(name = "fetched", type = PersonImpl.class),
+    @Property(name = "fetchedCount", type = int.class)
 })
 public class JSONTest {
     
@@ -125,6 +128,13 @@ public class JSONTest {
         model.setFetched(p);
         throw new IllegalStateException("Got him: " + p);
     }
+
+    @OnReceive(url="/{url}")
+    static void fetchArray(Person[] p, JSONik model) {
+        model.setFetchedCount(p.length);
+        model.setFetched(p[0]);
+        throw new IllegalStateException("Got in array him: " + Arrays.asList(p));
+    }
     
     @Http(@Http.Resource(
         content = "{'firstName': 'Sitar', 'sex': 'MALE'}", 
@@ -149,11 +159,33 @@ public class JSONTest {
     }
     
     @Http(@Http.Resource(
+        content = "{'firstName': 'Sitar', 'sex': 'MALE'}", 
+        path="/person.json", 
+        mimeType = "application/json"
+    ))
+    @BrwsrTest public void loadAndParseJSONSentToArray() {
+        JSONik js = new JSONik();
+        js.applyBindings();
+        
+        js.fetchArray("person.json");
+        
+        Person p = null;
+        for (int i = 0; i < 10000000; i++) {
+            if (js.getFetched() != null) {
+                p = js.getFetched();
+            }
+        }
+        assert p != null : "We should get our person back: " + p;
+        assert "Sitar".equals(p.getFirstName()) : "Expecting Sitar: " + p.getFirstName();
+        assert Sex.MALE.equals(p.getSex()) : "Expecting MALE: " + p.getSex();
+    }
+    
+    @Http(@Http.Resource(
         content = "[{'firstName': 'Gitar', 'sex': 'FEMALE'}]", 
         path="/person.json", 
         mimeType = "application/json"
     ))
-    @BrwsrTest public void loadAndParseJSONArray() {
+    @BrwsrTest public void loadAndParseJSONArraySingle() {
         JSONik js = new JSONik();
         js.applyBindings();
         
@@ -165,6 +197,33 @@ public class JSONTest {
                 p = js.getFetched();
             }
         }
+        assert p != null : "We should get our person back: " + p;
+        assert "Sitar".equals(p.getFirstName()) : "Expecting Sitar: " + p.getFirstName();
+        assert Sex.MALE.equals(p.getSex()) : "Expecting MALE: " + p.getSex();
+    }
+    
+    
+    @Http(@Http.Resource(
+        content = "[{'firstName': 'Gitar', 'sex': 'FEMALE'}"
+        + "{'firstName': 'Peter', 'sex': 'MALE'}"
+        + "]", 
+        path="/person.json", 
+        mimeType = "application/json"
+    ))
+    @BrwsrTest public void loadAndParseJSONArray() {
+        JSONik js = new JSONik();
+        js.applyBindings();
+        
+        js.fetchArray("person.json");
+        
+        Person p = null;
+        for (int i = 0; i < 10000000; i++) {
+            if (js.getFetched() != null) {
+                p = js.getFetched();
+            }
+        }
+        
+        assert js.getFetchedCount() == 2 : "We got two values: " + js.getFetchedCount();
         assert p != null : "We should get our person back: " + p;
         assert "Sitar".equals(p.getFirstName()) : "Expecting Sitar: " + p.getFirstName();
         assert Sex.MALE.equals(p.getSex()) : "Expecting MALE: " + p.getSex();

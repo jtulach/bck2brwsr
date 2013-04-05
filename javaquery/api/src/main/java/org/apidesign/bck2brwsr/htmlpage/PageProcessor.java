@@ -46,6 +46,8 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -752,20 +754,35 @@ public final class PageProcessor extends AbstractProcessor {
                 return false;
             }
             String modelClass = null;
+            boolean expectsList = false;
             List<String> args = new ArrayList<>();
             {
                 for (VariableElement ve : e.getParameters()) {
+                    TypeMirror modelType = null;
                     if (ve.asType().toString().equals(className)) {
                         args.add(className + ".this");
                     } else if (isModel(ve.asType())) {
+                        modelType = ve.asType();
+                    } else if (ve.asType().getKind() == TypeKind.ARRAY) {
+                        modelType = ((ArrayType)ve.asType()).getComponentType();
+                        expectsList = true;
+                    }
+                    if (modelType != null) {
                         if (modelClass != null) {
                             err().printMessage(Diagnostic.Kind.ERROR, "There can be only one model class among arguments", e);
                         } else {
-                            modelClass = ve.asType().toString();
-                            args.add("new " + modelClass + "(value)");
+                            modelClass = modelType.toString();
+                            if (expectsList) {
+                                args.add("arr");
+                            } else {
+                                args.add("arr[0]");
+                            }
                         }
                     }
                 }
+            }
+            if (modelClass == null) {
+                err().printMessage(Diagnostic.Kind.ERROR, "The method needs to have one @Model class as parameter", e);
             }
             String n = e.getSimpleName().toString();
             body.append("public void ").append(n).append("(");
@@ -784,10 +801,21 @@ public final class PageProcessor extends AbstractProcessor {
                 "  class ProcessResult implements Runnable {\n" +
                 "    @Override\n" +
                 "    public void run() {\n" +
-                "      Object value = result[0];\n" +
+                "      Object value = result[0];\n");
+            body.append(
+                "      " + modelClass + "[] arr;\n");
+            body.append(
                 "      if (value instanceof Object[]) {\n" +
-                "        value = ((Object[])value)[0];\n" +
-                "      }        ");
+                "        Object[] data = ((Object[])value);\n" +
+                "        arr = new " + modelClass + "[data.length];\n" +
+                "        for (int i = 0; i < data.length; i++) {\n" +
+                "          arr[i] = new " + modelClass + "(value);\n" +
+                "        }\n" +
+                "      } else {\n" +
+                "        arr = new " + modelClass + "[1];\n" +
+                "        arr[0] = new " + modelClass + "(value);\n" +
+                "      }\n"
+            );
             {
                 body.append(clazz.getSimpleName()).append(".").append(n).append("(");
                 String sep = "";
