@@ -73,4 +73,26 @@ public final class ConvertTypes {
     private static Object getProperty(Object object, String property) {
         return null;
     }
+
+    @JavaScriptBody(args = { "url", "arr", "callback" }, body = ""
+        + "var request = new XMLHttpRequest();\n"
+        + "request.open('GET', url, true);\n"
+        + "request.setRequestHeader('Content-Type', 'application/json; charset=utf-8');\n"
+        + "request.onreadystatechange = function() {\n"
+        + "  if (this.readyState!==4) return;\n"
+        + "  arr[0] = eval('(' + this.response + ')');\n"
+        + "  callback.run__V();\n"
+        + "};"
+        + "request.send();"
+    )
+    public static native void loadJSON(
+        String url, Object[] jsonResult, Runnable whenDone
+    );
+    
+    public static void extractJSON(Object jsonObject, String[] props, Object[] values) {
+        for (int i = 0; i < props.length; i++) {
+            values[i] = getProperty(jsonObject, props[i]);
+        }
+    }
+    
 }

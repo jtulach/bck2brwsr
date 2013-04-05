@@ -34,6 +34,7 @@ import java.util.WeakHashMap;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Completion;
 import javax.annotation.processing.Completions;
+import javax.annotation.processing.Messager;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
@@ -57,6 +58,7 @@ import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
 import org.apidesign.bck2brwsr.htmlpage.api.Model;
 import org.apidesign.bck2brwsr.htmlpage.api.On;
 import org.apidesign.bck2brwsr.htmlpage.api.OnFunction;
+import org.apidesign.bck2brwsr.htmlpage.api.OnReceive;
 import org.apidesign.bck2brwsr.htmlpage.api.Page;
 import org.apidesign.bck2brwsr.htmlpage.api.Property;
 import org.openide.util.lookup.ServiceProvider;
@@ -71,6 +73,7 @@ import org.openide.util.lookup.ServiceProvider;
     "org.apidesign.bck2brwsr.htmlpage.api.Model",
     "org.apidesign.bck2brwsr.htmlpage.api.Page",
     "org.apidesign.bck2brwsr.htmlpage.api.OnFunction",
+    "org.apidesign.bck2brwsr.htmlpage.api.OnReceive",
     "org.apidesign.bck2brwsr.htmlpage.api.On"
 })
 public final class PageProcessor extends AbstractProcessor {
@@ -102,6 +105,10 @@ public final class PageProcessor extends AbstractProcessor {
         } catch (IOException ex) {
             return processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, pkg, name).openInputStream();
         }
+    }
+
+    private  Messager err() {
+        return processingEnv.getMessager();
     }
     
     private boolean processModel(Element e) {
@@ -135,17 +142,63 @@ public final class PageProcessor extends AbstractProcessor {
                 w.append("import org.apidesign.bck2brwsr.htmlpage.KOList;\n");
                 w.append("import org.apidesign.bck2brwsr.core.JavaScriptOnly;\n");
                 w.append("final class ").append(className).append(" implements Cloneable {\n");
-                w.append("  private Object json;\n");
                 w.append("  private boolean locked;\n");
                 w.append("  private org.apidesign.bck2brwsr.htmlpage.Knockout ko;\n");
                 w.append(body.toString());
                 w.append("  private static Class<" + inPckName(e) + "> modelFor() { return null; }\n");
                 w.append("  public ").append(className).append("() {\n");
+                w.append("    intKnckt();\n");
+                w.append("  };\n");
+                w.append("  private void intKnckt() {\n");
                 w.append("    ko = org.apidesign.bck2brwsr.htmlpage.Knockout.applyBindings(this, ");
                 writeStringArray(propsGetSet, w);
                 w.append(", ");
                 writeStringArray(functions, w);
                 w.append("    );\n");
+                w.append("  };\n");
+                w.append("  ").append(className).append("(Object json) {\n");
+                int values = 0;
+                for (int i = 0; i < propsGetSet.size(); i += 4) {
+                    if (propsGetSet.get(i + 2) == null) {
+                        continue;
+                    }
+                    values++;
+                }
+                w.append("    Object[] ret = new Object[" + values + "];\n");
+                w.append("    org.apidesign.bck2brwsr.htmlpage.ConvertTypes.extractJSON(json, new String[] {\n");
+                for (int i = 0; i < propsGetSet.size(); i += 4) {
+                    if (propsGetSet.get(i + 2) == null) {
+                        continue;
+                    }
+                    w.append("      \"").append(propsGetSet.get(i)).append("\",\n");
+                }
+                w.append("    }, ret);\n");
+                for (int i = 0, cnt = 0, prop = 0; i < propsGetSet.size(); i += 4) {
+                    if (propsGetSet.get(i + 2) == null) {
+                        continue;
+                    }
+                    boolean[] isModel = { false };
+                    boolean[] isEnum = { false };
+                    String type = checkType(m.properties()[prop++], isModel, isEnum);
+                    w.append("    this.prop_").append(propsGetSet.get(i)).append(" = ");
+                    boolean close = false;
+                    if (isEnum[0]) {
+//                        w.append(type).append(".valueOf((String)");
+//                        close = true;
+                        w.append("null;\n");
+                        continue;
+                    } else {
+                        w.append('(').append(type).append(')');
+                    }
+                    w.append("ret[" + cnt++ + "]");
+                    if (close) {
+                        w.append(");\n");
+                    } else {
+                        w.append(";\n");
+                    }
+                    
+                }
+                w.append("    intKnckt();\n");
                 w.append("  };\n");
                 writeToString(m.properties(), w);
                 writeClone(className, m.properties(), w);
@@ -154,7 +207,7 @@ public final class PageProcessor extends AbstractProcessor {
                 w.close();
             }
         } catch (IOException ex) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Can't create " + className + ".java", e);
+            err().printMessage(Diagnostic.Kind.ERROR, "Can't create " + className + ".java", e);
             return false;
         }
         return ok;
@@ -173,7 +226,7 @@ public final class PageProcessor extends AbstractProcessor {
             pp = ProcessPage.readPage(is);
             is.close();
         } catch (IOException iOException) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Can't read " + p.xhtml() + " as " + iOException.getMessage(), e);
+            err().printMessage(Diagnostic.Kind.ERROR, "Can't read " + p.xhtml() + " as " + iOException.getMessage(), e);
             ok = false;
             pp = null;
         }
@@ -195,6 +248,9 @@ public final class PageProcessor extends AbstractProcessor {
                 ok = false;
             }
             if (!generateFunctions(e, body, className, e.getEnclosedElements(), functions)) {
+                ok = false;
+            }
+            if (!generateReceive(e, body, className, e.getEnclosedElements(), functions)) {
                 ok = false;
             }
             
@@ -237,7 +293,7 @@ public final class PageProcessor extends AbstractProcessor {
                 w.close();
             }
         } catch (IOException ex) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Can't create " + className + ".java", e);
+            err().printMessage(Diagnostic.Kind.ERROR, "Can't create " + className + ".java", e);
             return false;
         }
         return ok;
@@ -283,24 +339,24 @@ public final class PageProcessor extends AbstractProcessor {
                 if (oc != null) {
                     for (String id : oc.id()) {
                         if (pp == null) {
-                            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "id = " + id + " not found in HTML page.");
+                            err().printMessage(Diagnostic.Kind.ERROR, "id = " + id + " not found in HTML page.");
                             ok = false;
                             continue;
                         }
                         if (pp.tagNameForId(id) == null) {
-                            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "id = " + id + " does not exist in the HTML page. Found only " + pp.ids(), method);
+                            err().printMessage(Diagnostic.Kind.ERROR, "id = " + id + " does not exist in the HTML page. Found only " + pp.ids(), method);
                             ok = false;
                             continue;
                         }
                         ExecutableElement ee = (ExecutableElement)method;
                         CharSequence params = wrapParams(ee, id, className, "ev", null);
                         if (!ee.getModifiers().contains(Modifier.STATIC)) {
-                            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@On method has to be static", ee);
+                            err().printMessage(Diagnostic.Kind.ERROR, "@On method has to be static", ee);
                             ok = false;
                             continue;
                         }
                         if (ee.getModifiers().contains(Modifier.PRIVATE)) {
-                            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@On method can't be private", ee);
+                            err().printMessage(Diagnostic.Kind.ERROR, "@On method can't be private", ee);
                             ok = false;
                             continue;
                         }
@@ -553,7 +609,7 @@ public final class PageProcessor extends AbstractProcessor {
         if (!isModel[0] && !"java.lang.String".equals(ret) && !isEnum[0]) {
             String bt = findBoxedType(ret);
             if (bt == null) {
-                processingEnv.getMessager().printMessage(
+                err().printMessage(
                     Diagnostic.Kind.ERROR, 
                     "Only primitive types supported in the mapping. Not " + ret,
                     where
@@ -604,7 +660,7 @@ public final class PageProcessor extends AbstractProcessor {
             sb.append('"');
             sep = ", ";
         }
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
+        err().printMessage(Diagnostic.Kind.ERROR,
             propName + " is not one of known properties: " + sb
             , e
         );
@@ -634,19 +690,19 @@ public final class PageProcessor extends AbstractProcessor {
                 continue;
             }
             if (!e.getModifiers().contains(Modifier.STATIC)) {
-                processingEnv.getMessager().printMessage(
+                err().printMessage(
                     Diagnostic.Kind.ERROR, "@OnFunction method needs to be static", e
                 );
                 return false;
             }
             if (e.getModifiers().contains(Modifier.PRIVATE)) {
-                processingEnv.getMessager().printMessage(
+                err().printMessage(
                     Diagnostic.Kind.ERROR, "@OnFunction method cannot be private", e
                 );
                 return false;
             }
             if (e.getReturnType().getKind() != TypeKind.VOID) {
-                processingEnv.getMessager().printMessage(
+                err().printMessage(
                     Diagnostic.Kind.ERROR, "@OnFunction method should return void", e
                 );
                 return false;
@@ -660,6 +716,100 @@ public final class PageProcessor extends AbstractProcessor {
             
             functions.add(n);
             functions.add(n + "__VLjava_lang_Object_2Ljava_lang_Object_2");
+        }
+        return true;
+    }
+
+    private boolean generateReceive(
+        Element clazz, StringWriter body, String className, 
+        List<? extends Element> enclosedElements, List<String> functions
+    ) {
+        for (Element m : enclosedElements) {
+            if (m.getKind() != ElementKind.METHOD) {
+                continue;
+            }
+            ExecutableElement e = (ExecutableElement)m;
+            OnReceive onR = e.getAnnotation(OnReceive.class);
+            if (onR == null) {
+                continue;
+            }
+            if (!e.getModifiers().contains(Modifier.STATIC)) {
+                err().printMessage(
+                    Diagnostic.Kind.ERROR, "@OnReceive method needs to be static", e
+                );
+                return false;
+            }
+            if (e.getModifiers().contains(Modifier.PRIVATE)) {
+                err().printMessage(
+                    Diagnostic.Kind.ERROR, "@OnReceive method cannot be private", e
+                );
+                return false;
+            }
+            if (e.getReturnType().getKind() != TypeKind.VOID) {
+                err().printMessage(
+                    Diagnostic.Kind.ERROR, "@OnReceive method should return void", e
+                );
+                return false;
+            }
+            String modelClass = null;
+            List<String> args = new ArrayList<>();
+            {
+                for (VariableElement ve : e.getParameters()) {
+                    if (ve.asType().toString().equals(className)) {
+                        args.add(className + ".this");
+                    } else if (isModel(ve.asType())) {
+                        if (modelClass != null) {
+                            err().printMessage(Diagnostic.Kind.ERROR, "There can be only one model class among arguments", e);
+                        } else {
+                            modelClass = ve.asType().toString();
+                            args.add("new " + modelClass + "(value)");
+                        }
+                    }
+                }
+            }
+            String n = e.getSimpleName().toString();
+            body.append("public void ").append(n).append("(");
+            StringBuilder assembleURL = new StringBuilder();
+            {
+                String sep = "";
+                for (String p : findParamNames(e, onR.url(), assembleURL)) {
+                    body.append(sep);
+                    body.append("String ").append(p);
+                    sep = ", ";
+                }
+            }
+            body.append(") {\n");
+            body.append("  final Object[] result = { null };\n");
+            body.append(
+                "  class ProcessResult implements Runnable {\n" +
+                "    @Override\n" +
+                "    public void run() {\n" +
+                "      Object value = result[0];\n" +
+                "      if (value instanceof Object[]) {\n" +
+                "        throw new IllegalStateException(\"Array value: \" + value);\n" +
+                "      } else {\n        ");
+            {
+                body.append(clazz.getSimpleName()).append(".").append(n).append("(");
+                String sep = "";
+                for (String arg : args) {
+                    body.append(sep);
+                    body.append(arg);
+                    sep = ", ";
+                }
+                body.append(");\n");
+            }
+            body.append(
+                "      }\n" +
+                "    }\n" +
+                "  }\n"
+            );
+            body.append("  org.apidesign.bck2brwsr.htmlpage.ConvertTypes.loadJSON(\n      ");
+            body.append(assembleURL);
+            body.append(", result, new ProcessResult()\n  );\n");
+//            body.append("  ").append(clazz.getSimpleName()).append(".").append(n).append("(");
+//            body.append(wrapParams(e, null, className, "ev", "data"));
+//            body.append(");\n");
+            body.append("}\n");
         }
         return true;
     }
@@ -716,7 +866,7 @@ public final class PageProcessor extends AbstractProcessor {
                 params.append(className).append(".this");
                 continue;
             }
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, 
+            err().printMessage(Diagnostic.Kind.ERROR, 
                 "@On method can only accept String named 'id' or " + className + " arguments",
                 ee
             );
@@ -834,5 +984,30 @@ public final class PageProcessor extends AbstractProcessor {
             isEnum[0] = processingEnv.getTypeUtils().isSubtype(tm, enm);
         }
         return ret;
+    }
+
+    private Iterable<String> findParamNames(Element e, String url, StringBuilder assembleURL) {
+        List<String> params = new ArrayList<>();
+
+        for (int pos = 0; ;) {
+            int next = url.indexOf('{', pos);
+            if (next == -1) {
+                assembleURL.append('"')
+                    .append(url.substring(pos))
+                    .append('"');
+                return params;
+            }
+            int close = url.indexOf('}', next);
+            if (close == -1) {
+                err().printMessage(Diagnostic.Kind.ERROR, "Unbalanced '{' and '}' in " + url, e);
+                return params;
+            }
+            final String paramName = url.substring(next + 1, close);
+            params.add(paramName);
+            assembleURL.append('"')
+                .append(url.substring(pos, next))
+                .append("\" + ").append(paramName).append(" + ");
+            pos = close + 1;
+        }
     }
 }

@@ -18,16 +18,26 @@
 package org.apidesign.bck2brwsr.htmlpage;
 
 import java.util.Iterator;
+import org.apidesign.bck2brwsr.htmlpage.api.OnReceive;
+import org.apidesign.bck2brwsr.htmlpage.api.Page;
+import org.apidesign.bck2brwsr.htmlpage.api.Property;
+import org.apidesign.bck2brwsr.vmtest.BrwsrTest;
+import org.apidesign.bck2brwsr.vmtest.Http;
+import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.testng.annotations.Test;
 import static org.testng.Assert.*;
+import org.testng.annotations.Factory;
 
 /** Need to verify that models produce reasonable JSON objects.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
+@Page(xhtml = "Empty.html", className = "JSONik", properties = {
+    @Property(name = "fetched", type = PersonImpl.class)
+})
 public class JSONTest {
     
     @Test public void personToString() throws JSONException {
@@ -108,4 +118,60 @@ public class JSONTest {
         assertEquals(o.getJSONArray("nicknames").getString(1), n2);
         assertEquals(o.getJSONArray("age").getInt(1), 73);
     }
+    
+    
+    @OnReceive(url="/{url}")
+    static void fetch(Person p, JSONik model) {
+        model.setFetched(p);
+        throw new IllegalStateException("Got him: " + p);
+    }
+    
+    @Http(@Http.Resource(
+        content = "{'firstName': 'Sitar', 'sex': 'MALE'}", 
+        path="/person.json", 
+        mimeType = "application/json"
+    ))
+    @BrwsrTest public void loadAndParseJSON() {
+        JSONik js = new JSONik();
+        js.applyBindings();
+        
+        js.fetch("person.json");
+        
+        Person p = null;
+        for (int i = 0; i < 10000000; i++) {
+            if (js.getFetched() != null) {
+                p = js.getFetched();
+            }
+        }
+        assert p != null : "We should get our person back: " + p;
+        assert "Sitar".equals(p.getFirstName()) : "Expecting Sitar: " + p.getFirstName();
+        assert Sex.MALE.equals(p.getSex()) : "Expecting MALE: " + p.getSex();
+    }
+    
+    @Http(@Http.Resource(
+        content = "[{'firstName': 'Sitar', 'sex': 'MALE'}]", 
+        path="/person.json", 
+        mimeType = "application/json"
+    ))
+    @BrwsrTest public void loadAndParseJSONArray() {
+        JSONik js = new JSONik();
+        js.applyBindings();
+        
+        js.fetch("person.json");
+        
+        Person p = null;
+        for (int i = 0; i < 10000000; i++) {
+            if (js.getFetched() != null) {
+                p = js.getFetched();
+            }
+        }
+        assert p != null : "We should get our person back: " + p;
+        assert "Sitar".equals(p.getFirstName()) : "Expecting Sitar: " + p.getFirstName();
+        assert Sex.MALE.equals(p.getSex()) : "Expecting MALE: " + p.getSex();
+    }
+    
+    @Factory public static Object[] create() {
+        return VMTest.create(JSONTest.class);
+    }
+    
 }
