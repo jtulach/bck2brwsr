@@ -194,6 +194,36 @@ public class StringTest {
         
     }
     
+    @Test public void toStringOnJSArray() throws Exception {
+        String exp = StringSample.toStringArray(false, true);
+        
+        assertExec(
+            "Treated as Java Object array",
+            StringSample.class, "toStringArray__Ljava_lang_String_2ZZ",
+            exp, true, true
+        );
+    }
+
+    @Test public void toStringOnRealArray() throws Exception {
+        String exp = StringSample.toStringArray(false, true);
+        
+        assertExec(
+            "Is Java Object array",
+            StringSample.class, "toStringArray__Ljava_lang_String_2ZZ",
+            exp, false, true
+        );
+    }
+
+    @Test public void valueOfOnJSArray() throws Exception {
+        String exp = "[1, 2]";
+        
+        assertExec(
+            "Treated as classical JavaScript array",
+            StringSample.class, "toStringArray__Ljava_lang_String_2ZZ",
+            exp, true, false
+        );
+    }
+    
     private static TestVM code;
     
     @BeforeClass 
