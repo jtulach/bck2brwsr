@@ -786,8 +786,8 @@ public final class PageProcessor extends AbstractProcessor {
                 "    public void run() {\n" +
                 "      Object value = result[0];\n" +
                 "      if (value instanceof Object[]) {\n" +
-                "        throw new IllegalStateException(\"Array value: \" + value);\n" +
-                "      } else {\n        ");
+                "        value = ((Object[])value)[0];\n" +
+                "      }        ");
             {
                 body.append(clazz.getSimpleName()).append(".").append(n).append("(");
                 String sep = "";
@@ -799,7 +799,6 @@ public final class PageProcessor extends AbstractProcessor {
                 body.append(");\n");
             }
             body.append(
-                "      }\n" +
                 "    }\n" +
                 "  }\n"
             );

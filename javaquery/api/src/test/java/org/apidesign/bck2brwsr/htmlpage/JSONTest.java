@@ -149,7 +149,7 @@ public class JSONTest {
     }
     
     @Http(@Http.Resource(
-        content = "[{'firstName': 'Sitar', 'sex': 'MALE'}]", 
+        content = "[{'firstName': 'Gitar', 'sex': 'FEMALE'}]", 
         path="/person.json", 
         mimeType = "application/json"
     ))
