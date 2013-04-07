@@ -122,6 +122,7 @@ public final class PageProcessor extends AbstractProcessor {
         String pkg = findPkgName(e);
         Writer w;
         String className = m.className();
+        models.put(e, className);
         try {
             StringWriter body = new StringWriter();
             List<String> propsGetSet = new ArrayList<>();
@@ -809,7 +810,7 @@ public final class PageProcessor extends AbstractProcessor {
                 "        Object[] data = ((Object[])value);\n" +
                 "        arr = new " + modelClass + "[data.length];\n" +
                 "        for (int i = 0; i < data.length; i++) {\n" +
-                "          arr[i] = new " + modelClass + "(value);\n" +
+                "          arr[i] = new " + modelClass + "(data[i]);\n" +
                 "        }\n" +
                 "      } else {\n" +
                 "        arr = new " + modelClass + "[1];\n" +
