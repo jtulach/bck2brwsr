@@ -133,14 +133,16 @@ public class StringSample {
     
     @JavaScriptBody(args = {}, body = "return [1, 2];")
     private static native Object crtarr();
-    @JavaScriptBody(args = { "o" }, body = "return o.valueOf();")
-    private static native String valueOf(Object o);
+    @JavaScriptBody(args = { "o" }, body = "return o.toString();")
+    private static native String toStrng(Object o);
     
     public static String toStringArray(boolean fakeArr, boolean toString) {
         final Object arr = fakeArr ? crtarr() : new Object[2];
-        final String whole = toString ? arr.toString() : valueOf(arr);
+        final String whole = toString ? arr.toString() : toStrng(arr);
         int zav = whole.indexOf('@');
-        assert zav >= 0 : "There should be @ in: " + whole;
+        if (zav <= 0) {
+            zav = whole.length();
+        }
         return whole.substring(0, zav).toString().toString();
     }
     

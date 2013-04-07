@@ -215,12 +215,10 @@ public class StringTest {
     }
 
     @Test public void valueOfOnJSArray() throws Exception {
-        String exp = "[1, 2]";
-        
         assertExec(
             "Treated as classical JavaScript array",
             StringSample.class, "toStringArray__Ljava_lang_String_2ZZ",
-            exp, true, false
+            "1,2", true, false
         );
     }
     
