@@ -102,6 +102,7 @@ public final class InvocationContext {
         final String httpPath;
 
         Resource(InputStream httpContent, String httpType, String httpPath) {
+            httpContent.mark(Integer.MAX_VALUE);
             this.httpContent = httpContent;
             this.httpType = httpType;
             this.httpPath = httpPath;
