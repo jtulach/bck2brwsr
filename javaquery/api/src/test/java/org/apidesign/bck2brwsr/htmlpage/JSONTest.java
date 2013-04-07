@@ -137,6 +137,12 @@ public class JSONTest {
         throw new IllegalStateException("Got in array him: " + Arrays.asList(p));
     }
     
+    @OnReceive(url="/{url}")
+    static void fetchPeople(People p, JSONik model) {
+        model.setFetchedCount(p.getInfo().size());
+        model.setFetched(p.getInfo().get(0));
+    }
+    
     @Http(@Http.Resource(
         content = "{'firstName': 'Sitar', 'sex': 'MALE'}", 
         path="/person.json", 
@@ -200,6 +206,32 @@ public class JSONTest {
         if (p == null) {
             throw new InterruptedException();
         }
+        
+        assert p != null : "We should get our person back: " + p;
+        assert "Gitar".equals(p.getFirstName()) : "Expecting Gitar: " + p.getFirstName();
+//        assert Sex.MALE.equals(p.getSex()) : "Expecting MALE: " + p.getSex();
+    }
+    
+    @Http(@Http.Resource(
+        content = "{'info':[{'firstName': 'Gitar', 'sex': 'FEMALE'}]}", 
+        path="/people.json", 
+        mimeType = "application/json"
+    ))
+    @BrwsrTest public void loadAndParseArrayInPeople() throws InterruptedException {
+        if (js == null) {
+            js = new JSONik();
+            js.applyBindings();
+        
+            js.fetchPeople("people.json");
+        }
+        
+        if (0 == js.getFetchedCount()) {
+            throw new InterruptedException();
+        }
+
+        assert js.getFetchedCount() == 1 : "One person loaded: " + js.getFetchedCount();
+        
+        Person p = js.getFetched();
         
         assert p != null : "We should get our person back: " + p;
         assert "Gitar".equals(p.getFirstName()) : "Expecting Gitar: " + p.getFirstName();

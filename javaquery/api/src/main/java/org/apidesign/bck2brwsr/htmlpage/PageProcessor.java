@@ -162,7 +162,8 @@ public final class PageProcessor extends AbstractProcessor {
                 w.append("  ").append(className).append("(Object json) {\n");
                 int values = 0;
                 for (int i = 0; i < propsGetSet.size(); i += 4) {
-                    if (propsGetSet.get(i + 2) == null) {
+                    Property p = findProperty(m.properties(), propsGetSet.get(i));
+                    if (p == null) {
                         continue;
                     }
                     values++;
@@ -170,36 +171,45 @@ public final class PageProcessor extends AbstractProcessor {
                 w.append("    Object[] ret = new Object[" + values + "];\n");
                 w.append("    org.apidesign.bck2brwsr.htmlpage.ConvertTypes.extractJSON(json, new String[] {\n");
                 for (int i = 0; i < propsGetSet.size(); i += 4) {
-                    if (propsGetSet.get(i + 2) == null) {
+                    Property p = findProperty(m.properties(), propsGetSet.get(i));
+                    if (p == null) {
                         continue;
                     }
                     w.append("      \"").append(propsGetSet.get(i)).append("\",\n");
                 }
                 w.append("    }, ret);\n");
                 for (int i = 0, cnt = 0, prop = 0; i < propsGetSet.size(); i += 4) {
-                    if (propsGetSet.get(i + 2) == null) {
+                    final String pn = propsGetSet.get(i);
+                    Property p = findProperty(m.properties(), pn);
+                    if (p == null) {
                         continue;
                     }
                     boolean[] isModel = { false };
                     boolean[] isEnum = { false };
                     String type = checkType(m.properties()[prop++], isModel, isEnum);
-                    w.append("    this.prop_").append(propsGetSet.get(i)).append(" = ");
-                    boolean close = false;
                     if (isEnum[0]) {
 //                        w.append(type).append(".valueOf((String)");
 //                        close = true;
-                        w.append("null;\n");
-                        continue;
+                        w.append("    this.prop_").append(pn);
+                        w.append(" = null;\n");
+                    } else if (p.array()) {
+                        w.append("if (ret[" + cnt + "] instanceof Object[]) {\n");
+                        w.append("  for (Object e : ((Object[])ret[" + cnt + "])) {\n");
+                        if (isModel[0]) {
+                            w.append("    this.prop_").append(pn).append(".add(new ");
+                            w.append(type).append("(e));\n");
+                        } else {
+                            w.append("    this.prop_").append(pn).append(".add((");
+                            w.append(type).append(")e);\n");
+                        }
+                        w.append("  }\n");
+                        w.append("}\n");
                     } else {
-                        w.append('(').append(type).append(')');
+                        w.append("    this.prop_").append(pn);
+                        w.append(" = (").append(type).append(')');
+                        w.append("ret[" + cnt + "];\n");
                     }
-                    w.append("ret[" + cnt++ + "]");
-                    if (close) {
-                        w.append(");\n");
-                    } else {
-                        w.append(";\n");
-                    }
-                    
+                    cnt++;
                 }
                 w.append("    intKnckt();\n");
                 w.append("  };\n");
@@ -1037,5 +1047,14 @@ public final class PageProcessor extends AbstractProcessor {
                 .append("\" + ").append(paramName).append(" + ");
             pos = close + 1;
         }
+    }
+
+    private static Property findProperty(Property[] properties, String propName) {
+        for (Property p : properties) {
+            if (propName.equals(p.name())) {
+                return p;
+            }
+        }
+        return null;
     }
 }
