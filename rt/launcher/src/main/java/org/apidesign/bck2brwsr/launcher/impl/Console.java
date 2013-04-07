@@ -250,6 +250,9 @@ public class Console {
                     res = found.invoke(c.newInstance());
                 }
             } catch (Throwable ex) {
+                if (ex instanceof InvocationTargetException) {
+                    ex = ((InvocationTargetException)ex).getTargetException();
+                }
                 res = ex.getClass().getName() + ":" + ex.getMessage();
             }
         } else {

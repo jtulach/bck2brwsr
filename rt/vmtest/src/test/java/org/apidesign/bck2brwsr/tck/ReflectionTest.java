@@ -104,6 +104,11 @@ public class ReflectionTest {
         return "should not happen";
     }
 
+    @Compare public String methodThatThrowsException() throws Exception {
+        StaticUse.class.getMethod("instanceMethod").invoke(new StaticUse());
+        return "should not happen";
+    }
+
     @Compare public Object voidReturnType() throws Exception {
         return StaticUse.class.getMethod("instanceMethod").getReturnType();
     }
