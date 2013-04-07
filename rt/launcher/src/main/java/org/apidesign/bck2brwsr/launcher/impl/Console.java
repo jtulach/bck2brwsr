@@ -145,7 +145,6 @@ public class Console {
             try {
                 if (c == null) {
                     String data = arr[0];
-                    log("\nGot \"" + data + "\"");
 
                     if (data == null) {
                         log("Some error exiting");
@@ -161,6 +160,9 @@ public class Console {
 
                     c = Case.parseData(data);
                     beginTest(c);
+                    log("Got \"" + data + "\"");
+                } else {
+                    log("Processing \"" + arr[0] + "\"");
                 }
                 Object result = c.runTest();
                 finishTest(c, result);
@@ -169,7 +171,8 @@ public class Console {
                 new Request(url, u);
             } catch (Exception ex) {
                 if (ex instanceof InterruptedException) {
-                    interval(this, 100);
+                    log("Re-scheduling in 100ms");
+                    schedule(this, 100);
                     return;
                 }
                 log(ex.getClass().getName() + ":" + ex.getMessage());
@@ -240,8 +243,8 @@ public class Console {
     }
 
     @JavaScriptBody(args = {"r", "time"}, body =
-        "return window.setInterval(function() { r.run__V(); }, time);")
-    private static native Object interval(Runnable r, int time);
+        "return window.setTimeout(function() { r.run__V(); }, time);")
+    private static native Object schedule(Runnable r, int time);
     
     private static final class Case {
         private final Object data;
