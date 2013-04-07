@@ -130,6 +130,7 @@ public class Console {
         private final String[] arr = { null };
         private final String url;
         private Case c;
+        private int retries;
 
         private Request(String url) throws IOException {
             this.url = url;
@@ -162,9 +163,9 @@ public class Console {
                     beginTest(c);
                     log("Got \"" + data + "\"");
                 } else {
-                    log("Processing \"" + arr[0] + "\"");
+                    log("Processing \"" + arr[0] + "\" for " + retries + " time");
                 }
-                Object result = c.runTest();
+                Object result = retries++ >= 10 ? "java.lang.InterruptedException:timeout" : c.runTest();
                 finishTest(c, result);
                 
                 String u = url + "?request=" + c.getRequestId() + "&result=" + result;
