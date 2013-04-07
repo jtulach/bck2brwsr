@@ -75,7 +75,7 @@ public final class Bck2BrwsrCase implements ITest {
             String res = c.invoke();
             value = res;
             if (fail) {
-                int idx = res.indexOf(':');
+                int idx = res == null ? -1 : res.indexOf(':');
                 if (idx >= 0) {
                     Class<? extends Throwable> thrwbl = null;
                     try {
