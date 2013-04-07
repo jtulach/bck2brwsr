@@ -210,9 +210,15 @@ public final class PageProcessor extends AbstractProcessor {
                         w.append("  }\n");
                         w.append("}\n");
                     } else {
-                        w.append("    this.prop_").append(pn);
-                        w.append(" = (").append(type).append(')');
-                        w.append("ret[" + cnt + "];\n");
+                        if (isPrimitive(type)) {
+                            w.append("    this.prop_").append(pn);
+                            w.append(" = ((Number)").append("ret[" + cnt + "]).");
+                            w.append(type).append("Value();\n");
+                        } else {
+                            w.append("    this.prop_").append(pn);
+                            w.append(" = (").append(type).append(')');
+                            w.append("ret[" + cnt + "];\n");
+                        }
                     }
                     cnt++;
                 }

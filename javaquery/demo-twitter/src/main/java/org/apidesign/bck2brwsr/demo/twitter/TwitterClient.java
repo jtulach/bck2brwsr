@@ -33,7 +33,7 @@ import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
     @Property(name="activeTweetersName", type=String.class),
     @Property(name="modifiedList", type=TwitterClient.Twttrs.class),
     @Property(name="userNameToAdd", type=String.class),
-    @Property(name="currentTweets", type=String.class, array = true)
+    @Property(name="currentTweets", type=TwitterClient.Twt.class, array = true)
 })
 public class TwitterClient {
     @Model(className = "Tweeters", properties = {
@@ -41,6 +41,41 @@ public class TwitterClient {
         @Property(name="userNames", type = String.class, array = true)
     })
     static class Twttrs {
+    }
+    @Model(className = "Tweet", properties = {
+        @Property(name = "from_user", type = String.class),
+        @Property(name = "from_user_id", type = int.class),
+        @Property(name = "profile_image_url", type = String.class),
+        @Property(name = "text", type = String.class),
+        
+    })
+    static final class Twt {
+    }
+    @Model(className = "TwitterQuery", properties = {
+        @Property(array = true, name = "results", type = Twt.class)
+    })
+    public static final class TwttrQr {
+    }
+    
+    @OnReceive(url="{url}")
+    static void queryTweets(TwitterModel page, TwitterQuery q) {
+        page.getCurrentTweets().clear();
+        page.getCurrentTweets().addAll(q.getResults());
+    }
+    
+    @OnFunction
+    static void refreshTweets(TwitterModel model) {
+        Tweeters people = model.getActiveTweeters();
+        StringBuilder sb = new StringBuilder();
+        sb.append("http://search.twitter.com/search.json?callback=?&rpp=25&q=");
+        String sep = "";
+        for (String p : people.getUserNames()) {
+            sb.append(sep);
+            sb.append("from:");
+            sb.append(p);
+            sep = " OR ";
+        }
+        model.queryTweets(sb.toString());
     }
     
     private static Tweeters tweeters(String listName, String... userNames) {
@@ -60,7 +95,7 @@ public class TwitterClient {
         svdLst.add(tweeters("Tech pundits", "Scobleizer", "LeoLaporte", "techcrunch", "BoingBoing", "timoreilly", "codinghorror"));
 
         model.setActiveTweetersName("NetBeans");
-        
+
         model.applyBindings();
     }
     
