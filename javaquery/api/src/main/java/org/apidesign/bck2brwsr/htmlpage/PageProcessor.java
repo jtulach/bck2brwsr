@@ -199,8 +199,13 @@ public final class PageProcessor extends AbstractProcessor {
                             w.append("    this.prop_").append(pn).append(".add(new ");
                             w.append(type).append("(e));\n");
                         } else {
-                            w.append("    this.prop_").append(pn).append(".add((");
-                            w.append(type).append(")e);\n");
+                            if (isPrimitive(type)) {
+                                w.append("    this.prop_").append(pn).append(".add(((Number)e).");
+                                w.append(type).append("Value());\n");
+                            } else {
+                                w.append("    this.prop_").append(pn).append(".add((");
+                                w.append(type).append(")e);\n");
+                            }
                         }
                         w.append("  }\n");
                         w.append("}\n");
@@ -1056,5 +1061,15 @@ public final class PageProcessor extends AbstractProcessor {
             }
         }
         return null;
+    }
+
+    private boolean isPrimitive(String type) {
+        return 
+            "int".equals(type) ||
+            "double".equals(type) ||
+            "long".equals(type) ||
+            "short".equals(type) ||
+            "byte".equals(type) ||
+            "float".equals(type);
     }
 }

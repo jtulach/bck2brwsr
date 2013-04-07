@@ -127,20 +127,27 @@ public class JSONTest {
     @OnReceive(url="/{url}")
     static void fetch(Person p, JSONik model) {
         model.setFetched(p);
-        throw new IllegalStateException("Got him: " + p);
     }
 
     @OnReceive(url="/{url}")
     static void fetchArray(Person[] p, JSONik model) {
         model.setFetchedCount(p.length);
         model.setFetched(p[0]);
-        throw new IllegalStateException("Got in array him: " + Arrays.asList(p));
     }
     
     @OnReceive(url="/{url}")
     static void fetchPeople(People p, JSONik model) {
         model.setFetchedCount(p.getInfo().size());
         model.setFetched(p.getInfo().get(0));
+    }
+
+    @OnReceive(url="/{url}")
+    static void fetchPeopleAge(People p, JSONik model) {
+        int sum = 0;
+        for (int a : p.getAge()) {
+            sum += a;
+        }
+        model.setFetchedCount(sum);
     }
     
     @Http(@Http.Resource(
@@ -161,7 +168,6 @@ public class JSONTest {
             throw new InterruptedException();
         }
         
-        assert p != null : "We should get our person back: " + p;
         assert "Sitar".equals(p.getFirstName()) : "Expecting Sitar: " + p.getFirstName();
       //  assert Sex.MALE.equals(p.getSex()) : "Expecting MALE: " + p.getSex();
     }
@@ -236,6 +242,26 @@ public class JSONTest {
         assert p != null : "We should get our person back: " + p;
         assert "Gitar".equals(p.getFirstName()) : "Expecting Gitar: " + p.getFirstName();
 //        assert Sex.MALE.equals(p.getSex()) : "Expecting MALE: " + p.getSex();
+    }
+    
+    @Http(@Http.Resource(
+        content = "{'age':[1, 2, 3]}", 
+        path="/people.json", 
+        mimeType = "application/json"
+    ))
+    @BrwsrTest public void loadAndParseArrayOfIntegers() throws InterruptedException {
+        if (js == null) {
+            js = new JSONik();
+            js.applyBindings();
+        
+            js.fetchPeopleAge("people.json");
+        }
+        
+        if (0 == js.getFetchedCount()) {
+            throw new InterruptedException();
+        }
+
+        assert js.getFetchedCount() == 6 : "1 + 2 + 3 is " + js.getFetchedCount();
     }
     
     @Http(@Http.Resource(
