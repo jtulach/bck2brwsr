@@ -149,6 +149,18 @@ public class CompareStringsTest {
     public int stringToBytesLenght() throws UnsupportedEncodingException {
         return "\u017dlu\u0165ou\u010dk\u00fd k\u016f\u0148".getBytes("utf8").length;
     }
+    
+    @Compare public String replaceSeq() {
+        return "Hello World.".replace(".", "!");
+    }
+    @Compare public String replaceSeqAll() {
+        return "Hello World! Hello World.".replace("World", "Jarda");
+    }
+    @Compare public String replaceSeqAA() {
+        String res = "aaa".replace("aa", "b");
+        assert res.equals("ba") : "Expecting ba: " + res;
+        return res;
+    }
 
     @Factory
     public static Object[] create() {

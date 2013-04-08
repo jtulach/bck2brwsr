@@ -15,25 +15,24 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.tck;
+package org.apidesign.bck2brwsr.htmlpage.api;
 
-class StaticUse {
-    public static final Object NON_NULL = new Object();
-    public static int cnt;
-    static {
-        if (cnt++ != 0) {
-            throw new IllegalStateException("Multiple initialization of a <cinit>");
-        }
-    }
-    
-    StaticUse() {
-    }
-    
-    public void instanceMethod() {
-        throw new IllegalStateException();
-    }
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-    public static int plus(int a, int b) {
-        return a + b;
-    }
+/** Represents a property. Either in a generated model of an HTML
+ * {@link Page} or in a class defined by {@link Model}.
+ *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
+ */
+@Retention(RetentionPolicy.SOURCE)
+@Target(ElementType.METHOD)
+public @interface OnPropertyChange {
+    /** Name(s) of the properties. One wishes to observe.
+     * 
+     * @return valid java identifier
+     */
+    String[] value();
 }

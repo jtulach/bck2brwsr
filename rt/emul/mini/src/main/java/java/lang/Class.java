@@ -1252,6 +1252,7 @@ public final
     }
     
     @JavaScriptBody(args = { "sig" }, body = 
+        "if (!sig) sig = '[Ljava/lang/Object;';\n" +
         "var c = Array[sig];\n" +
         "if (c) return c;\n" +
         "c = vm.java_lang_Class(true);\n" +

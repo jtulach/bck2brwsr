@@ -15,5 +15,6 @@
         <module>api</module>
         <module>demo-calculator</module>
         <module>demo-calculator-dynamic</module>
-    </modules>
+    <module>demo-twitter</module>
+  </modules>
 </project>

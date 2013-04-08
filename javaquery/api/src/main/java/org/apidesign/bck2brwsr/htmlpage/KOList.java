@@ -19,6 +19,7 @@ package org.apidesign.bck2brwsr.htmlpage;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import org.apidesign.bck2brwsr.core.JavaScriptOnly;
 
 /**
@@ -29,6 +30,7 @@ public final class KOList<T> extends ArrayList<T> {
     private final String name;
     private final String[] deps;
     private Knockout model;
+    private Runnable onchange;
 
     public KOList(String name, String... deps) {
         this.name = name;
@@ -36,12 +38,37 @@ public final class KOList<T> extends ArrayList<T> {
     }
     
     public void assign(Knockout model) {
-        this.model = model;
+        if (this.model != model) {
+            this.model = model;
+            notifyChange();
+        }
+    }
+    
+    public KOList<T> onChange(Runnable r) {
+        if (this.onchange != null) {
+            throw new IllegalStateException();
+        }
+        this.onchange = r;
+        return this;
     }
 
     @Override
     public boolean add(T e) {
         boolean ret = super.add(e);
+        notifyChange();
+        return ret;
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends T> c) {
+        boolean ret = super.addAll(c);
+        notifyChange();
+        return ret;
+    }
+
+    @Override
+    public boolean addAll(int index, Collection<? extends T> c) {
+        boolean ret = super.addAll(index, c);
         notifyChange();
         return ret;
     }
@@ -92,7 +119,25 @@ public final class KOList<T> extends ArrayList<T> {
         notifyChange();
         return ret;
     }
-    
+
+    @Override
+    public String toString() {
+        Iterator<T> it = iterator();
+        if (!it.hasNext()) {
+            return "[]";
+        }
+        String sep = "";
+        StringBuilder sb = new StringBuilder();
+        sb.append('[');
+        while (it.hasNext()) {
+            T t = it.next();
+            sb.append(sep);
+            sb.append(ConvertTypes.toJSON(t));
+            sep = ",";
+        }
+        sb.append(']');
+        return sb.toString();
+    }
     
     
     @JavaScriptOnly(name = "koArray", value = "function() { return this.toArray___3Ljava_lang_Object_2(); }")
@@ -100,14 +145,23 @@ public final class KOList<T> extends ArrayList<T> {
 
     private void notifyChange() {
         Knockout m = model;
-        if (m == null) {
-            return;
+        if (m != null) {
+            m.valueHasMutated(name);
+            for (String dependant : deps) {
+                m.valueHasMutated(dependant);
+            }
         }
-        m.valueHasMutated(name);
-        for (String dependant : deps) {
-            m.valueHasMutated(dependant);
+        Runnable r = onchange;
+        if (r != null) {
+            r.run();
         }
     }
-    
+
+    @Override
+    public KOList clone() {
+        KOList ko = (KOList)super.clone();
+        ko.model = null;
+        return ko;
+    }
     
 }

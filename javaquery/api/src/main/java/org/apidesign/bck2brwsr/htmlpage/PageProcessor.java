@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,7 @@ import java.util.WeakHashMap;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Completion;
 import javax.annotation.processing.Completions;
+import javax.annotation.processing.Messager;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
@@ -45,9 +47,11 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
@@ -56,6 +60,8 @@ import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
 import org.apidesign.bck2brwsr.htmlpage.api.Model;
 import org.apidesign.bck2brwsr.htmlpage.api.On;
 import org.apidesign.bck2brwsr.htmlpage.api.OnFunction;
+import org.apidesign.bck2brwsr.htmlpage.api.OnPropertyChange;
+import org.apidesign.bck2brwsr.htmlpage.api.OnReceive;
 import org.apidesign.bck2brwsr.htmlpage.api.Page;
 import org.apidesign.bck2brwsr.htmlpage.api.Property;
 import org.openide.util.lookup.ServiceProvider;
@@ -70,6 +76,8 @@ import org.openide.util.lookup.ServiceProvider;
     "org.apidesign.bck2brwsr.htmlpage.api.Model",
     "org.apidesign.bck2brwsr.htmlpage.api.Page",
     "org.apidesign.bck2brwsr.htmlpage.api.OnFunction",
+    "org.apidesign.bck2brwsr.htmlpage.api.OnReceive",
+    "org.apidesign.bck2brwsr.htmlpage.api.OnPropertyChange",
     "org.apidesign.bck2brwsr.htmlpage.api.On"
 })
 public final class PageProcessor extends AbstractProcessor {
@@ -102,6 +110,10 @@ public final class PageProcessor extends AbstractProcessor {
             return processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, pkg, name).openInputStream();
         }
     }
+
+    private  Messager err() {
+        return processingEnv.getMessager();
+    }
     
     private boolean processModel(Element e) {
         boolean ok = true;
@@ -112,15 +124,20 @@ public final class PageProcessor extends AbstractProcessor {
         String pkg = findPkgName(e);
         Writer w;
         String className = m.className();
+        models.put(e, className);
         try {
             StringWriter body = new StringWriter();
             List<String> propsGetSet = new ArrayList<>();
             List<String> functions = new ArrayList<>();
             Map<String, Collection<String>> propsDeps = new HashMap<>();
+            Map<String, Collection<String>> functionDeps = new HashMap<>();
             if (!generateComputedProperties(body, m.properties(), e.getEnclosedElements(), propsGetSet, propsDeps)) {
                 ok = false;
             }
-            if (!generateProperties(e, body, m.properties(), propsGetSet, propsDeps)) {
+            if (!generateOnChange(e, propsDeps, m.properties(), className, functionDeps)) {
+                ok = false;
+            }
+            if (!generateProperties(e, body, m.properties(), propsGetSet, propsDeps, functionDeps)) {
                 ok = false;
             }
             if (!generateFunctions(e, body, className, e.getEnclosedElements(), functions)) {
@@ -133,25 +150,94 @@ public final class PageProcessor extends AbstractProcessor {
                 w.append("import org.apidesign.bck2brwsr.htmlpage.api.*;\n");
                 w.append("import org.apidesign.bck2brwsr.htmlpage.KOList;\n");
                 w.append("import org.apidesign.bck2brwsr.core.JavaScriptOnly;\n");
-                w.append("final class ").append(className).append(" {\n");
-                w.append("  private Object json;\n");
+                w.append("final class ").append(className).append(" implements Cloneable {\n");
                 w.append("  private boolean locked;\n");
                 w.append("  private org.apidesign.bck2brwsr.htmlpage.Knockout ko;\n");
                 w.append(body.toString());
-                w.append("  private static Class<" + e.getSimpleName() + "> modelFor() { return null; }\n");
+                w.append("  private static Class<" + inPckName(e) + "> modelFor() { return null; }\n");
                 w.append("  public ").append(className).append("() {\n");
+                w.append("    intKnckt();\n");
+                w.append("  };\n");
+                w.append("  private void intKnckt() {\n");
                 w.append("    ko = org.apidesign.bck2brwsr.htmlpage.Knockout.applyBindings(this, ");
                 writeStringArray(propsGetSet, w);
                 w.append(", ");
                 writeStringArray(functions, w);
                 w.append("    );\n");
                 w.append("  };\n");
+                w.append("  ").append(className).append("(Object json) {\n");
+                int values = 0;
+                for (int i = 0; i < propsGetSet.size(); i += 4) {
+                    Property p = findProperty(m.properties(), propsGetSet.get(i));
+                    if (p == null) {
+                        continue;
+                    }
+                    values++;
+                }
+                w.append("    Object[] ret = new Object[" + values + "];\n");
+                w.append("    org.apidesign.bck2brwsr.htmlpage.ConvertTypes.extractJSON(json, new String[] {\n");
+                for (int i = 0; i < propsGetSet.size(); i += 4) {
+                    Property p = findProperty(m.properties(), propsGetSet.get(i));
+                    if (p == null) {
+                        continue;
+                    }
+                    w.append("      \"").append(propsGetSet.get(i)).append("\",\n");
+                }
+                w.append("    }, ret);\n");
+                for (int i = 0, cnt = 0, prop = 0; i < propsGetSet.size(); i += 4) {
+                    final String pn = propsGetSet.get(i);
+                    Property p = findProperty(m.properties(), pn);
+                    if (p == null) {
+                        continue;
+                    }
+                    boolean[] isModel = { false };
+                    boolean[] isEnum = { false };
+                    String type = checkType(m.properties()[prop++], isModel, isEnum);
+                    if (isEnum[0]) {
+//                        w.append(type).append(".valueOf((String)");
+//                        close = true;
+                        w.append("    this.prop_").append(pn);
+                        w.append(" = null;\n");
+                    } else if (p.array()) {
+                        w.append("if (ret[" + cnt + "] instanceof Object[]) {\n");
+                        w.append("  for (Object e : ((Object[])ret[" + cnt + "])) {\n");
+                        if (isModel[0]) {
+                            w.append("    this.prop_").append(pn).append(".add(new ");
+                            w.append(type).append("(e));\n");
+                        } else {
+                            if (isPrimitive(type)) {
+                                w.append("    this.prop_").append(pn).append(".add(((Number)e).");
+                                w.append(type).append("Value());\n");
+                            } else {
+                                w.append("    this.prop_").append(pn).append(".add((");
+                                w.append(type).append(")e);\n");
+                            }
+                        }
+                        w.append("  }\n");
+                        w.append("}\n");
+                    } else {
+                        if (isPrimitive(type)) {
+                            w.append("    this.prop_").append(pn);
+                            w.append(" = ((Number)").append("ret[" + cnt + "]).");
+                            w.append(type).append("Value();\n");
+                        } else {
+                            w.append("    this.prop_").append(pn);
+                            w.append(" = (").append(type).append(')');
+                            w.append("ret[" + cnt + "];\n");
+                        }
+                    }
+                    cnt++;
+                }
+                w.append("    intKnckt();\n");
+                w.append("  };\n");
+                writeToString(m.properties(), w);
+                writeClone(className, m.properties(), w);
                 w.append("}\n");
             } finally {
                 w.close();
             }
         } catch (IOException ex) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Can't create " + className + ".java", e);
+            err().printMessage(Diagnostic.Kind.ERROR, "Can't create " + className + ".java", e);
             return false;
         }
         return ok;
@@ -170,7 +256,7 @@ public final class PageProcessor extends AbstractProcessor {
             pp = ProcessPage.readPage(is);
             is.close();
         } catch (IOException iOException) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Can't read " + p.xhtml(), e);
+            err().printMessage(Diagnostic.Kind.ERROR, "Can't read " + p.xhtml() + " as " + iOException.getMessage(), e);
             ok = false;
             pp = null;
         }
@@ -185,13 +271,20 @@ public final class PageProcessor extends AbstractProcessor {
             List<String> propsGetSet = new ArrayList<>();
             List<String> functions = new ArrayList<>();
             Map<String, Collection<String>> propsDeps = new HashMap<>();
+            Map<String, Collection<String>> functionDeps = new HashMap<>();
             if (!generateComputedProperties(body, p.properties(), e.getEnclosedElements(), propsGetSet, propsDeps)) {
                 ok = false;
             }
-            if (!generateProperties(e, body, p.properties(), propsGetSet, propsDeps)) {
+            if (!generateOnChange(e, propsDeps, p.properties(), className, functionDeps)) {
+                ok = false;
+            }
+            if (!generateProperties(e, body, p.properties(), propsGetSet, propsDeps, functionDeps)) {
                 ok = false;
             }
             if (!generateFunctions(e, body, className, e.getEnclosedElements(), functions)) {
+                ok = false;
+            }
+            if (!generateReceive(e, body, className, e.getEnclosedElements(), functions)) {
                 ok = false;
             }
             
@@ -206,7 +299,7 @@ public final class PageProcessor extends AbstractProcessor {
                 if (!initializeOnClick(className, (TypeElement) e, w, pp)) {
                     ok = false;
                 } else {
-                    for (String id : pp.ids()) {
+                    if (pp != null) for (String id : pp.ids()) {
                         String tag = pp.tagNameForId(id);
                         String type = type(tag);
                         w.append("  ").append("public final ").
@@ -234,7 +327,7 @@ public final class PageProcessor extends AbstractProcessor {
                 w.close();
             }
         } catch (IOException ex) {
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "Can't create " + className + ".java", e);
+            err().printMessage(Diagnostic.Kind.ERROR, "Can't create " + className + ".java", e);
             return false;
         }
         return ok;
@@ -280,24 +373,24 @@ public final class PageProcessor extends AbstractProcessor {
                 if (oc != null) {
                     for (String id : oc.id()) {
                         if (pp == null) {
-                            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "id = " + id + " not found in HTML page.");
+                            err().printMessage(Diagnostic.Kind.ERROR, "id = " + id + " not found in HTML page.");
                             ok = false;
                             continue;
                         }
                         if (pp.tagNameForId(id) == null) {
-                            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "id = " + id + " does not exist in the HTML page. Found only " + pp.ids(), method);
+                            err().printMessage(Diagnostic.Kind.ERROR, "id = " + id + " does not exist in the HTML page. Found only " + pp.ids(), method);
                             ok = false;
                             continue;
                         }
                         ExecutableElement ee = (ExecutableElement)method;
                         CharSequence params = wrapParams(ee, id, className, "ev", null);
                         if (!ee.getModifiers().contains(Modifier.STATIC)) {
-                            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@On method has to be static", ee);
+                            err().printMessage(Diagnostic.Kind.ERROR, "@On method has to be static", ee);
                             ok = false;
                             continue;
                         }
                         if (ee.getModifiers().contains(Modifier.PRIVATE)) {
-                            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "@On method can't be private", ee);
+                            err().printMessage(Diagnostic.Kind.ERROR, "@On method can't be private", ee);
                             ok = false;
                             continue;
                         }
@@ -378,7 +471,9 @@ public final class PageProcessor extends AbstractProcessor {
     private boolean generateProperties(
         Element where,
         Writer w, Property[] properties,
-        Collection<String> props, Map<String,Collection<String>> deps
+        Collection<String> props, 
+        Map<String,Collection<String>> deps,
+        Map<String,Collection<String>> functionDeps
     ) throws IOException {
         boolean ok = true;
         for (Property p : properties) {
@@ -389,7 +484,7 @@ public final class PageProcessor extends AbstractProcessor {
             if (p.array()) {
                 w.write("private KOList<" + tn + "> prop_" + p.name() + " = new KOList<" + tn + ">(\""
                     + p.name() + "\"");
-                final Collection<String> dependants = deps.get(p.name());
+                Collection<String> dependants = deps.get(p.name());
                 if (dependants != null) {
                     for (String depProp : dependants) {
                         w.write(", ");
@@ -398,7 +493,18 @@ public final class PageProcessor extends AbstractProcessor {
                         w.write('\"');
                     }
                 }
-                w.write(");\n");
+                w.write(")");
+                
+                dependants = functionDeps.get(p.name());
+                if (dependants != null) {
+                    w.write(".onChange(new Runnable() { public void run() {\n");
+                    for (String call : dependants) {
+                        w.append(call);
+                    }
+                    w.write("}})");
+                }
+                w.write(";\n");
+                
                 w.write("public java.util.List<" + tn + "> " + gs[0] + "() {\n");
                 w.write("  if (locked) throw new IllegalStateException();\n");
                 w.write("  prop_" + p.name() + ".assign(ko);\n");
@@ -415,13 +521,19 @@ public final class PageProcessor extends AbstractProcessor {
                 w.write("  prop_" + p.name() + " = v;\n");
                 w.write("  if (ko != null) {\n");
                 w.write("    ko.valueHasMutated(\"" + p.name() + "\");\n");
-                final Collection<String> dependants = deps.get(p.name());
+                Collection<String> dependants = deps.get(p.name());
                 if (dependants != null) {
                     for (String depProp : dependants) {
                         w.write("    ko.valueHasMutated(\"" + depProp + "\");\n");
                     }
                 }
                 w.write("  }\n");
+                dependants = functionDeps.get(p.name());
+                if (dependants != null) {
+                    for (String call : dependants) {
+                        w.append(call);
+                    }
+                }
                 w.write("}\n");
             }
             
@@ -450,7 +562,7 @@ public final class PageProcessor extends AbstractProcessor {
             final TypeMirror rt = ee.getReturnType();
             final Types tu = processingEnv.getTypeUtils();
             TypeMirror ert = tu.erasure(rt);
-            String tn = ert.toString();
+            String tn = fqn(ert, ee);
             boolean array = false;
             if (tn.equals("java.util.List")) {
                 array = true;
@@ -469,7 +581,7 @@ public final class PageProcessor extends AbstractProcessor {
                     ok = false;
                 }
                 
-                final String dt = pe.asType().toString();
+                final String dt = fqn(pe.asType(), ee);
                 String[] call = toGetSet(dn, dt, false);
                 w.write("  " + dt + " arg" + (++arg) + " = ");
                 w.write(call[0] + "();\n");
@@ -483,7 +595,7 @@ public final class PageProcessor extends AbstractProcessor {
             }
             w.write("  try {\n");
             w.write("    locked = true;\n");
-            w.write("    return " + e.getEnclosingElement().getSimpleName() + '.' + e.getSimpleName() + "(");
+            w.write("    return " + fqn(ee.getEnclosingElement().asType(), ee) + '.' + e.getSimpleName() + "(");
             String sep = "";
             for (int i = 1; i <= arg; i++) {
                 w.write(sep);
@@ -538,35 +650,19 @@ public final class PageProcessor extends AbstractProcessor {
 
     private String typeName(Element where, Property p) {
         String ret;
-        boolean isModel = false;
-        boolean isEnum = false;
-        try {
-            ret = p.type().getName();
-        } catch (MirroredTypeException ex) {
-            TypeMirror tm = processingEnv.getTypeUtils().erasure(ex.getTypeMirror());
-            final Element e = processingEnv.getTypeUtils().asElement(tm);
-            final Model m = e == null ? null : e.getAnnotation(Model.class);
-            if (m != null) {
-                ret = findPkgName(e) + '.' + m.className();
-                isModel = true;
-                models.put(e, m.className());
-            } else {
-                ret = tm.toString();
-            }
-            TypeMirror enm = processingEnv.getElementUtils().getTypeElement("java.lang.Enum").asType();
-            enm = processingEnv.getTypeUtils().erasure(enm);
-            isEnum = processingEnv.getTypeUtils().isSubtype(tm, enm);
-        }
+        boolean[] isModel = { false };
+        boolean[] isEnum = { false };
+        ret = checkType(p, isModel, isEnum);
         if (p.array()) {
             String bt = findBoxedType(ret);
             if (bt != null) {
                 return bt;
             }
         }
-        if (!isModel && !"java.lang.String".equals(ret) && !isEnum) {
+        if (!isModel[0] && !"java.lang.String".equals(ret) && !isEnum[0]) {
             String bt = findBoxedType(ret);
             if (bt == null) {
-                processingEnv.getMessager().printMessage(
+                err().printMessage(
                     Diagnostic.Kind.ERROR, 
                     "Only primitive types supported in the mapping. Not " + ret,
                     where
@@ -617,7 +713,7 @@ public final class PageProcessor extends AbstractProcessor {
             sb.append('"');
             sep = ", ";
         }
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
+        err().printMessage(Diagnostic.Kind.ERROR,
             propName + " is not one of known properties: " + sb
             , e
         );
@@ -647,25 +743,25 @@ public final class PageProcessor extends AbstractProcessor {
                 continue;
             }
             if (!e.getModifiers().contains(Modifier.STATIC)) {
-                processingEnv.getMessager().printMessage(
+                err().printMessage(
                     Diagnostic.Kind.ERROR, "@OnFunction method needs to be static", e
                 );
                 return false;
             }
             if (e.getModifiers().contains(Modifier.PRIVATE)) {
-                processingEnv.getMessager().printMessage(
+                err().printMessage(
                     Diagnostic.Kind.ERROR, "@OnFunction method cannot be private", e
                 );
                 return false;
             }
             if (e.getReturnType().getKind() != TypeKind.VOID) {
-                processingEnv.getMessager().printMessage(
+                err().printMessage(
                     Diagnostic.Kind.ERROR, "@OnFunction method should return void", e
                 );
                 return false;
             }
             String n = e.getSimpleName().toString();
-            body.append("void ").append(n).append("(Object data, Object ev) {\n");
+            body.append("private void ").append(n).append("(Object data, Object ev) {\n");
             body.append("  ").append(clazz.getSimpleName()).append(".").append(n).append("(");
             body.append(wrapParams(e, null, className, "ev", "data"));
             body.append(");\n");
@@ -673,6 +769,205 @@ public final class PageProcessor extends AbstractProcessor {
             
             functions.add(n);
             functions.add(n + "__VLjava_lang_Object_2Ljava_lang_Object_2");
+        }
+        return true;
+    }
+
+    private boolean generateOnChange(Element clazz, Map<String,Collection<String>> propDeps,
+        Property[] properties, String className, 
+        Map<String, Collection<String>> functionDeps
+    ) {
+        for (Element m : clazz.getEnclosedElements()) {
+            if (m.getKind() != ElementKind.METHOD) {
+                continue;
+            }
+            ExecutableElement e = (ExecutableElement) m;
+            OnPropertyChange onPC = e.getAnnotation(OnPropertyChange.class);
+            if (onPC == null) {
+                continue;
+            }
+            for (String pn : onPC.value()) {
+                if (findProperty(properties, pn) == null && findDerivedFrom(propDeps, pn).isEmpty()) {
+                    err().printMessage(Diagnostic.Kind.ERROR, "No property named '" + pn + "' in the model");
+                    return false;
+                }
+            }
+            if (!e.getModifiers().contains(Modifier.STATIC)) {
+                err().printMessage(
+                    Diagnostic.Kind.ERROR, "@OnPropertyChange method needs to be static", e);
+                return false;
+            }
+            if (e.getModifiers().contains(Modifier.PRIVATE)) {
+                err().printMessage(
+                    Diagnostic.Kind.ERROR, "@OnPropertyChange method cannot be private", e);
+                return false;
+            }
+            if (e.getReturnType().getKind() != TypeKind.VOID) {
+                err().printMessage(
+                    Diagnostic.Kind.ERROR, "@OnPropertyChange method should return void", e);
+                return false;
+            }
+            String n = e.getSimpleName().toString();
+            
+            
+            for (String pn : onPC.value()) {
+                StringBuilder call = new StringBuilder();
+                call.append("  ").append(clazz.getSimpleName()).append(".").append(n).append("(");
+                call.append(wrapPropName(e, className, "name", pn));
+                call.append(");\n");
+                
+                Collection<String> change = functionDeps.get(pn);
+                if (change == null) {
+                    change = new ArrayList<>();
+                    functionDeps.put(pn, change);
+                }
+                change.add(call.toString());
+                for (String dpn : findDerivedFrom(propDeps, pn)) {
+                    change = functionDeps.get(dpn);
+                    if (change == null) {
+                        change = new ArrayList<>();
+                        functionDeps.put(dpn, change);
+                    }
+                    change.add(call.toString());
+                }
+            }
+        }
+        return true;
+    }
+    
+    private boolean generateReceive(
+        Element clazz, StringWriter body, String className, 
+        List<? extends Element> enclosedElements, List<String> functions
+    ) {
+        for (Element m : enclosedElements) {
+            if (m.getKind() != ElementKind.METHOD) {
+                continue;
+            }
+            ExecutableElement e = (ExecutableElement)m;
+            OnReceive onR = e.getAnnotation(OnReceive.class);
+            if (onR == null) {
+                continue;
+            }
+            if (!e.getModifiers().contains(Modifier.STATIC)) {
+                err().printMessage(
+                    Diagnostic.Kind.ERROR, "@OnReceive method needs to be static", e
+                );
+                return false;
+            }
+            if (e.getModifiers().contains(Modifier.PRIVATE)) {
+                err().printMessage(
+                    Diagnostic.Kind.ERROR, "@OnReceive method cannot be private", e
+                );
+                return false;
+            }
+            if (e.getReturnType().getKind() != TypeKind.VOID) {
+                err().printMessage(
+                    Diagnostic.Kind.ERROR, "@OnReceive method should return void", e
+                );
+                return false;
+            }
+            String modelClass = null;
+            boolean expectsList = false;
+            List<String> args = new ArrayList<>();
+            {
+                for (VariableElement ve : e.getParameters()) {
+                    TypeMirror modelType = null;
+                    if (ve.asType().toString().equals(className)) {
+                        args.add(className + ".this");
+                    } else if (isModel(ve.asType())) {
+                        modelType = ve.asType();
+                    } else if (ve.asType().getKind() == TypeKind.ARRAY) {
+                        modelType = ((ArrayType)ve.asType()).getComponentType();
+                        expectsList = true;
+                    }
+                    if (modelType != null) {
+                        if (modelClass != null) {
+                            err().printMessage(Diagnostic.Kind.ERROR, "There can be only one model class among arguments", e);
+                        } else {
+                            modelClass = modelType.toString();
+                            if (expectsList) {
+                                args.add("arr");
+                            } else {
+                                args.add("arr[0]");
+                            }
+                        }
+                    }
+                }
+            }
+            if (modelClass == null) {
+                err().printMessage(Diagnostic.Kind.ERROR, "The method needs to have one @Model class as parameter", e);
+            }
+            String n = e.getSimpleName().toString();
+            body.append("public void ").append(n).append("(");
+            StringBuilder assembleURL = new StringBuilder();
+            String jsonpVarName = null;
+            {
+                String sep = "";
+                boolean skipJSONP = onR.jsonp().isEmpty();
+                for (String p : findParamNames(e, onR.url(), assembleURL)) {
+                    if (!skipJSONP && p.equals(onR.jsonp())) {
+                        skipJSONP = true;
+                        jsonpVarName = p;
+                        continue;
+                    }
+                    body.append(sep);
+                    body.append("String ").append(p);
+                    sep = ", ";
+                }
+                if (!skipJSONP) {
+                    err().printMessage(Diagnostic.Kind.ERROR, 
+                        "Name of jsonp attribute ('" + onR.jsonp() + 
+                        "') is not used in url attribute '" + onR.url() + "'"
+                    );
+                }
+            }
+            body.append(") {\n");
+            body.append("  final Object[] result = { null };\n");
+            body.append(
+                "  class ProcessResult implements Runnable {\n" +
+                "    @Override\n" +
+                "    public void run() {\n" +
+                "      Object value = result[0];\n");
+            body.append(
+                "      " + modelClass + "[] arr;\n");
+            body.append(
+                "      if (value instanceof Object[]) {\n" +
+                "        Object[] data = ((Object[])value);\n" +
+                "        arr = new " + modelClass + "[data.length];\n" +
+                "        for (int i = 0; i < data.length; i++) {\n" +
+                "          arr[i] = new " + modelClass + "(data[i]);\n" +
+                "        }\n" +
+                "      } else {\n" +
+                "        arr = new " + modelClass + "[1];\n" +
+                "        arr[0] = new " + modelClass + "(value);\n" +
+                "      }\n"
+            );
+            {
+                body.append(clazz.getSimpleName()).append(".").append(n).append("(");
+                String sep = "";
+                for (String arg : args) {
+                    body.append(sep);
+                    body.append(arg);
+                    sep = ", ";
+                }
+                body.append(");\n");
+            }
+            body.append(
+                "    }\n" +
+                "  }\n"
+            );
+            body.append("  ProcessResult pr = new ProcessResult();\n");
+            if (jsonpVarName != null) {
+                body.append("  String ").append(jsonpVarName).
+                    append(" = org.apidesign.bck2brwsr.htmlpage.ConvertTypes.createJSONP(result, pr);\n");
+            }
+            body.append("  org.apidesign.bck2brwsr.htmlpage.ConvertTypes.loadJSON(\n      ");
+            body.append(assembleURL);
+            body.append(", result, pr, ").append(jsonpVarName).append("\n  );\n");
+//            body.append("  ").append(clazz.getSimpleName()).append(".").append(n).append("(");
+//            body.append(wrapParams(e, null, className, "ev", "data"));
+//            body.append(");\n");
+            body.append("}\n");
         }
         return true;
     }
@@ -712,6 +1007,14 @@ public final class PageProcessor extends AbstractProcessor {
                     params.append(dataName);
                     params.append(", null");
                 } else {
+                    if (evName == null) {
+                        final StringBuilder sb = new StringBuilder();
+                        sb.append("Unexpected string parameter name.");
+                        if (dataName != null) {
+                            sb.append(" Try \"").append(dataName).append("\"");
+                        }
+                        err().printMessage(Diagnostic.Kind.ERROR, sb.toString(), ee);
+                    }
                     params.append(evName);
                     params.append(", \"");
                     params.append(ve.getSimpleName().toString());
@@ -720,7 +1023,7 @@ public final class PageProcessor extends AbstractProcessor {
                 params.append(")");
                 continue;
             }
-            String rn = ve.asType().toString();
+            String rn = fqn(ve.asType(), ee);
             int last = rn.lastIndexOf('.');
             if (last >= 0) {
                 rn = rn.substring(last + 1);
@@ -729,10 +1032,46 @@ public final class PageProcessor extends AbstractProcessor {
                 params.append(className).append(".this");
                 continue;
             }
-            processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, 
+            err().printMessage(Diagnostic.Kind.ERROR, 
                 "@On method can only accept String named 'id' or " + className + " arguments",
                 ee
             );
+        }
+        return params;
+    }
+    
+    
+    private CharSequence wrapPropName(
+        ExecutableElement ee, String className, String propName, String propValue
+    ) {
+        TypeMirror stringType = processingEnv.getElementUtils().getTypeElement("java.lang.String").asType();
+        StringBuilder params = new StringBuilder();
+        boolean first = true;
+        for (VariableElement ve : ee.getParameters()) {
+            if (!first) {
+                params.append(", ");
+            }
+            first = false;
+            if (ve.asType() == stringType) {
+                if (propName != null && ve.getSimpleName().contentEquals(propName)) {
+                    params.append('"').append(propValue).append('"');
+                } else {
+                    err().printMessage(Diagnostic.Kind.ERROR, "Unexpected string parameter name. Try \"" + propName + "\".");
+                }
+                continue;
+            }
+            String rn = fqn(ve.asType(), ee);
+            int last = rn.lastIndexOf('.');
+            if (last >= 0) {
+                rn = rn.substring(last + 1);
+            }
+            if (rn.equals(className)) {
+                params.append(className).append(".this");
+                continue;
+            }
+            err().printMessage(Diagnostic.Kind.ERROR,
+                "@OnPropertyChange method can only accept String or " + className + " arguments",
+                ee);
         }
         return params;
     }
@@ -766,5 +1105,142 @@ public final class PageProcessor extends AbstractProcessor {
             sep = ",\n";
         }
         w.write("\n  }");
+    }
+    
+    private void writeToString(Property[] props, Writer w) throws IOException {
+        w.write("  public String toString() {\n");
+        w.write("    StringBuilder sb = new StringBuilder();\n");
+        w.write("    sb.append('{');\n");
+        String sep = "";
+        for (Property p : props) {
+            w.write(sep);
+            w.append("    sb.append(\"" + p.name() + ": \");\n");
+            w.append("    sb.append(org.apidesign.bck2brwsr.htmlpage.ConvertTypes.toJSON(prop_");
+            w.append(p.name()).append("));\n");
+            sep =    "    sb.append(',');\n";
+        }
+        w.write("    sb.append('}');\n");
+        w.write("    return sb.toString();\n");
+        w.write("  }\n");
+    }
+    private void writeClone(String className, Property[] props, Writer w) throws IOException {
+        w.write("  public " + className + " clone() {\n");
+        w.write("    " + className + " ret = new " + className + "();\n");
+        for (Property p : props) {
+            if (!p.array()) {
+                boolean isModel[] = { false };
+                boolean isEnum[] = { false };
+                checkType(p, isModel, isEnum);
+                if (!isModel[0]) {
+                    w.write("    ret.prop_" + p.name() + " = prop_" + p.name() + ";\n");
+                    continue;
+                }
+                w.write("    ret.prop_" + p.name() + " = prop_" + p.name() + ".clone();\n");
+            } else {
+                w.write("    ret.prop_" + p.name() + " = prop_" + p.name() + ".clone();\n");
+            }
+        }
+        
+        w.write("    return ret;\n");
+        w.write("  }\n");
+    }
+
+    private String inPckName(Element e) {
+        StringBuilder sb = new StringBuilder();
+        while (e.getKind() != ElementKind.PACKAGE) {
+            if (sb.length() == 0) {
+                sb.append(e.getSimpleName());
+            } else {
+                sb.insert(0, '.');
+                sb.insert(0, e.getSimpleName());
+            }
+            e = e.getEnclosingElement();
+        }
+        return sb.toString();
+    }
+
+    private String fqn(TypeMirror pt, Element relative) {
+        if (pt.getKind() == TypeKind.ERROR) {
+            final Elements eu = processingEnv.getElementUtils();
+            PackageElement pckg = eu.getPackageOf(relative);
+            return pckg.getQualifiedName() + "." + pt.toString();
+        }
+        return pt.toString();
+    }
+
+    private String checkType(Property p, boolean[] isModel, boolean[] isEnum) {
+        String ret;
+        try {
+            ret = p.type().getName();
+        } catch (MirroredTypeException ex) {
+            TypeMirror tm = processingEnv.getTypeUtils().erasure(ex.getTypeMirror());
+            final Element e = processingEnv.getTypeUtils().asElement(tm);
+            final Model m = e == null ? null : e.getAnnotation(Model.class);
+            if (m != null) {
+                ret = findPkgName(e) + '.' + m.className();
+                isModel[0] = true;
+                models.put(e, m.className());
+            } else {
+                ret = tm.toString();
+            }
+            TypeMirror enm = processingEnv.getElementUtils().getTypeElement("java.lang.Enum").asType();
+            enm = processingEnv.getTypeUtils().erasure(enm);
+            isEnum[0] = processingEnv.getTypeUtils().isSubtype(tm, enm);
+        }
+        return ret;
+    }
+
+    private Iterable<String> findParamNames(Element e, String url, StringBuilder assembleURL) {
+        List<String> params = new ArrayList<>();
+
+        for (int pos = 0; ;) {
+            int next = url.indexOf('{', pos);
+            if (next == -1) {
+                assembleURL.append('"')
+                    .append(url.substring(pos))
+                    .append('"');
+                return params;
+            }
+            int close = url.indexOf('}', next);
+            if (close == -1) {
+                err().printMessage(Diagnostic.Kind.ERROR, "Unbalanced '{' and '}' in " + url, e);
+                return params;
+            }
+            final String paramName = url.substring(next + 1, close);
+            params.add(paramName);
+            assembleURL.append('"')
+                .append(url.substring(pos, next))
+                .append("\" + ").append(paramName).append(" + ");
+            pos = close + 1;
+        }
+    }
+
+    private static Property findProperty(Property[] properties, String propName) {
+        for (Property p : properties) {
+            if (propName.equals(p.name())) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    private boolean isPrimitive(String type) {
+        return 
+            "int".equals(type) ||
+            "double".equals(type) ||
+            "long".equals(type) ||
+            "short".equals(type) ||
+            "byte".equals(type) ||
+            "float".equals(type);
+    }
+
+    private static Collection<String> findDerivedFrom(Map<String, Collection<String>> propsDeps, String derivedProp) {
+        Set<String> names = new HashSet<>();
+        for (Map.Entry<String, Collection<String>> e : propsDeps.entrySet()) {
+            if (e.getValue().contains(derivedProp)) {
+                names.add(e.getKey());
+            }
+        }
+        return names;
     }
 }

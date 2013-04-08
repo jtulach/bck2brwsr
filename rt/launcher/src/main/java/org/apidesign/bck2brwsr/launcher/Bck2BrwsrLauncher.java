@@ -98,9 +98,9 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
         }
         HttpServer s = initServer(".", true);
         int last = startpage.lastIndexOf('/');
+        String prefix = startpage.substring(0, last);
         String simpleName = startpage.substring(last);
-        s.getServerConfiguration().addHttpHandler(new Page(resources, startpage), simpleName);
-        s.getServerConfiguration().addHttpHandler(new Page(resources, null), "/");
+        s.getServerConfiguration().addHttpHandler(new SubTree(resources, prefix), "/");
         try {
             launchServerAndBrwsr(s, simpleName);
         } catch (URISyntaxException | InterruptedException ex) {
@@ -177,7 +177,16 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
                     if (r.httpPath.equals(request.getRequestURI())) {
                         LOG.log(Level.INFO, "Serving HttpResource for {0}", request.getRequestURI());
                         response.setContentType(r.httpType);
-                        copyStream(r.httpContent, response.getOutputStream(), null);
+                        r.httpContent.reset();
+                        String[] params = null;
+                        if (r.parameters.length != 0) {
+                            params = new String[r.parameters.length];
+                            for (int i = 0; i < r.parameters.length; i++) {
+                                params[i] = request.getParameter(r.parameters[i]);
+                            }
+                        }
+                        
+                        copyStream(r.httpContent, response.getOutputStream(), null, params);
                     }
                 }
             }
@@ -315,7 +324,7 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
             }
             if (ch == '$' && params.length > 0) {
                 int cnt = is.read() - '0';
-                if (cnt == 'U' - '0') {
+                if (baseURL != null && cnt == 'U' - '0') {
                     os.write(baseURL.getBytes("UTF-8"));
                 } else {
                     if (cnt >= 0 && cnt < params.length) {
@@ -454,7 +463,7 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
     }
 
     private static class Page extends HttpHandler {
-        private final String resource;
+        final String resource;
         private final String[] args;
         private final Res res;
         
@@ -466,10 +475,7 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
 
         @Override
         public void service(Request request, Response response) throws Exception {
-            String r = resource;
-            if (r == null) {
-                r = request.getHttpHandlerPath();
-            }
+            String r = computePage(request);
             if (r.startsWith("/")) {
                 r = r.substring(1);
             }
@@ -493,6 +499,28 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
                 response.setStatus(404);
             }
         }
+
+        protected String computePage(Request request) {
+            String r = resource;
+            if (r == null) {
+                r = request.getHttpHandlerPath();
+            }
+            return r;
+        }
+    }
+    
+    private static class SubTree extends Page {
+
+        public SubTree(Res res, String resource, String... args) {
+            super(res, resource, args);
+        }
+
+        @Override
+        protected String computePage(Request request) {
+            return resource + request.getHttpHandlerPath();
+        }
+        
+        
     }
 
     private static class VM extends HttpHandler {

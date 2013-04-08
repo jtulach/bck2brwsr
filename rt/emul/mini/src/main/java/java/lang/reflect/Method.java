@@ -501,8 +501,8 @@ public final
         throws IllegalAccessException, IllegalArgumentException,
            InvocationTargetException
     {
-        final boolean isStatic = (getModifiers() & Modifier.STATIC) == 0;
-        if (isStatic && obj == null) {
+        final boolean nonStatic = (getModifiers() & Modifier.STATIC) == 0;
+        if (nonStatic && obj == null) {
             throw new NullPointerException();
         }
         Class[] types = getParameterTypes();
@@ -517,7 +517,7 @@ public final
                 }
             }
         }
-        Object res = invoke0(isStatic, this, obj, args);
+        Object res = invokeTry(nonStatic, this, obj, args);
         if (getReturnType().isPrimitive()) {
             res = fromPrimitive(getReturnType(), res);
         }
@@ -536,6 +536,15 @@ public final
         + "return method._data().apply(self, p);\n"
     )
     private static native Object invoke0(boolean isStatic, Method m, Object self, Object[] args);
+    
+    private static Object invokeTry(boolean isStatic, Method m, Object self, Object[] args)
+    throws InvocationTargetException {
+        try {
+            return invoke0(isStatic, m, self, args);
+        } catch (Throwable ex) {
+            throw new InvocationTargetException(ex, ex.getMessage());
+        }
+    }
 
     static Object fromPrimitive(Class<?> type, Object o) {
         if (type == Integer.TYPE) {

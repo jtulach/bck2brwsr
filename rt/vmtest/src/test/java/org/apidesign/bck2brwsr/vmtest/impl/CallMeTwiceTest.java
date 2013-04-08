@@ -15,25 +15,29 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.tck;
+package org.apidesign.bck2brwsr.vmtest.impl;
 
-class StaticUse {
-    public static final Object NON_NULL = new Object();
-    public static int cnt;
-    static {
-        if (cnt++ != 0) {
-            throw new IllegalStateException("Multiple initialization of a <cinit>");
+import org.apidesign.bck2brwsr.vmtest.BrwsrTest;
+import org.apidesign.bck2brwsr.vmtest.VMTest;
+import org.testng.annotations.Factory;
+
+/**
+ *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
+ */
+public class CallMeTwiceTest {
+    int cnt;
+    
+    @BrwsrTest public void callMeTwice() throws InterruptedException {
+        if (cnt++ == 0) {
+            throw new InterruptedException();
         }
+        int prevCnt = cnt;
+        cnt = 0;
+        assert prevCnt == 2 : "We need to receive two calls " + prevCnt;
     }
     
-    StaticUse() {
-    }
-    
-    public void instanceMethod() {
-        throw new IllegalStateException();
-    }
-
-    public static int plus(int a, int b) {
-        return a + b;
+    @Factory public static Object[] create() {
+        return VMTest.create(CallMeTwiceTest.class);
     }
 }

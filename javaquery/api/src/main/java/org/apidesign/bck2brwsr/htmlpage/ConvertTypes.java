@@ -50,6 +50,22 @@ public final class ConvertTypes {
         throw new IllegalStateException("Value " + ret + " is not of type " + modelClass);
     }
     
+    public static String toJSON(Object value) {
+        if (value == null) {
+            return "null";
+        }
+        if (value instanceof String) {
+            return '"' + 
+                ((String)value).
+                    replace("\"", "\\\"").
+                    replace("\n", "\\n").
+                    replace("\r", "\\r").
+                    replace("\t", "\\t")
+                + '"';
+        }
+        return value.toString();
+    }
+    
     @JavaScriptBody(args = { "object", "property" },
         body = "if (property === null) return object;\n"
         + "var p = object[property]; return p ? p : null;"
@@ -57,4 +73,78 @@ public final class ConvertTypes {
     private static Object getProperty(Object object, String property) {
         return null;
     }
+    
+    public static String createJSONP(Object[] jsonResult, Runnable whenDone) {
+        int h = whenDone.hashCode();
+        String name;
+        for (;;) {
+            name = "jsonp" + Integer.toHexString(h);
+            if (defineIfUnused(name, jsonResult, whenDone)) {
+                return name;
+            }
+            h++;
+        }
+    }
+
+    @JavaScriptBody(args = { "name", "arr", "run" }, body = 
+        "if (window[name]) return false;\n "
+      + "window[name] = function(data) {\n "
+      + "  arr[0] = data;\n"
+      + "  run.run__V();\n"
+      + "  delete window[name];\n"
+      + "};"
+      + "return true;\n"
+    )
+    private static boolean defineIfUnused(String name, Object[] arr, Runnable run) {
+        return true;
+    }
+    
+    @JavaScriptBody(args = { "url", "arr", "callback" }, body = ""
+        + "var request = new XMLHttpRequest();\n"
+        + "request.open('GET', url, true);\n"
+        + "request.setRequestHeader('Content-Type', 'application/json; charset=utf-8');\n"
+        + "request.onreadystatechange = function() {\n"
+        + "  if (this.readyState!==4) return;\n"
+        + "  try {\n"
+        + "    arr[0] = eval('(' + this.response + ')');\n"
+        + "  } catch (error) {;\n"
+        + "    throw 'Cannot parse' + error + ':' + this.response;\n"
+        + "  };\n"
+        + "  callback.run__V();\n"
+        + "};"
+        + "request.send();"
+    )
+    private static void loadJSON(
+        String url, Object[] jsonResult, Runnable whenDone
+    ) {
+    }
+    
+    public static void loadJSON(
+        String url, Object[] jsonResult, Runnable whenDone, String jsonp
+    ) {
+        if (jsonp == null) {
+            loadJSON(url, jsonResult, whenDone);
+        } else {
+            loadJSONP(url, jsonp);
+        }
+    }
+    
+    @JavaScriptBody(args = { "url", "jsonp" }, body = 
+        "var scrpt = window.document.createElement('script');\n "
+        + "scrpt.setAttribute('src', url);\n "
+        + "scrpt.setAttribute('id', jsonp);\n "
+        + "scrpt.setAttribute('type', 'text/javascript');\n "
+        + "var body = document.getElementsByTagName('body')[0];\n "
+        + "body.appendChild(scrpt);\n"
+    )
+    private static void loadJSONP(String url, String jsonp) {
+        
+    }
+    
+    public static void extractJSON(Object jsonObject, String[] props, Object[] values) {
+        for (int i = 0; i < props.length; i++) {
+            values[i] = getProperty(jsonObject, props[i]);
+        }
+    }
+    
 }
