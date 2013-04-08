@@ -38,7 +38,10 @@ public final class KOList<T> extends ArrayList<T> {
     }
     
     public void assign(Knockout model) {
-        this.model = model;
+        if (this.model != model) {
+            this.model = model;
+            notifyChange();
+        }
     }
     
     public KOList<T> onChange(Runnable r) {
@@ -156,7 +159,9 @@ public final class KOList<T> extends ArrayList<T> {
 
     @Override
     public KOList clone() {
-        return (KOList)super.clone();
+        KOList ko = (KOList)super.clone();
+        ko.model = null;
+        return ko;
     }
     
 }

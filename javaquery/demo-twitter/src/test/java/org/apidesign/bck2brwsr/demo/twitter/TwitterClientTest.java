@@ -46,7 +46,7 @@ public class TwitterClientTest {
         assertFalse(model.isUserNameToAddIsValid(), "Can't add Joe for the 2nd time");
         assertEquals(t.getUserNames().size(), 0, "Original tweeters list remains empty");
         
-        Tweeters mod = model.getModifiedList();
+        Tweeters mod = model.getActiveTweeters();
         assertNotNull(mod, "Modified list is not filled in");
         assertTrue(model.isHasUnsavedChanges(), "We have modifications");
         assertEquals(mod.getUserNames().size(), 1, "One element in the list");
@@ -56,7 +56,6 @@ public class TwitterClientTest {
         
         TwitterClient.saveChanges(model);
         assertFalse(model.isHasUnsavedChanges(), "Does not have anything to save");
-        assertNull(model.getModifiedList(), "No list modified");
         
         assertSame(model.getActiveTweeters(), mod, "Still editing the old modified one");
         

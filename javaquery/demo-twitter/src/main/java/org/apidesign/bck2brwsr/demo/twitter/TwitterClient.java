@@ -31,7 +31,7 @@ import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
 @Page(xhtml="index.html", className="TwitterModel", properties={
     @Property(name="savedLists", type=TwitterClient.Twttrs.class, array = true),
     @Property(name="activeTweetersName", type=String.class),
-    @Property(name="modifiedList", type=TwitterClient.Twttrs.class),
+    @Property(name="activeTweeters", type=TwitterClient.Twttrs.class),
     @Property(name="userNameToAdd", type=String.class),
     @Property(name="currentTweets", type=TwitterClient.Twt.class, array = true)
 })
@@ -63,26 +63,27 @@ public class TwitterClient {
         page.getCurrentTweets().addAll(q.getResults());
     }
     
+    @OnPropertyChange("activeTweetersName")
+    static void changeTweetersList(TwitterModel model) {
+        Tweeters people = findByName(model.getSavedLists(), model.getActiveTweetersName());        
+        model.setActiveTweeters(people.clone());
+    }
+    
     @OnPropertyChange("activeTweeters")
     static void refreshTweets(TwitterModel model) {
         Tweeters people = model.getActiveTweeters();
-        StringBuilder sb = new StringBuilder();
-        sb.append("rpp=25&q=");
-        String sep = "";
-        for (String p : people.getUserNames()) {
-            sb.append(sep);
-            sb.append("from:");
-            sb.append(p);
-            sep = " OR ";
+        if (people != null) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("rpp=25&q=");
+            String sep = "";
+            for (String p : people.getUserNames()) {
+                sb.append(sep);
+                sb.append("from:");
+                sb.append(p);
+                sep = " OR ";
+            }
+            model.queryTweets("http://search.twitter.com", sb.toString());
         }
-        model.queryTweets("http://search.twitter.com", sb.toString());
-    }
-    
-    private static Tweeters tweeters(String listName, String... userNames) {
-        Tweeters t = new Tweeters();
-        t.setName(listName);
-        t.getUserNames().addAll(Arrays.asList(userNames));
-        return t;
     }
     
     static {
@@ -100,31 +101,21 @@ public class TwitterClient {
     }
     
     @ComputedProperty
-    static Tweeters activeTweeters(String activeTweetersName, List<Tweeters> savedLists, Tweeters modifiedList) {
-        if (modifiedList != null && modifiedList.getName() != null) {
-            if (modifiedList.getName().equals(activeTweetersName)) {
-                return modifiedList;
-            }
+    static boolean hasUnsavedChanges(Tweeters activeTweeters, List<Tweeters> savedLists, String activeTweetersName) {
+        Tweeters tw = findByName(savedLists, activeTweetersName);
+        if (activeTweeters == null) {
+            return false;
         }
-        return findByName(savedLists, activeTweetersName);
-    }
-    
-    @OnPropertyChange("activeTweetersName")
-    static void clearModifiedList(TwitterModel m) {
-        m.setModifiedList(null);
+        return !tw.equals(activeTweeters);
     }
     
     @ComputedProperty
-    static boolean hasUnsavedChanges(Tweeters modifiedList) {
-        return modifiedList != null;
-    }
-    
-    @ComputedProperty
-    static boolean userNameToAddIsValid(String userNameToAdd, String activeTweetersName, List<Tweeters> savedLists, Tweeters modifiedList) {
-        Tweeters editingList = activeTweeters(activeTweetersName, savedLists, modifiedList);
-        return editingList != null && userNameToAdd != null && 
+    static boolean userNameToAddIsValid(
+        String userNameToAdd, String activeTweetersName, List<Tweeters> savedLists, Tweeters activeTweeters
+    ) {
+        return activeTweeters != null && userNameToAdd != null && 
             userNameToAdd.matches("[a-zA-Z0-9_]{1,15}") &&
-            !editingList.getUserNames().contains(userNameToAdd);
+            !activeTweeters.getUserNames().contains(userNameToAdd);
     }
     
     @OnFunction
@@ -143,33 +134,37 @@ public class TwitterClient {
     static void saveChanges(TwitterModel model) {
         Tweeters t = findByName(model.getSavedLists(), model.getActiveTweetersName());
         int indx = model.getSavedLists().indexOf(t);
-        assert indx != -1;
-        model.getSavedLists().set(indx, model.getModifiedList());
-        model.setModifiedList(null);
+        if (indx != -1) {
+            model.getSavedLists().set(indx, model.getActiveTweeters());
+        } else {
+            model.getSavedLists().add(model.getActiveTweeters());
+        }
     }
     
     @OnFunction
     static void addUser(TwitterModel model) {
         String n = model.getUserNameToAdd();
-        findModifiedList(model).getUserNames().add(n);
+        model.getActiveTweeters().getUserNames().add(n);
     }
     @OnFunction
     static void removeUser(String data, TwitterModel model) {
-        findModifiedList(model).getUserNames().remove(data);
+        model.getActiveTweeters().getUserNames().remove(data);
     }
     
-    private static Tweeters findModifiedList(TwitterModel model) {
-        if (model.getModifiedList() == null || model.getModifiedList().getName() == null) {
-            model.setModifiedList(model.getActiveTweeters().clone());
-        }
-        return model.getModifiedList();
-    }
     private static Tweeters findByName(List<Tweeters> list, String name) {
         for (Tweeters l : list) {
             if (l.getName() != null && l.getName().equals(name)) {
                 return l;
             }
         }
-        return list.isEmpty() ? null : list.get(0);
+        return list.isEmpty() ? new Tweeters() : list.get(0);
     }
+    
+    private static Tweeters tweeters(String listName, String... userNames) {
+        Tweeters t = new Tweeters();
+        t.setName(listName);
+        t.getUserNames().addAll(Arrays.asList(userNames));
+        return t;
+    }
+    
 }

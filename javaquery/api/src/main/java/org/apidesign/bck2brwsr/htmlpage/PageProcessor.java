@@ -1136,8 +1136,10 @@ public final class PageProcessor extends AbstractProcessor {
                     w.write("    ret.prop_" + p.name() + " = prop_" + p.name() + ";\n");
                     continue;
                 }
+                w.write("    ret.prop_" + p.name() + " = prop_" + p.name() + ".clone();\n");
+            } else {
+                w.write("    ret.prop_" + p.name() + " = prop_" + p.name() + ".clone();\n");
             }
-            w.write("    ret.prop_" + p.name() + " = prop_" + p.name() + ".clone();\n");
         }
         
         w.write("    return ret;\n");
