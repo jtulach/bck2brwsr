@@ -44,6 +44,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <bck2brwsr.obfuscationlevel>FULL</bck2brwsr.obfuscationlevel>
   </properties>
   <build>
       <plugins>
@@ -55,11 +56,14 @@
                     <execution>
                         <goals>
                             <goal>brwsr</goal>
+                            <goal>j2js</goal>
                         </goals>
                     </execution>
                 </executions>
                 <configuration>
                     <startpage>org/apidesign/bck2brwsr/demo/twitter/index.html</startpage>
+                    <javascript>${project.build.directory}/bck2brwsr.js</javascript>
+                    <obfuscation>${bck2brwsr.obfuscationlevel}</obfuscation>
                 </configuration>
             </plugin>
          <plugin>
@@ -122,14 +126,6 @@
       <artifactId>testng</artifactId>
       <version>6.5.2</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apidesign.bck2brwsr</groupId>
-      <artifactId>vm4brwsr</artifactId>
-      <classifier>js</classifier>
-      <type>zip</type>
-      <version>0.6-SNAPSHOT</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
