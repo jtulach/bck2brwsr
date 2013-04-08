@@ -47,7 +47,7 @@ public class TwitterClient {
         @Property(name = "from_user_id", type = int.class),
         @Property(name = "profile_image_url", type = String.class),
         @Property(name = "text", type = String.class),
-        
+        @Property(name = "created_at", type = String.class),
     })
     static final class Twt {
     }

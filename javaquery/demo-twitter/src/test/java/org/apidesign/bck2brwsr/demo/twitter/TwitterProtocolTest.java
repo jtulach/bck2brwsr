@@ -82,6 +82,9 @@ public class TwitterProtocolTest {
         }
 
         assert 4 == page.getCurrentTweets().size() : "Four tweets: " + page.getCurrentTweets();
+        
+        String firstDate = page.getCurrentTweets().get(0).getCreated_at();
+        assert "Fri, 05 Apr 2013 06:10:01 +0000".equals(firstDate) : "Date is OK: " + firstDate;
     }
     
     @Factory public static Object[] create() {
