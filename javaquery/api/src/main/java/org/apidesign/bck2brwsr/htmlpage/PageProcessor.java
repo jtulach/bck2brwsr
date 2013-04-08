@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +61,7 @@ import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
 import org.apidesign.bck2brwsr.htmlpage.api.Model;
 import org.apidesign.bck2brwsr.htmlpage.api.On;
 import org.apidesign.bck2brwsr.htmlpage.api.OnFunction;
+import org.apidesign.bck2brwsr.htmlpage.api.OnPropertyChange;
 import org.apidesign.bck2brwsr.htmlpage.api.OnReceive;
 import org.apidesign.bck2brwsr.htmlpage.api.Page;
 import org.apidesign.bck2brwsr.htmlpage.api.Property;
@@ -76,6 +78,7 @@ import org.openide.util.lookup.ServiceProvider;
     "org.apidesign.bck2brwsr.htmlpage.api.Page",
     "org.apidesign.bck2brwsr.htmlpage.api.OnFunction",
     "org.apidesign.bck2brwsr.htmlpage.api.OnReceive",
+    "org.apidesign.bck2brwsr.htmlpage.api.OnPropertyChange",
     "org.apidesign.bck2brwsr.htmlpage.api.On"
 })
 public final class PageProcessor extends AbstractProcessor {
@@ -128,10 +131,14 @@ public final class PageProcessor extends AbstractProcessor {
             List<String> propsGetSet = new ArrayList<>();
             List<String> functions = new ArrayList<>();
             Map<String, Collection<String>> propsDeps = new HashMap<>();
+            Map<String, Collection<String>> functionDeps = new HashMap<>();
             if (!generateComputedProperties(body, m.properties(), e.getEnclosedElements(), propsGetSet, propsDeps)) {
                 ok = false;
             }
-            if (!generateProperties(e, body, m.properties(), propsGetSet, propsDeps)) {
+            if (!generateOnChange(e, propsDeps, m.properties(), className, functionDeps)) {
+                ok = false;
+            }
+            if (!generateProperties(e, body, m.properties(), propsGetSet, propsDeps, functionDeps)) {
                 ok = false;
             }
             if (!generateFunctions(e, body, className, e.getEnclosedElements(), functions)) {
@@ -265,10 +272,14 @@ public final class PageProcessor extends AbstractProcessor {
             List<String> propsGetSet = new ArrayList<>();
             List<String> functions = new ArrayList<>();
             Map<String, Collection<String>> propsDeps = new HashMap<>();
+            Map<String, Collection<String>> functionDeps = new HashMap<>();
             if (!generateComputedProperties(body, p.properties(), e.getEnclosedElements(), propsGetSet, propsDeps)) {
                 ok = false;
             }
-            if (!generateProperties(e, body, p.properties(), propsGetSet, propsDeps)) {
+            if (!generateOnChange(e, propsDeps, p.properties(), className, functionDeps)) {
+                ok = false;
+            }
+            if (!generateProperties(e, body, p.properties(), propsGetSet, propsDeps, functionDeps)) {
                 ok = false;
             }
             if (!generateFunctions(e, body, className, e.getEnclosedElements(), functions)) {
@@ -461,7 +472,9 @@ public final class PageProcessor extends AbstractProcessor {
     private boolean generateProperties(
         Element where,
         Writer w, Property[] properties,
-        Collection<String> props, Map<String,Collection<String>> deps
+        Collection<String> props, 
+        Map<String,Collection<String>> deps,
+        Map<String,Collection<String>> functionDeps
     ) throws IOException {
         boolean ok = true;
         for (Property p : properties) {
@@ -498,13 +511,19 @@ public final class PageProcessor extends AbstractProcessor {
                 w.write("  prop_" + p.name() + " = v;\n");
                 w.write("  if (ko != null) {\n");
                 w.write("    ko.valueHasMutated(\"" + p.name() + "\");\n");
-                final Collection<String> dependants = deps.get(p.name());
+                Collection<String> dependants = deps.get(p.name());
                 if (dependants != null) {
                     for (String depProp : dependants) {
                         w.write("    ko.valueHasMutated(\"" + depProp + "\");\n");
                     }
                 }
                 w.write("  }\n");
+                dependants = functionDeps.get(p.name());
+                if (dependants != null) {
+                    for (String call : dependants) {
+                        w.append(call);
+                    }
+                }
                 w.write("}\n");
             }
             
@@ -744,6 +763,68 @@ public final class PageProcessor extends AbstractProcessor {
         return true;
     }
 
+    private boolean generateOnChange(Element clazz, Map<String,Collection<String>> propDeps,
+        Property[] properties, String className, 
+        Map<String, Collection<String>> functionDeps
+    ) {
+        for (Element m : clazz.getEnclosedElements()) {
+            if (m.getKind() != ElementKind.METHOD) {
+                continue;
+            }
+            ExecutableElement e = (ExecutableElement) m;
+            OnPropertyChange onPC = e.getAnnotation(OnPropertyChange.class);
+            if (onPC == null) {
+                continue;
+            }
+            for (String pn : onPC.value()) {
+                if (findProperty(properties, pn) == null && findDerivedFrom(propDeps, pn).isEmpty()) {
+                    err().printMessage(Diagnostic.Kind.ERROR, "No property named '" + pn + "' in the model");
+                    return false;
+                }
+            }
+            if (!e.getModifiers().contains(Modifier.STATIC)) {
+                err().printMessage(
+                    Diagnostic.Kind.ERROR, "@OnPropertyChange method needs to be static", e);
+                return false;
+            }
+            if (e.getModifiers().contains(Modifier.PRIVATE)) {
+                err().printMessage(
+                    Diagnostic.Kind.ERROR, "@OnPropertyChange method cannot be private", e);
+                return false;
+            }
+            if (e.getReturnType().getKind() != TypeKind.VOID) {
+                err().printMessage(
+                    Diagnostic.Kind.ERROR, "@OnPropertyChange method should return void", e);
+                return false;
+            }
+            String n = e.getSimpleName().toString();
+            
+            
+            for (String pn : onPC.value()) {
+                StringBuilder call = new StringBuilder();
+                call.append("  ").append(clazz.getSimpleName()).append(".").append(n).append("(");
+                call.append(wrapPropName(e, className, "name", pn));
+                call.append(");\n");
+                
+                Collection<String> change = functionDeps.get(pn);
+                if (change == null) {
+                    change = new ArrayList<>();
+                    functionDeps.put(pn, change);
+                }
+                change.add(call.toString());
+                for (String dpn : findDerivedFrom(propDeps, pn)) {
+                    change = functionDeps.get(dpn);
+                    if (change == null) {
+                        change = new ArrayList<>();
+                        functionDeps.put(dpn, change);
+                    }
+                    change.add(call.toString());
+                }
+            }
+        }
+        return true;
+    }
+    
     private boolean generateReceive(
         Element clazz, StringWriter body, String className, 
         List<? extends Element> enclosedElements, List<String> functions
@@ -898,6 +979,14 @@ public final class PageProcessor extends AbstractProcessor {
                     params.append(dataName);
                     params.append(", null");
                 } else {
+                    if (evName == null) {
+                        final StringBuilder sb = new StringBuilder();
+                        sb.append("Unexpected string parameter name.");
+                        if (dataName != null) {
+                            sb.append(" Try \"").append(dataName).append("\"");
+                        }
+                        err().printMessage(Diagnostic.Kind.ERROR, sb.toString(), ee);
+                    }
                     params.append(evName);
                     params.append(", \"");
                     params.append(ve.getSimpleName().toString());
@@ -919,6 +1008,42 @@ public final class PageProcessor extends AbstractProcessor {
                 "@On method can only accept String named 'id' or " + className + " arguments",
                 ee
             );
+        }
+        return params;
+    }
+    
+    
+    private CharSequence wrapPropName(
+        ExecutableElement ee, String className, String propName, String propValue
+    ) {
+        TypeMirror stringType = processingEnv.getElementUtils().getTypeElement("java.lang.String").asType();
+        StringBuilder params = new StringBuilder();
+        boolean first = true;
+        for (VariableElement ve : ee.getParameters()) {
+            if (!first) {
+                params.append(", ");
+            }
+            first = false;
+            if (ve.asType() == stringType) {
+                if (propName != null && ve.getSimpleName().contentEquals(propName)) {
+                    params.append('"').append(propValue).append('"');
+                } else {
+                    err().printMessage(Diagnostic.Kind.ERROR, "Unexpected string parameter name. Try \"" + propName + "\".");
+                }
+                continue;
+            }
+            String rn = fqn(ve.asType(), ee);
+            int last = rn.lastIndexOf('.');
+            if (last >= 0) {
+                rn = rn.substring(last + 1);
+            }
+            if (rn.equals(className)) {
+                params.append(className).append(".this");
+                continue;
+            }
+            err().printMessage(Diagnostic.Kind.ERROR,
+                "@OnPropertyChange method can only accept String or " + className + " arguments",
+                ee);
         }
         return params;
     }
@@ -1077,5 +1202,15 @@ public final class PageProcessor extends AbstractProcessor {
             "short".equals(type) ||
             "byte".equals(type) ||
             "float".equals(type);
+    }
+
+    private static Collection<String> findDerivedFrom(Map<String, Collection<String>> propsDeps, String derivedProp) {
+        Set<String> names = new HashSet<>();
+        for (Map.Entry<String, Collection<String>> e : propsDeps.entrySet()) {
+            if (e.getValue().contains(derivedProp)) {
+                names.add(e.getKey());
+            }
+        }
+        return names;
     }
 }

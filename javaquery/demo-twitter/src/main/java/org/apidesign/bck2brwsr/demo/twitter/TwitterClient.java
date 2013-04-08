@@ -63,11 +63,11 @@ public class TwitterClient {
         page.getCurrentTweets().addAll(q.getResults());
     }
     
-    @OnFunction
+    @OnPropertyChange("activeTweeters")
     static void refreshTweets(TwitterModel model) {
         Tweeters people = model.getActiveTweeters();
         StringBuilder sb = new StringBuilder();
-        sb.append("http://search.twitter.com/search.json?callback=?&rpp=25&q=");
+        sb.append("http://search.twitter.com/search.json?rpp=25&q=");
         String sep = "";
         for (String p : people.getUserNames()) {
             sb.append(sep);

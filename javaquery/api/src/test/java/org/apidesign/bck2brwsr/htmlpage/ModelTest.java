@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.ListIterator;
 import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
 import org.apidesign.bck2brwsr.htmlpage.api.OnFunction;
+import org.apidesign.bck2brwsr.htmlpage.api.OnPropertyChange;
 import org.apidesign.bck2brwsr.htmlpage.api.Page;
 import org.apidesign.bck2brwsr.htmlpage.api.Property;
 import static org.testng.Assert.*;
@@ -40,7 +41,8 @@ import org.testng.annotations.Test;
     @Property(name = "unrelated", type = long.class),
     @Property(name = "names", type = String.class, array = true),
     @Property(name = "values", type = int.class, array = true),
-    @Property(name = "people", type = PersonImpl.class, array = true)
+    @Property(name = "people", type = PersonImpl.class, array = true),
+    @Property(name = "changedProperty", type=String.class)
 })
 public class ModelTest {
     private Modelik model;
@@ -138,6 +140,9 @@ public class ModelTest {
         
         model.setValue(33);
         
+        // not interested in change of this property
+        my.mutated.remove("changedProperty");
+        
         assertEquals(my.mutated.size(), 2, "Two properties changed: " + my.mutated);
         assertTrue(my.mutated.contains("powerValue"), "Power value is in there: " + my.mutated);
         assertTrue(my.mutated.contains("value"), "Simple value is in there: " + my.mutated);
@@ -145,7 +150,11 @@ public class ModelTest {
         my.mutated.clear();
         
         model.setUnrelated(44);
-        assertEquals(my.mutated.size(), 1, "One property changed");
+        
+        
+        // not interested in change of this property
+        my.mutated.remove("changedProperty");
+        assertEquals(my.mutated.size(), 1, "One property changed: " + my.mutated);
         assertTrue(my.mutated.contains("unrelated"), "Its name is unrelated");
     }
     
@@ -176,6 +185,24 @@ public class ModelTest {
     @ComputedProperty
     static int powerValue(int value) {
         return value * value;
+    }
+    
+    @OnPropertyChange({ "powerValue", "unrelated" })
+    static void aPropertyChanged(Modelik m, String name) {
+        m.setChangedProperty(name);
+    }
+    
+    @Test public void changeAnything() {
+        model.setCount(44);
+        assertNull(model.getChangedProperty(), "No observed value change");
+    }
+    @Test public void changeValue() {
+        model.setValue(33);
+        assertEquals(model.getChangedProperty(), "powerValue", "power property changed");
+    }
+    @Test public void changeUnrelated() {
+        model.setUnrelated(333);
+        assertEquals(model.getChangedProperty(), "unrelated", "unrelated changed");
     }
     
     @ComputedProperty

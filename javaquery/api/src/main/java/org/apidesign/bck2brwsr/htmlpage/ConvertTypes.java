@@ -89,9 +89,10 @@ public final class ConvertTypes {
         + "};"
         + "request.send();"
     )
-    public static native void loadJSON(
+    public static void loadJSON(
         String url, Object[] jsonResult, Runnable whenDone
-    );
+    ) {
+    }
     
     public static void extractJSON(Object jsonObject, String[] props, Object[] values) {
         for (int i = 0; i < props.length; i++) {
