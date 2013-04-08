@@ -17,6 +17,7 @@
  */
 package org.apidesign.bck2brwsr.demo.twitter;
 
+import java.util.List;
 import static org.testng.Assert.*;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -46,11 +47,10 @@ public class TwitterClientTest {
         assertFalse(model.isUserNameToAddIsValid(), "Can't add Joe for the 2nd time");
         assertEquals(t.getUserNames().size(), 0, "Original tweeters list remains empty");
         
-        Tweeters mod = model.getActiveTweeters();
-        assertNotNull(mod, "Modified list is not filled in");
+        List<String> mod = model.getActiveTweeters();
         assertTrue(model.isHasUnsavedChanges(), "We have modifications");
-        assertEquals(mod.getUserNames().size(), 1, "One element in the list");
-        assertEquals(mod.getUserNames().get(0), "Joe", "Its name is Joe");
+        assertEquals(mod.size(), 1, "One element in the list");
+        assertEquals(mod.get(0), "Joe", "Its name is Joe");
         
         assertSame(model.getActiveTweeters(), mod, "Editing list is the modified one");
         
@@ -58,8 +58,10 @@ public class TwitterClientTest {
         assertFalse(model.isHasUnsavedChanges(), "Does not have anything to save");
         
         assertSame(model.getActiveTweeters(), mod, "Still editing the old modified one");
-        
-        assertFalse(model.getSavedLists().contains(t), "No longer contains old list");
     }
     
+    @Test public void httpAtTheEnd() {
+        String res = TwitterClient.Twt.html("Ahoj http://kuk");
+        assertEquals(res, "Ahoj <a href='http://kuk'>http://kuk</a>");
+    }
 }

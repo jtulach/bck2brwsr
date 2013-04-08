@@ -44,7 +44,7 @@
         This code based on original <a href="http://knockoutjs.com/examples/twitter.html">knockout.js Twitter example</a> and
         uses almost unmodified HTML code. It just changes the model. It 
         is written in Java language and it is executed using <a href="http://bck2brwsr.apidesign.org">Bck2Brwsr</a>
-        virtual machine. The Java source code has about 170 lines and is available 
+        virtual machine. The Java source code has about 190 lines and is available 
         <a href="http://source.apidesign.org/hg/bck2brwsr/file/3bd43aa6f08d/javaquery/demo-twitter/src/main/java/org/apidesign/bck2brwsr/demo/twitter/TwitterClient.java">here</a>
         - in fact it may even be more dense than the original JavaScript model.
         </p>
@@ -52,14 +52,14 @@
         <div class='liveExample'>
             <div class='configuration'>
                 <div class='listChooser'>
-                    <button data-bind='click: deleteList, enable: activeTweeters.name'>Delete</button>
+                    <button data-bind='click: deleteList, enable: activeTweetersName'>Delete</button>
                     <button data-bind='click: saveChanges, enable: hasUnsavedChanges'>Save</button> 
                     <select data-bind='options: savedLists, optionsValue: "name", value: activeTweetersName'> </select>
                 </div>
 
-                <p>Currently viewing <span data-bind='text: activeTweeters().userNames().length'> </span> user(s):</p>
-                <div class='currentUsers' data-bind='with: activeTweeters'>
-                    <ul data-bind='foreach: userNames'>
+                <p>Currently viewing <span data-bind='text: activeTweetersCount'> </span> user(s):</p>
+                <div class='currentUsers' >
+                    <ul data-bind='foreach: activeTweeters'>
                         <li>
                             <button data-bind='click: $root.removeUser'>Remove</button>
                             <div data-bind='text: $data'> </div>
@@ -79,8 +79,8 @@
                     <tr>
                         <td><img data-bind='attr: { src: profile_image_url }' /></td>
                         <td>
-                            <a href='http://twitter.com/${ from_user }' class='twitterUser' data-bind='attr: { href: "http://twitter.com/" + from_user }, text: from_user'> </a>
-                            <span data-bind='text: text'> </span>
+                            <a class='twitterUser' data-bind='attr: { href: userUrl }, text: from_user'> </a>
+                            <span data-bind='html: html'> </span>
                             <div class='tweetInfo' data-bind='text: created_at'> </div>
                         </td>
                     </tr>
