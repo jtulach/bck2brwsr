@@ -104,11 +104,14 @@ public class TwitterClient {
         if (modifiedList != null && modifiedList.getName() != null) {
             if (modifiedList.getName().equals(activeTweetersName)) {
                 return modifiedList;
-            } else {
-                modifiedList.setName(null);
             }
         }
         return findByName(savedLists, activeTweetersName);
+    }
+    
+    @OnPropertyChange("activeTweetersName")
+    static void clearModifiedList(TwitterModel m) {
+        m.setModifiedList(null);
     }
     
     @ComputedProperty

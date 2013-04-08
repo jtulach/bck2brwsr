@@ -191,6 +191,11 @@ public class ModelTest {
     static void aPropertyChanged(Modelik m, String name) {
         m.setChangedProperty(name);
     }
+
+    @OnPropertyChange({ "values" })
+    static void anArrayPropertyChanged(String name, Modelik m) {
+        m.setChangedProperty(name);
+    }
     
     @Test public void changeAnything() {
         model.setCount(44);
@@ -203,6 +208,11 @@ public class ModelTest {
     @Test public void changeUnrelated() {
         model.setUnrelated(333);
         assertEquals(model.getChangedProperty(), "unrelated", "unrelated changed");
+    }
+
+    @Test public void changeInArray() {
+        model.getValues().add(10);
+        assertEquals(model.getChangedProperty(), "values", "Something added into the array");
     }
     
     @ComputedProperty

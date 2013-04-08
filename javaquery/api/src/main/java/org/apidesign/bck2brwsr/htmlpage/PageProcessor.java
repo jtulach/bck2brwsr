@@ -485,7 +485,7 @@ public final class PageProcessor extends AbstractProcessor {
             if (p.array()) {
                 w.write("private KOList<" + tn + "> prop_" + p.name() + " = new KOList<" + tn + ">(\""
                     + p.name() + "\"");
-                final Collection<String> dependants = deps.get(p.name());
+                Collection<String> dependants = deps.get(p.name());
                 if (dependants != null) {
                     for (String depProp : dependants) {
                         w.write(", ");
@@ -494,7 +494,18 @@ public final class PageProcessor extends AbstractProcessor {
                         w.write('\"');
                     }
                 }
-                w.write(");\n");
+                w.write(")");
+                
+                dependants = functionDeps.get(p.name());
+                if (dependants != null) {
+                    w.write(".onChange(new Runnable() { public void run() {\n");
+                    for (String call : dependants) {
+                        w.append(call);
+                    }
+                    w.write("}})");
+                }
+                w.write(";\n");
+                
                 w.write("public java.util.List<" + tn + "> " + gs[0] + "() {\n");
                 w.write("  if (locked) throw new IllegalStateException();\n");
                 w.write("  prop_" + p.name() + ".assign(ko);\n");

@@ -30,6 +30,7 @@ public final class KOList<T> extends ArrayList<T> {
     private final String name;
     private final String[] deps;
     private Knockout model;
+    private Runnable onchange;
 
     public KOList(String name, String... deps) {
         this.name = name;
@@ -38,6 +39,14 @@ public final class KOList<T> extends ArrayList<T> {
     
     public void assign(Knockout model) {
         this.model = model;
+    }
+    
+    public KOList<T> onChange(Runnable r) {
+        if (this.onchange != null) {
+            throw new IllegalStateException();
+        }
+        this.onchange = r;
+        return this;
     }
 
     @Override
@@ -133,12 +142,15 @@ public final class KOList<T> extends ArrayList<T> {
 
     private void notifyChange() {
         Knockout m = model;
-        if (m == null) {
-            return;
+        if (m != null) {
+            m.valueHasMutated(name);
+            for (String dependant : deps) {
+                m.valueHasMutated(dependant);
+            }
         }
-        m.valueHasMutated(name);
-        for (String dependant : deps) {
-            m.valueHasMutated(dependant);
+        Runnable r = onchange;
+        if (r != null) {
+            r.run();
         }
     }
 
