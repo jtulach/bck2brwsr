@@ -73,7 +73,32 @@ public final class ConvertTypes {
     private static Object getProperty(Object object, String property) {
         return null;
     }
+    
+    public static String createJSONP(Object[] jsonResult, Runnable whenDone) {
+        int h = whenDone.hashCode();
+        String name;
+        for (;;) {
+            name = "jsonp" + Integer.toHexString(h);
+            if (defineIfUnused(name, jsonResult, whenDone)) {
+                return name;
+            }
+            h++;
+        }
+    }
 
+    @JavaScriptBody(args = { "name", "arr", "run" }, body = 
+        "if (window[name]) return false;\n "
+      + "window[name] = function(data) {\n "
+      + "  arr[0] = data;\n"
+      + "  run.run__V();\n"
+      + "  delete window[name];\n"
+      + "};"
+      + "return true;\n"
+    )
+    private static boolean defineIfUnused(String name, Object[] arr, Runnable run) {
+        return true;
+    }
+    
     @JavaScriptBody(args = { "url", "arr", "callback" }, body = ""
         + "var request = new XMLHttpRequest();\n"
         + "request.open('GET', url, true);\n"
@@ -89,9 +114,31 @@ public final class ConvertTypes {
         + "};"
         + "request.send();"
     )
-    public static void loadJSON(
+    private static void loadJSON(
         String url, Object[] jsonResult, Runnable whenDone
     ) {
+    }
+    
+    public static void loadJSON(
+        String url, Object[] jsonResult, Runnable whenDone, String jsonp
+    ) {
+        if (jsonp == null) {
+            loadJSON(url, jsonResult, whenDone);
+        } else {
+            loadJSONP(url, jsonp);
+        }
+    }
+    
+    @JavaScriptBody(args = { "url", "jsonp" }, body = 
+        "var scrpt = window.document.createElement('script');\n "
+        + "scrpt.setAttribute('src', url);\n "
+        + "scrpt.setAttribute('id', jsonp);\n "
+        + "scrpt.setAttribute('type', 'text/javascript');\n "
+        + "var body = document.getElementsByTagName('body')[0];\n "
+        + "body.appendChild(scrpt);\n"
+    )
+    private static void loadJSONP(String url, String jsonp) {
+        
     }
     
     public static void extractJSON(Object jsonObject, String[] props, Object[] values) {

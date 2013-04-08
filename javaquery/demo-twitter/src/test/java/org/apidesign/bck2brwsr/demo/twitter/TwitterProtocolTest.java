@@ -29,9 +29,10 @@ import org.testng.annotations.Factory;
 public class TwitterProtocolTest {
     private TwitterModel page;
     @Http(@Http.Resource(
-        path = "/test.tweet",
+        path = "/search.json",
         mimeType = "application/json",
-        content = "{\"completed_in\":0.04,\"max_id\":320055706885689344,\"max_id_str\""
+        parameters = {"callback"},
+        content = "$0({\"completed_in\":0.04,\"max_id\":320055706885689344,\"max_id_str\""
         + ":\"320055706885689344\",\"page\":1,\"query\":\"from%3AJaroslavTulach\",\"refresh_url\":"
         + "\"?since_id=320055706885689344&q=from%3AJaroslavTulach\","
         + "\"results\":[{\"created_at\":\"Fri, 05 Apr 2013 06:10:01 +0000\","
@@ -68,13 +69,13 @@ public class TwitterProtocolTest {
         + "\"profile_image_url_https\":\"https:\\/\\/si0.twimg.com\\/profile_images\\/1656828312\\/jst_normal.gif\","
         + "\"source\":\"&lt;a href=&quot;http:\\/\\/twitter.com\\/&quot;&gt;web&lt;\\/a&gt;\",\"text\":"
         + "\"Math proofs without words. Ingenious: http:\\/\\/t.co\\/sz7yVbfpGw\"}],\"results_per_page\":100,"
-        + "\"since_id\":0,\"since_id_str\":\"0\"}"
+        + "\"since_id\":0,\"since_id_str\":\"0\"})"
     ))
     @BrwsrTest public void readFromTwttr() throws InterruptedException {
         if (page == null) {
             page = new TwitterModel();
             page.applyBindings();
-            page.queryTweets("/test.tweet");
+            page.queryTweets("", "q=xyz");
         }
 
         if (page.getCurrentTweets().isEmpty()) {

@@ -65,10 +65,10 @@ public final class Bck2BrwsrCase implements ITest {
                 for (Http.Resource r : http) {
                     if (!r.content().isEmpty()) {
                         InputStream is = new ByteArrayInputStream(r.content().getBytes("UTF-8"));
-                        c.addHttpResource(r.path(), r.mimeType(), is);
+                        c.addHttpResource(r.path(), r.mimeType(), r.parameters(), is);
                     } else {
                         InputStream is = m.getDeclaringClass().getResourceAsStream(r.resource());
-                        c.addHttpResource(r.path(), r.mimeType(), is);
+                        c.addHttpResource(r.path(), r.mimeType(), r.parameters(), is);
                     }
                 }
             }

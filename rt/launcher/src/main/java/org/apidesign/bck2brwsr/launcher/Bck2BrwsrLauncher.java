@@ -178,7 +178,15 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
                         LOG.log(Level.INFO, "Serving HttpResource for {0}", request.getRequestURI());
                         response.setContentType(r.httpType);
                         r.httpContent.reset();
-                        copyStream(r.httpContent, response.getOutputStream(), null);
+                        String[] params = null;
+                        if (r.parameters.length != 0) {
+                            params = new String[r.parameters.length];
+                            for (int i = 0; i < r.parameters.length; i++) {
+                                params[i] = request.getParameter(r.parameters[i]);
+                            }
+                        }
+                        
+                        copyStream(r.httpContent, response.getOutputStream(), null, params);
                     }
                 }
             }
@@ -316,7 +324,7 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
             }
             if (ch == '$' && params.length > 0) {
                 int cnt = is.read() - '0';
-                if (cnt == 'U' - '0') {
+                if (baseURL != null && cnt == 'U' - '0') {
                     os.write(baseURL.getBytes("UTF-8"));
                 } else {
                     if (cnt >= 0 && cnt < params.length) {

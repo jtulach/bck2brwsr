@@ -57,7 +57,7 @@ public class TwitterClient {
     public static final class TwttrQr {
     }
     
-    @OnReceive(url="{url}")
+    @OnReceive(url="{root}/search.json?{query}&callback={me}", jsonp="me")
     static void queryTweets(TwitterModel page, TwitterQuery q) {
         page.getCurrentTweets().clear();
         page.getCurrentTweets().addAll(q.getResults());
@@ -67,7 +67,7 @@ public class TwitterClient {
     static void refreshTweets(TwitterModel model) {
         Tweeters people = model.getActiveTweeters();
         StringBuilder sb = new StringBuilder();
-        sb.append("http://search.twitter.com/search.json?rpp=25&q=");
+        sb.append("rpp=25&q=");
         String sep = "";
         for (String p : people.getUserNames()) {
             sb.append(sep);
@@ -75,7 +75,7 @@ public class TwitterClient {
             sb.append(p);
             sep = " OR ";
         }
-        model.queryTweets(sb.toString());
+        model.queryTweets("http://search.twitter.com", sb.toString());
     }
     
     private static Tweeters tweeters(String listName, String... userNames) {

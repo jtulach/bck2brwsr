@@ -171,6 +171,34 @@ public class JSONTest {
         assert "Sitar".equals(p.getFirstName()) : "Expecting Sitar: " + p.getFirstName();
       //  assert Sex.MALE.equals(p.getSex()) : "Expecting MALE: " + p.getSex();
     }
+    
+    @OnReceive(url="/{url}?callme={me}", jsonp = "me")
+    static void fetchViaJSONP(Person p, JSONik model) {
+        model.setFetched(p);
+    }
+    
+    @Http(@Http.Resource(
+        content = "$0({'firstName': 'Mitar', 'sex': 'MALE'})", 
+        path="/person.json", 
+        mimeType = "application/javascript",
+        parameters = { "callme" }
+    ))
+    @BrwsrTest public void loadAndParseJSONP() throws InterruptedException {
+        if (js == null) {
+            js = new JSONik();
+            js.applyBindings();
+
+            js.fetchViaJSONP("person.json");
+        }
+    
+        Person p = js.getFetched();
+        if (p == null) {
+            throw new InterruptedException();
+        }
+        
+        assert "Mitar".equals(p.getFirstName()) : "Unexpected: " + p.getFirstName();
+      //  assert Sex.MALE.equals(p.getSex()) : "Expecting MALE: " + p.getSex();
+    }
 
     @Http(@Http.Resource(
         content = "{'firstName': 'Sitar', 'sex': 'MALE'}", 

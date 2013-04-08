@@ -53,5 +53,10 @@ public @interface Http {
         String resource() default "";
         /** mime type of the resource */
         String mimeType();
+        /** query parameters. Can be referenced from the {@link #content} as
+         * <code>$0</code>, <code>$1</code>, etc. The values will be extracted
+         * from URL parameters of the request.
+         */
+        String[] parameters() default {};
     }
 }

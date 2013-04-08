@@ -901,12 +901,25 @@ public final class PageProcessor extends AbstractProcessor {
             String n = e.getSimpleName().toString();
             body.append("public void ").append(n).append("(");
             StringBuilder assembleURL = new StringBuilder();
+            String jsonpVarName = null;
             {
                 String sep = "";
+                boolean skipJSONP = onR.jsonp().isEmpty();
                 for (String p : findParamNames(e, onR.url(), assembleURL)) {
+                    if (!skipJSONP && p.equals(onR.jsonp())) {
+                        skipJSONP = true;
+                        jsonpVarName = p;
+                        continue;
+                    }
                     body.append(sep);
                     body.append("String ").append(p);
                     sep = ", ";
+                }
+                if (!skipJSONP) {
+                    err().printMessage(Diagnostic.Kind.ERROR, 
+                        "Name of jsonp attribute ('" + onR.jsonp() + 
+                        "') is not used in url attribute '" + onR.url() + "'"
+                    );
                 }
             }
             body.append(") {\n");
@@ -944,9 +957,14 @@ public final class PageProcessor extends AbstractProcessor {
                 "    }\n" +
                 "  }\n"
             );
+            body.append("  ProcessResult pr = new ProcessResult();\n");
+            if (jsonpVarName != null) {
+                body.append("  String ").append(jsonpVarName).
+                    append(" = org.apidesign.bck2brwsr.htmlpage.ConvertTypes.createJSONP(result, pr);\n");
+            }
             body.append("  org.apidesign.bck2brwsr.htmlpage.ConvertTypes.loadJSON(\n      ");
             body.append(assembleURL);
-            body.append(", result, new ProcessResult()\n  );\n");
+            body.append(", result, pr, ").append(jsonpVarName).append("\n  );\n");
 //            body.append("  ").append(clazz.getSimpleName()).append(".").append(n).append("(");
 //            body.append(wrapParams(e, null, className, "ev", "data"));
 //            body.append(");\n");
