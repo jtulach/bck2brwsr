@@ -230,4 +230,7 @@ public class Classes {
         return Application.class.isAssignableFrom(MyApplication.class);
     }
     
+    public static String valueEnum(String v) {
+        return ClassesMarker.E.valueOf(v).toString();
+    }
 }

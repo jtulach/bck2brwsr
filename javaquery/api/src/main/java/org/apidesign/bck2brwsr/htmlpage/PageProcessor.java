@@ -193,17 +193,16 @@ public final class PageProcessor extends AbstractProcessor {
                     boolean[] isModel = { false };
                     boolean[] isEnum = { false };
                     String type = checkType(m.properties()[prop++], isModel, isEnum);
-                    if (isEnum[0]) {
-//                        w.append(type).append(".valueOf((String)");
-//                        close = true;
-                        w.append("    this.prop_").append(pn);
-                        w.append(" = null;\n");
-                    } else if (p.array()) {
+                    if (p.array()) {
                         w.append("if (ret[" + cnt + "] instanceof Object[]) {\n");
                         w.append("  for (Object e : ((Object[])ret[" + cnt + "])) {\n");
                         if (isModel[0]) {
                             w.append("    this.prop_").append(pn).append(".add(new ");
                             w.append(type).append("(e));\n");
+                        } else if (isEnum[0]) {
+                            w.append("    this.prop_").append(pn);
+                            w.append(".add(");
+                            w.append(type).append(".valueOf((String)e));\n");
                         } else {
                             if (isPrimitive(type)) {
                                 w.append("    this.prop_").append(pn).append(".add(((Number)e).");
@@ -216,7 +215,11 @@ public final class PageProcessor extends AbstractProcessor {
                         w.append("  }\n");
                         w.append("}\n");
                     } else {
-                        if (isPrimitive(type)) {
+                        if (isEnum[0]) {
+                            w.append("    this.prop_").append(pn);
+                            w.append(" = ");
+                            w.append(type).append(".valueOf((String)ret[" + cnt + "]);\n");
+                        } else if (isPrimitive(type)) {
                             w.append("    this.prop_").append(pn);
                             w.append(" = ((Number)").append("ret[" + cnt + "]).");
                             w.append(type).append("Value();\n");

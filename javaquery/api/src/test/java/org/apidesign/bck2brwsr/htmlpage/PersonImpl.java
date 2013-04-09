@@ -54,7 +54,9 @@ final class PersonImpl {
     @Model(className = "People", properties = {
         @Property(array = true, name = "info", type = PersonImpl.class),
         @Property(array = true, name = "nicknames", type = String.class),
-        @Property(array = true, name = "age", type = int.class),})
+        @Property(array = true, name = "age", type = int.class),
+        @Property(array = true, name = "sex", type = Sex.class)
+    })
     public class PeopleImpl {
     }
 }

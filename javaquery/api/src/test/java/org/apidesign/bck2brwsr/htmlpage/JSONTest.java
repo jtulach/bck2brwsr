@@ -17,9 +17,7 @@
  */
 package org.apidesign.bck2brwsr.htmlpage;
 
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 import org.apidesign.bck2brwsr.htmlpage.api.OnReceive;
 import org.apidesign.bck2brwsr.htmlpage.api.Page;
 import org.apidesign.bck2brwsr.htmlpage.api.Property;
@@ -39,7 +37,8 @@ import org.testng.annotations.Factory;
  */
 @Page(xhtml = "Empty.html", className = "JSONik", properties = {
     @Property(name = "fetched", type = PersonImpl.class),
-    @Property(name = "fetchedCount", type = int.class)
+    @Property(name = "fetchedCount", type = int.class),
+    @Property(name = "fetchedSex", type = Sex.class, array = true)
 })
 public class JSONTest {
     private JSONik js;
@@ -169,7 +168,7 @@ public class JSONTest {
         }
         
         assert "Sitar".equals(p.getFirstName()) : "Expecting Sitar: " + p.getFirstName();
-      //  assert Sex.MALE.equals(p.getSex()) : "Expecting MALE: " + p.getSex();
+        assert Sex.MALE.equals(p.getSex()) : "Expecting MALE: " + p.getSex();
     }
     
     @OnReceive(url="/{url}?callme={me}", jsonp = "me")
@@ -197,7 +196,7 @@ public class JSONTest {
         }
         
         assert "Mitar".equals(p.getFirstName()) : "Unexpected: " + p.getFirstName();
-      //  assert Sex.MALE.equals(p.getSex()) : "Expecting MALE: " + p.getSex();
+        assert Sex.MALE.equals(p.getSex()) : "Expecting MALE: " + p.getSex();
     }
 
     @Http(@Http.Resource(
@@ -220,7 +219,7 @@ public class JSONTest {
         
         assert p != null : "We should get our person back: " + p;
         assert "Sitar".equals(p.getFirstName()) : "Expecting Sitar: " + p.getFirstName();
-//        assert Sex.MALE.equals(p.getSex()) : "Expecting MALE: " + p.getSex();
+        assert Sex.MALE.equals(p.getSex()) : "Expecting MALE: " + p.getSex();
     }
     
     @Http(@Http.Resource(
@@ -243,7 +242,7 @@ public class JSONTest {
         
         assert p != null : "We should get our person back: " + p;
         assert "Gitar".equals(p.getFirstName()) : "Expecting Gitar: " + p.getFirstName();
-//        assert Sex.MALE.equals(p.getSex()) : "Expecting MALE: " + p.getSex();
+        assert Sex.FEMALE.equals(p.getSex()) : "Expecting FEMALE: " + p.getSex();
     }
     
     @Http(@Http.Resource(
@@ -269,7 +268,7 @@ public class JSONTest {
         
         assert p != null : "We should get our person back: " + p;
         assert "Gitar".equals(p.getFirstName()) : "Expecting Gitar: " + p.getFirstName();
-//        assert Sex.MALE.equals(p.getSex()) : "Expecting MALE: " + p.getSex();
+        assert Sex.FEMALE.equals(p.getSex()) : "Expecting FEMALE: " + p.getSex();
     }
     
     @Http(@Http.Resource(
@@ -290,6 +289,38 @@ public class JSONTest {
         }
 
         assert js.getFetchedCount() == 6 : "1 + 2 + 3 is " + js.getFetchedCount();
+    }
+    
+    @OnReceive(url="/{url}")
+    static void fetchPeopleSex(People p, JSONik model) {
+        model.setFetchedCount(1);
+        model.getFetchedSex().addAll(p.getSex());
+    }
+    
+    
+    @Http(@Http.Resource(
+        content = "{'sex':['FEMALE', 'MALE', 'MALE']}", 
+        path="/people.json", 
+        mimeType = "application/json"
+    ))
+    @BrwsrTest public void loadAndParseArrayOfEnums() throws InterruptedException {
+        if (js == null) {
+            js = new JSONik();
+            js.applyBindings();
+        
+            js.fetchPeopleSex("people.json");
+        }
+        
+        if (0 == js.getFetchedCount()) {
+            throw new InterruptedException();
+        }
+
+        assert js.getFetchedCount() == 1 : "Loaded";
+        
+        assert js.getFetchedSex().size() == 3 : "Three values " + js.getFetchedSex();
+        assert js.getFetchedSex().get(0) == Sex.FEMALE : "Female first " + js.getFetchedSex();
+        assert js.getFetchedSex().get(1) == Sex.MALE : "male 2nd " + js.getFetchedSex();
+        assert js.getFetchedSex().get(2) == Sex.MALE : "male 3rd " + js.getFetchedSex();
     }
     
     @Http(@Http.Resource(
@@ -315,7 +346,7 @@ public class JSONTest {
         assert js.getFetchedCount() == 2 : "We got two values: " + js.getFetchedCount();
         assert p != null : "We should get our person back: " + p;
         assert "Gitar".equals(p.getFirstName()) : "Expecting Gitar: " + p.getFirstName();
-//        assert Sex.MALE.equals(p.getSex()) : "Expecting MALE: " + p.getSex();
+        assert Sex.FEMALE.equals(p.getSex()) : "Expecting FEMALE: " + p.getSex();
     }
 
     @Factory public static Object[] create() {
