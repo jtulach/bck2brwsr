@@ -103,6 +103,15 @@ public class ReflectionTest {
         StaticUse.class.getMethod("instanceMethod").invoke(null);
         return "should not happen";
     }
+    
+    @Compare public String classCastException() {
+        try {
+            Integer i = (Integer)StaticUseSub.getNonNull();
+            return "" + i.intValue();
+        } catch (ClassCastException ex) {
+            return ex.getClass().getName();
+        }
+    }
 
     @Compare public String methodThatThrowsException() throws Exception {
         StaticUse.class.getMethod("instanceMethod").invoke(new StaticUse());
