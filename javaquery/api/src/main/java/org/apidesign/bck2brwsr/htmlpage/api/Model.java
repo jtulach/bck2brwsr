@@ -27,8 +27,9 @@ import java.lang.annotation.Target;
  * annotated by {@link ComputedProperty} which define derived
  * properties in the model class.
  * <p>
- * The {@link #className() generated class} will have methods
- * to convert the object <code>toJSON</code> and <code>fromJSON</code>.
+ * The {@link #className() generated class}'s <code>toString</code>
+ * converts the state of the object into 
+ * <a href="http://en.wikipedia.org/wiki/JSON">JSON</a> format.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */

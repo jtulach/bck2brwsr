@@ -29,11 +29,11 @@ import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
  * @author Jaroslav Tulach
  */
 @Page(xhtml="index.html", className="TwitterModel", properties={
-    @Property(name="savedLists", type=TwitterClient.Twttrs.class, array = true),
+    @Property(name="savedLists", type=Tweeters.class, array = true),
     @Property(name="activeTweetersName", type=String.class),
     @Property(name="activeTweeters", type=String.class, array = true),
     @Property(name="userNameToAdd", type=String.class),
-    @Property(name="currentTweets", type=TwitterClient.Twt.class, array = true)
+    @Property(name="currentTweets", type=Tweet.class, array = true)
 })
 public class TwitterClient {
     @Model(className = "Tweeters", properties = {

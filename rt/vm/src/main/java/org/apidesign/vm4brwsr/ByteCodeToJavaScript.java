@@ -1940,7 +1940,7 @@ abstract class ByteCodeToJavaScript {
         final String type = jc.getClassName(indx);
         if (!type.startsWith("[")) {
             emit(out,
-                 "if (@1 !== null && !@1.$instOf_@2) throw {};",
+                 "if (@1 !== null && !@1.$instOf_@2) throw vm.java_lang_ClassCastException(true);",
                  smapper.getA(0), type.replace('/', '_'));
         } else {
             emit(out, "vm.java_lang_Class(false).forName__Ljava_lang_Class_2Ljava_lang_String_2('@2').cast__Ljava_lang_Object_2Ljava_lang_Object_2(@1);",

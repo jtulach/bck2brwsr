@@ -43,7 +43,7 @@ public class ConvertTypesTest {
         
         assert "son".equals(p.getFirstName()) : "First name: " + p.getFirstName();
         assert "dj".equals(p.getLastName()) : "Last name: " + p.getLastName();
-//        assert Sex.MALE.equals(p.getSex()) : "Sex: " + p.getSex();
+        assert Sex.MALE.equals(p.getSex()) : "Sex: " + p.getSex();
     }
     
     @Factory public static Object[] create() {
