@@ -89,10 +89,12 @@ public final class ConvertTypes {
     @JavaScriptBody(args = { "name", "arr", "run" }, body = 
         "if (window[name]) return false;\n "
       + "window[name] = function(data) {\n "
+      + "  delete window[name];\n"
+      + "  var el = window.document.getElementById(name);\n"
+      + "  el.parentNode.removeChild(el);\n"
       + "  arr[0] = data;\n"
       + "  run.run__V();\n"
-      + "  delete window[name];\n"
-      + "};"
+      + "};\n"
       + "return true;\n"
     )
     private static boolean defineIfUnused(String name, Object[] arr, Runnable run) {

@@ -17,7 +17,9 @@
  */
 package org.apidesign.bck2brwsr.htmlpage;
 
+import java.util.Arrays;
 import java.util.Iterator;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.htmlpage.api.OnReceive;
 import org.apidesign.bck2brwsr.htmlpage.api.Page;
 import org.apidesign.bck2brwsr.htmlpage.api.Property;
@@ -42,6 +44,7 @@ import org.testng.annotations.Factory;
 })
 public class JSONTest {
     private JSONik js;
+    private Integer orig;
     
     @Test public void personToString() throws JSONException {
         Person p = new Person();
@@ -183,7 +186,11 @@ public class JSONTest {
         parameters = { "callme" }
     ))
     @BrwsrTest public void loadAndParseJSONP() throws InterruptedException {
+        
         if (js == null) {
+            orig = scriptElements();
+            assert orig > 0 : "There should be some scripts on the page";
+            
             js = new JSONik();
             js.applyBindings();
 
@@ -197,7 +204,14 @@ public class JSONTest {
         
         assert "Mitar".equals(p.getFirstName()) : "Unexpected: " + p.getFirstName();
         assert Sex.MALE.equals(p.getSex()) : "Expecting MALE: " + p.getSex();
+        
+        int now = scriptElements();
+        
+        assert orig == now : "The set of elements is unchanged. Delta: " + (now - orig);
     }
+    
+    @JavaScriptBody(args = {  }, body = "return window.document.getElementsByTagName('script').length;")
+    private static native int scriptElements();
 
     @Http(@Http.Resource(
         content = "{'firstName': 'Sitar', 'sex': 'MALE'}", 
