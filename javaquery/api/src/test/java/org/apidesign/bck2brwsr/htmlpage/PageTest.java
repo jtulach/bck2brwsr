@@ -19,6 +19,8 @@ package org.apidesign.bck2brwsr.htmlpage;
 
 import java.io.IOException;
 import java.util.Locale;
+import javax.tools.Diagnostic;
+import javax.tools.JavaFileObject;
 import static org.testng.Assert.*;
 import org.testng.annotations.Test;
 
@@ -39,11 +41,12 @@ public class PageTest {
             + "}\n";
         
         Compile c = Compile.create(html, code);
-        assertEquals(c.getErrors().size(), 1, "One error: " + c.getErrors());
-        
-        String msg = c.getErrors().get(0).getMessage(Locale.ENGLISH);
-        if (!msg.contains("Runnable")) {
-            fail("Should contain warning about Runnable: " + msg);
+        assertFalse(c.getErrors().isEmpty(), "One error: " + c.getErrors());
+        for (Diagnostic<? extends JavaFileObject> e : c.getErrors()) {
+            String msg = e.getMessage(Locale.ENGLISH);
+            if (!msg.contains("Runnable")) {
+                fail("Should contain warning about Runnable: " + msg);
+            }
         }
     }
     
