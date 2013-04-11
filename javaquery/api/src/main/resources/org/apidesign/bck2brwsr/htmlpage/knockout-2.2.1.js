@@ -2193,7 +2193,14 @@ ko.bindingHandlers['attr'] = {
                     else
                         element[attrName] = attrValue;
                 } else if (!toRemove) {
-                    element.setAttribute(attrName, attrValue.toString());
+                    try {
+                        element.setAttribute(attrName, attrValue.toString());
+                    } catch (err) {
+                        // ignore for now
+                        if (console) {
+                            console.log("Can't set attribute " + attrName + " to " + attrValue + " error: " + err);
+                        }
+                    }
                 }
 
                 // Treat "name" specially - although you can think of it as an attribute, it also needs

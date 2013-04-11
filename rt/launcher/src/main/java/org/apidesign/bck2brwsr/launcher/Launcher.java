@@ -20,7 +20,6 @@ package org.apidesign.bck2brwsr.launcher;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.net.URLClassLoader;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 
 /** An abstraction for executing tests in a Bck2Brwsr virtual machine.
@@ -93,7 +92,7 @@ public abstract class Launcher {
      * @return interface that allows one to stop the server
      * @throws IOException if something goes wrong
      */
-    public static Closeable showURL(URLClassLoader classes, String startpage) throws IOException {
+    public static Closeable showURL(ClassLoader classes, String startpage) throws IOException {
         Bck2BrwsrLauncher l = new Bck2BrwsrLauncher(null);
         l.addClassLoader(classes);
         l.showURL(startpage);

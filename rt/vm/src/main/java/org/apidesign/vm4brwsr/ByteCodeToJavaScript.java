@@ -805,7 +805,7 @@ abstract class ByteCodeToJavaScript {
                 }
                 case opc_ldc_w:
                 case opc_ldc2_w: {
-                    int indx = readIntArg(byteCodes, i);
+                    int indx = readUShortArg(byteCodes, i);
                     i += 2;
                     String v = encodeConstant(indx);
                     int type = VarType.fromConstantType(jc.getTag(indx));
@@ -847,56 +847,56 @@ abstract class ByteCodeToJavaScript {
                                    "==", topMostLabel);
                     break;
                 case opc_ifeq: {
-                    int indx = i + readIntArg(byteCodes, i);
+                    int indx = i + readShortArg(byteCodes, i);
                     emitIf(out, "if (@1 == 0) ",
                          smapper.popI(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_ifne: {
-                    int indx = i + readIntArg(byteCodes, i);
+                    int indx = i + readShortArg(byteCodes, i);
                     emitIf(out, "if (@1 != 0) ",
                          smapper.popI(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_iflt: {
-                    int indx = i + readIntArg(byteCodes, i);
+                    int indx = i + readShortArg(byteCodes, i);
                     emitIf(out, "if (@1 < 0) ",
                          smapper.popI(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_ifle: {
-                    int indx = i + readIntArg(byteCodes, i);
+                    int indx = i + readShortArg(byteCodes, i);
                     emitIf(out, "if (@1 <= 0) ",
                          smapper.popI(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_ifgt: {
-                    int indx = i + readIntArg(byteCodes, i);
+                    int indx = i + readShortArg(byteCodes, i);
                     emitIf(out, "if (@1 > 0) ",
                          smapper.popI(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_ifge: {
-                    int indx = i + readIntArg(byteCodes, i);
+                    int indx = i + readShortArg(byteCodes, i);
                     emitIf(out, "if (@1 >= 0) ",
                          smapper.popI(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_ifnonnull: {
-                    int indx = i + readIntArg(byteCodes, i);
+                    int indx = i + readShortArg(byteCodes, i);
                     emitIf(out, "if (@1 !== null) ",
                          smapper.popA(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_ifnull: {
-                    int indx = i + readIntArg(byteCodes, i);
+                    int indx = i + readShortArg(byteCodes, i);
                     emitIf(out, "if (@1 === null) ",
                          smapper.popA(), i, indx, topMostLabel);
                     i += 2;
@@ -923,7 +923,7 @@ abstract class ByteCodeToJavaScript {
                                    ">=", topMostLabel);
                     break;
                 case opc_goto: {
-                    int indx = i + readIntArg(byteCodes, i);
+                    int indx = i + readShortArg(byteCodes, i);
                     goTo(out, i, indx, topMostLabel);
                     i += 2;
                     break;
@@ -950,7 +950,7 @@ abstract class ByteCodeToJavaScript {
                     i = invokeStaticMethod(byteCodes, i, smapper, true);
                     break;
                 case opc_new: {
-                    int indx = readIntArg(byteCodes, i);
+                    int indx = readUShortArg(byteCodes, i);
                     String ci = jc.getClassName(indx);
                     emit(out, "var @1 = new @2;",
                          smapper.pushA(), accessClass(ci.replace('/', '_')));
@@ -963,13 +963,13 @@ abstract class ByteCodeToJavaScript {
                     generateNewArray(atype, smapper);
                     break;
                 case opc_anewarray: {
-                    int type = readIntArg(byteCodes, i);
+                    int type = readUShortArg(byteCodes, i);
                     i += 2;
                     generateANewArray(type, smapper);
                     break;
                 }
                 case opc_multianewarray: {
-                    int type = readIntArg(byteCodes, i);
+                    int type = readUShortArg(byteCodes, i);
                     i += 2;
                     i = generateMultiANewArray(type, byteCodes, i, smapper);
                     break;
@@ -1185,11 +1185,11 @@ abstract class ByteCodeToJavaScript {
                 case opc_sipush:
                     emit(out, "var @1 = @2;",
                          smapper.pushI(),
-                         Integer.toString(readIntArg(byteCodes, i)));
+                         Integer.toString(readShortArg(byteCodes, i)));
                     i += 2;
                     break;
                 case opc_getfield: {
-                    int indx = readIntArg(byteCodes, i);
+                    int indx = readUShortArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
                     final String mangleClass = mangleSig(fi[0]);
@@ -1202,7 +1202,7 @@ abstract class ByteCodeToJavaScript {
                     break;
                 }
                 case opc_putfield: {
-                    int indx = readIntArg(byteCodes, i);
+                    int indx = readUShortArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
                     final String mangleClass = mangleSig(fi[0]);
@@ -1216,7 +1216,7 @@ abstract class ByteCodeToJavaScript {
                     break;
                 }
                 case opc_getstatic: {
-                    int indx = readIntArg(byteCodes, i);
+                    int indx = readUShortArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
                     emit(out, "var @1 = @2(false)._@3();",
@@ -1227,7 +1227,7 @@ abstract class ByteCodeToJavaScript {
                     break;
                 }
                 case opc_putstatic: {
-                    int indx = readIntArg(byteCodes, i);
+                    int indx = readUShortArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
                     emit(out, "@1(false)._@2(@3);",
@@ -1238,13 +1238,13 @@ abstract class ByteCodeToJavaScript {
                     break;
                 }
                 case opc_checkcast: {
-                    int indx = readIntArg(byteCodes, i);
+                    int indx = readUShortArg(byteCodes, i);
                     generateCheckcast(indx, smapper);
                     i += 2;
                     break;
                 }
                 case opc_instanceof: {
-                    int indx = readIntArg(byteCodes, i);
+                    int indx = readUShortArg(byteCodes, i);
                     generateInstanceOf(indx, smapper);
                     i += 2;
                     break;
@@ -1296,7 +1296,7 @@ abstract class ByteCodeToJavaScript {
     }
 
     private int generateIf(byte[] byteCodes, int i, final Variable v2, final Variable v1, final String test, int topMostLabel) throws IOException {
-        int indx = i + readIntArg(byteCodes, i);
+        int indx = i + readShortArg(byteCodes, i);
         out.append("if (").append(v1)
            .append(' ').append(test).append(' ')
            .append(v2).append(") ");
@@ -1304,11 +1304,6 @@ abstract class ByteCodeToJavaScript {
         return i + 2;
     }
     
-    private int readIntArg(byte[] byteCodes, int offsetInstruction) {
-        final int indxHi = byteCodes[offsetInstruction + 1] << 8;
-        final int indxLo = byteCodes[offsetInstruction + 2];
-        return (indxHi & 0xffffff00) | (indxLo & 0xff);
-    }
     private int readInt4(byte[] byteCodes, int offset) {
         final int d = byteCodes[offset + 0] << 24;
         final int c = byteCodes[offset + 1] << 16;
@@ -1316,18 +1311,25 @@ abstract class ByteCodeToJavaScript {
         final int a = byteCodes[offset + 3];
         return (d & 0xff000000) | (c & 0xff0000) | (b & 0xff00) | (a & 0xff);
     }
-    private int readUByte(byte[] byteCodes, int offset) {
+    private static int readUByte(byte[] byteCodes, int offset) {
         return byteCodes[offset] & 0xff;
     }
 
-    private int readUShort(byte[] byteCodes, int offset) {
+    private static int readUShort(byte[] byteCodes, int offset) {
         return ((byteCodes[offset] & 0xff) << 8)
                     | (byteCodes[offset + 1] & 0xff);
     }
+    private static int readUShortArg(byte[] byteCodes, int offsetInstruction) {
+        return readUShort(byteCodes, offsetInstruction + 1);
+    }
 
-    private int readShort(byte[] byteCodes, int offset) {
-        return (byteCodes[offset] << 8)
-                    | (byteCodes[offset + 1] & 0xff);
+    private static int readShort(byte[] byteCodes, int offset) {
+        int signed = byteCodes[offset];
+        byte b0 = (byte)signed;
+        return (b0 << 8) | (byteCodes[offset + 1] & 0xff);
+    }
+    private static int readShortArg(byte[] byteCodes, int offsetInstruction) {
+        return readShort(byteCodes, offsetInstruction + 1);
     }
 
     private static void countArgs(String descriptor, char[] returnType, StringBuilder sig, StringBuilder cnt) {
@@ -1455,7 +1457,7 @@ abstract class ByteCodeToJavaScript {
 
     private int invokeStaticMethod(byte[] byteCodes, int i, final StackMapper mapper, boolean isStatic)
     throws IOException {
-        int methodIndex = readIntArg(byteCodes, i);
+        int methodIndex = readUShortArg(byteCodes, i);
         String[] mi = jc.getFieldInfoName(methodIndex);
         char[] returnType = { 'V' };
         StringBuilder cnt = new StringBuilder();
@@ -1500,7 +1502,7 @@ abstract class ByteCodeToJavaScript {
     }
     private int invokeVirtualMethod(byte[] byteCodes, int i, final StackMapper mapper)
     throws IOException {
-        int methodIndex = readIntArg(byteCodes, i);
+        int methodIndex = readUShortArg(byteCodes, i);
         String[] mi = jc.getFieldInfoName(methodIndex);
         char[] returnType = { 'V' };
         StringBuilder cnt = new StringBuilder();
@@ -1938,7 +1940,7 @@ abstract class ByteCodeToJavaScript {
         final String type = jc.getClassName(indx);
         if (!type.startsWith("[")) {
             emit(out,
-                 "if (@1 !== null && !@1.$instOf_@2) throw {};",
+                 "if (@1 !== null && !@1.$instOf_@2) throw vm.java_lang_ClassCastException(true);",
                  smapper.getA(0), type.replace('/', '_'));
         } else {
             emit(out, "vm.java_lang_Class(false).forName__Ljava_lang_Class_2Ljava_lang_String_2('@2').cast__Ljava_lang_Object_2Ljava_lang_Object_2(@1);",

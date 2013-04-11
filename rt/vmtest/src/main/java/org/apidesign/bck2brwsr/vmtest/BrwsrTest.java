@@ -29,6 +29,10 @@ import java.lang.annotation.Target;
  * The browser to is by default executed via {@link java.awt.Desktop#browse(java.net.URI)},
  * but one can change that by specifying <code>-Dvmtest.brwsrs=firefox,google-chrome</code>
  * property.
+ * <p>
+ * If the annotated method throws {@link InterruptedException}, it will return
+ * the processing to the browser and after 100ms, called again. This is useful
+ * for testing asynchronous communication, etc.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */

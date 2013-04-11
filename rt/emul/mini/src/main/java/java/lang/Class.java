@@ -402,8 +402,15 @@ public final
             }
             return cmpType != null && getComponentType().isAssignableFrom(cmpType);
         }
-        String prop = "$instOf_" + getName().replace('.', '_');
-        return hasCnstrProperty(cls, prop);
+        if (isPrimitive()) {
+            return false;
+        } else {
+            if (cls.isPrimitive()) {
+                return false;
+            }
+            String prop = "$instOf_" + getName().replace('.', '_');
+            return hasCnstrProperty(cls, prop);
+        }
     }
 
     @JavaScriptBody(args = { "who", "prop" }, body = 
@@ -1245,6 +1252,7 @@ public final
     }
     
     @JavaScriptBody(args = { "sig" }, body = 
+        "if (!sig) sig = '[Ljava/lang/Object;';\n" +
         "var c = Array[sig];\n" +
         "if (c) return c;\n" +
         "c = vm.java_lang_Class(true);\n" +

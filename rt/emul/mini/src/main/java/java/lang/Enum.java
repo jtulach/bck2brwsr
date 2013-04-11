@@ -27,6 +27,7 @@ package java.lang;
 
 import java.io.Serializable;
 import java.io.IOException;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
  * This is the common base class of all Java language enumeration types.
@@ -225,15 +226,17 @@ public abstract class Enum<E extends Enum<E>>
      */
     public static <T extends Enum<T>> T valueOf(Class<T> enumType,
                                                 String name) {
-        throw new UnsupportedOperationException();
-//        T result = enumType.enumConstantDirectory().get(name);
-//        if (result != null)
-//            return result;
-//        if (name == null)
-//            throw new NullPointerException("Name is null");
-//        throw new IllegalArgumentException(
-//            "No enum constant " + enumType.getCanonicalName() + "." + name);
+        for (Object o : values(enumType)) {
+            T t = enumType.cast(o);
+            if (name.equals(((Enum)t).name)) {
+                return t;
+            }
+        }
+        throw new IllegalArgumentException();
     }
+    
+    @JavaScriptBody(args = { "enumType" }, body = "return enumType.cnstr.$VALUES;")
+    private static native Object[] values(Class<?> enumType);
 
     /**
      * enum classes cannot have finalize methods.

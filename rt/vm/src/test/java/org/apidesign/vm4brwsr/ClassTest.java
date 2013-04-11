@@ -207,5 +207,12 @@ public class ClassTest {
             true
         );
     }
+    
+    @Test public void valueOfEnum() throws Exception {
+        assertExec("can get value of enum", Classes.class,
+            "valueEnum__Ljava_lang_String_2Ljava_lang_String_2",
+            "TWO", "TWO"
+        );
+    }
 
 }

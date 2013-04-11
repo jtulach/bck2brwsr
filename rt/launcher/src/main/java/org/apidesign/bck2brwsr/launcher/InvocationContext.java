@@ -55,11 +55,11 @@ public final class InvocationContext {
     /** HTTP resource to be available during execution. An invocation may
      * perform an HTTP query and obtain a resource relative to the page.
      */
-    public void addHttpResource(String relativePath, String mimeType, InputStream content) {
-        if (relativePath == null || mimeType == null || content == null) {
+    public void addHttpResource(String relativePath, String mimeType, String[] parameters, InputStream content) {
+        if (relativePath == null || mimeType == null || content == null || parameters == null) {
             throw new NullPointerException();
         }
-        resources.add(new Resource(content, mimeType, relativePath));
+        resources.add(new Resource(content, mimeType, relativePath, parameters));
     }
     
     /** Invokes the associated method. 
@@ -100,11 +100,16 @@ public final class InvocationContext {
         final InputStream httpContent;
         final String httpType;
         final String httpPath;
+        final String[] parameters;
 
-        Resource(InputStream httpContent, String httpType, String httpPath) {
+        Resource(InputStream httpContent, String httpType, String httpPath,
+            String[] parameters
+        ) {
+            httpContent.mark(Integer.MAX_VALUE);
             this.httpContent = httpContent;
             this.httpType = httpType;
             this.httpPath = httpPath;
+            this.parameters = parameters;
         }
     }
 }

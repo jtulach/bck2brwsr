@@ -41,28 +41,78 @@ public class Console {
     @JavaScriptBody(args = {"id", "attr"}, body = 
         "return window.document.getElementById(id)[attr].toString();")
     private static native Object getAttr(String id, String attr);
+    @JavaScriptBody(args = {"elem", "attr"}, body = 
+        "return elem[attr].toString();")
+    private static native Object getAttr(Object elem, String attr);
 
     @JavaScriptBody(args = {"id", "attr", "value"}, body = 
         "window.document.getElementById(id)[attr] = value;")
     private static native void setAttr(String id, String attr, Object value);
+    @JavaScriptBody(args = {"elem", "attr", "value"}, body = 
+        "elem[attr] = value;")
+    private static native void setAttr(Object id, String attr, Object value);
     
     @JavaScriptBody(args = {}, body = "return; window.close();")
     private static native void closeWindow();
 
+    private static Object textArea;
+    private static Object statusArea;
+    
     private static void log(String newText) {
-        String id = "bck2brwsr.result";
+        if (textArea == null) {
+            return;
+        }
         String attr = "value";
-        setAttr(id, attr, getAttr(id, attr) + "\n" + newText);
-        setAttr(id, "scrollTop", getAttr(id, "scrollHeight"));
+        setAttr(textArea, attr, getAttr(textArea, attr) + "\n" + newText);
+        setAttr(textArea, "scrollTop", getAttr(textArea, "scrollHeight"));
     }
     
-    public static void execute() throws Exception {
-        String clazz = (String) getAttr("clazz", "value");
-        String method = (String) getAttr("method", "value");
-        Object res = invokeMethod(clazz, method);
-        setAttr("bck2brwsr.result", "value", res);
+    private static void beginTest(Case c) {
+        Object[] arr = new Object[2];
+        beginTest(c.getClassName() + "." + c.getMethodName(), c, arr);
+        textArea = arr[0];
+        statusArea = arr[1];
+    }
+    
+    private static void finishTest(Case c, Object res) {
+        if ("null".equals(res)) {
+            setAttr(statusArea, "innerHTML", "Success");
+        } else {
+            setAttr(statusArea, "innerHTML", "Result " + res);
+        }
+        statusArea = null;
+        textArea = null;
     }
 
+    @JavaScriptBody(args = { "test", "c", "arr" }, body = 
+          "var ul = window.document.getElementById('bck2brwsr.result');\n"
+        + "var li = window.document.createElement('li');\n"
+        + "var span = window.document.createElement('span');"
+        + "span.innerHTML = test + ' - ';\n"
+        + "var details = window.document.createElement('a');\n"
+        + "details.innerHTML = 'Details';\n"
+        + "details.href = '#';\n"
+        + "var p = window.document.createElement('p');\n"
+        + "var status = window.document.createElement('a');\n"
+        + "status.innerHTML = 'running';"
+        + "details.onclick = function() { li.appendChild(p); li.removeChild(details); status.innerHTML = 'Run Again'; status.href = '#'; };\n"
+        + "status.onclick = function() { c.again__V_3Ljava_lang_Object_2(arr); }\n"
+        + "var pre = window.document.createElement('textarea');\n"
+        + "pre.cols = 100;"
+        + "pre.rows = 10;"
+        + "li.appendChild(span);\n"
+        + "li.appendChild(status);\n"
+        + "var span = window.document.createElement('span');"
+        + "span.innerHTML = ' ';\n"
+        + "li.appendChild(span);\n"
+        + "li.appendChild(details);\n"
+        + "p.appendChild(pre);\n"
+        + "ul.appendChild(li);\n"
+        + "arr[0] = pre;\n"
+        + "arr[1] = status;\n"
+    )
+    private static native void beginTest(String test, Case c, Object[] arr);
+    
     @JavaScriptBody(args = { "url", "callback", "arr" }, body = ""
         + "var request = new XMLHttpRequest();\n"
         + "request.open('GET', url, true);\n"
@@ -84,49 +134,53 @@ public class Console {
     private static class Request implements Runnable {
         private final String[] arr = { null };
         private final String url;
+        private Case c;
+        private int retries;
 
         private Request(String url) throws IOException {
             this.url = url;
             loadText(url, this, arr);
         }
+        private Request(String url, String u) throws IOException {
+            this.url = url;
+            loadText(u, this, arr);
+        }
         
         @Override
         public void run() {
             try {
-                String data = arr[0];
-                log("\nGot \"" + data + "\"");
-                
-                if (data == null) {
-                    log("Some error exiting");
-                    closeWindow();
-                    return;
-                }
-                
-                if (data.isEmpty()) {
-                    log("No data, exiting");
-                    closeWindow();
-                    return;
-                }
-                
-                Case c = Case.parseData(data);
-                if (c.getHtmlFragment() != null) {
-                    setAttr("bck2brwsr.fragment", "innerHTML", c.getHtmlFragment());
-                }
-                log("Invoking " + c.getClassName() + '.' + c.getMethodName() + " as request: " + c.getRequestId());
+                if (c == null) {
+                    String data = arr[0];
 
-                Object result = invokeMethod(c.getClassName(), c.getMethodName());
+                    if (data == null) {
+                        log("Some error exiting");
+                        closeWindow();
+                        return;
+                    }
+
+                    if (data.isEmpty()) {
+                        log("No data, exiting");
+                        closeWindow();
+                        return;
+                    }
+
+                    c = Case.parseData(data);
+                    beginTest(c);
+                    log("Got \"" + data + "\"");
+                } else {
+                    log("Processing \"" + arr[0] + "\" for " + retries + " time");
+                }
+                Object result = retries++ >= 10 ? "java.lang.InterruptedException:timeout" : c.runTest();
+                finishTest(c, result);
                 
-                setAttr("bck2brwsr.fragment", "innerHTML", "");
-                log("Result: " + result);
-                
-                result = encodeURL("" + result);
-                
-                log("Sending back: " + url + "?request=" + c.getRequestId() + "&result=" + result);
                 String u = url + "?request=" + c.getRequestId() + "&result=" + result;
-                
-                loadText(u, this, arr);
-                
+                new Request(url, u);
             } catch (Exception ex) {
+                if (ex instanceof InterruptedException) {
+                    log("Re-scheduling in 100ms");
+                    schedule(this, 100);
+                    return;
+                }
                 log(ex.getClass().getName() + ":" + ex.getMessage());
             }
         }
@@ -152,8 +206,10 @@ public class Console {
         return sb.toString();
     }
     
-    static String invoke(String clazz, String method) throws ClassNotFoundException, InvocationTargetException, IllegalAccessException, InstantiationException {
-        final Object r = invokeMethod(clazz, method);
+    static String invoke(String clazz, String method) throws 
+    ClassNotFoundException, InvocationTargetException, IllegalAccessException, 
+    InstantiationException, InterruptedException {
+        final Object r = new Case(null).invokeMethod(clazz, method);
         return r == null ? "null" : r.toString().toString();
     }
 
@@ -188,40 +244,17 @@ public class Console {
         }
     }
    
-    private static Object invokeMethod(String clazz, String method) 
-    throws ClassNotFoundException, InvocationTargetException, 
-    SecurityException, IllegalAccessException, IllegalArgumentException,
-    InstantiationException {
-        Method found = null;
-        Class<?> c = Class.forName(clazz);
-        for (Method m : c.getMethods()) {
-            if (m.getName().equals(method)) {
-                found = m;
-            }
-        }
-        Object res;
-        if (found != null) {
-            try {
-                if ((found.getModifiers() & Modifier.STATIC) != 0) {
-                    res = found.invoke(null);
-                } else {
-                    res = found.invoke(c.newInstance());
-                }
-            } catch (Throwable ex) {
-                res = ex.getClass().getName() + ":" + ex.getMessage();
-            }
-        } else {
-            res = "Can't find method " + method + " in " + clazz;
-        }
-        return res;
-    }
-
     @JavaScriptBody(args = {}, body = "vm.desiredAssertionStatus = true;")
     private static void turnAssetionStatusOn() {
     }
+
+    @JavaScriptBody(args = {"r", "time"}, body =
+        "return window.setTimeout(function() { r.run__V(); }, time);")
+    private static native Object schedule(Runnable r, int time);
     
     private static final class Case {
         private final Object data;
+        private Object inst;
 
         private Case(Object data) {
             this.data = data;
@@ -245,6 +278,69 @@ public class Console {
 
         public String getHtmlFragment() {
             return value("html", data);
+        }
+        
+        void again(Object[] arr) {
+            try {
+                textArea = arr[0];
+                statusArea = arr[1];
+                setAttr(textArea, "value", "");
+                runTest();
+            } catch (Exception ex) {
+                log(ex.getClass().getName() + ":" + ex.getMessage());
+            }
+        }
+
+        private Object runTest() throws IllegalAccessException, 
+        IllegalArgumentException, ClassNotFoundException, UnsupportedEncodingException, 
+        InvocationTargetException, InstantiationException, InterruptedException {
+            if (this.getHtmlFragment() != null) {
+                setAttr("bck2brwsr.fragment", "innerHTML", this.getHtmlFragment());
+            }
+            log("Invoking " + this.getClassName() + '.' + this.getMethodName() + " as request: " + this.getRequestId());
+            Object result = invokeMethod(this.getClassName(), this.getMethodName());
+            setAttr("bck2brwsr.fragment", "innerHTML", "");
+            log("Result: " + result);
+            result = encodeURL("" + result);
+            log("Sending back: ...?request=" + this.getRequestId() + "&result=" + result);
+            return result;
+        }
+
+        private Object invokeMethod(String clazz, String method)
+        throws ClassNotFoundException, InvocationTargetException,
+        InterruptedException, IllegalAccessException, IllegalArgumentException,
+        InstantiationException {
+            Method found = null;
+            Class<?> c = Class.forName(clazz);
+            for (Method m : c.getMethods()) {
+                if (m.getName().equals(method)) {
+                    found = m;
+                }
+            }
+            Object res;
+            if (found != null) {
+                try {
+                    if ((found.getModifiers() & Modifier.STATIC) != 0) {
+                        res = found.invoke(null);
+                    } else {
+                        if (inst == null) {
+                            inst = c.newInstance();
+                        }
+                        res = found.invoke(inst);
+                    }
+                } catch (Throwable ex) {
+                    if (ex instanceof InvocationTargetException) {
+                        ex = ((InvocationTargetException) ex).getTargetException();
+                    }
+                    if (ex instanceof InterruptedException) {
+                        throw (InterruptedException)ex;
+                    }
+                    res = ex.getClass().getName() + ":" + ex.getMessage();
+                }
+            } else {
+                res = "Can't find method " + method + " in " + clazz;
+            }
+            return res;
         }
         
         @JavaScriptBody(args = "s", body = "return eval('(' + s + ')');")

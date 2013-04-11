@@ -53,6 +53,22 @@ public class ReflectionTest {
         return Runnable.class.isInterface();
     }
 
+    @Compare public boolean isAssignableToPrimitiveType() {
+        return boolean.class.isAssignableFrom(Runnable.class);
+    }
+
+    @Compare public boolean isAssignableFromPrimitiveType() {
+        return Runnable.class.isAssignableFrom(boolean.class);
+    }
+
+    @Compare public boolean isAssignableLongFromInt() {
+        return long.class.isAssignableFrom(int.class);
+    }
+
+    @Compare public boolean isAssignableIntFromLong() {
+        return int.class.isAssignableFrom(long.class);
+    }
+
     @Compare public String isRunnableHasRunMethod() throws NoSuchMethodException {
         return Runnable.class.getMethod("run").getName();
     }
@@ -85,6 +101,20 @@ public class ReflectionTest {
     
     @Compare public String cannotCallNonStaticMethodWithNull() throws Exception {
         StaticUse.class.getMethod("instanceMethod").invoke(null);
+        return "should not happen";
+    }
+    
+    @Compare public String classCastException() {
+        try {
+            Integer i = (Integer)StaticUseSub.getNonNull();
+            return "" + i.intValue();
+        } catch (ClassCastException ex) {
+            return ex.getClass().getName();
+        }
+    }
+
+    @Compare public String methodThatThrowsException() throws Exception {
+        StaticUse.class.getMethod("instanceMethod").invoke(new StaticUse());
         return "should not happen";
     }
 

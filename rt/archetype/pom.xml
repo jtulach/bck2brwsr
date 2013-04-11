@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>rt</artifactId>
+    <groupId>org.apidesign.bck2brwsr</groupId>
+    <version>0.6-SNAPSHOT</version>
+  </parent>
+  <groupId>org.apidesign.bck2brwsr</groupId>
+  <artifactId>bck2brwsr-archetype-html-sample</artifactId>
+  <version>0.6-SNAPSHOT</version>
+  <packaging>jar</packaging>
+  <name>Bck2Brwsr Maven Archetype</name>
+  <description>
+      Creates a skeletal HTML page and associated Java controller class.
+      Runs in any browser (even without Java plugin) with the help of Bck2Brwsr
+      virtual machine.
+  </description>
+  <build>
+      <plugins>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-compiler-plugin</artifactId>
+              <version>2.3.2</version>
+              <configuration>
+                  <source>1.6</source>
+                  <target>1.6</target>
+              </configuration>
+          </plugin>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-surefire-plugin</artifactId>
+              <configuration>
+                  <skipTests>true</skipTests>
+              </configuration>
+              <executions>
+                  <execution>
+                      <id>test</id>
+                      <goals>
+                          <goal>test</goal>
+                      </goals>
+                      <phase>integration-test</phase>
+                      <configuration>
+                          <additionalClasspathElements>
+                              <additionalClasspathElement>${project.build.directory}/bck2brwsr-archetype-html-sample-${project.version}.jar</additionalClasspathElement>
+                          </additionalClasspathElements>
+                          <skipTests>false</skipTests>
+                      </configuration>
+                  </execution>
+                  
+              </executions>
+          </plugin>
+      </plugins>
+  </build>
+  <dependencies>
+      <dependency>
+          <groupId>org.testng</groupId>
+          <artifactId>testng</artifactId>
+          <scope>test</scope>
+      </dependency>
+  </dependencies>
+</project>

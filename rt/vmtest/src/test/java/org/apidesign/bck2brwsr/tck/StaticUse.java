@@ -30,6 +30,7 @@ class StaticUse {
     }
     
     public void instanceMethod() {
+        throw new IllegalStateException();
     }
 
     public static int plus(int a, int b) {

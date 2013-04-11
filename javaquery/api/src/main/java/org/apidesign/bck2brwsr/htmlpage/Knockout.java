@@ -18,6 +18,7 @@
 package org.apidesign.bck2brwsr.htmlpage;
 
 import java.lang.reflect.Method;
+import java.util.List;
 import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
@@ -29,38 +30,40 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
 public class Knockout {
     /** used by tests */
     static Knockout next;
-    
-    Knockout() {
+    private final Object model;
+
+    Knockout(Object model) {
+        this.model = model == null ? this : model;
     }
     
     public static <M> Knockout applyBindings(
-        Class<M> modelClass, M model, String[] propsGettersAndSetters
+        Object model, String[] propsGettersAndSetters,
+        String[] methodsAndSignatures
+    ) {
+        applyImpl(propsGettersAndSetters, model.getClass(), model, model, methodsAndSignatures);
+        return new Knockout(model);
+    }
+    public static <M> Knockout applyBindings(
+        Class<M> modelClass, M model, String[] propsGettersAndSetters,
+        String[] methodsAndSignatures
     ) {
         Knockout bindings = next;
         next = null;
         if (bindings == null) {
-            bindings = new Knockout();
+            bindings = new Knockout(null);
         }
-        for (int i = 0; i < propsGettersAndSetters.length; i += 4) {
-            try {
-                Method getter = modelClass.getMethod(propsGettersAndSetters[i + 3]);
-                bind(bindings, model, propsGettersAndSetters[i],
-                    propsGettersAndSetters[i + 1],
-                    propsGettersAndSetters[i + 2],
-                    getter.getReturnType().isPrimitive()
-                );
-            } catch (NoSuchMethodException ex) {
-                throw new IllegalStateException(ex.getMessage());
-            }
-        }
+        applyImpl(propsGettersAndSetters, modelClass, bindings, model, methodsAndSignatures);
         applyBindings(bindings);
         return bindings;
     }
 
-    @JavaScriptBody(args = { "prop" }, body =
-        "this[prop].valueHasMutated();"
-    )
     public void valueHasMutated(String prop) {
+        valueHasMutated(model, prop);
+    }
+    @JavaScriptBody(args = { "self", "prop" }, body =
+        "self[prop].valueHasMutated();"
+    )
+    public void valueHasMutated(Object self, String prop) {
     }
     
 
@@ -68,10 +71,11 @@ public class Knockout {
     public static void triggerEvent(String id, String ev) {
     }
     
-    @JavaScriptBody(args = { "bindings", "model", "prop", "getter", "setter", "primitive" }, body =
+    @JavaScriptBody(args = { "bindings", "model", "prop", "getter", "setter", "primitive", "array" }, body =
           "var bnd = {\n"
         + "  'read': function() {\n"
         + "    var v = model[getter]();\n"
+        + "    if (array) v = v.koArray();\n"
         + "    return v;\n"
         + "  },\n"
         + "  'owner': bindings\n"
@@ -84,10 +88,43 @@ public class Knockout {
         + "bindings[prop] = ko['computed'](bnd);"
     )
     private static void bind(
-        Object bindings, Object model, String prop, String getter, String setter, boolean primitive
+        Object bindings, Object model, String prop, String getter, String setter, boolean primitive, boolean array
+    ) {
+    }
+
+    @JavaScriptBody(args = { "bindings", "model", "prop", "sig" }, body = 
+        "bindings[prop] = function(data, ev) { model[sig](data, ev); };"
+    )
+    private static void expose(
+        Object bindings, Object model, String prop, String sig
     ) {
     }
     
     @JavaScriptBody(args = { "bindings" }, body = "ko.applyBindings(bindings);")
     private static void applyBindings(Object bindings) {}
+    
+    private static void applyImpl(
+        String[] propsGettersAndSetters,
+        Class<?> modelClass,
+        Object bindings,
+        Object model,
+        String[] methodsAndSignatures
+    ) throws IllegalStateException, SecurityException {
+        for (int i = 0; i < propsGettersAndSetters.length; i += 4) {
+            try {
+                Method getter = modelClass.getMethod(propsGettersAndSetters[i + 3]);
+                bind(bindings, model, propsGettersAndSetters[i],
+                    propsGettersAndSetters[i + 1],
+                    propsGettersAndSetters[i + 2],
+                    getter.getReturnType().isPrimitive(),
+                    List.class.isAssignableFrom(getter.getReturnType()));
+            } catch (NoSuchMethodException ex) {
+                throw new IllegalStateException(ex.getMessage());
+            }
+        }
+        for (int i = 0; i < methodsAndSignatures.length; i += 2) {
+            expose(
+                bindings, model, methodsAndSignatures[i], methodsAndSignatures[i + 1]);
+        }
+    }
 }

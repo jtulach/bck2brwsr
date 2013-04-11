@@ -18,6 +18,8 @@
 package org.apidesign.bck2brwsr.tck;
 
 import java.lang.reflect.Array;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+import org.apidesign.bck2brwsr.vmtest.BrwsrTest;
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
@@ -127,6 +129,30 @@ public class ReflectionArrayTest {
         return Array.newInstance(int.class, 3, 3, 3).getClass().getName();
     }
     
+    @JavaScriptBody(args = {}, body = "return [1, 2];")
+    private static native Object crtarr();
+
+    @JavaScriptBody(args = {}, body = "return new Object();")
+    private static native Object newobj();
+
+    @BrwsrTest
+    public static void toStringArray() {
+        final Object arr = crtarr();
+        final Object real = new Object[2];
+        assert arr instanceof Object[] : "Any array is Java array: " + arr;
+        assert arr.getClass() == real.getClass() : "Same classes " + arr + " and " + real.getClass();
+        final String str = arr.toString();
+        assert str != null;
+        assert str.startsWith("[Ljava.lang.Object;@") : str;
+    }
+    
+    @BrwsrTest
+    public static void objectToString() {
+        String s = newobj().toString();
+        assert s != null : "Some string computed";
+        assert s.startsWith("java.lang.Object@") : "Regular object toString(): " + s;
+    }
+
     
     @Factory
     public static Object[] create() {

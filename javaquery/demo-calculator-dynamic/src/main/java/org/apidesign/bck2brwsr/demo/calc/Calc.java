@@ -17,9 +17,11 @@
  */
 package org.apidesign.bck2brwsr.demo.calc;
 
+import java.util.List;
 import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
 import org.apidesign.bck2brwsr.htmlpage.api.On;
 import static org.apidesign.bck2brwsr.htmlpage.api.OnEvent.*;
+import org.apidesign.bck2brwsr.htmlpage.api.OnFunction;
 import org.apidesign.bck2brwsr.htmlpage.api.Page;
 import org.apidesign.bck2brwsr.htmlpage.api.Property;
 
@@ -33,11 +35,12 @@ import org.apidesign.bck2brwsr.htmlpage.api.Property;
     @Property(name = "memory", type = double.class),
     @Property(name = "display", type = double.class),
     @Property(name = "operation", type = String.class),
-    @Property(name = "hover", type = boolean.class)
+    @Property(name = "hover", type = boolean.class),
+    @Property(name = "history", type = HistoryImpl.class, array = true)
 })
 public class Calc {
     static {
-        new Calculator().applyBindings();
+        new Calculator().applyBindings().setOperation("plus");
     }
     
     @On(event = CLICK, id="clear")
@@ -65,12 +68,29 @@ public class Calc {
     
     @On(event = CLICK, id="result")
     static void computeTheValue(Calculator c) {
-        c.setDisplay(compute(
+        final double newValue = compute(
             c.getOperation(), 
             c.getMemory(), 
             c.getDisplay()
-        ));
+        );
+        c.setDisplay(newValue);
+        if (!containsValue(c.getHistory(), newValue)) {
+            History h = new History();
+            h.setValue(newValue);
+            h.setOperation(c.getOperation());
+            c.getHistory().add(h);
+        }
         c.setMemory(0);
+    }
+    
+    @OnFunction
+    static void recoverMemory(Calculator c, History data) {
+        c.setDisplay(data.getValue());
+    }
+
+    @OnFunction
+    static void removeMemory(Calculator c, History data) {
+        c.getHistory().remove(data);
     }
     
     private static double compute(String op, double memory, double display) {
@@ -108,5 +128,19 @@ public class Calc {
             return "Type numbers and perform simple operations! Press '=' to get result.";
         }
         return "Attempt to compute " + memory + " " + operation + " " + display + " = " + compute(operation, memory, display);
+    }
+    
+    @ComputedProperty
+    static boolean emptyHistory(List<?> history) {
+        return history.isEmpty();
+    }
+
+    private static boolean containsValue(List<History> arr, final double newValue) {
+        for (History history : arr) {
+            if (history.getValue() == newValue) {
+                return true;
+            }
+        }
+        return false;
     }
 }
