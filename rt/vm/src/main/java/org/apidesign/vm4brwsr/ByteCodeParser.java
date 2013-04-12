@@ -1981,7 +1981,7 @@ final class ByteCodeParser {
             pkgPrefixLen = classname.lastIndexOf("/") + 1;
             if (pkgPrefixLen != 0) {
                 pkgPrefix = classname.substring(0, pkgPrefixLen);
-                return ("package  " + pkgPrefix.substring(0, pkgPrefixLen - 1) + ";\n");
+                return /* ("package  " + */ pkgPrefix.substring(0, pkgPrefixLen - 1) /* + ";\n") */;
             } else {
                 return null;
             }

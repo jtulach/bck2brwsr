@@ -25,6 +25,7 @@
 
 package java.lang.reflect;
 
+import org.apidesign.bck2brwsr.core.Exported;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.core.JavaScriptPrototype;
 
@@ -636,9 +637,12 @@ class Array {
         + "arr.jvmName = sig;\n"
         + "return arr;"
     )
-    static native Object newArray(boolean primitive, String sig, int length);
+    @Exported
+    private static native Object newArray(boolean primitive, String sig, int length);
 
-    static Object multiNewArray(String sig, int[] dims, int index)
+
+    @Exported
+    private static Object multiNewArray(String sig, int[] dims, int index)
     throws IllegalArgumentException, NegativeArraySizeException {
         if (dims.length == index + 1) {
             return newArray(sig.length() == 2, sig, dims[index]);

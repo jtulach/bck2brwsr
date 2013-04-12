@@ -20,14 +20,18 @@ package org.apidesign.vm4brwsr;
 import com.google.javascript.jscomp.CommandLineRunner;
 import com.google.javascript.jscomp.SourceFile;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.apidesign.bck2brwsr.core.ExtraJavaScript;
+import org.apidesign.vm4brwsr.ByteCodeParser.AnnotationParser;
 import org.apidesign.vm4brwsr.ByteCodeParser.ClassData;
 import org.apidesign.vm4brwsr.ByteCodeParser.FieldData;
 import org.apidesign.vm4brwsr.ByteCodeParser.MethodData;
@@ -163,12 +167,14 @@ final class ClosureWrapper extends CommandLineRunner {
 /*                
             case MEDIUM:
                 return new ClosureWrapper(w, "ADVANCED_OPTIMIZATIONS",
-                                          new MediumObfuscationDelegate(),
+                                          new MediumObfuscationDelegate(
+                                                  resources),
                                           resources, arr);
 */
             case FULL:
                 return new ClosureWrapper(w, "ADVANCED_OPTIMIZATIONS",
-                                          new FullObfuscationDelegate(),
+                                          new FullObfuscationDelegate(
+                                                  resources),
                                           resources, arr);
             default:
                 throw new IllegalArgumentException(
@@ -264,10 +270,16 @@ final class ClosureWrapper extends CommandLineRunner {
             "clone__Ljava_lang_Object_2"
         };
 
-        private final Collection<String> externs;
+        private final Bck2Brwsr.Resources resources;
 
-        protected AdvancedObfuscationDelegate() {
+        private final Collection<String> externs;
+        private final Map<Object, Boolean> isMarkedAsExportedCache;
+
+        protected AdvancedObfuscationDelegate(Bck2Brwsr.Resources resources) {
+            this.resources = resources;
+
             externs = new ArrayList<String>(Arrays.asList(INITIAL_EXTERNS));
+            isMarkedAsExportedCache = new HashMap<Object, Boolean>();
         }
 
         @Override
@@ -275,7 +287,9 @@ final class ClosureWrapper extends CommandLineRunner {
                                 String destObject,
                                 String mangledName,
                                 ClassData classData) throws IOException {
-            exportJSProperty(out, destObject, mangledName);
+            if (isExportedClass(classData)) {
+                exportJSProperty(out, destObject, mangledName);
+            }
         }
 
         @Override
@@ -283,7 +297,9 @@ final class ClosureWrapper extends CommandLineRunner {
                                  String destObject,
                                  String mangledName,
                                  MethodData methodData) throws IOException {
-            if ((methodData.access & ByteCodeParser.ACC_PRIVATE) == 0) {
+            if (isAccessible(methodData.access)
+                        && isExportedClass(methodData.cls)
+                    || isMarkedAsExported(methodData)) {
                 exportJSProperty(out, destObject, mangledName);
             }
         }
@@ -293,7 +309,9 @@ final class ClosureWrapper extends CommandLineRunner {
                                 String destObject,
                                 String mangledName,
                                 FieldData fieldData) throws IOException {
-            if ((fieldData.access & ByteCodeParser.ACC_PRIVATE) == 0) {
+            if (isAccessible(fieldData.access)
+                        && isExportedClass(fieldData.cls)
+                    || isMarkedAsExported(fieldData)) {
                 exportJSProperty(out, destObject, mangledName);
             }
         }
@@ -306,10 +324,110 @@ final class ClosureWrapper extends CommandLineRunner {
         protected void addExtern(String extern) {
             externs.add(extern);
         }
+
+        private boolean isExportedClass(ClassData classData)
+                throws IOException {
+            return classData.isPublic() && isMarkedAsExportedPackage(
+                                               classData.getPkgName())
+                       || isMarkedAsExported(classData);
+        }
+
+        private boolean isMarkedAsExportedPackage(String pkgName) {
+            if (pkgName == null) {
+                return false;
+            }
+
+            final Boolean cachedValue = isMarkedAsExportedCache.get(pkgName);
+            if (cachedValue != null) {
+                return cachedValue;
+            }
+
+            final boolean newValue = resolveIsMarkedAsExportedPackage(pkgName);
+            isMarkedAsExportedCache.put(pkgName, newValue);
+
+            return newValue;
+        }
+
+        private boolean isMarkedAsExported(ClassData classData)
+                throws IOException {
+            final Boolean cachedValue = isMarkedAsExportedCache.get(classData);
+            if (cachedValue != null) {
+                return cachedValue;
+            }
+
+            final boolean newValue =
+                    isMarkedAsExported(classData.findAnnotationData(true),
+                                       classData);
+            isMarkedAsExportedCache.put(classData, newValue);
+
+            return newValue;
+        }
+
+        private boolean isMarkedAsExported(MethodData methodData)
+                throws IOException {
+            return isMarkedAsExported(methodData.findAnnotationData(true),
+                                      methodData.cls);
+        }
+
+        private boolean isMarkedAsExported(FieldData fieldData)
+                throws IOException {
+            return isMarkedAsExported(fieldData.findAnnotationData(true),
+                                      fieldData.cls);
+        }
+
+        private boolean resolveIsMarkedAsExportedPackage(String pkgName) {
+            try {
+                final InputStream is =
+                        resources.get(pkgName + "/package-info.class");
+
+                try {
+                    final ClassData pkgInfoClass = new ClassData(is);
+                    return isMarkedAsExported(
+                                   pkgInfoClass.findAnnotationData(true),
+                                   pkgInfoClass);
+                } finally {
+                    is.close();
+                }
+            } catch (final IOException e) {
+                return false;
+            }
+        }
+
+        private boolean isMarkedAsExported(byte[] arrData, ClassData cd)
+                throws IOException {
+            if (arrData == null) {
+                return false;
+            }
+
+            final boolean[] found = { false };
+            final AnnotationParser annotationParser =
+                    new AnnotationParser(false, false) {
+                        @Override
+                        protected void visitAnnotationStart(
+                                String type,
+                                boolean top) {
+                            if (top && type.equals("Lorg/apidesign/bck2brwsr"
+                                                       + "/core/Exported;")) {
+                                found[0] = true;
+                            }
+                        }
+                    };
+            annotationParser.parse(arrData, cd);
+            return found[0];
+        }
+
+        private static boolean isAccessible(int access) {
+            return (access & (ByteCodeParser.ACC_PUBLIC
+                                  | ByteCodeParser.ACC_PROTECTED)) != 0;
+        }
     }
 
     private static final class MediumObfuscationDelegate
             extends AdvancedObfuscationDelegate {
+        public MediumObfuscationDelegate(Bck2Brwsr.Resources resources) {
+            super(resources);
+        }
+
         @Override
         public void exportJSProperty(Appendable out,
                                      String destObject,
@@ -320,6 +438,10 @@ final class ClosureWrapper extends CommandLineRunner {
 
     private static final class FullObfuscationDelegate
             extends AdvancedObfuscationDelegate {
+        public FullObfuscationDelegate(Bck2Brwsr.Resources resources) {
+            super(resources);
+        }
+
         @Override
         public void exportJSProperty(Appendable out,
                                      String destObject,
