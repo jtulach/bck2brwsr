@@ -4,7 +4,7 @@
 
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>demo.static.calculator</artifactId>
-  <version>0.6</version>
+  <version>0.7-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>JavaQuery Demo - Calculator - Static Compilation</name>
@@ -19,7 +19,7 @@
             <plugin>
                 <groupId>org.apidesign.bck2brwsr</groupId>
                 <artifactId>mojo</artifactId>
-                <version>0.6</version>
+                <version>0.7-SNAPSHOT</version>
                 <executions>
                     <execution>
                         <goals>
@@ -98,13 +98,13 @@
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>emul</artifactId>
-      <version>0.6</version>
+      <version>0.7-SNAPSHOT</version>
       <classifier>rt</classifier>
     </dependency>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>javaquery.api</artifactId>
-      <version>0.6</version>
+      <version>0.7-SNAPSHOT</version>
     </dependency>
   </dependencies>
 </project>
