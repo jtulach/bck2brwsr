@@ -46,4 +46,7 @@
  *
  * @since JDK1.1
  */
+@Exported
 package java.lang.reflect;
+
+import org.apidesign.bck2brwsr.core.Exported;
