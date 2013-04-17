@@ -23,6 +23,7 @@ import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.annotation.AnnotationTypeMismatchException;
+import java.lang.annotation.IncompleteAnnotationException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1334,7 +1335,7 @@ public final class PageProcessor extends AbstractProcessor {
         String typeName(ProcessingEnvironment env) {
             try {
                 return p.type().getName();
-            } catch (AnnotationTypeMismatchException ex) {
+            } catch (IncompleteAnnotationException | AnnotationTypeMismatchException ex) {
                 for (Object v : getAnnoValues(env)) {
                     String s = v.toString().replace(" ", "");
                     if (s.startsWith("type=") && s.endsWith(".class")) {
