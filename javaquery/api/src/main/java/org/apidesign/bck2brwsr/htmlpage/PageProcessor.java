@@ -1140,7 +1140,8 @@ public final class PageProcessor extends AbstractProcessor {
         String sep = "";
         for (Prprt p : props) {
             w.write(sep);
-            w.append("    sb.append(\"" + p.name() + ": \");\n");
+            w.append("    sb.append('\"').append(\"" + p.name() + "\")");
+                w.append(".append('\"').append(\":\");\n");
             w.append("    sb.append(org.apidesign.bck2brwsr.htmlpage.ConvertTypes.toJSON(prop_");
             w.append(p.name()).append("));\n");
             sep =    "    sb.append(',');\n";

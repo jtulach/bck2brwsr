@@ -54,6 +54,9 @@ public final class ConvertTypes {
         if (value == null) {
             return "null";
         }
+        if (value instanceof Enum) {
+            value = value.toString();
+        }
         if (value instanceof String) {
             return '"' + 
                 ((String)value).
