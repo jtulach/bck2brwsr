@@ -246,7 +246,7 @@ public final class PageProcessor extends AbstractProcessor {
                             w.append(type).append("(e));\n");
                         } else if (isEnum[0]) {
                             w.append("    this.prop_").append(pn);
-                            w.append(".add(");
+                            w.append(".add(e == null ? null : ");
                             w.append(type).append(".valueOf((String)e));\n");
                         } else {
                             if (isPrimitive(type)) {
@@ -262,7 +262,7 @@ public final class PageProcessor extends AbstractProcessor {
                     } else {
                         if (isEnum[0]) {
                             w.append("    this.prop_").append(pn);
-                            w.append(" = ");
+                            w.append(" = ret[" + cnt + "] == null ? null : ");
                             w.append(type).append(".valueOf((String)ret[" + cnt + "]);\n");
                         } else if (isPrimitive(type)) {
                             w.append("    this.prop_").append(pn);

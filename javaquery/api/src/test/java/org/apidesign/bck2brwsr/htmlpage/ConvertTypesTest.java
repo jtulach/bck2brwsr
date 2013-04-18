@@ -27,23 +27,34 @@ import org.testng.annotations.Factory;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class ConvertTypesTest {
-    @JavaScriptBody(args = {  }, body = "var json = new Object();"
+    @JavaScriptBody(args = { "includeSex" }, body = "var json = new Object();"
         + "json.firstName = 'son';\n"
         + "json.lastName = 'dj';\n"
-        + "json.sex = 'MALE';\n"
+        + "if (includeSex) json.sex = 'MALE';\n"
         + "return json;"
     )
-    private static native Object createJSON();
+    private static native Object createJSON(boolean includeSex);
     
     @BrwsrTest
-    public void testConvertToPeople() {
-        final Object o = createJSON();
+    public void testConvertToPeople() throws Exception {
+        final Object o = createJSON(true);
         
         Person p = new Person(o);
         
         assert "son".equals(p.getFirstName()) : "First name: " + p.getFirstName();
         assert "dj".equals(p.getLastName()) : "Last name: " + p.getLastName();
         assert Sex.MALE.equals(p.getSex()) : "Sex: " + p.getSex();
+    }
+
+    @BrwsrTest
+    public void testConvertToPeopleWithoutSex() throws Exception {
+        final Object o = createJSON(false);
+        
+        Person p = new Person(o);
+        
+        assert "son".equals(p.getFirstName()) : "First name: " + p.getFirstName();
+        assert "dj".equals(p.getLastName()) : "Last name: " + p.getLastName();
+        assert p.getSex() == null : "No sex: " + p.getSex();
     }
     
     @Factory public static Object[] create() {
