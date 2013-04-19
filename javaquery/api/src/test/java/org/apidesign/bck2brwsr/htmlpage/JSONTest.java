@@ -70,6 +70,25 @@ public class JSONTest {
         assertEquals(o.getString("sex"), "MALE");
     }
     
+    @BrwsrTest public void toJSONInABrowser() throws Throwable {
+        Person p = new Person();
+        p.setSex(Sex.MALE);
+        p.setFirstName("Jarda");
+        p.setLastName("Tulach");
+
+        Object json;
+        try {
+            json = parseJSON(p.toString());
+        } catch (Throwable ex) {
+            throw new IllegalStateException("Can't parse " + p).initCause(ex);
+        }
+        
+        Person p2 = new Person(json);
+        
+        assert p2.getFirstName().equals(p.getFirstName()) : 
+            "Should be the same: " + p.getFirstName() + " != " + p2.getFirstName();
+    }
+    
     @Test public void personWithWildCharactersAndNulls() throws JSONException {
         Person p = new Person();
         p.setFirstName("'\"\n");
@@ -213,6 +232,9 @@ public class JSONTest {
     @JavaScriptBody(args = {  }, body = "return window.document.getElementsByTagName('script').length;")
     private static native int scriptElements();
 
+    @JavaScriptBody(args = { "s" }, body = "return window.JSON.parse(s);")
+    private static native Object parseJSON(String s);
+    
     @Http(@Http.Resource(
         content = "{'firstName': 'Sitar', 'sex': 'MALE'}", 
         path="/person.json", 

@@ -24,7 +24,6 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 import org.testng.annotations.Test;
-import org.xml.sax.InputSource;
 import static org.testng.Assert.*;
 import org.testng.annotations.BeforeClass;
 import org.w3c.dom.Document;

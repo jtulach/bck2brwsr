@@ -23,6 +23,7 @@ import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.annotation.AnnotationTypeMismatchException;
+import java.lang.annotation.IncompleteAnnotationException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -245,7 +246,7 @@ public final class PageProcessor extends AbstractProcessor {
                             w.append(type).append("(e));\n");
                         } else if (isEnum[0]) {
                             w.append("    this.prop_").append(pn);
-                            w.append(".add(");
+                            w.append(".add(e == null ? null : ");
                             w.append(type).append(".valueOf((String)e));\n");
                         } else {
                             if (isPrimitive(type)) {
@@ -261,7 +262,7 @@ public final class PageProcessor extends AbstractProcessor {
                     } else {
                         if (isEnum[0]) {
                             w.append("    this.prop_").append(pn);
-                            w.append(" = ");
+                            w.append(" = ret[" + cnt + "] == null ? null : ");
                             w.append(type).append(".valueOf((String)ret[" + cnt + "]);\n");
                         } else if (isPrimitive(type)) {
                             w.append("    this.prop_").append(pn);
@@ -1139,7 +1140,8 @@ public final class PageProcessor extends AbstractProcessor {
         String sep = "";
         for (Prprt p : props) {
             w.write(sep);
-            w.append("    sb.append(\"" + p.name() + ": \");\n");
+            w.append("    sb.append('\"').append(\"" + p.name() + "\")");
+                w.append(".append('\"').append(\":\");\n");
             w.append("    sb.append(org.apidesign.bck2brwsr.htmlpage.ConvertTypes.toJSON(prop_");
             w.append(p.name()).append("));\n");
             sep =    "    sb.append(',');\n";
@@ -1334,7 +1336,7 @@ public final class PageProcessor extends AbstractProcessor {
         String typeName(ProcessingEnvironment env) {
             try {
                 return p.type().getName();
-            } catch (AnnotationTypeMismatchException ex) {
+            } catch (IncompleteAnnotationException | AnnotationTypeMismatchException ex) {
                 for (Object v : getAnnoValues(env)) {
                     String s = v.toString().replace(" ", "");
                     if (s.startsWith("type=") && s.endsWith(".class")) {

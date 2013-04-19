@@ -4,14 +4,26 @@
   <parent>
     <artifactId>bck2brwsr</artifactId>
     <groupId>org.apidesign</groupId>
-    <version>0.6-SNAPSHOT</version>
+    <version>0.7-SNAPSHOT</version>
   </parent>
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>ide</artifactId>
-  <version>0.6-SNAPSHOT</version>
+  <version>0.7-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>IDE Support</name>
   <modules>
     <module>editor</module>
   </modules>
+  <build>
+      <plugins>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-deploy-plugin</artifactId>
+              <version>2.7</version>
+              <configuration>
+                  <skip>true</skip>
+              </configuration>
+          </plugin>      
+      </plugins>
+  </build>
 </project>
