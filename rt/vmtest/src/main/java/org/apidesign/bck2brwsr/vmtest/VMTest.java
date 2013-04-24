@@ -47,10 +47,10 @@ public final class VMTest {
      * Each {@link BrwsrTest} annotated method is executed once in {@link Launcher started
      * browser}.
      * 
-     * @param clazz the class to inspect
+     * @param clazz the class (or classes) to inspect
      * @return the set of created tests
      */
-    public static Object[] create(Class<?> clazz) {
+    public static Object[] create(Class... clazz) {
         return CompareCase.create(clazz);
     }
 }
