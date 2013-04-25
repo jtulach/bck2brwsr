@@ -57,4 +57,14 @@ public final class Bck2BrwsrKnockoutTest extends KnockoutTCK {
 
     @JavaScriptBody(args = { "json", "key", "value" }, body = "json[key] = value;")
     private static native void putValue(Object json, String key, Object value);
+
+    @Override
+    public Object executeScript(String script, Object[] arguments) {
+        return execScript(script, arguments);
+    }
+    
+    @JavaScriptBody(args = { "s", "args" }, body = 
+        "var f = new Function(s); return f.apply(null, args);"
+    )
+    private static native Object execScript(String s, Object[] arguments);
 }
