@@ -193,5 +193,7 @@ public final class Bck2Brwsr {
          *   or the file cannot be found
          */
         public InputStream get(String resource) throws IOException;
+
+        public String getModule(String resource) throws IOException;
     }
 }

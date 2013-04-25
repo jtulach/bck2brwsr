@@ -460,6 +460,11 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
             }
             throw new IOException("Can't find " + resource);
         }
+
+        @Override
+        public String getModule(String resource) throws IOException {
+            return null;
+        }
     }
 
     private static class Page extends HttpHandler {

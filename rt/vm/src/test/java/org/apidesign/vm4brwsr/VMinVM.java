@@ -45,7 +45,7 @@ class VMinVM extends ByteCodeToJavaScript {
     }
 
     @Override
-    String getVMObject() {
+    String getExportsObject() {
         return "global";
     }
 }

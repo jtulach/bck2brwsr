@@ -35,6 +35,43 @@ final class LdrRsrcs implements Bck2Brwsr.Resources {
 
     @Override
     public InputStream get(String name) throws IOException {
+        return findSource(name).openStream();
+    }
+
+    @Override
+    public String getModule(String name) throws IOException {
+        final URL url = findSource(name);
+
+        if (!"jar".equalsIgnoreCase(url.getProtocol())) {
+            return null;
+        }
+
+        final String fullPathString = url.getPath();
+        final int sepIndex = fullPathString.indexOf('!');
+        final String jarPathString =
+                (sepIndex != -1) ? fullPathString.substring(0, sepIndex)
+                                 : fullPathString;
+        if (!jarPathString.endsWith(".jar")) {
+            return null;
+        }
+
+        String moduleName =
+                jarPathString.substring(
+                                  jarPathString.lastIndexOf('/') + 1,
+                                  jarPathString.length() - 4);
+        if (moduleName.endsWith("-SNAPSHOT")) {
+            moduleName = moduleName.substring(
+                                        0, moduleName.length() - 9);
+        }
+        final int dashIndex = moduleName.lastIndexOf('-');
+        if (dashIndex != -1) {
+            moduleName = moduleName.substring(0, dashIndex);
+        }
+
+        return moduleName;
+    }
+
+    private URL findSource(String name) throws IOException {
         Enumeration<URL> en = loader.getResources(name);
         URL u = null;
         while (en.hasMoreElements()) {
@@ -43,6 +80,6 @@ final class LdrRsrcs implements Bck2Brwsr.Resources {
         if (u == null) {
             throw new IOException("Can't find " + name);
         }
-        return u.openStream();
+        return u;
     }
 }

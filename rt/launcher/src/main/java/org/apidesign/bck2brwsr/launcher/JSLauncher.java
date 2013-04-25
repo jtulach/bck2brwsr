@@ -128,5 +128,10 @@ final class JSLauncher extends Launcher {
             }
             throw new IOException("Can't find " + resource);
         }
+
+        @Override
+        public String getModule(String resource) throws IOException {
+            return null;
+        }
     }
 }

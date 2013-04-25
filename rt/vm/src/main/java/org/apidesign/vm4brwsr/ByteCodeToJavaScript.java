@@ -30,10 +30,6 @@ abstract class ByteCodeToJavaScript {
     final Appendable out;
     final ObfuscationDelegate obfuscationDelegate;
 
-    protected ByteCodeToJavaScript(Appendable out) {
-        this(out, ObfuscationDelegate.NULL);
-    }
-
     protected ByteCodeToJavaScript(
             Appendable out, ObfuscationDelegate obfuscationDelegate) {
         this.out = out;
@@ -66,7 +62,7 @@ abstract class ByteCodeToJavaScript {
         return classOperation;
     }
 
-    abstract String getVMObject();
+    abstract String getExportsObject();
 
     /** Prints out a debug message. 
      * 
@@ -243,7 +239,7 @@ abstract class ByteCodeToJavaScript {
         out.append("\n  return arguments[0] ? new CLS() : CLS.prototype;");
         out.append("\n};");
 
-        obfuscationDelegate.exportClass(out, getVMObject(), className, jc);
+        obfuscationDelegate.exportClass(out, getExportsObject(), className, jc);
 
 //        StringBuilder sb = new StringBuilder();
 //        for (String init : toInitilize.toArray()) {

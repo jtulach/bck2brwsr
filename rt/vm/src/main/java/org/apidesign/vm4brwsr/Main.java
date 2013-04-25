@@ -18,9 +18,16 @@
 package org.apidesign.vm4brwsr;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 /** Generator of JavaScript from bytecode of classes on classpath of the VM
  * with a Main method.
@@ -30,7 +37,7 @@ import java.io.Writer;
 final class Main {
     private Main() {}
     
-    public static void main(String... args) throws IOException {
+    public static void main(String... args) throws IOException, URISyntaxException {
         final String obfuscate = "--obfuscatelevel";
         
         if (args.length < 2) {
@@ -50,7 +57,9 @@ final class Main {
             System.err.println("] <file_to_generate_js_code_to> java/lang/Class org/your/App ...");
             System.exit(9);
         }
-        
+
+        final ClassLoader mainClassLoader = Main.class.getClassLoader();
+
         ObfuscationLevel obfLevel = ObfuscationLevel.NONE;
         StringArray classes = new StringArray();
         String generateTo = null;
@@ -78,15 +87,114 @@ final class Main {
             if (generateTo == null) {
                 generateTo = args[i];
             } else {
-                classes = classes.addAndNew(args[i]);
+                collectClasses(classes, mainClassLoader, args[i]);
             }
         }
         try (Writer w = new BufferedWriter(new FileWriter(generateTo))) {
             Bck2Brwsr.newCompiler().
                 obfuscation(obfLevel).
                 addRootClasses(classes.toArray()).
-                resources(Main.class.getClassLoader()).
+                resources(mainClassLoader).
                 generate(w);
+        }
+    }
+
+    private static void collectClasses(
+            final StringArray dest,
+            final ClassLoader cl, final String relativePath)
+                throws IOException, URISyntaxException {
+        final Enumeration<URL> urls = cl.getResources(relativePath);
+        if (!urls.hasMoreElements()) {
+            dest.add(relativePath);
+            return;
+        }
+        do {
+            final URL url = urls.nextElement();
+            switch (url.getProtocol()) {
+                case "file":
+                    collectClasses(dest, relativePath,
+                                   new File(new URI(url.toString())));
+                    continue;
+                case "jar":
+                    final String fullPath = url.getPath();
+                    final int sepIndex = fullPath.indexOf('!');
+                    final String jarFilePath =
+                            (sepIndex != -1) ? fullPath.substring(0, sepIndex)
+                                             : fullPath;
+
+                    final URI jarUri = new URI(jarFilePath);
+                    if (jarUri.getScheme().equals("file")) {
+                        try (JarFile jarFile = new JarFile(new File(jarUri))) {
+                            collectClasses(dest, relativePath, jarFile);
+                            continue;
+                        }
+                    }
+                    break;
+            }
+
+            dest.add(relativePath);
+        } while (urls.hasMoreElements());
+    }
+
+    private static void collectClasses(final StringArray dest,
+                                       final String relativePath,
+                                       final File file) {
+        if (file.isDirectory()) {
+            final File[] subFiles = file.listFiles();
+            for (final File subFile: subFiles) {
+                collectClasses(dest,
+                               extendPath(relativePath, subFile.getName()),
+                               subFile);
+            }
+
+            return;
+        }
+
+        final String filePath = file.getPath();
+        if (filePath.endsWith(".class")) {
+            validateAndAddClass(dest, relativePath);
+        }
+    }
+
+    private static void collectClasses(final StringArray dest,
+                                       final String relativePath,
+                                       final JarFile jarFile) {
+        if (relativePath.endsWith(".class")) {
+            if (jarFile.getJarEntry(relativePath) != null) {
+                validateAndAddClass(dest, relativePath);
+            }
+
+            return;
+        }
+
+        final String expectedPrefix =
+                relativePath.endsWith("/") ? relativePath
+                                           : relativePath + '/';
+        final Enumeration<JarEntry> entries = jarFile.entries();
+        while (entries.hasMoreElements()) {
+            final JarEntry entry = entries.nextElement();
+            if (!entry.isDirectory()) {
+                final String entryName = entry.getName();
+                if (entryName.startsWith(expectedPrefix)
+                        && entryName.endsWith(".class")) {
+                    validateAndAddClass(dest, entryName);
+                }
+            }
+        }
+    }
+
+    private static String extendPath(final String relativePath,
+                                     final String fileName) {
+        return relativePath.endsWith("/") ? relativePath + fileName
+                                          : relativePath + '/' + fileName;
+    }
+
+    private static void validateAndAddClass(final StringArray dest,
+                                            final String relativePath) {
+        final String className =
+                relativePath.substring(0, relativePath.length() - 6);
+        if (!className.endsWith("package-info")) {
+            dest.add(className);
         }
     }
 }

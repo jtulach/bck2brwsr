@@ -24,11 +24,7 @@ import java.io.InputStream;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-class VM extends ByteCodeToJavaScript {
-    public VM(Appendable out) {
-        super(out);
-    }
-
+abstract class VM extends ByteCodeToJavaScript {
     private VM(Appendable out, ObfuscationDelegate obfuscationDelegate) {
         super(out, obfuscationDelegate);
     }
@@ -49,16 +45,27 @@ class VM extends ByteCodeToJavaScript {
     }
     
     static void compile(Bck2Brwsr.Resources l, Appendable out, StringArray names) throws IOException {
-        new VM(out).doCompile(l, names);
+        VM vm = new Standalone(out, ObfuscationDelegate.NULL);
+        vm.doCompile(l, names);
     }
 
     static void compile(Bck2Brwsr.Resources l, Appendable out, StringArray names,
                         ObfuscationDelegate obfuscationDelegate) throws IOException {
-        new VM(out, obfuscationDelegate).doCompile(l, names);
+        VM vm = new Standalone(out, obfuscationDelegate);
+        vm.doCompile(l, names);
     }
 
-    protected void doCompile(Bck2Brwsr.Resources l, StringArray names) throws IOException {
-        out.append("(function VM(global) {var fillInVMSkeleton = function(vm) {");
+    private void doCompile(Bck2Brwsr.Resources l, StringArray names) throws IOException {
+        generatePrologue();
+        generateBody(l, names);
+        generateEpilogue();
+    }
+
+    protected abstract void generatePrologue() throws IOException;
+
+    protected abstract void generateEpilogue() throws IOException;
+
+    protected void generateBody(Bck2Brwsr.Resources l, StringArray names) throws IOException {
         StringArray processed = new StringArray();
         StringArray initCode = new StringArray();
         for (String baseClass : names.toArray()) {
@@ -76,7 +83,7 @@ class VM extends ByteCodeToJavaScript {
                 }
                 InputStream is = loadClass(l, name);
                 if (is == null) {
-                    throw new IOException("Can't find class " + name); 
+                    throw new IOException("Can't find class " + name);
                 }
                 try {
                     String ic = compile(is);
@@ -91,11 +98,11 @@ class VM extends ByteCodeToJavaScript {
                                 break;
                             }
                         }
-                        throw new IOException("Error while compiling " + name + "\n" 
+                        throw new IOException("Error while compiling " + name + "\n"
                             + seq.subSequence(lastBlock + 1, seq.length()), ex
                         );
                     } else {
-                        throw new IOException("Error while compiling " + name + "\n" 
+                        throw new IOException("Error while compiling " + name + "\n"
                             + out, ex
                         );
                     }
@@ -113,7 +120,7 @@ class VM extends ByteCodeToJavaScript {
                 readResource(emul, out);
             }
             scripts = new StringArray();
-            
+
             StringArray toInit = StringArray.asList(references.toArray());
             toInit.reverse();
 
@@ -128,36 +135,8 @@ class VM extends ByteCodeToJavaScript {
                 }
             }
         }
-        out.append(
-              "  return vm;\n"
-            + "  };\n"
-            + "  global.bck2brwsr = function() {\n"
-            + "    var args = Array.prototype.slice.apply(arguments);\n"
-            + "    var vm = fillInVMSkeleton({});\n"
-            + "    var loader = {};\n"
-            + "    loader.vm = vm;\n"
-            + "    loader.loadClass = function(name) {\n"
-            + "      var attr = name.replace__Ljava_lang_String_2CC('.','_');\n"
-            + "      var fn = vm[attr];\n"
-            + "      if (fn) return fn(false);\n"
-            + "      return vm.org_apidesign_vm4brwsr_VMLazy(false).\n"
-            + "        load__Ljava_lang_Object_2Ljava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2(loader, name, args);\n"
-            + "    }\n"
-            + "    if (vm.loadClass) {\n"
-            + "      throw 'Cannot initialize the bck2brwsr VM twice!';\n"
-            + "    }\n"
-            + "    vm.loadClass = loader.loadClass;\n"
-            + "    vm.loadBytes = function(name) {\n"
-            + "      return vm.org_apidesign_vm4brwsr_VMLazy(false).\n"
-            + "        loadBytes___3BLjava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2(loader, name, args);\n"
-            + "    }\n"
-            + "    vm.java_lang_reflect_Array(false);\n"
-            + "    vm.org_apidesign_vm4brwsr_VMLazy(false).\n"
-            + "      loadBytes___3BLjava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2(loader, null, args);\n"
-            + "    return loader;\n"
-            + "  };\n");
-        out.append("}(this));");
     }
+
     private static void readResource(InputStream emul, Appendable out) throws IOException {
         try {
             int state = 0;
@@ -241,8 +220,80 @@ class VM extends ByteCodeToJavaScript {
         return "vm." + className;
     }
 
-    @Override
-    String getVMObject() {
-        return "vm";
+    private static final class Standalone extends VM {
+        private Standalone(Appendable out,
+                           ObfuscationDelegate obfuscationDelegate) {
+            super(out, obfuscationDelegate);
+        }
+
+        @Override
+        protected void generatePrologue() throws IOException {
+            out.append("(function VM(global) {var fillInVMSkeleton = function(vm) {");
+        }
+
+        @Override
+        protected void generateEpilogue() throws IOException {
+            out.append(
+                  "  return vm;\n"
+                + "  };\n"
+                + "  global.bck2brwsr = function() {\n"
+                + "    var args = Array.prototype.slice.apply(arguments);\n"
+                + "    var vm = fillInVMSkeleton({});\n"
+                + "    var loader = {};\n"
+                + "    loader.vm = vm;\n"
+                + "    loader.loadClass = function(name) {\n"
+                + "      var attr = name.replace__Ljava_lang_String_2CC('.','_');\n"
+                + "      var fn = vm[attr];\n"
+                + "      if (fn) return fn(false);\n"
+                + "      return vm.org_apidesign_vm4brwsr_VMLazy(false).\n"
+                + "        load__Ljava_lang_Object_2Ljava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2(loader, name, args);\n"
+                + "    }\n"
+                + "    if (vm.loadClass) {\n"
+                + "      throw 'Cannot initialize the bck2brwsr VM twice!';\n"
+                + "    }\n"
+                + "    vm.loadClass = loader.loadClass;\n"
+                + "    vm.loadBytes = function(name) {\n"
+                + "      return vm.org_apidesign_vm4brwsr_VMLazy(false).\n"
+                + "        loadBytes___3BLjava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2(loader, name, args);\n"
+                + "    }\n"
+                + "    vm.java_lang_reflect_Array(false);\n"
+                + "    vm.org_apidesign_vm4brwsr_VMLazy(false).\n"
+                + "      loadBytes___3BLjava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2(loader, null, args);\n"
+                + "    return loader;\n"
+                + "  };\n");
+            out.append("}(this));");
+        }
+
+        @Override
+        String getExportsObject() {
+            return "vm";
+        }
+    }
+
+    private static final class Extension extends VM {
+        private final String name;
+
+        private Extension(String name,
+                          Appendable out,
+                          ObfuscationDelegate obfuscationDelegate) {
+            super(out, obfuscationDelegate);
+            this.name = name;
+        }
+
+        @Override
+        protected void generatePrologue() throws IOException {
+            out.append("bck2brwsr.registerExtension(function(exports) {\n"
+                           + "  var vm = {};\n");
+        }
+
+        @Override
+        protected void generateEpilogue() throws IOException {
+            out.append("});");
+        }
+
+        @Override
+        String getExportsObject() {
+            return "exports";
+        }
     }
 }

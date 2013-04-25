@@ -166,5 +166,10 @@ final class TestVM {
             }
             return u.openStream();
         }
+
+        @Override
+        public String getModule(String resource) throws IOException {
+            return null;
+        }
     }
 }

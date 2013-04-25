@@ -135,4 +135,9 @@ final class Dew extends HttpHandler implements Bck2Brwsr.Resources {
         byte[] arr = data == null ? null : data.get(r);
         return arr == null ? null : new ByteArrayInputStream(arr);
     }
+
+    @Override
+    public String getModule(String resource) throws IOException {
+        return null;
+    }
 }
