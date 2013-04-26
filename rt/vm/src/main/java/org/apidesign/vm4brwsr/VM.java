@@ -19,14 +19,20 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
+import org.apidesign.vm4brwsr.ByteCodeParser.ClassData;
 
 /** Generator of JavaScript from bytecode of classes on classpath of the VM.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 abstract class VM extends ByteCodeToJavaScript {
-    private VM(Appendable out, ObfuscationDelegate obfuscationDelegate) {
-        super(out, obfuscationDelegate);
+    protected final Bck2Brwsr.Resources resources;
+    private final ExportedSymbols exportedSymbols;
+
+    private VM(Appendable out, Bck2Brwsr.Resources resources) {
+        super(out);
+        this.resources = resources;
+        this.exportedSymbols = new ExportedSymbols(resources);
     }
 
     static {
@@ -44,20 +50,19 @@ abstract class VM extends ByteCodeToJavaScript {
         return false;
     }
     
-    static void compile(Bck2Brwsr.Resources l, Appendable out, StringArray names) throws IOException {
-        VM vm = new Standalone(out, ObfuscationDelegate.NULL);
-        vm.doCompile(l, names);
+    static void compileStandalone(Bck2Brwsr.Resources l, Appendable out, StringArray names) throws IOException {
+        VM vm = new Standalone(out, l);
+        vm.doCompile(names);
     }
 
-    static void compile(Bck2Brwsr.Resources l, Appendable out, StringArray names,
-                        ObfuscationDelegate obfuscationDelegate) throws IOException {
-        VM vm = new Standalone(out, obfuscationDelegate);
-        vm.doCompile(l, names);
+    static void compileExtension(Bck2Brwsr.Resources l, Appendable out, StringArray names) throws IOException {
+        VM vm = new Extension(out, l);
+        vm.doCompile(names);
     }
 
-    private void doCompile(Bck2Brwsr.Resources l, StringArray names) throws IOException {
+    private void doCompile(StringArray names) throws IOException {
         generatePrologue();
-        generateBody(l, names);
+        generateBody(names);
         generateEpilogue();
     }
 
@@ -65,7 +70,24 @@ abstract class VM extends ByteCodeToJavaScript {
 
     protected abstract void generateEpilogue() throws IOException;
 
-    protected void generateBody(Bck2Brwsr.Resources l, StringArray names) throws IOException {
+    protected abstract String generateClass(String className)
+            throws IOException;
+
+    protected abstract String getExportsObject();
+
+    @Override
+    protected final void declaredClass(ClassData classData, String mangledName)
+            throws IOException {
+        if (exportedSymbols.isExported(classData)) {
+            out.append("\n").append(getExportsObject()).append("['")
+                                               .append(mangledName)
+                                               .append("'] = ")
+                            .append(accessClass(mangledName))
+               .append(";\n");
+        }
+    }
+
+    private void generateBody(StringArray names) throws IOException {
         StringArray processed = new StringArray();
         StringArray initCode = new StringArray();
         for (String baseClass : names.toArray()) {
@@ -81,12 +103,9 @@ abstract class VM extends ByteCodeToJavaScript {
                 if (name == null) {
                     break;
                 }
-                InputStream is = loadClass(l, name);
-                if (is == null) {
-                    throw new IOException("Can't find class " + name);
-                }
+
                 try {
-                    String ic = compile(is);
+                    String ic = generateClass(name);
                     processed.add(name);
                     initCode.add(ic == null ? "" : ic);
                 } catch (RuntimeException ex) {
@@ -113,7 +132,7 @@ abstract class VM extends ByteCodeToJavaScript {
                 while (resource.startsWith("/")) {
                     resource = resource.substring(1);
                 }
-                InputStream emul = l.get(resource);
+                InputStream emul = resources.get(resource);
                 if (emul == null) {
                     throw new IOException("Can't find " + resource);
                 }
@@ -221,9 +240,8 @@ abstract class VM extends ByteCodeToJavaScript {
     }
 
     private static final class Standalone extends VM {
-        private Standalone(Appendable out,
-                           ObfuscationDelegate obfuscationDelegate) {
-            super(out, obfuscationDelegate);
+        private Standalone(Appendable out, Bck2Brwsr.Resources resources) {
+            super(out, resources);
         }
 
         @Override
@@ -236,9 +254,13 @@ abstract class VM extends ByteCodeToJavaScript {
             out.append(
                   "  return vm;\n"
                 + "  };\n"
+                + "  var extensions = [];\n"
                 + "  global.bck2brwsr = function() {\n"
                 + "    var args = Array.prototype.slice.apply(arguments);\n"
                 + "    var vm = fillInVMSkeleton({});\n"
+                + "    for (var i = 0; i < extensions.length; ++i) {\n"
+                + "      extensions[i](vm);\n"
+                + "    }\n"
                 + "    var loader = {};\n"
                 + "    loader.vm = vm;\n"
                 + "    loader.loadClass = function(name) {\n"
@@ -261,29 +283,47 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "      loadBytes___3BLjava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2(loader, null, args);\n"
                 + "    return loader;\n"
                 + "  };\n");
+            out.append(
+                  "  global.bck2brwsr.registerExtension"
+                             + " = function(extension) {\n"
+                + "    extensions.push(extension);\n"
+                + "  };\n");
             out.append("}(this));");
         }
 
         @Override
-        String getExportsObject() {
+        protected String generateClass(String className) throws IOException {
+            InputStream is = loadClass(resources, className);
+            if (is == null) {
+                throw new IOException("Can't find class " + className);
+            }
+            return compile(is);
+        }
+
+        @Override
+        protected String getExportsObject() {
             return "vm";
         }
     }
 
     private static final class Extension extends VM {
-        private final String name;
-
-        private Extension(String name,
-                          Appendable out,
-                          ObfuscationDelegate obfuscationDelegate) {
-            super(out, obfuscationDelegate);
-            this.name = name;
+        private Extension(Appendable out, Bck2Brwsr.Resources resources) {
+            super(out, resources);
         }
 
         @Override
         protected void generatePrologue() throws IOException {
             out.append("bck2brwsr.registerExtension(function(exports) {\n"
                            + "  var vm = {};\n");
+            out.append("  function link(n, inst) {\n"
+                           + "    var cls = n.replace__Ljava_lang_String_2CC("
+                                                  + "'/', '_').toString();\n"
+                           + "    var dot = n.replace__Ljava_lang_String_2CC("
+                                                  + "'/', '.').toString();\n"
+                           + "    exports.loadClass(dot);\n"
+                           + "    vm[cls] = exports[cls];\n"
+                           + "    return vm[cls](inst);\n"
+                           + "  };\n");
         }
 
         @Override
@@ -292,7 +332,24 @@ abstract class VM extends ByteCodeToJavaScript {
         }
 
         @Override
-        String getExportsObject() {
+        protected String generateClass(String className) throws IOException {
+            InputStream is = loadClass(resources, className);
+            if (is == null) {
+                out.append("\n").append(assignClass(
+                                            className.replace('/', '_')))
+                   .append("function() {\n  return link('")
+                   .append(className)
+                   .append("', arguments.length == 0 || arguments[0] === true);"
+                               + "\n};");
+
+                return null;
+            }
+
+            return compile(is);
+        }
+
+        @Override
+        protected String getExportsObject() {
             return "exports";
         }
     }

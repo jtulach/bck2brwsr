@@ -104,7 +104,7 @@ final class ClosureWrapper extends CommandLineRunner {
         if (compiledCode == null) {
             StringBuilder sb = new StringBuilder();
             try {
-                VM.compile(res, sb, classes, obfuscationDelegate);
+                VM.compileStandalone(res, sb, classes);
                 compiledCode = sb.toString();
             } catch (IOException ex) {
                 compiledCode = ex.getMessage();

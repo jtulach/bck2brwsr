@@ -27,21 +27,44 @@ import java.util.Enumeration;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 final class LdrRsrcs implements Bck2Brwsr.Resources {
+    private final String module;
     private final ClassLoader loader;
 
     LdrRsrcs(ClassLoader loader) {
+        this(null, loader);
+    }
+
+    LdrRsrcs(String module, ClassLoader loader) {
+        this.module = module;
         this.loader = loader;
     }
 
     @Override
     public InputStream get(String name) throws IOException {
-        return findSource(name).openStream();
+        final URL url = findSource(name);
+        if (url == null) {
+            return null;
+        }
+        if (module != null) {
+            final String resourceModule = getModule(url);
+            if ((resourceModule != null) && !module.equals(resourceModule)) {
+                return null;
+            }
+        }
+
+        return url.openStream();
     }
 
-    @Override
-    public String getModule(String name) throws IOException {
-        final URL url = findSource(name);
+    private URL findSource(String name) throws IOException {
+        Enumeration<URL> en = loader.getResources(name);
+        URL u = null;
+        while (en.hasMoreElements()) {
+            u = en.nextElement();
+        }
+        return u;
+    }
 
+    private static String getModule(URL url) throws IOException {
         if (!"jar".equalsIgnoreCase(url.getProtocol())) {
             return null;
         }
@@ -69,17 +92,5 @@ final class LdrRsrcs implements Bck2Brwsr.Resources {
         }
 
         return moduleName;
-    }
-
-    private URL findSource(String name) throws IOException {
-        Enumeration<URL> en = loader.getResources(name);
-        URL u = null;
-        while (en.hasMoreElements()) {
-            u = en.nextElement();
-        }
-        if (u == null) {
-            throw new IOException("Can't find " + name);
-        }
-        return u;
     }
 }

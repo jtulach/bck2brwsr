@@ -106,7 +106,7 @@ final class VMLazy {
         private final VMLazy lazy;
 
         public Gen(VMLazy vm, Appendable out) {
-            super(out, ObfuscationDelegate.NULL);
+            super(out);
             this.lazy = vm;
         }
         
@@ -150,11 +150,6 @@ final class VMLazy {
         @Override
         String accessClass(String classOperation) {
             return "vm." + classOperation;
-        }
-
-        @Override
-        String getExportsObject() {
-            return "vm";
         }
     }
 }

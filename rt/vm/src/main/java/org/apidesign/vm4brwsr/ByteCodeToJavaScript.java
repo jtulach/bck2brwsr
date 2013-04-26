@@ -28,12 +28,9 @@ import static org.apidesign.vm4brwsr.ByteCodeParser.*;
 abstract class ByteCodeToJavaScript {
     private ClassData jc;
     final Appendable out;
-    final ObfuscationDelegate obfuscationDelegate;
 
-    protected ByteCodeToJavaScript(
-            Appendable out, ObfuscationDelegate obfuscationDelegate) {
+    protected ByteCodeToJavaScript(Appendable out) {
         this.out = out;
-        this.obfuscationDelegate = obfuscationDelegate;
     }
     
     /* Collects additional required resources.
@@ -62,7 +59,9 @@ abstract class ByteCodeToJavaScript {
         return classOperation;
     }
 
-    abstract String getExportsObject();
+    protected void declaredClass(ClassData classData, String mangledName)
+            throws IOException {
+    }
 
     /** Prints out a debug message. 
      * 
@@ -145,7 +144,7 @@ abstract class ByteCodeToJavaScript {
                    .append("; };");
             }
 
-            obfuscationDelegate.exportField(out, "c", "_" + v.getName(), v);
+//            obfuscationDelegate.exportField(out, "c", "_" + v.getName(), v);
         }
         for (MethodData m : jc.getMethods()) {
             byte[] onlyArr = m.findAnnotationData(true);
@@ -175,7 +174,7 @@ abstract class ByteCodeToJavaScript {
                     mn = generateInstanceMethod(destObject, m);
                 }
             }
-            obfuscationDelegate.exportMethod(out, destObject, mn, m);
+//            obfuscationDelegate.exportMethod(out, destObject, mn, m);
             byte[] runAnno = m.findAnnotationData(false);
             if (runAnno != null) {
                 out.append("\n    ").append(destObject).append(".").append(mn).append(".anno = {");
@@ -188,11 +187,11 @@ abstract class ByteCodeToJavaScript {
         out.append("\n    c.constructor = CLS;");
         String instOfName = "$instOf_" + className;
         out.append("\n    c.").append(instOfName).append(" = true;");
-        obfuscationDelegate.exportJSProperty(out, "c", instOfName);
+//        obfuscationDelegate.exportJSProperty(out, "c", instOfName);
         for (String superInterface : jc.getSuperInterfaces()) {
             instOfName = "$instOf_" + superInterface.replace('/', '_');
             out.append("\n    c.").append(instOfName).append(" = true;");
-            obfuscationDelegate.exportJSProperty(out, "c", instOfName);
+//            obfuscationDelegate.exportJSProperty(out, "c", instOfName);
         }
         out.append("\n    CLS.$class = 'temp';");
         out.append("\n    CLS.$class = ");
@@ -239,7 +238,7 @@ abstract class ByteCodeToJavaScript {
         out.append("\n  return arguments[0] ? new CLS() : CLS.prototype;");
         out.append("\n};");
 
-        obfuscationDelegate.exportClass(out, getExportsObject(), className, jc);
+        declaredClass(jc, className);
 
 //        StringBuilder sb = new StringBuilder();
 //        for (String init : toInitilize.toArray()) {

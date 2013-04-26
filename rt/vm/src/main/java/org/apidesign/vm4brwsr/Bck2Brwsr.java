@@ -57,11 +57,13 @@ public final class Bck2Brwsr {
     private final ObfuscationLevel level;
     private final StringArray classes;
     private final Resources res;
+    private final boolean extension;
 
-    private Bck2Brwsr(ObfuscationLevel level, StringArray classes, Resources resources) {
+    private Bck2Brwsr(ObfuscationLevel level, StringArray classes, Resources resources, boolean extension) {
         this.level = level;
         this.classes = classes;
         this.res = resources;
+        this.extension = extension;
     }
     
     /** Helper method to generate virtual machine from bytes served by a <code>resources</code>
@@ -98,8 +100,10 @@ public final class Bck2Brwsr {
      * @since 0.5
      */
     public static Bck2Brwsr newCompiler() {
-        StringArray arr = StringArray.asList(VM.class.getName().replace('.', '/'));
-        return new Bck2Brwsr(ObfuscationLevel.NONE, arr, null);
+        StringArray arr = StringArray.asList(
+                              Class.class.getName().replace('.', '/'),
+                              VM.class.getName().replace('.', '/'));
+        return new Bck2Brwsr(ObfuscationLevel.NONE, arr, null, false);
     }
 
     /** Creates new instance of the Bck2Brwsr compiler which inherits
@@ -114,7 +118,8 @@ public final class Bck2Brwsr {
         if (classes.length == 0) {
             return this;
         } else {
-            return new Bck2Brwsr(level, this.classes.addAndNew(classes), res);
+            return new Bck2Brwsr(level, this.classes.addAndNew(classes), res,
+                                 extension);
         }
     }
     
@@ -127,7 +132,7 @@ public final class Bck2Brwsr {
      * @since 0.5
      */
     public Bck2Brwsr obfuscation(ObfuscationLevel level) {
-        return new Bck2Brwsr(level, classes, res);
+        return new Bck2Brwsr(level, classes, res, extension);
     }
     
     /** A way to change the provider of additional resources (classes) for the 
@@ -139,7 +144,11 @@ public final class Bck2Brwsr {
      * @since 0.5
      */
     public Bck2Brwsr resources(Resources res) {
-        return new Bck2Brwsr(level, classes, res);
+        return new Bck2Brwsr(level, classes, res, extension);
+    }
+
+    public Bck2Brwsr extension(boolean extension) {
+        return new Bck2Brwsr(level, classes, res, extension);
     }
 
     /** A way to change the provider of additional resources (classes) for the 
@@ -162,19 +171,23 @@ public final class Bck2Brwsr {
      */
     public void generate(Appendable out) throws IOException {
         Resources r = res != null ? res : new LdrRsrcs(Bck2Brwsr.class.getClassLoader());
-        if (level != ObfuscationLevel.NONE) {
-            try {
-                ClosureWrapper.produceTo(out, level, r, classes);
-                return;
-            } catch (IOException ex) {
-                throw ex;
-            } catch (Throwable ex) {
-                out.append("/* Failed to obfuscate: " + ex.getMessage()
-                               + " */\n");
-            }
-        }
+//        if (level != ObfuscationLevel.NONE) {
+//            try {
+//                ClosureWrapper.produceTo(out, level, r, classes);
+//                return;
+//            } catch (IOException ex) {
+//                throw ex;
+//            } catch (Throwable ex) {
+//                out.append("/* Failed to obfuscate: " + ex.getMessage()
+//                               + " */\n");
+//            }
+//        }
 
-        VM.compile(r, out, classes);
+        if (extension) {
+            VM.compileExtension(r, out, classes);
+        } else {
+            VM.compileStandalone(r, out, classes);
+        }
     }
     
     /** Provider of resources (classes and other files). The 
@@ -193,7 +206,5 @@ public final class Bck2Brwsr {
          *   or the file cannot be found
          */
         public InputStream get(String resource) throws IOException;
-
-        public String getModule(String resource) throws IOException;
     }
 }

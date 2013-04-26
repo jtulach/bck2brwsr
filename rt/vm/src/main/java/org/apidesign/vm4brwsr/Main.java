@@ -39,10 +39,11 @@ final class Main {
     
     public static void main(String... args) throws IOException, URISyntaxException {
         final String obfuscate = "--obfuscatelevel";
-        
+        final String extension = "--createextension";
+
         if (args.length < 2) {
             System.err.println("Bck2Brwsr Translator from Java(tm) to JavaScript, (c) Jaroslav Tulach 2012");
-            System.err.println("Usage: java -cp ... -jar ... [");
+            System.err.print("Usage: java -cp ... -jar ... [");
             System.err.print(obfuscate);
             System.err.print(" [");
             boolean first = true;
@@ -53,7 +54,8 @@ final class Main {
                 System.err.print(l.name());
                 first = false;
             }
-                
+            System.err.print("]] [");
+            System.err.print(extension);
             System.err.println("] <file_to_generate_js_code_to> java/lang/Class org/your/App ...");
             System.exit(9);
         }
@@ -61,6 +63,7 @@ final class Main {
         final ClassLoader mainClassLoader = Main.class.getClassLoader();
 
         ObfuscationLevel obfLevel = ObfuscationLevel.NONE;
+        boolean createExtension = false;
         StringArray classes = new StringArray();
         String generateTo = null;
         for (int i = 0; i < args.length; i++) {
@@ -84,17 +87,30 @@ final class Main {
                 }
                 continue;
             }
+            if (extension.equals(args[i])) { // NOI18N
+                createExtension = true;
+                continue;
+            }
             if (generateTo == null) {
                 generateTo = args[i];
             } else {
                 collectClasses(classes, mainClassLoader, args[i]);
             }
         }
-        try (Writer w = new BufferedWriter(new FileWriter(generateTo))) {
+        final File outputFile = new File(generateTo);
+        String moduleName = null;
+        if (createExtension) {
+            moduleName = outputFile.getName();
+            if (moduleName.endsWith(".js")) {
+                moduleName = moduleName.substring(0, moduleName.length() - 3);
+            }
+        }
+        try (Writer w = new BufferedWriter(new FileWriter(outputFile))) {
             Bck2Brwsr.newCompiler().
+                extension(createExtension).
                 obfuscation(obfLevel).
                 addRootClasses(classes.toArray()).
-                resources(mainClassLoader).
+                resources(new LdrRsrcs(moduleName, mainClassLoader)).
                 generate(w);
         }
     }
