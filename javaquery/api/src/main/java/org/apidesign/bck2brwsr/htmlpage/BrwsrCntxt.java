@@ -95,5 +95,9 @@ public final class BrwsrCntxt implements Technology<Object>, Transfer {
     public Object wrapArray(Object[] arr) {
         return arr;
     }
-    
+
+    @Override
+    public <M> M toModel(Class<M> modelClass, Object data) {
+        return modelClass.cast(data);
+    }
 }
