@@ -15,24 +15,20 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.htmlpage.api;
+package org.apidesign.bck2brwsr.htmlpage;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import net.java.html.json.Context;
+import org.apidesign.html.json.spi.ContextProvider;
+import org.openide.util.lookup.ServiceProvider;
 
-/** 
- * @deprecated Replaced by new {@link net.java.html.json.OnPropertyChange net.java.html.json} API.
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+/**
+ *
+ * @author Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  */
-@Retention(RetentionPolicy.SOURCE)
-@Target(ElementType.METHOD)
-@Deprecated
-public @interface OnPropertyChange {
-    /** Name(s) of the properties. One wishes to observe.
-     * 
-     * @return valid java identifier
-     */
-    String[] value();
+@ServiceProvider(service = ContextProvider.class)
+public final class BrwsrCntxtPrvdr implements ContextProvider {
+    @Override
+    public Context findContext(Class<?> requestor) {
+        return BrwsrCntxt.DEFAULT;
+    }
 }

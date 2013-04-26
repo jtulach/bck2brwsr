@@ -22,54 +22,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Static methods in classes annotated by {@link Page}
- * can be marked by this annotation to establish a 
- * <a href="http://en.wikipedia.org/wiki/JSON">JSON</a>
- * communication point.
- * The associated model page then gets new method to invoke a network
- * connection. Example follows:
- * 
- * <pre>
- * {@link Page @Page}(className="MyModel", xhtml="page.html", properties={
- *   {@link Property @Property}(name = "people", type=Person.class, array=true)
- * })
- * class MyModelImpl {
- *   {@link Model @Model}(className="Person", properties={
- *     {@link Property @Property}(name = "firstName", type=String.class),
- *     {@link Property @Property}(name = "lastName", type=String.class)
- *   })
- *   static class PersonImpl {
- *     {@link ComputedProperty @ComputedProperty}
- *     static String fullName(String firstName, String lastName) {
- *       return firstName + " " + lastName;
- *     }
- *   }
- * 
- *   {@link OnReceive @OnReceive}(url = "{protocol}://your.server.com/person/{name}")
- *   static void getANewPerson(MyModel m, Person p) {
- *     {@link Element#alert Element.alert}("Adding " + p.getFullName() + '!');
- *     m.getPeople().add(p);
- *   }
- * 
- *   // the above will generate method <code>getANewPerson</code> in class <code>MyModel</code>.
- *   // with <code>protocol</code> and <code>name</code> arguments
- *   // which asynchronously contacts the server and in case of success calls
- *   // your {@link OnReceive @OnReceive} with parsed in data
- * 
- *   {@link On @On}(event={@link OnEvent#CLICK OnEvent.CLICK}, id="rqst")
- *   static void requestSmith(MyModel m) {
- *     m.getANewPerson("http", "Smith");
- *   }
- * }
- * </pre>
- * When the server returns <code>{ "firstName" : "John", "lastName" : "Smith" }</code>
- * the browser will show alert message <em>Adding John Smith!</em>.
- * 
+/** 
+ * @deprecated Replaced by new {@link net.java.html.json.OnReceive net.java.html.json} API.
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  * @since 0.6
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.METHOD)
+@Deprecated
 public @interface OnReceive {
     /** The URL to connect to. Can contain variable names surrounded by '{' and '}'.
      * Those parameters will then become variables of the associated method.

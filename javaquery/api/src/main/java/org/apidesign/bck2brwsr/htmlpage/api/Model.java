@@ -22,19 +22,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Defines a model class named {@link #className()} which contains
- * defined {@link #properties()}. This class can have methods 
- * annotated by {@link ComputedProperty} which define derived
- * properties in the model class.
- * <p>
- * The {@link #className() generated class}'s <code>toString</code>
- * converts the state of the object into 
- * <a href="http://en.wikipedia.org/wiki/JSON">JSON</a> format.
- *
+/** 
+ * @deprecated Replaced by new {@link net.java.html.json.Model net.java.html.json} API.
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
+@Deprecated
 public @interface Model {
     /** Name of the model class */
     String className();

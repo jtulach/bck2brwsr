@@ -22,16 +22,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Can be used in classes annotated with {@link Page} annotation to
- * define a derived property. Value of derived property is based on values
- * of {@link Property} as enumerated by {@link Page#properties()}.
- * <p>
- * The name of the derived property is the name of the method. The arguments
- * of the method define the property names (from {@link Page#properties()} list)
- * the value of property depends on. 
- *
+/** 
+ * @deprecated Replaced by new {@link net.java.html.json.ComputedProperty net.java.html.json} API.
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
+@Deprecated
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.METHOD)
 public @interface ComputedProperty {

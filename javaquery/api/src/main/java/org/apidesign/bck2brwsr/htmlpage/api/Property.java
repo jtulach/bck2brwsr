@@ -22,13 +22,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.List;
 
-/** Represents a property. Either in a generated model of an HTML
- * {@link Page} or in a class defined by {@link Model}.
- *
+/** 
+ * @deprecated Replaced by new {@link net.java.html.json.Property net.java.html.json} API.
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target({})
+@Deprecated
 public @interface Property {
     /** Name of the property. Will be used to define proper getter and setter
      * in the associated class.
