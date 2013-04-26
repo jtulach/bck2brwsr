@@ -18,6 +18,7 @@
 package org.apidesign.bck2brwsr.demo.twitter;
 
 import java.util.List;
+import net.java.html.json.Context;
 import static org.testng.Assert.*;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -32,12 +33,12 @@ public class TwitterClientTest {
 
     @BeforeMethod
     public void initModel() {
-        model = new TwitterModel().applyBindings();
+        model = new TwitterModel(Context.EMPTY);
     }
 
     @Test public void testIsValidToAdd() {
         model.setUserNameToAdd("Joe");
-        Tweeters t = new Tweeters();
+        Tweeters t = new Tweeters(Context.EMPTY);
         t.setName("test");
         model.getSavedLists().add(t);
         model.setActiveTweetersName("test");

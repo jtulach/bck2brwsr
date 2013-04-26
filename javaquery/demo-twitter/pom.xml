@@ -128,6 +128,7 @@
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>javaquery.api</artifactId>
       <version>0.7-SNAPSHOT</version>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.testng</groupId>
@@ -140,6 +141,12 @@
       <artifactId>vmtest</artifactId>
       <version>0.7-SNAPSHOT</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apidesign.html</groupId>
+      <artifactId>net.java.html.json</artifactId>
+      <version>0.1-SNAPSHOT</version>
+      <type>jar</type>
     </dependency>
   </dependencies>
 </project>

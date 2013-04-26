@@ -19,16 +19,19 @@ package org.apidesign.bck2brwsr.demo.twitter;
 
 import java.util.Arrays;
 import java.util.List;
-import org.apidesign.bck2brwsr.htmlpage.api.*;
-import org.apidesign.bck2brwsr.htmlpage.api.Page;
-import org.apidesign.bck2brwsr.htmlpage.api.Property;
-import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
+import net.java.html.json.ComputedProperty;
+import net.java.html.json.Context;
+import net.java.html.json.Function;
+import net.java.html.json.Model;
+import net.java.html.json.OnPropertyChange;
+import net.java.html.json.OnReceive;
+import net.java.html.json.Property;
 
 /** Controller class for access to Twitter.
  * 
  * @author Jaroslav Tulach
  */
-@Page(xhtml="index.html", className="TwitterModel", properties={
+@Model(className="TwitterModel", properties={
     @Property(name="savedLists", type=Tweeters.class, array = true),
     @Property(name="activeTweetersName", type=String.class),
     @Property(name="activeTweeters", type=String.class, array = true),
@@ -106,8 +109,9 @@ public class TwitterClient {
         model.queryTweets("http://search.twitter.com", sb.toString());
     }
     
+    private static final Context DEFAULT = Context.findDefault(TwitterClient.class);
     static {
-        final TwitterModel model = new TwitterModel();
+        final TwitterModel model = new TwitterModel(DEFAULT);
         final List<Tweeters> svdLst = model.getSavedLists();
         svdLst.add(newTweeters("API Design", "JaroslavTulach"));
         svdLst.add(newTweeters("Celebrities", "JohnCleese", "MCHammer", "StephenFry", "algore", "StevenSanderson"));
@@ -143,19 +147,19 @@ public class TwitterClient {
             !activeTweeters.contains(userNameToAdd);
     }
     
-    @OnFunction
+    @Function
     static void deleteList(TwitterModel model) {
         final List<Tweeters> sl = model.getSavedLists();
         sl.remove(findByName(sl, model.getActiveTweetersName()));
         if (sl.isEmpty()) {
-            final Tweeters t = new Tweeters();
+            final Tweeters t = new Tweeters(DEFAULT);
             t.setName("New");
             sl.add(t);
         }
         model.setActiveTweetersName(sl.get(0).getName());
     }
     
-    @OnFunction
+    @Function
     static void saveChanges(TwitterModel model) {
         Tweeters t = findByName(model.getSavedLists(), model.getActiveTweetersName());
         int indx = model.getSavedLists().indexOf(t);
@@ -166,12 +170,12 @@ public class TwitterClient {
         }
     }
     
-    @OnFunction
+    @Function
     static void addUser(TwitterModel model) {
         String n = model.getUserNameToAdd();
         model.getActiveTweeters().add(n);
     }
-    @OnFunction
+    @Function
     static void removeUser(String data, TwitterModel model) {
         model.getActiveTweeters().remove(data);
     }
@@ -182,11 +186,11 @@ public class TwitterClient {
                 return l;
             }
         }
-        return list.isEmpty() ? new Tweeters() : list.get(0);
+        return list.isEmpty() ? new Tweeters(DEFAULT) : list.get(0);
     }
     
     private static Tweeters newTweeters(String listName, String... userNames) {
-        Tweeters t = new Tweeters();
+        Tweeters t = new Tweeters(DEFAULT);
         t.setName(listName);
         t.getUserNames().addAll(Arrays.asList(userNames));
         return t;
