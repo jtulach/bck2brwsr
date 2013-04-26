@@ -24,4 +24,7 @@ public class StaticUseSub extends StaticUse {
     public static Object getNonNull() {
         return NON_NULL;
     }
+    static Object getNull() {
+        return null;
+    }
 }
