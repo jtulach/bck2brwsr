@@ -30,6 +30,14 @@ public class StaticUseSubTest {
         Object ret = StaticUseSub.getNonNull();
         return ret.getClass().getName();
     }
+    
+    @Compare public String isNullPointerTheSame() throws Exception {
+        try {
+            return StaticUseSub.getNull().getClass().toString();
+        } catch (NullPointerException ex) {
+            return ex.getClass().getName();
+        }
+    }
 
     @Factory public static Object[] create() {
         return VMTest.create(StaticUseSubTest.class);

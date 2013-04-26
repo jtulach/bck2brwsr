@@ -7,11 +7,11 @@
     <version>0.7-SNAPSHOT</version>
   </parent>
   <groupId>org.apidesign.bck2brwsr</groupId>
-  <artifactId>mojo</artifactId>
+  <artifactId>bck2brwsr-maven-plugin</artifactId>
   <version>0.7-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
-  <name>Bck2Brwsr Maven Plugins</name>
-  <url>http://maven.apache.org</url>
+  <name>Bck2Brwsr Maven Plugin</name>
+  <url>http://bck2brwsr.apidesign.org/</url>
       <build>
         <plugins>
             <plugin>

@@ -94,9 +94,7 @@ public class ArchetypeVersionTest {
         for (int i = 0; i < goals.getLength(); i++) {
             String s = goals.item(i).getTextContent();
             if (s.contains("bck2brwsr")) {
-                String[] arr = s.split(":");
-                assertEquals(arr.length, 4, "Three :");
-                assertEquals(arr[2], version, "Proper version is used");
+                assertFalse(s.matches(".*bck2brwsr.*[0-9].*"), "No numbers: " + s);
             }
         }
     }
