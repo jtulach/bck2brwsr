@@ -7,7 +7,7 @@
     <version>0.7-SNAPSHOT</version>
   </parent>
   <groupId>org.apidesign.bck2brwsr</groupId>
-  <artifactId>launcher</artifactId>
+  <artifactId>launcher.http</artifactId>
   <version>0.7-SNAPSHOT</version>
   <name>Bck2Brwsr Launcher</name>
   <url>http://maven.apache.org</url>
@@ -37,10 +37,9 @@
   </properties>
   <dependencies>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>launcher</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.glassfish.grizzly</groupId>

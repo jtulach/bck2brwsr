@@ -70,6 +70,8 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
     
     public Bck2BrwsrLauncher(String cmd) {
         this.cmd = cmd;
+        addClassLoader(Bck2Brwsr.class.getClassLoader());
+        setTimeout(180000);
     }
     
     @Override

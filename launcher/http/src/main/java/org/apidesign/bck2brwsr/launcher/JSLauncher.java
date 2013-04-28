@@ -42,7 +42,10 @@ final class JSLauncher extends Launcher {
     private Invocable code;
     private StringBuilder codeSeq;
     private Object console;
-    
+
+    JSLauncher() {
+        addClassLoader(Bck2Brwsr.class.getClassLoader());
+    }
     
     @Override InvocationContext runMethod(InvocationContext mi) {
         loaders.add(mi.clazz.getClassLoader());

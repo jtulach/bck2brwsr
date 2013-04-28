@@ -20,11 +20,11 @@ package org.apidesign.bck2brwsr.launcher;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import org.apidesign.vm4brwsr.Bck2Brwsr;
+import java.lang.reflect.Constructor;
 
 /** An abstraction for executing tests in a Bck2Brwsr virtual machine.
- * Either in {@linkm Launcher#createJavaScript JavaScript engine}, 
- * or in {@linkm Launcher#createBrowser external browser}.
+ * Either in {@link Launcher#createJavaScript JavaScript engine}, 
+ * or in {@link Launcher#createBrowser external browser}.
  * <p>
  * There also are methods to {@link #showDir(java.io.File, java.lang.String) display pages} 
  * in an external browser served by internal HTTP server.
@@ -64,9 +64,12 @@ public abstract class Launcher {
      * @return the launcher
      */
     public static Launcher createJavaScript() {
-        final JSLauncher l = new JSLauncher();
-        l.addClassLoader(Bck2Brwsr.class.getClassLoader());
-        return l;
+        try {
+            Class<?> c = loadClass("org.apidesign.bck2brwsr.launcher.JSLauncher");
+            return (Launcher) c.newInstance();
+        } catch (Exception ex) {
+            throw new IllegalStateException("Please include org.apidesign.bck2brwsr:launcher.html dependency!", ex);
+        }
     }
     
     /** Creates launcher that is using external browser.
@@ -76,10 +79,13 @@ public abstract class Launcher {
      * @return launcher executing in external browser.
      */
     public static Launcher createBrowser(String cmd) {
-        final Bck2BrwsrLauncher l = new Bck2BrwsrLauncher(cmd);
-        l.addClassLoader(Bck2Brwsr.class.getClassLoader());
-        l.setTimeout(180000);
-        return l;
+        try {
+            Class<?> c = loadClass("org.apidesign.bck2brwsr.launcher.Bck2BrwsrLauncher");
+            Constructor<?> cnstr = c.getConstructor(String.class);
+            return (Launcher) cnstr.newInstance(cmd);
+        } catch (Exception ex) {
+            throw new IllegalStateException("Please include org.apidesign.bck2brwsr:launcher.html dependency!", ex);
+        }
     }
     
     /** Starts an HTTP server which provides access to classes and resources
@@ -93,10 +99,10 @@ public abstract class Launcher {
      * @throws IOException if something goes wrong
      */
     public static Closeable showURL(ClassLoader classes, String startpage) throws IOException {
-        Bck2BrwsrLauncher l = new Bck2BrwsrLauncher(null);
+        Launcher l = createBrowser(null);
         l.addClassLoader(classes);
         l.showURL(startpage);
-        return l;
+        return (Closeable) l;
     }
     /** Starts an HTTP server which provides access to certain directory.
      * The <code>startpage</code> should be relative location inside the root 
@@ -107,10 +113,27 @@ public abstract class Launcher {
      * @exception IOException if something goes wrong.
      */
     public static Closeable showDir(File directory, String startpage) throws IOException {
-        Bck2BrwsrLauncher l = new Bck2BrwsrLauncher(null);
+        Launcher l = createBrowser(null);
         l.showDirectory(directory, startpage);
-        return l;
+        return (Closeable) l;
     }
 
     abstract InvocationContext runMethod(InvocationContext c) throws IOException; 
+
+
+    private static Class<?> loadClass(String cn) throws ClassNotFoundException {
+        return Launcher.class.getClassLoader().loadClass(cn);
+    }
+
+    void showDirectory(File directory, String startpage) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
+    void showURL(String startpage) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
+    void addClassLoader(ClassLoader classes) {
+        throw new UnsupportedOperationException();
+    }
 }
