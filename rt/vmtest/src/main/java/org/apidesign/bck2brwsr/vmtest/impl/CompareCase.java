@@ -53,19 +53,16 @@ public final class CompareCase implements ITest {
      * @param clazz the class to inspect
      * @return the set of created tests
      */
-    public static Object[] create(Class... classes) {
+    public static Object[] create(String[] brwsr, Class[] classes) {
         List<Object> ret = new ArrayList<>();
         
         final LaunchSetup l = LaunchSetup.INSTANCE;
         ret.add(l);
         
-        String[] brwsr;
         {
             String p = System.getProperty("vmtest.brwsrs");
             if (p != null) {
                 brwsr = p.split(",");
-            } else {
-                brwsr = new String[0];
             }
         }
         
