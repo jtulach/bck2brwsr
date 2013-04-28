@@ -18,6 +18,7 @@
 package org.apidesign.bck2brwsr.htmlpage;
 
 import net.java.html.json.Context;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.html.json.spi.ContextProvider;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -29,6 +30,11 @@ import org.openide.util.lookup.ServiceProvider;
 public final class BrwsrCntxtPrvdr implements ContextProvider {
     @Override
     public Context findContext(Class<?> requestor) {
-        return BrwsrCntxt.DEFAULT;
+        return bck2BrwsrVM() ? BrwsrCntxt.DEFAULT : null;
+    }
+    
+    @JavaScriptBody(args = {  }, body = "return true;")
+    private static boolean bck2BrwsrVM() {
+        return false;
     }
 }
