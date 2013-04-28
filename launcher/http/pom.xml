@@ -51,11 +51,5 @@
       <artifactId>vm4brwsr</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>emul</artifactId>
-      <version>${project.version}</version>
-      <classifier>rt</classifier>
-    </dependency>
   </dependencies>
 </project>
