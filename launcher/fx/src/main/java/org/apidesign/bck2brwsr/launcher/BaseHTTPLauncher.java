@@ -41,7 +41,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apidesign.bck2brwsr.launcher.InvocationContext.Resource;
-import org.apidesign.vm4brwsr.Bck2Brwsr;
 import org.glassfish.grizzly.PortRange;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.HttpServer;
@@ -56,7 +55,7 @@ import org.glassfish.grizzly.http.util.HttpStatus;
  * Supports execution in native browser as well as Java's internal 
  * execution engine.
  */
-class BaseHTTPLauncher extends Launcher implements Closeable {
+abstract class BaseHTTPLauncher extends Launcher implements Closeable {
     private static final Logger LOG = Logger.getLogger(BaseHTTPLauncher.class.getName());
     private static final InvocationContext END = new InvocationContext(null, null, null);
     private final Set<ClassLoader> loaders = new LinkedHashSet<>();
@@ -70,7 +69,7 @@ class BaseHTTPLauncher extends Launcher implements Closeable {
     
     public BaseHTTPLauncher(String cmd) {
         this.cmd = cmd;
-        addClassLoader(Bck2Brwsr.class.getClassLoader());
+        addClassLoader(BaseHTTPLauncher.class.getClassLoader());
         setTimeout(180000);
     }
     
@@ -455,29 +454,9 @@ class BaseHTTPLauncher extends Launcher implements Closeable {
         }
     }
 
-    void generateBck2BrwsrJS(StringBuilder sb, Bck2Brwsr.Resources loader) throws IOException {
-        Bck2Brwsr.generate(sb, loader);
-        sb.append(
-            "(function WrapperVM(global) {"
-            + "  function ldCls(res) {\n"
-            + "    var request = new XMLHttpRequest();\n"
-            + "    request.open('GET', '/classes/' + res, false);\n"
-            + "    request.send();\n"
-            + "    if (request.status !== 200) return null;\n"
-            + "    var arr = eval('(' + request.responseText + ')');\n"
-            + "    return arr;\n"
-            + "  }\n"
-            + "  var prevvm = global.bck2brwsr;\n"
-            + "  global.bck2brwsr = function() {\n"
-            + "    var args = Array.prototype.slice.apply(arguments);\n"
-            + "    args.unshift(ldCls);\n"
-            + "    return prevvm.apply(null, args);\n"
-            + "  };\n"
-            + "})(this);\n");
-    }
+    abstract void generateBck2BrwsrJS(StringBuilder sb, Object loader) throws IOException;
 
-    private class Res implements Bck2Brwsr.Resources {
-        @Override
+    private class Res {
         public InputStream get(String resource) throws IOException {
             for (ClassLoader l : loaders) {
                 URL u = null;

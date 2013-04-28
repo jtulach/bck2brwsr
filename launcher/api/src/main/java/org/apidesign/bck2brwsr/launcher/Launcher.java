@@ -82,12 +82,16 @@ public abstract class Launcher {
         String msg = "Trying to create browser '" + cmd + "'";
         try {
             Class<?> c;
-            if ("fx".equals(cmd)) { // NOI18N
+            if ("fxbrwsr".equals(cmd)) { // NOI18N
                 msg = "Please include org.apidesign.bck2brwsr:launcher.fx dependency!";
                 c = loadClass("org.apidesign.bck2brwsr.launcher.FXBrwsrLauncher"); // NOI18N
             } else {
                 msg = "Please include org.apidesign.bck2brwsr:launcher.html dependency!";
                 c = loadClass("org.apidesign.bck2brwsr.launcher.Bck2BrwsrLauncher"); // NOI18N
+                if ("bck2brwsr".equals(cmd)) { // NOI18N
+                    // use default executable
+                    cmd = null;
+                }
             }
             Constructor<?> cnstr = c.getConstructor(String.class);
             return (Launcher) cnstr.newInstance(cmd);
@@ -107,7 +111,22 @@ public abstract class Launcher {
      * @throws IOException if something goes wrong
      */
     public static Closeable showURL(ClassLoader classes, String startpage) throws IOException {
-        Launcher l = createBrowser(null);
+        return showURL(null, classes, startpage);
+    }
+    /** Starts an HTTP server which provides access to classes and resources
+     * available in the <code>classes</code> URL and shows a start page
+     * available as {@link ClassLoader#getResource(java.lang.String)} from the
+     * provide classloader. Opens a browser with URL showing the start page.
+     * 
+     * @param brwsr name of browser to use or <code>null</code>
+     * @param classes classloader offering access to classes and resources
+     * @param startpage page to show in the browser
+     * @return interface that allows one to stop the server
+     * @throws IOException if something goes wrong
+     * @since 0.7
+     */
+    public static Closeable showURL(String brwsr, ClassLoader classes, String startpage) throws IOException {
+        Launcher l = createBrowser(brwsr);
         l.addClassLoader(classes);
         l.showURL(startpage);
         return (Closeable) l;

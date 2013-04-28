@@ -27,7 +27,6 @@ import java.net.URL;
 import java.util.Enumeration;
 import javafx.scene.web.WebEngine;
 import netscape.javascript.JSObject;
-import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
  *
@@ -37,24 +36,17 @@ public final class Console {
     public Console() {
     }
     
-    @JavaScriptBody(args = {"elem", "attr"}, body = 
-        "return elem[attr].toString();")
     private static Object getAttr(Object elem, String attr) {
         return InvokeJS.CObject.call("getAttr", elem, attr);
     }
 
-    @JavaScriptBody(args = {"id", "attr", "value"}, body = 
-        "window.document.getElementById(id)[attr] = value;")
     private static void setAttr(String id, String attr, Object value) {
         InvokeJS.CObject.call("setAttrId", id, attr, value);
     }
-    @JavaScriptBody(args = {"elem", "attr", "value"}, body = 
-        "elem[attr] = value;")
     private static void setAttr(Object id, String attr, Object value) {
         InvokeJS.CObject.call("setAttr", id, attr, value);
     }
     
-    @JavaScriptBody(args = {}, body = "return; window.close();")
     private static void closeWindow() {}
 
     private static Object textArea;
@@ -113,7 +105,6 @@ public final class Console {
         + "arr[0] = pre;\n"
         + "arr[1] = status;\n";
         
-    @JavaScriptBody(args = { "test", "c", "arr" }, body = BEGIN_TEST)
     private static void beginTest(String test, Case c, Object[] arr) {
         InvokeJS.CObject.call("beginTest", test, c, arr);
     }
@@ -130,7 +121,6 @@ public final class Console {
         + " } catch (e) { alert(e); }"
         + "};"
         + "request.send();";
-    @JavaScriptBody(args = { "url", "callback", "arr" }, body = LOAD_TEXT)
     private static void loadText(String url, Runnable callback, String[] arr) throws IOException {
         InvokeJS.CObject.call("loadText", url, new Run(callback), arr);
     }
@@ -257,12 +247,9 @@ public final class Console {
         }
     }
    
-    @JavaScriptBody(args = {}, body = "vm.desiredAssertionStatus = true;")
     private static void turnAssetionStatusOn() {
     }
 
-    @JavaScriptBody(args = {"r", "time"}, body =
-        "return window.setTimeout(function() { r.run__V(); }, time);")
     private static Object schedule(Runnable r, int time) {
         return InvokeJS.CObject.call("schedule", new Run(r), time);
     }
@@ -362,16 +349,10 @@ public final class Console {
             return res;
         }
         
-        @JavaScriptBody(args = "s", body = "return eval('(' + s + ')');")
         private static Object toJSON(String s) {
             return InvokeJS.CObject.call("toJSON", s);
         }
         
-        @JavaScriptBody(args = {"p", "d"}, body = 
-              "var v = d[p];\n"
-            + "if (typeof v === 'undefined') return null;\n"
-            + "return v.toString();"
-        )
         private static Object value(String p, Object d) {
             return ((JSObject)d).getMember(p);
         }
@@ -388,7 +369,6 @@ public final class Console {
     private static final class InvokeJS {
         static final JSObject CObject = initJS();
 
-        @JavaScriptBody(args = {  }, body = "return null;")
         private static JSObject initJS() {
             WebEngine web = (WebEngine) System.getProperties().get("webEngine");
             return (JSObject) web.executeScript("(function() {"

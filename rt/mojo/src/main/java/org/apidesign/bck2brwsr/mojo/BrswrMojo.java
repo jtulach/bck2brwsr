@@ -41,6 +41,15 @@ import org.apidesign.bck2brwsr.launcher.Launcher;
 public class BrswrMojo extends AbstractMojo {
     public BrswrMojo() {
     }
+    
+    /** The identification of a launcher to use. Known values <code>fxbrwsr</code>, 
+     * <code>bck2brwsr</code>, or 
+     * name of an external process to execute.
+     */
+    @Parameter
+    private String launcher;
+    
+    
     /** Resource to show as initial page */
     @Parameter
     private String startpage;
@@ -69,7 +78,7 @@ public class BrswrMojo extends AbstractMojo {
             } else {
                 URLClassLoader url = buildClassLoader(classes, prj.getDependencyArtifacts());
                 try {
-                    httpServer = Launcher.showURL(url, startpage());
+                    httpServer = Launcher.showURL(launcher, url, startpage());
                 } catch (Exception ex) {
                     throw new MojoExecutionException("Can't open " + startpage(), ex);
                 }

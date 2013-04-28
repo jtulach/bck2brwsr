@@ -45,10 +45,5 @@
       <scope>system</scope>
       <systemPath>${java.home}/lib/jfxrt.jar</systemPath>
     </dependency>
-    <dependency>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>vm4brwsr</artifactId>
-        <version>${project.version}</version>
-    </dependency>
   </dependencies>
 </project>

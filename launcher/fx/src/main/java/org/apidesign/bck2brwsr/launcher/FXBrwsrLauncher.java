@@ -29,7 +29,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
 import org.apidesign.bck2brwsr.launcher.fximpl.JVMBridge;
-import org.apidesign.vm4brwsr.Bck2Brwsr;
 
 /**
  *
@@ -79,7 +78,7 @@ final class FXBrwsrLauncher extends BaseHTTPLauncher {
     }
     
     @Override
-    void generateBck2BrwsrJS(StringBuilder sb, Bck2Brwsr.Resources loader) throws IOException {
+    void generateBck2BrwsrJS(StringBuilder sb, Object loader) throws IOException {
         sb.append("(function() {\n"
             + "  var impl = this.bck2brwsr;\n"
             + "  this.bck2brwsr = function() { return impl; };\n"
