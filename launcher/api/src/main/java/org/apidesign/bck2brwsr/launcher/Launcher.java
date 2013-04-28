@@ -79,12 +79,20 @@ public abstract class Launcher {
      * @return launcher executing in external browser.
      */
     public static Launcher createBrowser(String cmd) {
+        String msg = "Trying to create browser '" + cmd + "'";
         try {
-            Class<?> c = loadClass("org.apidesign.bck2brwsr.launcher.Bck2BrwsrLauncher");
+            Class<?> c;
+            if ("fx".equals(cmd)) { // NOI18N
+                msg = "Please include org.apidesign.bck2brwsr:launcher.fx dependency!";
+                c = loadClass("org.apidesign.bck2brwsr.launcher.FXBrwsrLauncher"); // NOI18N
+            } else {
+                msg = "Please include org.apidesign.bck2brwsr:launcher.html dependency!";
+                c = loadClass("org.apidesign.bck2brwsr.launcher.Bck2BrwsrLauncher"); // NOI18N
+            }
             Constructor<?> cnstr = c.getConstructor(String.class);
             return (Launcher) cnstr.newInstance(cmd);
         } catch (Exception ex) {
-            throw new IllegalStateException("Please include org.apidesign.bck2brwsr:launcher.html dependency!", ex);
+            throw new IllegalStateException(msg, ex);
         }
     }
     

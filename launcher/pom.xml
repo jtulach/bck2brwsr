@@ -14,5 +14,6 @@
   <modules>
     <module>api</module>
     <module>http</module>
+    <module>fx</module>
   </modules>
 </project>
