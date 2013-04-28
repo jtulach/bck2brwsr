@@ -450,15 +450,15 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable {
     private class Res implements Bck2Brwsr.Resources {
         @Override
         public InputStream get(String resource) throws IOException {
+            URL u = null;
             for (ClassLoader l : loaders) {
-                URL u = null;
                 Enumeration<URL> en = l.getResources(resource);
                 while (en.hasMoreElements()) {
                     u = en.nextElement();
                 }
-                if (u != null) {
-                    return u.openStream();
-                }
+            }
+            if (u != null) {
+                return u.openStream();
             }
             throw new IOException("Can't find " + resource);
         }
