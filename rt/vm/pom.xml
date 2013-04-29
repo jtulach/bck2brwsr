@@ -86,6 +86,7 @@
                      <configuration>
                          <executable>java</executable>
                         <arguments>
+                            <argument>-Dskip.if.exists=true</argument>
                             <argument>-cp</argument>
                             <classpath />
                             <argument>org.apidesign.vm4brwsr.Main</argument>

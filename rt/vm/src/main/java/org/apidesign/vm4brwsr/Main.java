@@ -18,6 +18,7 @@
 package org.apidesign.vm4brwsr;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -81,7 +82,14 @@ final class Main {
                 classes = classes.addAndNew(args[i]);
             }
         }
-        try (Writer w = new BufferedWriter(new FileWriter(generateTo))) {
+        
+        File gt = new File(generateTo);
+        if (Boolean.getBoolean("skip.if.exists") && gt.isFile()) {
+            System.err.println("Skipping as " + gt + " exists.");
+            System.exit(0);
+        }
+        
+        try (Writer w = new BufferedWriter(new FileWriter(gt))) {
             Bck2Brwsr.newCompiler().
                 obfuscation(obfLevel).
                 addRootClasses(classes.toArray()).
