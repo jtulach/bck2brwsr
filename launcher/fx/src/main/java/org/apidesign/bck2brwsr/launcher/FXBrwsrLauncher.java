@@ -19,12 +19,15 @@ package org.apidesign.bck2brwsr.launcher;
 
 import org.apidesign.bck2brwsr.launcher.fximpl.FXBrwsr;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Enumeration;
 
 import java.util.concurrent.Executors;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
@@ -47,7 +50,7 @@ final class FXBrwsrLauncher extends BaseHTTPLauncher {
             throw new LinkageError("Can't add jfxrt.jar on the classpath", ex);
         }
     }
-    
+
     public FXBrwsrLauncher(String ignore) {
         super(null);
     }
@@ -94,5 +97,33 @@ final class FXBrwsrLauncher extends BaseHTTPLauncher {
         super.close();
         Platform.exit();
     }
+
+    public static void main(String... args) throws IOException {
+        String startPage = null;
+
+        final ClassLoader cl = FXBrwsrLauncher.class.getClassLoader();
+        startPage = findStartPage(cl, startPage);
+        if (startPage == null) {
+            throw new NullPointerException("Can't find StartPage tag in manifests!");
+        }
+        
+        Launcher.showURL("fxbrwsr", cl, startPage);
+    }
     
+    private static String findStartPage(final ClassLoader cl, String startPage) throws IOException {
+        Enumeration<URL> en = cl.getResources("META-INF/MANIFEST.MF");
+        while (en.hasMoreElements()) {
+            URL url = en.nextElement();
+            Manifest mf;
+            try (InputStream is = url.openStream()) {
+                mf = new Manifest(is);
+            }
+            String sp = mf.getMainAttributes().getValue("StartPage");
+            if (sp != null) {
+                startPage = sp;
+                break;
+            }
+        }
+        return startPage;
+    }
 }
