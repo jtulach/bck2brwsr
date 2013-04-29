@@ -57,11 +57,11 @@ public final class VMTest {
      * @return the set of created tests
      */
     public static Object[] create(Class clazz) {
-        return newTests().addClass(clazz).build();
+        return newTests().withClasses(clazz).build();
     }
     
     /** Creates new builder for test execution. Continue with methods
-     * like {@link #addClass(java.lang.Class[])} or {@link #addLauncher(java.lang.String[])}.
+     * like {@link #withClasses(java.lang.Class[])} or {@link #withLaunchers(java.lang.String[])}.
      * Finish the process by calling {@link #build()}.
      * 
      * @return new instance of a builder
@@ -85,7 +85,7 @@ public final class VMTest {
      * @param classes one or more classes to inspect
      * @since 0.7
      */
-    public final VMTest addClass(Class... classes) {
+    public final VMTest withClasses(Class... classes) {
         this.classes.addAll(Arrays.asList(classes));
         return this;
     }
@@ -100,7 +100,7 @@ public final class VMTest {
      *   of tests
      * @since 0.7
      */
-    public final VMTest addLauncher(String... launcher) {
+    public final VMTest withLaunchers(String... launcher) {
         this.launcher.addAll(Arrays.asList(launcher));
         return this;
     }

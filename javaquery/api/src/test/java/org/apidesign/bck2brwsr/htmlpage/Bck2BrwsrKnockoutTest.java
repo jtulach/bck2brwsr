@@ -32,7 +32,10 @@ import org.testng.annotations.Factory;
 @ServiceProvider(service = KnockoutTCK.class)
 public final class Bck2BrwsrKnockoutTest extends KnockoutTCK {
     @Factory public static Object[] create() {
-        return VMTest.newTests().addClass(testClasses()).addLauncher("bck2brwsr").build();
+        return VMTest.newTests().
+            withClasses(testClasses()).
+            withLaunchers("bck2brwsr").
+            build();
     }
     
     @Override
