@@ -61,9 +61,9 @@ public class Knockout {
         valueHasMutated(model, prop);
     }
     @JavaScriptBody(args = { "self", "prop" }, body =
-        "var p = self[prop]; if (p) p.valueHasMutated();"
+        "self[prop].valueHasMutated();"
     )
-    public static void valueHasMutated(Object self, String prop) {
+    public void valueHasMutated(Object self, String prop) {
     }
     
 
@@ -87,7 +87,7 @@ public class Knockout {
         + "}\n"
         + "bindings[prop] = ko['computed'](bnd);"
     )
-    static void bind(
+    private static void bind(
         Object bindings, Object model, String prop, String getter, String setter, boolean primitive, boolean array
     ) {
     }
@@ -95,13 +95,13 @@ public class Knockout {
     @JavaScriptBody(args = { "bindings", "model", "prop", "sig" }, body = 
         "bindings[prop] = function(data, ev) { model[sig](data, ev); };"
     )
-    static void expose(
+    private static void expose(
         Object bindings, Object model, String prop, String sig
     ) {
     }
     
     @JavaScriptBody(args = { "bindings" }, body = "ko.applyBindings(bindings);")
-    static void applyBindings(Object bindings) {}
+    private static void applyBindings(Object bindings) {}
     
     private static void applyImpl(
         String[] propsGettersAndSetters,

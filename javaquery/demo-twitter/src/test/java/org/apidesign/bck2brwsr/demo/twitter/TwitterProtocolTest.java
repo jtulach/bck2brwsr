@@ -17,7 +17,6 @@
  */
 package org.apidesign.bck2brwsr.demo.twitter;
 
-import net.java.html.json.Context;
 import org.apidesign.bck2brwsr.vmtest.BrwsrTest;
 import org.apidesign.bck2brwsr.vmtest.Http;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
@@ -74,7 +73,7 @@ public class TwitterProtocolTest {
     ))
     @BrwsrTest public void readFromTwttr() throws InterruptedException {
         if (page == null) {
-            page = new TwitterModel(Context.findDefault(TwitterProtocolTest.class));
+            page = new TwitterModel();
             page.applyBindings();
             page.queryTweets("", "q=xyz");
         }
