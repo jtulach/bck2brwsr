@@ -17,6 +17,9 @@
  */
 package org.apidesign.bck2brwsr.vmtest;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.apidesign.bck2brwsr.launcher.Launcher;
 import org.apidesign.bck2brwsr.vmtest.impl.CompareCase;
 import org.testng.annotations.Factory;
@@ -34,6 +37,9 @@ import org.testng.annotations.Factory;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public final class VMTest {
+    private final List<Class> classes = new ArrayList<>();
+    private final List<String> launcher = new ArrayList<>();
+    
     private VMTest() {
     }
     
@@ -47,10 +53,66 @@ public final class VMTest {
      * Each {@link BrwsrTest} annotated method is executed once in {@link Launcher started
      * browser}.
      * 
-     * @param clazz the class to inspect
+     * @param clazz the class (or classes) to inspect
      * @return the set of created tests
      */
-    public static Object[] create(Class<?> clazz) {
-        return CompareCase.create(clazz);
+    public static Object[] create(Class clazz) {
+        return newTests().withClasses(clazz).build();
+    }
+    
+    /** Creates new builder for test execution. Continue with methods
+     * like {@link #withClasses(java.lang.Class[])} or {@link #withLaunchers(java.lang.String[])}.
+     * Finish the process by calling {@link #build()}.
+     * 
+     * @return new instance of a builder
+     * @since 0.7
+     */
+    public static VMTest newTests() {
+        return new VMTest();
+    }
+    
+    /** Adds class (or classes) to the test execution. The classes are inspected
+     * to contain methods annotated by
+     * {@link Compare} or {@link BrwsrTest}. Appropriate set of TestNG test
+     * cases is then created.
+     * <p>
+     * Each {@link Compare} instance runs the test in different virtual
+     * machine and at the end they compare the results.
+     * <p>
+     * Each {@link BrwsrTest} annotated method is executed once in {@link Launcher started
+     * browser}.
+     * 
+     * @param classes one or more classes to inspect
+     * @since 0.7
+     */
+    public final VMTest withClasses(Class... classes) {
+        this.classes.addAll(Arrays.asList(classes));
+        return this;
+    }
+
+    /** Adds list of launchers that should be used to execute tests defined
+     * by {@link Compare} and {@link BrwsrTest} annotations. This value 
+     * can be overrided by using <code>vmtest.brwsrs</code> property.
+     * List of supported launchers is available in the documentation of
+     * {@link Launcher}.
+     * 
+     * @param launcher names of one or more launchers to use for the execution
+     *   of tests
+     * @since 0.7
+     */
+    public final VMTest withLaunchers(String... launcher) {
+        this.launcher.addAll(Arrays.asList(launcher));
+        return this;
+    }
+    
+    /** Assembles the provided information into the final array of tests.
+     * @return array of TestNG tests
+     * @since 0.7
+     */
+    public final Object[] build() {
+        return CompareCase.create(
+            launcher.toArray(new String[0]), 
+            classes.toArray(new Class[0])
+        );
     }
 }

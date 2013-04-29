@@ -81,5 +81,15 @@
         <artifactId>launcher</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>launcher.http</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>launcher.fx</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 </dependencies>
 </project>

@@ -21,6 +21,7 @@
     <module>javaquery</module>
     <module>benchmarks</module>
     <module>ide</module>
+    <module>launcher</module>
     <module>rt</module>
   </modules>
   <licenses>
@@ -86,7 +87,7 @@
                        <exclude>rt/emul/*/src/main/**</exclude>
                        <exclude>rt/vm/src/main/java/org/apidesign/vm4brwsr/ByteCodeParser.java</exclude>
                        <exclude>rt/archetype/src/main/resources/archetype-resources/**</exclude>
-                       <exclude>rt/vmtest/src/test/resources/**</exclude>
+                       <exclude>rt/emul/compact/src/test/resources/**</exclude>
                        <exclude>dew/src/main/resources/org/apidesign/bck2brwsr/dew/**</exclude>
                        <exclude>javaquery/api/src/main/resources/org/apidesign/bck2brwsr/htmlpage/knockout*.js</exclude>
                   </excludes>

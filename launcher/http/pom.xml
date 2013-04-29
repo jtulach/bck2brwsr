@@ -3,15 +3,14 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apidesign.bck2brwsr</groupId>
-    <artifactId>rt</artifactId>
+    <artifactId>launcher-pom</artifactId>
     <version>0.7-SNAPSHOT</version>
   </parent>
   <groupId>org.apidesign.bck2brwsr</groupId>
-  <artifactId>vmtest</artifactId>
+  <artifactId>launcher.http</artifactId>
   <version>0.7-SNAPSHOT</version>
-  
-  <name>VM Testing APIs</name>
-  <url>http://bck2brwsr.apidesign.org</url>
+  <name>Bck2Brwsr Launcher</name>
+  <url>http://maven.apache.org</url>
     <build>
         <plugins>
             <plugin>
@@ -23,14 +22,6 @@
                     <target>1.7</target>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <excludePackageNames>org.apidesign.bck2brwsr.vmtest.impl</excludePackageNames>
-                    <skip>false</skip>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
     <properties>
@@ -38,25 +29,19 @@
   </properties>
   <dependencies>
     <dependency>
-      <groupId>org.testng</groupId>
-      <artifactId>testng</artifactId>
-      <scope>compile</scope>
-      <exclusions>
-        <exclusion>
-          <artifactId>junit</artifactId>
-          <groupId>junit</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>launcher</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.netbeans.api</groupId>
-      <artifactId>org-openide-util-lookup</artifactId>
-      <scope>provided</scope>
+      <groupId>org.glassfish.grizzly</groupId>
+      <artifactId>grizzly-http-server</artifactId>
+      <version>2.2.19</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>vm4brwsr</artifactId>
+      <version>${project.version}</version>
     </dependency>
   </dependencies>
 </project>
