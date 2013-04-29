@@ -24,10 +24,6 @@
           </plugin>
       </plugins>
   </build>
-  <properties>
-      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-      <bck2brwsr.version>0.7-SNAPSHOT</bck2brwsr.version>
-  </properties>
   <dependencies>
     <dependency>
       <groupId>org.testng</groupId>
