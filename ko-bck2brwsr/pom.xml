@@ -6,7 +6,7 @@
     <artifactId>html</artifactId>
     <version>0.1-SNAPSHOT</version>
   </parent>
-  <groupId>org.apidesign.bck2brwsr</groupId>
+  <groupId>org.apidesign.html</groupId>
   <artifactId>ko-bck2brwsr</artifactId>
   <version>0.1-SNAPSHOT</version>
   <name>Knockout.b2b</name>
@@ -57,13 +57,13 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>vmtest</artifactId>
       <version>${bck2brwsr.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>launcher.http</artifactId>
       <version>${bck2brwsr.version}</version>
       <scope>test</scope>
