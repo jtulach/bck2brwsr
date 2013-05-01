@@ -25,9 +25,15 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.html.json.spi.ContextProvider;
 import org.openide.util.lookup.ServiceProvider;
 
-/**
+/** This is an implementation package - just
+ * include its JAR on classpath and use official {@link Context} API
+ * to access the functionality.
+ * <p>
+ * Provides binding between models and <a href="http://bck2brwsr.apidesign.org">
+ * Bck2Brwsr</a> VM.
+ * Registers {@link ContextProvider}, so {@link ServiceLoader} can find it.
  *
- * @author Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @ServiceProvider(service = ContextProvider.class)
 public final class BrwsrCntxtPrvdr implements ContextProvider {

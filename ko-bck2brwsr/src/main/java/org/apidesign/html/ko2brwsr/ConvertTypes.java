@@ -26,7 +26,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public final class ConvertTypes {
+final class ConvertTypes {
     ConvertTypes() {
     }
     

@@ -32,7 +32,7 @@ import org.apidesign.html.json.spi.Transfer;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public final class BrwsrCntxt implements Technology<Object>, Transfer {
+final class BrwsrCntxt implements Technology<Object>, Transfer {
     private BrwsrCntxt() {}
     
     public static final Context DEFAULT;
