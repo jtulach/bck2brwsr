@@ -25,12 +25,12 @@ import java.util.List;
 import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
-/** Provides binding between models and 
+/** Provides binding between models and bck2brwsr VM.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @ExtraJavaScript(resource = "/org/apidesign/bck2brwsr/htmlpage/knockout-2.2.1.js")
-public class Knockout {
+final class Knockout {
     /** used by tests */
     static Knockout next;
     private final Object model;
