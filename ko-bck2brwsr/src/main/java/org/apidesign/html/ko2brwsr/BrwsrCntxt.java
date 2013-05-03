@@ -20,6 +20,9 @@
  */
 package org.apidesign.html.ko2brwsr;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import net.java.html.json.Context;
 import org.apidesign.html.json.spi.ContextBuilder;
 import org.apidesign.html.json.spi.FunctionBinding;
@@ -101,5 +104,19 @@ final class BrwsrCntxt implements Technology<Object>, Transfer {
     @Override
     public <M> M toModel(Class<M> modelClass, Object data) {
         return modelClass.cast(data);
+    }
+
+    @Override
+    public Object toJSON(InputStream is) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        InputStreamReader r = new InputStreamReader(is);
+        for (;;) {
+            int ch = r.read();
+            if (ch == -1) {
+                break;
+            }
+            sb.append((char)ch);
+        }
+        return ConvertTypes.parse(sb.toString());
     }
 }

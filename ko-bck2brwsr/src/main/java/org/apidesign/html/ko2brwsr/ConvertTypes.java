@@ -107,6 +107,11 @@ final class ConvertTypes {
         return true;
     }
     
+    @JavaScriptBody(args = { "s" }, body = "return eval('(' + s + ')');")
+    static Object parse(String s) {
+        return s;
+    }
+    
     @JavaScriptBody(args = { "url", "arr", "callback" }, body = ""
         + "var request = new XMLHttpRequest();\n"
         + "request.open('GET', url, true);\n"
