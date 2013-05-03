@@ -246,7 +246,7 @@ public class Object {
     }
 
     @JavaScriptBody(args = "self", body = 
-          "\nif (!self.$instOf_java_lang_Cloneable) {"
+          "\nif (!self['$instOf_java_lang_Cloneable']) {"
         + "\n  return null;"
         + "\n} else {"
         + "\n  var clone = self.constructor(true);"

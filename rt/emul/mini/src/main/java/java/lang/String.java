@@ -1013,7 +1013,7 @@ public final class String
      * @see  #equalsIgnoreCase(String)
      */
     @JavaScriptBody(args = { "obj" }, body = 
-        "return obj != null && obj.$instOf_java_lang_String && "
+        "return obj != null && obj['$instOf_java_lang_String'] && "
         + "this.toString() === obj.toString();"
     )
     public boolean equals(Object anObject) {

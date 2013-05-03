@@ -185,13 +185,9 @@ abstract class ByteCodeToJavaScript {
             out.append("\n    ").append(destObject).append(".").append(mn).append(".cls = CLS;");
         }
         out.append("\n    c.constructor = CLS;");
-        String instOfName = "$instOf_" + className;
-        out.append("\n    c.").append(instOfName).append(" = true;");
-//        obfuscationDelegate.exportJSProperty(out, "c", instOfName);
+        out.append("\n    c['$instOf_").append(className).append("'] = true;");
         for (String superInterface : jc.getSuperInterfaces()) {
-            instOfName = "$instOf_" + superInterface.replace('/', '_');
-            out.append("\n    c.").append(instOfName).append(" = true;");
-//            obfuscationDelegate.exportJSProperty(out, "c", instOfName);
+            out.append("\n    c['$instOf_").append(superInterface.replace('/', '_')).append("'] = true;");
         }
         out.append("\n    CLS.$class = 'temp';");
         out.append("\n    CLS.$class = ");
@@ -1783,7 +1779,7 @@ abstract class ByteCodeToJavaScript {
                 final String classInternalName = jc.getClassName(e.catch_cpx);
                 addReference(classInternalName);
                 if ("java/lang/Throwable".equals(classInternalName)) {
-                    out.append("if (e.$instOf_java_lang_Throwable) {");
+                    out.append("if (e['$instOf_java_lang_Throwable']) {");
                     out.append("  var stA0 = e;");
                     out.append("} else {");
                     out.append("  var stA0 = vm.java_lang_Throwable(true);");
@@ -1791,7 +1787,7 @@ abstract class ByteCodeToJavaScript {
                     out.append("}");
                     goTo(out, current, e.handler_pc, topMostLabel);
                 } else {
-                    out.append("if (e.$instOf_" + classInternalName.replace('/', '_') + ") {");
+                    out.append("if (e['$instOf_" + classInternalName.replace('/', '_') + "']) {");
                     out.append("var stA0 = e;");
                     goTo(out, current, e.handler_pc, topMostLabel);
                     out.append("}\n");
@@ -1920,7 +1916,7 @@ abstract class ByteCodeToJavaScript {
     private void generateInstanceOf(int indx, final StackMapper smapper) throws IOException {
         final String type = jc.getClassName(indx);
         if (!type.startsWith("[")) {
-            emit(out, "var @2 = @1 != null && @1.$instOf_@3 ? 1 : 0;",
+            emit(out, "var @2 = @1 != null && @1['$instOf_@3'] ? 1 : 0;",
                  smapper.popA(), smapper.pushI(),
                  type.replace('/', '_'));
         } else {
@@ -1935,7 +1931,7 @@ abstract class ByteCodeToJavaScript {
         final String type = jc.getClassName(indx);
         if (!type.startsWith("[")) {
             emit(out,
-                 "if (@1 !== null && !@1.$instOf_@2) throw vm.java_lang_ClassCastException(true);",
+                 "if (@1 !== null && !@1['$instOf_@2']) throw vm.java_lang_ClassCastException(true);",
                  smapper.getA(0), type.replace('/', '_'));
         } else {
             emit(out, "vm.java_lang_Class(false).forName__Ljava_lang_Class_2Ljava_lang_String_2('@2').cast__Ljava_lang_Object_2Ljava_lang_Object_2(@1);",
