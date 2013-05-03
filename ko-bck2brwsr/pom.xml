@@ -4,11 +4,11 @@
   <parent>
     <groupId>org.apidesign</groupId>
     <artifactId>html</artifactId>
-    <version>0.2</version>
+    <version>0.3-SNAPSHOT</version>
   </parent>
   <groupId>org.apidesign.html</groupId>
   <artifactId>ko-bck2brwsr</artifactId>
-  <version>0.2</version>
+  <version>0.3-SNAPSHOT</version>
   <name>Knockout.b2b</name>
   <url>http://maven.apache.org</url>
   <build>
@@ -78,12 +78,12 @@
     <dependency>
       <groupId>org.apidesign.html</groupId>
       <artifactId>net.java.html.json</artifactId>
-      <version>0.2</version>
+      <version>0.3-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.apidesign.html</groupId>
       <artifactId>net.java.html.json.tck</artifactId>
-      <version>0.2</version>
+      <version>0.3-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
