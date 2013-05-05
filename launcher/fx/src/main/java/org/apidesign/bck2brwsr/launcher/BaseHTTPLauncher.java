@@ -35,6 +35,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -55,7 +56,7 @@ import org.glassfish.grizzly.http.util.HttpStatus;
  * Supports execution in native browser as well as Java's internal 
  * execution engine.
  */
-abstract class BaseHTTPLauncher extends Launcher implements Closeable {
+abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<HttpServer> {
     private static final Logger LOG = Logger.getLogger(BaseHTTPLauncher.class.getName());
     private static final InvocationContext END = new InvocationContext(null, null, null);
     private final Set<ClassLoader> loaders = new LinkedHashSet<>();
@@ -106,6 +107,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable {
         String prefix = startpage.substring(0, last);
         String simpleName = startpage.substring(last);
         s.getServerConfiguration().addHttpHandler(new SubTree(resources, prefix), "/");
+        server = s;
         try {
             launchServerAndBrwsr(s, simpleName);
         } catch (URISyntaxException | InterruptedException ex) {
@@ -421,6 +423,11 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable {
         file.delete();
     }
 
+    @Override
+    public HttpServer call() throws Exception {
+        return server;
+    }
+    
     @Override
     public void close() throws IOException {
         shutdown();
