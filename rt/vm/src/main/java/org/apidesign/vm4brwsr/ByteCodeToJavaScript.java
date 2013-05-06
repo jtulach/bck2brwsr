@@ -63,6 +63,16 @@ abstract class ByteCodeToJavaScript {
             throws IOException {
     }
 
+    protected void declaredField(FieldData fieldData,
+                                 String destObject,
+                                 String mangledName) throws IOException {
+    }
+
+    protected void declaredMethod(MethodData methodData,
+                                  String destObject,
+                                  String mangledName) throws IOException {
+    }
+
     /** Prints out a debug message. 
      * 
      * @param msg the message
@@ -144,7 +154,7 @@ abstract class ByteCodeToJavaScript {
                    .append("; };");
             }
 
-//            obfuscationDelegate.exportField(out, "c", "_" + v.getName(), v);
+            declaredField(v, "c", "_" + v.getName());
         }
         for (MethodData m : jc.getMethods()) {
             byte[] onlyArr = m.findAnnotationData(true);
@@ -174,7 +184,7 @@ abstract class ByteCodeToJavaScript {
                     mn = generateInstanceMethod(destObject, m);
                 }
             }
-//            obfuscationDelegate.exportMethod(out, destObject, mn, m);
+            declaredMethod(m, destObject, mn);
             byte[] runAnno = m.findAnnotationData(false);
             if (runAnno != null) {
                 out.append("\n    ").append(destObject).append(".").append(mn).append(".anno = {");

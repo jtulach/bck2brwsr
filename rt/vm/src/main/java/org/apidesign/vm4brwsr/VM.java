@@ -20,6 +20,8 @@ package org.apidesign.vm4brwsr;
 import java.io.IOException;
 import java.io.InputStream;
 import org.apidesign.vm4brwsr.ByteCodeParser.ClassData;
+import org.apidesign.vm4brwsr.ByteCodeParser.FieldData;
+import org.apidesign.vm4brwsr.ByteCodeParser.MethodData;
 
 /** Generator of JavaScript from bytecode of classes on classpath of the VM.
  *
@@ -85,6 +87,33 @@ abstract class VM extends ByteCodeToJavaScript {
                             .append(accessClass(mangledName))
                .append(";\n");
         }
+    }
+
+    @Override
+    protected void declaredField(FieldData fieldData,
+                                 String destObject,
+                                 String mangledName) throws IOException {
+        if (exportedSymbols.isExported(fieldData)) {
+            exportMember(destObject, mangledName);
+        }
+    }
+
+    @Override
+    protected void declaredMethod(MethodData methodData,
+                                  String destObject,
+                                  String mangledName) throws IOException {
+        if (exportedSymbols.isExported(methodData)) {
+            exportMember(destObject, mangledName);
+        }
+    }
+
+    private void exportMember(String destObject, String memberName)
+            throws IOException {
+        out.append("\n").append(destObject).append("['")
+                                           .append(memberName)
+                                           .append("'] = ")
+                        .append(destObject).append(".").append(memberName)
+           .append(";\n");
     }
 
     private void generateBody(StringArray names) throws IOException {
