@@ -28,12 +28,15 @@ import org.apidesign.vm4brwsr.ByteCodeParser.MethodData;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 abstract class VM extends ByteCodeToJavaScript {
-    protected final Bck2Brwsr.Resources resources;
+    protected final ClassDataCache classDataCache;
+
+    private final Bck2Brwsr.Resources resources;
     private final ExportedSymbols exportedSymbols;
 
     private VM(Appendable out, Bck2Brwsr.Resources resources) {
         super(out);
         this.resources = resources;
+        this.classDataCache = new ClassDataCache(resources);
         this.exportedSymbols = new ExportedSymbols(resources);
     }
 
@@ -231,10 +234,6 @@ abstract class VM extends ByteCodeToJavaScript {
         }
     }
 
-    private static InputStream loadClass(Bck2Brwsr.Resources l, String name) throws IOException {
-        return l.get(name + ".class"); // NOI18N
-    }
-
     static String toString(String name) throws IOException {
         StringBuilder sb = new StringBuilder();
 //        compile(sb, name);
@@ -266,6 +265,19 @@ abstract class VM extends ByteCodeToJavaScript {
     @Override
     String accessClass(String className) {
         return "vm." + className;
+    }
+
+    @Override
+    protected String accessMember(String object, String mangledName,
+                                  String[] fieldInfoName) throws IOException {
+        final ClassData declaringClass =
+                classDataCache.getClassData(fieldInfoName[0]);
+        if (declaringClass == null) {
+            return object + "['" + mangledName + "']";
+        }
+
+        // TODO
+        return object + "." + mangledName;
     }
 
     private static final class Standalone extends VM {
@@ -322,11 +334,11 @@ abstract class VM extends ByteCodeToJavaScript {
 
         @Override
         protected String generateClass(String className) throws IOException {
-            InputStream is = loadClass(resources, className);
-            if (is == null) {
+            ClassData classData = classDataCache.getClassData(className);
+            if (classData == null) {
                 throw new IOException("Can't find class " + className);
             }
-            return compile(is);
+            return compile(classData);
         }
 
         @Override
@@ -362,8 +374,8 @@ abstract class VM extends ByteCodeToJavaScript {
 
         @Override
         protected String generateClass(String className) throws IOException {
-            InputStream is = loadClass(resources, className);
-            if (is == null) {
+            ClassData classData = classDataCache.getClassData(className);
+            if (classData == null) {
                 out.append("\n").append(assignClass(
                                             className.replace('/', '_')))
                    .append("function() {\n  return link('")
@@ -374,7 +386,7 @@ abstract class VM extends ByteCodeToJavaScript {
                 return null;
             }
 
-            return compile(is);
+            return compile(classData);
         }
 
         @Override

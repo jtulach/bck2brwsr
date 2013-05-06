@@ -59,6 +59,11 @@ abstract class ByteCodeToJavaScript {
         return classOperation;
     }
 
+    protected String accessMember(String object, String mangledName,
+                                  String[] fieldInfoName) throws IOException {
+        return object + "." + mangledName;
+    }
+
     protected void declaredClass(ClassData classData, String mangledName)
             throws IOException {
     }
@@ -94,7 +99,11 @@ abstract class ByteCodeToJavaScript {
      */
     
     public String compile(InputStream classFile) throws IOException {
-        this.jc = new ClassData(classFile);
+        return compile(new ClassData(classFile));
+    }
+
+    protected String compile(ClassData classData) throws IOException {
+        this.jc = classData;
         if (jc.getMajor_version() < 50) {
             throw new IOException("Can't compile " + jc.getClassName() + ". Class file version " + jc.getMajor_version() + "."
                 + jc.getMinor_version() + " - recompile with -target 1.6 (at least)."
@@ -1195,10 +1204,11 @@ abstract class ByteCodeToJavaScript {
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
                     final String mangleClass = mangleSig(fi[0]);
                     final String mangleClassAccess = accessClass(mangleClass);
-                    emit(out, "var @2 = @4(false)._@3.call(@1);",
+                    emit(out, "var @2 = @3.call(@1);",
                          smapper.popA(),
-                         smapper.pushT(type), fi[1], mangleClassAccess
-                    );
+                         smapper.pushT(type),
+                         accessMember(mangleClassAccess + "(false)",
+                                      "_" + fi[1], fi));
                     i += 2;
                     break;
                 }
@@ -1208,11 +1218,11 @@ abstract class ByteCodeToJavaScript {
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
                     final String mangleClass = mangleSig(fi[0]);
                     final String mangleClassAccess = accessClass(mangleClass);
-                    emit(out, "@4(false)._@3.call(@2, @1);",
+                    emit(out, "@3.call(@2, @1);",
                          smapper.popT(type),
-                         smapper.popA(), fi[1], 
-                         mangleClassAccess
-                    );
+                         smapper.popA(),
+                         accessMember(mangleClassAccess + "(false)",
+                                      "_" + fi[1], fi));
                     i += 2;
                     break;
                 }
@@ -1220,9 +1230,11 @@ abstract class ByteCodeToJavaScript {
                     int indx = readUShortArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
-                    emit(out, "var @1 = @2(false)._@3();",
+                    emit(out, "var @1 = @2();",
                          smapper.pushT(type),
-                         accessClass(fi[0].replace('/', '_')), fi[1]);
+                         accessMember(accessClass(fi[0].replace('/', '_'))
+                                          + "(false)",
+                                      "_" + fi[1], fi));
                     i += 2;
                     addReference(fi[0]);
                     break;
@@ -1231,8 +1243,10 @@ abstract class ByteCodeToJavaScript {
                     int indx = readUShortArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
-                    emit(out, "@1(false)._@2(@3);",
-                         accessClass(fi[0].replace('/', '_')), fi[1],
+                    emit(out, "@1(@2);",
+                         accessMember(accessClass(fi[0].replace('/', '_'))
+                                          + "(false)",
+                                      "_" + fi[1], fi),
                          smapper.popT(type));
                     i += 2;
                     addReference(fi[0]);
@@ -1478,12 +1492,12 @@ abstract class ByteCodeToJavaScript {
         }
 
         final String in = mi[0];
-        out.append(accessClass(in.replace('/', '_')));
-        out.append("(false).");
-        if (mn.startsWith("cons_")) {
-            out.append("constructor.");
-        }
-        out.append(mn);
+        out.append(accessMember(
+                       accessClass(in.replace('/', '_')) + "(false)",
+                       mn.startsWith("cons_")
+                              ? "constructor." + mn
+                              : mn,
+                       mi));
         if (isStatic) {
             out.append('(');
         } else {
@@ -1522,8 +1536,7 @@ abstract class ByteCodeToJavaScript {
                .append(" = ");
         }
 
-        out.append(vars[0]).append('.');
-        out.append(mn);
+        out.append(accessMember(vars[0].toString(), mn, mi));
         out.append('(');
         String sep = "";
         for (int j = 1; j < numArguments; ++j) {
