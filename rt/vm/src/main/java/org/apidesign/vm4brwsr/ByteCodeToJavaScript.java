@@ -59,8 +59,22 @@ abstract class ByteCodeToJavaScript {
         return classOperation;
     }
 
-    protected String accessMember(String object, String mangledName,
-                                  String[] fieldInfoName) throws IOException {
+    protected String accessField(String object, String mangledName,
+                                 String[] fieldInfoName) throws IOException {
+        return object + "." + mangledName;
+    }
+
+    protected String accessStaticMethod(
+                             String object,
+                             String mangledName,
+                             String[] fieldInfoName) throws IOException {
+        return object + "." + mangledName;
+    }
+
+    protected String accessVirtualMethod(
+                             String object,
+                             String mangledName,
+                             String[] fieldInfoName) throws IOException {
         return object + "." + mangledName;
     }
 
@@ -1207,8 +1221,8 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "var @2 = @3.call(@1);",
                          smapper.popA(),
                          smapper.pushT(type),
-                         accessMember(mangleClassAccess + "(false)",
-                                      "_" + fi[1], fi));
+                         accessField(mangleClassAccess + "(false)",
+                                     "_" + fi[1], fi));
                     i += 2;
                     break;
                 }
@@ -1221,8 +1235,8 @@ abstract class ByteCodeToJavaScript {
                     emit(out, "@3.call(@2, @1);",
                          smapper.popT(type),
                          smapper.popA(),
-                         accessMember(mangleClassAccess + "(false)",
-                                      "_" + fi[1], fi));
+                         accessField(mangleClassAccess + "(false)",
+                                     "_" + fi[1], fi));
                     i += 2;
                     break;
                 }
@@ -1232,9 +1246,9 @@ abstract class ByteCodeToJavaScript {
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
                     emit(out, "var @1 = @2();",
                          smapper.pushT(type),
-                         accessMember(accessClass(fi[0].replace('/', '_'))
-                                          + "(false)",
-                                      "_" + fi[1], fi));
+                         accessField(accessClass(fi[0].replace('/', '_'))
+                                         + "(false)",
+                                     "_" + fi[1], fi));
                     i += 2;
                     addReference(fi[0]);
                     break;
@@ -1244,9 +1258,9 @@ abstract class ByteCodeToJavaScript {
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
                     emit(out, "@1(@2);",
-                         accessMember(accessClass(fi[0].replace('/', '_'))
-                                          + "(false)",
-                                      "_" + fi[1], fi),
+                         accessField(accessClass(fi[0].replace('/', '_'))
+                                         + "(false)",
+                                     "_" + fi[1], fi),
                          smapper.popT(type));
                     i += 2;
                     addReference(fi[0]);
@@ -1492,7 +1506,7 @@ abstract class ByteCodeToJavaScript {
         }
 
         final String in = mi[0];
-        out.append(accessMember(
+        out.append(accessStaticMethod(
                        accessClass(in.replace('/', '_')) + "(false)",
                        mn.startsWith("cons_")
                               ? "constructor." + mn
@@ -1536,7 +1550,7 @@ abstract class ByteCodeToJavaScript {
                .append(" = ");
         }
 
-        out.append(accessMember(vars[0].toString(), mn, mi));
+        out.append(accessVirtualMethod(vars[0].toString(), mn, mi));
         out.append('(');
         String sep = "";
         for (int j = 1; j < numArguments; ++j) {

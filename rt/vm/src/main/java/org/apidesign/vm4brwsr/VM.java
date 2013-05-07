@@ -32,12 +32,14 @@ abstract class VM extends ByteCodeToJavaScript {
 
     private final Bck2Brwsr.Resources resources;
     private final ExportedSymbols exportedSymbols;
+    private final StringArray invokerMethods;
 
     private VM(Appendable out, Bck2Brwsr.Resources resources) {
         super(out);
         this.resources = resources;
         this.classDataCache = new ClassDataCache(resources);
         this.exportedSymbols = new ExportedSymbols(resources);
+        this.invokerMethods = new StringArray();
     }
 
     static {
@@ -67,7 +69,20 @@ abstract class VM extends ByteCodeToJavaScript {
 
     private void doCompile(StringArray names) throws IOException {
         generatePrologue();
+        out.append(
+                "\n  var invoker = function Invoker() {"
+                    + "\n    return Invoker.target[Invoker.method]"
+                                      + ".apply(Invoker.target, arguments);"
+                    + "\n  };");
         generateBody(names);
+        for (String invokerMethod: invokerMethods.toArray()) {
+            out.append("\n  invoker." + invokerMethod + " = function(target) {"
+                           + "\n    invoker.target = target;"
+                           + "\n    invoker.method = '" + invokerMethod + "';"
+                           + "\n    return invoker;"
+                           + "\n  };");
+        }
+        out.append("\n");
         generateEpilogue();
     }
 
@@ -268,16 +283,64 @@ abstract class VM extends ByteCodeToJavaScript {
     }
 
     @Override
-    protected String accessMember(String object, String mangledName,
-                                  String[] fieldInfoName) throws IOException {
-        final ClassData declaringClass =
+    protected String accessField(String object, String mangledName,
+                                 String[] fieldInfoName) throws IOException {
+        final FieldData field =
+                classDataCache.findField(fieldInfoName[0],
+                                         fieldInfoName[1],
+                                         fieldInfoName[2]);
+        return accessNonVirtualMember(object, mangledName,
+                                      (field != null) ? field.cls : null);
+    }
+
+    @Override
+    protected String accessStaticMethod(
+                             String object,
+                             String mangledName,
+                             String[] fieldInfoName) throws IOException {
+        final MethodData method =
+                classDataCache.findMethod(fieldInfoName[0],
+                                          fieldInfoName[1],
+                                          fieldInfoName[2]);
+        return accessNonVirtualMember(object, mangledName,
+                                      (method != null) ? method.cls : null);
+    }
+
+    @Override
+    protected String accessVirtualMethod(
+                             String object,
+                             String mangledName,
+                             String[] fieldInfoName) throws IOException {
+        final ClassData referencedClass =
                 classDataCache.getClassData(fieldInfoName[0]);
-        if (declaringClass == null) {
-            return object + "['" + mangledName + "']";
+        final MethodData method =
+                classDataCache.findMethod(referencedClass,
+                                          fieldInfoName[1],
+                                          fieldInfoName[2]);
+
+        if ((method != null)
+                && (((method.access & ByteCodeParser.ACC_FINAL) != 0)
+                        || ((referencedClass.getAccessFlags()
+                                 & ByteCodeParser.ACC_FINAL) != 0)
+                        || !exportedSymbols.isExported(method))) {
+            return object + "." + mangledName;
         }
 
-        // TODO
-        return object + "." + mangledName;
+        return accessThroughInvoker(object, mangledName);
+    }
+
+    private String accessThroughInvoker(String object, String mangledName) {
+        if (!invokerMethods.contains(mangledName)) {
+            invokerMethods.add(mangledName);
+        }
+        return "invoker." + mangledName + '(' + object + ')';
+    }
+
+    private static String accessNonVirtualMember(String object,
+                                                 String mangledName,
+                                                 ClassData declaringClass) {
+        return (declaringClass != null) ? object + "." + mangledName
+                                        : object + "['" + mangledName + "']";
     }
 
     private static final class Standalone extends VM {

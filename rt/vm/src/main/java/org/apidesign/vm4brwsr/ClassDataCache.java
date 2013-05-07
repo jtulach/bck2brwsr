@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.Map;
 import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import org.apidesign.vm4brwsr.ByteCodeParser.ClassData;
+import org.apidesign.vm4brwsr.ByteCodeParser.FieldData;
+import org.apidesign.vm4brwsr.ByteCodeParser.MethodData;
 
 @ExtraJavaScript(processByteCode = false, resource="")
 final class ClassDataCache {
@@ -37,7 +39,12 @@ final class ClassDataCache {
         classDataMap = new HashMap<String, Object>();
     }
 
-    ClassData getClassData(final String className) throws IOException {
+    ClassData getClassData(String className) throws IOException {
+        if (className.startsWith("[")) {
+            // required for accessVirtualMethod, shouldn't be problematic for
+            // calls from other sources
+            className = "java/lang/Object";
+        }
         Object cacheEntry = classDataMap.get(className);
         if (cacheEntry == null) {
             final InputStream is = loadClass(resources, className);
@@ -46,6 +53,58 @@ final class ClassDataCache {
         }
 
         return (cacheEntry != MISSING_CLASS) ? (ClassData) cacheEntry : null;
+    }
+
+    MethodData findMethod(final String startingClass,
+                          final String name,
+                          final String signature) throws IOException {
+        return findMethod(getClassData(startingClass), name, signature);
+    }
+
+    FieldData findField(final String startingClass,
+                        final String name,
+                        final String signature) throws IOException {
+        return findField(getClassData(startingClass), name, signature);
+    }
+
+    MethodData findMethod(ClassData currentClass,
+                          final String name,
+                          final String signature) throws IOException {
+        while (currentClass != null) {
+            final MethodData methodData =
+                    currentClass.findMethod(name, signature);
+            if (methodData != null) {
+                return methodData;
+            }
+
+            final String superClassName = currentClass.getSuperClassName();
+            if (superClassName == null) {
+                break;
+            }
+            currentClass = getClassData(superClassName);
+        }
+
+        return null;
+    }
+
+    FieldData findField(ClassData currentClass,
+                        final String name,
+                        final String signature) throws IOException {
+        while (currentClass != null) {
+            final FieldData fieldData =
+                    currentClass.findField(name, signature);
+            if (fieldData != null) {
+                return fieldData;
+            }
+
+            final String superClassName = currentClass.getSuperClassName();
+            if (superClassName == null) {
+                break;
+            }
+            currentClass = getClassData(superClassName);
+        }
+
+        return null;
     }
 
     private static InputStream loadClass(Bck2Brwsr.Resources l, String name)

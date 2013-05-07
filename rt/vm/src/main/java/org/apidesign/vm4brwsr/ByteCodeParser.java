@@ -2034,6 +2034,30 @@ final class ByteCodeParser {
             return getNameAndType(c2.cpx2, 1, arr);
         }
 
+        public MethodData findMethod(String name, String signature) {
+            for (MethodData md: methods) {
+                if (md.getName().equals(name)
+                        && md.getInternalSig().equals(signature)) {
+                    return md;
+                }
+            }
+
+            // not found
+            return null;
+        }
+
+        public FieldData findField(String name, String signature) {
+            for (FieldData fd: fields) {
+                if (fd.getName().equals(name)
+                        && fd.getInternalSig().equals(signature)) {
+                    return fd;
+                }
+            }
+
+            // not found
+            return null;
+        }
+
         static byte[] findAttr(String n, AttrData[] attrs) {
             for (AttrData ad : attrs) {
                 if (n.equals(ad.getAttrName())) {
