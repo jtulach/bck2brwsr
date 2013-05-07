@@ -208,9 +208,6 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable, Callable<Ht
             public void service(Request request, Response response) throws Exception {
                 String id = request.getParameter("request");
                 String value = request.getParameter("result");
-                if (value != null && value.indexOf((char)0xC5) != -1) {
-                    value = toUTF8(value);
-                }
                 
                 
                 InvocationContext mi = null;
@@ -375,13 +372,6 @@ final class Bck2BrwsrLauncher extends Launcher implements Closeable, Callable<Ht
             final Process process = Runtime.getRuntime().exec(cmdArr);
             return new Object[] { process, null };
         }
-    }
-    private static String toUTF8(String value) throws UnsupportedEncodingException {
-        byte[] arr = new byte[value.length()];
-        for (int i = 0; i < arr.length; i++) {
-            arr[i] = (byte)value.charAt(i);
-        }
-        return new String(arr, "UTF-8");
     }
     
     private static String decodeURL(String s) {

@@ -11,6 +11,9 @@
   <version>0.8-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Launchers</name>
+  <properties>
+      <grizzly.version>2.3.2</grizzly.version>
+  </properties>
   <modules>
     <module>api</module>
     <module>http</module>
