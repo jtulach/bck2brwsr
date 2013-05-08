@@ -37,19 +37,23 @@ final class ClosureWrapper extends CommandLineRunner {
 
     private final Bck2Brwsr.Resources res;
     private final StringArray classes;
+    private final boolean extension;
 
     private String compiledCode;
     private String externsCode;
 
     private ClosureWrapper(Appendable out, 
                            String compilationLevel,
-                           Bck2Brwsr.Resources res, StringArray classes) {
+                           Bck2Brwsr.Resources res,
+                           StringArray classes,
+                           boolean extension) {
         super(
             generateArguments(compilationLevel),
             new PrintStream(new APS(out)), System.err
         );
         this.res = res;
         this.classes = classes;
+        this.extension = extension;
     }
 
     @Override
@@ -92,7 +96,7 @@ final class ClosureWrapper extends CommandLineRunner {
         if (compiledCode == null) {
             StringBuilder sb = new StringBuilder();
             try {
-                VM.compileStandalone(res, sb, classes);
+                VM.compile(sb, res, classes, extension);
                 compiledCode = sb.toString();
             } catch (IOException ex) {
                 compiledCode = ex.getMessage();
@@ -134,30 +138,21 @@ final class ClosureWrapper extends CommandLineRunner {
         return finalArgs;
     }
 
-    static int produceTo(Appendable w, ObfuscationLevel obfuscationLevel, Bck2Brwsr.Resources resources, StringArray arr) throws IOException {
-        ClosureWrapper cw = create(w, obfuscationLevel, resources, arr);
+    static int produceTo(Appendable output,
+                         ObfuscationLevel obfuscationLevel,
+                         Bck2Brwsr.Resources resources,
+                         StringArray arr,
+                         boolean extension) throws IOException {
+        final ClosureWrapper cw =
+                new ClosureWrapper(output,
+                                   (obfuscationLevel == ObfuscationLevel.FULL)
+                                           ? "ADVANCED_OPTIMIZATIONS"
+                                           : "SIMPLE_OPTIMIZATIONS",
+                                   resources, arr, extension);
         try {
             return cw.doRun();
         } catch (FlagUsageException ex) {
             throw new IOException(ex);
-        }
-    }
-
-    private static ClosureWrapper create(Appendable w,
-                                         ObfuscationLevel obfuscationLevel,
-                                         Bck2Brwsr.Resources resources,
-                                         StringArray arr) {
-        switch (obfuscationLevel) {
-            case MINIMAL:
-                return new ClosureWrapper(w, "SIMPLE_OPTIMIZATIONS",
-                                          resources, arr);
-
-            case FULL:
-                return new ClosureWrapper(w, "ADVANCED_OPTIMIZATIONS",
-                                          resources, arr);
-            default:
-                throw new IllegalArgumentException(
-                        "Unsupported level: " + obfuscationLevel);
         }
     }
 

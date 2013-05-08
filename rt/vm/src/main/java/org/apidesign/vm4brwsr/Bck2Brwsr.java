@@ -20,7 +20,6 @@ package org.apidesign.vm4brwsr;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Enumeration;
 
 /** Build your own virtual machine! Use methods in this class to generate
  * a skeleton JVM in JavaScript that contains pre-compiled classes of your
@@ -171,25 +170,21 @@ public final class Bck2Brwsr {
      */
     public void generate(Appendable out) throws IOException {
         Resources r = res != null ? res : new LdrRsrcs(Bck2Brwsr.class.getClassLoader());
-//        if (level != ObfuscationLevel.NONE) {
-//            try {
-//                ClosureWrapper.produceTo(out, level, r, classes);
-//                return;
-//            } catch (IOException ex) {
-//                throw ex;
-//            } catch (Throwable ex) {
-//                out.append("/* Failed to obfuscate: " + ex.getMessage()
-//                               + " */\n");
-//            }
-//        }
-
-        if (extension) {
-            VM.compileExtension(r, out, classes);
-        } else {
-            VM.compileStandalone(r, out, classes);
+        if (level != ObfuscationLevel.NONE) {
+            try {
+                ClosureWrapper.produceTo(out, level, r, classes, extension);
+                return;
+            } catch (IOException ex) {
+                throw ex;
+            } catch (Throwable ex) {
+                out.append("/* Failed to obfuscate: " + ex.getMessage()
+                               + " */\n");
+            }
         }
+
+        VM.compile(out, r, classes, extension);
     }
-    
+
     /** Provider of resources (classes and other files). The 
      * {@link #generate(java.lang.Appendable, org.apidesign.vm4brwsr.Bck2Brwsr.Resources, java.lang.String[]) 
      * generator method} will call back here for all classes needed during

@@ -57,13 +57,8 @@ abstract class VM extends ByteCodeToJavaScript {
         return false;
     }
     
-    static void compileStandalone(Bck2Brwsr.Resources l, Appendable out, StringArray names) throws IOException {
-        VM vm = new Standalone(out, l);
-        vm.doCompile(names);
-    }
-
-    static void compileExtension(Bck2Brwsr.Resources l, Appendable out, StringArray names) throws IOException {
-        VM vm = new Extension(out, l);
+    static void compile(Appendable out, Bck2Brwsr.Resources l, StringArray names, boolean extension) throws IOException {
+        VM vm = extension ? new Extension(out, l) : new Standalone(out, l);
         vm.doCompile(names);
     }
 
