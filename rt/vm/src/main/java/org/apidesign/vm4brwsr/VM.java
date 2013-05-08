@@ -115,7 +115,7 @@ abstract class VM extends ByteCodeToJavaScript {
     protected void declaredMethod(MethodData methodData,
                                   String destObject,
                                   String mangledName) throws IOException {
-        if (exportedSymbols.isExported(methodData)) {
+        if (isHierarchyExported(methodData)) {
             exportMember(destObject, mangledName);
         }
     }
@@ -317,7 +317,7 @@ abstract class VM extends ByteCodeToJavaScript {
                 && (((method.access & ByteCodeParser.ACC_FINAL) != 0)
                         || ((referencedClass.getAccessFlags()
                                  & ByteCodeParser.ACC_FINAL) != 0)
-                        || !exportedSymbols.isExported(method))) {
+                        || !isHierarchyExported(method))) {
             return object + "." + mangledName;
         }
 
@@ -331,11 +331,60 @@ abstract class VM extends ByteCodeToJavaScript {
         return "invoker." + mangledName + '(' + object + ')';
     }
 
+    private boolean isHierarchyExported(final MethodData methodData)
+            throws IOException {
+        if (exportedSymbols.isExported(methodData)) {
+            return true;
+        }
+        if ((methodData.access & (ByteCodeParser.ACC_PRIVATE
+                                      | ByteCodeParser.ACC_STATIC)) != 0) {
+            return false;
+        }
+
+        final ExportedMethodFinder exportedMethodFinder =
+                new ExportedMethodFinder(exportedSymbols);
+
+        classDataCache.findMethods(
+                methodData.cls,
+                methodData.getName(),
+                methodData.getInternalSig(),
+                exportedMethodFinder);
+
+        return (exportedMethodFinder.getFound() != null);
+    }
+
     private static String accessNonVirtualMember(String object,
                                                  String mangledName,
                                                  ClassData declaringClass) {
         return (declaringClass != null) ? object + "." + mangledName
                                         : object + "['" + mangledName + "']";
+    }
+
+    private static final class ExportedMethodFinder
+            implements ClassDataCache.TraversalCallback<MethodData> {
+        private final ExportedSymbols exportedSymbols;
+        private MethodData found;
+
+        public ExportedMethodFinder(final ExportedSymbols exportedSymbols) {
+            this.exportedSymbols = exportedSymbols;
+        }
+
+        @Override
+        public boolean traverse(final MethodData methodData) {
+            try {
+                if (exportedSymbols.isExported(methodData)) {
+                    found = methodData;
+                    return false;
+                }
+            } catch (final IOException e) {
+            }
+
+            return true;
+        }
+
+        public MethodData getFound() {
+            return found;
+        }
     }
 
     private static final class Standalone extends VM {

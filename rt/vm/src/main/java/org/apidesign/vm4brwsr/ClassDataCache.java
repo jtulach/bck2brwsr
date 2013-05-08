@@ -67,44 +67,143 @@ final class ClassDataCache {
         return findField(getClassData(startingClass), name, signature);
     }
 
-    MethodData findMethod(ClassData currentClass,
+    MethodData findMethod(final ClassData startingClass,
                           final String name,
                           final String signature) throws IOException {
-        while (currentClass != null) {
-            final MethodData methodData =
-                    currentClass.findMethod(name, signature);
-            if (methodData != null) {
-                return methodData;
-            }
+        final FindFirstTraversalCallback<MethodData> ffTraversalCallback =
+                new FindFirstTraversalCallback<MethodData>();
 
-            final String superClassName = currentClass.getSuperClassName();
-            if (superClassName == null) {
-                break;
-            }
-            currentClass = getClassData(superClassName);
-        }
-
-        return null;
+        findMethods(startingClass, name, signature, ffTraversalCallback);
+        return ffTraversalCallback.getFirst();
     }
 
-    FieldData findField(ClassData currentClass,
+    FieldData findField(final ClassData startingClass,
                         final String name,
                         final String signature) throws IOException {
+        final FindFirstTraversalCallback<FieldData> ffTraversalCallback =
+                new FindFirstTraversalCallback<FieldData>();
+
+        findFields(startingClass, name, signature, ffTraversalCallback);
+        return ffTraversalCallback.getFirst();
+    }
+
+    void findMethods(final ClassData startingClass,
+                     final String methodName,
+                     final String methodSignature,
+                     final TraversalCallback<MethodData> mdTraversalCallback)
+                             throws IOException {
+        traverseHierarchy(
+                startingClass,
+                new FindMethodsTraversalCallback(methodName, methodSignature,
+                                                 mdTraversalCallback));
+    }
+
+    void findFields(final ClassData startingClass,
+                    final String fieldName,
+                    final String fieldSignature,
+                    final TraversalCallback<FieldData> fdTraversalCallback)
+                            throws IOException {
+        traverseHierarchy(
+                startingClass,
+                new FindFieldsTraversalCallback(fieldName, fieldSignature,
+                                                fdTraversalCallback));
+    }
+
+    private boolean traverseHierarchy(
+            ClassData currentClass,
+            final TraversalCallback<ClassData> cdTraversalCallback)
+                throws IOException {
         while (currentClass != null) {
-            final FieldData fieldData =
-                    currentClass.findField(name, signature);
-            if (fieldData != null) {
-                return fieldData;
+            if (!cdTraversalCallback.traverse(currentClass)) {
+                return false;
+            }
+
+            for (final String superIfaceName:
+                    currentClass.getSuperInterfaces()) {
+                if (!traverseHierarchy(getClassData(superIfaceName),
+                                       cdTraversalCallback)) {
+                    return false;
+                }
             }
 
             final String superClassName = currentClass.getSuperClassName();
             if (superClassName == null) {
                 break;
             }
+
             currentClass = getClassData(superClassName);
         }
 
-        return null;
+        return true;
+    }
+
+    interface TraversalCallback<T> {
+        boolean traverse(T object);
+    }
+
+    private final class FindFirstTraversalCallback<T>
+            implements TraversalCallback<T> {
+        private T firstObject;
+
+        @Override
+        public boolean traverse(final T object) {
+            firstObject = object;
+            return false;
+        }
+
+        public T getFirst() {
+            return firstObject;
+        }
+    }
+
+    private final class FindMethodsTraversalCallback
+            implements TraversalCallback<ClassData> {
+        private final String methodName;
+        private final String methodSignature;
+        private final TraversalCallback<MethodData> mdTraversalCallback;
+
+        public FindMethodsTraversalCallback(
+                final String methodName,
+                final String methodSignature,
+                final TraversalCallback<MethodData> mdTraversalCallback) {
+            this.methodName = methodName;
+            this.methodSignature = methodSignature;
+            this.mdTraversalCallback = mdTraversalCallback;
+        }
+
+        @Override
+        public boolean traverse(final ClassData classData) {
+            final MethodData methodData =
+                    classData.findMethod(methodName, methodSignature);
+            return (methodData != null)
+                       ? mdTraversalCallback.traverse(methodData)
+                       : true;
+        }
+    }
+
+    private final class FindFieldsTraversalCallback
+            implements TraversalCallback<ClassData> {
+        private final String fieldName;
+        private final String fieldSignature;
+        private final TraversalCallback<FieldData> fdTraversalCallback;
+
+        public FindFieldsTraversalCallback(
+                final String fieldName,
+                final String fieldSignature,
+                final TraversalCallback<FieldData> fdTraversalCallback) {
+            this.fieldName = fieldName;
+            this.fieldSignature = fieldSignature;
+            this.fdTraversalCallback = fdTraversalCallback;
+        }
+
+        @Override
+        public boolean traverse(final ClassData classData) {
+            final FieldData fieldData =
+                    classData.findField(fieldName, fieldSignature);
+            return (fieldData != null)
+                       ? fdTraversalCallback.traverse(fieldData)
+                       : true;
+        }
     }
 
     private static InputStream loadClass(Bck2Brwsr.Resources l, String name)
