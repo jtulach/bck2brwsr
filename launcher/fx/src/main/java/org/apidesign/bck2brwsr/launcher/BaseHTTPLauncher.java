@@ -51,6 +51,7 @@ import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.grizzly.http.server.ServerConfiguration;
 import org.glassfish.grizzly.http.util.HttpStatus;
+import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 
 /**
  * Lightweight server to launch Bck2Brwsr applications and tests.
@@ -150,6 +151,19 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
     private HttpServer initServer(String path, boolean addClasses) throws IOException {
         HttpServer s = HttpServer.createSimpleServer(path, new PortRange(8080, 65535));
 
+        ThreadPoolConfig fewThreads = ThreadPoolConfig.defaultConfig().copy().
+            setPoolName("Fx/Bck2 Brwsr").
+            setCorePoolSize(1).
+            setMaxPoolSize(5);
+        ThreadPoolConfig oneKernel = ThreadPoolConfig.defaultConfig().copy().
+            setPoolName("Kernel Fx/Bck2").
+            setCorePoolSize(1).
+            setMaxPoolSize(3);
+        for (NetworkListener nl : s.getListeners()) {
+            nl.getTransport().setWorkerThreadPoolConfig(fewThreads);
+            nl.getTransport().setKernelThreadPoolConfig(oneKernel);
+        }
+        
         final ServerConfiguration conf = s.getServerConfiguration();
         if (addClasses) {
             conf.addHttpHandler(new VM(), "/bck2brwsr.js");
