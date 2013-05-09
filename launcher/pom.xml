@@ -4,11 +4,11 @@
   <parent>
     <artifactId>bck2brwsr</artifactId>
     <groupId>org.apidesign</groupId>
-    <version>0.8-SNAPSHOT</version>
+    <version>0.7</version>
   </parent>
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>launcher-pom</artifactId>
-  <version>0.8-SNAPSHOT</version>
+  <version>0.7.1</version>
   <packaging>pom</packaging>
   <name>Launchers</name>
   <properties>
@@ -19,4 +19,8 @@
     <module>http</module>
     <module>fx</module>
   </modules>
+
+  <scm>
+    <tag>release-${releaseVersion}</tag>
+  </scm>
 </project>

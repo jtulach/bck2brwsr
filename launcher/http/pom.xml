@@ -4,11 +4,11 @@
   <parent>
     <groupId>org.apidesign.bck2brwsr</groupId>
     <artifactId>launcher-pom</artifactId>
-    <version>0.8-SNAPSHOT</version>
+    <version>0.7.1</version>
   </parent>
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>launcher.http</artifactId>
-  <version>0.8-SNAPSHOT</version>
+  <version>0.7.1</version>
   <name>Bck2Brwsr Launcher</name>
   <url>http://maven.apache.org</url>
     <build>
@@ -54,7 +54,7 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>vm4brwsr</artifactId>
-      <version>${project.version}</version>
+      <version>0.7</version>
     </dependency>
   </dependencies>
 </project>
