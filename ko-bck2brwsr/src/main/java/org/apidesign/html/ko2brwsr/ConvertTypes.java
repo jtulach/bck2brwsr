@@ -112,34 +112,26 @@ final class ConvertTypes {
         return s;
     }
     
-    @JavaScriptBody(args = { "url", "arr", "callback" }, body = ""
+    @JavaScriptBody(args = { "url", "arr", "callback", "method", "data" }, body = ""
         + "var request = new XMLHttpRequest();\n"
-        + "request.open('GET', url, true);\n"
+        + "if (!method) method = 'GET';\n"
+        + "request.open(method, url, true);\n"
         + "request.setRequestHeader('Content-Type', 'application/json; charset=utf-8');\n"
         + "request.onreadystatechange = function() {\n"
         + "  if (this.readyState!==4) return;\n"
         + "  try {\n"
         + "    arr[0] = eval('(' + this.response + ')');\n"
         + "  } catch (error) {;\n"
-        + "    throw 'Cannot parse' + error + ':' + this.response;\n"
-        + "  };\n"
+        + "    arr[0] = this.response;\n"
+        + "  }\n"
         + "  callback.run__V();\n"
         + "};"
-        + "request.send();"
+        + "if (data) request.send(data);"
+        + "else request.send();"
     )
-    private static void loadJSON(
-        String url, Object[] jsonResult, Runnable whenDone
+    static void loadJSON(
+        String url, Object[] jsonResult, Runnable whenDone, String method, String data
     ) {
-    }
-    
-    public static void loadJSON(
-        String url, Object[] jsonResult, Runnable whenDone, String jsonp
-    ) {
-        if (jsonp == null) {
-            loadJSON(url, jsonResult, whenDone);
-        } else {
-            loadJSONP(url, jsonp);
-        }
     }
     
     @JavaScriptBody(args = { "url", "jsonp" }, body = 
@@ -150,7 +142,7 @@ final class ConvertTypes {
         + "var body = document.getElementsByTagName('body')[0];\n "
         + "body.appendChild(scrpt);\n"
     )
-    private static void loadJSONP(String url, String jsonp) {
+    static void loadJSONP(String url, String jsonp) {
         
     }
     

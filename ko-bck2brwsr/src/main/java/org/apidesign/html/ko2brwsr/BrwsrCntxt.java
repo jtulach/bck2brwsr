@@ -20,9 +20,12 @@
  */
 package org.apidesign.html.ko2brwsr;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.java.html.json.Context;
 import org.apidesign.html.json.spi.ContextBuilder;
 import org.apidesign.html.json.spi.FunctionBinding;
@@ -61,9 +64,19 @@ final class BrwsrCntxt implements Technology<Object>, Transfer {
         R r = new R();
         if (call.isJSONP()) {
             String me = ConvertTypes.createJSONP(r.arr, r);
-            ConvertTypes.loadJSON(call.composeURL(me), r.arr, r, me);
+            ConvertTypes.loadJSONP(call.composeURL(me), me);
         } else {
-            ConvertTypes.loadJSON(call.composeURL(null), r.arr, r, null);
+            String data = null;
+            if (call.isDoOutput()) {
+                try {
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                    call.writeData(bos);
+                    data = new String(bos.toByteArray(), "UTF-8");
+                } catch (IOException ex) {
+                    call.notifyError(ex);
+                }
+            }
+            ConvertTypes.loadJSON(call.composeURL(null), r.arr, r, call.getMethod(), data);
         }
     }
 

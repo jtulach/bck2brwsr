@@ -72,7 +72,7 @@
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>launcher.http</artifactId>
-      <version>${bck2brwsr.version}</version>
+      <version>0.8-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
     <dependency>
