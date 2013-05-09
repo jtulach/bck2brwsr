@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.URI;
@@ -57,7 +58,7 @@ import org.glassfish.grizzly.http.util.HttpStatus;
  * execution engine.
  */
 abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<HttpServer> {
-    private static final Logger LOG = Logger.getLogger(BaseHTTPLauncher.class.getName());
+    static final Logger LOG = Logger.getLogger(BaseHTTPLauncher.class.getName());
     private static final InvocationContext END = new InvocationContext(null, null, null);
     private final Set<ClassLoader> loaders = new LinkedHashSet<>();
     private final BlockingQueue<InvocationContext> methods = new LinkedBlockingQueue<>();
@@ -190,6 +191,25 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                             params = new String[r.parameters.length];
                             for (int i = 0; i < r.parameters.length; i++) {
                                 params[i] = request.getParameter(r.parameters[i]);
+                                if (params[i] == null) {
+                                    if ("http.method".equals(r.parameters[i])) {
+                                        params[i] = request.getMethod().toString();
+                                    } else if ("http.requestBody".equals(r.parameters[i])) {
+                                        Reader rdr = request.getReader();
+                                        StringBuilder sb = new StringBuilder();
+                                        for (;;) {
+                                            int ch = rdr.read();
+                                            if (ch == -1) {
+                                                break;
+                                            }
+                                            sb.append((char)ch);
+                                        }
+                                        params[i] = sb.toString();
+                                    }
+                                }
+                                if (params[i] == null) {
+                                    params[i] = "null";
+                                }
                             }
                         }
                         
@@ -199,9 +219,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
             }
         }
         
-        conf.addHttpHandler(new Page(resources, 
-            "org/apidesign/bck2brwsr/launcher/fximpl/harness.xhtml"
-        ), "/execute");
+        conf.addHttpHandler(new Page(resources, harnessResource()), "/execute");
         
         conf.addHttpHandler(new HttpHandler() {
             int cnt;
@@ -461,9 +479,10 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         }
     }
 
-    abstract void generateBck2BrwsrJS(StringBuilder sb, Object loader) throws IOException;
+    abstract void generateBck2BrwsrJS(StringBuilder sb, Res loader) throws IOException;
+    abstract String harnessResource();
 
-    private class Res {
+    class Res {
         public InputStream get(String resource) throws IOException {
             for (ClassLoader l : loaders) {
                 URL u = null;

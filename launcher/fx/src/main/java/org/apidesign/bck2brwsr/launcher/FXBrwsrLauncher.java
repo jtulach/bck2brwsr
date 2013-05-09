@@ -81,7 +81,7 @@ final class FXBrwsrLauncher extends BaseHTTPLauncher {
     }
     
     @Override
-    void generateBck2BrwsrJS(StringBuilder sb, Object loader) throws IOException {
+    void generateBck2BrwsrJS(StringBuilder sb, Res loader) throws IOException {
         sb.append("(function() {\n"
             + "  var impl = this.bck2brwsr;\n"
             + "  this.bck2brwsr = function() { return impl; };\n"
@@ -96,6 +96,10 @@ final class FXBrwsrLauncher extends BaseHTTPLauncher {
     public void close() throws IOException {
         super.close();
         Platform.exit();
+    }
+
+    String harnessResource() {
+        return "org/apidesign/bck2brwsr/launcher/fximpl/harness.xhtml";
     }
 
     public static void main(String... args) throws IOException {
