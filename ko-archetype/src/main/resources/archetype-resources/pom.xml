@@ -41,7 +41,7 @@
     <net.java.html.version>${project.version}</net.java.html.version>
     <bck2brwsr.version>${bck2brwsr.version}</bck2brwsr.version>
     <bck2brwsr.obfuscationlevel>MINIMAL</bck2brwsr.obfuscationlevel>
-    <brwsr.startpage>org/apidesign/html/demo/twitter/index.html</brwsr.startpage>
+    <brwsr.startpage>\${package.replace('.','/')}/index.html</brwsr.startpage>
   </properties>
   <build>
       <plugins>
