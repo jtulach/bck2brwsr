@@ -1,29 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-
-    The MIT License (MIT)
-
-    Copyright (C) 2013 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
-
-    Permission is hereby granted, free of charge, to any person obtaining a copy
-    of this software and associated documentation files (the "Software"), to deal
-    in the Software without restriction, including without limitation the rights
-    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-    copies of the Software, and to permit persons to whom the Software is
-    furnished to do so, subject to the following conditions:
-
-    The above copyright notice and this permission notice shall be included in
-    all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-    THE SOFTWARE.
-
--->
 
 <!--
     Copied from knockout.js Twitter example:
@@ -47,12 +22,19 @@
         <h2>Bck2Brwsr's Twitter</h2>
         
         <p>
-        This code based on original <a href="http://knockoutjs.com/examples/twitter.html">knockout.js Twitter example</a> and
-        uses almost unmodified HTML code. It just changes the model. It 
-        is written in Java language and it is executed using <a href="http://bck2brwsr.apidesign.org">Bck2Brwsr</a>
-        virtual machine. The Java source code has about 190 lines and is available 
-        <a href="http://source.apidesign.org/hg/bck2brwsr/file/7fc6b7e9c982/javaquery/demo-twitter/src/main/java/org/apidesign/bck2brwsr/demo/twitter/TwitterClient.java">here</a>
+        This code is based on original 
+        <a href="http://knockoutjs.com/examples/twitter.html">knockout.js
+        Twitter example</a> and
+        uses almost unmodified HTML page. It just changes the model. The model
+        is written in Java language.The Java source code has about 190 lines 
         - in fact it may even be more dense than the original JavaScript model.
+        </p>
+        <p>
+        The project has two profiles. Either it executes in real Java virtual
+        machine and renders using JavaFX's WebView (use <code>fxbrwsr</code> profile
+        - the default). It can also run directly in a browser via
+        <a href="http://bck2brwsr.apidesign.org">Bck2Brwsr</a> virtual machine
+        (use <code>bck2brwsr</code> profile).
         </p>
         
         <div class='liveExample'>
@@ -96,8 +78,8 @@
         
         <script src="bck2brwsr.js"></script>
         <script type="text/javascript">
-            var vm = bck2brwsr('demo-twitter-1.0-SNAPSHOT.jar');
-            vm.loadClass('org.apidesign.html.demo.twitter.TwitterClient');
+            var vm = bck2brwsr('${artifactId}-${version}.jar');
+            vm.loadClass('${package}.TwitterClient');
         </script>
 
 
