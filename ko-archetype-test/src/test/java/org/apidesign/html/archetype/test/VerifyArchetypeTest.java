@@ -43,11 +43,50 @@ public class VerifyArchetypeTest {
         v.executeGoal("verify");
         
         v.verifyErrorFreeLog();
+        
+        for (String l : v.loadFile(v.getBasedir(), v.getLogFileName(), false)) {
+            if (l.contains("j2js")) {
+                fail("No pre-compilaton:\n" + l);
+            }
+        }
+        
+        v.verifyTextInLog("org.apidesign.bck2brwsr.launcher.FXBrwsrLauncher");
+        v.verifyTextInLog("fxcompile/o-a-test/target/o-a-test-1.0-SNAPSHOT-fxbrwsr.zip");
+    }
+    
+    @Test public void bck2BrwsrCompiles() throws Exception {
+        final File dir = new File("target/tests/b2bcompile/").getAbsoluteFile();
+        generateFromArchetype(dir);
+        
+        File created = new File(dir, "o-a-test");
+        assertTrue(created.isDirectory(), "Project created");
+        assertTrue(new File(created, "pom.xml").isFile(), "Pom file is in there");
+        
+        Verifier v = new Verifier(created.getAbsolutePath());
+        v.addCliOption("-Pbck2brwsr");
+        v.executeGoal("verify");
+        
+        v.verifyErrorFreeLog();
+        
+        // does pre-compilation to JavaScript
+        v.verifyTextInLog("j2js");
+        // uses Bck2BrwsrLauncher
+        v.verifyTextInLog("org.apidesign.bck2brwsr.launcher.Bck2BrwsrLauncher stopServerAndBrwsr");
+        // building zip:
+        v.verifyTextInLog("b2bcompile/o-a-test/target/o-a-test-1.0-SNAPSHOT-bck2brwsr.zip");
+        
+        for (String l : v.loadFile(v.getBasedir(), v.getLogFileName(), false)) {
+            if (l.contains("fxbrwsr")) {
+                fail("No fxbrwsr:\n" + l);
+            }
+        }
+
     }
 
-    private Verifier generateFromArchetype(final File dir) throws Exception {
+    private Verifier generateFromArchetype(final File dir, String... params) throws Exception {
         Verifier v = new Verifier(dir.getAbsolutePath());
         v.setAutoclean(false);
+        v.setLogFileName("generate.log");
         v.deleteDirectory("");
         dir.mkdirs();
         Properties sysProp = v.getSystemProperties();
@@ -57,6 +96,10 @@ public class VerifyArchetypeTest {
         sysProp.put("archetypeGroupId", "org.apidesign.html");
         sysProp.put("archetypeArtifactId", "knockout4j-archetype");
         sysProp.put("archetypeVersion", ArchetypeVersionTest.findCurrentVersion());
+        
+        for (String p : params) {
+            v.addCliOption(p);
+        }
         v.executeGoal("archetype:generate");
         v.verifyErrorFreeLog();
         return v;
