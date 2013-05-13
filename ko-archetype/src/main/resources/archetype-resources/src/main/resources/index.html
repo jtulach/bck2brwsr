@@ -1,31 +1,105 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    The MIT License (MIT)
+
+    Copyright (C) 2013 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in
+    all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+    THE SOFTWARE.
+
+-->
+
+<!--
+    Copied from knockout.js Twitter example:
+    http://knockoutjs.com/examples/twitter.html
+-->
+
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
-        <title>Bck2Brwsr's Hello World</title>
+        <title>Bck2Brwsr's Twitter</title>
     </head>
     <body>
-        <h1 data-bind="text: helloMessage">Loading Bck2Brwsr's Hello World...</h1>
-        Your name: <input id='input' data-bind="value: name, valueUpdate: 'afterkeydown'"></input>
-        <button id="hello">Say Hello!</button>
+        <link href='twitterExample.css' rel='Stylesheet' ></link>
+        
+        <style type='text/css'>
+           .liveExample select { height: 1.7em; }
+           .liveExample button { height: 2em; }
+        </style>
+        
+        
+        <h2>Bck2Brwsr's Twitter</h2>
+        
         <p>
-            <canvas id="canvas" width="300" height="50">
-            </canvas>
+        This code based on original <a href="http://knockoutjs.com/examples/twitter.html">knockout.js Twitter example</a> and
+        uses almost unmodified HTML code. It just changes the model. It 
+        is written in Java language and it is executed using <a href="http://bck2brwsr.apidesign.org">Bck2Brwsr</a>
+        virtual machine. The Java source code has about 190 lines and is available 
+        <a href="http://source.apidesign.org/hg/bck2brwsr/file/7fc6b7e9c982/javaquery/demo-twitter/src/main/java/org/apidesign/bck2brwsr/demo/twitter/TwitterClient.java">here</a>
+        - in fact it may even be more dense than the original JavaScript model.
         </p>
         
+        <div class='liveExample'>
+            <div class='configuration'>
+                <div class='listChooser'>
+                    <button data-bind='click: deleteList, enable: activeTweetersName'>Delete</button>
+                    <button data-bind='click: saveChanges, enable: hasUnsavedChanges'>Save</button> 
+                    <select data-bind='options: savedLists, optionsValue: "name", value: activeTweetersName'> </select>
+                </div>
+
+                <p>Currently viewing <span data-bind='text: activeTweetersCount'> </span> user(s):</p>
+                <div class='currentUsers' >
+                    <ul data-bind='foreach: activeTweeters'>
+                        <li>
+                            <button data-bind='click: $root.removeUser'>Remove</button>
+                            <div data-bind='text: $data'> </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <form data-bind='submit: addUser'>
+                    <label>Add user:</label>
+                    <input data-bind='value: userNameToAdd, valueUpdate: "keyup", css: { invalid: !userNameToAddIsValid() }' />
+                    <button data-bind='enable: userNameToAddIsValid' type='submit'>Add</button>
+                </form>
+            </div>
+            <div class='tweets'>
+                <div class='loadingIndicator'>Loading...</div>
+                <table data-bind='foreach: currentTweets' width='100%'>
+                    <tr>
+                        <td><img data-bind='attr: { src: profile_image_url }' /></td>
+                        <td>
+                            <a class='twitterUser' data-bind='attr: { href: userUrl }, text: from_user'> </a>
+                            <span data-bind='html: html'> </span>
+                            <div class='tweetInfo' data-bind='text: created_at'> </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
         
-        <div data-bind="if: noMessages">No message displayed yet.</div>
-        <ul data-bind="foreach: messages">
-            <li>
-                <a href="#" data-bind="text: $data, click: $root.display"></a>
-                (<a href="#" data-bind="click: $root.remove">delete</a>)
-            </li>
-        </ul>
-      
         <script src="bck2brwsr.js"></script>
         <script type="text/javascript">
-            var vm = bck2brwsr('${artifactId}-${version}.jar');
-            vm.loadClass('${package}.App');
+            var vm = bck2brwsr('demo-twitter-1.0-SNAPSHOT.jar');
+            vm.loadClass('org.apidesign.html.demo.twitter.TwitterClient');
         </script>
+
+
     </body>
 </html>

@@ -4,7 +4,7 @@
     <fileSet filtered="true" packaged="true">
       <directory>src/main/java</directory>
       <includes>
-        <include>**/App.java</include>
+        <include>**/*.java</include>
       </includes>
     </fileSet>
     <fileSet filtered="true" packaged="true">
@@ -12,12 +12,19 @@
       <includes>
         <include>**/*.xhtml</include>
         <include>**/*.html</include>
+        <include>**/*.css</include>
       </includes>
     </fileSet>
     <fileSet filtered="true" packaged="true">
       <directory>src/test/java</directory>
       <includes>
         <include>**/*Test.java</include>
+      </includes>
+    </fileSet>
+    <fileSet filtered="true" packaged="false">
+      <directory>src/main/assembly</directory>
+      <includes>
+        <include>**/*.xml</include>
       </includes>
     </fileSet>
     <fileSet filtered="false" packaged="false">

@@ -53,36 +53,6 @@
                   <target>1.6</target>
               </configuration>
           </plugin>
-          <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-surefire-plugin</artifactId>
-              <configuration>
-                  <skipTests>true</skipTests>
-              </configuration>
-              <executions>
-                  <execution>
-                      <id>test</id>
-                      <goals>
-                          <goal>test</goal>
-                      </goals>
-                      <phase>integration-test</phase>
-                      <configuration>
-                          <additionalClasspathElements>
-                              <additionalClasspathElement>${project.build.directory}/knockout4j-archetype-${project.version}.jar</additionalClasspathElement>
-                          </additionalClasspathElements>
-                          <skipTests>false</skipTests>
-                      </configuration>
-                  </execution>
-                  
-              </executions>
-          </plugin>
       </plugins>
   </build>
-  <dependencies>
-      <dependency>
-          <groupId>org.testng</groupId>
-          <artifactId>testng</artifactId>
-          <scope>test</scope>
-      </dependency>
-  </dependencies>
 </project>
