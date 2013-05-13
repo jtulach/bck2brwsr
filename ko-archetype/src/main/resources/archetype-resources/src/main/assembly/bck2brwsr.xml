@@ -20,7 +20,7 @@
   </dependencySets> 
   <fileSets>
       <fileSet>
-          <directory>${project.build.directory}/classes/org/apidesign/html/demo/twitter/</directory>
+          <directory>${project.build.directory}/classes/${package.replace('.','/')}/</directory>
           <includes>
               <include>**/*</include>
           </includes>

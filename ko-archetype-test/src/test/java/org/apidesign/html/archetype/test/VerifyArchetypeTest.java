@@ -22,6 +22,7 @@ package org.apidesign.html.archetype.test;
 
 import java.io.File;
 import java.util.Properties;
+import java.util.zip.ZipFile;
 import org.apache.maven.it.Verifier;
 import org.testng.annotations.Test;
 import static org.testng.Assert.*;
@@ -81,6 +82,13 @@ public class VerifyArchetypeTest {
             }
         }
 
+        File zip = new File(new File(created, "target"), "o-a-test-1.0-SNAPSHOT-bck2brwsr.zip");
+        assertTrue(zip.isFile(), "Zip file with website was created");
+        
+        ZipFile zf = new ZipFile(zip);
+        assertNotNull(zf.getEntry("public_html/index.html"), "index.html found");
+        assertNotNull(zf.getEntry("public_html/twitterExample.css"), "css file found");
+        
     }
 
     private Verifier generateFromArchetype(final File dir, String... params) throws Exception {
