@@ -58,8 +58,14 @@ abstract class VM extends ByteCodeToJavaScript {
     }
     
     static void compile(Appendable out, Bck2Brwsr.Resources l, StringArray names, boolean extension) throws IOException {
-        VM vm = extension ? new Extension(out, l) : new Standalone(out, l);
-        vm.doCompile(names);
+        VM vm = extension ? new Extension(out, l, names.toArray())
+                          : new Standalone(out, l);
+
+        final StringArray fixedNames =
+                StringArray.asList(Class.class.getName().replace('.', '/'),
+                                   VM.class.getName().replace('.', '/'));
+
+        vm.doCompile(fixedNames.addAndNew(names.toArray()));
     }
 
     private void doCompile(StringArray names) throws IOException {
@@ -85,10 +91,9 @@ abstract class VM extends ByteCodeToJavaScript {
 
     protected abstract void generateEpilogue() throws IOException;
 
-    protected abstract String generateClass(String className)
-            throws IOException;
-
     protected abstract String getExportsObject();
+
+    protected abstract boolean isExternalClass(String className);
 
     @Override
     protected final void declaredClass(ClassData classData, String mangledName)
@@ -100,6 +105,14 @@ abstract class VM extends ByteCodeToJavaScript {
                             .append(accessClass(mangledName))
                .append(";\n");
         }
+    }
+
+    protected String generateClass(String className) throws IOException {
+        ClassData classData = classDataCache.getClassData(className);
+        if (classData == null) {
+            throw new IOException("Can't find class " + className);
+        }
+        return compile(classData);
     }
 
     @Override
@@ -314,6 +327,7 @@ abstract class VM extends ByteCodeToJavaScript {
                                           fieldInfoName[2]);
 
         if ((method != null)
+                && !isExternalClass(method.cls.getClassName())
                 && (((method.access & ByteCodeParser.ACC_FINAL) != 0)
                         || ((referencedClass.getAccessFlags()
                                  & ByteCodeParser.ACC_FINAL) != 0)
@@ -353,11 +367,13 @@ abstract class VM extends ByteCodeToJavaScript {
         return (exportedMethodFinder.getFound() != null);
     }
 
-    private static String accessNonVirtualMember(String object,
-                                                 String mangledName,
-                                                 ClassData declaringClass) {
-        return (declaringClass != null) ? object + "." + mangledName
-                                        : object + "['" + mangledName + "']";
+    private String accessNonVirtualMember(String object,
+                                          String mangledName,
+                                          ClassData declaringClass) {
+        return ((declaringClass != null)
+                    && !isExternalClass(declaringClass.getClassName()))
+                            ? object + "." + mangledName
+                            : object + "['" + mangledName + "']";
     }
 
     private static final class ExportedMethodFinder
@@ -440,23 +456,23 @@ abstract class VM extends ByteCodeToJavaScript {
         }
 
         @Override
-        protected String generateClass(String className) throws IOException {
-            ClassData classData = classDataCache.getClassData(className);
-            if (classData == null) {
-                throw new IOException("Can't find class " + className);
-            }
-            return compile(classData);
+        protected String getExportsObject() {
+            return "vm";
         }
 
         @Override
-        protected String getExportsObject() {
-            return "vm";
+        protected boolean isExternalClass(String className) {
+            return false;
         }
     }
 
     private static final class Extension extends VM {
-        private Extension(Appendable out, Bck2Brwsr.Resources resources) {
+        private final StringArray extensionClasses;
+
+        private Extension(Appendable out, Bck2Brwsr.Resources resources,
+                          String[] extClassesArray) {
             super(out, resources);
+            this.extensionClasses = StringArray.asList(extClassesArray);
         }
 
         @Override
@@ -464,10 +480,10 @@ abstract class VM extends ByteCodeToJavaScript {
             out.append("bck2brwsr.registerExtension(function(exports) {\n"
                            + "  var vm = {};\n");
             out.append("  function link(n, inst) {\n"
-                           + "    var cls = n.replace__Ljava_lang_String_2CC("
-                                                  + "'/', '_').toString();\n"
-                           + "    var dot = n.replace__Ljava_lang_String_2CC("
-                                                  + "'/', '.').toString();\n"
+                           + "    var cls = n['replace__Ljava_lang_String_2CC']"
+                                                  + "('/', '_').toString();\n"
+                           + "    var dot = n['replace__Ljava_lang_String_2CC']"
+                                                  + "('/', '.').toString();\n"
                            + "    exports.loadClass(dot);\n"
                            + "    vm[cls] = exports[cls];\n"
                            + "    return vm[cls](inst);\n"
@@ -481,8 +497,7 @@ abstract class VM extends ByteCodeToJavaScript {
 
         @Override
         protected String generateClass(String className) throws IOException {
-            ClassData classData = classDataCache.getClassData(className);
-            if (classData == null) {
+            if (isExternalClass(className)) {
                 out.append("\n").append(assignClass(
                                             className.replace('/', '_')))
                    .append("function() {\n  return link('")
@@ -493,12 +508,17 @@ abstract class VM extends ByteCodeToJavaScript {
                 return null;
             }
 
-            return compile(classData);
+            return super.generateClass(className);
         }
 
         @Override
         protected String getExportsObject() {
             return "exports";
+        }
+
+        @Override
+        protected boolean isExternalClass(String className) {
+            return !extensionClasses.contains(className);
         }
     }
 }

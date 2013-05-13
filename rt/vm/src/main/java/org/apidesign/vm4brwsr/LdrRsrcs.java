@@ -27,70 +27,19 @@ import java.util.Enumeration;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 final class LdrRsrcs implements Bck2Brwsr.Resources {
-    private final String module;
     private final ClassLoader loader;
 
     LdrRsrcs(ClassLoader loader) {
-        this(null, loader);
-    }
-
-    LdrRsrcs(String module, ClassLoader loader) {
-        this.module = module;
         this.loader = loader;
     }
 
     @Override
     public InputStream get(String name) throws IOException {
-        final URL url = findSource(name);
-        if (url == null) {
-            return null;
-        }
-        if (module != null) {
-            final String resourceModule = getModule(url);
-            if ((resourceModule != null) && !module.equals(resourceModule)) {
-                return null;
-            }
-        }
-
-        return url.openStream();
-    }
-
-    private URL findSource(String name) throws IOException {
         Enumeration<URL> en = loader.getResources(name);
         URL u = null;
         while (en.hasMoreElements()) {
             u = en.nextElement();
         }
-        return u;
-    }
-
-    private static String getModule(URL url) throws IOException {
-        if (!"jar".equalsIgnoreCase(url.getProtocol())) {
-            return null;
-        }
-
-        final String fullPathString = url.getPath();
-        final int sepIndex = fullPathString.indexOf('!');
-        final String jarPathString =
-                (sepIndex != -1) ? fullPathString.substring(0, sepIndex)
-                                 : fullPathString;
-        if (!jarPathString.endsWith(".jar")) {
-            return null;
-        }
-
-        String moduleName =
-                jarPathString.substring(
-                                  jarPathString.lastIndexOf('/') + 1,
-                                  jarPathString.length() - 4);
-        if (moduleName.endsWith("-SNAPSHOT")) {
-            moduleName = moduleName.substring(
-                                        0, moduleName.length() - 9);
-        }
-        final int dashIndex = moduleName.lastIndexOf('-');
-        if (dashIndex != -1) {
-            moduleName = moduleName.substring(0, dashIndex);
-        }
-
-        return moduleName;
+        return (u != null) ? u.openStream() : null;
     }
 }

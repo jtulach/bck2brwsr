@@ -99,10 +99,7 @@ public final class Bck2Brwsr {
      * @since 0.5
      */
     public static Bck2Brwsr newCompiler() {
-        StringArray arr = StringArray.asList(
-                              Class.class.getName().replace('.', '/'),
-                              VM.class.getName().replace('.', '/'));
-        return new Bck2Brwsr(ObfuscationLevel.NONE, arr, null, false);
+        return new Bck2Brwsr(ObfuscationLevel.NONE, new StringArray(), null, false);
     }
 
     /** Creates new instance of the Bck2Brwsr compiler which inherits

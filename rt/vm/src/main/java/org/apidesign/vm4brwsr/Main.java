@@ -97,20 +97,12 @@ final class Main {
                 collectClasses(classes, mainClassLoader, args[i]);
             }
         }
-        final File outputFile = new File(generateTo);
-        String moduleName = null;
-        if (createExtension) {
-            moduleName = outputFile.getName();
-            if (moduleName.endsWith(".js")) {
-                moduleName = moduleName.substring(0, moduleName.length() - 3);
-            }
-        }
-        try (Writer w = new BufferedWriter(new FileWriter(outputFile))) {
+        try (Writer w = new BufferedWriter(new FileWriter(generateTo))) {
             Bck2Brwsr.newCompiler().
                 extension(createExtension).
                 obfuscation(obfLevel).
                 addRootClasses(classes.toArray()).
-                resources(new LdrRsrcs(moduleName, mainClassLoader)).
+                resources(new LdrRsrcs(mainClassLoader)).
                 generate(w);
         }
     }

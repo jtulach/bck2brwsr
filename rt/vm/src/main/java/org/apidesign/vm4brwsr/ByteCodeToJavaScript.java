@@ -1506,12 +1506,11 @@ abstract class ByteCodeToJavaScript {
         }
 
         final String in = mi[0];
-        out.append(accessStaticMethod(
-                       accessClass(in.replace('/', '_')) + "(false)",
-                       mn.startsWith("cons_")
-                              ? "constructor." + mn
-                              : mn,
-                       mi));
+        String object = accessClass(in.replace('/', '_')) + "(false)";
+        if (mn.startsWith("cons_")) {
+            object += ".constructor";
+        }
+        out.append(accessStaticMethod(object, mn, mi));
         if (isStatic) {
             out.append('(');
         } else {
