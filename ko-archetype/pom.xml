@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>html</artifactId>
+    <groupId>org.apidesign</groupId>
+    <version>0.3-SNAPSHOT</version>
+  </parent>
+  <groupId>org.apidesign.html</groupId>
+  <artifactId>knockout4j-archetype</artifactId>
+  <version>0.3-SNAPSHOT</version>
+  <packaging>jar</packaging>
+  <name>Knockout 4 Java Maven Archetype</name>
+  <description>
+      HTML page with Knockout.js bindings driven by application model
+      written in Java. Use your favorite language to code. Use
+      HTML as a lightweight rendering toolkit. Deploy using JavaFX or 
+      bck2brwsr virtual machine.
+  </description>
+  <build>
+      <resources>
+          <resource>
+            <directory>src/main/resources</directory>
+            <filtering>true</filtering>
+            <includes>
+                <include>**/pom.xml</include>
+            </includes>
+          </resource>
+          <resource>
+            <directory>src/main/resources</directory>
+            <filtering>false</filtering>
+            <excludes>
+                <exclude>**/pom.xml</exclude>
+            </excludes>
+          </resource>
+      </resources>      
+      <plugins>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-compiler-plugin</artifactId>
+              <version>2.3.2</version>
+              <configuration>
+                  <source>1.6</source>
+                  <target>1.6</target>
+              </configuration>
+          </plugin>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-resources-plugin</artifactId>
+              <version>2.6</version>
+              <configuration>
+                  <escapeString>\</escapeString>
+                  <target>1.6</target>
+              </configuration>
+          </plugin>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-surefire-plugin</artifactId>
+              <configuration>
+                  <skipTests>true</skipTests>
+              </configuration>
+              <executions>
+                  <execution>
+                      <id>test</id>
+                      <goals>
+                          <goal>test</goal>
+                      </goals>
+                      <phase>integration-test</phase>
+                      <configuration>
+                          <additionalClasspathElements>
+                              <additionalClasspathElement>${project.build.directory}/knockout4j-archetype-${project.version}.jar</additionalClasspathElement>
+                          </additionalClasspathElements>
+                          <skipTests>false</skipTests>
+                      </configuration>
+                  </execution>
+                  
+              </executions>
+          </plugin>
+      </plugins>
+  </build>
+  <dependencies>
+      <dependency>
+          <groupId>org.testng</groupId>
+          <artifactId>testng</artifactId>
+          <scope>test</scope>
+      </dependency>
+  </dependencies>
+</project>
