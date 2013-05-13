@@ -3,7 +3,7 @@
     <action>
         <actionName>run</actionName>
         <goals>
-            <goal>process-classes</goal>
+            <goal>package</goal>
             <goal>bck2brwsr:brwsr</goal>
         </goals>
     </action>
