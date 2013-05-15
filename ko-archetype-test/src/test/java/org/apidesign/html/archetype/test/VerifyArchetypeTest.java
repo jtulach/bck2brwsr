@@ -64,6 +64,10 @@ public class VerifyArchetypeTest {
         assertTrue(new File(created, "pom.xml").isFile(), "Pom file is in there");
         
         Verifier v = new Verifier(created.getAbsolutePath());
+        Properties sysProp = v.getSystemProperties();
+        if (Boolean.getBoolean("java.awt.headless")) {
+            sysProp.put("java.awt.headless", "true");
+        }
         v.addCliOption("-Pbck2brwsr");
         v.executeGoal("verify");
         
