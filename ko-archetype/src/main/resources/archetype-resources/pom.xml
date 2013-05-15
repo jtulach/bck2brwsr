@@ -40,6 +40,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <net.java.html.version>${project.version}</net.java.html.version>
     <bck2brwsr.version>${bck2brwsr.version}</bck2brwsr.version>
+    <bck2brwsr.launcher.version>${bck2brwsr.launcher.version}</bck2brwsr.launcher.version>
     <bck2brwsr.obfuscationlevel>MINIMAL</bck2brwsr.obfuscationlevel>
     <brwsr.startpage>\${package.replace('.','/')}/index.html</brwsr.startpage>
   </properties>
@@ -181,7 +182,7 @@
               <dependency>
                   <groupId>org.apidesign.bck2brwsr</groupId>
                   <artifactId>launcher.fx</artifactId>
-                  <version>\${bck2brwsr.version}</version>
+                  <version>\${bck2brwsr.launcher.version}</version>
                   <scope>runtime</scope>
               </dependency>
           </dependencies>
@@ -256,7 +257,7 @@
               <dependency>
                   <groupId>org.apidesign.bck2brwsr</groupId>
                   <artifactId>launcher.http</artifactId>
-                  <version>\${bck2brwsr.version}</version>
+                  <version>\${bck2brwsr.launcher.version}</version>
                   <scope>test</scope>
               </dependency>
           </dependencies>

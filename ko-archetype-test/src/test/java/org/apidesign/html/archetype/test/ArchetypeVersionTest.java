@@ -69,6 +69,39 @@ public class ArchetypeVersionTest {
         assertEquals(arch, version, "net.java.html.json dependency needs to be on latest version");
     }
     
+    @Test public void testCheckLauncher() throws Exception {
+        final ClassLoader l = ArchetypeVersionTest.class.getClassLoader();
+        URL r = l.getResource("archetype-resources/pom.xml");
+        assertNotNull(r, "Archetype pom found");
+        
+        final XPathFactory fact = XPathFactory.newInstance();
+        XPathExpression xp2 = fact.newXPath().compile(
+            "//properties/bck2brwsr.launcher.version/text()"
+        );
+        
+        Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(r.openStream());
+        String arch = (String) xp2.evaluate(dom, XPathConstants.STRING);
+
+        
+        assertTrue(arch.matches("[0-9\\.]+"), "launcher version seems valid: " + arch);
+    }
+    
+    @Test public void testCheckBck2Brwsr() throws Exception {
+        final ClassLoader l = ArchetypeVersionTest.class.getClassLoader();
+        URL r = l.getResource("archetype-resources/pom.xml");
+        assertNotNull(r, "Archetype pom found");
+        
+        final XPathFactory fact = XPathFactory.newInstance();
+        XPathExpression xp2 = fact.newXPath().compile(
+            "//properties/bck2brwsr.version/text()"
+        );
+        
+        Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(r.openStream());
+        String arch = (String) xp2.evaluate(dom, XPathConstants.STRING);
+        
+        assertTrue(arch.matches("[0-9\\.]+"), "bck2brwsr version seems valid: " + arch);
+    }
+    
     @Test public void testNbActions() throws Exception {
         final ClassLoader l = ArchetypeVersionTest.class.getClassLoader();
         URL r = l.getResource("archetype-resources/nbactions.xml");
