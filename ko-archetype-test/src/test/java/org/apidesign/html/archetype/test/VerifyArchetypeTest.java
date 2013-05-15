@@ -72,7 +72,7 @@ public class VerifyArchetypeTest {
         // does pre-compilation to JavaScript
         v.verifyTextInLog("j2js");
         // uses Bck2BrwsrLauncher
-        v.verifyTextInLog("org.apidesign.bck2brwsr.launcher.Bck2BrwsrLauncher stopServerAndBrwsr");
+        v.verifyTextInLog("BaseHTTPLauncher stopServerAndBrwsr");
         // building zip:
         v.verifyTextInLog("b2bcompile/o-a-test/target/o-a-test-1.0-SNAPSHOT-bck2brwsr.zip");
         
