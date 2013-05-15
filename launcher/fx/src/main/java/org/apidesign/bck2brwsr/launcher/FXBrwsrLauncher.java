@@ -70,6 +70,7 @@ final class FXBrwsrLauncher extends BaseHTTPLauncher {
                         FXBrwsr.launch(FXBrwsr.class, url.toString());
                         LOG.log(Level.INFO, "Launcher is back. Closing");
                         close();
+                        System.exit(0);
                     } catch (Throwable ex) {
                         LOG.log(Level.WARNING, "Error launching Web View", ex);
                     }
