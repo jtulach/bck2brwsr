@@ -65,7 +65,7 @@
                 </form>
             </div>
             <div class='tweets'>
-                <div class='loadingIndicator'>Loading...</div>
+                <div class='loadingIndicator' data-bind="visible: loading">Loading...</div>
                 <table data-bind='foreach: currentTweets' width='100%'>
                     <tr>
                         <td><img data-bind='attr: { src: profile_image_url }' /></td>

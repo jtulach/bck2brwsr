@@ -15,6 +15,7 @@ import net.java.html.json.Property;
     @Property(name="activeTweetersName", type=String.class),
     @Property(name="activeTweeters", type=String.class, array = true),
     @Property(name="userNameToAdd", type=String.class),
+    @Property(name="loading", type=boolean.class),
     @Property(name="currentTweets", type=Tweet.class, array = true)
 })
 public class TwitterClient {
@@ -65,6 +66,7 @@ public class TwitterClient {
     static void queryTweets(TwitterModel page, TwitterQuery q) {
         page.getCurrentTweets().clear();
         page.getCurrentTweets().addAll(q.getResults());
+        page.setLoading(false);
     }
     
     @OnPropertyChange("activeTweetersName")
@@ -85,6 +87,7 @@ public class TwitterClient {
             sb.append(p);
             sep = " OR ";
         }
+        model.setLoading(true);
         model.queryTweets("http://search.twitter.com", sb.toString());
     }
     

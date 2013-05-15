@@ -29,4 +29,4 @@ input.invalid { border: 1px solid red !important; background-color: #FFAAAA !imp
 .configuration form input { width:40%; font-size: 1.3em; border:1px solid silver; background-color: White; padding: 0.1em; }
 .configuration form button { width: 20%; margin-left: 0.3em; height: 2em; }
 
-.loadingIndicator { position: absolute; top: 0.1em; left: 0.1em; font: 0.8em Arial; background-color: #229; color: White; padding: 0.2em 0.5em 0.2em 0.5em; display: none; }
+.loadingIndicator { position: absolute; top: 0.1em; left: 0.1em; font: 0.8em Arial; background-color: #229; color: White; padding: 0.2em 0.5em 0.2em 0.5em; }
