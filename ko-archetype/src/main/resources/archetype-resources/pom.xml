@@ -49,7 +49,7 @@
           <plugin>
               <groupId>org.apidesign.bck2brwsr</groupId>
               <artifactId>bck2brwsr-maven-plugin</artifactId>
-              <version>\${bck2brwsr.version}</version>
+              <version>\${bck2brwsr.launcher.version}</version>
               <executions>
                   <execution>
                       <goals>
