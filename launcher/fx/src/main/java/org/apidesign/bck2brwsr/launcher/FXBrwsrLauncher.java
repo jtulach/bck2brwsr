@@ -25,6 +25,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Enumeration;
+import java.util.List;
 
 import java.util.concurrent.Executors;
 import java.util.jar.Manifest;
@@ -84,14 +85,22 @@ final class FXBrwsrLauncher extends BaseHTTPLauncher {
     void generateBck2BrwsrJS(StringBuilder sb, Res loader) throws IOException {
         sb.append("(function() {\n"
             + "  var impl = this.bck2brwsr;\n"
-            + "  this.bck2brwsr = function() { return impl; };\n"
-            + "})(window);\n"
-        );
+            + "  this.bck2brwsr = function() { return impl; };\n");
+        if (isDebugged()) {
+            sb.append("var scr = window.document.createElement('script');\n");
+            sb.append("scr.type = 'text/javascript';\n");
+            sb.append("scr.src = 'https://getfirebug.com/firebug-lite.js';\n");
+            sb.append("scr.text = '{ startOpened: true }';\n");
+            sb.append("var head = window.document.getElementsByTagName('head')[0];");
+            sb.append("head.appendChild(scr);\n");
+            sb.append("var html = window.document.getElementsByTagName('html')[0];");
+            sb.append("html.debug = true;\n");
+        }
+        
+        sb.append("})(window);\n");
         JVMBridge.onBck2BrwsrLoad();
     }
-    
-    
-    
+
     @Override
     public void close() throws IOException {
         super.close();
@@ -129,5 +138,23 @@ final class FXBrwsrLauncher extends BaseHTTPLauncher {
             }
         }
         return startPage;
+    }
+    
+    private static boolean isDebugged() {
+        try {
+            return isDebuggedImpl();
+        } catch (LinkageError e) {
+            return false;
+        }
+    }
+
+    private static boolean isDebuggedImpl() {
+        java.lang.management.RuntimeMXBean runtime;
+        runtime = java.lang.management.ManagementFactory.getRuntimeMXBean();
+        List<String> args = runtime.getInputArguments();
+        if (args.contains("-Xdebug")) { // NOI18N
+            return true;
+        }
+        return false;
     }
 }
