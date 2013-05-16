@@ -4,12 +4,12 @@
   <parent>
     <artifactId>javaquery</artifactId>
     <groupId>org.apidesign.bck2brwsr</groupId>
-    <version>0.7.2</version>
+    <version>0.8-SNAPSHOT</version>
   </parent>
 
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>demo-twitter</artifactId>
-  <version>0.7.2</version>
+  <version>0.8-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>Bck2Brwsr's Twttr</name>
