@@ -194,14 +194,14 @@ public class NumberTest {
 
     @Test public void valueOfLongBooleanTrue() throws Exception {
         assertExec("Can we call JavaScripts valueOf on Boolean?", 
-            Numbers.class, "seven__DI", 
-            Double.valueOf(1), 31
+            Numbers.class, "bseven__ZI", 
+            true, 31
         );
     }
     @Test public void valueOfLongBooleanFalse() throws Exception {
         assertExec("Can we call JavaScripts valueOf on Boolean?", 
-            Numbers.class, "seven__DI", 
-            Double.valueOf(0), 30
+            Numbers.class, "bseven__ZI", 
+            false, 30
         );
     }
 

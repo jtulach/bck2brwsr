@@ -84,10 +84,20 @@ public class Numbers {
             default: throw new IllegalStateException();
         }
     }
+    static boolean bseven(int todo) {
+        switch (todo) {
+            case 30: return bvalueOf(Boolean.FALSE);
+            case 31: return bvalueOf(Boolean.TRUE);
+            default: throw new IllegalStateException();
+        }
+    }
     
     @JavaScriptBody(args = {}, body = "return 7;")
     private static native Number sevenNew();
-    
+
     @JavaScriptBody(args = { "o" }, body = "return o.valueOf();")
     private static native double valueOf(Object o);
+    
+    @JavaScriptBody(args = { "o" }, body = "return o.valueOf();")
+    private static native boolean bvalueOf(Object o);
 }
