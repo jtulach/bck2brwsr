@@ -4,11 +4,11 @@
     <parent>
         <groupId>org.apidesign</groupId>
         <artifactId>html</artifactId>
-        <version>0.3</version>
+        <version>0.4-SNAPSHOT</version>
     </parent>
     <groupId>org.apidesign.html</groupId>
     <artifactId>ko-archetype-test</artifactId>
-    <version>0.3</version>
+    <version>0.4-SNAPSHOT</version>
     <name>Knockout 4 Java Archetype Test</name>
     <url>http://maven.apache.org</url>
     <description>Verifies the Knockout &amp; net.java.html.json archetype behaves properly.</description>
@@ -19,7 +19,7 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>knockout4j-archetype</artifactId>
-            <version>0.3</version>
+            <version>0.4-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.testng</groupId>
