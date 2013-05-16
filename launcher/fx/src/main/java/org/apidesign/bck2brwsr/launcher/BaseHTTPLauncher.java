@@ -498,15 +498,21 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
 
     class Res {
         public InputStream get(String resource) throws IOException {
+            URL u = null;
             for (ClassLoader l : loaders) {
-                URL u = null;
                 Enumeration<URL> en = l.getResources(resource);
                 while (en.hasMoreElements()) {
                     u = en.nextElement();
+                    if (u.toExternalForm().matches("^.*emul.*rt\\.jar.*$")) {
+                        return u.openStream();
+                    }
                 }
-                if (u != null) {
-                    return u.openStream();
+            }
+            if (u != null) {
+                if (u.toExternalForm().contains("rt.jar")) {
+                    LOG.log(Level.WARNING, "Fallback to bootclasspath for {0}", u);
                 }
+                return u.openStream();
             }
             throw new IOException("Can't find " + resource);
         }
