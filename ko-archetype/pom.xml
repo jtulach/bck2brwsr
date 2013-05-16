@@ -4,11 +4,11 @@
   <parent>
     <artifactId>html</artifactId>
     <groupId>org.apidesign</groupId>
-    <version>0.3-SNAPSHOT</version>
+    <version>0.3</version>
   </parent>
   <groupId>org.apidesign.html</groupId>
   <artifactId>knockout4j-archetype</artifactId>
-  <version>0.3-SNAPSHOT</version>
+  <version>0.3</version>
   <packaging>jar</packaging>
   <name>Knockout 4 Java Maven Archetype</name>
   <description>
