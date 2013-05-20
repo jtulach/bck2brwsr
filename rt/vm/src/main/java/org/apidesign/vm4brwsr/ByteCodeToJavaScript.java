@@ -1587,7 +1587,7 @@ abstract class ByteCodeToJavaScript {
         String s = jc.stringValue(entryIndex, classRef);
         if (classRef[0] != null) {
             if (classRef[0].startsWith("[")) {
-                s = accessClass("java_lang_Class") + "(false).forName__Ljava_lang_Class_2Ljava_lang_String_2('" + classRef[0] + "');";
+                s = accessClass("java_lang_Class") + "(false)['forName__Ljava_lang_Class_2Ljava_lang_String_2']('" + classRef[0] + "');";
             } else {
                 addReference(classRef[0]);
                 s = accessClass(s.replace('/', '_')) + "(false).constructor.$class";
@@ -1819,7 +1819,7 @@ abstract class ByteCodeToJavaScript {
                     out.append("  var stA0 = e;");
                     out.append("} else {");
                     out.append("  var stA0 = vm.java_lang_Throwable(true);");
-                    out.append("  vm.java_lang_Throwable.cons__VLjava_lang_String_2.call(stA0, e.toString());");
+                    out.append("  vm.java_lang_Throwable['cons__VLjava_lang_String_2'].call(stA0, e.toString());");
                     out.append("}");
                     goTo(out, current, e.handler_pc, topMostLabel);
                 } else {
@@ -1874,7 +1874,7 @@ abstract class ByteCodeToJavaScript {
             case 11: jvmType = "[J"; break;
             default: throw new IllegalStateException("Array type: " + atype);
         }
-        emit(out, "var @2 = Array.prototype.newArray__Ljava_lang_Object_2ZLjava_lang_String_2I(true, '@3', @1);",
+        emit(out, "var @2 = Array.prototype['newArray__Ljava_lang_Object_2ZLjava_lang_String_2I'](true, '@3', @1);",
              smapper.popI(), smapper.pushA(), jvmType);
     }
 
@@ -1885,7 +1885,7 @@ abstract class ByteCodeToJavaScript {
         } else {
             typeName = "[L" + typeName + ";";
         }
-        emit(out, "var @2 = Array.prototype.newArray__Ljava_lang_Object_2ZLjava_lang_String_2I(false, '@3', @1);",
+        emit(out, "var @2 = Array.prototype['newArray__Ljava_lang_Object_2ZLjava_lang_String_2I'](false, '@3', @1);",
              smapper.popI(), smapper.pushA(), typeName);
     }
 
@@ -1901,7 +1901,7 @@ abstract class ByteCodeToJavaScript {
             dims.insert(1, smapper.popI());
         }
         dims.append(']');
-        emit(out, "var @2 = Array.prototype.multiNewArray__Ljava_lang_Object_2Ljava_lang_String_2_3II('@3', @1, 0);",
+        emit(out, "var @2 = Array.prototype['multiNewArray__Ljava_lang_Object_2Ljava_lang_String_2_3II']('@3', @1, 0);",
              dims.toString(), smapper.pushA(), typeName);
         return i;
     }
@@ -1956,7 +1956,7 @@ abstract class ByteCodeToJavaScript {
                  smapper.popA(), smapper.pushI(),
                  type.replace('/', '_'));
         } else {
-            emit(out, "var @2 = vm.java_lang_Class(false).forName__Ljava_lang_Class_2Ljava_lang_String_2('@3').isInstance__ZLjava_lang_Object_2(@1);",
+            emit(out, "var @2 = vm.java_lang_Class(false)['forName__Ljava_lang_Class_2Ljava_lang_String_2']('@3')['isInstance__ZLjava_lang_Object_2'](@1);",
                 smapper.popA(), smapper.pushI(),
                 type
             );
@@ -1970,7 +1970,7 @@ abstract class ByteCodeToJavaScript {
                  "if (@1 !== null && !@1['$instOf_@2']) throw vm.java_lang_ClassCastException(true);",
                  smapper.getA(0), type.replace('/', '_'));
         } else {
-            emit(out, "vm.java_lang_Class(false).forName__Ljava_lang_Class_2Ljava_lang_String_2('@2').cast__Ljava_lang_Object_2Ljava_lang_Object_2(@1);",
+            emit(out, "vm.java_lang_Class(false)['forName__Ljava_lang_Class_2Ljava_lang_String_2']('@2')['cast__Ljava_lang_Object_2Ljava_lang_Object_2'](@1);",
                  smapper.getA(0), type
             );
         }
