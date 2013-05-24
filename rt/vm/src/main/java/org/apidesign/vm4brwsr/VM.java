@@ -34,6 +34,12 @@ abstract class VM extends ByteCodeToJavaScript {
     private final ExportedSymbols exportedSymbols;
     private final StringArray invokerMethods;
 
+    private static final Class<?> FIXED_DEPENDENCIES[] = {
+            Class.class,
+            ArithmeticException.class,
+            VM.class
+        };
+
     private VM(Appendable out, Bck2Brwsr.Resources resources) {
         super(out);
         this.resources = resources;
@@ -61,9 +67,11 @@ abstract class VM extends ByteCodeToJavaScript {
         VM vm = extension ? new Extension(out, l, names.toArray())
                           : new Standalone(out, l);
 
-        final StringArray fixedNames =
-                StringArray.asList(Class.class.getName().replace('.', '/'),
-                                   VM.class.getName().replace('.', '/'));
+        final StringArray fixedNames = new StringArray();
+
+        for (final Class<?> fixedClass: FIXED_DEPENDENCIES) {
+            fixedNames.add(fixedClass.getName().replace('.', '/'));
+        }
 
         vm.doCompile(fixedNames.addAndNew(names.toArray()));
     }
