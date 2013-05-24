@@ -1814,20 +1814,11 @@ abstract class ByteCodeToJavaScript {
             if (e.catch_cpx != 0) { //not finally
                 final String classInternalName = jc.getClassName(e.catch_cpx);
                 addReference(classInternalName);
-                if ("java/lang/Throwable".equals(classInternalName)) {
-                    out.append("if (e['$instOf_java_lang_Throwable']) {");
-                    out.append("  var stA0 = e;");
-                    out.append("} else {");
-                    out.append("  var stA0 = vm.java_lang_Throwable(true);");
-                    out.append("  vm.java_lang_Throwable['cons__VLjava_lang_String_2'].call(stA0, e.toString());");
-                    out.append("}");
-                    goTo(out, current, e.handler_pc, topMostLabel);
-                } else {
-                    out.append("if (e['$instOf_" + classInternalName.replace('/', '_') + "']) {");
-                    out.append("var stA0 = e;");
-                    goTo(out, current, e.handler_pc, topMostLabel);
-                    out.append("}\n");
-                }
+                out.append("e = vm.java_lang_Throwable(false).bck2BrwsrCnvrt(e);");
+                out.append("if (e['$instOf_" + classInternalName.replace('/', '_') + "']) {");
+                out.append("var stA0 = e;");
+                goTo(out, current, e.handler_pc, topMostLabel);
+                out.append("}\n");
             } else {
                 finallyPC = e.handler_pc;
             }

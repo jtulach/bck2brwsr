@@ -22,13 +22,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Represents a property. Either in a generated model of an HTML
- * {@link Page} or in a class defined by {@link Model}.
- *
+/** 
+ * @deprecated Replaced by new {@link net.java.html.json.OnPropertyChange net.java.html.json} API.
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.METHOD)
+@Deprecated
 public @interface OnPropertyChange {
     /** Name(s) of the properties. One wishes to observe.
      * 

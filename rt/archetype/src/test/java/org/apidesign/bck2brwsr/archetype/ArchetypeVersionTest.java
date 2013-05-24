@@ -24,7 +24,6 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 import org.testng.annotations.Test;
-import org.xml.sax.InputSource;
 import static org.testng.Assert.*;
 import org.testng.annotations.BeforeClass;
 import org.w3c.dom.Document;
@@ -95,9 +94,7 @@ public class ArchetypeVersionTest {
         for (int i = 0; i < goals.getLength(); i++) {
             String s = goals.item(i).getTextContent();
             if (s.contains("bck2brwsr")) {
-                String[] arr = s.split(":");
-                assertEquals(arr.length, 4, "Three :");
-                assertEquals(arr[2], version, "Proper version is used");
+                assertFalse(s.matches(".*bck2brwsr.*[0-9].*"), "No numbers: " + s);
             }
         }
     }

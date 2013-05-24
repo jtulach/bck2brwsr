@@ -26,6 +26,7 @@
 package java.lang;
 
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
+import org.apidesign.bck2brwsr.core.JavaScriptPrototype;
 
 /**
  * The Boolean class wraps a value of the primitive type
@@ -42,6 +43,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  * @author  Arthur van Hoff
  * @since   JDK1.0
  */
+@JavaScriptPrototype(container = "Boolean.prototype", prototype = "new Boolean")
 public final class Boolean implements java.io.Serializable,
                                       Comparable<Boolean>
 {
@@ -129,6 +131,7 @@ public final class Boolean implements java.io.Serializable,
      *
      * @return  the primitive {@code boolean} value of this object.
      */
+    @JavaScriptBody(args = {}, body = "return this.valueOf();")
     public boolean booleanValue() {
         return value;
     }
@@ -287,7 +290,7 @@ public final class Boolean implements java.io.Serializable,
     }
     @JavaScriptBody(args = {  }, body = 
         "vm.java_lang_Boolean(false)" +
-        ".valueOf = function() { return this._value(); };"
+        ".valueOf = function() { return this._value() ? true : false; };"
     )
     private native static void initValueOf();
 }

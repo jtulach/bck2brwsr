@@ -4,11 +4,11 @@
   <parent>
     <groupId>org.apidesign.bck2brwsr</groupId>
     <artifactId>emul.pom</artifactId>
-    <version>0.6-SNAPSHOT</version>
+    <version>0.8-SNAPSHOT</version>
   </parent>
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>emul.mini</artifactId>
-  <version>0.6-SNAPSHOT</version>
+  <version>0.8-SNAPSHOT</version>
   <name>Minimal API Profile</name>
   <url>http://maven.apache.org</url>
   <properties>
@@ -18,7 +18,7 @@
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>core</artifactId>
-      <version>0.6-SNAPSHOT</version>
+      <version>0.8-SNAPSHOT</version>
       <type>jar</type>
     </dependency>
     <dependency>

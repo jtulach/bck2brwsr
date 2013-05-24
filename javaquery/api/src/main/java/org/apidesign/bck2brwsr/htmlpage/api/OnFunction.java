@@ -22,13 +22,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Methods in class annotated by {@link Model} or {@link Page} can be 
- * annotated by this annotation to signal that they should be available
- * as functions to users of the model classes.
- *
+/** 
+ * @deprecated Replaced by new {@link net.java.html.json.Function net.java.html.json} API.
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.SOURCE)
+@Deprecated
 public @interface OnFunction {
 }

@@ -97,7 +97,14 @@ final class Main {
                 collectClasses(classes, mainClassLoader, args[i]);
             }
         }
-        try (Writer w = new BufferedWriter(new FileWriter(generateTo))) {
+        
+        File gt = new File(generateTo);
+        if (Boolean.getBoolean("skip.if.exists") && gt.isFile()) {
+            System.err.println("Skipping as " + gt + " exists.");
+            System.exit(0);
+        }
+        
+        try (Writer w = new BufferedWriter(new FileWriter(gt))) {
             Bck2Brwsr.newCompiler().
                 extension(createExtension).
                 obfuscation(obfLevel).
