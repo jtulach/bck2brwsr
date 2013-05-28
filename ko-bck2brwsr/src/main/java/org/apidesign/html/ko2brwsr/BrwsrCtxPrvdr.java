@@ -20,9 +20,10 @@
  */
 package org.apidesign.html.ko2brwsr;
 
-import net.java.html.json.Context;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
-import org.apidesign.html.json.spi.ContextProvider;
+import org.apidesign.html.context.spi.Contexts;
+import org.apidesign.html.json.spi.Technology;
+import org.apidesign.html.json.spi.Transfer;
 import org.openide.util.lookup.ServiceProvider;
 
 /** This is an implementation package - just
@@ -35,11 +36,15 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@ServiceProvider(service = ContextProvider.class)
-public final class BrwsrCntxtPrvdr implements ContextProvider {
+@ServiceProvider(service = Contexts.Provider.class)
+public final class BrwsrCtxPrvdr implements Contexts.Provider {
+
     @Override
-    public Context findContext(Class<?> requestor) {
-        return bck2BrwsrVM() ? BrwsrCntxt.DEFAULT : null;
+    public void fillContext(Contexts.Builder context, Class<?> requestor) {
+        if (bck2BrwsrVM()) {
+            context.register(Technology.class, BrwsrCtxImpl.DEFAULT, 50).
+            register(Transfer.class, BrwsrCtxImpl.DEFAULT, 50);
+        }
     }
     
     @JavaScriptBody(args = {  }, body = "return true;")

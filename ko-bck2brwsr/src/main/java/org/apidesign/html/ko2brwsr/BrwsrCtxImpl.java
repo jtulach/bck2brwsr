@@ -24,10 +24,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import net.java.html.json.Context;
-import org.apidesign.html.json.spi.ContextBuilder;
+import net.java.html.BrwsrCtx;
+import org.apidesign.html.context.spi.Contexts;
 import org.apidesign.html.json.spi.FunctionBinding;
 import org.apidesign.html.json.spi.JSONCall;
 import org.apidesign.html.json.spi.PropertyBinding;
@@ -38,14 +36,10 @@ import org.apidesign.html.json.spi.Transfer;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-final class BrwsrCntxt implements Technology<Object>, Transfer {
-    private BrwsrCntxt() {}
+final class BrwsrCtxImpl implements Technology<Object>, Transfer {
+    private BrwsrCtxImpl() {}
     
-    public static final Context DEFAULT;
-    static {
-        BrwsrCntxt c = new BrwsrCntxt();
-        DEFAULT = ContextBuilder.create().withTechnology(c).withTransfer(c).build();
-    }
+    public static final BrwsrCtxImpl DEFAULT = new BrwsrCtxImpl();
     
     @Override
     public void extract(Object obj, String[] props, Object[] values) {
