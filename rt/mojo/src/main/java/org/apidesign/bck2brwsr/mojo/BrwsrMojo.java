@@ -33,11 +33,16 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apidesign.bck2brwsr.launcher.Launcher;
 
 /** Executes given HTML page in a browser. */
-@Mojo(name="brwsr", defaultPhase=LifecyclePhase.NONE)
+@Mojo(
+    name="brwsr",
+    requiresDependencyResolution = ResolutionScope.RUNTIME,
+    defaultPhase=LifecyclePhase.NONE
+)
 public class BrwsrMojo extends AbstractMojo {
     public BrwsrMojo() {
     }
@@ -76,7 +81,7 @@ public class BrwsrMojo extends AbstractMojo {
             if (directory != null) {
                 httpServer = Launcher.showDir(directory, startpage);
             } else {
-                URLClassLoader url = buildClassLoader(classes, prj.getDependencyArtifacts());
+                URLClassLoader url = buildClassLoader(classes, prj.getArtifacts());
                 try {
                     httpServer = Launcher.showURL(launcher, url, startpage());
                 } catch (Exception ex) {
