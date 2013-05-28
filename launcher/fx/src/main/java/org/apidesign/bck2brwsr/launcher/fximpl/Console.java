@@ -232,7 +232,9 @@ public final class Console {
         if (u == null) {
             throw new IOException("Can't find " + name);
         }
-        try (InputStream is = u.openStream()) {
+        InputStream is = null;
+        try {
+            is = u.openStream();
             byte[] arr;
             arr = new byte[is.available()];
             int offset = 0;
@@ -244,6 +246,8 @@ public final class Console {
                 offset += len;
             }
             return arr;
+        } finally {
+            if (is != null) is.close();
         }
     }
    

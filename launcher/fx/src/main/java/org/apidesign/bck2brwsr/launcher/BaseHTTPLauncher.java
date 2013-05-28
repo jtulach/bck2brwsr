@@ -61,8 +61,8 @@ import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<HttpServer> {
     static final Logger LOG = Logger.getLogger(BaseHTTPLauncher.class.getName());
     private static final InvocationContext END = new InvocationContext(null, null, null);
-    private final Set<ClassLoader> loaders = new LinkedHashSet<>();
-    private final BlockingQueue<InvocationContext> methods = new LinkedBlockingQueue<>();
+    private final Set<ClassLoader> loaders = new LinkedHashSet<ClassLoader>();
+    private final BlockingQueue<InvocationContext> methods = new LinkedBlockingQueue<InvocationContext>();
     private long timeOut;
     private final Res resources = new Res();
     private final String cmd;
@@ -112,7 +112,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         server = s;
         try {
             launchServerAndBrwsr(s, simpleName);
-        } catch (URISyntaxException | InterruptedException ex) {
+        } catch (Exception ex) {
             throw new IOException(ex);
         }
     }
@@ -124,7 +124,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         HttpServer s = initServer(dir.getPath(), false);
         try {
             launchServerAndBrwsr(s, startpage);
-        } catch (URISyntaxException | InterruptedException ex) {
+        } catch (Exception ex) {
             throw new IOException(ex);
         }
     }
@@ -237,7 +237,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         
         conf.addHttpHandler(new HttpHandler() {
             int cnt;
-            List<InvocationContext> cases = new ArrayList<>();
+            List<InvocationContext> cases = new ArrayList<InvocationContext>();
             DynamicResourceHandler prev;
             @Override
             public void service(Request request, Response response) throws Exception {
@@ -547,7 +547,8 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                 replace = args;
             }
             OutputStream os = response.getOutputStream();
-            try (InputStream is = res.get(r)) {
+            try { 
+                InputStream is = res.get(r);
                 copyStream(is, os, request.getRequestURL().toString(), replace);
             } catch (IOException ex) {
                 response.setDetailMessage(ex.getLocalizedMessage());
@@ -603,7 +604,9 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
             if (res.startsWith("/")) {
                 res = res.substring(1);
             }
-            try (InputStream is = loader.get(res)) {
+            InputStream is = null;
+            try {
+                is = loader.get(res);
                 response.setContentType("text/javascript");
                 Writer w = response.getWriter();
                 w.append("[");
@@ -628,6 +631,10 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                 response.setStatus(HttpStatus.NOT_FOUND_404);
                 response.setError();
                 response.setDetailMessage(ex.getMessage());
+            } finally {
+                if (is != null) {
+                    is.close();
+                }
             }
         }
     }

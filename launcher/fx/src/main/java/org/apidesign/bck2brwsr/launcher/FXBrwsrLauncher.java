@@ -129,8 +129,12 @@ final class FXBrwsrLauncher extends BaseHTTPLauncher {
         while (en.hasMoreElements()) {
             URL url = en.nextElement();
             Manifest mf;
-            try (InputStream is = url.openStream()) {
+            InputStream is = null;
+            try {
+                is = url.openStream();
                 mf = new Manifest(is);
+            } finally {
+                if (is != null) is.close();
             }
             String sp = mf.getMainAttributes().getValue("StartPage");
             if (sp != null) {
