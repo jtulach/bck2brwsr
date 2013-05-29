@@ -3,7 +3,6 @@ package ${package};
 import java.util.Arrays;
 import java.util.List;
 import net.java.html.json.ComputedProperty;
-import net.java.html.json.Context;
 import net.java.html.json.Function;
 import net.java.html.json.Model;
 import net.java.html.json.OnPropertyChange;
@@ -91,9 +90,8 @@ public class TwitterClient {
         model.queryTweets("http://search.twitter.com", sb.toString());
     }
     
-    private static final Context DEFAULT = Context.findDefault(TwitterClient.class);
     static {
-        final TwitterModel model = new TwitterModel(DEFAULT);
+        final TwitterModel model = new TwitterModel();
         final List<Tweeters> svdLst = model.getSavedLists();
         svdLst.add(newTweeters("API Design", "JaroslavTulach"));
         svdLst.add(newTweeters("Celebrities", "JohnCleese", "MCHammer", "StephenFry", "algore", "StevenSanderson"));
@@ -134,7 +132,7 @@ public class TwitterClient {
         final List<Tweeters> sl = model.getSavedLists();
         sl.remove(findByName(sl, model.getActiveTweetersName()));
         if (sl.isEmpty()) {
-            final Tweeters t = new Tweeters(DEFAULT);
+            final Tweeters t = new Tweeters();
             t.setName("New");
             sl.add(t);
         }
@@ -168,11 +166,11 @@ public class TwitterClient {
                 return l;
             }
         }
-        return list.isEmpty() ? new Tweeters(DEFAULT) : list.get(0);
+        return list.isEmpty() ? new Tweeters() : list.get(0);
     }
     
     private static Tweeters newTweeters(String listName, String... userNames) {
-        Tweeters t = new Tweeters(DEFAULT);
+        Tweeters t = new Tweeters();
         t.setName(listName);
         t.getUserNames().addAll(Arrays.asList(userNames));
         return t;

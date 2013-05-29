@@ -1,7 +1,8 @@
 package ${package};
 
 import java.util.List;
-import net.java.html.json.Context;
+import net.java.html.BrwsrCtx;
+import net.java.html.json.Models;
 import static org.testng.Assert.*;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -14,12 +15,12 @@ public class TwitterClientTest {
 
     @BeforeMethod
     public void initModel() {
-        model = new TwitterModel(Context.EMPTY);
+        model = Models.bind(new TwitterModel(), BrwsrCtx.EMPTY);
     }
 
     @Test public void testIsValidToAdd() {
         model.setUserNameToAdd("Joe");
-        Tweeters t = new Tweeters(Context.EMPTY);
+        Tweeters t = Models.bind(new Tweeters(), BrwsrCtx.EMPTY);
         t.setName("test");
         model.getSavedLists().add(t);
         model.setActiveTweetersName("test");
