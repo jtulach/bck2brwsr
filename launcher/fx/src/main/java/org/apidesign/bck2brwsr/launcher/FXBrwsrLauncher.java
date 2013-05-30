@@ -67,7 +67,11 @@ final class FXBrwsrLauncher extends BaseHTTPLauncher {
                 public void run() {
                     LOG.log(Level.INFO, "In FX thread. Launching!");
                     try {
-                        FXBrwsr.launch(FXBrwsr.class, url.toString());
+                        if (isDebugged()) {
+                            FXBrwsr.launch(FXBrwsr.class, url.toString(), "--toolbar=true");
+                        } else {
+                            FXBrwsr.launch(FXBrwsr.class, url.toString());
+                        }
                         LOG.log(Level.INFO, "Launcher is back. Closing");
                         close();
                         System.exit(0);
