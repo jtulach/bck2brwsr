@@ -24,6 +24,7 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -67,11 +68,13 @@ final class FXBrwsrLauncher extends BaseHTTPLauncher {
                 public void run() {
                     LOG.log(Level.INFO, "In FX thread. Launching!");
                     try {
+                        List<String> params = new ArrayList<String>();
+                        params.add(url.toString());
                         if (isDebugged()) {
-                            FXBrwsr.launch(FXBrwsr.class, url.toString(), "--toolbar=true");
-                        } else {
-                            FXBrwsr.launch(FXBrwsr.class, url.toString());
+                            params.add("--toolbar=true");
+                            params.add("--firebug=true");
                         }
+                        FXBrwsr.launch(FXBrwsr.class, params.toArray(new String[params.size()]));
                         LOG.log(Level.INFO, "Launcher is back. Closing");
                         close();
                         System.exit(0);
@@ -91,17 +94,6 @@ final class FXBrwsrLauncher extends BaseHTTPLauncher {
         sb.append("(function() {\n"
             + "  var impl = this.bck2brwsr;\n"
             + "  this.bck2brwsr = function() { return impl; };\n");
-        if (isDebugged()) {
-            sb.append("var scr = window.document.createElement('script');\n");
-            sb.append("scr.type = 'text/javascript';\n");
-            sb.append("scr.src = 'https://getfirebug.com/firebug-lite.js';\n");
-            sb.append("scr.text = '{ startOpened: true }';\n");
-            sb.append("var head = window.document.getElementsByTagName('head')[0];");
-            sb.append("head.appendChild(scr);\n");
-            sb.append("var html = window.document.getElementsByTagName('html')[0];");
-            sb.append("html.debug = true;\n");
-        }
-        
         sb.append("})(window);\n");
         JVMBridge.onBck2BrwsrLoad();
     }

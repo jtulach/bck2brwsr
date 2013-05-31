@@ -76,8 +76,10 @@ public class FXBrwsr extends Application {
         vbox.getChildren().add(view);
 
         BorderPane root = new BorderPane();
-        if ("true".equals(this.getParameters().getNamed().get("toolbar"))) { // NOI18N
-            final ToolBar toolbar = BrowserToolbar.create(view, vbox);
+        final boolean showToolbar = "true".equals(this.getParameters().getNamed().get("toolbar")); // NOI18N
+        final boolean useFirebug = "true".equals(this.getParameters().getNamed().get("firebug")); // NOI18N
+        if (showToolbar) {
+            final ToolBar toolbar = new BrowserToolbar(view, vbox, useFirebug);
             root.setTop( toolbar );
         }
         root.setCenter(hbox);

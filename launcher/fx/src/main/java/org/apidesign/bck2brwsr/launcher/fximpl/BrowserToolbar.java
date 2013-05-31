@@ -35,6 +35,7 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
+import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 
 final class BrowserToolbar extends ToolBar {
@@ -44,7 +45,7 @@ final class BrowserToolbar extends ToolBar {
     private final ToggleGroup resizeGroup = new ToggleGroup();
     private final ComboBox<String> comboZoom = new ComboBox<String>();
     
-    private BrowserToolbar( WebView webView, Pane container ) {
+    BrowserToolbar(WebView webView, Pane container, boolean useFirebug) {
         this.webView = webView;
         this.container = container;
         
@@ -87,7 +88,23 @@ final class BrowserToolbar extends ToolBar {
                 comboZoom.setValue( newZoom );
             }
         });
+        
+        if (useFirebug) {
+            getItems().add(new Separator());
 
+            final ToggleButton firebug = new ToggleButton(null, new ImageView(
+                new Image(BrowserToolbar.class.getResourceAsStream("firebug.png"))
+            ));
+            firebug.setTooltip(new Tooltip("Show/Hide firebug"));
+            firebug.selectedProperty().addListener(new InvalidationListener() {
+                @Override
+                public void invalidated(Observable o) {
+                    toggleFireBug(firebug.isSelected());
+                }
+            });
+            getItems().add(firebug);
+        }
+        
         /*
         final ToggleButton btnSelMode = new ToggleButton( null, new ImageView(
             new Image(BrowserToolbar.class.getResourceAsStream("selectionMode.png"))
@@ -102,10 +119,6 @@ final class BrowserToolbar extends ToolBar {
         });
         getItems().add( btnSelMode );
         */
-    }
-
-    public static ToolBar create( WebView view, Pane container ) {
-        return new BrowserToolbar( view, container );
     }
 
     private String zoom( String zoomFactor ) {
@@ -172,6 +185,29 @@ final class BrowserToolbar extends ToolBar {
 
     private void toggleSelectionMode( boolean selMode ) {
         System.err.println( "selection mode: " + selMode );
+    }
+    
+    final void toggleFireBug(boolean enable) {
+        WebEngine eng = webView.getEngine();
+        Object installed = eng.executeScript("window.Firebug");
+        if ("undefined".equals(installed)) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("var scr = window.document.createElement('script');\n");
+            sb.append("scr.type = 'text/javascript';\n");
+            sb.append("scr.src = 'https://getfirebug.com/firebug-lite.js';\n");
+            sb.append("scr.text = '{ startOpened: true }';\n");
+            sb.append("var head = window.document.getElementsByTagName('head')[0];");
+            sb.append("head.appendChild(scr);\n");
+            sb.append("var html = window.document.getElementsByTagName('html')[0];");
+            sb.append("html.debug = true;\n");
+            eng.executeScript(sb.toString());
+        } else {
+            if (enable) {
+                eng.executeScript("Firebug.chrome.open()");
+            } else {
+                eng.executeScript("Firebug.chrome.close()");
+            }
+        }
     }
 
     /**
