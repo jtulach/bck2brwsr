@@ -73,6 +73,10 @@ final class FXBrwsrLauncher extends BaseHTTPLauncher {
                         if (isDebugged()) {
                             params.add("--toolbar=true");
                             params.add("--firebug=true");
+                            String ud = System.getProperty("netbeans.user");
+                            if (ud != null) {
+                                params.add("--userdir=" + ud);
+                            }
                         }
                         FXBrwsr.launch(FXBrwsr.class, params.toArray(new String[params.size()]));
                         LOG.log(Level.INFO, "Launcher is back. Closing");

@@ -27,20 +27,13 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.geometry.VPos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebEngine;
@@ -58,11 +51,12 @@ import netscape.javascript.JSObject;
  */
 public class FXBrwsr extends Application {
     private static final Logger LOG = Logger.getLogger(FXBrwsr.class.getName());
-
+    
     @Override
     public void start(Stage primaryStage) throws Exception {
         WebView view = new WebView();
-        WebController wc = new WebController(view, getParameters().getUnnamed());
+        final String nbUserDir = this.getParameters().getNamed().get("userdir"); // NOI18N
+        WebController wc = new WebController(view, nbUserDir, getParameters().getUnnamed());
 
         final VBox vbox = new VBox();
         vbox.setAlignment( Pos.CENTER );
@@ -79,7 +73,7 @@ public class FXBrwsr extends Application {
         final boolean showToolbar = "true".equals(this.getParameters().getNamed().get("toolbar")); // NOI18N
         final boolean useFirebug = "true".equals(this.getParameters().getNamed().get("firebug")); // NOI18N
         if (showToolbar) {
-            final ToolBar toolbar = new BrowserToolbar(view, vbox, useFirebug);
+            final ToolBar toolbar = new BrowserToolbar(view, vbox, useFirebug, wc.dbg);
             root.setTop( toolbar );
         }
         root.setCenter(hbox);
@@ -96,8 +90,11 @@ public class FXBrwsr extends Application {
      */
     private static class WebController {
         private final JVMBridge bridge = new JVMBridge();
+        private final WebDebug dbg;
+        private final String ud;
 
-        public WebController(WebView view, List<String> params) {
+        public WebController(WebView view, String ud, List<String> params) {
+            this.ud = ud;
             LOG.log(Level.INFO, "Initializing WebView with {0}", params);
             final WebEngine eng = view.getEngine();
             try {
@@ -140,6 +137,15 @@ public class FXBrwsr extends Application {
                     dialogStage.showAndWait();
                 }
             });
+            WebDebug wd = null;
+            try {
+                if (ud != null) {
+                    wd = WebDebug.create(eng.impl_getDebugger(), ud);
+                }
+            } catch (Exception ex) {
+                LOG.log(Level.WARNING, null, ex);
+            }
+            this.dbg = wd;
         }
 
         boolean initBck2Brwsr(WebEngine webEngine) {

@@ -45,7 +45,7 @@ final class BrowserToolbar extends ToolBar {
     private final ToggleGroup resizeGroup = new ToggleGroup();
     private final ComboBox<String> comboZoom = new ComboBox<String>();
     
-    BrowserToolbar(WebView webView, Pane container, boolean useFirebug) {
+    BrowserToolbar(WebView webView, Pane container, boolean useFirebug, final WebDebug webDebug) {
         this.webView = webView;
         this.container = container;
         
@@ -105,20 +105,18 @@ final class BrowserToolbar extends ToolBar {
             getItems().add(firebug);
         }
         
-        /*
-        final ToggleButton btnSelMode = new ToggleButton( null, new ImageView(
-            new Image(BrowserToolbar.class.getResourceAsStream("selectionMode.png"))
-        ));
-        btnSelMode.setTooltip( new Tooltip( "Toggle selection mode" ) );
-        btnSelMode.selectedProperty().addListener( new InvalidationListener() {
-
-            @Override
-            public void invalidated( Observable o ) {
-                toggleSelectionMode( btnSelMode.isSelected() );
-            }
-        });
-        getItems().add( btnSelMode );
-        */
+        if (webDebug != null) {
+            final ToggleButton btnSelMode = new ToggleButton(null, new ImageView(
+                    new Image(BrowserToolbar.class.getResourceAsStream("selectionMode.png"))));
+            btnSelMode.setTooltip(new Tooltip("Toggle selection mode"));
+            btnSelMode.selectedProperty().addListener(new InvalidationListener() {
+                @Override
+                public void invalidated(Observable o) {
+                    toggleSelectionMode(webDebug, btnSelMode.isSelected());
+                }
+            });
+            getItems().add(btnSelMode);
+        }
     }
 
     private String zoom( String zoomFactor ) {
@@ -183,8 +181,9 @@ final class BrowserToolbar extends ToolBar {
         webView.autosize();
     }
 
-    private void toggleSelectionMode( boolean selMode ) {
-        System.err.println( "selection mode: " + selMode );
+    private void toggleSelectionMode(WebDebug dbg, boolean selMode) {
+        // "inspect"
+        dbg.call("{\"message\":\"selection_mode\",\"selectionMode\":" + selMode + "}");
     }
     
     final void toggleFireBug(boolean enable) {
