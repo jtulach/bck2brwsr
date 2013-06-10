@@ -48,7 +48,7 @@ public class JsClassLoaderTest {
         ClassLoader parent = JsClassLoaderTest.class.getClassLoader().getParent();
         loader = new JsClassLoader(new URL[] { my }, parent) {
             @Override
-            protected JsClassLoader.Fn defineFn(String code, String... names) {
+            protected Fn defineFn(String code, String... names) {
                 StringBuilder sb = new StringBuilder();
                 sb.append("(function() {");
                 sb.append("var r = {};");
@@ -66,7 +66,7 @@ public class JsClassLoaderTest {
                 sb.append("})()");
                 try {
                     final Object val = eng.eval(sb.toString());
-                    return new JsClassLoader.Fn() {
+                    return new Fn() {
                         @Override
                         public Object invoke(Object... args) throws Exception {
                             Invocable inv = (Invocable)eng;

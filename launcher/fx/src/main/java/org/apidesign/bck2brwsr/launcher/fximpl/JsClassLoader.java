@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassReader;
@@ -37,7 +36,7 @@ import org.objectweb.asm.Type;
  *
  * @author Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  */
-public abstract class JsClassLoader extends URLClassLoader {
+abstract class JsClassLoader extends URLClassLoader {
     JsClassLoader(URL[] urls, ClassLoader parent) {
         super(urls, parent);
     }
@@ -65,23 +64,14 @@ public abstract class JsClassLoader extends URLClassLoader {
                 }
             }
         }
-        if (name.startsWith("org.apidesign.bck2brwsr.launcher.fximpl.JsClassLoader")) {
+        if (name.startsWith("org.apidesign.bck2brwsr.launcher.fximpl.Fn")) {
             return Class.forName(name);
         }
         
         return super.findClass(name);
     }
     
-    public final Fn define(String code, String... names) {
-        return defineFn(code, names);
-    }
-    
-
     protected abstract Fn defineFn(String code, String... names);
-    
-    public static abstract class Fn {
-        public abstract Object invoke(Object... args) throws Exception;
-    }
     
     
     private static final class FindInClass extends ClassVisitor {
@@ -138,7 +128,7 @@ public abstract class JsClassLoader extends URLClassLoader {
                 super.visitFieldInsn(
                     Opcodes.GETSTATIC, FindInClass.this.name, 
                     "$$bck2brwsr$$" + name, 
-                    "Lorg/apidesign/bck2brwsr/launcher/fximpl/JsClassLoader$Fn;"
+                    "Lorg/apidesign/bck2brwsr/launcher/fximpl/Fn;"
                 );
                 super.visitInsn(Opcodes.DUP);
                 Label ifNotNull = new Label();
@@ -147,10 +137,6 @@ public abstract class JsClassLoader extends URLClassLoader {
                 // init Fn
                 super.visitInsn(Opcodes.POP);
                 super.visitLdcInsn(Type.getObjectType(FindInClass.this.name));
-                super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, 
-                    "java/lang/Class", "getClassLoader", "()Ljava/lang/ClassLoader;"
-                );
-                super.visitTypeInsn(Opcodes.CHECKCAST, "org/apidesign/bck2brwsr/launcher/fximpl/JsClassLoader");
                 super.visitLdcInsn(body);
                 super.visitIntInsn(Opcodes.SIPUSH, args.size());
                 super.visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/String");
@@ -161,9 +147,9 @@ public abstract class JsClassLoader extends URLClassLoader {
                     super.visitLdcInsn(name);
                     super.visitInsn(Opcodes.AASTORE);
                 }
-                super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, 
-                    "org/apidesign/bck2brwsr/launcher/fximpl/JsClassLoader",
-                    "define", "(Ljava/lang/String;[Ljava/lang/String;)Lorg/apidesign/bck2brwsr/launcher/fximpl/JsClassLoader$Fn;"
+                super.visitMethodInsn(Opcodes.INVOKESTATIC, 
+                    "org/apidesign/bck2brwsr/launcher/fximpl/Fn", "define", 
+                    "(Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/String;)Lorg/apidesign/bck2brwsr/launcher/fximpl/Fn;"
                 );
                 // end of Fn init
                 
@@ -171,7 +157,7 @@ public abstract class JsClassLoader extends URLClassLoader {
                 super.visitIntInsn(Opcodes.SIPUSH, args.size());
                 super.visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/Object");
                 super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, 
-                    "org/apidesign/bck2brwsr/launcher/fximpl/JsClassLoader$Fn", "invoke", "([Ljava/lang/Object;)Ljava/lang/Object;"
+                    "org/apidesign/bck2brwsr/launcher/fximpl/Fn", "invoke", "([Ljava/lang/Object;)Ljava/lang/Object;"
                 );
                 super.visitInsn(Opcodes.ARETURN);
             }
@@ -183,7 +169,7 @@ public abstract class JsClassLoader extends URLClassLoader {
                     FindInClass.this.visitField(
                         Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC, 
                         "$$bck2brwsr$$" + name, 
-                        "Lorg/apidesign/bck2brwsr/launcher/fximpl/JsClassLoader$Fn;", 
+                        "Lorg/apidesign/bck2brwsr/launcher/fximpl/Fn;", 
                         null, null
                     );
                 }
