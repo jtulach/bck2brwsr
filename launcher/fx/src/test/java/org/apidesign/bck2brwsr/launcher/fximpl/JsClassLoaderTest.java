@@ -24,6 +24,7 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import org.objectweb.asm.signature.SignatureReader;
 import static org.testng.Assert.*;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -92,7 +93,7 @@ public class JsClassLoaderTest {
             throw ex.getTargetException();
         }
     }
-    /*
+    
     @Test public void testExecuteScript() throws Throwable {
         Method plus = methodClass.getMethod("plus", int.class, int.class);
         try {
@@ -101,6 +102,4 @@ public class JsClassLoaderTest {
             throw ex.getTargetException();
         }
     }
-    */
-
 }

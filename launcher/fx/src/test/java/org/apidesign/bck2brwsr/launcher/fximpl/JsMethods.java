@@ -29,10 +29,8 @@ public class JsMethods {
         return -42;
     }
     
-/*
     @JavaScriptBody(args = {"x", "y" }, body = "return x + y;")
     public static int plus(int x, int y) {
         return 0;
     }
- */   
 }

@@ -31,6 +31,8 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.signature.SignatureReader;
+import org.objectweb.asm.signature.SignatureVisitor;
 
 /** 
  *
@@ -91,19 +93,21 @@ abstract class JsClassLoader extends URLClassLoader {
 
         @Override
         public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-            return new FindInMethod(name,
+            return new FindInMethod(name, desc,
                 super.visitMethod(access, name, desc, signature, exceptions)
             );
         }
         
         private final class FindInMethod extends MethodVisitor {
             private final String name;
+            private final String desc;
             private List<String> args;
             private String body;
             
-            public FindInMethod(String name, MethodVisitor mv) {
+            public FindInMethod(String name, String desc, MethodVisitor mv) {
                 super(Opcodes.ASM4, mv);
                 this.name = name;
+                this.desc = desc;
             }
 
             @Override
@@ -156,10 +160,89 @@ abstract class JsClassLoader extends URLClassLoader {
                 super.visitLabel(ifNotNull);
                 super.visitIntInsn(Opcodes.SIPUSH, args.size());
                 super.visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/Object");
+                
+                class SV extends SignatureVisitor {
+                    private boolean nowReturn;
+                    private Type returnType;
+                    private int index;
+                    
+                    public SV() {
+                        super(Opcodes.ASM4);
+                    }
+                    
+                    @Override
+                    public void visitBaseType(char descriptor) {
+                        final Type t = Type.getType("" + descriptor);
+                        if (nowReturn) {
+                            returnType = t;
+                            return;
+                        }
+                        FindInMethod.super.visitInsn(Opcodes.DUP);
+                        FindInMethod.super.visitIntInsn(Opcodes.SIPUSH, index);
+                        FindInMethod.super.visitVarInsn(t.getOpcode(Opcodes.ILOAD), index);
+                        String factory;
+                        switch (descriptor) {
+                        case 'I': factory = "java/lang/Integer"; break;
+                        case 'J': factory = "java/lang/Long"; break;
+                        case 'S': factory = "java/lang/Short"; break;
+                        case 'F': factory = "java/lang/Float"; break;
+                        case 'D': factory = "java/lang/Double"; break;
+                        case 'Z': factory = "java/lang/Boolean"; break;
+                        case 'C': factory = "java/lang/Character"; break;
+                        case 'B': factory = "java/lang/Byte"; break;
+                        default: throw new IllegalStateException(t.toString());
+                        }
+                        FindInMethod.super.visitMethodInsn(Opcodes.INVOKESTATIC,
+                            factory, "valueOf", "(" + descriptor + ")L" + factory + ";"
+                        );
+                        FindInMethod.super.visitInsn(Opcodes.AASTORE);
+                        index++;
+                    }
+
+                    @Override
+                    public void visitClassType(String name) {
+                        if (nowReturn) {
+                            returnType = Type.getObjectType(name);
+                            return;
+                        }
+                        FindInMethod.super.visitInsn(Opcodes.DUP);
+                        FindInMethod.super.visitIntInsn(Opcodes.SIPUSH, index);
+                        FindInMethod.super.visitVarInsn(Opcodes.ALOAD, index);
+                        FindInMethod.super.visitInsn(Opcodes.AASTORE);
+                        index++;
+                    }
+
+                    @Override
+                    public SignatureVisitor visitReturnType() {
+                        nowReturn = true;
+                        return this;
+                    }
+                    
+                    
+                }
+                SV sv = new SV();
+                SignatureReader sr = new SignatureReader(desc);
+                sr.accept(sv);
+                
                 super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, 
                     "org/apidesign/bck2brwsr/launcher/fximpl/Fn", "invoke", "([Ljava/lang/Object;)Ljava/lang/Object;"
                 );
-                super.visitInsn(Opcodes.ARETURN);
+                switch (sv.returnType.getSort()) {
+                case Type.VOID: 
+                    super.visitInsn(Opcodes.RETURN);
+                    return;
+                case Type.ARRAY:
+                case Type.OBJECT:
+                    super.visitTypeInsn(Opcodes.CHECKCAST, sv.returnType.getInternalName());
+                    super.visitInsn(Opcodes.ARETURN);
+                    return;
+                default:
+                    super.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Number");
+                    super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, 
+                        "java/lang/Number", sv.returnType.getClassName() + "Value", "()" + sv.returnType.getDescriptor()
+                    );
+                    super.visitInsn(sv.returnType.getOpcode(Opcodes.IRETURN));
+                }
             }
 
             @Override
