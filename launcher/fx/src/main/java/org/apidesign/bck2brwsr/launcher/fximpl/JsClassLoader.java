@@ -38,10 +38,13 @@ import org.objectweb.asm.signature.SignatureVisitor;
  *
  * @author Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  */
-abstract class JsClassLoader extends URLClassLoader {
-    JsClassLoader(URL[] urls, ClassLoader parent) {
-        super(urls, parent);
+abstract class JsClassLoader extends ClassLoader {
+    JsClassLoader(ClassLoader parent) {
+        super(parent);
     }
+    
+    @Override
+    protected abstract URL findResource(String name);
 
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {

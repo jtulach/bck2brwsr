@@ -20,6 +20,7 @@ package org.apidesign.bck2brwsr.launcher.fximpl;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.net.URLClassLoader;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -45,9 +46,14 @@ public class JsClassLoaderTest {
         ScriptEngineManager sem = new ScriptEngineManager();
         final ScriptEngine eng = sem.getEngineByMimeType("text/javascript");
         
-        URL my = JsClassLoaderTest.class.getProtectionDomain().getCodeSource().getLocation();
+        final URL my = JsClassLoaderTest.class.getProtectionDomain().getCodeSource().getLocation();
         ClassLoader parent = JsClassLoaderTest.class.getClassLoader().getParent();
-        loader = new JsClassLoader(new URL[] { my }, parent) {
+        final URLClassLoader ul = new URLClassLoader(new URL[] { my }, parent);
+        loader = new JsClassLoader(parent) {
+            @Override
+            protected URL findResource(String name) {
+                return ul.getResource(name);
+            }
             @Override
             protected Fn defineFn(String code, String... names) {
                 StringBuilder sb = new StringBuilder();

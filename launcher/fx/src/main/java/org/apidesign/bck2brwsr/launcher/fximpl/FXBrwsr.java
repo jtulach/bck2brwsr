@@ -89,11 +89,12 @@ public class FXBrwsr extends Application {
      * Create a resizable WebView pane
      */
     private static class WebController {
-        private final JVMBridge bridge = new JVMBridge();
+        private final JVMBridge bridge;
         private final WebDebug dbg;
         private final String ud;
 
         public WebController(WebView view, String ud, List<String> params) {
+            this.bridge = new JVMBridge(view.getEngine());
             this.ud = ud;
             LOG.log(Level.INFO, "Initializing WebView with {0}", params);
             final WebEngine eng = view.getEngine();
