@@ -18,6 +18,10 @@
 package org.apidesign.bck2brwsr.launcher.fximpl;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.TooManyListenersException;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.web.WebEngine;
@@ -75,6 +79,20 @@ public final class JVMBridge {
                 }
             }
             return null;
+        }
+        
+        @Override
+        protected Enumeration<URL> findResources(String name) {
+            List<URL> arr = new ArrayList<URL>();
+            if (ldrs != null) {
+                for (ClassLoader l : ldrs) {
+                    URL u = l.getResource(name);
+                    if (u != null) {
+                        arr.add(u);
+                    }
+                }
+            }
+            return Collections.enumeration(arr);
         }
 
         @Override

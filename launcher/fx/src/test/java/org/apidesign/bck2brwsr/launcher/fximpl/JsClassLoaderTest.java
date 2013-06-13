@@ -21,6 +21,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Enumeration;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -83,6 +84,11 @@ public class JsClassLoaderTest {
                 } catch (ScriptException ex) {
                     throw new LinkageError("Can't parse: " + sb, ex);
                 }
+            }
+
+            @Override
+            protected Enumeration<URL> findResources(String name) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
             }
         };
         

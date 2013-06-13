@@ -20,8 +20,9 @@ package org.apidesign.bck2brwsr.launcher.fximpl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.net.URLClassLoader;
+import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassReader;
@@ -45,6 +46,9 @@ abstract class JsClassLoader extends ClassLoader {
     
     @Override
     protected abstract URL findResource(String name);
+    
+    @Override
+    protected abstract Enumeration<URL> findResources(String name);
 
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
@@ -53,12 +57,25 @@ abstract class JsClassLoader extends ClassLoader {
             InputStream is = null;
             try {
                 is = u.openStream();
-                ClassReader cr = new ClassReader(is);
-                ClassWriter w = new ClassWriter(cr, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-                FindInClass fic = new FindInClass(w);
-                cr.accept(fic, 0);
-                byte[] arr = w.toByteArray();
-                return defineClass(name, arr, 0, arr.length);
+                byte[] arr = new byte[is.available()];
+                int len = is.read(arr);
+                if (len != arr.length) {
+                    arr = null;
+                }
+                is.close();
+                is = null;
+                ClassReader cr = new ClassReader(arr);
+                FindInClass tst = new FindInClass(null);
+                cr.accept(tst, 0);
+                if (tst.found) {
+                    ClassWriter w = new ClassWriterEx(cr, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+                    FindInClass fic = new FindInClass(w);
+                    cr.accept(fic, 0);
+                    arr = w.toByteArray();
+                }
+                if (arr != null) {
+                    return defineClass(name, arr, 0, arr.length);
+                }
             } catch (IOException ex) {
                 throw new ClassNotFoundException("Can't load " + name, ex);
             } finally {
@@ -81,6 +98,7 @@ abstract class JsClassLoader extends ClassLoader {
     
     private static final class FindInClass extends ClassVisitor {
         private String name;
+        private boolean found;
         
         public FindInClass(ClassVisitor cv) {
             super(Opcodes.ASM4, cv);
@@ -116,6 +134,7 @@ abstract class JsClassLoader extends ClassLoader {
             @Override
             public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
                 if ("Lorg/apidesign/bck2brwsr/core/JavaScriptBody;".equals(desc)) { // NOI18N
+                    found = true;
                     return new FindInAnno();
                 }
                 return super.visitAnnotation(desc, visible);
@@ -296,5 +315,38 @@ abstract class JsClassLoader extends ClassLoader {
                 }
             }
         }
+    }
+    
+    private class ClassWriterEx extends ClassWriter {
+
+        public ClassWriterEx(ClassReader classReader, int flags) {
+            super(classReader, flags);
+        }
+        
+        @Override
+        protected String getCommonSuperClass(final String type1, final String type2) {
+            Class<?> c, d;
+            ClassLoader classLoader = JsClassLoader.this;
+            try {
+                c = Class.forName(type1.replace('/', '.'), false, classLoader);
+                d = Class.forName(type2.replace('/', '.'), false, classLoader);
+            } catch (Exception e) {
+                throw new RuntimeException(e.toString());
+            }
+            if (c.isAssignableFrom(d)) {
+                return type1;
+            }
+            if (d.isAssignableFrom(c)) {
+                return type2;
+            }
+            if (c.isInterface() || d.isInterface()) {
+                return "java/lang/Object";
+            } else {
+                do {
+                    c = c.getSuperclass();
+                } while (!c.isAssignableFrom(d));
+                return c.getName().replace('.', '/');
+            }
+        }        
     }
 }
