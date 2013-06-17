@@ -20,7 +20,6 @@ package org.apidesign.bck2brwsr.launcher.fximpl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -58,9 +57,13 @@ abstract class JsClassLoader extends ClassLoader {
             try {
                 is = u.openStream();
                 byte[] arr = new byte[is.available()];
-                int len = is.read(arr);
-                if (len != arr.length) {
-                    arr = null;
+                int len = 0;
+                while (len < arr.length) {
+                    int read = is.read(arr, len, arr.length - len);
+                    if (read == -1) {
+                        throw new IOException("Can't read " + u);
+                    }
+                    len += read;
                 }
                 is.close();
                 is = null;
