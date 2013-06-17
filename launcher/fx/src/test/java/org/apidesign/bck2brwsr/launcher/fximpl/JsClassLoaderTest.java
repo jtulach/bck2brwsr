@@ -21,12 +21,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import org.objectweb.asm.signature.SignatureReader;
 import static org.testng.Assert.*;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -59,8 +61,7 @@ public class JsClassLoaderTest {
             protected Fn defineFn(String code, String... names) {
                 StringBuilder sb = new StringBuilder();
                 sb.append("(function() {");
-                sb.append("var r = {};");
-                sb.append("r.fn = function(");
+                sb.append("return function(");
                 String sep = "";
                 for (String n : names) {
                     sb.append(sep);
@@ -70,15 +71,18 @@ public class JsClassLoaderTest {
                 sb.append(") {");
                 sb.append(code);
                 sb.append("};");
-                sb.append("return r;");
                 sb.append("})()");
                 try {
                     final Object val = eng.eval(sb.toString());
                     return new Fn() {
                         @Override
                         public Object invoke(Object thiz, Object... args) throws Exception {
+                            List<Object> all = new ArrayList<Object>(args.length + 1);
+                            all.add(thiz == null ? val : thiz);
+                            all.addAll(Arrays.asList(args));
                             Invocable inv = (Invocable)eng;
-                            return inv.invokeMethod(val, "fn", args);
+                            Object ret = inv.invokeMethod(val, "call", all.toArray());
+                            return ret == val ? null : ret;
                         }
                     };
                 } catch (ScriptException ex) {
