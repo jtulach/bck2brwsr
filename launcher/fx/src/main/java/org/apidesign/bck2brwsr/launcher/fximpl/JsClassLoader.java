@@ -51,6 +51,21 @@ abstract class JsClassLoader extends ClassLoader {
 
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
+        if (name.startsWith("javafx")) {
+            return Class.forName(name);
+        }
+        if (name.startsWith("netscape")) {
+            return Class.forName(name);
+        }
+        if (name.startsWith("com.sun")) {
+            return Class.forName(name);
+        }
+        if (name.equals(JsClassLoader.class.getName())) {
+            return JsClassLoader.class;
+        }
+        if (name.equals(Fn.class.getName())) {
+            return Fn.class;
+        }
         URL u = findResource(name.replace('.', '/') + ".class");
         if (u != null) {
             InputStream is = null;

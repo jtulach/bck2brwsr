@@ -40,7 +40,7 @@ public final class JVMBridge {
     
     JVMBridge(WebEngine eng) {
         this.engine = eng;
-        this.cl = new WebClassLoader(JVMBridge.class.getClassLoader());
+        this.cl = new WebClassLoader(JVMBridge.class.getClassLoader().getParent());
     }
         
     public static void registerClassLoaders(ClassLoader[] loaders) {
@@ -126,7 +126,15 @@ public final class JVMBridge {
         
         @Override
         public Object invoke(Object... args) throws Exception {
-            return fn.call("fn", args); // NOI18N
+            try {
+                return fn.call("fn", args); // NOI18N
+            } catch (Error t) {
+                t.printStackTrace();
+                throw t;
+            } catch (Exception t) {
+                t.printStackTrace();
+                throw t;
+            }
         }
     }
 }

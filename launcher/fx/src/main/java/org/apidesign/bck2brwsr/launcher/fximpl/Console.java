@@ -25,8 +25,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.Enumeration;
-import javafx.scene.web.WebEngine;
 import netscape.javascript.JSObject;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
  *
@@ -35,17 +35,15 @@ import netscape.javascript.JSObject;
 public final class Console {
     public Console() {
     }
-    
-    private static Object getAttr(Object elem, String attr) {
-        return InvokeJS.CObject.call("getAttr", elem, attr);
-    }
 
-    private static void setAttr(String id, String attr, Object value) {
-        InvokeJS.CObject.call("setAttrId", id, attr, value);
-    }
-    private static void setAttr(Object id, String attr, Object value) {
-        InvokeJS.CObject.call("setAttr", id, attr, value);
-    }
+    @JavaScriptBody(args = { "elem", "attr" }, body = "return elem[attr].toString();")
+    private static native Object getAttr(Object elem, String attr);
+
+    @JavaScriptBody(args = { "id", "attr", "value" }, body = "window.document.getElementById(id)[attr] = value;")
+    private static native void setAttr(String id, String attr, Object value);
+
+    @JavaScriptBody(args = { "elem", "attr", "value" }, body = "elem[attr] = value;")
+    private static native void setAttr(Object id, String attr, Object value);
     
     private static void closeWindow() {}
 
@@ -78,7 +76,7 @@ public final class Console {
         textArea = null;
     }
 
-    private static final String BEGIN_TEST =  
+    @JavaScriptBody(args = { "test", "c", "arr" }, body = 
         "var ul = window.document.getElementById('bck2brwsr.result');\n"
         + "var li = window.document.createElement('li');\n"
         + "var span = window.document.createElement('span');"
@@ -103,27 +101,24 @@ public final class Console {
         + "p.appendChild(pre);\n"
         + "ul.appendChild(li);\n"
         + "arr[0] = pre;\n"
-        + "arr[1] = status;\n";
-        
-    private static void beginTest(String test, Case c, Object[] arr) {
-        InvokeJS.CObject.call("beginTest", test, c, arr);
-    }
+        + "arr[1] = status;\n"
+    )
+    private static native void beginTest(String test, Case c, Object[] arr);
     
-    private static final String LOAD_TEXT = 
+    @JavaScriptBody(args = { "url", "callback", "arr" }, body =
           "var request = new XMLHttpRequest();\n"
         + "request.open('GET', url, true);\n"
         + "request.setRequestHeader('Content-Type', 'text/plain; charset=utf-8');\n"
         + "request.onreadystatechange = function() {\n"
         + "  if (this.readyState!==4) return;\n"
-        + " try {"
+        + " try {\n"
         + "  arr[0] = this.responseText;\n"
-        + "  callback.run__V();\n"
-        + " } catch (e) { alert(e); }"
-        + "};"
-        + "request.send();";
-    private static void loadText(String url, Runnable callback, String[] arr) throws IOException {
-        InvokeJS.CObject.call("loadText", url, new Run(callback), arr);
-    }
+        + "  callback.run();\n"
+        + " } catch (e) { alert(e); }\n"
+        + "};\n"
+        + "request.send();\n"
+    )
+    private static native void loadText(String url, Runnable callback, String[] arr) throws IOException;
     
     public static void runHarness(String url) throws IOException {
         new Console().harness(url);
@@ -142,11 +137,11 @@ public final class Console {
 
         private Request(String url) throws IOException {
             this.url = url;
-            loadText(url, this, arr);
+            loadText(url, new Run(this), arr);
         }
         private Request(String url, String u) throws IOException {
             this.url = url;
-            loadText(u, this, arr);
+            loadText(u, new Run(this), arr);
         }
         
         @Override
@@ -181,7 +176,7 @@ public final class Console {
             } catch (Exception ex) {
                 if (ex instanceof InterruptedException) {
                     log("Re-scheduling in 100ms");
-                    schedule(this, 100);
+                    schedule(new Run(this), 100);
                     return;
                 }
                 log(ex.getClass().getName() + ":" + ex.getMessage());
@@ -254,9 +249,8 @@ public final class Console {
     private static void turnAssetionStatusOn() {
     }
 
-    private static Object schedule(Runnable r, int time) {
-        return InvokeJS.CObject.call("schedule", new Run(r), time);
-    }
+    @JavaScriptBody(args = { "r", "time" }, body = "return window.setTimeout(function() { r.run(); }, time);")
+    private static native Object schedule(Runnable r, int time);
     
     private static final class Case {
         private final Object data;
@@ -352,48 +346,16 @@ public final class Console {
             }
             return res;
         }
-        
-        private static Object toJSON(String s) {
-            return InvokeJS.CObject.call("toJSON", s);
-        }
+
+        @JavaScriptBody(args = { "s" }, body = "return eval('(' + s + ')');")
+        private static native Object toJSON(String s);
         
         private static Object value(String p, Object d) {
             return ((JSObject)d).getMember(p);
         }
     }
     
-    private static String safe(String txt) {
-        return "try {" + txt + "} catch (err) { alert(err); }";
-    }
-    
     static {
         turnAssetionStatusOn();
     }
-    
-    private static final class InvokeJS {
-        static final JSObject CObject = initJS();
-
-        private static JSObject initJS() {
-            WebEngine web = (WebEngine) System.getProperties().get("webEngine");
-            return (JSObject) web.executeScript("(function() {"
-                + "var CObject = {};"
-
-                + "CObject.getAttr = function(elem, attr) { return elem[attr].toString(); };"
-
-                + "CObject.setAttrId = function(id, attr, value) { window.document.getElementById(id)[attr] = value; };"
-                + "CObject.setAttr = function(elem, attr, value) { elem[attr] = value; };"
-
-                + "CObject.beginTest = function(test, c, arr) {" + safe(BEGIN_TEST) + "};"
-
-                + "CObject.loadText = function(url, callback, arr) {" + safe(LOAD_TEXT.replace("run__V", "run")) + "};"
-
-                + "CObject.schedule = function(r, time) { return window.setTimeout(function() { r.run(); }, time); };"
-
-                + "CObject.toJSON = function(s) { return eval('(' + s + ')'); };"
-
-                + "return CObject;"
-            + "})(this)");
-        }
-    }
-    
 }

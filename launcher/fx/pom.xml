@@ -68,7 +68,7 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>core</artifactId>
       <version>${project.version}</version>
-      <scope>test</scope>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.ow2.asm</groupId>
