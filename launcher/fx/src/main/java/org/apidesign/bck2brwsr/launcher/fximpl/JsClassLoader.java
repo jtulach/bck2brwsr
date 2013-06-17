@@ -70,7 +70,7 @@ abstract class JsClassLoader extends ClassLoader {
                 ClassReader cr = new ClassReader(arr);
                 FindInClass tst = new FindInClass(null);
                 cr.accept(tst, 0);
-                if (tst.found) {
+                if (tst.found > 0) {
                     ClassWriter w = new ClassWriterEx(cr, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
                     FindInClass fic = new FindInClass(w);
                     cr.accept(fic, 0);
@@ -101,7 +101,7 @@ abstract class JsClassLoader extends ClassLoader {
     
     private static final class FindInClass extends ClassVisitor {
         private String name;
-        private boolean found;
+        private int found;
         
         public FindInClass(ClassVisitor cv) {
             super(Opcodes.ASM4, cv);
@@ -138,7 +138,7 @@ abstract class JsClassLoader extends ClassLoader {
             @Override
             public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
                 if ("Lorg/apidesign/bck2brwsr/core/JavaScriptBody;".equals(desc)) { // NOI18N
-                    found = true;
+                    found++;
                     return new FindInAnno();
                 }
                 return super.visitAnnotation(desc, visible);
@@ -165,7 +165,7 @@ abstract class JsClassLoader extends ClassLoader {
                 
                 super.visitFieldInsn(
                     Opcodes.GETSTATIC, FindInClass.this.name, 
-                    "$$bck2brwsr$$" + name, 
+                    "$$bck2brwsr$$" + name + "_" + found, 
                     "Lorg/apidesign/bck2brwsr/launcher/fximpl/Fn;"
                 );
                 super.visitInsn(Opcodes.DUP);
@@ -290,7 +290,7 @@ abstract class JsClassLoader extends ClassLoader {
                     }
                     FindInClass.this.visitField(
                         Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC, 
-                        "$$bck2brwsr$$" + name, 
+                        "$$bck2brwsr$$" + name + "_" + found, 
                         "Lorg/apidesign/bck2brwsr/launcher/fximpl/Fn;", 
                         null, null
                     );

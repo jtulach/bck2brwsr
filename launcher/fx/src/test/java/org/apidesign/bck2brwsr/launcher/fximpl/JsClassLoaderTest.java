@@ -114,4 +114,13 @@ public class JsClassLoaderTest {
             throw ex.getTargetException();
         }
     }
+
+    @Test public void overloadedMethod() throws Throwable {
+        Method plus = methodClass.getMethod("plus", int.class);
+        try {
+            assertEquals(plus.invoke(null, 10), 10);
+        } catch (InvocationTargetException ex) {
+            throw ex.getTargetException();
+        }
+    }
 }

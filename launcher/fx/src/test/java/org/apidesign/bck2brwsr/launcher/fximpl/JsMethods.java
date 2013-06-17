@@ -31,4 +31,7 @@ public class JsMethods {
     
     @JavaScriptBody(args = {"x", "y" }, body = "return x + y;")
     public static native int plus(int x, int y);
+    
+    @JavaScriptBody(args = {"x"}, body = "return x;")
+    public static native int plus(int x);
 }
