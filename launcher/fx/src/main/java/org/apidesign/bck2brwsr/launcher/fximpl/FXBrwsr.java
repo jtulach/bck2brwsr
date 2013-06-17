@@ -154,7 +154,6 @@ public class FXBrwsr extends Application {
             LOG.log(Level.FINE, "window: {0}", jsobj);
             Object prev = jsobj.getMember("bck2brwsr");
             if ("undefined".equals(prev)) {
-                System.getProperties().put("webEngine", webEngine);
                 jsobj.setMember("bck2brwsr", bridge);
                 return true;
             }
