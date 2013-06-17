@@ -115,7 +115,7 @@ abstract class JsClassLoader extends ClassLoader {
         @Override
         public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
             return new FindInMethod(name, desc,
-                super.visitMethod(access, name, desc, signature, exceptions)
+                super.visitMethod(access & (~Opcodes.ACC_NATIVE), name, desc, signature, exceptions)
             );
         }
         
@@ -124,6 +124,7 @@ abstract class JsClassLoader extends ClassLoader {
             private final String desc;
             private List<String> args;
             private String body;
+            private boolean bodyGenerated;
             
             public FindInMethod(String name, String desc, MethodVisitor mv) {
                 super(Opcodes.ASM4, mv);
@@ -150,6 +151,14 @@ abstract class JsClassLoader extends ClassLoader {
                 if (body == null) {
                     return;
                 } 
+                generateBody();
+            }
+            
+            private boolean generateBody() {
+                if (bodyGenerated) {
+                    return false;
+                }
+                bodyGenerated = true;
                 
                 super.visitFieldInsn(
                     Opcodes.GETSTATIC, FindInClass.this.name, 
@@ -252,12 +261,12 @@ abstract class JsClassLoader extends ClassLoader {
                 switch (sv.returnType.getSort()) {
                 case Type.VOID: 
                     super.visitInsn(Opcodes.RETURN);
-                    return;
+                    break;
                 case Type.ARRAY:
                 case Type.OBJECT:
                     super.visitTypeInsn(Opcodes.CHECKCAST, sv.returnType.getInternalName());
                     super.visitInsn(Opcodes.ARETURN);
-                    return;
+                    break;
                 default:
                     super.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Number");
                     super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, 
@@ -265,12 +274,17 @@ abstract class JsClassLoader extends ClassLoader {
                     );
                     super.visitInsn(sv.returnType.getOpcode(Opcodes.IRETURN));
                 }
+                return true;
             }
 
             @Override
             public void visitEnd() {
                 super.visitEnd();
                 if (body != null) {
+                    if (generateBody()) {
+                        // native method
+                        super.visitMaxs(1, 0);
+                    }
                     FindInClass.this.visitField(
                         Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC, 
                         "$$bck2brwsr$$" + name, 
