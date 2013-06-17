@@ -125,7 +125,7 @@ public final class JVMBridge {
         }
         
         @Override
-        public Object invoke(Object... args) throws Exception {
+        public Object invoke(Object thiz, Object... args) throws Exception {
             try {
                 return fn.call("fn", args); // NOI18N
             } catch (Error t) {

@@ -132,7 +132,7 @@ abstract class JsClassLoader extends ClassLoader {
 
         @Override
         public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-            return new FindInMethod(name, desc,
+            return new FindInMethod(access, name, desc,
                 super.visitMethod(access & (~Opcodes.ACC_NATIVE), name, desc, signature, exceptions)
             );
         }
@@ -140,12 +140,14 @@ abstract class JsClassLoader extends ClassLoader {
         private final class FindInMethod extends MethodVisitor {
             private final String name;
             private final String desc;
+            private final int access;
             private List<String> args;
             private String body;
             private boolean bodyGenerated;
             
-            public FindInMethod(String name, String desc, MethodVisitor mv) {
+            public FindInMethod(int access, String name, String desc, MethodVisitor mv) {
                 super(Opcodes.ASM4, mv);
+                this.access = access;
                 this.name = name;
                 this.desc = desc;
             }
@@ -207,6 +209,16 @@ abstract class JsClassLoader extends ClassLoader {
                 // end of Fn init
                 
                 super.visitLabel(ifNotNull);
+                
+                final int offset;
+                if ((access & Opcodes.ACC_STATIC) == 0) {
+                    offset = 1;
+                    super.visitIntInsn(Opcodes.ALOAD, 0);
+                } else {
+                    offset = 0;
+                    super.visitInsn(Opcodes.ACONST_NULL);
+                }
+                
                 super.visitIntInsn(Opcodes.SIPUSH, args.size());
                 super.visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/Object");
                 
@@ -228,7 +240,7 @@ abstract class JsClassLoader extends ClassLoader {
                         }
                         FindInMethod.super.visitInsn(Opcodes.DUP);
                         FindInMethod.super.visitIntInsn(Opcodes.SIPUSH, index);
-                        FindInMethod.super.visitVarInsn(t.getOpcode(Opcodes.ILOAD), index);
+                        FindInMethod.super.visitVarInsn(t.getOpcode(Opcodes.ILOAD), index + offset);
                         String factory;
                         switch (descriptor) {
                         case 'I': factory = "java/lang/Integer"; break;
@@ -256,7 +268,7 @@ abstract class JsClassLoader extends ClassLoader {
                         }
                         FindInMethod.super.visitInsn(Opcodes.DUP);
                         FindInMethod.super.visitIntInsn(Opcodes.SIPUSH, index);
-                        FindInMethod.super.visitVarInsn(Opcodes.ALOAD, index);
+                        FindInMethod.super.visitVarInsn(Opcodes.ALOAD, index + offset);
                         FindInMethod.super.visitInsn(Opcodes.AASTORE);
                         index++;
                     }
@@ -274,7 +286,7 @@ abstract class JsClassLoader extends ClassLoader {
                 sr.accept(sv);
                 
                 super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, 
-                    "org/apidesign/bck2brwsr/launcher/fximpl/Fn", "invoke", "([Ljava/lang/Object;)Ljava/lang/Object;"
+                    "org/apidesign/bck2brwsr/launcher/fximpl/Fn", "invoke", "(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;"
                 );
                 switch (sv.returnType.getSort()) {
                 case Type.VOID: 

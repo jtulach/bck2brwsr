@@ -76,7 +76,7 @@ public class JsClassLoaderTest {
                     final Object val = eng.eval(sb.toString());
                     return new Fn() {
                         @Override
-                        public Object invoke(Object... args) throws Exception {
+                        public Object invoke(Object thiz, Object... args) throws Exception {
                             Invocable inv = (Invocable)eng;
                             return inv.invokeMethod(val, "fn", args);
                         }
@@ -123,4 +123,34 @@ public class JsClassLoaderTest {
             throw ex.getTargetException();
         }
     }
+    
+    @Test public void instanceMethod() throws Throwable {
+        Method plus = methodClass.getMethod("plusInst", int.class);
+        Object inst = methodClass.newInstance();
+        try {
+            assertEquals(plus.invoke(inst, 10), 10);
+        } catch (InvocationTargetException ex) {
+            throw ex.getTargetException();
+        }
+    }
+    
+    @Test public void staticThis() throws Throwable {
+        Method st = methodClass.getMethod("staticThis");
+        try {
+            assertNull(st.invoke(null));
+        } catch (InvocationTargetException ex) {
+            throw ex.getTargetException();
+        }
+    }
+
+    @Test public void getThis() throws Throwable {
+        Object th = methodClass.newInstance();
+        Method st = methodClass.getMethod("getThis");
+        try {
+            assertEquals(st.invoke(th), th);
+        } catch (InvocationTargetException ex) {
+            throw ex.getTargetException();
+        }
+    }
+    
 }

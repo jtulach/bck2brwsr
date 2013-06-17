@@ -27,6 +27,6 @@ public abstract class Fn {
         return cl.defineFn(code, names);
     }
 
-    public abstract Object invoke(Object... args) throws Exception;
+    public abstract Object invoke(Object thiz, Object... args) throws Exception;
     
 }
