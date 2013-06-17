@@ -19,12 +19,14 @@ package org.apidesign.bck2brwsr.launcher.fximpl;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.TooManyListenersException;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.web.WebEngine;
+import javax.script.Invocable;
 import netscape.javascript.JSObject;
 
 /**
@@ -99,8 +101,7 @@ public final class JVMBridge {
         protected Fn defineFn(String code, String... names) {
             StringBuilder sb = new StringBuilder();
             sb.append("(function() {");
-            sb.append("  var x = {};");
-            sb.append("  x.fn = function(");
+            sb.append("  return function(");
             String sep = "";
             for (String n : names) {
                 sb.append(sep).append(n);
@@ -109,7 +110,6 @@ public final class JVMBridge {
             sb.append(") {\n");
             sb.append(code);
             sb.append("};");
-            sb.append("return x;");
             sb.append("})()");
             
             JSObject x = (JSObject) engine.executeScript(sb.toString());
@@ -127,7 +127,11 @@ public final class JVMBridge {
         @Override
         public Object invoke(Object thiz, Object... args) throws Exception {
             try {
-                return fn.call("fn", args); // NOI18N
+                List<Object> all = new ArrayList<Object>(args.length + 1);
+                all.add(thiz == null ? fn : thiz);
+                all.addAll(Arrays.asList(args));
+                Object ret = fn.call("call", all.toArray()); // NOI18N
+                return ret == fn ? null : ret;
             } catch (Error t) {
                 t.printStackTrace();
                 throw t;
