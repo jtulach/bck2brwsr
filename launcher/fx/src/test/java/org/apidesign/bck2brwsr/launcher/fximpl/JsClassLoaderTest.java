@@ -23,12 +23,15 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
+import java.util.Collection;
 import java.util.List;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import org.apidesign.html.boot.spi.Fn;
+import org.apidesign.html.boot.impl.FindResources;
+import org.apidesign.html.boot.impl.FnUtils;
 import static org.testng.Assert.*;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -52,13 +55,17 @@ public class JsClassLoaderTest {
         final URL my = JsClassLoaderTest.class.getProtectionDomain().getCodeSource().getLocation();
         ClassLoader parent = JsClassLoaderTest.class.getClassLoader().getParent();
         final URLClassLoader ul = new URLClassLoader(new URL[] { my }, parent);
-        loader = new JsClassLoader(parent) {
+        class Fr implements FindResources, Fn.Presenter {
             @Override
-            protected URL findResource(String name) {
-                return ul.getResource(name);
+            public void findResources(String path, Collection<? super URL> results, boolean oneIsEnough) {
+                URL u = ul.getResource(path);
+                if (u != null) {
+                    results.add(u);
+                }
             }
+
             @Override
-            protected Fn defineFn(String code, String... names) {
+            public Fn defineFn(String code, String... names) {
                 StringBuilder sb = new StringBuilder();
                 sb.append("(function() {");
                 sb.append("return function(");
@@ -91,11 +98,12 @@ public class JsClassLoaderTest {
             }
 
             @Override
-            protected Enumeration<URL> findResources(String name) {
+            public void displayPage(URL page, Runnable onPageLoad) {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
             }
-        };
+        }
         
+        loader = FnUtils.newLoader(new Fr(), new Fr(), parent);
         methodClass = loader.loadClass(JsMethods.class.getName());
     }
     

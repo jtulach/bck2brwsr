@@ -17,17 +17,21 @@
  */
 package org.apidesign.bck2brwsr.launcher.fximpl;
 
+import org.apidesign.html.boot.spi.Fn;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.TooManyListenersException;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.web.WebEngine;
-import javax.script.Invocable;
+import net.java.html.boot.BrowserBuilder;
 import netscape.javascript.JSObject;
+import org.apidesign.html.boot.impl.FindResources;
+import org.apidesign.html.boot.impl.FnUtils;
 
 /**
  *
@@ -35,14 +39,16 @@ import netscape.javascript.JSObject;
  */
 public final class JVMBridge {
     private final WebEngine engine;
-    private final WebClassLoader cl;
+    private final ClassLoader cl;
     
     private static ClassLoader[] ldrs;
     private static ChangeListener<Void> onBck2BrwsrLoad;
     
     JVMBridge(WebEngine eng) {
         this.engine = eng;
-        this.cl = new WebClassLoader(JVMBridge.class.getClassLoader().getParent());
+        final ClassLoader p = JVMBridge.class.getClassLoader().getParent();
+        WebClassLoader wcl = new WebClassLoader(p);
+        this.cl = FnUtils.newLoader(wcl, wcl, p);
     }
         
     public static void registerClassLoaders(ClassLoader[] loaders) {
@@ -67,38 +73,25 @@ public final class JVMBridge {
         return Class.forName(name, true, cl);
     }
     
-    private final class WebClassLoader extends JsClassLoader {
+    private final class WebClassLoader implements FindResources, Fn.Presenter {
+        private final ClassLoader cl;
+        
         public WebClassLoader(ClassLoader parent) {
-            super(parent);
+            this.cl = parent;
         }
 
         @Override
-        protected URL findResource(String name) {
+        public void findResources(String name, Collection<? super URL> results, boolean oneIsEnough) {
             if (ldrs != null) for (ClassLoader l : ldrs) {
                 URL u = l.getResource(name);
                 if (u != null) {
-                    return u;
+                    results.add(u);
                 }
             }
-            return null;
-        }
-        
-        @Override
-        protected Enumeration<URL> findResources(String name) {
-            List<URL> arr = new ArrayList<URL>();
-            if (ldrs != null) {
-                for (ClassLoader l : ldrs) {
-                    URL u = l.getResource(name);
-                    if (u != null) {
-                        arr.add(u);
-                    }
-                }
-            }
-            return Collections.enumeration(arr);
         }
 
         @Override
-        protected Fn defineFn(String code, String... names) {
+        public Fn defineFn(String code, String... names) {
             StringBuilder sb = new StringBuilder();
             sb.append("(function() {");
             sb.append("  return function(");
@@ -114,6 +107,11 @@ public final class JVMBridge {
             
             JSObject x = (JSObject) engine.executeScript(sb.toString());
             return new JSFn(x);
+        }
+
+        @Override
+        public void displayPage(URL page, Runnable onPageLoad) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
     }
     

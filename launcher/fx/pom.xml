@@ -75,5 +75,10 @@
       <artifactId>asm</artifactId>
       <version>4.1</version>
     </dependency>
+    <dependency>
+      <groupId>org.apidesign.html</groupId>
+      <artifactId>net.java.html.boot</artifactId>
+      <version>0.4-SNAPSHOT</version>
+    </dependency>
   </dependencies>
 </project>
