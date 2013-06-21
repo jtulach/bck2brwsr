@@ -17,6 +17,7 @@
  */
 package org.apidesign.bck2brwsr.vmtest.impl;
 
+import java.lang.annotation.Annotation;
 import org.apidesign.bck2brwsr.vmtest.*;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -53,7 +54,7 @@ public final class CompareCase implements ITest {
      * @param clazz the class to inspect
      * @return the set of created tests
      */
-    public static Object[] create(String[] brwsr, Class[] classes) {
+    public static Object[] create(String[] brwsr, Class[] classes, Class<? extends Annotation> brwsrTest) {
         List<Object> ret = new ArrayList<>();
         
         final LaunchSetup l = LaunchSetup.INSTANCE;
@@ -70,7 +71,7 @@ public final class CompareCase implements ITest {
             Method[] arr = clazz.getMethods();
             for (Method m : arr) {
                 registerCompareCases(m, l, ret, brwsr);
-                registerBrwsrCases(m, l, ret, brwsr);
+                registerBrwsrCases(brwsrTest, m, l, ret, brwsr);
             }
         }
         return ret.toArray();
@@ -149,8 +150,8 @@ public final class CompareCase implements ITest {
             ret.add(new CompareCase(m, real, cse));
         }
     }
-    private static void registerBrwsrCases(Method m, final LaunchSetup l, List<Object> ret, String[] brwsr) {
-        BrwsrTest c = m.getAnnotation(BrwsrTest.class);
+    private static void registerBrwsrCases(Class<? extends Annotation> brwsrTest, Method m, final LaunchSetup l, List<Object> ret, String[] brwsr) {
+        Object c = m.getAnnotation(brwsrTest);
         if (c == null) {
             return;
         }

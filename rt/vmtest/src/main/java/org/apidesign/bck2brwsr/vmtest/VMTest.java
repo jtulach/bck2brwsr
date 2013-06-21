@@ -17,6 +17,7 @@
  */
 package org.apidesign.bck2brwsr.vmtest;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -39,6 +40,7 @@ import org.testng.annotations.Factory;
 public final class VMTest {
     private final List<Class> classes = new ArrayList<>();
     private final List<String> launcher = new ArrayList<>();
+    private Class<? extends Annotation> annotation = BrwsrTest.class;
     
     private VMTest() {
     }
@@ -104,6 +106,24 @@ public final class VMTest {
         this.launcher.addAll(Arrays.asList(launcher));
         return this;
     }
+
+    /** Specifies which annotation annotates the test methods
+     * to be executed. By 
+     * default it is the {@link BrwsrTest} annotation. Methods in
+     * {@link #withClasses(java.lang.Class[]) test classes} annotated by
+     * this annotation will be executed.
+     * 
+     * @param aClass an annotation class 
+     * @return this
+     * @since 0.8
+     */
+    public final VMTest withTestAnnotation(Class<? extends Annotation> aClass) {
+        if (!aClass.isAnnotation()) {
+            throw new IllegalStateException();
+        }
+        this.annotation = aClass;
+        return this;
+    }
     
     /** Assembles the provided information into the final array of tests.
      * @return array of TestNG tests
@@ -112,7 +132,8 @@ public final class VMTest {
     public final Object[] build() {
         return CompareCase.create(
             launcher.toArray(new String[0]), 
-            classes.toArray(new Class[0])
+            classes.toArray(new Class[0]),
+            annotation
         );
     }
 }
