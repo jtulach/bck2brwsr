@@ -177,20 +177,19 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         server = initServer(".", true);
         final ServerConfiguration conf = server.getServerConfiguration();
         
-        class DynamicResourceHandler extends HttpHandler {
+        class DynamicResourceHandler extends HttpHandler implements InvocationContext.RegisterResource {
             private final InvocationContext ic;
             public DynamicResourceHandler(InvocationContext ic) {
-                if (ic == null || ic.resources.isEmpty()) {
-                    throw new NullPointerException();
-                }
                 this.ic = ic;
                 for (Resource r : ic.resources) {
                     conf.addHttpHandler(this, r.httpPath);
                 }
+                InvocationContext.register(this);
             }
 
             public void close() {
                 conf.removeHttpHandler(this);
+                InvocationContext.register(null);
             }
             
             @Override
@@ -230,6 +229,15 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                         copyStream(r.httpContent, response.getOutputStream(), null, params);
                     }
                 }
+            }
+
+            @Override
+            public URI registerResource(Resource r) {
+                if (!ic.resources.contains(r)) {
+                    ic.resources.add(r);
+                    conf.addHttpHandler(this, r.httpPath);
+                }
+                return pageURL(server, r.httpPath);
             }
         }
         
@@ -286,9 +294,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                     return;
                 }
                 
-                if (!mi.resources.isEmpty()) {
-                    prev = new DynamicResourceHandler(mi);
-                }
+                prev = new DynamicResourceHandler(mi);
                 
                 cases.add(mi);
                 final String cn = mi.clazz.getName();
@@ -381,10 +387,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
 
     private Object[] launchServerAndBrwsr(HttpServer server, final String page) throws IOException, URISyntaxException, InterruptedException {
         server.start();
-        NetworkListener listener = server.getListeners().iterator().next();
-        int port = listener.getPort();
-        
-        URI uri = new URI("http://localhost:" + port + page);
+        URI uri = pageURL(server, page);
         return showBrwsr(uri);
     }
     private static String toUTF8(String value) throws UnsupportedEncodingException {
@@ -495,6 +498,16 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
 
     abstract void generateBck2BrwsrJS(StringBuilder sb, Res loader) throws IOException;
     abstract String harnessResource();
+
+    private static URI pageURL(HttpServer server, final String page) {
+        NetworkListener listener = server.getListeners().iterator().next();
+        int port = listener.getPort();
+        try {
+            return new URI("http://localhost:" + port + page);
+        } catch (URISyntaxException ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
 
     class Res {
         public InputStream get(String resource) throws IOException {

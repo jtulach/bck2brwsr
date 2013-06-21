@@ -19,6 +19,7 @@ package org.apidesign.bck2brwsr.launcher;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -95,6 +96,31 @@ public final class InvocationContext {
         wait.countDown();
     }
 
+    private static RegisterResource RR;
+    static void register(RegisterResource rr) {
+        RR = rr;
+    }
+    /** A running {@link InvocationContext test} can register additional 
+     * resources to the associated browser (if any). 
+     * 
+     * @param content the stream to deliver content from
+     * @param mimeType mime type for the HTTP reply
+     * @param path suggested path in the server to use
+     * @param parameters additional parameters
+     * @return the URI the resource is made available at
+     * @throws NullPointerException if there is no {@link InvocationContext test} 
+     *    currently running
+     * @since 0.8
+     */
+    public static URI register(
+        InputStream content, String mimeType, String path, String[] parameters
+    ) {
+        final Resource r = new Resource(content, mimeType, path, parameters);
+        return RR.registerResource(r);
+    }
+    static interface RegisterResource {
+        public URI registerResource(Resource r);
+    }
 
     static final class Resource {
         final InputStream httpContent;
