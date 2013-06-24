@@ -20,6 +20,13 @@
  */
 package org.apidesign.html.ko2brwsr;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Map;
 import net.java.html.BrwsrCtx;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
@@ -27,6 +34,7 @@ import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.apidesign.html.context.spi.Contexts;
 import org.apidesign.html.json.spi.Technology;
 import org.apidesign.html.json.spi.Transfer;
+import org.apidesign.html.json.tck.KOTest;
 import org.apidesign.html.json.tck.KnockoutTCK;
 import org.openide.util.lookup.ServiceProvider;
 import org.testng.annotations.Factory;
@@ -41,6 +49,7 @@ public final class Bck2BrwsrKnockoutTest extends KnockoutTCK {
         return VMTest.newTests().
             withClasses(testClasses()).
             withLaunchers("bck2brwsr").
+            withTestAnnotation(KOTest.class).
             build();
     }
     
@@ -78,4 +87,38 @@ public final class Bck2BrwsrKnockoutTest extends KnockoutTCK {
         "var f = new Function(s); return f.apply(null, args);"
     )
     private static native Object execScript(String s, Object[] arguments);
+    
+    @JavaScriptBody(args = {  }, body = 
+          "var h;"
+        + "if (!!window && !!window.location && !!window.location.href)\n"
+        + "  h = window.location.href;\n"
+        + "else "
+        + "  h = null;"
+        + "return h;\n"
+    )
+    private static native String findBaseURL();
+    
+    @Override
+    public URI prepareURL(String content, String mimeType, String[] parameters) {
+        try {
+            final URL baseURL = new URL(findBaseURL());
+            StringBuilder sb = new StringBuilder();
+            sb.append("/dynamic?mimeType=").append(mimeType);
+            for (int i = 0; i < parameters.length; i++) {
+                sb.append("&param" + i).append("=").append(parameters[i]);
+            }
+            String mangle = content.replace("\n", "%0a")
+                .replace("\"", "\\\"").replace(" ", "%20");
+            sb.append("&content=").append(mangle);
+
+            URL query = new URL(baseURL, sb.toString());
+            String uri = (String) query.getContent(new Class[] { String.class });
+            URI connectTo = new URI(uri.trim());
+            return connectTo;
+        } catch (IOException ex) {
+            throw new IllegalStateException(ex);
+        } catch (URISyntaxException ex) {
+            throw new IllegalStateException(ex);
+        }
+    }    
 }
