@@ -17,6 +17,8 @@
  */
 package org.apidesign.bck2brwsr.launcher;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -44,6 +46,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apidesign.bck2brwsr.launcher.InvocationContext.Resource;
 import org.glassfish.grizzly.PortRange;
+import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.NetworkListener;
@@ -177,23 +180,41 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         server = initServer(".", true);
         final ServerConfiguration conf = server.getServerConfiguration();
         
-        class DynamicResourceHandler extends HttpHandler implements InvocationContext.RegisterResource {
+        class DynamicResourceHandler extends HttpHandler {
             private final InvocationContext ic;
+            private int resourcesCount;
             public DynamicResourceHandler(InvocationContext ic) {
                 this.ic = ic;
                 for (Resource r : ic.resources) {
                     conf.addHttpHandler(this, r.httpPath);
                 }
-                InvocationContext.register(this);
             }
 
             public void close() {
                 conf.removeHttpHandler(this);
-                InvocationContext.register(null);
             }
             
             @Override
             public void service(Request request, Response response) throws Exception {
+                if ("/dynamic".equals(request.getRequestURI())) {
+                    String mimeType = request.getParameter("mimeType");
+                    List<String> params = new ArrayList<String>();
+                    for (int i = 0; ; i++) {
+                        String p = request.getParameter("param" + i);
+                        if (p == null) {
+                            break;
+                        }
+                        params.add(p);
+                    }
+                    final String cnt = request.getParameter("content");
+                    String mangle = cnt.replace("%20", " ").replace("%0A", "\n");
+                    ByteArrayInputStream is = new ByteArrayInputStream(mangle.getBytes("UTF-8"));
+                    URI url = registerResource(new Resource(is, mimeType, "/dynamic/res" + ++resourcesCount, params.toArray(new String[params.size()])));
+                    response.getWriter().write(url.toString());
+                    response.getWriter().write("\n");
+                    return;
+                }
+                
                 for (Resource r : ic.resources) {
                     if (r.httpPath.equals(request.getRequestURI())) {
                         LOG.log(Level.INFO, "Serving HttpResource for {0}", request.getRequestURI());
@@ -231,8 +252,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                 }
             }
 
-            @Override
-            public URI registerResource(Resource r) {
+            private URI registerResource(Resource r) {
                 if (!ic.resources.contains(r)) {
                     ic.resources.add(r);
                     conf.addHttpHandler(this, r.httpPath);
@@ -295,6 +315,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                 }
                 
                 prev = new DynamicResourceHandler(mi);
+                conf.addHttpHandler(prev, "/dynamic");
                 
                 cases.add(mi);
                 final String cn = mi.clazz.getName();
