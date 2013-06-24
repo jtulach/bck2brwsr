@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+    <action>
+        <actionName>run</actionName>
+        <goals>
+            <goal>package</goal>
+            <goal>bck2brwsr:brwsr</goal>
+        </goals>
+        <properties>
+            <skipTests>true</skipTests>
+            <bck2brwsr.obfuscationlevel>NONE</bck2brwsr.obfuscationlevel>
+        </properties>
+    </action>
+</actions>
