@@ -22,13 +22,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.TooManyListenersException;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.web.WebEngine;
-import net.java.html.boot.BrowserBuilder;
 import netscape.javascript.JSObject;
 import org.apidesign.html.boot.impl.FindResources;
 import org.apidesign.html.boot.impl.FnUtils;
@@ -47,7 +44,7 @@ public final class JVMBridge {
     JVMBridge(WebEngine eng) {
         this.engine = eng;
         final ClassLoader p = JVMBridge.class.getClassLoader().getParent();
-        WebClassLoader wcl = new WebClassLoader(p);
+        WebClassLoader wcl = new WebClassLoader();
         this.cl = FnUtils.newLoader(wcl, wcl, p);
     }
         
@@ -74,12 +71,6 @@ public final class JVMBridge {
     }
     
     private final class WebClassLoader implements FindResources, Fn.Presenter {
-        private final ClassLoader cl;
-        
-        public WebClassLoader(ClassLoader parent) {
-            this.cl = parent;
-        }
-
         @Override
         public void findResources(String name, Collection<? super URL> results, boolean oneIsEnough) {
             if (ldrs != null) for (ClassLoader l : ldrs) {
