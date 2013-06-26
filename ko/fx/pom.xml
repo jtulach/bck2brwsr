@@ -74,6 +74,12 @@
       <type>jar</type>
     </dependency>
     <dependency>
+      <groupId>org.apidesign.html</groupId>
+      <artifactId>ko-fx</artifactId>
+      <version>${net.java.html.version}</version>
+      <type>jar</type>
+    </dependency>
+    <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>vmtest</artifactId>
       <version>${project.version}</version>

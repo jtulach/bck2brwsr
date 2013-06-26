@@ -17,6 +17,7 @@
  */
 package org.apidesign.bck2brwsr.launcher.fximpl;
 
+import java.io.BufferedReader;
 import java.io.Reader;
 import org.apidesign.html.boot.spi.Fn;
 import java.net.URL;
@@ -103,12 +104,21 @@ public final class JVMBridge {
 
         @Override
         public void displayPage(URL page, Runnable onPageLoad) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
         public void loadScript(Reader code) throws Exception {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            BufferedReader r = new BufferedReader(code);
+            StringBuilder sb = new StringBuilder();
+            for (;;) {
+                String l = r.readLine();
+                if (l == null) {
+                    break;
+                }
+                sb.append(l).append('\n');
+            }
+            engine.executeScript(sb.toString());
         }
     }
     
