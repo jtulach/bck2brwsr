@@ -90,6 +90,8 @@
                        <exclude>rt/emul/compact/src/test/resources/**</exclude>
                        <exclude>dew/src/main/resources/org/apidesign/bck2brwsr/dew/**</exclude>
                        <exclude>javaquery/api/src/main/resources/org/apidesign/bck2brwsr/htmlpage/knockout*.js</exclude>
+                       <exclude>ko/archetype/src/main/resources/archetype-resources/**</exclude>
+                       <exclude>ko/bck2brwsr/src/main/resources/org/apidesign/bck2brwsr/htmlpage/knockout-2.2.1.js</exclude>
                   </excludes>
               </configuration>
           </plugin>

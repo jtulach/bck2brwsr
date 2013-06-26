@@ -17,6 +17,7 @@
  */
 package org.apidesign.bck2brwsr.launcher.fximpl;
 
+import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -99,6 +100,11 @@ public class JsClassLoaderTest {
 
             @Override
             public void displayPage(URL page, Runnable onPageLoad) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+
+            @Override
+            public void loadScript(Reader code) throws Exception {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
             }
         }
