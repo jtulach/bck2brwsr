@@ -6,7 +6,7 @@
     <artifactId>ko</artifactId>
     <version>0.8-SNAPSHOT</version>
   </parent>
-  <groupId>org.apidesign.html</groupId>
+  <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>ko-fx</artifactId>
   <version>0.8-SNAPSHOT</version>
   <name>Knockout.fx in Brwsr</name>
@@ -51,7 +51,7 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>org.apidesign.html</groupId>
       <artifactId>net.java.html.json.tck</artifactId>
       <version>${net.java.html.version}</version>
       <scope>test</scope>
@@ -70,7 +70,7 @@
     <dependency>
       <groupId>org.apidesign.html</groupId>
       <artifactId>net.java.html.boot</artifactId>
-      <version>${project.version}</version>
+      <version>${net.java.html.version}</version>
       <type>jar</type>
     </dependency>
     <dependency>
