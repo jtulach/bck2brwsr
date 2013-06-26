@@ -66,11 +66,13 @@ implements Callback<String, Void>, Runnable {
     @Override
     public void run() {
         try {
-            String p = "/home/jarda/src/bck2brwsr/html~demo/twitter/src/main/resources/org/apidesign/html/demo/twitter/index.html";
-            File f = new File(p);
-            String[] args = {"--livehtml", f.getAbsolutePath()};
-            File dir = f.getParentFile();
-            cliHandler(args, toDbg, this, System.err, dir);
+            String p = System.getProperty("startpage.file");
+            File f;
+            if (p != null && (f = new File(p)).exists()) {
+                String[] args = {"--livehtml", f.getAbsolutePath()};
+                File dir = f.getParentFile();
+                cliHandler(args, toDbg, this, System.err, dir);
+            }
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
@@ -152,7 +154,7 @@ implements Callback<String, Void>, Runnable {
                 for (;;) {
                     WebDebug.this.flush();
                     try {
-                        current = pending.poll(100, TimeUnit.MILLISECONDS);
+                        current = pending.poll(5, TimeUnit.MILLISECONDS);
                         if (current == null) {
                             return 0;
                         }

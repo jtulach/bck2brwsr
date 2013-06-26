@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -75,7 +76,6 @@ public class BrwsrMojo extends AbstractMojo {
         if (startpage == null) {
             throw new MojoExecutionException("You have to provide a start page");
         }
-        
         try {
             Closeable httpServer;
             if (directory != null) {
@@ -83,6 +83,13 @@ public class BrwsrMojo extends AbstractMojo {
             } else {
                 URLClassLoader url = buildClassLoader(classes, prj.getArtifacts());
                 try {
+                    for (Resource r : prj.getResources()) {
+                        File f = new File(r.getDirectory(), startpage().replace('/', File.separatorChar));
+                        if (f.exists()) {
+                            System.setProperty("startpage.file", f.getPath());
+                        }
+                    }
+                    
                     httpServer = Launcher.showURL(launcher, url, startpage());
                 } catch (Exception ex) {
                     throw new MojoExecutionException("Can't open " + startpage(), ex);
