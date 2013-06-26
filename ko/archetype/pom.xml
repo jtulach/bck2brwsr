@@ -2,15 +2,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <artifactId>html</artifactId>
-    <groupId>org.apidesign</groupId>
-    <version>0.4-SNAPSHOT</version>
+    <artifactId>ko</artifactId>
+    <groupId>org.apidesign.bck2brwsr</groupId>
+    <version>0.8-SNAPSHOT</version>
   </parent>
-  <groupId>org.apidesign.html</groupId>
+  <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>knockout4j-archetype</artifactId>
-  <version>0.4-SNAPSHOT</version>
+  <version>0.8-SNAPSHOT</version>
   <packaging>jar</packaging>
-  <name>Knockout 4 Java Maven Archetype</name>
+  <name>Knockout Bck2Brwsr Maven Archetype</name>
   <description>
       HTML page with Knockout.js bindings driven by application model
       written in Java. Use your favorite language to code. Use

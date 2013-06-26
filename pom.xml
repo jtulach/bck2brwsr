@@ -21,6 +21,7 @@
     <module>javaquery</module>
     <module>benchmarks</module>
     <module>ide</module>
+    <module>ko</module>
     <module>launcher</module>
     <module>rt</module>
   </modules>

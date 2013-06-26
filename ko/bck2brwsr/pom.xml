@@ -2,13 +2,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.apidesign</groupId>
-    <artifactId>html</artifactId>
-    <version>0.4-SNAPSHOT</version>
+    <groupId>org.apidesign.bck2brwsr</groupId>
+    <artifactId>ko</artifactId>
+    <version>0.8-SNAPSHOT</version>
   </parent>
-  <groupId>org.apidesign.html</groupId>
+  <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>ko-bck2brwsr</artifactId>
-  <version>0.4-SNAPSHOT</version>
+  <version>0.8-SNAPSHOT</version>
   <name>Knockout.b2b</name>
   <url>http://maven.apache.org</url>
   <build>
@@ -51,7 +51,7 @@
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>emul</artifactId>
-      <version>${bck2brwsr.version}</version>
+      <version>${project.version}</version>
       <classifier>rt</classifier>
       <type>jar</type>
       <scope>compile</scope>
@@ -59,20 +59,20 @@
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>vm4brwsr</artifactId>
-      <version>${bck2brwsr.version}</version>
+      <version>${project.version}</version>
       <type>jar</type>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>vmtest</artifactId>
-      <version>${bck2brwsr.version}</version>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>launcher.http</artifactId>
-      <version>${bck2brwsr.launcher.version}</version>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -89,7 +89,7 @@
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>core</artifactId>
-      <version>${bck2brwsr.version}</version>
+      <version>${project.version}</version>
       <type>jar</type>
     </dependency>
   </dependencies>

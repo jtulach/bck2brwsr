@@ -15,7 +15,7 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.html.ko2brwsr;
+package org.apidesign.bck2brwsr.ko2brwsr;
 
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
