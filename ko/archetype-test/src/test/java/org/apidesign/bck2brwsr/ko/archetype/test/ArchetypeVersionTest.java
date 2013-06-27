@@ -62,8 +62,13 @@ public class ArchetypeVersionTest {
         
         Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(r.openStream());
         String arch = (String) xp2.evaluate(dom, XPathConstants.STRING);
+        
+        // temporary
+        int snapshot = arch.indexOf("-SNAPSHOT");
+        assertTrue(snapshot > 0, "Now depends on snapshot: " + arch);
+        arch = arch.substring(0, snapshot);
 
-        assertEquals(arch, version, "net.java.html.json dependency needs to be on latest version");
+        assertTrue(arch.matches("[0-9\\.]+"), "net.java.html.json version seems valid: " + arch);
     }
     
     @Test public void testCheckLauncher() throws Exception {
@@ -79,8 +84,7 @@ public class ArchetypeVersionTest {
         Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(r.openStream());
         String arch = (String) xp2.evaluate(dom, XPathConstants.STRING);
 
-        
-        assertTrue(arch.matches("[0-9\\.]+"), "launcher version seems valid: " + arch);
+        assertEquals(arch, version, "launcher dependency is on more recent version");
     }
     
     @Test public void testCheckBck2Brwsr() throws Exception {
@@ -96,7 +100,7 @@ public class ArchetypeVersionTest {
         Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(r.openStream());
         String arch = (String) xp2.evaluate(dom, XPathConstants.STRING);
         
-        assertTrue(arch.matches("[0-9\\.]+"), "bck2brwsr version seems valid: " + arch);
+        assertEquals(arch, version, "bck2brwsr dependency is on more recent version");
     }
     
     @Test public void testNbActions() throws Exception {
@@ -122,7 +126,7 @@ public class ArchetypeVersionTest {
 
     static String findCurrentVersion() throws XPathExpressionException, IOException, ParserConfigurationException, SAXException, XPathFactoryConfigurationException {
         final ClassLoader l = ArchetypeVersionTest.class.getClassLoader();
-        URL u = l.getResource("META-INF/maven/org.apidesign.html/knockout4j-archetype/pom.xml");
+        URL u = l.getResource("META-INF/maven/org.apidesign.bck2brwsr/knockout4j-archetype/pom.xml");
         assertNotNull(u, "Own pom found: " + System.getProperty("java.class.path"));
 
         final XPathFactory fact = XPathFactory.newInstance();
