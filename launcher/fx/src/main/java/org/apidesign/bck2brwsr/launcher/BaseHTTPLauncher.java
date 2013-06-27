@@ -17,7 +17,6 @@
  */
 package org.apidesign.bck2brwsr.launcher;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.File;
@@ -46,7 +45,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apidesign.bck2brwsr.launcher.InvocationContext.Resource;
 import org.glassfish.grizzly.PortRange;
-import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.NetworkListener;
@@ -183,6 +181,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         class DynamicResourceHandler extends HttpHandler {
             private final InvocationContext ic;
             private int resourcesCount;
+            DynamicResourceHandler delegate;
             public DynamicResourceHandler(InvocationContext ic) {
                 this.ic = ic;
                 for (Resource r : ic.resources) {
@@ -190,12 +189,18 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                 }
             }
 
-            public void close() {
+            public void close(DynamicResourceHandler del) {
                 conf.removeHttpHandler(this);
+                delegate = del;
             }
             
             @Override
             public void service(Request request, Response response) throws Exception {
+                if (delegate != null) {
+                    delegate.service(request, response);
+                    return;
+                }
+                
                 if ("/dynamic".equals(request.getRequestURI())) {
                     String mimeType = request.getParameter("mimeType");
                     List<String> params = new ArrayList<String>();
@@ -297,11 +302,6 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                     }
                 }
                 
-                if (prev != null) {
-                    prev.close();
-                    prev = null;
-                }
-                
                 if (mi == null) {
                     mi = methods.take();
                     caseNmbr = cnt++;
@@ -313,8 +313,11 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                     LOG.log(Level.INFO, "End of data reached. Exiting.");
                     return;
                 }
-                
-                prev = new DynamicResourceHandler(mi);
+                final DynamicResourceHandler newRH = new DynamicResourceHandler(mi);
+                if (prev != null) {
+                    prev.close(newRH);
+                }
+                prev = newRH;
                 conf.addHttpHandler(prev, "/dynamic");
                 
                 cases.add(mi);
