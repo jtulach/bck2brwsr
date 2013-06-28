@@ -249,9 +249,9 @@
                   <classifier>rt</classifier>
               </dependency>
               <dependency>
-                  <groupId>org.apidesign.html</groupId>
+                  <groupId>org.apidesign.bck2brwsr</groupId>
                   <artifactId>ko-bck2brwsr</artifactId>
-                  <version>\${net.java.html.version}</version>
+                  <version>\${bck2brwsr.version}</version>
                   <scope>runtime</scope>
               </dependency>
               <dependency>

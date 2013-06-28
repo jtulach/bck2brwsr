@@ -73,7 +73,7 @@ public class VerifyArchetypeTest {
         // does pre-compilation to JavaScript
         v.verifyTextInLog("j2js");
         // uses Bck2BrwsrLauncher
-        v.verifyTextInLog("BaseHTTPLauncher stopServerAndBrwsr");
+        v.verifyTextInLog("BaseHTTPLauncher showBrwsr");
         // building zip:
         v.verifyTextInLog("b2bcompile/o-a-test/target/o-a-test-1.0-SNAPSHOT-bck2brwsr.zip");
         
@@ -102,7 +102,7 @@ public class VerifyArchetypeTest {
         sysProp.put("groupId", "org.apidesign.test");
         sysProp.put("artifactId", "o-a-test");
         sysProp.put("package", "org.apidesign.test.oat");
-        sysProp.put("archetypeGroupId", "org.apidesign.html");
+        sysProp.put("archetypeGroupId", "org.apidesign.bck2brwsr");
         sysProp.put("archetypeArtifactId", "knockout4j-archetype");
         sysProp.put("archetypeVersion", ArchetypeVersionTest.findCurrentVersion());
         
