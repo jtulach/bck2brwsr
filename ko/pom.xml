@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.apidesign.bck2brwsr</groupId>
+  <artifactId>ko</artifactId>
+  <version>0.8-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>Bck2Brwsr Knockout Support</name>
+  <parent>
+    <groupId>org.apidesign</groupId>
+    <artifactId>bck2brwsr</artifactId>
+    <version>0.8-SNAPSHOT</version>
+  </parent>  
+  <properties>
+      <net.java.html.version>0.4-SNAPSHOT</net.java.html.version>
+  </properties>
+  <modules>
+    <module>archetype</module>
+    <module>archetype-test</module>
+    <module>bck2brwsr</module>
+    <module>fx</module>
+  </modules>
+</project>

@@ -1,0 +1,98 @@
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html lang="en" ng-app="bck2brwsr" ng-controller="DevCtrl">
+    <head>
+        <title>Back2Browser - DEW</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="css/bootstrap-combined.min.css"/>  
+        <link rel="stylesheet" href="js/codemirror/codemirror.css">
+        <link rel="stylesheet" href="js/codemirror/theme/elegant.css"/>
+        <link rel="stylesheet" href="css/app.css"/>
+    </head>
+    <body>
+                
+        <div class="navbar navbar-fixed-top" style="width: 100%"> 
+        <div class="navbar-inner" style="padding-left: 12px; padding-right: 12px;">
+            <!-- a class="brand" style="font-size: 100%"><span class="text-info"><b>Java and HTML5</b></span><small>- Together at Last!</small></a-->
+            <form class="navbar-form pull-right">
+                <!-- select class="span2"></select -->
+                <button ng-click="post()" class="btn btn-warning">Rebuild</button>
+              </form>
+            <!-- ul class="nav">                          
+                <li><select class="btn-small" type="text"></select></li>
+            </ul -->
+            <!-- form class="form form-horizontal pull-right">
+                <button class="btn btn-warning btn-small pull-right top" ng-click="post()">Rebuild</button>
+            </form -->
+            <!-- ul class="nav pull-right">
+                
+            </ul-->     
+        </div>  
+        </div>
+
+        <div class="container-fluid">        
+        
+        <div style="height: 4em;">&nbsp;</div>    
+            
+        <div class="row-fluid">
+            <div class="span6" style="margin-bottom: 10px;"> 
+                <table class="table table-condensed" style="margin-bottom: 2px">
+                <tr><td><i class="ic-html5"></i> HTML5</td></tr>               
+                </table>
+                <div>
+                    <textarea ui-codemirror='{ lineNumbers : true, mode : "xml", theme : "elegant", matchBrackets : true, lineWrapping : true }' ng-model="html"></textarea>
+                    <div class="alert alert-error" ng-show="doc.modelError">
+                        <small>{{doc.modelError.toString()}}</small>
+                    </div>
+                </div>    
+            </div>
+            
+            <div class="span6">  
+                <table class="table table-condensed" style="margin-bottom: 2px">
+                <tr><td><i class="ic-java"></i> Java</td></tr>               
+                </table>                
+                <div>
+                    <textarea id="editorJava" ui-codemirror='{ lineNumbers : true, mode : "text/x-java", theme : "elegant", matchBrackets : true, lineWrapping : true, gutters: ["CodeMirror-linenumbers", "issues"] }' ng-model="java"></textarea>
+                    <div class="alert alert-error" ng-show="doc.modelError">
+                        <small>{{doc.modelError.toString()}}</small>
+                    </div>
+                </div>
+            </div>
+        
+        </div>    
+            
+        <table class="table table-condensed">
+            <tr ng-click="gotoError(e.line, e.col)" ng-repeat="e in errors" ng-class="errorClass(e.kind)">
+                <td style="text-align: right">{{e.line}}</td> 
+                <td>:</td> 
+                <td style="text-align: left">{{e.col}}</td> 
+                <td width="100%" class="text-error error-hover">{{e.msg}} <i class="icon-play"/></td>
+            </tr>            
+        </table>    
+            
+        
+        <div>&nbsp;</div>    
+            
+        <ul class="nav nav-tabs">
+            <li ng-class="'active'"><a href="#">Result</a></li>
+        </ul>    
+        
+        
+        <!-- button class="btn" ng-click="reload()">Reload</button -->
+        <iframe id="result" frameborder="0" scrolling="yes" width="100%" style="height: 1000px; overflow: auto; border: 1px solid #DFDFDF;" src="result.html">
+            <p>Your browser does not support iframes.</p>
+        </iframe>
+            
+        </div>
+        
+        <script src="js/angular/angular.min.js"></script>
+        <script src="js/codemirror/codemirror.js"></script>
+        <script src="js/codemirror/mode/xml.js"></script>
+        <script src="js/codemirror/mode/clike.js"></script>
+        <script src="js/app.js"></script>
+    </body>
+</html>

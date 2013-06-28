@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>Bck2Brwsr's Hello World</title>
+    </head>
+    <body>
+        <h1 data-bind="text: helloMessage">Loading Bck2Brwsr's Hello World...</h1>
+        Your name: <input id='input' data-bind="value: name, valueUpdate: 'afterkeydown'"></input>
+        <button id="hello">Say Hello!</button>
+        <p>
+            <canvas id="canvas" width="300" height="50">
+            </canvas>
+        </p>
+        
+        
+        <div data-bind="if: noMessages">No message displayed yet.</div>
+        <ul data-bind="foreach: messages">
+            <li>
+                <a href="#" data-bind="text: $data, click: $root.display"></a>
+                (<a href="#" data-bind="click: $root.remove">delete</a>)
+            </li>
+        </ul>
+      
+        <script src="bck2brwsr.js"></script>
+        <script type="text/javascript">
+            var vm = bck2brwsr('${artifactId}-${version}.jar');
+            vm.loadClass('${package}.App');
+        </script>
+    </body>
+</html>
