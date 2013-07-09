@@ -15,6 +15,7 @@
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <netbeans.version>RELEASE73</netbeans.version>
       <license>COPYING</license>
+      <net.java.html.version>0.4-SNAPSHOT</net.java.html.version>
   </properties>
   <modules>
     <module>dew</module>

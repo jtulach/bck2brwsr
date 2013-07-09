@@ -151,6 +151,12 @@
       <artifactId>closure-compiler</artifactId>
       <version>r2388</version>
       <scope>compile</scope>
-    </dependency>  
+    </dependency>
+    <dependency>
+      <groupId>org.apidesign.html</groupId>
+      <artifactId>net.java.html.boot</artifactId>
+      <scope>test</scope>
+      <version>${net.java.html.version}</version>
+    </dependency>
   </dependencies>
 </project>

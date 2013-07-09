@@ -96,16 +96,34 @@ abstract class ByteCodeToJavaScript {
             );
         }
         byte[] arrData = jc.findAnnotationData(true);
-        String[] arr = findAnnotation(arrData, jc, 
-            "org.apidesign.bck2brwsr.core.ExtraJavaScript", 
-            "resource", "processByteCode"
-        );
-        if (arr != null) {
-            if (!arr[0].isEmpty()) {
-                requireScript(arr[0]);
+        {
+            String[] arr = findAnnotation(arrData, jc, 
+                "org.apidesign.bck2brwsr.core.ExtraJavaScript", 
+                "resource", "processByteCode"
+            );
+            if (arr != null) {
+                if (!arr[0].isEmpty()) {
+                    requireScript(arr[0]);
+                }
+                if ("0".equals(arr[1])) {
+                    return null;
+                }
             }
-            if ("0".equals(arr[1])) {
-                return null;
+        }
+        {
+            String[] arr = findAnnotation(arrData, jc, 
+                "net.java.html.js.JavaScriptResource", 
+                "value"
+            );
+            if (arr != null) {
+                if (arr[0].startsWith("/")) {
+                    requireScript(arr[0]);
+                } else {
+                    int last = jc.getClassName().lastIndexOf('/');
+                    requireScript(
+                        jc.getClassName().substring(0, last + 1).replace('.', '/') + arr[0]
+                    );
+                }
             }
         }
         String[] proto = findAnnotation(arrData, jc, 
@@ -1575,6 +1593,7 @@ abstract class ByteCodeToJavaScript {
             return null;
         }
         final String jvmType = "Lorg/apidesign/bck2brwsr/core/JavaScriptBody;";
+        final String htmlType = "Lnet/java/html/js/JavaScriptBody;";
         class P extends AnnotationParser {
             public P() {
                 super(false, true);
@@ -1587,6 +1606,15 @@ abstract class ByteCodeToJavaScript {
             @Override
             protected void visitAttr(String type, String attr, String at, String value) {
                 if (type.equals(jvmType)) {
+                    if ("body".equals(attr)) {
+                        body = value;
+                    } else if ("args".equals(attr)) {
+                        args[cnt++] = value;
+                    } else {
+                        throw new IllegalArgumentException(attr);
+                    }
+                }
+                if (type.equals(htmlType)) {
                     if ("body".equals(attr)) {
                         body = value;
                     } else if ("args".equals(attr)) {
