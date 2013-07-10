@@ -1602,6 +1602,7 @@ abstract class ByteCodeToJavaScript {
             int cnt;
             String[] args = new String[30];
             String body;
+            boolean javacall;
             
             @Override
             protected void visitAttr(String type, String attr, String at, String value) {
@@ -1619,6 +1620,8 @@ abstract class ByteCodeToJavaScript {
                         body = value;
                     } else if ("args".equals(attr)) {
                         args[cnt++] = value;
+                    } else if ("javacall".equals(attr)) {
+                        javacall = "1".equals(value);
                     } else {
                         throw new IllegalArgumentException(attr);
                     }
