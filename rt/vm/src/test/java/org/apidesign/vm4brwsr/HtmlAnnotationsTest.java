@@ -40,7 +40,14 @@ public class HtmlAnnotationsTest {
             7, 6
         );
     }
-    
+/*
+    @Test public void callRunnableFromJS() throws Exception {
+        assertExec("runnable called", HtmlAnnotations.class, 
+            "callback__I",
+            Double.valueOf(1)
+        );
+    }
+*/    
     
     private static TestVM code;
     

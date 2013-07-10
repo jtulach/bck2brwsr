@@ -34,4 +34,18 @@ public class HtmlAnnotations {
     @JavaScriptBody(args = { "x", "y" }, body = "return mul(x, y);")
     public static native int useExternalMul(int x, int y);
     
+    public static int callback() {
+        final int[] arr = { 0 };
+        callback(new Runnable() {
+            @Override
+            public void run() {
+                arr[0]++;
+            }
+        });
+        return arr[0];
+    }
+    
+    @JavaScriptBody(args = { "r" }, javacall=true, body = "r.@java.lang.Runnable::run()()")
+    private static native void callback(Runnable r);
+    
 }
