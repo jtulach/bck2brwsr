@@ -1645,10 +1645,77 @@ abstract class ByteCodeToJavaScript {
             index++;
         }
         out.append(") {").append("\n");
-        out.append(p.body);
+        if (p.javacall) {
+            int lastSlash = jc.getClassName().lastIndexOf('/');
+            final String pkg = jc.getClassName().substring(0, lastSlash);
+            out.append(mangleCallbacks(pkg, p.body));
+            requireReference(pkg + "/$JsCallbacks$");
+        } else {
+            out.append(p.body);
+        }
         out.append("\n}\n");
         return mn;
     }
+    
+    private static CharSequence mangleCallbacks(String pkgName, String body) {
+        StringBuilder sb = new StringBuilder();
+        int pos = 0;
+        for (;;) {
+            int next = body.indexOf(".@", pos);
+            if (next == -1) {
+                sb.append(body.substring(pos));
+                return sb;
+            }
+            int ident = next;
+            while (ident > 0) {
+                if (!Character.isJavaIdentifierPart(body.charAt(--ident))) {
+                    ident++;
+                    break;
+                }
+            }
+            String refId = body.substring(ident, next);
+
+            sb.append(body.substring(pos, ident));
+
+            int sigBeg = body.indexOf('(', next);
+            int sigEnd = body.indexOf(')', sigBeg);
+            int colon4 = body.indexOf("::", next);
+            if (sigBeg == -1 || sigEnd == -1 || colon4 == -1) {
+                throw new IllegalStateException("Malformed body " + body);
+            }
+            String fqn = body.substring(next + 2, colon4);
+            String method = body.substring(colon4 + 2, sigBeg);
+            String params = body.substring(sigBeg, sigEnd + 1);
+
+            int paramBeg = body.indexOf('(', sigEnd + 1);
+            
+            sb.append("vm.").append(pkgName.replace('/', '_')).append("_$JsCallbacks$(false)._VM().");
+            sb.append(mangle(fqn, method, params));
+            sb.append("(").append(refId);
+            if (body.charAt(paramBeg + 1) != ')') {
+                sb.append(",");
+            }
+            pos = paramBeg + 1;
+        }
+    }
+    private static String mangle(String fqn, String method, String params) {
+        if (params.startsWith("(")) {
+            params = params.substring(1);
+        }
+        if (params.endsWith(")")) {
+            params = params.substring(0, params.length() - 1);
+        }
+        return replace(fqn) + "__" + replace(method) + "____Ljava_lang_Object_2L" + 
+            replace(fqn) + "_2" + replace(params);
+    }
+
+    private static String replace(String orig) {
+        return orig.replace("_", "_1").
+            replace(";", "_2").
+            replace("[", "_3").
+            replace('.', '_').replace('/', '_');
+    }
+    
     private static String className(ClassData jc) {
         //return jc.getName().getInternalName().replace('/', '_');
         return jc.getClassName().replace('/', '_');
