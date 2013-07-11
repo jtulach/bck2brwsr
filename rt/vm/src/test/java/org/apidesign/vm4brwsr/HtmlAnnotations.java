@@ -47,5 +47,7 @@ public class HtmlAnnotations {
     
     @JavaScriptBody(args = { "r" }, javacall=true, body = "r.@java.lang.Runnable::run()()")
     private static native void callback(Runnable r);
-    
+
+    @JavaScriptBody(args = {  }, javacall = true, body = "return @org.apidesign.vm4brwsr.HtmlAnnotations::callback()();")
+    private static native int staticCallback();
 }

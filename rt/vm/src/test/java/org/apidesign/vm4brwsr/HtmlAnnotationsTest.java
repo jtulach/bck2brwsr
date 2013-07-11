@@ -47,6 +47,13 @@ public class HtmlAnnotationsTest {
             Double.valueOf(1)
         );
     }
+
+    @Test public void callStaticMethodFromJS() throws Exception {
+        assertExec("runnable called", HtmlAnnotations.class, 
+            "staticCallback__I",
+            Double.valueOf(1)
+        );
+    }
     
     private static TestVM code;
     

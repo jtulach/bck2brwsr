@@ -1664,7 +1664,8 @@ abstract class ByteCodeToJavaScript {
             int next = body.indexOf(".@", pos);
             if (next == -1) {
                 sb.append(body.substring(pos));
-                return sb;
+                body = sb.toString();
+                break;
             }
             int ident = next;
             while (ident > 0) {
@@ -1690,23 +1691,63 @@ abstract class ByteCodeToJavaScript {
             int paramBeg = body.indexOf('(', sigEnd + 1);
             
             sb.append("vm.").append(pkgName.replace('/', '_')).append("_$JsCallbacks$(false)._VM().");
-            sb.append(mangle(fqn, method, params));
+            sb.append(mangle(fqn, method, params, false));
             sb.append("(").append(refId);
             if (body.charAt(paramBeg + 1) != ')') {
                 sb.append(",");
             }
             pos = paramBeg + 1;
         }
+        sb = null;
+        pos = 0;
+        for (;;) {
+            int next = body.indexOf("@", pos);
+            if (next == -1) {
+                if (sb == null) {
+                    return body;
+                }
+                sb.append(body.substring(pos));
+                return sb;
+            }
+            if (sb == null) {
+                sb = new StringBuilder();
+            }
+
+            sb.append(body.substring(pos, next));
+
+            int sigBeg = body.indexOf('(', next);
+            int sigEnd = body.indexOf(')', sigBeg);
+            int colon4 = body.indexOf("::", next);
+            if (sigBeg == -1 || sigEnd == -1 || colon4 == -1) {
+                throw new IllegalStateException("Malformed body " + body);
+            }
+            String fqn = body.substring(next + 1, colon4);
+            String method = body.substring(colon4 + 2, sigBeg);
+            String params = body.substring(sigBeg, sigEnd + 1);
+
+            int paramBeg = body.indexOf('(', sigEnd + 1);
+            
+            sb.append("vm.").append(pkgName.replace('/', '_')).append("_$JsCallbacks$(false)._VM().");
+            sb.append(mangle(fqn, method, params, true));
+            sb.append("(");
+            pos = paramBeg + 1;
+        }
     }
-    private static String mangle(String fqn, String method, String params) {
+    private static String mangle(String fqn, String method, String params, boolean isStatic) {
         if (params.startsWith("(")) {
             params = params.substring(1);
         }
         if (params.endsWith(")")) {
             params = params.substring(0, params.length() - 1);
         }
-        return replace(fqn) + "__" + replace(method) + "____Ljava_lang_Object_2L" + 
-            replace(fqn) + "_2" + replace(params);
+        StringBuilder sb = new StringBuilder();
+        final String rfqn = replace(fqn);
+        sb.append(rfqn).append("__").append(method).append("____Ljava_lang_Object_2");
+        if (!isStatic) {
+            sb.append('L').append(rfqn).append("_2");
+        }
+        sb.append(params);
+        return sb.toString();
     }
 
     private static String replace(String orig) {
