@@ -49,5 +49,21 @@ public class HtmlAnnotations {
     private static native void callback(Runnable r);
 
     @JavaScriptBody(args = {  }, javacall = true, body = "return @org.apidesign.vm4brwsr.HtmlAnnotations::callback()();")
-    private static native int staticCallback();
+    public static native int staticCallback();
+    
+    
+    protected long chooseLong(boolean takeFirst, boolean takeSecond, long first, long second) {
+        long l = 0;
+        if (takeFirst) l += first;
+        if (takeSecond) l += second;
+        return l;
+    }
+    
+    public static Object create() {
+        return new HtmlAnnotations();
+    }
+    @JavaScriptBody(args = { "impl", "a", "b" }, javacall = true, body = 
+        "return impl.@org.apidesign.vm4brwsr.HtmlAnnotations::chooseLong(ZZJJ)(true, false, a, b);"
+    )
+    public static native long first(Object impl, long a, long b);
 }

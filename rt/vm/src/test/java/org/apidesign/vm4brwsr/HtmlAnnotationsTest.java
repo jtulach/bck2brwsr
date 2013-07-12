@@ -17,6 +17,7 @@
  */
 package org.apidesign.vm4brwsr;
 
+import static org.testng.Assert.assertNotNull;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -52,6 +53,15 @@ public class HtmlAnnotationsTest {
         assertExec("runnable called", HtmlAnnotations.class, 
             "staticCallback__I",
             Double.valueOf(1)
+        );
+    }
+
+    @Test public void callbackWithFourParamsAndReturnType() throws Exception {
+        Object instance = code.execCode("Get an HtmlAnnotations instance", HtmlAnnotations.class, "create__Ljava_lang_Object_2", null);
+        assertNotNull(instance, "Instance created");
+        assertExec("runnable called", HtmlAnnotations.class, 
+            "first__JLjava_lang_Object_2JJ",
+            Double.valueOf(42), instance, 42, 31
         );
     }
     

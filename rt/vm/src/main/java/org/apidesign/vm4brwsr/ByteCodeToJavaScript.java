@@ -1742,7 +1742,8 @@ abstract class ByteCodeToJavaScript {
         }
         StringBuilder sb = new StringBuilder();
         final String rfqn = replace(fqn);
-        sb.append(rfqn).append("__").append(method).append("____Ljava_lang_Object_2");
+        sb.append(rfqn).append("$").append(method).
+            append('$').append(params).append("__Ljava_lang_Object_2");
         if (!isStatic) {
             sb.append('L').append(rfqn).append("_2");
         }
