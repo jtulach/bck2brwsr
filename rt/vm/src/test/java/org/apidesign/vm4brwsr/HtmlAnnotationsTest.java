@@ -64,6 +64,15 @@ public class HtmlAnnotationsTest {
             Double.valueOf(42), instance, 42, 31
         );
     }
+
+    @Test public void callbackWithObjectParamsAndReturnType() throws Exception {
+        Object instance = code.execCode("Get an HtmlAnnotations instance", HtmlAnnotations.class, "create__Ljava_lang_Object_2", null);
+        assertNotNull(instance, "Instance created");
+        assertExec("called back and forth", HtmlAnnotations.class, 
+            "onError__Ljava_lang_Double_2Ljava_lang_Object_2Ljava_lang_Double_2",
+            Double.valueOf(42), instance, 42
+        );
+    }
     
     private static TestVM code;
     

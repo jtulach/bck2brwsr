@@ -26,6 +26,9 @@ import net.java.html.js.JavaScriptResource;
  */
 @JavaScriptResource("htmlannotations.js")
 public class HtmlAnnotations {
+    private Object callback;
+    
+    
     @JavaScriptBody(args = {}, body = "return 42;")
     public static int fourtyTwo() {
         return -1;
@@ -59,6 +62,14 @@ public class HtmlAnnotations {
         return l;
     }
     
+    protected void onError(Object obj) throws Exception {
+        callback = obj;
+    }
+    
+    Object getError() {
+        return callback;
+    }
+    
     public static Object create() {
         return new HtmlAnnotations();
     }
@@ -66,4 +77,10 @@ public class HtmlAnnotations {
         "return impl.@org.apidesign.vm4brwsr.HtmlAnnotations::chooseLong(ZZJJ)(true, false, a, b);"
     )
     public static native long first(Object impl, long a, long b);
+    
+    @JavaScriptBody(args = { "impl", "d" }, javacall = true, body = 
+        "impl.@org.apidesign.vm4brwsr.HtmlAnnotations::onError(Ljava/lang/Object;)(d);" +
+        "return impl.@org.apidesign.vm4brwsr.HtmlAnnotations::getError()();"
+    )
+    public static native Double onError(Object impl, Double d);
 }
