@@ -26,6 +26,10 @@ import org.testng.annotations.Factory;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class DoubleTest {
+    @Compare public boolean parsedDoubleIsDouble() {
+        return Double.valueOf("1.1") instanceof Double;
+    }
+    
     @Compare public String integerToString() {
         return toStr(1);
     }

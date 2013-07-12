@@ -502,10 +502,8 @@ public final class Double extends Number implements Comparable<Double> {
      * @throws     NumberFormatException  if the string does not contain a
      *             parsable number.
      */
-    @JavaScriptBody(args="s", body="return parseFloat(s);")
     public static Double valueOf(String s) throws NumberFormatException {
-        throw new UnsupportedOperationException();
-//        return new Double(FloatingDecimal.readJavaFormatString(s).doubleValue());
+        return new Double(parseDouble(s));
     }
 
     /**
