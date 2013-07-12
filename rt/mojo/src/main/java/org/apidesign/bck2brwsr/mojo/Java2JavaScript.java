@@ -33,12 +33,16 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 import org.apidesign.vm4brwsr.ObfuscationLevel;
 
 /** Compiles classes into JavaScript. */
-@Mojo(name="j2js", defaultPhase=LifecyclePhase.PROCESS_CLASSES)
+@Mojo(name="j2js", 
+    requiresDependencyResolution = ResolutionScope.COMPILE,
+    defaultPhase=LifecyclePhase.PROCESS_CLASSES
+)
 public class Java2JavaScript extends AbstractMojo {
     public Java2JavaScript() {
     }
@@ -86,7 +90,7 @@ public class Java2JavaScript extends AbstractMojo {
         }
 
         try {
-            URLClassLoader url = buildClassLoader(classes, prj.getDependencyArtifacts());
+            URLClassLoader url = buildClassLoader(classes, prj.getArtifacts());
             FileWriter w = new FileWriter(javascript);
             Bck2Brwsr.newCompiler().
                 obfuscation(obfuscation).
