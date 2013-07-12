@@ -17,14 +17,10 @@
  */
 package org.apidesign.bck2brwsr.ko2brwsr;
 
-import org.apidesign.bck2brwsr.ko2brwsr.BrwsrCtxImpl;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.Map;
 import net.java.html.BrwsrCtx;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
