@@ -21,8 +21,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import net.java.html.BrwsrCtx;
-import org.apidesign.html.context.spi.Contexts;
 import org.apidesign.html.json.spi.FunctionBinding;
 import org.apidesign.html.json.spi.JSONCall;
 import org.apidesign.html.json.spi.PropertyBinding;
@@ -122,5 +120,10 @@ final class BrwsrCtxImpl implements Technology<Object>, Transfer {
             sb.append((char)ch);
         }
         return ConvertTypes.parse(sb.toString());
+    }
+
+    @Override
+    public void runSafe(Runnable r) {
+        r.run();
     }
 }

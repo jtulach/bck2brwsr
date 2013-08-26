@@ -146,6 +146,7 @@ public final class Console {
         
         @Override
         public void run() {
+            Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
             try {
                 if (c == null) {
                     String data = arr[0];

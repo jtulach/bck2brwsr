@@ -86,5 +86,35 @@
       <scope>test</scope>
       <type>jar</type>
     </dependency>
+    <dependency>
+      <groupId>org.apidesign.html</groupId>
+      <artifactId>ko-ws-tyrus</artifactId>
+      <version>${net.java.html.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
+  <profiles>
+      <profile>
+          <id>jdk8</id>
+          <activation>
+              <file>
+                  <exists>${java.home}/lib/ext/jfxrt.jar</exists>
+              </file>
+          </activation>
+          <properties>
+            <jfxrt.jar>${java.home}/lib/ext/jfxrt.jar</jfxrt.jar>
+          </properties>
+      </profile>
+      <profile>
+          <id>jdk7</id>
+          <activation>
+              <file>
+                  <exists>${java.home}/lib/jfxrt.jar</exists>
+              </file>
+          </activation>
+          <properties>
+            <jfxrt.jar>${java.home}/lib/jfxrt.jar</jfxrt.jar>
+          </properties>
+      </profile>
+  </profiles>
 </project>

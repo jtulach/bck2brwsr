@@ -18,6 +18,7 @@
 package org.apidesign.bck2brwsr.launcher;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -53,6 +54,11 @@ import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.grizzly.http.server.ServerConfiguration;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
+import org.glassfish.grizzly.websockets.WebSocket;
+import org.glassfish.grizzly.websockets.WebSocketAddOn;
+import org.glassfish.grizzly.websockets.WebSocketApplication;
+import org.glassfish.grizzly.websockets.WebSocketEngine;
+import org.openide.util.Exceptions;
 
 /**
  * Lightweight server to launch Bck2Brwsr applications and tests.
@@ -151,7 +157,11 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
     
     private HttpServer initServer(String path, boolean addClasses) throws IOException {
         HttpServer s = HttpServer.createSimpleServer(path, new PortRange(8080, 65535));
-
+        final WebSocketAddOn addon = new WebSocketAddOn();
+        for (NetworkListener listener : s.getListeners()) {
+            listener.registerAddOn(addon);
+        }
+        
         ThreadPoolConfig fewThreads = ThreadPoolConfig.defaultConfig().copy().
             setPoolName("Fx/Bck2 Brwsr").
             setCorePoolSize(1).
@@ -202,6 +212,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                 }
                 
                 if ("/dynamic".equals(request.getRequestURI())) {
+                    boolean webSocket = false;
                     String mimeType = request.getParameter("mimeType");
                     List<String> params = new ArrayList<String>();
                     for (int i = 0; ; i++) {
@@ -210,11 +221,20 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                             break;
                         }
                         params.add(p);
-                    }
+                        if ("protocol:ws".equals(p)) {
+                            webSocket = true;
+                            continue;
+                        }                    }
                     final String cnt = request.getParameter("content");
                     String mangle = cnt.replace("%20", " ").replace("%0A", "\n");
                     ByteArrayInputStream is = new ByteArrayInputStream(mangle.getBytes("UTF-8"));
-                    URI url = registerResource(new Resource(is, mimeType, "/dynamic/res" + ++resourcesCount, params.toArray(new String[params.size()])));
+                    URI url;
+                    final Resource res = new Resource(is, mimeType, "/dynamic/res" + ++resourcesCount, params.toArray(new String[params.size()]));
+                    if (webSocket) {
+                        url = registerWebSocket(res);
+                    } else {
+                        url = registerResource(res);
+                    }
                     response.getWriter().write(url.toString());
                     response.getWriter().write("\n");
                     return;
@@ -256,13 +276,18 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                     }
                 }
             }
+            
+            private URI registerWebSocket(Resource r) {
+                WebSocketEngine.getEngine().register("", r.httpPath, new WS(r));
+                return pageURL("ws", server, r.httpPath);
+            }
 
             private URI registerResource(Resource r) {
                 if (!ic.resources.contains(r)) {
                     ic.resources.add(r);
                     conf.addHttpHandler(this, r.httpPath);
                 }
-                return pageURL(server, r.httpPath);
+                return pageURL("http", server, r.httpPath);
             }
         }
         
@@ -411,7 +436,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
 
     private Object[] launchServerAndBrwsr(HttpServer server, final String page) throws IOException, URISyntaxException, InterruptedException {
         server.start();
-        URI uri = pageURL(server, page);
+        URI uri = pageURL("http", server, page);
         return showBrwsr(uri);
     }
     private static String toUTF8(String value) throws UnsupportedEncodingException {
@@ -523,11 +548,11 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
     abstract void generateBck2BrwsrJS(StringBuilder sb, Res loader) throws IOException;
     abstract String harnessResource();
 
-    private static URI pageURL(HttpServer server, final String page) {
+    private static URI pageURL(String protocol, HttpServer server, final String page) {
         NetworkListener listener = server.getListeners().iterator().next();
         int port = listener.getPort();
         try {
-            return new URI("http://localhost:" + port + page);
+            return new URI(protocol + "://localhost:" + port + page);
         } catch (URISyntaxException ex) {
             throw new IllegalStateException(ex);
         }
@@ -675,4 +700,25 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
             }
         }
     }
-}
+    private static class WS extends WebSocketApplication {
+
+        private final Resource r;
+
+        private WS(Resource r) {
+            this.r = r;
+        }
+
+        @Override
+        public void onMessage(WebSocket socket, String text) {
+            try {
+                r.httpContent.reset();
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                copyStream(r.httpContent, out, null, text);
+                String s = new String(out.toByteArray(), "UTF-8");
+                socket.send(s);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+    }}

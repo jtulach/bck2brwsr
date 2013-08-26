@@ -31,9 +31,11 @@ import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.apidesign.html.context.spi.Contexts;
 import org.apidesign.html.json.spi.Technology;
 import org.apidesign.html.json.spi.Transfer;
+import org.apidesign.html.json.spi.WSTransfer;
 import org.apidesign.html.json.tck.KOTest;
 import org.apidesign.html.json.tck.KnockoutTCK;
 import org.apidesign.html.kofx.FXContext;
+import org.apidesign.html.wstyrus.TyrusContext;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.openide.util.lookup.ServiceProvider;
@@ -58,10 +60,19 @@ public final class KnockoutFXTest extends KnockoutTCK {
     @Override
     public BrwsrCtx createContext() {
         FXContext fx = new FXContext();
-        return Contexts.newBuilder().
+        TyrusContext tc = new TyrusContext();
+        Contexts.Builder b = Contexts.newBuilder().
             register(Technology.class, fx, 10).
-            register(Transfer.class, fx, 10).
-            build();
+            register(Transfer.class, fx, 10);
+        try {
+            Class.forName("java.util.function.Function");
+            // prefer WebView's WebSockets on JDK8
+            b.register(WSTransfer.class, fx, 10);
+        } catch (ClassNotFoundException ex) {
+            // ok, JDK7 needs tyrus
+            b.register(WSTransfer.class, tc, 20);
+        }
+        return b.build();
     }
 
     @Override
