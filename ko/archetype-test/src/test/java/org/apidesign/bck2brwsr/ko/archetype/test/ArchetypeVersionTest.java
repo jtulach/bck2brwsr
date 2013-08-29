@@ -63,10 +63,8 @@ public class ArchetypeVersionTest {
         Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(r.openStream());
         String arch = (String) xp2.evaluate(dom, XPathConstants.STRING);
         
-        // temporary
         int snapshot = arch.indexOf("-SNAPSHOT");
-        assertTrue(snapshot > 0, "Now depends on snapshot: " + arch);
-        arch = arch.substring(0, snapshot);
+        assertEquals(snapshot, -1, "Don't depend on snapshots: " + arch);
 
         assertTrue(arch.matches("[0-9\\.]+"), "net.java.html.json version seems valid: " + arch);
     }
