@@ -26,12 +26,13 @@ import org.apidesign.html.json.spi.JSONCall;
 import org.apidesign.html.json.spi.PropertyBinding;
 import org.apidesign.html.json.spi.Technology;
 import org.apidesign.html.json.spi.Transfer;
+import org.apidesign.html.json.spi.WSTransfer;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-final class BrwsrCtxImpl implements Technology<Object>, Transfer {
+final class BrwsrCtxImpl implements Technology<Object>, Transfer, WSTransfer<LoadWS> {
     private BrwsrCtxImpl() {}
     
     public static final BrwsrCtxImpl DEFAULT = new BrwsrCtxImpl();
@@ -125,5 +126,20 @@ final class BrwsrCtxImpl implements Technology<Object>, Transfer {
     @Override
     public void runSafe(Runnable r) {
         r.run();
+    }
+
+    @Override
+    public LoadWS open(String url, JSONCall callback) {
+        return new LoadWS(callback, url);
+    }
+
+    @Override
+    public void send(LoadWS socket, JSONCall data) {
+        socket.send(data);
+    }
+
+    @Override
+    public void close(LoadWS socket) {
+        socket.close();
     }
 }

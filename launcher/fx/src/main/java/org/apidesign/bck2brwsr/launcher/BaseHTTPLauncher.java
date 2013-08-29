@@ -157,28 +157,28 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
     
     private HttpServer initServer(String path, boolean addClasses) throws IOException {
         HttpServer s = HttpServer.createSimpleServer(path, new PortRange(8080, 65535));
-        final WebSocketAddOn addon = new WebSocketAddOn();
-        for (NetworkListener listener : s.getListeners()) {
-            listener.registerAddOn(addon);
-        }
-        
+        /*
         ThreadPoolConfig fewThreads = ThreadPoolConfig.defaultConfig().copy().
             setPoolName("Fx/Bck2 Brwsr").
-            setCorePoolSize(1).
+            setCorePoolSize(3).
             setMaxPoolSize(5);
         ThreadPoolConfig oneKernel = ThreadPoolConfig.defaultConfig().copy().
             setPoolName("Kernel Fx/Bck2").
-            setCorePoolSize(1).
+            setCorePoolSize(3).
             setMaxPoolSize(3);
         for (NetworkListener nl : s.getListeners()) {
             nl.getTransport().setWorkerThreadPoolConfig(fewThreads);
             nl.getTransport().setKernelThreadPoolConfig(oneKernel);
         }
-        
+        */
         final ServerConfiguration conf = s.getServerConfiguration();
         if (addClasses) {
             conf.addHttpHandler(new VM(), "/bck2brwsr.js");
             conf.addHttpHandler(new Classes(resources), "/classes/");
+        }
+        final WebSocketAddOn addon = new WebSocketAddOn();
+        for (NetworkListener listener : s.getListeners()) {
+            listener.registerAddOn(addon);
         }
         return s;
     }

@@ -92,5 +92,11 @@
       <version>${project.version}</version>
       <type>jar</type>
     </dependency>
+    <dependency>
+      <groupId>org.apidesign.html</groupId>
+      <artifactId>net.java.html.boot</artifactId>
+      <version>0.5</version>
+      <type>jar</type>
+    </dependency>
   </dependencies>
 </project>

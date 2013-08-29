@@ -28,6 +28,7 @@ import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.apidesign.html.context.spi.Contexts;
 import org.apidesign.html.json.spi.Technology;
 import org.apidesign.html.json.spi.Transfer;
+import org.apidesign.html.json.spi.WSTransfer;
 import org.apidesign.html.json.tck.KOTest;
 import org.apidesign.html.json.tck.KnockoutTCK;
 import org.openide.util.lookup.ServiceProvider;
@@ -51,6 +52,7 @@ public final class Bck2BrwsrKnockoutTest extends KnockoutTCK {
     public BrwsrCtx createContext() {
         return Contexts.newBuilder().
             register(Transfer.class, BrwsrCtxImpl.DEFAULT, 9).
+            register(WSTransfer.class, BrwsrCtxImpl.DEFAULT, 9).
             register(Technology.class, BrwsrCtxImpl.DEFAULT, 9).build();
     }
 
