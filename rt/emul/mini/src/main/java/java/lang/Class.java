@@ -155,11 +155,15 @@ public final
             }
             return arrType;
         }
-        Class<?> c = loadCls(className, className.replace('.', '_'));
-        if (c == null) {
-            throw new ClassNotFoundException(className);
+        try {
+            Class<?> c = loadCls(className, className.replace('.', '_'));
+            if (c == null) {
+                throw new ClassNotFoundException(className);
+            }
+            return c;
+        } catch (Throwable ex) {
+            throw new ClassNotFoundException(className, ex);
         }
-        return c;
     }
 
 
