@@ -45,15 +45,36 @@ final class BrwsrCtxImpl implements Technology<Object>, Transfer, WSTransfer<Loa
     @Override
     public void loadJSON(final JSONCall call) {
         class R implements Runnable {
+            final boolean success;
+
+            public R(boolean success) {
+                this.success = success;
+            }
+            
             Object[] arr = { null };
             @Override
             public void run() {
-                call.notifySuccess(arr[0]);
+                if (success) {
+                    call.notifySuccess(arr[0]);
+                } else {
+                    Throwable t;
+                    if (arr[0] instanceof Throwable) {
+                        t = (Throwable) arr[0];
+                    } else {
+                        if (arr[0] == null) {
+                            t = new IOException();
+                        } else {
+                            t = new IOException(arr[0].toString());
+                        }
+                    }
+                    call.notifyError(t);
+                }
             }
         }
-        R r = new R();
+        R success = new R(true);
+        R failure = new R(false);
         if (call.isJSONP()) {
-            String me = ConvertTypes.createJSONP(r.arr, r);
+            String me = ConvertTypes.createJSONP(success.arr, success);
             ConvertTypes.loadJSONP(call.composeURL(me), me);
         } else {
             String data = null;
@@ -66,7 +87,7 @@ final class BrwsrCtxImpl implements Technology<Object>, Transfer, WSTransfer<Loa
                     call.notifyError(ex);
                 }
             }
-            ConvertTypes.loadJSON(call.composeURL(null), r.arr, r, call.getMethod(), data);
+            ConvertTypes.loadJSON(call.composeURL(null), success.arr, success, failure, call.getMethod(), data);
         }
     }
 

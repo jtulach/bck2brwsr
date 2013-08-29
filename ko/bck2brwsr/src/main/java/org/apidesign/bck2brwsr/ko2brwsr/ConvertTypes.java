@@ -111,7 +111,7 @@ final class ConvertTypes {
         return s;
     }
     
-    @JavaScriptBody(args = { "url", "arr", "callback", "method", "data" }, body = ""
+    @JavaScriptBody(args = { "url", "arr", "callback", "onError", "method", "data" }, body = ""
         + "var request = new XMLHttpRequest();\n"
         + "if (!method) method = 'GET';\n"
         + "request.open(method, url, true);\n"
@@ -124,12 +124,15 @@ final class ConvertTypes {
         + "    arr[0] = this.response;\n"
         + "  }\n"
         + "  callback.run__V();\n"
-        + "};"
+        + "};\n"
+        + "request.onerror = function (e) {\n"
+        + "  arr[0] = e; onError.run__V();\n"
+        + "}\n"
         + "if (data) request.send(data);"
         + "else request.send();"
     )
     static void loadJSON(
-        String url, Object[] jsonResult, Runnable whenDone, String method, String data
+        String url, Object[] jsonResult, Runnable whenDone, Runnable whenErr, String method, String data
     ) {
     }
     
