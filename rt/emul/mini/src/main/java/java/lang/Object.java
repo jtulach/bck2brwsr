@@ -79,9 +79,17 @@ public class Object {
      * @see    Class Literals, section 15.8.2 of
      *         <cite>The Java&trade; Language Specification</cite>.
      */
-    @JavaScriptBody(args={}, body="return this.constructor.$class;")
-    public final native Class<?> getClass();
+    public final Class<?> getClass() {
+        Class<?> c = getClassImpl();
+        return c == null ? Object.class : c;
+    }
 
+    @JavaScriptBody(args={}, body=
+          "var c = this.constructor.$class;\n"
+        + "return c ? c : null;\n"
+    )
+    private final native Class<?> getClassImpl();
+    
     /**
      * Returns a hash code value for the object. This method is
      * supported for the benefit of hash tables such as those provided by

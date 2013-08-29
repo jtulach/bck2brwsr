@@ -233,4 +233,11 @@ public class Classes {
     public static String valueEnum(String v) {
         return ClassesMarker.E.valueOf(v).toString();
     }
+    
+    public static String typeOfFn() {
+        return fn().getClass().getName();
+    }
+    
+    @JavaScriptBody(args = {  }, body = "return function() { alert('x'); };")
+    private native static Object fn();
 }
