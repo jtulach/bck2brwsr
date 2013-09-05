@@ -208,14 +208,18 @@ abstract class ByteCodeToJavaScript {
             out.append("\n    ").append(destObject).append(".").append(mn).append(".cls = CLS;");
         }
         out.append("\n    c.constructor = CLS;");
+        out.append("\n    function fillInstOf(x) {");
         String instOfName = "$instOf_" + className;
-        out.append("\n    c.").append(instOfName).append(" = true;");
-        obfuscationDelegate.exportJSProperty(out, "c", instOfName);
+        out.append("\n        x.").append(instOfName).append(" = true;");
         for (String superInterface : jc.getSuperInterfaces()) {
-            instOfName = "$instOf_" + superInterface.replace('/', '_');
-            out.append("\n    c.").append(instOfName).append(" = true;");
-            obfuscationDelegate.exportJSProperty(out, "c", instOfName);
+            String intrfc = superInterface.replace('/', '_');
+            out.append("\n      vm.").append(intrfc).append("(false).fillInstOf(x);");
+            requireReference(superInterface);
         }
+        out.append("\n    }");
+        out.append("\n    c.fillInstOf = fillInstOf;");
+        out.append("\n    fillInstOf(c);");
+        obfuscationDelegate.exportJSProperty(out, "c", instOfName);
         out.append("\n    CLS.$class = 'temp';");
         out.append("\n    CLS.$class = ");
         out.append(accessClass("java_lang_Class(true);"));

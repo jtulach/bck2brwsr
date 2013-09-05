@@ -221,5 +221,11 @@ public class ClassTest {
             "java.lang.Object"
         );
     }
-
+    
+    @Test public void instanceOfSuperInterface() throws Exception {
+        assertExec("Is iof super interface", Classes.class,
+            "instanceOfSuperInterface__Z",
+            1.0
+        );
+    }
 }

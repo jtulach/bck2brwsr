@@ -18,6 +18,7 @@
 package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -240,4 +241,13 @@ public class Classes {
     
     @JavaScriptBody(args = {  }, body = "return function() { alert('x'); };")
     private native static Object fn();
+    
+    public static boolean instanceOfSuperInterface() {
+        Object obj = new SuperSerial() {
+        };
+        return obj instanceof Serializable;
+    }
+    
+    private static interface SuperSerial extends Serializable {
+    }
 }
