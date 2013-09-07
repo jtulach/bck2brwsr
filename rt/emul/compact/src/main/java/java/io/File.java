@@ -29,13 +29,6 @@ import java.net.URI;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-import java.util.List;
-import java.util.ArrayList;
-import java.security.AccessController;
-import java.security.SecureRandom;
-import java.nio.file.Path;
-import java.nio.file.FileSystems;
-import sun.security.action.GetPropertyAction;
 
 /**
  * An abstract representation of file and directory pathnames.
@@ -153,7 +146,50 @@ public class File
     /**
      * The FileSystem object representing the platform's local file system.
      */
-    static private FileSystem fs = FileSystem.getFileSystem();
+    static private FileSystem fs = new FileSystem();
+    private static class FileSystem {
+
+        private char getSeparator() {
+            return '/';
+        }
+
+        private String resolve(String path, String child) {
+            return path + '/' + child;
+        }
+
+        private String normalize(String pathname) {
+            return pathname;
+        }
+
+        private int prefixLength(String path) {
+            return 0;
+        }
+
+        private String getDefaultParent() {
+            return "/";
+        }
+
+        private String fromURIPath(String p) {
+            return p;
+        }
+
+        private boolean isAbsolute(File aThis) {
+            return aThis.getPath().startsWith("/");
+        }
+
+        private int compare(File one, File two) {
+            return one.getPath().compareTo(two.getPath());
+        }
+
+        private int hashCode(File aThis) {
+            return aThis.getPath().hashCode();
+        }
+
+        private char getPathSeparator() {
+            return ':';
+        }
+        
+    }
 
     /**
      * This abstract pathname's normalized pathname string.  A normalized
@@ -527,7 +563,7 @@ public class File
      * @see     java.io.File#isAbsolute()
      */
     public String getAbsolutePath() {
-        return fs.resolve(this);
+        throw new SecurityException();
     }
 
     /**
@@ -586,7 +622,7 @@ public class File
      * @see     Path#toRealPath
      */
     public String getCanonicalPath() throws IOException {
-        return fs.canonicalize(fs.resolve(this));
+        throw new SecurityException();
     }
 
     /**
@@ -723,11 +759,7 @@ public class File
      *          method denies read access to the file
      */
     public boolean canRead() {
-        SecurityManager security = System.getSecurityManager();
-        if (security != null) {
-            security.checkRead(path);
-        }
-        return fs.checkAccess(this, FileSystem.ACCESS_READ);
+        throw new SecurityException();
     }
 
     /**
@@ -745,11 +777,7 @@ public class File
      *          method denies write access to the file
      */
     public boolean canWrite() {
-        SecurityManager security = System.getSecurityManager();
-        if (security != null) {
-            security.checkWrite(path);
-        }
-        return fs.checkAccess(this, FileSystem.ACCESS_WRITE);
+        throw new SecurityException();
     }
 
     /**
@@ -765,11 +793,7 @@ public class File
      *          method denies read access to the file or directory
      */
     public boolean exists() {
-        SecurityManager security = System.getSecurityManager();
-        if (security != null) {
-            security.checkRead(path);
-        }
-        return ((fs.getBooleanAttributes(this) & FileSystem.BA_EXISTS) != 0);
+        throw new SecurityException();
     }
 
     /**
@@ -792,12 +816,7 @@ public class File
      *          method denies read access to the file
      */
     public boolean isDirectory() {
-        SecurityManager security = System.getSecurityManager();
-        if (security != null) {
-            security.checkRead(path);
-        }
-        return ((fs.getBooleanAttributes(this) & FileSystem.BA_DIRECTORY)
-                != 0);
+        throw new SecurityException();
     }
 
     /**
@@ -822,11 +841,7 @@ public class File
      *          method denies read access to the file
      */
     public boolean isFile() {
-        SecurityManager security = System.getSecurityManager();
-        if (security != null) {
-            security.checkRead(path);
-        }
-        return ((fs.getBooleanAttributes(this) & FileSystem.BA_REGULAR) != 0);
+        throw new SecurityException();
     }
 
     /**
@@ -848,11 +863,7 @@ public class File
      * @since 1.2
      */
     public boolean isHidden() {
-        SecurityManager security = System.getSecurityManager();
-        if (security != null) {
-            security.checkRead(path);
-        }
-        return ((fs.getBooleanAttributes(this) & FileSystem.BA_HIDDEN) != 0);
+        throw new SecurityException();
     }
 
     /**
@@ -877,11 +888,7 @@ public class File
      *          method denies read access to the file
      */
     public long lastModified() {
-        SecurityManager security = System.getSecurityManager();
-        if (security != null) {
-            security.checkRead(path);
-        }
-        return fs.getLastModifiedTime(this);
+        throw new SecurityException();
     }
 
     /**
@@ -905,11 +912,7 @@ public class File
      *          method denies read access to the file
      */
     public long length() {
-        SecurityManager security = System.getSecurityManager();
-        if (security != null) {
-            security.checkRead(path);
-        }
-        return fs.getLength(this);
+        throw new SecurityException();
     }
 
 
@@ -942,9 +945,7 @@ public class File
      * @since 1.2
      */
     public boolean createNewFile() throws IOException {
-        SecurityManager security = System.getSecurityManager();
-        if (security != null) security.checkWrite(path);
-        return fs.createFileExclusively(path);
+        throw new SecurityException();
     }
 
     /**
@@ -966,11 +967,7 @@ public class File
      *          delete access to the file
      */
     public boolean delete() {
-        SecurityManager security = System.getSecurityManager();
-        if (security != null) {
-            security.checkDelete(path);
-        }
-        return fs.delete(this);
+        throw new SecurityException();
     }
 
     /**
@@ -1001,11 +998,7 @@ public class File
      * @since 1.2
      */
     public void deleteOnExit() {
-        SecurityManager security = System.getSecurityManager();
-        if (security != null) {
-            security.checkDelete(path);
-        }
-        DeleteOnExitHook.add(path);
+        throw new SecurityException();
     }
 
     /**
@@ -1041,11 +1034,7 @@ public class File
      *          the directory
      */
     public String[] list() {
-        SecurityManager security = System.getSecurityManager();
-        if (security != null) {
-            security.checkRead(path);
-        }
-        return fs.list(this);
+        throw new SecurityException();
     }
 
     /**
@@ -1078,17 +1067,7 @@ public class File
      * @see java.nio.file.Files#newDirectoryStream(Path,String)
      */
     public String[] list(FilenameFilter filter) {
-        String names[] = list();
-        if ((names == null) || (filter == null)) {
-            return names;
-        }
-        List<String> v = new ArrayList<>();
-        for (int i = 0 ; i < names.length ; i++) {
-            if (filter.accept(this, names[i])) {
-                v.add(names[i]);
-            }
-        }
-        return v.toArray(new String[v.size()]);
+        throw new SecurityException();
     }
 
     /**
@@ -1130,14 +1109,7 @@ public class File
      * @since  1.2
      */
     public File[] listFiles() {
-        String[] ss = list();
-        if (ss == null) return null;
-        int n = ss.length;
-        File[] fs = new File[n];
-        for (int i = 0; i < n; i++) {
-            fs[i] = new File(ss[i], this);
-        }
-        return fs;
+        throw new SecurityException();
     }
 
     /**
@@ -1171,13 +1143,7 @@ public class File
      * @see java.nio.file.Files#newDirectoryStream(Path,String)
      */
     public File[] listFiles(FilenameFilter filter) {
-        String ss[] = list();
-        if (ss == null) return null;
-        ArrayList<File> files = new ArrayList<>();
-        for (String s : ss)
-            if ((filter == null) || filter.accept(this, s))
-                files.add(new File(s, this));
-        return files.toArray(new File[files.size()]);
+        throw new SecurityException();
     }
 
     /**
@@ -1209,15 +1175,7 @@ public class File
      * @see java.nio.file.Files#newDirectoryStream(Path,java.nio.file.DirectoryStream.Filter)
      */
     public File[] listFiles(FileFilter filter) {
-        String ss[] = list();
-        if (ss == null) return null;
-        ArrayList<File> files = new ArrayList<>();
-        for (String s : ss) {
-            File f = new File(s, this);
-            if ((filter == null) || filter.accept(f))
-                files.add(f);
-        }
-        return files.toArray(new File[files.size()]);
+        throw new SecurityException();
     }
 
     /**
@@ -1232,11 +1190,7 @@ public class File
      *          method does not permit the named directory to be created
      */
     public boolean mkdir() {
-        SecurityManager security = System.getSecurityManager();
-        if (security != null) {
-            security.checkWrite(path);
-        }
-        return fs.createDirectory(this);
+        throw new SecurityException();
     }
 
     /**
@@ -1260,22 +1214,7 @@ public class File
      *          parent directories to be created
      */
     public boolean mkdirs() {
-        if (exists()) {
-            return false;
-        }
-        if (mkdir()) {
-            return true;
-        }
-        File canonFile = null;
-        try {
-            canonFile = getCanonicalFile();
-        } catch (IOException e) {
-            return false;
-        }
-
-        File parent = canonFile.getParentFile();
-        return (parent != null && (parent.mkdirs() || parent.exists()) &&
-                canonFile.mkdir());
+        throw new SecurityException();
     }
 
     /**
@@ -1306,12 +1245,7 @@ public class File
      *          If parameter <code>dest</code> is <code>null</code>
      */
     public boolean renameTo(File dest) {
-        SecurityManager security = System.getSecurityManager();
-        if (security != null) {
-            security.checkWrite(path);
-            security.checkWrite(dest.path);
-        }
-        return fs.rename(this, dest);
+        throw new SecurityException();
     }
 
     /**
@@ -1341,12 +1275,7 @@ public class File
      * @since 1.2
      */
     public boolean setLastModified(long time) {
-        if (time < 0) throw new IllegalArgumentException("Negative time");
-        SecurityManager security = System.getSecurityManager();
-        if (security != null) {
-            security.checkWrite(path);
-        }
-        return fs.setLastModifiedTime(this, time);
+        throw new SecurityException();
     }
 
     /**
@@ -1367,11 +1296,7 @@ public class File
      * @since 1.2
      */
     public boolean setReadOnly() {
-        SecurityManager security = System.getSecurityManager();
-        if (security != null) {
-            security.checkWrite(path);
-        }
-        return fs.setReadOnly(this);
+        throw new SecurityException();
     }
 
     /**
@@ -1405,11 +1330,7 @@ public class File
      * @since 1.6
      */
     public boolean setWritable(boolean writable, boolean ownerOnly) {
-        SecurityManager security = System.getSecurityManager();
-        if (security != null) {
-            security.checkWrite(path);
-        }
-        return fs.setPermission(this, FileSystem.ACCESS_WRITE, writable, ownerOnly);
+        throw new SecurityException();
     }
 
     /**
@@ -1475,11 +1396,7 @@ public class File
      * @since 1.6
      */
     public boolean setReadable(boolean readable, boolean ownerOnly) {
-        SecurityManager security = System.getSecurityManager();
-        if (security != null) {
-            security.checkWrite(path);
-        }
-        return fs.setPermission(this, FileSystem.ACCESS_READ, readable, ownerOnly);
+        throw new SecurityException();
     }
 
     /**
@@ -1548,11 +1465,7 @@ public class File
      * @since 1.6
      */
     public boolean setExecutable(boolean executable, boolean ownerOnly) {
-        SecurityManager security = System.getSecurityManager();
-        if (security != null) {
-            security.checkWrite(path);
-        }
-        return fs.setPermission(this, FileSystem.ACCESS_EXECUTE, executable, ownerOnly);
+        throw new SecurityException();
     }
 
     /**
@@ -1602,11 +1515,7 @@ public class File
      * @since 1.6
      */
     public boolean canExecute() {
-        SecurityManager security = System.getSecurityManager();
-        if (security != null) {
-            security.checkExec(path);
-        }
-        return fs.checkAccess(this, FileSystem.ACCESS_EXECUTE);
+        throw new SecurityException();
     }
 
 
@@ -1655,7 +1564,7 @@ public class File
      * @see java.nio.file.FileStore
      */
     public static File[] listRoots() {
-        return fs.listRoots();
+        throw new SecurityException();
     }
 
 
@@ -1677,12 +1586,7 @@ public class File
      * @since  1.6
      */
     public long getTotalSpace() {
-        SecurityManager sm = System.getSecurityManager();
-        if (sm != null) {
-            sm.checkPermission(new RuntimePermission("getFileSystemAttributes"));
-            sm.checkRead(path);
-        }
-        return fs.getSpace(this, FileSystem.SPACE_TOTAL);
+        throw new SecurityException();
     }
 
     /**
@@ -1712,12 +1616,7 @@ public class File
      * @since  1.6
      */
     public long getFreeSpace() {
-        SecurityManager sm = System.getSecurityManager();
-        if (sm != null) {
-            sm.checkPermission(new RuntimePermission("getFileSystemAttributes"));
-            sm.checkRead(path);
-        }
-        return fs.getSpace(this, FileSystem.SPACE_FREE);
+        throw new SecurityException();
     }
 
     /**
@@ -1750,38 +1649,11 @@ public class File
      * @since  1.6
      */
     public long getUsableSpace() {
-        SecurityManager sm = System.getSecurityManager();
-        if (sm != null) {
-            sm.checkPermission(new RuntimePermission("getFileSystemAttributes"));
-            sm.checkRead(path);
-        }
-        return fs.getSpace(this, FileSystem.SPACE_USABLE);
+        throw new SecurityException();
     }
 
     /* -- Temporary files -- */
 
-    private static class TempDirectory {
-        private TempDirectory() { }
-
-        // temporary directory location
-        private static final File tmpdir = new File(fs.normalize(AccessController
-            .doPrivileged(new GetPropertyAction("java.io.tmpdir"))));
-        static File location() {
-            return tmpdir;
-        }
-
-        // file name generation
-        private static final SecureRandom random = new SecureRandom();
-        static File generateFile(String prefix, String suffix, File dir) {
-            long n = random.nextLong();
-            if (n == Long.MIN_VALUE) {
-                n = 0;      // corner case
-            } else {
-                n = Math.abs(n);
-            }
-            return new File(dir, prefix + Long.toString(n) + suffix);
-        }
-    }
 
     /**
      * <p> Creates a new empty file in the specified directory, using the
@@ -1856,28 +1728,7 @@ public class File
                                       File directory)
         throws IOException
     {
-        if (prefix.length() < 3)
-            throw new IllegalArgumentException("Prefix string too short");
-        if (suffix == null)
-            suffix = ".tmp";
-
-        File tmpdir = (directory != null) ? directory : TempDirectory.location();
-        SecurityManager sm = System.getSecurityManager();
-        File f;
-        do {
-            f = TempDirectory.generateFile(prefix, suffix, tmpdir);
-            if (sm != null) {
-                try {
-                    sm.checkWrite(f.getPath());
-                } catch (SecurityException se) {
-                    // don't reveal temporary directory location
-                    if (directory == null)
-                        throw new SecurityException("Unable to create temporary file");
-                    throw se;
-                }
-            }
-        } while (!fs.createFileExclusively(f.getPath()));
-        return f;
+        throw new SecurityException();
     }
 
     /**
@@ -2031,7 +1882,7 @@ public class File
     private static final long serialVersionUID = 301077366599181567L;
 
     // -- Integration with java.nio.file --
-
+/*
     private volatile transient Path filePath;
 
     /**
@@ -2060,17 +1911,17 @@ public class File
      * @since   1.7
      * @see Path#toFile
      */
-    public Path toPath() {
-        Path result = filePath;
-        if (result == null) {
-            synchronized (this) {
-                result = filePath;
-                if (result == null) {
-                    result = FileSystems.getDefault().getPath(path);
-                    filePath = result;
-                }
-            }
-        }
-        return result;
-    }
+//    public Path toPath() {
+//        Path result = filePath;
+//        if (result == null) {
+//            synchronized (this) {
+//                result = filePath;
+//                if (result == null) {
+//                    result = FileSystems.getDefault().getPath(path);
+//                    filePath = result;
+//                }
+//            }
+//        }
+//        return result;
+//    }
 }

@@ -24,13 +24,7 @@
  */
 
 package java.util.logging;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.io.*;
-
-import sun.misc.JavaLangAccess;
-import sun.misc.SharedSecrets;
 
 /**
  * LogRecord objects are used to pass logging requests between
@@ -69,8 +63,7 @@ import sun.misc.SharedSecrets;
  */
 
 public class LogRecord implements java.io.Serializable {
-    private static final AtomicLong globalSequenceNumber
-        = new AtomicLong(0);
+    private static long globalSequenceNumber = 0;
 
     /**
      * The default value of threadID will be the current thread's
@@ -81,11 +74,6 @@ public class LogRecord implements java.io.Serializable {
      * returns int, while Thread.getId() returns long.
      */
     private static final int MIN_SEQUENTIAL_THREAD_ID = Integer.MAX_VALUE / 2;
-
-    private static final AtomicInteger nextThreadId
-        = new AtomicInteger(MIN_SEQUENTIAL_THREAD_ID);
-
-    private static final ThreadLocal<Integer> threadIds = new ThreadLocal<>();
 
     /**
      * @serial Logging message level
@@ -139,23 +127,12 @@ public class LogRecord implements java.io.Serializable {
 
     private transient boolean needToInferCaller;
     private transient Object parameters[];
-    private transient ResourceBundle resourceBundle;
 
     /**
      * Returns the default value for a new LogRecord's threadID.
      */
     private int defaultThreadID() {
-        long tid = Thread.currentThread().getId();
-        if (tid < MIN_SEQUENTIAL_THREAD_ID) {
-            return (int) tid;
-        } else {
-            Integer id = threadIds.get();
-            if (id == null) {
-                id = nextThreadId.getAndIncrement();
-                threadIds.set(id);
-            }
-            return id;
-        }
+        return 0;
     }
 
     /**
@@ -180,7 +157,7 @@ public class LogRecord implements java.io.Serializable {
         this.level = level;
         message = msg;
         // Assign a thread ID and a unique sequence number.
-        sequenceNumber = globalSequenceNumber.getAndIncrement();
+        sequenceNumber = globalSequenceNumber++;
         threadID = defaultThreadID();
         millis = System.currentTimeMillis();
         needToInferCaller = true;
@@ -212,18 +189,18 @@ public class LogRecord implements java.io.Serializable {
      * be null if the message is not localizable, or if no suitable
      * ResourceBundle is available.
      */
-    public ResourceBundle getResourceBundle() {
-        return resourceBundle;
-    }
+//    public ResourceBundle getResourceBundle() {
+//        return resourceBundle;
+//    }
 
     /**
      * Set the localization resource bundle.
      *
      * @param bundle  localization bundle (may be null)
      */
-    public void setResourceBundle(ResourceBundle bundle) {
-        resourceBundle = bundle;
-    }
+//    public void setResourceBundle(ResourceBundle bundle) {
+//        resourceBundle = bundle;
+//    }
 
     /**
      * Get the localization resource bundle name
@@ -301,9 +278,6 @@ public class LogRecord implements java.io.Serializable {
      * @return the source class name
      */
     public String getSourceClassName() {
-        if (needToInferCaller) {
-            inferCaller();
-        }
         return sourceClassName;
     }
 
@@ -332,9 +306,6 @@ public class LogRecord implements java.io.Serializable {
      * @return the source method name
      */
     public String getSourceMethodName() {
-        if (needToInferCaller) {
-            inferCaller();
-        }
         return sourceMethodName;
     }
 
@@ -487,75 +458,6 @@ public class LogRecord implements java.io.Serializable {
         }
     }
 
-    private void readObject(ObjectInputStream in)
-                        throws IOException, ClassNotFoundException {
-        // We have to call defaultReadObject first.
-        in.defaultReadObject();
-
-        // Read version number.
-        byte major = in.readByte();
-        byte minor = in.readByte();
-        if (major != 1) {
-            throw new IOException("LogRecord: bad version: " + major + "." + minor);
-        }
-        int len = in.readInt();
-        if (len == -1) {
-            parameters = null;
-        } else {
-            parameters = new Object[len];
-            for (int i = 0; i < parameters.length; i++) {
-                parameters[i] = in.readObject();
-            }
-        }
-        // If necessary, try to regenerate the resource bundle.
-        if (resourceBundleName != null) {
-            try {
-                resourceBundle = ResourceBundle.getBundle(resourceBundleName);
-            } catch (MissingResourceException ex) {
-                // This is not a good place to throw an exception,
-                // so we simply leave the resourceBundle null.
-                resourceBundle = null;
-            }
-        }
-
-        needToInferCaller = false;
-    }
-
-    // Private method to infer the caller's class and method names
-    private void inferCaller() {
-        needToInferCaller = false;
-        JavaLangAccess access = SharedSecrets.getJavaLangAccess();
-        Throwable throwable = new Throwable();
-        int depth = access.getStackTraceDepth(throwable);
-
-        boolean lookingForLogger = true;
-        for (int ix = 0; ix < depth; ix++) {
-            // Calling getStackTraceElement directly prevents the VM
-            // from paying the cost of building the entire stack frame.
-            StackTraceElement frame =
-                access.getStackTraceElement(throwable, ix);
-            String cname = frame.getClassName();
-            boolean isLoggerImpl = isLoggerImplFrame(cname);
-            if (lookingForLogger) {
-                // Skip all frames until we have found the first logger frame.
-                if (isLoggerImpl) {
-                    lookingForLogger = false;
-                }
-            } else {
-                if (!isLoggerImpl) {
-                    // skip reflection call
-                    if (!cname.startsWith("java.lang.reflect.") && !cname.startsWith("sun.reflect.")) {
-                       // We've found the relevant frame.
-                       setSourceClassName(cname);
-                       setSourceMethodName(frame.getMethodName());
-                       return;
-                    }
-                }
-            }
-        }
-        // We haven't found a suitable frame, so just punt.  This is
-        // OK as we are only committed to making a "best effort" here.
-    }
 
     private boolean isLoggerImplFrame(String cname) {
         // the log record could be created for a platform logger

@@ -872,7 +872,7 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
 
     private static Random getSecureRandom() {
         if (staticRandom == null) {
-            staticRandom = new java.security.SecureRandom();
+            staticRandom = new Random();
         }
         return staticRandom;
     }
@@ -3070,71 +3070,7 @@ public class BigInteger extends Number implements Comparable<BigInteger> {
         new ObjectStreamField("lowestSetBit", Integer.TYPE)
         };
 
-    /**
-     * Reconstitute the {@code BigInteger} instance from a stream (that is,
-     * deserialize it). The magnitude is read in as an array of bytes
-     * for historical reasons, but it is converted to an array of ints
-     * and the byte array is discarded.
-     * Note:
-     * The current convention is to initialize the cache fields, bitCount,
-     * bitLength and lowestSetBit, to 0 rather than some other marker value.
-     * Therefore, no explicit action to set these fields needs to be taken in
-     * readObject because those fields already have a 0 value be default since
-     * defaultReadObject is not being used.
-     */
-    private void readObject(java.io.ObjectInputStream s)
-        throws java.io.IOException, ClassNotFoundException {
-        /*
-         * In order to maintain compatibility with previous serialized forms,
-         * the magnitude of a BigInteger is serialized as an array of bytes.
-         * The magnitude field is used as a temporary store for the byte array
-         * that is deserialized. The cached computation fields should be
-         * transient but are serialized for compatibility reasons.
-         */
 
-        // prepare to read the alternate persistent fields
-        ObjectInputStream.GetField fields = s.readFields();
-
-        // Read the alternate persistent fields that we care about
-        int sign = fields.get("signum", -2);
-        byte[] magnitude = (byte[])fields.get("magnitude", null);
-
-        // Validate signum
-        if (sign < -1 || sign > 1) {
-            String message = "BigInteger: Invalid signum value";
-            if (fields.defaulted("signum"))
-                message = "BigInteger: Signum not present in stream";
-            throw new java.io.StreamCorruptedException(message);
-        }
-        if ((magnitude.length == 0) != (sign == 0)) {
-            String message = "BigInteger: signum-magnitude mismatch";
-            if (fields.defaulted("magnitude"))
-                message = "BigInteger: Magnitude not present in stream";
-            throw new java.io.StreamCorruptedException(message);
-        }
-
-        // Commit final fields via Unsafe
-        unsafe.putIntVolatile(this, signumOffset, sign);
-
-        // Calculate mag field from magnitude and discard magnitude
-        unsafe.putObjectVolatile(this, magOffset,
-                                 stripLeadingZeroBytes(magnitude));
-    }
-
-    // Support for resetting final fields while deserializing
-    private static final sun.misc.Unsafe unsafe = sun.misc.Unsafe.getUnsafe();
-    private static final long signumOffset;
-    private static final long magOffset;
-    static {
-        try {
-            signumOffset = unsafe.objectFieldOffset
-                (BigInteger.class.getDeclaredField("signum"));
-            magOffset = unsafe.objectFieldOffset
-                (BigInteger.class.getDeclaredField("mag"));
-        } catch (Exception ex) {
-            throw new Error(ex);
-        }
-    }
 
     /**
      * Save the {@code BigInteger} instance to a stream.

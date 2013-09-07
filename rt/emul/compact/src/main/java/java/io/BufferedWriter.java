@@ -106,8 +106,7 @@ public class BufferedWriter extends Writer {
         nChars = sz;
         nextChar = 0;
 
-        lineSeparator = java.security.AccessController.doPrivileged(
-            new sun.security.action.GetPropertyAction("line.separator"));
+        lineSeparator = "\n";
     }
 
     /** Checks to make sure that the stream has not been closed */

@@ -17,6 +17,7 @@
  */
 package org.apidesign.bck2brwsr.tck;
 
+import java.util.logging.Logger;
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
@@ -25,36 +26,18 @@ import org.testng.annotations.Factory;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class CompareHashTest {
-    @Compare public int hashOfString() {
-        return "Ahoj".hashCode();
+public class LoggerTest {
+    @Compare public String parentLogger() {
+        Logger lx = Logger.getLogger("x");
+        assert lx != null;
+        assert lx.getName().equals("x") : "Right name: " + lx.getName();
+        Logger lxyz = Logger.getLogger("x.y.z");
+        assert lxyz != null;
+        assert lxyz.getName().equals("x.y.z") : "xyz name: " + lxyz.getName();
+        return lxyz.getParent().getName();
     }
     
-    @Compare public boolean hashOfIntegerDifferentToOwnHash() {
-        Integer i = 120;
-        return System.identityHashCode(i) != i.hashCode();
-    }
-
-    @Compare public int hashOfObjectSameAsOwnHash() {
-        Object o = new Object();
-        return System.identityHashCode(o) - o.hashCode();
-    }
-    
-    @Compare public int hashRemainsYieldsZero() {
-        Object o = new Object();
-        return o.hashCode() - o.hashCode();
-    }
-    
-    @Compare public int initializeInStatic() {
-        return StaticUse.NON_NULL.hashCode() - StaticUse.NON_NULL.hashCode();
-    }
-    
-    @Compare public int hashOfInt() {
-        return Integer.valueOf(Integer.MAX_VALUE).hashCode();
-    }
-    
-    @Factory
-    public static Object[] create() {
-        return VMTest.create(CompareHashTest.class);
+    @Factory public static Object[] create() {
+        return VMTest.create(LoggerTest.class);
     }
 }

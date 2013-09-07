@@ -30,15 +30,6 @@ import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CharsetEncoder;
-import java.nio.charset.CoderResult;
-import java.nio.charset.CodingErrorAction;
-import java.nio.charset.CharacterCodingException;
-import java.text.Normalizer;
-import sun.nio.cs.ThreadLocalCoders;
 
 import java.lang.Character;             // for javadoc
 import java.lang.NullPointerException;  // for javadoc
@@ -2631,6 +2622,7 @@ public final class URI
     }
 
     private static void appendEncoded(StringBuffer sb, char c) {
+        /*
         ByteBuffer bb = null;
         try {
             bb = ThreadLocalCoders.encoderFor("UTF-8")
@@ -2645,6 +2637,7 @@ public final class URI
             else
                 sb.append((char)b);
         }
+        */
     }
 
     // Quote any characters in s that are not permitted
@@ -2698,7 +2691,7 @@ public final class URI
             if (++i >= n)
                 return s;
         }
-
+/*
         String ns = Normalizer.normalize(s, Normalizer.Form.NFC);
         ByteBuffer bb = null;
         try {
@@ -2707,8 +2700,9 @@ public final class URI
         } catch (CharacterCodingException x) {
             assert false;
         }
-
+*/
         StringBuffer sb = new StringBuffer();
+        /*
         while (bb.hasRemaining()) {
             int b = bb.get() & 0xff;
             if (b >= 0x80)
@@ -2716,6 +2710,7 @@ public final class URI
             else
                 sb.append((char)b);
         }
+        */
         return sb.toString();
     }
 
@@ -2752,6 +2747,7 @@ public final class URI
             return s;
 
         StringBuffer sb = new StringBuffer(n);
+        /*
         ByteBuffer bb = ByteBuffer.allocate(n);
         CharBuffer cb = CharBuffer.allocate(n);
         CharsetDecoder dec = ThreadLocalCoders.decoderFor("UTF-8")
@@ -2796,7 +2792,7 @@ public final class URI
             assert cr.isUnderflow();
             sb.append(cb.flip().toString());
         }
-
+*/
         return sb.toString();
     }
 

@@ -272,14 +272,6 @@ public class BigDecimal extends Number implements Comparable<BigDecimal> {
     /* Appease the serialization gods */
     private static final long serialVersionUID = 6108874887143696463L;
 
-    private static final ThreadLocal<StringBuilderHelper>
-        threadLocalStringBuilderHelper = new ThreadLocal<StringBuilderHelper>() {
-        @Override
-        protected StringBuilderHelper initialValue() {
-            return new StringBuilderHelper();
-        }
-    };
-
     // Cache of common small BigDecimal values.
     private static final BigDecimal zeroThroughTen[] = {
         new BigDecimal(BigInteger.ZERO,         0,  0, 1),
@@ -3163,6 +3155,7 @@ public class BigDecimal extends Number implements Comparable<BigDecimal> {
     // negative) if its intCompact field is not INFLATED. It is shared by all
     // calls to toString() and its variants in that particular thread.
     static class StringBuilderHelper {
+        private static StringBuilderHelper INSTANCE = new StringBuilderHelper();
         final StringBuilder sb;    // Placeholder for BigDecimal string
         final char[] cmpCharArray; // character array to place the intCompact
 
@@ -3269,7 +3262,7 @@ public class BigDecimal extends Number implements Comparable<BigDecimal> {
                 Long.toString(intCompact):
                 intVal.toString();
 
-        StringBuilderHelper sbHelper = threadLocalStringBuilderHelper.get();
+        StringBuilderHelper sbHelper = StringBuilderHelper.INSTANCE;
         char[] coeff;
         int offset;  // offset is the starting index for coeff array
         // Get the significand as an absolute value
@@ -3797,12 +3790,6 @@ public class BigDecimal extends Number implements Comparable<BigDecimal> {
      * Internal printing routine
      */
     private static void print(String name, BigDecimal bd) {
-        System.err.format("%s:\tintCompact %d\tintVal %d\tscale %d\tprecision %d%n",
-                          name,
-                          bd.intCompact,
-                          bd.intVal,
-                          bd.scale,
-                          bd.precision);
     }
 
     /**

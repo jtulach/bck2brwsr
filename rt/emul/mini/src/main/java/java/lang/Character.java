@@ -2298,6 +2298,10 @@ class Character implements java.io.Serializable, Comparable<Character> {
      */
     @Deprecated
     public static boolean isSpace(char ch) {
+        return isSpaceChar(ch);
+    }
+
+    public static boolean isSpaceChar(int ch) {
         return (ch <= 0x0020) &&
             (((((1L << 0x0009) |
             (1L << 0x000A) |
@@ -2305,7 +2309,6 @@ class Character implements java.io.Serializable, Comparable<Character> {
             (1L << 0x000D) |
             (1L << 0x0020)) >> ch) & 1L) != 0);
     }
-
 
 
     /**

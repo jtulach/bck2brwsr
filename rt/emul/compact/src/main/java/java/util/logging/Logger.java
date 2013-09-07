@@ -26,10 +26,9 @@
 
 package java.util.logging;
 
-import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.security.*;
-import java.lang.ref.WeakReference;
+import java.util.HashMap;
+import java.util.Map;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
  * A Logger object is used to log messages for a specific
@@ -165,31 +164,13 @@ import java.lang.ref.WeakReference;
 
 
 public class Logger {
-    private static final Handler emptyHandlers[] = new Handler[0];
-    private static final int offValue = Level.OFF.intValue();
-    private LogManager manager;
+    private static int offValue = Level.OFF.intValue();
+    private static final Map<String,Logger> ALL = new HashMap<>();
     private String name;
-    private final CopyOnWriteArrayList<Handler> handlers =
-        new CopyOnWriteArrayList<>();
-    private String resourceBundleName;
-    private volatile boolean useParentHandlers = true;
-    private volatile Filter filter;
-    private boolean anonymous;
 
-    private ResourceBundle catalog;     // Cached resource bundle
-    private String catalogName;         // name associated with catalog
-    private Locale catalogLocale;       // locale associated with catalog
-
-    // The fields relating to parent-child relationships and levels
-    // are managed under a separate lock, the treeLock.
-    private static Object treeLock = new Object();
-    // We keep weak references from parents to children, but strong
-    // references from children to parents.
-    private volatile Logger parent;    // our nearest parent.
-    private ArrayList<LogManager.LoggerWeakRef> kids;   // WeakReferences to loggers that have us as parent
-    private volatile Level levelObject;
     private volatile int levelValue;  // current effective level value
-
+    private Level levelObject;
+    
     /**
      * GLOBAL_LOGGER_NAME is a name for the global logger.
      *
@@ -249,11 +230,6 @@ public class Logger {
      *             no corresponding resource can be found.
      */
     protected Logger(String name, String resourceBundleName) {
-        this.manager = LogManager.getLogManager();
-        if (resourceBundleName != null) {
-            // Note: we may get a MissingResourceException here.
-            setupResourceInfo(resourceBundleName);
-        }
         this.name = name;
         levelValue = Level.INFO.intValue();
     }
@@ -267,20 +243,8 @@ public class Logger {
         levelValue = Level.INFO.intValue();
     }
 
-    // It is called from the LogManager.<clinit> to complete
-    // initialization of the global Logger.
-    void setLogManager(LogManager manager) {
-        this.manager = manager;
-    }
-
     private void checkAccess() throws SecurityException {
-        if (!anonymous) {
-            if (manager == null) {
-                // Complete initialization of the global Logger.
-                manager = LogManager.getLogManager();
-            }
-            manager.checkAccess();
-        }
+        throw new SecurityException();
     }
 
     /**
@@ -314,18 +278,7 @@ public class Logger {
     // Synchronization is not required here. All synchronization for
     // adding a new Logger object is handled by LogManager.addLogger().
     public static Logger getLogger(String name) {
-        // This method is intentionally not a wrapper around a call
-        // to getLogger(name, resourceBundleName). If it were then
-        // this sequence:
-        //
-        //     getLogger("Foo", "resourceBundleForFoo");
-        //     getLogger("Foo");
-        //
-        // would throw an IllegalArgumentException in the second call
-        // because the wrapper would result in an attempt to replace
-        // the existing "resourceBundleForFoo" with null.
-        LogManager manager = LogManager.getLogManager();
-        return manager.demandLogger(name);
+        return getLogger(name, null);
     }
 
     /**
@@ -372,16 +325,12 @@ public class Logger {
     // Synchronization is not required here. All synchronization for
     // adding a new Logger object is handled by LogManager.addLogger().
     public static Logger getLogger(String name, String resourceBundleName) {
-        LogManager manager = LogManager.getLogManager();
-        Logger result = manager.demandLogger(name);
-        if (result.resourceBundleName == null) {
-            // Note: we may get a MissingResourceException here.
-            result.setupResourceInfo(resourceBundleName);
-        } else if (!result.resourceBundleName.equals(resourceBundleName)) {
-            throw new IllegalArgumentException(result.resourceBundleName +
-                                " != " + resourceBundleName);
+        Logger l = ALL.get(name);
+        if (l == null) {
+            l = new Logger(name, resourceBundleName);
+            ALL.put(name, l);
         }
-        return result;
+        return l;
     }
 
 
@@ -437,14 +386,7 @@ public class Logger {
     // Synchronization is not required here. All synchronization for
     // adding a new anonymous Logger object is handled by doSetParent().
     public static Logger getAnonymousLogger(String resourceBundleName) {
-        LogManager manager = LogManager.getLogManager();
-        // cleanup some Loggers that have been GC'ed
-        manager.drainLoggerRefQueueBounded();
-        Logger result = new Logger(null, resourceBundleName);
-        result.anonymous = true;
-        Logger root = manager.getLogger("");
-        result.doSetParent(root);
-        return result;
+        return new Logger(null, resourceBundleName);
     }
 
     /**
@@ -455,9 +397,9 @@ public class Logger {
      *
      * @return localization bundle (may be null)
      */
-    public ResourceBundle getResourceBundle() {
-        return findResourceBundle(getResourceBundleName());
-    }
+//    public ResourceBundle getResourceBundle() {
+//        return findResourceBundle(getResourceBundleName());
+//    }
 
     /**
      * Retrieve the localization resource bundle name for this
@@ -467,7 +409,7 @@ public class Logger {
      * @return localization bundle name (may be null)
      */
     public String getResourceBundleName() {
-        return resourceBundleName;
+        return null;
     }
 
     /**
@@ -481,19 +423,18 @@ public class Logger {
      * @exception  SecurityException  if a security manager exists and if
      *             the caller does not have LoggingPermission("control").
      */
-    public void setFilter(Filter newFilter) throws SecurityException {
-        checkAccess();
-        filter = newFilter;
-    }
+//    public void setFilter(Filter newFilter) throws SecurityException {
+//        checkAccess();
+//    }
 
     /**
      * Get the current filter for this Logger.
      *
      * @return  a filter object (may be null)
      */
-    public Filter getFilter() {
-        return filter;
-    }
+//    public Filter getFilter() {
+//        return filter;
+//    }
 
     /**
      * Log a LogRecord.
@@ -505,41 +446,32 @@ public class Logger {
      * @param record the LogRecord to be published
      */
     public void log(LogRecord record) {
-        if (record.getLevel().intValue() < levelValue || levelValue == offValue) {
-            return;
-        }
-        Filter theFilter = filter;
-        if (theFilter != null && !theFilter.isLoggable(record)) {
+        if (record.getLevel().intValue() < levelValue) {
             return;
         }
 
-        // Post the LogRecord to all our Handlers, and then to
-        // our parents' handlers, all the way up the tree.
-
-        Logger logger = this;
-        while (logger != null) {
-            for (Handler handler : logger.getHandlers()) {
-                handler.publish(record);
-            }
-
-            if (!logger.getUseParentHandlers()) {
-                break;
-            }
-
-            logger = logger.getParent();
-        }
+        consoleLog(
+            record.getLevel().toString(), 
+            record.getLoggerName(),
+            record.getMessage()
+        );
     }
+    
+    @JavaScriptBody(args = { "method", "logger", "msg" }, body = 
+        "window.console[method]('[' + logger + ']: ' + msg);"
+    )
+    private static native void consoleLog(
+        String method, String logger, String msg
+    );
 
     // private support method for logging.
     // We fill in the logger name, resource bundle name, and
     // resource bundle and then call "void log(LogRecord)".
     private void doLog(LogRecord lr) {
+        doLog(lr, lr.getResourceBundleName());
+    }
+    private void doLog(LogRecord lr, String bundleName) {
         lr.setLoggerName(name);
-        String ebname = getEffectiveResourceBundleName();
-        if (ebname != null) {
-            lr.setResourceBundleName(ebname);
-            lr.setResourceBundle(findResourceBundle(ebname));
-        }
         log(lr);
     }
 
@@ -748,17 +680,6 @@ public class Logger {
     // Start of convenience methods WITH className, methodName and bundle name.
     //=========================================================================
 
-    // Private support method for logging for "logrb" methods.
-    // We fill in the logger name, resource bundle name, and
-    // resource bundle and then call "void log(LogRecord)".
-    private void doLog(LogRecord lr, String rbname) {
-        lr.setLoggerName(name);
-        if (rbname != null) {
-            lr.setResourceBundleName(rbname);
-            lr.setResourceBundle(findResourceBundle(rbname));
-        }
-        log(lr);
-    }
 
     /**
      * Log a message, specifying source class, method, and resource bundle name
@@ -1168,11 +1089,8 @@ public class Logger {
      *             the caller does not have LoggingPermission("control").
      */
     public void setLevel(Level newLevel) throws SecurityException {
-        checkAccess();
-        synchronized (treeLock) {
-            levelObject = newLevel;
-            updateEffectiveLevel();
-        }
+        levelValue = newLevel.intValue();
+        levelObject = newLevel;
     }
 
     /**
@@ -1220,12 +1138,12 @@ public class Logger {
      * @exception  SecurityException  if a security manager exists and if
      *             the caller does not have LoggingPermission("control").
      */
-    public void addHandler(Handler handler) throws SecurityException {
-        // Check for null handler
-        handler.getClass();
-        checkAccess();
-        handlers.add(handler);
-    }
+//    public void addHandler(Handler handler) throws SecurityException {
+//        // Check for null handler
+//        handler.getClass();
+//        checkAccess();
+//        handlers.add(handler);
+//    }
 
     /**
      * Remove a log Handler.
@@ -1236,22 +1154,22 @@ public class Logger {
      * @exception  SecurityException  if a security manager exists and if
      *             the caller does not have LoggingPermission("control").
      */
-    public void removeHandler(Handler handler) throws SecurityException {
-        checkAccess();
-        if (handler == null) {
-            return;
-        }
-        handlers.remove(handler);
-    }
+//    public void removeHandler(Handler handler) throws SecurityException {
+//        checkAccess();
+//        if (handler == null) {
+//            return;
+//        }
+//        handlers.remove(handler);
+//    }
 
     /**
      * Get the Handlers associated with this logger.
      * <p>
      * @return  an array of all registered Handlers
      */
-    public Handler[] getHandlers() {
-        return handlers.toArray(emptyHandlers);
-    }
+//    public Handler[] getHandlers() {
+//        return handlers.toArray(emptyHandlers);
+//    }
 
     /**
      * Specify whether or not this logger should send its output
@@ -1266,7 +1184,6 @@ public class Logger {
      */
     public void setUseParentHandlers(boolean useParentHandlers) {
         checkAccess();
-        this.useParentHandlers = useParentHandlers;
     }
 
     /**
@@ -1276,97 +1193,7 @@ public class Logger {
      * @return  true if output is to be sent to the logger's parent
      */
     public boolean getUseParentHandlers() {
-        return useParentHandlers;
-    }
-
-    // Private utility method to map a resource bundle name to an
-    // actual resource bundle, using a simple one-entry cache.
-    // Returns null for a null name.
-    // May also return null if we can't find the resource bundle and
-    // there is no suitable previous cached value.
-
-    private synchronized ResourceBundle findResourceBundle(String name) {
-        // Return a null bundle for a null name.
-        if (name == null) {
-            return null;
-        }
-
-        Locale currentLocale = Locale.getDefault();
-
-        // Normally we should hit on our simple one entry cache.
-        if (catalog != null && currentLocale == catalogLocale
-                                        && name == catalogName) {
-            return catalog;
-        }
-
-        // Use the thread's context ClassLoader.  If there isn't one,
-        // use the SystemClassloader.
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        if (cl == null) {
-            cl = ClassLoader.getSystemClassLoader();
-        }
-        try {
-            catalog = ResourceBundle.getBundle(name, currentLocale, cl);
-            catalogName = name;
-            catalogLocale = currentLocale;
-            return catalog;
-        } catch (MissingResourceException ex) {
-            // Woops.  We can't find the ResourceBundle in the default
-            // ClassLoader.  Drop through.
-        }
-
-
-        // Fall back to searching up the call stack and trying each
-        // calling ClassLoader.
-        for (int ix = 0; ; ix++) {
-            Class clz = sun.reflect.Reflection.getCallerClass(ix);
-            if (clz == null) {
-                break;
-            }
-            ClassLoader cl2 = clz.getClassLoader();
-            if (cl2 == null) {
-                cl2 = ClassLoader.getSystemClassLoader();
-            }
-            if (cl == cl2) {
-                // We've already checked this classloader.
-                continue;
-            }
-            cl = cl2;
-            try {
-                catalog = ResourceBundle.getBundle(name, currentLocale, cl);
-                catalogName = name;
-                catalogLocale = currentLocale;
-                return catalog;
-            } catch (MissingResourceException ex) {
-                // Ok, this one didn't work either.
-                // Drop through, and try the next one.
-            }
-        }
-
-        if (name.equals(catalogName)) {
-            // Return the previous cached value for that name.
-            // This may be null.
-            return catalog;
-        }
-        // Sorry, we're out of luck.
-        return null;
-    }
-
-    // Private utility method to initialize our one entry
-    // resource bundle cache.
-    // Note: for consistency reasons, we are careful to check
-    // that a suitable ResourceBundle exists before setting the
-    // ResourceBundleName.
-    private synchronized void setupResourceInfo(String name) {
-        if (name == null) {
-            return;
-        }
-        ResourceBundle rb = findResourceBundle(name);
-        if (rb == null) {
-            // We've failed to find an expected ResourceBundle.
-            throw new MissingResourceException("Can't find " + name + " bundle", name, "");
-        }
-        resourceBundleName = name;
+        return true;
     }
 
     /**
@@ -1388,7 +1215,19 @@ public class Logger {
         // would synchronize on treeLock (in fact, there is no way for external
         // callers to so synchronize).  Therefore, we have made parent volatile
         // instead.
-        return parent;
+        String n = getName();
+        int at = n.length();
+        for (;;) {
+            int last = n.lastIndexOf('.', at - 1);
+            if (last == -1) {
+                return getGlobal();
+            }
+            Logger p = ALL.get(n.substring(0, last));
+            if (p != null) {
+                return p;
+            }
+            at = last;
+        }
     }
 
     /**
@@ -1405,126 +1244,7 @@ public class Logger {
         if (parent == null) {
             throw new NullPointerException();
         }
-        manager.checkAccess();
-        doSetParent(parent);
+        checkAccess();
     }
-
-    // Private method to do the work for parenting a child
-    // Logger onto a parent logger.
-    private void doSetParent(Logger newParent) {
-
-        // System.err.println("doSetParent \"" + getName() + "\" \""
-        //                              + newParent.getName() + "\"");
-
-        synchronized (treeLock) {
-
-            // Remove ourself from any previous parent.
-            LogManager.LoggerWeakRef ref = null;
-            if (parent != null) {
-                // assert parent.kids != null;
-                for (Iterator<LogManager.LoggerWeakRef> iter = parent.kids.iterator(); iter.hasNext(); ) {
-                    ref = iter.next();
-                    Logger kid =  ref.get();
-                    if (kid == this) {
-                        // ref is used down below to complete the reparenting
-                        iter.remove();
-                        break;
-                    } else {
-                        ref = null;
-                    }
-                }
-                // We have now removed ourself from our parents' kids.
-            }
-
-            // Set our new parent.
-            parent = newParent;
-            if (parent.kids == null) {
-                parent.kids = new ArrayList<>(2);
-            }
-            if (ref == null) {
-                // we didn't have a previous parent
-                ref = manager.new LoggerWeakRef(this);
-            }
-            ref.setParentRef(new WeakReference<Logger>(parent));
-            parent.kids.add(ref);
-
-            // As a result of the reparenting, the effective level
-            // may have changed for us and our children.
-            updateEffectiveLevel();
-
-        }
-    }
-
-    // Package-level method.
-    // Remove the weak reference for the specified child Logger from the
-    // kid list. We should only be called from LoggerWeakRef.dispose().
-    final void removeChildLogger(LogManager.LoggerWeakRef child) {
-        synchronized (treeLock) {
-            for (Iterator<LogManager.LoggerWeakRef> iter = kids.iterator(); iter.hasNext(); ) {
-                LogManager.LoggerWeakRef ref = iter.next();
-                if (ref == child) {
-                    iter.remove();
-                    return;
-                }
-            }
-        }
-    }
-
-    // Recalculate the effective level for this node and
-    // recursively for our children.
-
-    private void updateEffectiveLevel() {
-        // assert Thread.holdsLock(treeLock);
-
-        // Figure out our current effective level.
-        int newLevelValue;
-        if (levelObject != null) {
-            newLevelValue = levelObject.intValue();
-        } else {
-            if (parent != null) {
-                newLevelValue = parent.levelValue;
-            } else {
-                // This may happen during initialization.
-                newLevelValue = Level.INFO.intValue();
-            }
-        }
-
-        // If our effective value hasn't changed, we're done.
-        if (levelValue == newLevelValue) {
-            return;
-        }
-
-        levelValue = newLevelValue;
-
-        // System.err.println("effective level: \"" + getName() + "\" := " + level);
-
-        // Recursively update the level on each of our kids.
-        if (kids != null) {
-            for (int i = 0; i < kids.size(); i++) {
-                LogManager.LoggerWeakRef ref = kids.get(i);
-                Logger kid =  ref.get();
-                if (kid != null) {
-                    kid.updateEffectiveLevel();
-                }
-            }
-        }
-    }
-
-
-    // Private method to get the potentially inherited
-    // resource bundle name for this Logger.
-    // May return null
-    private String getEffectiveResourceBundleName() {
-        Logger target = this;
-        while (target != null) {
-            String rbn = target.getResourceBundleName();
-            if (rbn != null) {
-                return rbn;
-            }
-            target = target.getParent();
-        }
-        return null;
-    }
-
 
 }

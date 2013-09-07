@@ -24,7 +24,6 @@
  */
 
 package java.util.logging;
-import java.util.ResourceBundle;
 
 /**
  * The Level class defines a set of standard logging levels that
@@ -236,12 +235,7 @@ public class Level implements java.io.Serializable {
      * @return localized name
      */
     public String getLocalizedName() {
-        try {
-            ResourceBundle rb = ResourceBundle.getBundle(resourceBundleName);
-            return rb.getString(name);
-        } catch (Exception ex) {
-            return name;
-        }
+        return getName();
     }
 
     /**

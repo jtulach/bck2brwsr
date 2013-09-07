@@ -25,11 +25,8 @@
 
 package java.io;
 
-import java.util.Formatter;
-import java.util.Locale;
-import java.nio.charset.Charset;
-import java.nio.charset.IllegalCharsetNameException;
-import java.nio.charset.UnsupportedCharsetException;
+import java.util.Arrays;
+
 
 /**
  * A <code>PrintStream</code> adds functionality to another output stream,
@@ -80,23 +77,6 @@ public class PrintStream extends FilterOutputStream
         return obj;
     }
 
-    /**
-     * Returns a charset object for the given charset name.
-     * @throws NullPointerException          is csn is null
-     * @throws UnsupportedEncodingException  if the charset is not supported
-     */
-    private static Charset toCharset(String csn)
-        throws UnsupportedEncodingException
-    {
-        requireNonNull(csn, "charsetName");
-        try {
-            return Charset.forName(csn);
-        } catch (IllegalCharsetNameException|UnsupportedCharsetException unused) {
-            // UnsupportedEncodingException should be thrown
-            throw new UnsupportedEncodingException(csn);
-        }
-    }
-
     /* Private constructors */
     private PrintStream(boolean autoFlush, OutputStream out) {
         super(out);
@@ -104,11 +84,24 @@ public class PrintStream extends FilterOutputStream
         this.charOut = new OutputStreamWriter(this);
         this.textOut = new BufferedWriter(charOut);
     }
+    
+    static final class Formatter {
+    }
+    
+    static final class Charset {
+    }
+    
+    static Charset toCharset(String ch) throws UnsupportedEncodingException {
+        if (!"UTF-8".equals(ch)) {
+            throw new UnsupportedEncodingException();
+        }
+        return null;
+    }
 
     private PrintStream(boolean autoFlush, OutputStream out, Charset charset) {
         super(out);
         this.autoFlush = autoFlush;
-        this.charOut = new OutputStreamWriter(this, charset);
+        this.charOut = new OutputStreamWriter(this);
         this.textOut = new BufferedWriter(charOut);
     }
 
@@ -205,7 +198,8 @@ public class PrintStream extends FilterOutputStream
      * @since  1.5
      */
     public PrintStream(String fileName) throws FileNotFoundException {
-        this(false, new FileOutputStream(fileName));
+        super(null);
+        throw new FileNotFoundException();
     }
 
     /**
@@ -244,8 +238,8 @@ public class PrintStream extends FilterOutputStream
     public PrintStream(String fileName, String csn)
         throws FileNotFoundException, UnsupportedEncodingException
     {
-        // ensure charset is checked before the file is opened
-        this(false, toCharset(csn), new FileOutputStream(fileName));
+        super(null);
+        throw new FileNotFoundException();
     }
 
     /**
@@ -276,7 +270,8 @@ public class PrintStream extends FilterOutputStream
      * @since  1.5
      */
     public PrintStream(File file) throws FileNotFoundException {
-        this(false, new FileOutputStream(file));
+        super(null);
+        throw new FileNotFoundException();
     }
 
     /**
@@ -315,8 +310,8 @@ public class PrintStream extends FilterOutputStream
     public PrintStream(File file, String csn)
         throws FileNotFoundException, UnsupportedEncodingException
     {
-        // ensure charset is checked before the file is opened
-        this(false, toCharset(csn), new FileOutputStream(file));
+        super(null);
+        throw new FileNotFoundException();
     }
 
     /** Check to make sure that the stream has not been closed */
@@ -868,7 +863,8 @@ public class PrintStream extends FilterOutputStream
      * @since  1.5
      */
     public PrintStream printf(String format, Object ... args) {
-        return format(format, args);
+        append(format).append(Arrays.toString(args));
+        return this;
     }
 
     /**
@@ -917,9 +913,9 @@ public class PrintStream extends FilterOutputStream
      *
      * @since  1.5
      */
-    public PrintStream printf(Locale l, String format, Object ... args) {
-        return format(l, format, args);
-    }
+//    public PrintStream printf(Locale l, String format, Object ... args) {
+//        return format(l, format, args);
+//    }
 
     /**
      * Writes a formatted string to this output stream using the specified
@@ -960,22 +956,22 @@ public class PrintStream extends FilterOutputStream
      *
      * @since  1.5
      */
-    public PrintStream format(String format, Object ... args) {
-        try {
-            synchronized (this) {
-                ensureOpen();
-                if ((formatter == null)
-                    || (formatter.locale() != Locale.getDefault()))
-                    formatter = new Formatter((Appendable) this);
-                formatter.format(Locale.getDefault(), format, args);
-            }
-        } catch (InterruptedIOException x) {
-            Thread.currentThread().interrupt();
-        } catch (IOException x) {
-            trouble = true;
-        }
-        return this;
-    }
+//    public PrintStream format(String format, Object ... args) {
+//        try {
+//            synchronized (this) {
+//                ensureOpen();
+//                if ((formatter == null)
+//                    || (formatter.locale() != Locale.getDefault()))
+//                    formatter = new Formatter((Appendable) this);
+//                formatter.format(Locale.getDefault(), format, args);
+//            }
+//        } catch (InterruptedIOException x) {
+//            Thread.currentThread().interrupt();
+//        } catch (IOException x) {
+//            trouble = true;
+//        }
+//        return this;
+//    }
 
     /**
      * Writes a formatted string to this output stream using the specified
@@ -1017,22 +1013,22 @@ public class PrintStream extends FilterOutputStream
      *
      * @since  1.5
      */
-    public PrintStream format(Locale l, String format, Object ... args) {
-        try {
-            synchronized (this) {
-                ensureOpen();
-                if ((formatter == null)
-                    || (formatter.locale() != l))
-                    formatter = new Formatter(this, l);
-                formatter.format(l, format, args);
-            }
-        } catch (InterruptedIOException x) {
-            Thread.currentThread().interrupt();
-        } catch (IOException x) {
-            trouble = true;
-        }
-        return this;
-    }
+////    public PrintStream format(Locale l, String format, Object ... args) {
+////        try {
+////            synchronized (this) {
+////                ensureOpen();
+////                if ((formatter == null)
+////                    || (formatter.locale() != l))
+////                    formatter = new Formatter(this, l);
+////                formatter.format(l, format, args);
+////            }
+////        } catch (InterruptedIOException x) {
+////            Thread.currentThread().interrupt();
+////        } catch (IOException x) {
+////            trouble = true;
+////        }
+////        return this;
+////    }
 
     /**
      * Appends the specified character sequence to this output stream.

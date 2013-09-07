@@ -125,12 +125,15 @@ public class Object {
      * @see     java.lang.Object#equals(java.lang.Object)
      * @see     java.lang.System#identityHashCode
      */
+    public int hashCode() {
+        return defaultHashCode();
+    }
     @JavaScriptBody(args = {}, body = 
         "if (this.$hashCode) return this.$hashCode;\n"
         + "var h = this.computeHashCode__I();\n"
         + "return this.$hashCode = h & h;"
     )
-    public native int hashCode();
+    final native int defaultHashCode();
 
     @JavaScriptBody(args = {}, body = "return Math.random() * Math.pow(2, 32);")
     native int computeHashCode();

@@ -25,12 +25,10 @@
 
 package java.io;
 
+import java.io.PrintStream.Charset;
+import java.io.PrintStream.Formatter;
+import java.util.Arrays;
 import java.util.Objects;
-import java.util.Formatter;
-import java.util.Locale;
-import java.nio.charset.Charset;
-import java.nio.charset.IllegalCharsetNameException;
-import java.nio.charset.UnsupportedCharsetException;
 
 /**
  * Prints formatted representations of objects to a text-output stream.  This
@@ -66,7 +64,7 @@ public class PrintWriter extends Writer {
     private final boolean autoFlush;
     private boolean trouble = false;
     private Formatter formatter;
-    private PrintStream psOut = null;
+//    private PrintStream psOut = null;
 
     /**
      * Line separator string.  This is the value of the line.separator
@@ -82,13 +80,7 @@ public class PrintWriter extends Writer {
     private static Charset toCharset(String csn)
         throws UnsupportedEncodingException
     {
-        Objects.requireNonNull(csn, "charsetName");
-        try {
-            return Charset.forName(csn);
-        } catch (IllegalCharsetNameException|UnsupportedCharsetException unused) {
-            // UnsupportedEncodingException should be thrown
-            throw new UnsupportedEncodingException(csn);
-        }
+        return PrintStream.toCharset(csn);
     }
 
     /**
@@ -113,8 +105,7 @@ public class PrintWriter extends Writer {
         super(out);
         this.out = out;
         this.autoFlush = autoFlush;
-        lineSeparator = java.security.AccessController.doPrivileged(
-            new sun.security.action.GetPropertyAction("line.separator"));
+        lineSeparator = "\n";
     }
 
     /**
@@ -148,9 +139,9 @@ public class PrintWriter extends Writer {
         this(new BufferedWriter(new OutputStreamWriter(out)), autoFlush);
 
         // save print stream for error propagation
-        if (out instanceof java.io.PrintStream) {
-            psOut = (PrintStream) out;
-        }
+//        if (out instanceof java.io.PrintStream) {
+//            psOut = (PrintStream) out;
+//        }
     }
 
     /**
@@ -181,16 +172,16 @@ public class PrintWriter extends Writer {
      * @since  1.5
      */
     public PrintWriter(String fileName) throws FileNotFoundException {
-        this(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName))),
-             false);
+        super();
+        throw new FileNotFoundException();
     }
 
     /* Private constructor */
     private PrintWriter(Charset charset, File file)
         throws FileNotFoundException
     {
-        this(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), charset)),
-             false);
+        super();
+        throw new FileNotFoundException();
     }
 
     /**
@@ -260,8 +251,8 @@ public class PrintWriter extends Writer {
      * @since  1.5
      */
     public PrintWriter(File file) throws FileNotFoundException {
-        this(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file))),
-             false);
+        super();
+        throw new FileNotFoundException();
     }
 
     /**
@@ -359,9 +350,10 @@ public class PrintWriter extends Writer {
         if (out instanceof java.io.PrintWriter) {
             PrintWriter pw = (PrintWriter) out;
             return pw.checkError();
-        } else if (psOut != null) {
-            return psOut.checkError();
-        }
+        } else 
+//        if (psOut != null) {
+//            return psOut.checkError();
+//        }
         return trouble;
     }
 
@@ -851,9 +843,9 @@ public class PrintWriter extends Writer {
      *
      * @since  1.5
      */
-    public PrintWriter printf(Locale l, String format, Object ... args) {
-        return format(l, format, args);
-    }
+//    public PrintWriter printf(Locale l, String format, Object ... args) {
+//        return format(l, format, args);
+//    }
 
     /**
      * Writes a formatted string to this writer using the specified format
@@ -896,21 +888,7 @@ public class PrintWriter extends Writer {
      * @since  1.5
      */
     public PrintWriter format(String format, Object ... args) {
-        try {
-            synchronized (lock) {
-                ensureOpen();
-                if ((formatter == null)
-                    || (formatter.locale() != Locale.getDefault()))
-                    formatter = new Formatter(this);
-                formatter.format(Locale.getDefault(), format, args);
-                if (autoFlush)
-                    out.flush();
-            }
-        } catch (InterruptedIOException x) {
-            Thread.currentThread().interrupt();
-        } catch (IOException x) {
-            trouble = true;
-        }
+        append(format).append(Arrays.toString(args));
         return this;
     }
 
@@ -955,23 +933,9 @@ public class PrintWriter extends Writer {
      *
      * @since  1.5
      */
-    public PrintWriter format(Locale l, String format, Object ... args) {
-        try {
-            synchronized (lock) {
-                ensureOpen();
-                if ((formatter == null) || (formatter.locale() != l))
-                    formatter = new Formatter(this, l);
-                formatter.format(l, format, args);
-                if (autoFlush)
-                    out.flush();
-            }
-        } catch (InterruptedIOException x) {
-            Thread.currentThread().interrupt();
-        } catch (IOException x) {
-            trouble = true;
-        }
-        return this;
-    }
+//    public PrintWriter format(Locale l, String format, Object ... args) {
+//        return format(format, args);
+//    }
 
     /**
      * Appends the specified character sequence to this writer.
