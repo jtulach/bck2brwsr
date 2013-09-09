@@ -114,6 +114,12 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+        <groupId>org.apidesign.bck2brwsr</groupId>
+        <artifactId>launcher.http</artifactId>
+        <version>\${bck2brwsr.launcher.version}</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>vmtest</artifactId>
       <version>\${bck2brwsr.version}</version>
@@ -254,12 +260,6 @@
                   <artifactId>ko-bck2brwsr</artifactId>
                   <version>\${bck2brwsr.version}</version>
                   <scope>runtime</scope>
-              </dependency>
-              <dependency>
-                  <groupId>org.apidesign.bck2brwsr</groupId>
-                  <artifactId>launcher.http</artifactId>
-                  <version>\${bck2brwsr.launcher.version}</version>
-                  <scope>test</scope>
               </dependency>
           </dependencies>
       </profile>

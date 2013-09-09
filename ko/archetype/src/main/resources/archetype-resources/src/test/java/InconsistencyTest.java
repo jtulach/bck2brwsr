@@ -11,8 +11,6 @@ import org.testng.annotations.Factory;
  * There can be bugs, however. To help us fix them, we kindly ask you to 
  * write an "inconsistency" test. A test that compares behavior of the API
  * between real VM and bck2brwsr VM. This class is skeleton of such test.
- *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class InconsistencyTest {
     /** A method to demonstrate inconsistency between bck2brwsr and HotSpot.
