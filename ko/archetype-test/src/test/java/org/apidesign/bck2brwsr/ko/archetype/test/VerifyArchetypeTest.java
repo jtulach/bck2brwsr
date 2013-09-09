@@ -18,11 +18,15 @@
 package org.apidesign.bck2brwsr.ko.archetype.test;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.apache.maven.it.Verifier;
 import org.testng.annotations.Test;
 import static org.testng.Assert.*;
+import org.testng.reporters.Files;
 
 /**
  *
@@ -87,8 +91,18 @@ public class VerifyArchetypeTest {
         assertTrue(zip.isFile(), "Zip file with website was created");
         
         ZipFile zf = new ZipFile(zip);
-        assertNotNull(zf.getEntry("public_html/index.html"), "index.html found");
+        final ZipEntry index = zf.getEntry("public_html/index.html");
+        assertNotNull(index, "index.html found");
         
+        String txt = readText(zf.getInputStream(index));
+        final int beg = txt.indexOf("${");
+        if (beg >= 0) {
+            int end = txt.indexOf("}", beg);
+            if (end < beg) {
+                end = txt.length();
+            }
+            fail("No substitutions in index.html. Found: " + txt.substring(beg, end));
+        }
     }
 
     private Verifier generateFromArchetype(final File dir, String... params) throws Exception {
@@ -111,5 +125,9 @@ public class VerifyArchetypeTest {
         v.executeGoal("archetype:generate");
         v.verifyErrorFreeLog();
         return v;
+    }
+    
+    private static String readText(InputStream is) throws IOException {
+        return Files.readFile(is);
     }
 }

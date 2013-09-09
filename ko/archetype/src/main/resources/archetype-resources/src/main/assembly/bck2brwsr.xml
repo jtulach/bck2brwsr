@@ -32,6 +32,7 @@
       <fileSet>
           <directory>src/main/webapp/pages</directory>
           <outputDirectory>/</outputDirectory>
+          <filtered>true</filtered>
       </fileSet>
   </fileSets>
   <files>
