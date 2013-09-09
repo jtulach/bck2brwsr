@@ -135,14 +135,34 @@ public abstract class Launcher {
      * The <code>startpage</code> should be relative location inside the root 
      * directory. Opens a browser with URL showing the start page.
      * 
+     * @param brwsr type of the browser to use
+     * @param directory the root directory on disk
+     * @param classes additional classloader with access to classes or <code>null</code>
+     * @param startpage relative path from the root to the page
+     * @return instance of server that can be closed
+     * @exception IOException if something goes wrong.
+     * @since 0.8
+     */
+    public static Closeable showDir(String brwsr, File directory, ClassLoader classes, String startpage) throws IOException {
+        Launcher l = createBrowser(brwsr);
+        if (classes != null) {
+            l.addClassLoader(classes);
+        }
+        l.showDirectory(directory, startpage);
+        return (Closeable) l;
+    }
+    
+    /** Starts an HTTP server which provides access to certain directory.
+     * The <code>startpage</code> should be relative location inside the root 
+     * directory. Opens a browser with URL showing the start page.
+     * 
      * @param directory the root directory on disk
      * @param startpage relative path from the root to the page
+     * @return instance of server that can be closed
      * @exception IOException if something goes wrong.
      */
     public static Closeable showDir(File directory, String startpage) throws IOException {
-        Launcher l = createBrowser(null);
-        l.showDirectory(directory, startpage);
-        return (Closeable) l;
+        return showDir(null, directory, null, startpage);
     }
 
     abstract InvocationContext runMethod(InvocationContext c) throws IOException; 

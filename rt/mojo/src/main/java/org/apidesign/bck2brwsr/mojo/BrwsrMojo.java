@@ -79,7 +79,8 @@ public class BrwsrMojo extends AbstractMojo {
         try {
             Closeable httpServer;
             if (directory != null) {
-                httpServer = Launcher.showDir(directory, startpage);
+                URLClassLoader url = buildClassLoader(classes, prj.getArtifacts());
+                httpServer = Launcher.showDir(launcher, directory, url, startpage);
             } else {
                 URLClassLoader url = buildClassLoader(classes, prj.getArtifacts());
                 try {

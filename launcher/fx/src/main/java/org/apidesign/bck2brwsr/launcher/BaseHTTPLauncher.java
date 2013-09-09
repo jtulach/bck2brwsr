@@ -52,6 +52,7 @@ import org.glassfish.grizzly.http.server.NetworkListener;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.grizzly.http.server.ServerConfiguration;
+import org.glassfish.grizzly.http.server.StaticHttpHandler;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 import org.glassfish.grizzly.websockets.WebSocket;
@@ -111,7 +112,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         if (!startpage.startsWith("/")) {
             startpage = "/" + startpage;
         }
-        HttpServer s = initServer(".", true);
+        HttpServer s = initServer(".", true, "");
         int last = startpage.lastIndexOf('/');
         String prefix = startpage.substring(0, last);
         String simpleName = startpage.substring(last);
@@ -128,7 +129,12 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         if (!startpage.startsWith("/")) {
             startpage = "/" + startpage;
         }
-        HttpServer s = initServer(dir.getPath(), false);
+        String prefix = "";
+        int last = startpage.lastIndexOf('/');
+        if (last >= 0) {
+            prefix = startpage.substring(0, last);
+        }
+        HttpServer s = initServer(dir.getPath(), false, prefix);
         try {
             launchServerAndBrwsr(s, startpage);
         } catch (Exception ex) {
@@ -155,8 +161,8 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         }
     }
     
-    private HttpServer initServer(String path, boolean addClasses) throws IOException {
-        HttpServer s = HttpServer.createSimpleServer(path, new PortRange(8080, 65535));
+    private HttpServer initServer(String path, boolean addClasses, String vmPrefix) throws IOException {
+        HttpServer s = HttpServer.createSimpleServer(null, new PortRange(8080, 65535));
         /*
         ThreadPoolConfig fewThreads = ThreadPoolConfig.defaultConfig().copy().
             setPoolName("Fx/Bck2 Brwsr").
@@ -172,8 +178,15 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         }
         */
         final ServerConfiguration conf = s.getServerConfiguration();
+        VMAndPages vm = new VMAndPages();
+        conf.addHttpHandler(vm, "/");
+        if (vmPrefix != null) {
+            vm.registerVM(vmPrefix + "/bck2brwsr.js");
+        }
+        if (path != null) {
+            vm.addDocRoot(path);
+        }
         if (addClasses) {
-            conf.addHttpHandler(new VM(), "/bck2brwsr.js");
             conf.addHttpHandler(new Classes(resources), "/classes/");
         }
         final WebSocketAddOn addon = new WebSocketAddOn();
@@ -185,7 +198,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
     
     private void executeInBrowser() throws InterruptedException, URISyntaxException, IOException {
         wait = new CountDownLatch(1);
-        server = initServer(".", true);
+        server = initServer(".", true, "");
         final ServerConfiguration conf = server.getServerConfiguration();
         
         class DynamicResourceHandler extends HttpHandler {
@@ -642,14 +655,28 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         
     }
 
-    private class VM extends HttpHandler {
+    private class VMAndPages extends StaticHttpHandler {
+        private String vmResource;
+        
+        public VMAndPages() {
+            super((String[]) null);
+        }
+        
         @Override
         public void service(Request request, Response response) throws Exception {
-            response.setCharacterEncoding("UTF-8");
-            response.setContentType("text/javascript");
-            StringBuilder sb = new StringBuilder();
-            generateBck2BrwsrJS(sb, BaseHTTPLauncher.this.resources);
-            response.getWriter().write(sb.toString());
+            if (request.getRequestURI().equals(vmResource)) {
+                response.setCharacterEncoding("UTF-8");
+                response.setContentType("text/javascript");
+                StringBuilder sb = new StringBuilder();
+                generateBck2BrwsrJS(sb, BaseHTTPLauncher.this.resources);
+                response.getWriter().write(sb.toString());
+            } else {
+                super.service(request, response);
+            }
+        }
+
+        private void registerVM(String vmResource) {
+            this.vmResource = vmResource;
         }
     }
 
