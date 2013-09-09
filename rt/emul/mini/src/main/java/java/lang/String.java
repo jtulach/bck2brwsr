@@ -2315,8 +2315,35 @@ public final class String
      * @spec JSR-51
      */
     public String[] split(String regex, int limit) {
-        throw new UnsupportedOperationException("Needs regexp");
+        if (limit <= 0) {
+            Object[] arr = splitImpl(this, regex, Integer.MAX_VALUE);
+            int to = arr.length;
+            if (limit == 0) {
+                while (to > 1 && ((String)arr[--to]).isEmpty()) {
+                }
+                to++;
+            }
+            String[] ret = new String[to];
+            System.arraycopy(arr, 0, ret, 0, to);
+            return ret;
+        } else {
+            Object[] arr = splitImpl(this, regex, limit);
+            String[] ret = new String[arr.length];
+            int pos = 0;
+            for (int i = 0; i < arr.length; i++) {
+                final String s = (String)arr[i];
+                ret[i] = s;
+                pos = indexOf(s, pos) + s.length();
+            }
+            ret[arr.length - 1] += substring(pos);
+            return ret;
+        }
     }
+    
+    @JavaScriptBody(args = { "str", "regex", "limit"}, body = 
+        "return str.split(new RegExp(regex), limit);"
+    )
+    private static native Object[] splitImpl(String str, String regex, int limit);
 
     /**
      * Splits this string around matches of the given <a
