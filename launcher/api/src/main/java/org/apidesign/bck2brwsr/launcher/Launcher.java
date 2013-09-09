@@ -148,7 +148,7 @@ public abstract class Launcher {
         if (classes != null) {
             l.addClassLoader(classes);
         }
-        l.showDirectory(directory, startpage);
+        l.showDirectory(directory, startpage, classes != null);
         return (Closeable) l;
     }
     
@@ -172,7 +172,7 @@ public abstract class Launcher {
         return Launcher.class.getClassLoader().loadClass(cn);
     }
 
-    void showDirectory(File directory, String startpage) throws IOException {
+    void showDirectory(File directory, String startpage, boolean addClasses) throws IOException {
         throw new UnsupportedOperationException();
     }
 

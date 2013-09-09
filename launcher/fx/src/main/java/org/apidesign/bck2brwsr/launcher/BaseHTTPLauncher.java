@@ -125,7 +125,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         }
     }
 
-    void showDirectory(File dir, String startpage) throws IOException {
+    void showDirectory(File dir, String startpage, boolean addClasses) throws IOException {
         if (!startpage.startsWith("/")) {
             startpage = "/" + startpage;
         }
@@ -134,7 +134,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         if (last >= 0) {
             prefix = startpage.substring(0, last);
         }
-        HttpServer s = initServer(dir.getPath(), false, prefix);
+        HttpServer s = initServer(dir.getPath(), addClasses, prefix);
         try {
             launchServerAndBrwsr(s, startpage);
         } catch (Exception ex) {

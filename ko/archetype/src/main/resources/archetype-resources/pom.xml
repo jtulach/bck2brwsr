@@ -42,7 +42,7 @@
     <bck2brwsr.version>${project.version}</bck2brwsr.version>
     <bck2brwsr.launcher.version>${project.version}</bck2brwsr.launcher.version>
     <bck2brwsr.obfuscationlevel>MINIMAL</bck2brwsr.obfuscationlevel>
-    <brwsr.startpage>\${package.replace('.','/')}/index.html</brwsr.startpage>
+    <brwsr.startpage>pages/index.html</brwsr.startpage>
   </properties>
   <build>
       <plugins>
@@ -58,8 +58,9 @@
                   </execution>
               </executions>
               <configuration>
-                  <startpage>\${brwsr.startpage}</startpage>
-                  <launcher>\${brwsr}</launcher>
+                  <directory>\${basedir}/src/main/webapp/</directory>
+                  <startpage>${brwsr.startpage}</startpage>
+                  <launcher>${brwsr}</launcher>
               </configuration>
           </plugin>
           <plugin>

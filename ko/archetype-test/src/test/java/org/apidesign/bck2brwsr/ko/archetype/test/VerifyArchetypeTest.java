@@ -88,7 +88,6 @@ public class VerifyArchetypeTest {
         
         ZipFile zf = new ZipFile(zip);
         assertNotNull(zf.getEntry("public_html/index.html"), "index.html found");
-        assertNotNull(zf.getEntry("public_html/twitterExample.css"), "css file found");
         
     }
 

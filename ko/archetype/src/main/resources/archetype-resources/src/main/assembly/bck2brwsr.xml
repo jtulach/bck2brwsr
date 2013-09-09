@@ -29,6 +29,10 @@
           </excludes>
           <outputDirectory>/</outputDirectory>
       </fileSet>
+      <fileSet>
+          <directory>src/main/webapp/pages</directory>
+          <outputDirectory>/</outputDirectory>
+      </fileSet>
   </fileSets>
   <files>
     <file>

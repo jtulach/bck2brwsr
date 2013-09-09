@@ -17,11 +17,14 @@
  */
 package org.apidesign.bck2brwsr.launcher;
 
+import java.io.File;
 import org.apidesign.bck2brwsr.launcher.fximpl.FXBrwsr;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.net.JarURLConnection;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -34,6 +37,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
 import org.apidesign.bck2brwsr.launcher.fximpl.JVMBridge;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -116,15 +120,29 @@ final class FXBrwsrLauncher extends BaseHTTPLauncher {
         String startPage = null;
 
         final ClassLoader cl = FXBrwsrLauncher.class.getClassLoader();
-        startPage = findStartPage(cl, startPage);
+        URL[] manifestURL = { null };
+        startPage = findStartPage(cl, startPage, manifestURL);
         if (startPage == null) {
             throw new NullPointerException("Can't find StartPage tag in manifests!");
         }
         
-        Launcher.showURL("fxbrwsr", cl, startPage);
+        File dir = new File(".");
+        if (manifestURL[0].getProtocol().equals("jar")) {
+            try {
+                dir = new File(
+                    ((JarURLConnection)manifestURL[0].openConnection()).getJarFileURL().toURI()
+                ).getParentFile();
+            } catch (URISyntaxException ex) {
+                LOG.log(Level.WARNING, "Can't find root directory", ex);
+            }
+        }
+        
+        Launcher.showDir("fxbrwsr", dir, cl, startPage);
     }
     
-    private static String findStartPage(final ClassLoader cl, String startPage) throws IOException {
+    private static String findStartPage(
+        final ClassLoader cl, String startPage, URL[] startURL
+    ) throws IOException {
         Enumeration<URL> en = cl.getResources("META-INF/MANIFEST.MF");
         while (en.hasMoreElements()) {
             URL url = en.nextElement();
@@ -139,6 +157,9 @@ final class FXBrwsrLauncher extends BaseHTTPLauncher {
             String sp = mf.getMainAttributes().getValue("StartPage");
             if (sp != null) {
                 startPage = sp;
+                if (startURL != null) {
+                    startURL[0] = url;
+                }
                 break;
             }
         }
