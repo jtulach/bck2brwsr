@@ -449,9 +449,17 @@ public class Logger {
         if (record.getLevel().intValue() < levelValue) {
             return;
         }
+        
+        String method;
+        switch (record.getLevel().toString()) {
+            case "INFO": method = "info";  break;
+            case "SEVERE": method = "error"; break;
+            case "WARNING": method = "warn"; break;
+            default: method = "log"; break;
+        }
 
         consoleLog(
-            record.getLevel().toString(), 
+            method, 
             record.getLoggerName(),
             record.getMessage()
         );
