@@ -21,6 +21,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.html.context.spi.Contexts;
 import org.apidesign.html.json.spi.Technology;
 import org.apidesign.html.json.spi.Transfer;
+import org.apidesign.html.json.spi.WSTransfer;
 import org.openide.util.lookup.ServiceProvider;
 
 /** This is an implementation package - just
@@ -40,7 +41,8 @@ public final class BrwsrCtxPrvdr implements Contexts.Provider {
     public void fillContext(Contexts.Builder context, Class<?> requestor) {
         if (bck2BrwsrVM()) {
             context.register(Technology.class, BrwsrCtxImpl.DEFAULT, 50).
-            register(Transfer.class, BrwsrCtxImpl.DEFAULT, 50);
+            register(Transfer.class, BrwsrCtxImpl.DEFAULT, 50).
+            register(WSTransfer.class, BrwsrCtxImpl.DEFAULT, 50);
         }
     }
     
