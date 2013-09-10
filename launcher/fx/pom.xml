@@ -33,7 +33,6 @@
         </plugins>
     </build>
     <properties>
-        <jfxrt.jar>${java.home}/lib/jfxrt.jar</jfxrt.jar>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
   <dependencies>
