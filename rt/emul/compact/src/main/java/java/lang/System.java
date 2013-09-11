@@ -17,6 +17,8 @@
  */
 package java.lang;
 
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+
 /** Poor man's re-implementation of most important System methods.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
@@ -55,5 +57,9 @@ public class System {
      */
     public static String lineSeparator() {
         return "\n";
+    }
+
+    @JavaScriptBody(args = { "exitCode" }, body = "window.close();")
+    public static void exit(int exitCode) {
     }
 }
