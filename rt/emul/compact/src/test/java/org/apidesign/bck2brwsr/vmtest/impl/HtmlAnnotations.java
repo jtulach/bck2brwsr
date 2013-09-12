@@ -15,7 +15,7 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.vm4brwsr;
+package org.apidesign.bck2brwsr.vmtest.impl;
 
 import net.java.html.js.JavaScriptBody;
 import net.java.html.js.JavaScriptResource;
@@ -51,7 +51,7 @@ public class HtmlAnnotations {
     @JavaScriptBody(args = { "r" }, javacall=true, body = "r.@java.lang.Runnable::run()()")
     private static native void callback(Runnable r);
 
-    @JavaScriptBody(args = {  }, javacall = true, body = "return @org.apidesign.vm4brwsr.HtmlAnnotations::callback()();")
+    @JavaScriptBody(args = {  }, javacall = true, body = "return @org.apidesign.bck2brwsr.vmtest.impl.HtmlAnnotations::callback()();")
     public static native int staticCallback();
     
     
@@ -74,13 +74,13 @@ public class HtmlAnnotations {
         return new HtmlAnnotations();
     }
     @JavaScriptBody(args = { "impl", "a", "b" }, javacall = true, body = 
-        "return impl.@org.apidesign.vm4brwsr.HtmlAnnotations::chooseLong(ZZJJ)(true, false, a, b);"
+        "return impl.@org.apidesign.bck2brwsr.vmtest.impl.HtmlAnnotations::chooseLong(ZZJJ)(true, false, a, b);"
     )
     public static native long first(Object impl, long a, long b);
     
     @JavaScriptBody(args = { "impl", "d" }, javacall = true, body = 
-        "impl.@org.apidesign.vm4brwsr.HtmlAnnotations::onError(Ljava/lang/Object;)(d);" +
-        "return impl.@org.apidesign.vm4brwsr.HtmlAnnotations::getError()();"
+        "impl.@org.apidesign.bck2brwsr.vmtest.impl.HtmlAnnotations::onError(Ljava/lang/Object;)(d);" +
+        "return impl.@org.apidesign.bck2brwsr.vmtest.impl.HtmlAnnotations::getError()();"
     )
     public static native Double onError(Object impl, Double d);
 }

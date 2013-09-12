@@ -35,6 +35,7 @@ import org.apidesign.html.boot.impl.FindResources;
 import org.apidesign.html.boot.impl.FnUtils;
 import static org.testng.Assert.*;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 /**
@@ -44,6 +45,7 @@ import org.testng.annotations.Test;
 public class JsClassLoaderTest {
     private static ClassLoader loader;
     private static Class<?> methodClass;
+    private static Fn.Presenter presenter;
     
     public JsClassLoaderTest() {
     }
@@ -82,7 +84,7 @@ public class JsClassLoaderTest {
                 sb.append("})()");
                 try {
                     final Object val = eng.eval(sb.toString());
-                    return new Fn() {
+                    return new Fn(this) {
                         @Override
                         public Object invoke(Object thiz, Object... args) throws Exception {
                             List<Object> all = new ArrayList<Object>(args.length + 1);
@@ -109,8 +111,14 @@ public class JsClassLoaderTest {
             }
         }
         
-        loader = FnUtils.newLoader(new Fr(), new Fr(), parent);
+        Fr fr = new Fr();
+        presenter = fr;
+        loader = FnUtils.newLoader(fr, fr, parent);
         methodClass = loader.loadClass(JsMethods.class.getName());
+    }
+    
+    @BeforeMethod public void registerPresenter() {
+        FnUtils.currentPresenter(presenter);
     }
     
     @Test public void noParamMethod() throws Throwable {

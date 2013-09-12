@@ -130,6 +130,14 @@ final class VMLazy {
 
         @Override
         protected void requireScript(String resourcePath) throws IOException {
+            if (!resourcePath.startsWith("/")) {
+                resourcePath = "/" + resourcePath;
+            }
+            String code = readCode(resourcePath);
+            applyCode(lazy.loader, null, code, false);
+        }
+
+        private String readCode(String resourcePath) throws IOException {
             InputStream is = getClass().getResourceAsStream(resourcePath);
             StringBuilder sb = new StringBuilder();
             for (;;) {
@@ -139,7 +147,7 @@ final class VMLazy {
                 }
                 sb.append((char)ch);
             }
-            applyCode(lazy.loader, null, sb.toString(), false);
+            return sb.toString();
         }
 
         @Override

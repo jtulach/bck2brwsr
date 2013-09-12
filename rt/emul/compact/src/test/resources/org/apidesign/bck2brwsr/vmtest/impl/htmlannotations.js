@@ -17,3 +17,4 @@
  */
 
 function mul(x, y) { return x * y; }
+window.mul = mul;

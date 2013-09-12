@@ -39,6 +39,7 @@ import org.apidesign.html.boot.impl.FnUtils;
 public final class JVMBridge {
     private final WebEngine engine;
     private final ClassLoader cl;
+    private final WebPresenter presenter;
     
     private static ClassLoader[] ldrs;
     private static ChangeListener<Void> onBck2BrwsrLoad;
@@ -46,8 +47,8 @@ public final class JVMBridge {
     JVMBridge(WebEngine eng) {
         this.engine = eng;
         final ClassLoader p = JVMBridge.class.getClassLoader().getParent();
-        WebClassLoader wcl = new WebClassLoader();
-        this.cl = FnUtils.newLoader(wcl, wcl, p);
+        this.presenter = new WebPresenter();
+        this.cl = FnUtils.newLoader(presenter, presenter, p);
     }
         
     public static void registerClassLoaders(ClassLoader[] loaders) {
@@ -69,10 +70,11 @@ public final class JVMBridge {
     }
     
     public Class<?> loadClass(String name) throws ClassNotFoundException {
+        FnUtils.currentPresenter(presenter);
         return Class.forName(name, true, cl);
     }
     
-    private final class WebClassLoader implements FindResources, Fn.Presenter {
+    private final class WebPresenter implements FindResources, Fn.Presenter {
         @Override
         public void findResources(String name, Collection<? super URL> results, boolean oneIsEnough) {
             if (ldrs != null) for (ClassLoader l : ldrs) {
@@ -99,7 +101,7 @@ public final class JVMBridge {
             sb.append("})()");
             
             JSObject x = (JSObject) engine.executeScript(sb.toString());
-            return new JSFn(x);
+            return new JSFn(this, x);
         }
 
         @Override
@@ -125,10 +127,11 @@ public final class JVMBridge {
     private static final class JSFn extends Fn {
         private final JSObject fn;
 
-        public JSFn(JSObject fn) {
+        private JSFn(WebPresenter cl, JSObject fn) {
+            super(cl);
             this.fn = fn;
         }
-        
+
         @Override
         public Object invoke(Object thiz, Object... args) throws Exception {
             try {

@@ -28,6 +28,7 @@ import java.util.Map;
 import net.java.html.BrwsrCtx;
 import net.java.html.js.JavaScriptBody;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
+import org.apidesign.html.boot.impl.FnUtils;
 import org.apidesign.html.context.spi.Contexts;
 import org.apidesign.html.json.spi.Technology;
 import org.apidesign.html.json.spi.Transfer;
@@ -59,7 +60,7 @@ public final class KnockoutFXTest extends KnockoutTCK {
 
     @Override
     public BrwsrCtx createContext() {
-        FXContext fx = new FXContext();
+        FXContext fx = new FXContext(FnUtils.currentPresenter());
         TyrusContext tc = new TyrusContext();
         Contexts.Builder b = Contexts.newBuilder().
             register(Technology.class, fx, 10).
