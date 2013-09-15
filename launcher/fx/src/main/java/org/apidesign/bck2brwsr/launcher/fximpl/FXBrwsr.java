@@ -55,8 +55,9 @@ public class FXBrwsr extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         WebView view = new WebView();
-        final String nbUserDir = this.getParameters().getNamed().get("userdir"); // NOI18N
-        WebController wc = new WebController(view, nbUserDir, getParameters().getUnnamed());
+        WebController wc = new WebController(view, getParameters().getUnnamed());
+        
+        FXInspect.initialize(view.getEngine());
 
         final VBox vbox = new VBox();
         vbox.setAlignment( Pos.CENTER );
@@ -73,7 +74,7 @@ public class FXBrwsr extends Application {
         final boolean showToolbar = "true".equals(this.getParameters().getNamed().get("toolbar")); // NOI18N
         final boolean useFirebug = "true".equals(this.getParameters().getNamed().get("firebug")); // NOI18N
         if (showToolbar) {
-            final ToolBar toolbar = new BrowserToolbar(view, vbox, useFirebug, wc.dbg);
+            final ToolBar toolbar = new BrowserToolbar(view, vbox, useFirebug);
             root.setTop( toolbar );
         }
         root.setCenter(hbox);
@@ -90,12 +91,9 @@ public class FXBrwsr extends Application {
      */
     private static class WebController {
         private final JVMBridge bridge;
-        private final WebDebug dbg;
-        private final String ud;
 
-        public WebController(WebView view, String ud, List<String> params) {
+        public WebController(WebView view, List<String> params) {
             this.bridge = new JVMBridge(view.getEngine());
-            this.ud = ud;
             LOG.log(Level.INFO, "Initializing WebView with {0}", params);
             final WebEngine eng = view.getEngine();
             try {
@@ -138,15 +136,6 @@ public class FXBrwsr extends Application {
                     dialogStage.showAndWait();
                 }
             });
-            WebDebug wd = null;
-            try {
-                if (ud != null) {
-                    wd = WebDebug.create(eng.impl_getDebugger(), ud);
-                }
-            } catch (Exception ex) {
-                LOG.log(Level.WARNING, null, ex);
-            }
-            this.dbg = wd;
         }
 
         boolean initBck2Brwsr(WebEngine webEngine) {
