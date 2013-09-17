@@ -328,7 +328,8 @@ public class Object {
      * @see        java.lang.Object#notifyAll()
      * @see        java.lang.Object#wait()
      */
-    public final native void notify();
+    public final void notify() {
+    }
 
     /**
      * Wakes up all threads that are waiting on this object's monitor. A
@@ -352,7 +353,8 @@ public class Object {
      * @see        java.lang.Object#notify()
      * @see        java.lang.Object#wait()
      */
-    public final native void notifyAll();
+    public final void notifyAll() {
+    }
 
     /**
      * Causes the current thread to wait until either another thread invokes the
@@ -439,7 +441,9 @@ public class Object {
      * @see        java.lang.Object#notify()
      * @see        java.lang.Object#notifyAll()
      */
-    public final native void wait(long timeout) throws InterruptedException;
+    public final void wait(long timeout) throws InterruptedException {
+        throw new InterruptedException();
+    }
 
     /**
      * Causes the current thread to wait until another thread invokes the
@@ -504,20 +508,7 @@ public class Object {
      *             this exception is thrown.
      */
     public final void wait(long timeout, int nanos) throws InterruptedException {
-        if (timeout < 0) {
-            throw new IllegalArgumentException("timeout value is negative");
-        }
-
-        if (nanos < 0 || nanos > 999999) {
-            throw new IllegalArgumentException(
-                                "nanosecond timeout value out of range");
-        }
-
-        if (nanos >= 500000 || (nanos != 0 && timeout == 0)) {
-            timeout++;
-        }
-
-        wait(timeout);
+        throw new InterruptedException();
     }
 
     /**
@@ -559,7 +550,7 @@ public class Object {
      * @see        java.lang.Object#notifyAll()
      */
     public final void wait() throws InterruptedException {
-        wait(0);
+        throw new InterruptedException();
     }
 
     /**
