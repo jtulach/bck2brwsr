@@ -4,11 +4,11 @@
   <parent>
     <artifactId>ko</artifactId>
     <groupId>org.apidesign.bck2brwsr</groupId>
-    <version>0.8-SNAPSHOT</version>
+    <version>0.8</version>
   </parent>
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>knockout4j-archetype</artifactId>
-  <version>0.8-SNAPSHOT</version>
+  <version>0.8</version>
   <packaging>jar</packaging>
   <name>Knockout Bck2Brwsr Maven Archetype</name>
   <description>
