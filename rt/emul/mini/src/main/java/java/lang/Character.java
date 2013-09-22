@@ -2375,7 +2375,14 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * @since   1.5
      */
     public static boolean isWhitespace(int codePoint) {
-        throw new UnsupportedOperationException();
+        if (
+            codePoint == SPACE_SEPARATOR || 
+            codePoint == LINE_SEPARATOR || 
+            codePoint == PARAGRAPH_SEPARATOR
+        ) {
+            return true;
+        }
+        return false;
     }
 
     /**
