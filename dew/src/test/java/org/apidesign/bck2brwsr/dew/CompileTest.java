@@ -18,15 +18,17 @@
 package org.apidesign.bck2brwsr.dew;
 
 import java.io.IOException;
+import org.apidesign.bck2brwsr.vmtest.Compare;
+import org.apidesign.bck2brwsr.vmtest.VMTest;
 import static org.testng.Assert.*;
-import org.testng.annotations.Test;
+import org.testng.annotations.Factory;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class CompileTest  {
-    @Test public void testCompile() throws IOException {
+    @Compare public void testCompile() throws IOException {
         String html = "<html><body>"
                 + " <button id='btn'>Hello!</button>"
                 + "</body></html>";
@@ -41,5 +43,9 @@ public class CompileTest  {
 
         assertNotNull(result.get("x/y/z/X.class"), "Class X is compiled: " + result);
         assertNotNull(result.get("x/y/z/Index.class"), "Class Index is compiled: " + result);
+    }
+    
+    @Factory public static Object[] create() {
+        return VMTest.create(CompileTest.class);
     }
 }

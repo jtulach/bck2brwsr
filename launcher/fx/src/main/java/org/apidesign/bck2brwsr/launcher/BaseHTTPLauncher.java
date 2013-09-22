@@ -44,6 +44,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.tools.ToolProvider;
 import org.apidesign.bck2brwsr.launcher.InvocationContext.Resource;
 import org.glassfish.grizzly.PortRange;
 import org.glassfish.grizzly.http.server.HttpHandler;
@@ -81,6 +82,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
     public BaseHTTPLauncher(String cmd) {
         this.cmd = cmd;
         addClassLoader(BaseHTTPLauncher.class.getClassLoader());
+        addClassLoader(ToolProvider.getSystemToolClassLoader());
         setTimeout(180000);
     }
     
