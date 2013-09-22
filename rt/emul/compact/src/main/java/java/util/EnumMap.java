@@ -26,7 +26,7 @@
 package java.util;
 
 import java.util.Map.Entry;
-import sun.misc.SharedSecrets;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
  * A specialized {@link Map} implementation for use with enum type keys.  All
@@ -737,10 +737,8 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
      * Returns all of the values comprising K.
      * The result is uncloned, cached, and shared by all callers.
      */
-    private static <K extends Enum<K>> K[] getKeyUniverse(Class<K> keyType) {
-        return SharedSecrets.getJavaLangAccess()
-                                        .getEnumConstantsShared(keyType);
-    }
+    @JavaScriptBody(args = { "enumType" }, body = "return enumType.cnstr.$VALUES;")
+    private static native <K extends Enum<K>> K[] getKeyUniverse(Class<K> keyType);
 
     private static final long serialVersionUID = 458661240069192865L;
 

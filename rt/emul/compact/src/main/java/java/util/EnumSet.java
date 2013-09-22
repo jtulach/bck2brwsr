@@ -25,7 +25,7 @@
 
 package java.util;
 
-import sun.misc.SharedSecrets;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
  * A specialized {@link Set} implementation for use with enum types.  All of
@@ -384,10 +384,8 @@ public abstract class EnumSet<E extends Enum<E>> extends AbstractSet<E>
      * Returns all of the values comprising E.
      * The result is uncloned, cached, and shared by all callers.
      */
-    private static <E extends Enum<E>> E[] getUniverse(Class<E> elementType) {
-        return SharedSecrets.getJavaLangAccess()
-                                        .getEnumConstantsShared(elementType);
-    }
+    @JavaScriptBody(args = { "enumType" }, body = "return enumType.cnstr.$VALUES;")
+    private static native <E extends Enum<E>> E[] getUniverse(Class<E> elementType);
 
     /**
      * This class is used to serialize all EnumSet instances, regardless of
