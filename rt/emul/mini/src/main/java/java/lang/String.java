@@ -2159,6 +2159,14 @@ public final class String
      * @since 1.4
      * @spec JSR-51
      */
+    @JavaScriptBody(args = { "regex", "newText" }, body = 
+          "var self = this.toString();\n"
+        + "var re = new RegExp(regex.toString());\n"
+        + "var r = re.exec(self);\n"
+        + "if (r === null || r.length === 0) return this;\n"
+        + "var from = self.indexOf(r[0]);\n"
+        + "return this.substring(0, from) + newText + this.substring(from + r[0].length);\n"
+    )
     public String replaceFirst(String regex, String replacement) {
         throw new UnsupportedOperationException();
     }
@@ -2203,7 +2211,14 @@ public final class String
      * @spec JSR-51
      */
     public String replaceAll(String regex, String replacement) {
-        throw new UnsupportedOperationException();
+        String p = this;
+        for (;;) {
+            String n = p.replaceFirst(regex, replacement);
+            if (n == p) {
+                return n;
+            }
+            p = n;
+        }
     }
 
     /**
