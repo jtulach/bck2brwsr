@@ -72,6 +72,10 @@ public class ReflectionTest {
     @Compare public String isRunnableHasRunMethod() throws NoSuchMethodException {
         return Runnable.class.getMethod("run").getName();
     }
+
+    @Compare public String isRunnableDeclaresRunMethod() throws NoSuchMethodException {
+        return Runnable.class.getDeclaredMethod("run").getName();
+    }
     
     @Compare public String namesOfMethods() {
         StringBuilder sb = new StringBuilder();

@@ -975,6 +975,137 @@ public final
     }
     
     /**
+     * Returns an array of {@code Field} objects reflecting all the fields
+     * declared by the class or interface represented by this
+     * {@code Class} object. This includes public, protected, default
+     * (package) access, and private fields, but excludes inherited fields.
+     * The elements in the array returned are not sorted and are not in any
+     * particular order.  This method returns an array of length 0 if the class
+     * or interface declares no fields, or if this {@code Class} object
+     * represents a primitive type, an array class, or void.
+     *
+     * <p> See <em>The Java Language Specification</em>, sections 8.2 and 8.3.
+     *
+     * @return    the array of {@code Field} objects representing all the
+     * declared fields of this class
+     * @exception  SecurityException
+     *             If a security manager, <i>s</i>, is present and any of the
+     *             following conditions is met:
+     *
+     *             <ul>
+     *
+     *             <li> invocation of
+     *             {@link SecurityManager#checkMemberAccess
+     *             s.checkMemberAccess(this, Member.DECLARED)} denies
+     *             access to the declared fields within this class
+     *
+     *             <li> the caller's class loader is not the same as or an
+     *             ancestor of the class loader for the current class and
+     *             invocation of {@link SecurityManager#checkPackageAccess
+     *             s.checkPackageAccess()} denies access to the package
+     *             of this class
+     *
+     *             </ul>
+     *
+     * @since JDK1.1
+     */
+    public Field[] getDeclaredFields() throws SecurityException {
+        throw new SecurityException();
+    }
+
+    /**
+     * <b>Bck2Brwsr</b> emulation can only seek public methods, otherwise it
+     * throws a {@code SecurityException}.
+     * <p>
+     * Returns a {@code Method} object that reflects the specified
+     * declared method of the class or interface represented by this
+     * {@code Class} object. The {@code name} parameter is a
+     * {@code String} that specifies the simple name of the desired
+     * method, and the {@code parameterTypes} parameter is an array of
+     * {@code Class} objects that identify the method's formal parameter
+     * types, in declared order.  If more than one method with the same
+     * parameter types is declared in a class, and one of these methods has a
+     * return type that is more specific than any of the others, that method is
+     * returned; otherwise one of the methods is chosen arbitrarily.  If the
+     * name is "&lt;init&gt;"or "&lt;clinit&gt;" a {@code NoSuchMethodException}
+     * is raised.
+     *
+     * @param name the name of the method
+     * @param parameterTypes the parameter array
+     * @return    the {@code Method} object for the method of this class
+     * matching the specified name and parameters
+     * @exception NoSuchMethodException if a matching method is not found.
+     * @exception NullPointerException if {@code name} is {@code null}
+     * @exception  SecurityException
+     *             If a security manager, <i>s</i>, is present and any of the
+     *             following conditions is met:
+     *
+     *             <ul>
+     *
+     *             <li> invocation of
+     *             {@link SecurityManager#checkMemberAccess
+     *             s.checkMemberAccess(this, Member.DECLARED)} denies
+     *             access to the declared method
+     *
+     *             <li> the caller's class loader is not the same as or an
+     *             ancestor of the class loader for the current class and
+     *             invocation of {@link SecurityManager#checkPackageAccess
+     *             s.checkPackageAccess()} denies access to the package
+     *             of this class
+     *
+     *             </ul>
+     *
+     * @since JDK1.1
+     */
+    public Method getDeclaredMethod(String name, Class<?>... parameterTypes)
+    throws NoSuchMethodException, SecurityException {
+        try {
+            return getMethod(name, parameterTypes);
+        } catch (NoSuchMethodException ex) {
+            throw new SecurityException();
+        }
+    }
+
+    /**
+     * Returns a {@code Field} object that reflects the specified declared
+     * field of the class or interface represented by this {@code Class}
+     * object. The {@code name} parameter is a {@code String} that
+     * specifies the simple name of the desired field.  Note that this method
+     * will not reflect the {@code length} field of an array class.
+     *
+     * @param name the name of the field
+     * @return the {@code Field} object for the specified field in this
+     * class
+     * @exception NoSuchFieldException if a field with the specified name is
+     *              not found.
+     * @exception NullPointerException if {@code name} is {@code null}
+     * @exception  SecurityException
+     *             If a security manager, <i>s</i>, is present and any of the
+     *             following conditions is met:
+     *
+     *             <ul>
+     *
+     *             <li> invocation of
+     *             {@link SecurityManager#checkMemberAccess
+     *             s.checkMemberAccess(this, Member.DECLARED)} denies
+     *             access to the declared field
+     *
+     *             <li> the caller's class loader is not the same as or an
+     *             ancestor of the class loader for the current class and
+     *             invocation of {@link SecurityManager#checkPackageAccess
+     *             s.checkPackageAccess()} denies access to the package
+     *             of this class
+     *
+     *             </ul>
+     *
+     * @since JDK1.1
+     */
+    public Field getDeclaredField(String name)
+    throws SecurityException {
+        throw new SecurityException();
+    }
+    
+    /**
      * Character.isDigit answers {@code true} to some non-ascii
      * digits.  This one does not.
      */
