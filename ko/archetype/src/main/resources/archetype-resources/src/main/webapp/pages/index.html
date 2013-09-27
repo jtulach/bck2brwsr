@@ -9,12 +9,21 @@
                 0% { -webkit-transform: rotate(0deg); }
                 100% { -webkit-transform: rotate(360deg); }
             }
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
 
             .rotate {
                 -webkit-animation-name: spin;
                 -webkit-animation-duration: 3s;
                 -webkit-animation-iteration-count: infinite;
                 -webkit-animation-direction: alternate;
+                
+                animation-name: spin;
+                animation-duration: 3s;
+                animation-iteration-count: infinite;
+                animation-direction: alternate;
             }
 
             #scene {
