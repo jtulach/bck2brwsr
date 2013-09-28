@@ -28,7 +28,6 @@ package java.lang;
 import java.io.UnsupportedEncodingException;
 import java.util.Comparator;
 import java.util.Locale;
-import java.util.Objects;
 import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.core.JavaScriptOnly;
@@ -2898,7 +2897,8 @@ public final class String
     public static String format(Locale l, String format, Object ... args) {
         String p = format;
         for (int i = 0; i < args.length; i++) {
-            p = p.replaceFirst("%s", Objects.toString(args[i]));
+            String v = args[i] == null ? "null" : args[i].toString();
+            p = p.replaceFirst("%s", v);
         }
         return p;
         // return new Formatter(l).format(format, args).toString();
