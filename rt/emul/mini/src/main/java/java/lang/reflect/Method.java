@@ -113,7 +113,7 @@ public final
     }
     
     @JavaScriptBody(args = "self", body = "return self.access;")
-    private static native int getAccess(Object self);
+    static native int getAccess(Object self);
     
     /**
      * Returns an array of {@code TypeVariable} objects that represent the
@@ -183,6 +183,10 @@ public final
      * represents
      */
     public Class<?>[] getParameterTypes() {
+        return getParameterTypes(sig);
+    }
+    
+    static Class<?>[] getParameterTypes(String sig) {
         Class[] arr = new Class[MethodImpl.signatureElements(sig) - 1];
         Enumeration<Class> en = MethodImpl.signatureParser(sig);
         en.nextElement(); // return type
@@ -583,7 +587,7 @@ public final
     private static native Integer fromRaw(Class<?> cls, String m, Object o);
 
     @JavaScriptBody(args = { "o" }, body = "return o.valueOf();")
-    private static native Object toPrimitive(Object o);
+    static native Object toPrimitive(Object o);
     
     /**
      * Returns {@code true} if this method is a bridge
@@ -691,6 +695,11 @@ public final
         MethodImpl.INSTANCE = new MethodImpl() {
             protected Method create(Class<?> declaringClass, String name, Object data, String sig) {
                 return new Method(declaringClass, name, data, sig);
+            }
+
+            @Override
+            protected Constructor create(Class<?> declaringClass, Object data, String sig) {
+                return new Constructor(declaringClass, data, sig);
             }
         };
     }

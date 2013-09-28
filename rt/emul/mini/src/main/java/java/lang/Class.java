@@ -29,6 +29,7 @@ import java.io.ByteArrayInputStream;
 import org.apidesign.bck2brwsr.emul.reflect.AnnotationImpl;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.TypeVariable;
@@ -1104,6 +1105,188 @@ public final
     throws SecurityException {
         throw new SecurityException();
     }
+    
+    /**
+     * Returns an array containing {@code Constructor} objects reflecting
+     * all the public constructors of the class represented by this
+     * {@code Class} object.  An array of length 0 is returned if the
+     * class has no public constructors, or if the class is an array class, or
+     * if the class reflects a primitive type or void.
+     *
+     * Note that while this method returns an array of {@code
+     * Constructor<T>} objects (that is an array of constructors from
+     * this class), the return type of this method is {@code
+     * Constructor<?>[]} and <em>not</em> {@code Constructor<T>[]} as
+     * might be expected.  This less informative return type is
+     * necessary since after being returned from this method, the
+     * array could be modified to hold {@code Constructor} objects for
+     * different classes, which would violate the type guarantees of
+     * {@code Constructor<T>[]}.
+     *
+     * @return the array of {@code Constructor} objects representing the
+     *  public constructors of this class
+     * @exception  SecurityException
+     *             If a security manager, <i>s</i>, is present and any of the
+     *             following conditions is met:
+     *
+     *             <ul>
+     *
+     *             <li> invocation of
+     *             {@link SecurityManager#checkMemberAccess
+     *             s.checkMemberAccess(this, Member.PUBLIC)} denies
+     *             access to the constructors within this class
+     *
+     *             <li> the caller's class loader is not the same as or an
+     *             ancestor of the class loader for the current class and
+     *             invocation of {@link SecurityManager#checkPackageAccess
+     *             s.checkPackageAccess()} denies access to the package
+     *             of this class
+     *
+     *             </ul>
+     *
+     * @since JDK1.1
+     */
+    public Constructor<?>[] getConstructors() throws SecurityException {
+        return MethodImpl.findConstructors(this, 0x01);
+    }
+
+    /**
+     * Returns a {@code Constructor} object that reflects the specified
+     * public constructor of the class represented by this {@code Class}
+     * object. The {@code parameterTypes} parameter is an array of
+     * {@code Class} objects that identify the constructor's formal
+     * parameter types, in declared order.
+     *
+     * If this {@code Class} object represents an inner class
+     * declared in a non-static context, the formal parameter types
+     * include the explicit enclosing instance as the first parameter.
+     *
+     * <p> The constructor to reflect is the public constructor of the class
+     * represented by this {@code Class} object whose formal parameter
+     * types match those specified by {@code parameterTypes}.
+     *
+     * @param parameterTypes the parameter array
+     * @return the {@code Constructor} object of the public constructor that
+     * matches the specified {@code parameterTypes}
+     * @exception NoSuchMethodException if a matching method is not found.
+     * @exception  SecurityException
+     *             If a security manager, <i>s</i>, is present and any of the
+     *             following conditions is met:
+     *
+     *             <ul>
+     *
+     *             <li> invocation of
+     *             {@link SecurityManager#checkMemberAccess
+     *             s.checkMemberAccess(this, Member.PUBLIC)} denies
+     *             access to the constructor
+     *
+     *             <li> the caller's class loader is not the same as or an
+     *             ancestor of the class loader for the current class and
+     *             invocation of {@link SecurityManager#checkPackageAccess
+     *             s.checkPackageAccess()} denies access to the package
+     *             of this class
+     *
+     *             </ul>
+     *
+     * @since JDK1.1
+     */
+    public Constructor<T> getConstructor(Class<?>... parameterTypes)
+    throws NoSuchMethodException, SecurityException {
+        Constructor c = MethodImpl.findConstructor(this, parameterTypes);
+        if (c == null) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(getName()).append('(');
+            String sep = "";
+            for (int i = 0; i < parameterTypes.length; i++) {
+                sb.append(sep).append(parameterTypes[i].getName());
+                sep = ", ";
+            }
+            sb.append(')');
+            throw new NoSuchMethodException(sb.toString());
+        }
+        return c;
+    }
+
+    /**
+     * Returns an array of {@code Constructor} objects reflecting all the
+     * constructors declared by the class represented by this
+     * {@code Class} object. These are public, protected, default
+     * (package) access, and private constructors.  The elements in the array
+     * returned are not sorted and are not in any particular order.  If the
+     * class has a default constructor, it is included in the returned array.
+     * This method returns an array of length 0 if this {@code Class}
+     * object represents an interface, a primitive type, an array class, or
+     * void.
+     *
+     * <p> See <em>The Java Language Specification</em>, section 8.2.
+     *
+     * @return    the array of {@code Constructor} objects representing all the
+     * declared constructors of this class
+     * @exception  SecurityException
+     *             If a security manager, <i>s</i>, is present and any of the
+     *             following conditions is met:
+     *
+     *             <ul>
+     *
+     *             <li> invocation of
+     *             {@link SecurityManager#checkMemberAccess
+     *             s.checkMemberAccess(this, Member.DECLARED)} denies
+     *             access to the declared constructors within this class
+     *
+     *             <li> the caller's class loader is not the same as or an
+     *             ancestor of the class loader for the current class and
+     *             invocation of {@link SecurityManager#checkPackageAccess
+     *             s.checkPackageAccess()} denies access to the package
+     *             of this class
+     *
+     *             </ul>
+     *
+     * @since JDK1.1
+     */
+    public Constructor<?>[] getDeclaredConstructors() throws SecurityException {
+        throw new SecurityException();
+    }
+    /**
+     * Returns a {@code Constructor} object that reflects the specified
+     * constructor of the class or interface represented by this
+     * {@code Class} object.  The {@code parameterTypes} parameter is
+     * an array of {@code Class} objects that identify the constructor's
+     * formal parameter types, in declared order.
+     *
+     * If this {@code Class} object represents an inner class
+     * declared in a non-static context, the formal parameter types
+     * include the explicit enclosing instance as the first parameter.
+     *
+     * @param parameterTypes the parameter array
+     * @return    The {@code Constructor} object for the constructor with the
+     * specified parameter list
+     * @exception NoSuchMethodException if a matching method is not found.
+     * @exception  SecurityException
+     *             If a security manager, <i>s</i>, is present and any of the
+     *             following conditions is met:
+     *
+     *             <ul>
+     *
+     *             <li> invocation of
+     *             {@link SecurityManager#checkMemberAccess
+     *             s.checkMemberAccess(this, Member.DECLARED)} denies
+     *             access to the declared constructor
+     *
+     *             <li> the caller's class loader is not the same as or an
+     *             ancestor of the class loader for the current class and
+     *             invocation of {@link SecurityManager#checkPackageAccess
+     *             s.checkPackageAccess()} denies access to the package
+     *             of this class
+     *
+     *             </ul>
+     *
+     * @since JDK1.1
+     */
+    public Constructor<T> getDeclaredConstructor(Class<?>... parameterTypes)
+    throws NoSuchMethodException, SecurityException {
+        return getConstructor(parameterTypes);
+    }
+    
     
     /**
      * Character.isDigit answers {@code true} to some non-ascii
