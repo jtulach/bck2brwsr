@@ -20,6 +20,7 @@ package org.apidesign.bck2brwsr.tck;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Locale;
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
@@ -160,6 +161,19 @@ public class CompareStringsTest {
         String res = "aaa".replace("aa", "b");
         assert res.equals("ba") : "Expecting ba: " + res;
         return res;
+    }
+    
+    @Compare public String localeUS() {
+        return Locale.US.toString();
+    }
+    
+    @Compare public String localeFrench() {
+        return Locale.FRENCH.toString();
+    }
+    
+    
+    @Compare public String formatSimple() {
+        return String.format((Locale)null, "Hello %s!", "World");
     }
 
     @Factory
