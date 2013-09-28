@@ -17,6 +17,10 @@
  */
 package java.lang;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.PrintStream;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /** Poor man's re-implementation of most important System methods.
@@ -62,4 +66,16 @@ public class System {
     @JavaScriptBody(args = { "exitCode" }, body = "window.close();")
     public static void exit(int exitCode) {
     }
+    
+    public final static InputStream in;
+
+    public final static PrintStream out;
+
+    public final static PrintStream err;
+    
+    static {
+        in = new ByteArrayInputStream(new byte[0]);
+        out = err = new PrintStream(new ByteArrayOutputStream());
+    }
+    
 }
