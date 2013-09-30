@@ -44,8 +44,14 @@ public class System {
     }
 
     public static String getProperty(String name) {
+        if ("os.name".equals(name)) {
+            return userAgent();
+        }
         return null;
     }
+    
+    @JavaScriptBody(args = {}, body = "return navigator.userAgent;")
+    private static native String userAgent();
     
     public static String getProperty(String key, String def) {
         return def;
