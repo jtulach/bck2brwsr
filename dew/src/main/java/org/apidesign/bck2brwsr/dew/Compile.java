@@ -85,90 +85,35 @@ final class Compile implements DiagnosticListener<JavaFileObject> {
     }
     
     private Map<String, byte[]> compile(final String html, final String code) throws IOException {
-        StandardJavaFileManager sjfm = ToolProvider.getSystemJavaCompiler().getStandardFileManager(this, null, null);
+        final ClassLoaderFileManager clfm = new ClassLoaderFileManager();
+        final JavaFileObject file = clfm.createMemoryFileObject(
+                ClassLoaderFileManager.convertFQNToResource(pkg.isEmpty() ? cls : pkg + "." + cls) + Kind.SOURCE.extension,
+                Kind.SOURCE,
+                code.getBytes());
+        final JavaFileObject htmlFile = clfm.createMemoryFileObject(
+            ClassLoaderFileManager.convertFQNToResource(pkg),
+            Kind.OTHER,
+            html.getBytes());
 
-        final Map<String, ByteArrayOutputStream> class2BAOS = new HashMap<>();
-
-        JavaFileObject file = new SimpleJavaFileObject(URI.create("mem://mem"), Kind.SOURCE) {
-            @Override
-            public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
-                return code;
-            }
-        };
-        final JavaFileObject htmlFile = new SimpleJavaFileObject(URI.create("mem://mem2"), Kind.OTHER) {
-            @Override
-            public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
-                return html;
-            }
-
-            @Override
-            public InputStream openInputStream() throws IOException {
-                return new ByteArrayInputStream(html.getBytes());
-            }
-        };
-        
-        final URI scratch;
-        try {
-            scratch = new URI("mem://mem3");
-        } catch (URISyntaxException ex) {
-            throw new IOException(ex);
-        }
-        
-        JavaFileManager jfm = new ForwardingJavaFileManager<JavaFileManager>(sjfm) {
-            @Override
-            public JavaFileObject getJavaFileForOutput(Location location, String className, Kind kind, FileObject sibling) throws IOException {
-                if (kind  == Kind.CLASS) {
-                    final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-
-                    class2BAOS.put(className.replace('.', '/') + ".class", buffer);
-                    return new SimpleJavaFileObject(sibling.toUri(), kind) {
-                        @Override
-                        public OutputStream openOutputStream() throws IOException {
-                            return buffer;
-                        }
-                    };
-                }
-                
-                if (kind == Kind.SOURCE) {
-                    return new SimpleJavaFileObject(scratch/*sibling.toUri()*/, kind) {
-                        private final ByteArrayOutputStream data = new ByteArrayOutputStream();
-                        @Override
-                        public OutputStream openOutputStream() throws IOException {
-                            return data;
-                        }
-
-                        @Override
-                        public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
-                            data.close();
-                            return new String(data.toByteArray());
-                        }
-                    };
-                }
-                
-                throw new IllegalStateException();
-            }
-
+        JavaFileManager jfm = new ForwardingJavaFileManager<JavaFileManager>(clfm) {            
             @Override
             public FileObject getFileForInput(Location location, String packageName, String relativeName) throws IOException {
                 if (location == StandardLocation.SOURCE_PATH) {
                     if (packageName.equals(pkg)) {
                         return htmlFile;
                     }
-                }
-                
+                }                
                 return null;
             }
-            
         };
 
-        ToolProvider.getSystemJavaCompiler().getTask(null, jfm, this, /*XXX:*/Arrays.asList("-source", "1.7", "-target", "1.7"), null, Arrays.asList(file)).call();
+        final Boolean res = ToolProvider.getSystemJavaCompiler().getTask(null, jfm, this, /*XXX:*/Arrays.asList("-source", "1.7", "-target", "1.7"), null, Arrays.asList(file)).call();
+
 
         Map<String, byte[]> result = new HashMap<>();
-
-        for (Map.Entry<String, ByteArrayOutputStream> e : class2BAOS.entrySet()) {
-            result.put(e.getKey(), e.getValue().toByteArray());
+        for (MemoryFileObject generated : clfm.getGeneratedFiles(Kind.CLASS)) {
+            result.put(generated.infer(), generated.getContent());
         }
-
         return result;
     }
 
