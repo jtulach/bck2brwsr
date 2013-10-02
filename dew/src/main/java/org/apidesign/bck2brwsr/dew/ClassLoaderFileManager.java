@@ -9,7 +9,9 @@ package org.apidesign.bck2brwsr.dew;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -61,7 +63,7 @@ public class ClassLoaderFileManager implements JavaFileManager {
     @Override
     public ClassLoader getClassLoader(Location location) {
         if (canClassLoad(location)) {
-            return getClass().getClassLoader();
+            return new SafeClassLoader(getClass().getClassLoader());
         } else {
             return null;
         }
@@ -326,6 +328,35 @@ public class ClassLoaderFileManager implements JavaFileManager {
             }
         }
         return res;
+    }
+
+    private static final class SafeClassLoader extends ClassLoader {
+        private final ClassLoader delegate;
+
+        SafeClassLoader(final ClassLoader delegate) {
+            this.delegate = delegate;
+
+        }
+
+        @Override
+        public URL getResource(String name) {
+            return delegate.getResource(name);
+        }
+
+        @Override
+        public InputStream getResourceAsStream(String name) {
+            return delegate.getResourceAsStream(name);
+        }
+
+        @Override
+        public Enumeration<URL> getResources(String name) throws IOException {
+            return delegate.getResources(name);
+        }
+
+        @Override
+        public Class<?> loadClass(String name) throws ClassNotFoundException {
+            return delegate.loadClass(name);
+        }
     }
 
 }

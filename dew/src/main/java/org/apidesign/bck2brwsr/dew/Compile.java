@@ -108,11 +108,9 @@ final class Compile implements DiagnosticListener<JavaFileObject> {
         };
 
         final Boolean res = ToolProvider.getSystemJavaCompiler().getTask(null, jfm, this, /*XXX:*/Arrays.asList("-source", "1.7", "-target", "1.7"), null, Arrays.asList(file)).call();
-
-
         Map<String, byte[]> result = new HashMap<>();
         for (MemoryFileObject generated : clfm.getGeneratedFiles(Kind.CLASS)) {
-            result.put(generated.infer(), generated.getContent());
+            result.put(generated.getName().substring(1), generated.getContent());
         }
         return result;
     }

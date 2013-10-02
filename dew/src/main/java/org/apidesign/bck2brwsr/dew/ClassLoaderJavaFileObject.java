@@ -30,9 +30,7 @@ class ClassLoaderJavaFileObject extends BaseFileObject {
     public InputStream openInputStream() throws IOException {
         final InputStream in = getClass().getClassLoader().getResourceAsStream(path.substring(1));
         if (in == null) {
-            getClass().getClassLoader().getResourceAsStream(path.substring(1));
             throw new FileNotFoundException(path);
-
         }
         return in;
     }
