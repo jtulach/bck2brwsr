@@ -18,6 +18,7 @@
 package org.apidesign.bck2brwsr.tck;
 
 import java.io.InputStream;
+import java.net.URL;
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
@@ -48,6 +49,11 @@ public class ResourcesTest {
             sb.append((char)b[i]);
         }
         return sb.toString();
+    }
+    
+    @Compare public String toURIFromURL() throws Exception {
+        URL u = new URL("http://apidesign.org");
+        return u.toURI().toString();
     }
     
     @Factory public static Object[] create() {

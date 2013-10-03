@@ -27,6 +27,7 @@ package java.lang;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Comparator;
+import java.util.Locale;
 import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.core.JavaScriptOnly;
@@ -2456,7 +2457,9 @@ public final class String
      * @see     java.lang.String#toUpperCase(Locale)
      * @since   1.1
      */
-//    public String toLowerCase(Locale locale) {
+    public String toLowerCase(java.util.Locale locale) {
+        return toLowerCase();
+    }
 //        if (locale == null) {
 //            throw new NullPointerException();
 //        }
@@ -2571,7 +2574,7 @@ public final class String
      */
     @JavaScriptBody(args = {}, body = "return this.toLowerCase();")
     public String toLowerCase() {
-        throw new UnsupportedOperationException("Should be supported but without connection to locale");
+        return null;
     }
 
     /**
@@ -2622,8 +2625,10 @@ public final class String
      * @see     java.lang.String#toLowerCase(Locale)
      * @since   1.1
      */
-    /* not for javascript 
     public String toUpperCase(Locale locale) {
+        return toUpperCase();
+    }
+    /* not for javascript 
         if (locale == null) {
             throw new NullPointerException();
         }
@@ -2737,7 +2742,7 @@ public final class String
      */
     @JavaScriptBody(args = {}, body = "return this.toUpperCase();")
     public String toUpperCase() {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     /**
@@ -2848,7 +2853,7 @@ public final class String
      * @since  1.5
      */
     public static String format(String format, Object ... args) {
-        throw new UnsupportedOperationException();
+        return format((Locale)null, format, args);
     }
 
     /**
@@ -2891,9 +2896,15 @@ public final class String
      * @see  java.util.Formatter
      * @since  1.5
      */
-//    public static String format(Locale l, String format, Object ... args) {
-//        return new Formatter(l).format(format, args).toString();
-//    }
+    public static String format(Locale l, String format, Object ... args) {
+        String p = format;
+        for (int i = 0; i < args.length; i++) {
+            String v = args[i] == null ? "null" : args[i].toString();
+            p = p.replaceFirst("%s", v);
+        }
+        return p;
+        // return new Formatter(l).format(format, args).toString();
+    }
 
     /**
      * Returns the string representation of the <code>Object</code> argument.

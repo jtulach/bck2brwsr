@@ -15,37 +15,22 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.dew;
+package org.apidesign.bck2brwsr.tck;
 
-import java.io.IOException;
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
-import static org.testng.Assert.*;
 import org.testng.annotations.Factory;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class CompileTest  {
-    @Compare public void testCompile() throws IOException {
-        String html = "<html><body>"
-                + " <button id='btn'>Hello!</button>"
-                + "</body></html>";
-        String java = "package x.y.z;"
-                + "import org.apidesign.bck2brwsr.htmlpage.api.*;"
-                + "import static org.apidesign.bck2brwsr.htmlpage.api.OnEvent.*;"
-            + "@Page(xhtml=\"index.html\", className=\"Index\")"
-            + "class X { "
-            + "   @On(event=CLICK, id=\"btn\") static void clcs() {}"
-            + "}";
-        Compile result = Compile.create(html, java);
-
-        assertNotNull(result.get("x/y/z/X.class"), "Class X is compiled: " + result);
-        assertNotNull(result.get("x/y/z/Index.class"), "Class Index is compiled: " + result);
+public class SystemTest {
+    @Compare public boolean nonNullOSName() {
+        return System.getProperty("os.name") != null;
     }
-    
+
     @Factory public static Object[] create() {
-        return VMTest.create(CompileTest.class);
+        return VMTest.create(SystemTest.class);
     }
 }

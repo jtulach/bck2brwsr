@@ -19,6 +19,7 @@ package org.apidesign.bck2brwsr.tck;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
@@ -72,12 +73,33 @@ public class ReflectionTest {
     @Compare public String isRunnableHasRunMethod() throws NoSuchMethodException {
         return Runnable.class.getMethod("run").getName();
     }
+
+    @Compare public String isRunnableDeclaresRunMethod() throws NoSuchMethodException {
+        return Runnable.class.getDeclaredMethod("run").getName();
+    }
+    
+    @Compare public String intValue() throws Exception {
+        return Integer.class.getConstructor(int.class).newInstance(10).toString();
+    }
     
     @Compare public String namesOfMethods() {
         StringBuilder sb = new StringBuilder();
         String[] arr = new String[20];
         int i = 0;
         for (Method m : StaticUse.class.getMethods()) {
+            arr[i++] = m.getName();
+        }
+        for (String s : sort(arr, i)) {
+            sb.append(s).append("\n");
+        }
+        return sb.toString();
+    }
+
+    @Compare public String paramsOfConstructors() {
+        StringBuilder sb = new StringBuilder();
+        String[] arr = new String[20];
+        int i = 0;
+        for (Constructor<?> m : StaticUse.class.getConstructors()) {
             arr[i++] = m.getName();
         }
         for (String s : sort(arr, i)) {

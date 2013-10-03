@@ -920,6 +920,23 @@ public final class URL implements java.io.Serializable {
     }
 
     /**
+     * Returns a {@link java.net.URI} equivalent to this URL.
+     * This method functions in the same way as <code>new URI (this.toString())</code>.
+     * <p>Note, any URL instance that complies with RFC 2396 can be converted
+     * to a URI. However, some URLs that are not strictly in compliance
+     * can not be converted to a URI.
+     *
+     * @exception URISyntaxException if this URL is not formatted strictly according to
+     *            to RFC2396 and cannot be converted to a URI.
+     *
+     * @return    a URI instance equivalent to this URL.
+     * @since 1.5
+     */
+    public URI toURI() throws URISyntaxException {
+        return new URI (toString());
+    }
+
+    /**
      * Returns a {@link java.net.URLConnection URLConnection} instance that
      * represents a connection to the remote object referred to by the
      * {@code URL}.
