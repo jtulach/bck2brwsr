@@ -540,8 +540,7 @@ public final class Double extends Number implements Comparable<Double> {
      */
     @JavaScriptBody(args="s", body="return parseFloat(s);")
     public static double parseDouble(String s) throws NumberFormatException {
-        throw new UnsupportedOperationException();
-//        return FloatingDecimal.readJavaFormatString(s).doubleValue();
+        return 0;
     }
 
     /**
