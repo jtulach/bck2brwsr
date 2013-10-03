@@ -162,6 +162,10 @@ public class CompareStringsTest {
         return res;
     }
 
+    @Compare public String replaceWithItself() {
+        return "org.apidesign.bck2brwsr.core.JavaScriptBody".replace(".", "\\.");
+    }
+    
     @Factory
     public static Object[] create() {
         return VMTest.create(CompareStringsTest.class);

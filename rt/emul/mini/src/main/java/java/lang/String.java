@@ -2239,12 +2239,14 @@ public final class String
           "var s = this.toString();\n"
         + "target = target.toString();\n"
         + "replacement = replacement.toString();\n"
+        + "var pos = 0;\n"
         + "for (;;) {\n"
-        + "  var ret = s.replace(target, replacement);\n"
-        + "  if (ret === s) {\n"
-        + "    return ret;\n"
+        + "  var indx = s.indexOf(target, pos);\n"
+        + "  if (indx === -1) {\n"
+        + "    return s;\n"
         + "  }\n"
-        + "  s = ret;\n"
+        + "  pos = indx + replacement.length;\n"
+        + "  s = s.substring(0, indx) + replacement + s.substring(indx + target.length);\n"
         + "}"
     )
     public native String replace(CharSequence target, CharSequence replacement);
