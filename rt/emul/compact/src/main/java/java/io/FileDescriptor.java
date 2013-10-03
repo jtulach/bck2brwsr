@@ -134,36 +134,6 @@ public final class FileDescriptor {
      */
     public native void sync() throws SyncFailedException;
 
-    /* This routine initializes JNI field offsets for the class */
-    private static native void initIDs();
-
-    static {
-        initIDs();
-    }
-
-    // Set up JavaIOFileDescriptorAccess in SharedSecrets
-    static {
-        sun.misc.SharedSecrets.setJavaIOFileDescriptorAccess(
-            new sun.misc.JavaIOFileDescriptorAccess() {
-                public void set(FileDescriptor obj, int fd) {
-                    obj.fd = fd;
-                }
-
-                public int get(FileDescriptor obj) {
-                    return obj.fd;
-                }
-
-                public void setHandle(FileDescriptor obj, long handle) {
-                    throw new UnsupportedOperationException();
-                }
-
-                public long getHandle(FileDescriptor obj) {
-                    throw new UnsupportedOperationException();
-                }
-            }
-        );
-    }
-
     // package private methods used by FIS, FOS and RAF
 
     int incrementAndGetUseCount() {

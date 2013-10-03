@@ -24,7 +24,6 @@
  */
 
 package java.io;
-import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 /**
  * A <code>BufferedInputStream</code> adds
@@ -59,16 +58,6 @@ class BufferedInputStream extends FilterInputStream {
      */
     protected volatile byte buf[];
 
-    /**
-     * Atomic updater to provide compareAndSet for buf. This is
-     * necessary because closes can be asynchronous. We use nullness
-     * of buf[] as primary indicator that this stream is closed. (The
-     * "in" field is also nulled out on close.)
-     */
-    private static final
-        AtomicReferenceFieldUpdater<BufferedInputStream, byte[]> bufUpdater =
-        AtomicReferenceFieldUpdater.newUpdater
-        (BufferedInputStream.class,  byte[].class, "buf");
 
     /**
      * The index one greater than the index of the last valid byte in
@@ -221,14 +210,6 @@ class BufferedInputStream extends FilterInputStream {
                     nsz = marklimit;
                 byte nbuf[] = new byte[nsz];
                 System.arraycopy(buffer, 0, nbuf, 0, pos);
-                if (!bufUpdater.compareAndSet(this, buffer, nbuf)) {
-                    // Can't replace buf if there was an async close.
-                    // Note: This would need to be changed if fill()
-                    // is ever made accessible to multiple threads.
-                    // But for now, the only way CAS can fail is via close.
-                    // assert buf == null;
-                    throw new IOException("Stream closed");
-                }
                 buffer = nbuf;
             }
         count = pos;
@@ -465,13 +446,12 @@ class BufferedInputStream extends FilterInputStream {
     public void close() throws IOException {
         byte[] buffer;
         while ( (buffer = buf) != null) {
-            if (bufUpdater.compareAndSet(this, buffer, null)) {
-                InputStream input = in;
-                in = null;
-                if (input != null)
-                    input.close();
-                return;
-            }
+            InputStream input = in;
+            buf = null;
+            in = null;
+            if (input != null)
+                input.close();
+            return;
             // Else retry in case a new buf was CASed in fill()
         }
     }

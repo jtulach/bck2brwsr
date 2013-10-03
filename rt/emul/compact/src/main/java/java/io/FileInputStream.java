@@ -25,8 +25,6 @@
 
 package java.io;
 
-import java.nio.channels.FileChannel;
-import sun.nio.ch.FileChannelImpl;
 
 
 /**
@@ -51,7 +49,7 @@ class FileInputStream extends InputStream
     /* File Descriptor - handle to the open file */
     private final FileDescriptor fd;
 
-    private FileChannel channel = null;
+//    private FileChannel channel = null;
 
     private final Object closeLock = new Object();
     private volatile boolean closed = false;
@@ -125,17 +123,7 @@ class FileInputStream extends InputStream
      * @see        java.lang.SecurityManager#checkRead(java.lang.String)
      */
     public FileInputStream(File file) throws FileNotFoundException {
-        String name = (file != null ? file.getPath() : null);
-        SecurityManager security = System.getSecurityManager();
-        if (security != null) {
-            security.checkRead(name);
-        }
-        if (name == null) {
-            throw new NullPointerException();
-        }
-        fd = new FileDescriptor();
-        fd.incrementAndGetUseCount();
-        open(name);
+        throw new SecurityException();
     }
 
     /**
@@ -163,21 +151,7 @@ class FileInputStream extends InputStream
      * @see        SecurityManager#checkRead(java.io.FileDescriptor)
      */
     public FileInputStream(FileDescriptor fdObj) {
-        SecurityManager security = System.getSecurityManager();
-        if (fdObj == null) {
-            throw new NullPointerException();
-        }
-        if (security != null) {
-            security.checkRead(fdObj);
-        }
-        fd = fdObj;
-
-        /*
-         * FileDescriptor is being shared by streams.
-         * Ensure that it's GC'ed only when all the streams/channels are done
-         * using it.
-         */
-        fd.incrementAndGetUseCount();
+        throw new SecurityException();
     }
 
     /**
@@ -303,15 +277,15 @@ class FileInputStream extends InputStream
             }
             closed = true;
         }
-        if (channel != null) {
-            /*
-             * Decrement the FD use count associated with the channel
-             * The use count is incremented whenever a new channel
-             * is obtained from this stream.
-             */
-           fd.decrementAndGetUseCount();
-           channel.close();
-        }
+//        if (channel != null) {
+//            /*
+//             * Decrement the FD use count associated with the channel
+//             * The use count is incremented whenever a new channel
+//             * is obtained from this stream.
+//             */
+//           fd.decrementAndGetUseCount();
+//           channel.close();
+//        }
 
         /*
          * Decrement the FD use count associated with this stream
@@ -358,21 +332,21 @@ class FileInputStream extends InputStream
      * @since 1.4
      * @spec JSR-51
      */
-    public FileChannel getChannel() {
-        synchronized (this) {
-            if (channel == null) {
-                channel = FileChannelImpl.open(fd, true, false, this);
-
-                /*
-                 * Increment fd's use count. Invoking the channel's close()
-                 * method will result in decrementing the use count set for
-                 * the channel.
-                 */
-                fd.incrementAndGetUseCount();
-            }
-            return channel;
-        }
-    }
+//    public FileChannel getChannel() {
+//        synchronized (this) {
+//            if (channel == null) {
+//                channel = FileChannelImpl.open(fd, true, false, this);
+//
+//                /*
+//                 * Increment fd's use count. Invoking the channel's close()
+//                 * method will result in decrementing the use count set for
+//                 * the channel.
+//                 */
+//                fd.incrementAndGetUseCount();
+//            }
+//            return channel;
+//        }
+//    }
 
     private static native void initIDs();
 

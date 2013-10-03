@@ -45,19 +45,7 @@ import java.io.InputStream;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
-import java.net.JarURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.jar.JarEntry;
-
-import sun.util.locale.BaseLocale;
-import sun.util.locale.LocaleObjectCache;
 
 
 /**
@@ -288,8 +276,8 @@ public abstract class ResourceBundle {
      * This variable would be better named "cache", but we keep the old
      * name for compatibility with some workarounds for bug 4212439.
      */
-    private static final ConcurrentMap<CacheKey, BundleReference> cacheList
-        = new ConcurrentHashMap<>(INITIAL_CACHE_SIZE);
+    private static final Map<CacheKey, BundleReference> cacheList
+        = new HashMap<>(INITIAL_CACHE_SIZE);
 
     /**
      * Queue for reference objects referring to class loaders or bundles.
@@ -410,65 +398,6 @@ public abstract class ResourceBundle {
         return locale;
     }
 
-    /*
-     * Automatic determination of the ClassLoader to be used to load
-     * resources on behalf of the client.  N.B. The client is getLoader's
-     * caller's caller.
-     */
-    private static ClassLoader getLoader() {
-        Class[] stack = getClassContext();
-        /* Magic number 2 identifies our caller's caller */
-        Class c = stack[2];
-        ClassLoader cl = (c == null) ? null : c.getClassLoader();
-        if (cl == null) {
-            // When the caller's loader is the boot class loader, cl is null
-            // here. In that case, ClassLoader.getSystemClassLoader() may
-            // return the same class loader that the application is
-            // using. We therefore use a wrapper ClassLoader to create a
-            // separate scope for bundles loaded on behalf of the Java
-            // runtime so that these bundles cannot be returned from the
-            // cache to the application (5048280).
-            cl = RBClassLoader.INSTANCE;
-        }
-        return cl;
-    }
-
-    private static native Class[] getClassContext();
-
-    /**
-     * A wrapper of ClassLoader.getSystemClassLoader().
-     */
-    private static class RBClassLoader extends ClassLoader {
-        private static final RBClassLoader INSTANCE = AccessController.doPrivileged(
-                    new PrivilegedAction<RBClassLoader>() {
-                        public RBClassLoader run() {
-                            return new RBClassLoader();
-                        }
-                    });
-        private static final ClassLoader loader = ClassLoader.getSystemClassLoader();
-
-        private RBClassLoader() {
-        }
-        public Class<?> loadClass(String name) throws ClassNotFoundException {
-            if (loader != null) {
-                return loader.loadClass(name);
-            }
-            return Class.forName(name);
-        }
-        public URL getResource(String name) {
-            if (loader != null) {
-                return loader.getResource(name);
-            }
-            return ClassLoader.getSystemResource(name);
-        }
-        public InputStream getResourceAsStream(String name) {
-            if (loader != null) {
-                return loader.getResourceAsStream(name);
-            }
-            return ClassLoader.getSystemResourceAsStream(name);
-        }
-    }
-
     /**
      * Sets the parent bundle of this bundle.
      * The parent bundle is searched by {@link #getObject getObject}
@@ -492,7 +421,6 @@ public abstract class ResourceBundle {
         // These three are the actual keys for lookup in Map.
         private String name;
         private Locale locale;
-        private LoaderReference loaderRef;
 
         // bundle format which is necessary for calling
         // Control.needsReload().
@@ -515,14 +443,9 @@ public abstract class ResourceBundle {
         // of this instance.
         private int hashCodeCache;
 
-        CacheKey(String baseName, Locale locale, ClassLoader loader) {
+        CacheKey(String baseName, Locale locale) {
             this.name = baseName;
             this.locale = locale;
-            if (loader == null) {
-                this.loaderRef = null;
-            } else {
-                loaderRef = new LoaderReference(loader, referenceQueue, this);
-            }
             calculateHashCode();
         }
 
@@ -550,10 +473,6 @@ public abstract class ResourceBundle {
             return this;
         }
 
-        ClassLoader getLoader() {
-            return (loaderRef != null) ? loaderRef.get() : null;
-        }
-
         public boolean equals(Object other) {
             if (this == other) {
                 return true;
@@ -572,17 +491,7 @@ public abstract class ResourceBundle {
                 if (!locale.equals(otherEntry.locale)) {
                     return false;
                 }
-                //are refs (both non-null) or (both null)?
-                if (loaderRef == null) {
-                    return otherEntry.loaderRef == null;
-                }
-                ClassLoader loader = loaderRef.get();
-                return (otherEntry.loaderRef != null)
-                        // with a null reference we can no longer find
-                        // out which class loader was referenced; so
-                        // treat it as unequal
-                        && (loader != null)
-                        && (loader == otherEntry.loaderRef.get());
+                return true;
             } catch (NullPointerException e) {
             } catch (ClassCastException e) {
             }
@@ -596,19 +505,11 @@ public abstract class ResourceBundle {
         private void calculateHashCode() {
             hashCodeCache = name.hashCode() << 3;
             hashCodeCache ^= locale.hashCode();
-            ClassLoader loader = getLoader();
-            if (loader != null) {
-                hashCodeCache ^= loader.hashCode();
-            }
         }
 
         public Object clone() {
             try {
                 CacheKey clone = (CacheKey) super.clone();
-                if (loaderRef != null) {
-                    clone.loaderRef = new LoaderReference(loaderRef.get(),
-                                                          referenceQueue, clone);
-                }
                 // Clear the reference to a Throwable
                 clone.cause = null;
                 return clone;
@@ -651,7 +552,7 @@ public abstract class ResourceBundle {
                     l = "\"\"";
                 }
             }
-            return "CacheKey[" + name + ", lc=" + l + ", ldr=" + getLoader()
+            return "CacheKey[" + name + ", lc=" + l
                 + "(format=" + format + ")]";
         }
     }
@@ -662,25 +563,6 @@ public abstract class ResourceBundle {
      */
     private static interface CacheKeyReference {
         public CacheKey getCacheKey();
-    }
-
-    /**
-     * References to class loaders are weak references, so that they can be
-     * garbage collected when nobody else is using them. The ResourceBundle
-     * class has no reason to keep class loaders alive.
-     */
-    private static final class LoaderReference extends WeakReference<ClassLoader>
-                                               implements CacheKeyReference {
-        private CacheKey cacheKey;
-
-        LoaderReference(ClassLoader referent, ReferenceQueue q, CacheKey key) {
-            super(referent, q);
-            cacheKey = key;
-        }
-
-        public CacheKey getCacheKey() {
-            return cacheKey;
-        }
     }
 
     /**
@@ -722,8 +604,6 @@ public abstract class ResourceBundle {
     public static final ResourceBundle getBundle(String baseName)
     {
         return getBundleImpl(baseName, Locale.getDefault(),
-                             /* must determine loader here, else we break stack invariant */
-                             getLoader(),
                              Control.INSTANCE);
     }
 
@@ -765,7 +645,6 @@ public abstract class ResourceBundle {
                                                  Control control) {
         return getBundleImpl(baseName, Locale.getDefault(),
                              /* must determine loader here, else we break stack invariant */
-                             getLoader(),
                              control);
     }
 
@@ -795,7 +674,6 @@ public abstract class ResourceBundle {
     {
         return getBundleImpl(baseName, locale,
                              /* must determine loader here, else we break stack invariant */
-                             getLoader(),
                              Control.INSTANCE);
     }
 
@@ -840,7 +718,6 @@ public abstract class ResourceBundle {
                                                  Control control) {
         return getBundleImpl(baseName, targetLocale,
                              /* must determine loader here, else we break stack invariant */
-                             getLoader(),
                              control);
     }
 
@@ -1025,7 +902,7 @@ public abstract class ResourceBundle {
         if (loader == null) {
             throw new NullPointerException();
         }
-        return getBundleImpl(baseName, locale, loader, Control.INSTANCE);
+        return getBundleImpl(baseName, locale, Control.INSTANCE);
     }
 
     /**
@@ -1243,11 +1120,11 @@ public abstract class ResourceBundle {
         if (loader == null || control == null) {
             throw new NullPointerException();
         }
-        return getBundleImpl(baseName, targetLocale, loader, control);
+        return getBundleImpl(baseName, targetLocale, control);
     }
 
     private static ResourceBundle getBundleImpl(String baseName, Locale locale,
-                                                ClassLoader loader, Control control) {
+                                                Control control) {
         if (locale == null || control == null) {
             throw new NullPointerException();
         }
@@ -1256,7 +1133,7 @@ public abstract class ResourceBundle {
         // name and loader will never change during the bundle loading
         // process. We have to make sure that the locale is set before
         // using it as a cache key.
-        CacheKey cacheKey = new CacheKey(baseName, locale, loader);
+        CacheKey cacheKey = new CacheKey(baseName, locale);
         ResourceBundle bundle = null;
 
         // Quick lookup of the cache.
@@ -1388,7 +1265,7 @@ public abstract class ResourceBundle {
                 // the same bundles having different parents.
                 BundleReference bundleRef = cacheList.get(cacheKey);
                 if (bundleRef != null && bundleRef.get() == bundle) {
-                    cacheList.remove(cacheKey, bundleRef);
+                    cacheList.remove(cacheKey);
                 }
             }
         }
@@ -1434,7 +1311,7 @@ public abstract class ResourceBundle {
             String format = formats.get(i);
             try {
                 bundle = control.newBundle(cacheKey.getName(), targetLocale, format,
-                                           cacheKey.getLoader(), reload);
+                                           null, reload);
             } catch (LinkageError error) {
                 // We need to handle the LinkageError case due to
                 // inconsistent case-sensitivity in ClassLoader.
@@ -1562,7 +1439,7 @@ public abstract class ResourceBundle {
             assert bundle != NONEXISTENT_BUNDLE;
             bundle.expired = true;
             bundle.cacheKey = null;
-            cacheList.remove(cacheKey, bundleRef);
+            cacheList.remove(cacheKey);
             bundle = null;
         } else {
             CacheKey key = bundleRef.getCacheKey();
@@ -1581,7 +1458,7 @@ public abstract class ResourceBundle {
                                 bundle.expired = control.needsReload(key.getName(),
                                                                      key.getLocale(),
                                                                      key.getFormat(),
-                                                                     key.getLoader(),
+                                                                     null,
                                                                      bundle,
                                                                      key.loadTime);
                             } catch (Exception e) {
@@ -1593,7 +1470,7 @@ public abstract class ResourceBundle {
                                 // return the bundle with the expired flag
                                 // on.
                                 bundle.cacheKey = null;
-                                cacheList.remove(cacheKey, bundleRef);
+                                cacheList.remove(cacheKey);
                             } else {
                                 // Update the expiration control info. and reuse
                                 // the same bundle instance
@@ -1603,7 +1480,7 @@ public abstract class ResourceBundle {
                     }
                 } else {
                     // We just remove NONEXISTENT_BUNDLE from the cache.
-                    cacheList.remove(cacheKey, bundleRef);
+                    cacheList.remove(cacheKey);
                     bundle = null;
                 }
             }
@@ -1630,7 +1507,7 @@ public abstract class ResourceBundle {
             bundle.cacheKey = key;
 
             // Put the bundle in the cache if it's not been in the cache.
-            BundleReference result = cacheList.putIfAbsent(key, bundleRef);
+            BundleReference result = cacheList.put(key, bundleRef);
 
             // If someone else has put the same bundle in the cache before
             // us and it has not expired, we should use the one in the cache.
@@ -1677,7 +1554,7 @@ public abstract class ResourceBundle {
      * @see ResourceBundle.Control#getTimeToLive(String,Locale)
      */
     public static final void clearCache() {
-        clearCache(getLoader());
+        clearCache(null);
     }
 
     /**
@@ -1695,9 +1572,7 @@ public abstract class ResourceBundle {
         }
         Set<CacheKey> set = cacheList.keySet();
         for (CacheKey key : set) {
-            if (key.getLoader() == loader) {
-                set.remove(key);
-            }
+            set.remove(key);
         }
     }
 
@@ -2300,13 +2175,25 @@ public abstract class ResourceBundle {
             if (baseName == null) {
                 throw new NullPointerException();
             }
-            return new ArrayList<>(CANDIDATES_CACHE.get(locale.getBaseLocale()));
+            return new ArrayList<>(CANDIDATES_CACHE.get(locale));
         }
 
         private static final CandidateListCache CANDIDATES_CACHE = new CandidateListCache();
 
-        private static class CandidateListCache extends LocaleObjectCache<BaseLocale, List<Locale>> {
-            protected List<Locale> createObject(BaseLocale base) {
+        private static class CandidateListCache {
+            private Locale prevQuery;
+            private List<Locale> prevResult;
+            
+            public List<Locale> get(Locale l) {
+                if (prevQuery == l) {
+                    return prevResult;
+                }
+                prevResult = createObject(l);
+                prevQuery = l;
+                return prevResult;
+            }
+            
+            protected List<Locale> createObject(Locale base) {
                 String language = base.getLanguage();
                 String script = base.getScript();
                 String region = base.getRegion();
@@ -2563,7 +2450,9 @@ public abstract class ResourceBundle {
             if (format.equals("java.class")) {
                 try {
                     Class<? extends ResourceBundle> bundleClass
-                        = (Class<? extends ResourceBundle>)loader.loadClass(bundleName);
+                        = (Class<? extends ResourceBundle>)(loader != null ? 
+                        loader.loadClass(bundleName) :
+                        Class.forName(bundleName));
 
                     // If the class isn't a ResourceBundle subclass, throw a
                     // ClassCastException.
@@ -2579,39 +2468,15 @@ public abstract class ResourceBundle {
                 final String resourceName = toResourceName(bundleName, "properties");
                 final ClassLoader classLoader = loader;
                 final boolean reloadFlag = reload;
-                InputStream stream = null;
-                try {
-                    stream = AccessController.doPrivileged(
-                        new PrivilegedExceptionAction<InputStream>() {
-                            public InputStream run() throws IOException {
-                                InputStream is = null;
-                                if (reloadFlag) {
-                                    URL url = classLoader.getResource(resourceName);
-                                    if (url != null) {
-                                        URLConnection connection = url.openConnection();
-                                        if (connection != null) {
-                                            // Disable caches to get fresh data for
-                                            // reloading.
-                                            connection.setUseCaches(false);
-                                            is = connection.getInputStream();
-                                        }
-                                    }
-                                } else {
-                                    is = classLoader.getResourceAsStream(resourceName);
-                                }
-                                return is;
-                            }
-                        });
-                } catch (PrivilegedActionException e) {
-                    throw (IOException) e.getException();
-                }
+                InputStream stream = classLoader != null ? classLoader.getResourceAsStream(resourceName) :
+                    ResourceBundle.class.getResourceAsStream("/" + resourceName);
                 if (stream != null) {
                     try {
                         bundle = new PropertyResourceBundle(stream);
                     } finally {
                         stream.close();
                     }
-                }
+                }   
             } else {
                 throw new IllegalArgumentException("unknown format: " + format);
             }
@@ -2730,6 +2595,7 @@ public abstract class ResourceBundle {
             }
             boolean result = false;
             try {
+/*
                 String resourceName = toResourceName(toBundleName(baseName, locale), format);
                 URL url = loader.getResource(resourceName);
                 if (url != null) {
@@ -2752,6 +2618,7 @@ public abstract class ResourceBundle {
                     }
                     result = lastModified >= loadTime;
                 }
+                */
             } catch (NullPointerException npe) {
                 throw npe;
             } catch (Exception e) {

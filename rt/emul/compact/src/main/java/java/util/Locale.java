@@ -514,6 +514,15 @@ public final class Locale implements Cloneable, Serializable {
     private static final int DISPLAY_COUNTRY  = 1;
     private static final int DISPLAY_VARIANT  = 2;
     private static final int DISPLAY_SCRIPT   = 3;
+
+    static Locale getInstance(String language, String script, String region, String v, Object object) {
+        return new Locale(language, script, region);
+    }
+
+    static Locale getInstance(String no, String no0, String ny) {
+        return new Locale(no, no0, ny);
+    }
+    
     private String language;
     private String country;
     private String variant;
@@ -628,6 +637,26 @@ public final class Locale implements Cloneable, Serializable {
         return Locale.US;
     }
 
+    /**
+     * Gets the current value of the default locale for the specified Category
+     * for this instance of the Java Virtual Machine.
+     * <p>
+     * The Java Virtual Machine sets the default locale during startup based
+     * on the host environment. It is used by many locale-sensitive methods
+     * if no locale is explicitly specified. It can be changed using the
+     * setDefault(Locale.Category, Locale) method.
+     *
+     * @param category - the specified category to get the default locale
+     * @throws NullPointerException - if category is null
+     * @return the default locale for the specified Category for this instance
+     *     of the Java Virtual Machine
+     * @see #setDefault(Locale.Category, Locale)
+     * @since 1.7
+     */
+    public static Locale getDefault(Locale.Category category) {
+        return Locale.US;
+    }
+    
     /**
      * Sets the default locale for this instance of the Java Virtual Machine.
      * This does not affect the host locale.
@@ -938,5 +967,46 @@ public final class Locale implements Cloneable, Serializable {
         return true;
     }
 
+    /**
+     * Enum for locale categories.  These locale categories are used to get/set
+     * the default locale for the specific functionality represented by the
+     * category.
+     *
+     * @see #getDefault(Locale.Category)
+     * @see #setDefault(Locale.Category, Locale)
+     * @since 1.7
+     */
+    public enum Category {
+
+        /**
+         * Category used to represent the default locale for
+         * displaying user interfaces.
+         */
+        DISPLAY("user.language.display",
+                "user.script.display",
+                "user.country.display",
+                "user.variant.display"),
+
+        /**
+         * Category used to represent the default locale for
+         * formatting dates, numbers, and/or currencies.
+         */
+        FORMAT("user.language.format",
+               "user.script.format",
+               "user.country.format",
+               "user.variant.format");
+
+        Category(String languageKey, String scriptKey, String countryKey, String variantKey) {
+            this.languageKey = languageKey;
+            this.scriptKey = scriptKey;
+            this.countryKey = countryKey;
+            this.variantKey = variantKey;
+        }
+
+        final String languageKey;
+        final String scriptKey;
+        final String countryKey;
+        final String variantKey;
+    }
 
 }

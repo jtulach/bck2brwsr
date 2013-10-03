@@ -25,8 +25,6 @@
 
 package java.io;
 
-import java.nio.channels.FileChannel;
-import sun.nio.ch.FileChannelImpl;
 
 
 /**
@@ -65,7 +63,7 @@ class FileOutputStream extends OutputStream
     /**
      * The associated channel, initalized lazily.
      */
-    private FileChannel channel;
+//    private FileChannel channel;
 
     private final Object closeLock = new Object();
     private volatile boolean closed = false;
@@ -197,19 +195,7 @@ class FileOutputStream extends OutputStream
     public FileOutputStream(File file, boolean append)
         throws FileNotFoundException
     {
-        String name = (file != null ? file.getPath() : null);
-        SecurityManager security = System.getSecurityManager();
-        if (security != null) {
-            security.checkWrite(name);
-        }
-        if (name == null) {
-            throw new NullPointerException();
-        }
-        this.fd = new FileDescriptor();
-        this.append = append;
-
-        fd.incrementAndGetUseCount();
-        open(name, append);
+        throw new SecurityException();
     }
 
     /**
@@ -236,22 +222,7 @@ class FileOutputStream extends OutputStream
      * @see        java.lang.SecurityManager#checkWrite(java.io.FileDescriptor)
      */
     public FileOutputStream(FileDescriptor fdObj) {
-        SecurityManager security = System.getSecurityManager();
-        if (fdObj == null) {
-            throw new NullPointerException();
-        }
-        if (security != null) {
-            security.checkWrite(fdObj);
-        }
-        this.fd = fdObj;
-        this.append = false;
-
-        /*
-         * FileDescriptor is being shared by streams.
-         * Ensure that it's GC'ed only when all the streams/channels are done
-         * using it.
-         */
-        fd.incrementAndGetUseCount();
+        throw new SecurityException();
     }
 
     /**
@@ -338,16 +309,16 @@ class FileOutputStream extends OutputStream
             }
             closed = true;
         }
-
-        if (channel != null) {
-            /*
-             * Decrement FD use count associated with the channel
-             * The use count is incremented whenever a new channel
-             * is obtained from this stream.
-             */
-            fd.decrementAndGetUseCount();
-            channel.close();
-        }
+//
+//        if (channel != null) {
+//            /*
+//             * Decrement FD use count associated with the channel
+//             * The use count is incremented whenever a new channel
+//             * is obtained from this stream.
+//             */
+//            fd.decrementAndGetUseCount();
+//            channel.close();
+//        }
 
         /*
          * Decrement FD use count associated with this stream
@@ -395,21 +366,21 @@ class FileOutputStream extends OutputStream
      * @since 1.4
      * @spec JSR-51
      */
-    public FileChannel getChannel() {
-        synchronized (this) {
-            if (channel == null) {
-                channel = FileChannelImpl.open(fd, false, true, append, this);
-
-                /*
-                 * Increment fd's use count. Invoking the channel's close()
-                 * method will result in decrementing the use count set for
-                 * the channel.
-                 */
-                fd.incrementAndGetUseCount();
-            }
-            return channel;
-        }
-    }
+//    public FileChannel getChannel() {
+//        synchronized (this) {
+//            if (channel == null) {
+//                channel = FileChannelImpl.open(fd, false, true, append, this);
+//
+//                /*
+//                 * Increment fd's use count. Invoking the channel's close()
+//                 * method will result in decrementing the use count set for
+//                 * the channel.
+//                 */
+//                fd.incrementAndGetUseCount();
+//            }
+//            return channel;
+//        }
+//    }
 
     /**
      * Cleans up the connection to the file, and ensures that the

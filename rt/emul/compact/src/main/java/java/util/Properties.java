@@ -861,12 +861,11 @@ class Properties extends Hashtable<Object,Object> {
      * @since 1.5
      */
     public synchronized void loadFromXML(InputStream in)
-        throws IOException, InvalidPropertiesFormatException
+        throws IOException
     {
         if (in == null)
             throw new NullPointerException();
-        XMLUtils.load(this, in);
-        in.close();
+        throw new IOException();
     }
 
     /**
@@ -933,7 +932,7 @@ class Properties extends Hashtable<Object,Object> {
     {
         if (os == null)
             throw new NullPointerException();
-        XMLUtils.save(this, os, comment, encoding);
+        throw new IOException();
     }
 
     /**
