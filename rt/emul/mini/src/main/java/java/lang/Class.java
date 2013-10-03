@@ -1158,7 +1158,7 @@ public final
      * @see java.lang.RuntimePermission
      */
     public ClassLoader getClassLoader() {
-        throw new SecurityException();
+        return ClassLoader.getSystemClassLoader();
     }
 
     /**

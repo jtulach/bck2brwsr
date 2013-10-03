@@ -180,7 +180,7 @@ public abstract class ClassLoader {
      * @since  1.2
      */
     protected ClassLoader(ClassLoader parent) {
-        throw new SecurityException();
+        this.parent = parent;
     }
 
     /**
@@ -199,7 +199,7 @@ public abstract class ClassLoader {
      *          of a new class loader.
      */
     protected ClassLoader() {
-        throw new SecurityException();
+        this.parent = null;
     }
 
     // -- Class --
@@ -845,8 +845,27 @@ public abstract class ClassLoader {
      * @revised  1.4
      */
     public static ClassLoader getSystemClassLoader() {
-        throw new SecurityException();
+        if (SYSTEM == null) {
+            SYSTEM = new ClassLoader() {
+                @Override
+                protected Enumeration<URL> findResources(String name) throws IOException {
+                    return getSystemResources(name);
+                }
+
+                @Override
+                protected URL findResource(String name) {
+                    return getSystemResource(name);
+                }
+
+                @Override
+                protected Class<?> findClass(String name) throws ClassNotFoundException {
+                    return Class.forName(name);
+                }
+            };
+        }
+        return SYSTEM;
     }
+    private static ClassLoader SYSTEM;
 
     // Returns true if the specified class loader can be found in this class
     // loader's delegation chain.
@@ -870,7 +889,7 @@ public abstract class ClassLoader {
     }
 
     private static URL getBootstrapResource(String name) {
-        throw new UnsupportedOperationException();
+        return Object.class.getResource("/" + name);
     }
 
     private static Enumeration<URL> getBootstrapResources(String name) {
@@ -910,7 +929,7 @@ public abstract class ClassLoader {
         }
 
         public boolean hasMoreElements() {
-            if (next == null) {
+            if (next == null && index < arr.length) {
                 if (arr[index].hasMoreElements()) {
                     next = (URL) arr[index].nextElement();
                 } else {

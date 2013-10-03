@@ -38,6 +38,17 @@ public class ResourcesTest {
         }
         return sb.toString();
     }
+
+    @Compare public String readResourceAsStreamFromClassLoader() throws Exception {
+        InputStream is = getClass().getClassLoader().getResourceAsStream("org/apidesign/bck2brwsr/tck/Resources.txt");
+        byte[] b = new byte[30];
+        int len = is.read(b);
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < len; i++) {
+            sb.append((char)b[i]);
+        }
+        return sb.toString();
+    }
     
     @Factory public static Object[] create() {
         return VMTest.create(ResourcesTest.class);
