@@ -34,6 +34,11 @@ public class ReflectionArrayTest {
         return arr.length;
     }
     
+    @Compare public String indexOutOfBounds() {
+        String[] arr = { null, null };
+        return arr[2];
+    }
+    
     @Compare public int reflectiveLengthOfStringArray() {
         Object arr = Array.newInstance(String.class, 10);
         return Array.getLength(arr);

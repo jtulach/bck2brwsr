@@ -3,7 +3,7 @@ vm.java_lang_reflect_Array(false);
 vm.java_lang_String(false);
 
 Array.prototype.at = function(indx, value) {
-  if (indx < 0 || indx > this.length) {
+  if (indx < 0 || indx >= this.length) {
       var e = vm.java_lang_ArrayIndexOutOfBoundsException(true);
       e.constructor.cons__VLjava_lang_String_2.call(e, indx.toString());
       throw e;
