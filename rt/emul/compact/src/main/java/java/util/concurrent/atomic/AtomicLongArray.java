@@ -34,8 +34,6 @@
  */
 
 package java.util.concurrent.atomic;
-import sun.misc.Unsafe;
-import java.util.*;
 
 /**
  * A {@code long} array in which elements may be updated atomically.
@@ -47,28 +45,7 @@ import java.util.*;
 public class AtomicLongArray implements java.io.Serializable {
     private static final long serialVersionUID = -2308431214976778248L;
 
-    private static final Unsafe unsafe = Unsafe.getUnsafe();
-    private static final int base = unsafe.arrayBaseOffset(long[].class);
-    private static final int shift;
     private final long[] array;
-
-    static {
-        int scale = unsafe.arrayIndexScale(long[].class);
-        if ((scale & (scale - 1)) != 0)
-            throw new Error("data type scale not a power of two");
-        shift = 31 - Integer.numberOfLeadingZeros(scale);
-    }
-
-    private long checkedByteOffset(int i) {
-        if (i < 0 || i >= array.length)
-            throw new IndexOutOfBoundsException("index " + i);
-
-        return byteOffset(i);
-    }
-
-    private static long byteOffset(int i) {
-        return ((long) i << shift) + base;
-    }
 
     /**
      * Creates a new AtomicLongArray of the given length, with all
@@ -108,11 +85,7 @@ public class AtomicLongArray implements java.io.Serializable {
      * @return the current value
      */
     public final long get(int i) {
-        return getRaw(checkedByteOffset(i));
-    }
-
-    private long getRaw(long offset) {
-        return unsafe.getLongVolatile(array, offset);
+        return array[i];
     }
 
     /**
@@ -122,7 +95,7 @@ public class AtomicLongArray implements java.io.Serializable {
      * @param newValue the new value
      */
     public final void set(int i, long newValue) {
-        unsafe.putLongVolatile(array, checkedByteOffset(i), newValue);
+        array[i] = newValue;
     }
 
     /**
@@ -133,7 +106,7 @@ public class AtomicLongArray implements java.io.Serializable {
      * @since 1.6
      */
     public final void lazySet(int i, long newValue) {
-        unsafe.putOrderedLong(array, checkedByteOffset(i), newValue);
+        array[i] = newValue;
     }
 
 
@@ -146,12 +119,9 @@ public class AtomicLongArray implements java.io.Serializable {
      * @return the previous value
      */
     public final long getAndSet(int i, long newValue) {
-        long offset = checkedByteOffset(i);
-        while (true) {
-            long current = getRaw(offset);
-            if (compareAndSetRaw(offset, current, newValue))
-                return current;
-        }
+        long v = array[i];
+        array[i] = newValue;
+        return v;
     }
 
     /**
@@ -165,11 +135,12 @@ public class AtomicLongArray implements java.io.Serializable {
      * the actual value was not equal to the expected value.
      */
     public final boolean compareAndSet(int i, long expect, long update) {
-        return compareAndSetRaw(checkedByteOffset(i), expect, update);
-    }
-
-    private boolean compareAndSetRaw(long offset, long expect, long update) {
-        return unsafe.compareAndSwapLong(array, offset, expect, update);
+        if (array[i] == expect) {
+            array[i] = update;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -217,12 +188,9 @@ public class AtomicLongArray implements java.io.Serializable {
      * @return the previous value
      */
     public final long getAndAdd(int i, long delta) {
-        long offset = checkedByteOffset(i);
-        while (true) {
-            long current = getRaw(offset);
-            if (compareAndSetRaw(offset, current, current + delta))
-                return current;
-        }
+        long v = array[i];
+        array[i] += delta;
+        return v;
     }
 
     /**
@@ -253,13 +221,8 @@ public class AtomicLongArray implements java.io.Serializable {
      * @return the updated value
      */
     public long addAndGet(int i, long delta) {
-        long offset = checkedByteOffset(i);
-        while (true) {
-            long current = getRaw(offset);
-            long next = current + delta;
-            if (compareAndSetRaw(offset, current, next))
-                return next;
-        }
+        array[i] += delta;
+        return array[i];
     }
 
     /**
@@ -274,7 +237,7 @@ public class AtomicLongArray implements java.io.Serializable {
         StringBuilder b = new StringBuilder();
         b.append('[');
         for (int i = 0; ; i++) {
-            b.append(getRaw(byteOffset(i)));
+            b.append(get(i));
             if (i == iMax)
                 return b.append(']').toString();
             b.append(',').append(' ');

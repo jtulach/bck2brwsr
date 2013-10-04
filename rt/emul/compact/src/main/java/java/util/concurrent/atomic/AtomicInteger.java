@@ -34,7 +34,6 @@
  */
 
 package java.util.concurrent.atomic;
-import sun.misc.Unsafe;
 
 /**
  * An {@code int} value that may be updated atomically.  See the
@@ -51,17 +50,6 @@ import sun.misc.Unsafe;
 */
 public class AtomicInteger extends Number implements java.io.Serializable {
     private static final long serialVersionUID = 6214790243416807050L;
-
-    // setup to use Unsafe.compareAndSwapInt for updates
-    private static final Unsafe unsafe = Unsafe.getUnsafe();
-    private static final long valueOffset;
-
-    static {
-      try {
-        valueOffset = unsafe.objectFieldOffset
-            (AtomicInteger.class.getDeclaredField("value"));
-      } catch (Exception ex) { throw new Error(ex); }
-    }
 
     private volatile int value;
 
@@ -105,7 +93,7 @@ public class AtomicInteger extends Number implements java.io.Serializable {
      * @since 1.6
      */
     public final void lazySet(int newValue) {
-        unsafe.putOrderedInt(this, valueOffset, newValue);
+        value = newValue;
     }
 
     /**
@@ -132,7 +120,12 @@ public class AtomicInteger extends Number implements java.io.Serializable {
      * the actual value was not equal to the expected value.
      */
     public final boolean compareAndSet(int expect, int update) {
-        return unsafe.compareAndSwapInt(this, valueOffset, expect, update);
+        if (value == expect) {
+            value = update;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -148,7 +141,7 @@ public class AtomicInteger extends Number implements java.io.Serializable {
      * @return true if successful.
      */
     public final boolean weakCompareAndSet(int expect, int update) {
-        return unsafe.compareAndSwapInt(this, valueOffset, expect, update);
+        return compareAndSet(expect, update);
     }
 
     /**

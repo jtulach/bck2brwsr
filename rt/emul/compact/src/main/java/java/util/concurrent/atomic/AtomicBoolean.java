@@ -34,7 +34,6 @@
  */
 
 package java.util.concurrent.atomic;
-import sun.misc.Unsafe;
 
 /**
  * A {@code boolean} value that may be updated atomically. See the
@@ -49,16 +48,6 @@ import sun.misc.Unsafe;
  */
 public class AtomicBoolean implements java.io.Serializable {
     private static final long serialVersionUID = 4654671469794556979L;
-    // setup to use Unsafe.compareAndSwapInt for updates
-    private static final Unsafe unsafe = Unsafe.getUnsafe();
-    private static final long valueOffset;
-
-    static {
-      try {
-        valueOffset = unsafe.objectFieldOffset
-            (AtomicBoolean.class.getDeclaredField("value"));
-      } catch (Exception ex) { throw new Error(ex); }
-    }
 
     private volatile int value;
 
@@ -98,7 +87,12 @@ public class AtomicBoolean implements java.io.Serializable {
     public final boolean compareAndSet(boolean expect, boolean update) {
         int e = expect ? 1 : 0;
         int u = update ? 1 : 0;
-        return unsafe.compareAndSwapInt(this, valueOffset, e, u);
+        if (this.value == e) {
+            this.value = u;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -114,9 +108,7 @@ public class AtomicBoolean implements java.io.Serializable {
      * @return true if successful.
      */
     public boolean weakCompareAndSet(boolean expect, boolean update) {
-        int e = expect ? 1 : 0;
-        int u = update ? 1 : 0;
-        return unsafe.compareAndSwapInt(this, valueOffset, e, u);
+        return compareAndSet(expect, update);
     }
 
     /**
@@ -135,8 +127,7 @@ public class AtomicBoolean implements java.io.Serializable {
      * @since 1.6
      */
     public final void lazySet(boolean newValue) {
-        int v = newValue ? 1 : 0;
-        unsafe.putOrderedInt(this, valueOffset, v);
+        set(newValue);
     }
 
     /**

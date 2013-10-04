@@ -34,7 +34,6 @@
  */
 
 package java.util.concurrent.atomic;
-import sun.misc.Unsafe;
 
 /**
  * A {@code long} value that may be updated atomically.  See the
@@ -52,30 +51,12 @@ import sun.misc.Unsafe;
 public class AtomicLong extends Number implements java.io.Serializable {
     private static final long serialVersionUID = 1927816293512124184L;
 
-    // setup to use Unsafe.compareAndSwapLong for updates
-    private static final Unsafe unsafe = Unsafe.getUnsafe();
-    private static final long valueOffset;
-
-    /**
-     * Records whether the underlying JVM supports lockless
-     * compareAndSwap for longs. While the Unsafe.compareAndSwapLong
-     * method works in either case, some constructions should be
-     * handled at Java level to avoid locking user-visible locks.
-     */
-    static final boolean VM_SUPPORTS_LONG_CAS = VMSupportsCS8();
 
     /**
      * Returns whether underlying JVM supports lockless CompareAndSet
      * for longs. Called only once and cached in VM_SUPPORTS_LONG_CAS.
      */
     private static native boolean VMSupportsCS8();
-
-    static {
-      try {
-        valueOffset = unsafe.objectFieldOffset
-            (AtomicLong.class.getDeclaredField("value"));
-      } catch (Exception ex) { throw new Error(ex); }
-    }
 
     private volatile long value;
 
@@ -119,7 +100,7 @@ public class AtomicLong extends Number implements java.io.Serializable {
      * @since 1.6
      */
     public final void lazySet(long newValue) {
-        unsafe.putOrderedLong(this, valueOffset, newValue);
+        value = newValue;
     }
 
     /**
@@ -146,7 +127,12 @@ public class AtomicLong extends Number implements java.io.Serializable {
      * the actual value was not equal to the expected value.
      */
     public final boolean compareAndSet(long expect, long update) {
-        return unsafe.compareAndSwapLong(this, valueOffset, expect, update);
+        if (value == expect) {
+            value = update;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -162,7 +148,7 @@ public class AtomicLong extends Number implements java.io.Serializable {
      * @return true if successful.
      */
     public final boolean weakCompareAndSet(long expect, long update) {
-        return unsafe.compareAndSwapLong(this, valueOffset, expect, update);
+        return compareAndSet(expect, update);
     }
 
     /**

@@ -34,7 +34,6 @@
  */
 
 package java.util.concurrent.atomic;
-import sun.misc.Unsafe;
 
 /**
  * An object reference that may be updated atomically. See the {@link
@@ -46,16 +45,6 @@ import sun.misc.Unsafe;
  */
 public class AtomicReference<V>  implements java.io.Serializable {
     private static final long serialVersionUID = -1848883965231344442L;
-
-    private static final Unsafe unsafe = Unsafe.getUnsafe();
-    private static final long valueOffset;
-
-    static {
-      try {
-        valueOffset = unsafe.objectFieldOffset
-            (AtomicReference.class.getDeclaredField("value"));
-      } catch (Exception ex) { throw new Error(ex); }
-    }
 
     private volatile V value;
 
@@ -99,7 +88,7 @@ public class AtomicReference<V>  implements java.io.Serializable {
      * @since 1.6
      */
     public final void lazySet(V newValue) {
-        unsafe.putOrderedObject(this, valueOffset, newValue);
+        value = newValue;
     }
 
     /**
@@ -111,7 +100,12 @@ public class AtomicReference<V>  implements java.io.Serializable {
      * the actual value was not equal to the expected value.
      */
     public final boolean compareAndSet(V expect, V update) {
-        return unsafe.compareAndSwapObject(this, valueOffset, expect, update);
+        if (value == expect) {
+            value = update;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -127,7 +121,7 @@ public class AtomicReference<V>  implements java.io.Serializable {
      * @return true if successful.
      */
     public final boolean weakCompareAndSet(V expect, V update) {
-        return unsafe.compareAndSwapObject(this, valueOffset, expect, update);
+        return compareAndSet(expect, update);
     }
 
     /**
