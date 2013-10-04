@@ -41,10 +41,7 @@ package java.util;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.IOException;
-import sun.util.calendar.CalendarSystem;
-import sun.util.calendar.CalendarUtils;
-import sun.util.calendar.BaseCalendar;
-import sun.util.calendar.Gregorian;
+import java.util.Date.BaseCalendar;
 
 /**
  * <code>SimpleTimeZone</code> is a concrete subclass of <code>TimeZone</code>
@@ -555,9 +552,10 @@ public class SimpleTimeZone extends TimeZone {
                     }
                 }
             }
-            BaseCalendar cal = date >= GregorianCalendar.DEFAULT_GREGORIAN_CUTOVER ?
-                gcal : (BaseCalendar) CalendarSystem.forName("julian");
-            BaseCalendar.Date cdate = (BaseCalendar.Date) cal.newCalendarDate(TimeZone.NO_TIMEZONE);
+            BaseCalendar cal = gcal;
+//            date >= GregorianCalendar.DEFAULT_GREGORIAN_CUTOVER ?
+//                gcal : (BaseCalendar) CalendarSystem.forName("julian");
+            BaseCalendar.Datum cdate = (BaseCalendar.Datum) cal.newCalendarDate(TimeZone.NO_TIMEZONE);
             // Get the year in local time
             cal.getCalendarDate(date + rawOffset, cdate);
             int year = cdate.getNormalizedYear();
@@ -625,7 +623,7 @@ public class SimpleTimeZone extends TimeZone {
             // y %= 28 also produces an equivalent year, but positive
             // year numbers would be convenient to use the UNIX cal
             // command.
-            y = (int) CalendarUtils.mod((long) y, 28);
+            y = (int) (long) y % 28;
         }
 
         // convert year to its 1-based month value
@@ -633,7 +631,7 @@ public class SimpleTimeZone extends TimeZone {
 
         // First, calculate time as a Gregorian date.
         BaseCalendar cal = gcal;
-        BaseCalendar.Date cdate = (BaseCalendar.Date) cal.newCalendarDate(TimeZone.NO_TIMEZONE);
+        BaseCalendar.Datum cdate = (BaseCalendar.Datum) cal.newCalendarDate(TimeZone.NO_TIMEZONE);
         cdate.setDate(y, m, day);
         long time = cal.getTime(cdate); // normalize cdate
         time += millis - rawOffset; // UTC time
@@ -644,12 +642,12 @@ public class SimpleTimeZone extends TimeZone {
         // normalized year numbering is ..., -2 (BCE 2), -1 (BCE 1),
         // 1, 2 ... which is different from the GregorianCalendar
         // style year numbering (..., -1, 0 (BCE 1), 1, 2, ...).
-        if (time < GregorianCalendar.DEFAULT_GREGORIAN_CUTOVER) {
-            cal = (BaseCalendar) CalendarSystem.forName("julian");
-            cdate = (BaseCalendar.Date) cal.newCalendarDate(TimeZone.NO_TIMEZONE);
-            cdate.setNormalizedDate(y, m, day);
-            time = cal.getTime(cdate) + millis - rawOffset;
-        }
+//        if (time < GregorianCalendar.DEFAULT_GREGORIAN_CUTOVER) {
+//            cal = (BaseCalendar) CalendarSystem.forName("julian");
+//            cdate = (BaseCalendar.Datum) cal.newCalendarDate(TimeZone.NO_TIMEZONE);
+//            cdate.setNormalizedDate(y, m, day);
+//            time = cal.getTime(cdate) + millis - rawOffset;
+//        }
 
         if ((cdate.getNormalizedYear() != y)
             || (cdate.getMonth() != m)
@@ -669,7 +667,7 @@ public class SimpleTimeZone extends TimeZone {
         return getOffset(cal, cdate, y, time);
     }
 
-    private int getOffset(BaseCalendar cal, BaseCalendar.Date cdate, int year, long time) {
+    private int getOffset(BaseCalendar cal, BaseCalendar.Datum cdate, int year, long time) {
         synchronized (this) {
             if (cacheStart != 0) {
                 if (time >= cacheStart && time < cacheEnd) {
@@ -721,7 +719,7 @@ public class SimpleTimeZone extends TimeZone {
         return offset;
     }
 
-    private long getStart(BaseCalendar cal, BaseCalendar.Date cdate, int year) {
+    private long getStart(BaseCalendar cal, BaseCalendar.Datum cdate, int year) {
         int time = startTime;
         if (startTimeMode != UTC_TIME) {
             time -= rawOffset;
@@ -730,7 +728,7 @@ public class SimpleTimeZone extends TimeZone {
                              startDayOfWeek, time);
     }
 
-    private long getEnd(BaseCalendar cal, BaseCalendar.Date cdate, int year) {
+    private long getEnd(BaseCalendar cal, BaseCalendar.Datum cdate, int year) {
         int time = endTime;
         if (endTimeMode != UTC_TIME) {
             time -= rawOffset;
@@ -742,7 +740,7 @@ public class SimpleTimeZone extends TimeZone {
                                         endDayOfWeek, time);
     }
 
-    private long getTransition(BaseCalendar cal, BaseCalendar.Date cdate,
+    private long getTransition(BaseCalendar cal, BaseCalendar.Datum cdate,
                                int mode, int year, int month, int dayOfMonth,
                                int dayOfWeek, int timeOfDay) {
         cdate.setNormalizedYear(year);
@@ -757,17 +755,17 @@ public class SimpleTimeZone extends TimeZone {
             if (dayOfMonth < 0) {
                 cdate.setDayOfMonth(cal.getMonthLength(cdate));
             }
-            cdate = (BaseCalendar.Date) cal.getNthDayOfWeek(dayOfMonth, dayOfWeek, cdate);
+            cdate = (BaseCalendar.Datum) cal.getNthDayOfWeek(dayOfMonth, dayOfWeek, cdate);
             break;
 
         case DOW_GE_DOM_MODE:
             cdate.setDayOfMonth(dayOfMonth);
-            cdate = (BaseCalendar.Date) cal.getNthDayOfWeek(1, dayOfWeek, cdate);
+            cdate = (BaseCalendar.Datum) cal.getNthDayOfWeek(1, dayOfWeek, cdate);
             break;
 
         case DOW_LE_DOM_MODE:
             cdate.setDayOfMonth(dayOfMonth);
-            cdate = (BaseCalendar.Date) cal.getNthDayOfWeek(-1, dayOfWeek, cdate);
+            cdate = (BaseCalendar.Datum) cal.getNthDayOfWeek(-1, dayOfWeek, cdate);
             break;
         }
         return cal.getTime(cdate) + timeOfDay;
@@ -1196,7 +1194,7 @@ public class SimpleTimeZone extends TimeZone {
      */
     private int dstSavings;
 
-    private static final Gregorian gcal = CalendarSystem.getGregorianCalendar();
+    private static final BaseCalendar gcal = new BaseCalendar();//CalendarSystem.getGregorianCalendar();
 
     /**
      * Cache values representing a single period of daylight saving
@@ -1702,5 +1700,38 @@ public class SimpleTimeZone extends TimeZone {
         }
 
         serialVersionOnStream = currentSerialVersion;
+    }
+    
+    static final class GregorianCalendar {
+        public static final int BC = 0;
+
+        /**
+         * Value of the {@link #ERA} field indicating the period before the
+         * common era, the same value as {@link #BC}.
+         *
+         * @see #CE
+         */
+        static final int BCE = 0;
+
+        /**
+         * Value of the <code>ERA</code> field indicating the common era (Anno
+         * Domini), also known as CE. The sequence of years at the transition
+         * from <code>BC</code> to <code>AD</code> is ..., 2 BC, 1 BC, 1 AD, 2
+         * AD,...
+         *
+         * @see #ERA
+         */
+        public static final int AD = 1;
+
+        // The default value of gregorianCutover.
+        static final long DEFAULT_GREGORIAN_CUTOVER = -12219292800000L;
+        /**
+         * Value of the {@link #ERA} field indicating
+         * the common era, the same value as {@link #AD}.
+         *
+         * @see #BCE
+         */
+        static final int CE = 1;
+        
     }
 }

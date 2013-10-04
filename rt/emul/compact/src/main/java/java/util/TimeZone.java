@@ -43,10 +43,6 @@ import java.lang.ref.SoftReference;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.concurrent.ConcurrentHashMap;
-import sun.security.action.GetPropertyAction;
-import sun.util.TimeZoneNameUtility;
-import sun.util.calendar.ZoneInfo;
-import sun.util.calendar.ZoneInfoFile;
 
 /**
  * <code>TimeZone</code> represents a time zone offset, and also figures out daylight
@@ -411,7 +407,7 @@ abstract public class TimeZone implements Serializable, Cloneable {
             if (daylight) {
                 offset += getDSTSavings();
             }
-            return ZoneInfoFile.toCustomID(offset);
+          //  return ZoneInfoFile.toCustomID(offset);
         }
 
         int index = daylight ? 3 : 1;
@@ -440,7 +436,7 @@ abstract public class TimeZone implements Serializable, Cloneable {
                 if (names != null) {
                     return names;
                 }
-                names = TimeZoneNameUtility.retrieveDisplayNames(id, locale);
+                names = null; // TimeZoneNameUtility.retrieveDisplayNames(id, locale);
                 if (names != null) {
                     perLocale.put(locale, names);
                 }
@@ -448,7 +444,7 @@ abstract public class TimeZone implements Serializable, Cloneable {
             }
         }
 
-        String[] names = TimeZoneNameUtility.retrieveDisplayNames(id, locale);
+        String[] names = null; // TimeZoneNameUtility.retrieveDisplayNames(id, locale);
         if (names != null) {
             Map<Locale, String[]> perLocale = new ConcurrentHashMap<Locale, String[]>();
             perLocale.put(locale, names);
@@ -556,14 +552,15 @@ abstract public class TimeZone implements Serializable, Cloneable {
     }
 
     private static TimeZone getTimeZone(String ID, boolean fallback) {
-        TimeZone tz = ZoneInfo.getTimeZone(ID);
-        if (tz == null) {
-            tz = parseCustomTimeZone(ID);
-            if (tz == null && fallback) {
-                tz = new ZoneInfo(GMT_ID, 0);
-            }
-        }
-        return tz;
+//        TimeZone tz = ZoneInfo.getTimeZone(ID);
+//        if (tz == null) {
+//            tz = parseCustomTimeZone(ID);
+//            if (tz == null && fallback) {
+//                tz = new ZoneInfo(GMT_ID, 0);
+//            }
+//        }
+//        return tz;
+        return TimeZone.NO_TIMEZONE;
     }
 
     /**
@@ -576,7 +573,7 @@ abstract public class TimeZone implements Serializable, Cloneable {
      * @see #getRawOffset()
      */
     public static synchronized String[] getAvailableIDs(int rawOffset) {
-        return ZoneInfo.getAvailableIDs(rawOffset);
+        return new String[0];//ZoneInfo.getAvailableIDs(rawOffset);
     }
 
     /**
@@ -584,7 +581,7 @@ abstract public class TimeZone implements Serializable, Cloneable {
      * @return an array of IDs.
      */
     public static synchronized String[] getAvailableIDs() {
-        return ZoneInfo.getAvailableIDs();
+        return new String[0];//return ZoneInfo.getAvailableIDs();
     }
 
     /**
@@ -615,12 +612,12 @@ abstract public class TimeZone implements Serializable, Cloneable {
      * method doesn't create a clone.
      */
     static TimeZone getDefaultRef() {
-        TimeZone defaultZone = defaultZoneTL.get();
+        TimeZone defaultZone = null;//defaultZoneTL.get();
         if (defaultZone == null) {
             defaultZone = defaultTimeZone;
             if (defaultZone == null) {
                 // Need to initialize the default time zone.
-                defaultZone = setDefaultZone();
+                defaultZone = TimeZone.NO_TIMEZONE;
                 assert defaultZone != null;
             }
         }
@@ -628,68 +625,8 @@ abstract public class TimeZone implements Serializable, Cloneable {
         return defaultZone;
     }
 
-    private static synchronized TimeZone setDefaultZone() {
-        TimeZone tz = null;
-        // get the time zone ID from the system properties
-        String zoneID = AccessController.doPrivileged(
-                new GetPropertyAction("user.timezone"));
-
-        // if the time zone ID is not set (yet), perform the
-        // platform to Java time zone ID mapping.
-        if (zoneID == null || zoneID.equals("")) {
-            String country = AccessController.doPrivileged(
-                    new GetPropertyAction("user.country"));
-            String javaHome = AccessController.doPrivileged(
-                    new GetPropertyAction("java.home"));
-            try {
-                zoneID = getSystemTimeZoneID(javaHome, country);
-                if (zoneID == null) {
-                    zoneID = GMT_ID;
-                }
-            } catch (NullPointerException e) {
-                zoneID = GMT_ID;
-            }
-        }
-
-        // Get the time zone for zoneID. But not fall back to
-        // "GMT" here.
-        tz = getTimeZone(zoneID, false);
-
-        if (tz == null) {
-            // If the given zone ID is unknown in Java, try to
-            // get the GMT-offset-based time zone ID,
-            // a.k.a. custom time zone ID (e.g., "GMT-08:00").
-            String gmtOffsetID = getSystemGMTOffsetID();
-            if (gmtOffsetID != null) {
-                zoneID = gmtOffsetID;
-            }
-            tz = getTimeZone(zoneID, true);
-        }
-        assert tz != null;
-
-        final String id = zoneID;
-        AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                public Object run() {
-                    System.setProperty("user.timezone", id);
-                    return null;
-                }
-            });
-
-        defaultTimeZone = tz;
-        return tz;
-    }
-
     private static boolean hasPermission() {
-        boolean hasPermission = true;
-        SecurityManager sm = System.getSecurityManager();
-        if (sm != null) {
-            try {
-                sm.checkPermission(new PropertyPermission
-                                   ("user.timezone", "write"));
-            } catch (SecurityException e) {
-                hasPermission = false;
-            }
-        }
+        boolean hasPermission = false;
         return hasPermission;
     }
 
@@ -706,10 +643,10 @@ abstract public class TimeZone implements Serializable, Cloneable {
         if (hasPermission()) {
             synchronized (TimeZone.class) {
                 defaultTimeZone = zone;
-                defaultZoneTL.set(null);
+              //  defaultZoneTL.set(null);
             }
         } else {
-            defaultZoneTL.set(zone);
+            //defaultZoneTL.set(zone);
         }
     }
 
@@ -760,8 +697,6 @@ abstract public class TimeZone implements Serializable, Cloneable {
      */
     private String           ID;
     private static volatile TimeZone defaultTimeZone;
-    private static final InheritableThreadLocal<TimeZone> defaultZoneTL
-                                        = new InheritableThreadLocal<TimeZone>();
 
     static final String         GMT_ID        = "GMT";
     private static final int    GMT_ID_LENGTH = 3;
@@ -775,90 +710,6 @@ abstract public class TimeZone implements Serializable, Cloneable {
      * no daylight saving time, or null if the id cannot be parsed.
      */
     private static final TimeZone parseCustomTimeZone(String id) {
-        int length;
-
-        // Error if the length of id isn't long enough or id doesn't
-        // start with "GMT".
-        if ((length = id.length()) < (GMT_ID_LENGTH + 2) ||
-            id.indexOf(GMT_ID) != 0) {
-            return null;
-        }
-
-        ZoneInfo zi;
-
-        // First, we try to find it in the cache with the given
-        // id. Even the id is not normalized, the returned ZoneInfo
-        // should have its normalized id.
-        zi = ZoneInfoFile.getZoneInfo(id);
-        if (zi != null) {
-            return zi;
-        }
-
-        int index = GMT_ID_LENGTH;
-        boolean negative = false;
-        char c = id.charAt(index++);
-        if (c == '-') {
-            negative = true;
-        } else if (c != '+') {
-            return null;
-        }
-
-        int hours = 0;
-        int num = 0;
-        int countDelim = 0;
-        int len = 0;
-        while (index < length) {
-            c = id.charAt(index++);
-            if (c == ':') {
-                if (countDelim > 0) {
-                    return null;
-                }
-                if (len > 2) {
-                    return null;
-                }
-                hours = num;
-                countDelim++;
-                num = 0;
-                len = 0;
-                continue;
-            }
-            if (c < '0' || c > '9') {
-                return null;
-            }
-            num = num * 10 + (c - '0');
-            len++;
-        }
-        if (index != length) {
-            return null;
-        }
-        if (countDelim == 0) {
-            if (len <= 2) {
-                hours = num;
-                num = 0;
-            } else {
-                hours = num / 100;
-                num %= 100;
-            }
-        } else {
-            if (len != 2) {
-                return null;
-            }
-        }
-        if (hours > 23 || num > 59) {
-            return null;
-        }
-        int gmtOffset =  (hours * 60 + num) * 60 * 1000;
-
-        if (gmtOffset == 0) {
-            zi = ZoneInfoFile.getZoneInfo(GMT_ID);
-            if (negative) {
-                zi.setID("GMT-00:00");
-            } else {
-                zi.setID("GMT+00:00");
-            }
-        } else {
-            zi = ZoneInfoFile.getCustomTimeZone(id, negative ? -gmtOffset : gmtOffset);
-        }
-        return zi;
+        return null;
     }
 }

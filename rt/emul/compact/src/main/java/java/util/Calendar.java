@@ -43,19 +43,13 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OptionalDataException;
 import java.io.Serializable;
-import java.security.AccessControlContext;
 import java.security.AccessController;
-import java.security.PermissionCollection;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.security.ProtectionDomain;
 import java.text.DateFormat;
 import java.text.DateFormatSymbols;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import sun.util.BuddhistCalendar;
-import sun.util.calendar.ZoneInfo;
-import sun.util.resources.LocaleData;
 
 /**
  * The <code>Calendar</code> class is an abstract class that provides methods
@@ -1025,18 +1019,18 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
             // returns a BuddhistCalendar instance.
             if ("th".equals(aLocale.getLanguage())
                     && ("TH".equals(aLocale.getCountry()))) {
-                cal = new BuddhistCalendar(zone, aLocale);
+//                cal = new BuddhistCalendar(zone, aLocale);
             } else {
-                cal = new GregorianCalendar(zone, aLocale);
+//                cal = new GregorianCalendar(zone, aLocale);
             }
         } else if (caltype.equals("japanese")) {
-            cal = new JapaneseImperialCalendar(zone, aLocale);
+//            cal = new JapaneseImperialCalendar(zone, aLocale);
         } else if (caltype.equals("buddhist")) {
-            cal = new BuddhistCalendar(zone, aLocale);
+//            cal = new BuddhistCalendar(zone, aLocale);
         } else {
             // Unsupported calendar type.
             // Use Gregorian calendar as a fallback.
-            cal = new GregorianCalendar(zone, aLocale);
+//            cal = new GregorianCalendar(zone, aLocale);
         }
 
         return cal;
@@ -1130,10 +1124,10 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
     public void setTimeInMillis(long millis) {
         // If we don't need to recalculate the calendar field values,
         // do nothing.
-        if (time == millis && isTimeSet && areFieldsSet && areAllFieldsSet
-            && (zone instanceof ZoneInfo) && !((ZoneInfo)zone).isDirty()) {
-            return;
-        }
+//        if (time == millis && isTimeSet && areFieldsSet && areAllFieldsSet
+//            && (zone instanceof ZoneInfo) && !((ZoneInfo)zone).isDirty()) {
+//            return;
+//        }
         time = millis;
         isTimeSet = true;
         areFieldsSet = false;
@@ -2587,10 +2581,10 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
         /* try to get the Locale data from the cache */
         int[] data = cachedLocaleData.get(desiredLocale);
         if (data == null) {  /* cache miss */
-            ResourceBundle bundle = LocaleData.getCalendarData(desiredLocale);
+//            ResourceBundle bundle = LocaleData.getCalendarData(desiredLocale);
             data = new int[2];
-            data[0] = Integer.parseInt(bundle.getString("firstDayOfWeek"));
-            data[1] = Integer.parseInt(bundle.getString("minimalDaysInFirstWeek"));
+//            data[0] = Integer.parseInt(bundle.getString("firstDayOfWeek"));
+//            data[1] = Integer.parseInt(bundle.getString("minimalDaysInFirstWeek"));
             cachedLocaleData.putIfAbsent(desiredLocale, data);
         }
         firstDayOfWeek = data[0];
@@ -2721,14 +2715,14 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
         // SimpleTimeZone equivalent (as a single DST schedule) for
         // backward compatibility.
         TimeZone savedZone = null;
-        if (zone instanceof ZoneInfo) {
-            SimpleTimeZone stz = ((ZoneInfo)zone).getLastRuleInstance();
-            if (stz == null) {
-                stz = new SimpleTimeZone(zone.getRawOffset(), zone.getID());
-            }
-            savedZone = zone;
-            zone = stz;
-        }
+//        if (zone instanceof ZoneInfo) {
+//            SimpleTimeZone stz = ((ZoneInfo)zone).getLastRuleInstance();
+//            if (stz == null) {
+//                stz = new SimpleTimeZone(zone.getRawOffset(), zone.getID());
+//            }
+//            savedZone = zone;
+//            zone = stz;
+//        }
 
         // Write out the 1.1 FCS object.
         stream.defaultWriteObject();
@@ -2739,18 +2733,6 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
         stream.writeObject(savedZone);
         if (savedZone != null) {
             zone = savedZone;
-        }
-    }
-
-    private static class CalendarAccessControlContext {
-        private static final AccessControlContext INSTANCE;
-        static {
-            RuntimePermission perm = new RuntimePermission("accessClassInPackage.sun.util.calendar");
-            PermissionCollection perms = perm.newPermissionCollection();
-            perms.add(perm);
-            INSTANCE = new AccessControlContext(new ProtectionDomain[] {
-                                                    new ProtectionDomain(null, perms)
-                                                });
         }
     }
 
@@ -2783,28 +2765,28 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
         serialVersionOnStream = currentSerialVersion;
 
         // If there's a ZoneInfo object, use it for zone.
-        ZoneInfo zi = null;
-        try {
-            zi = AccessController.doPrivileged(
-                    new PrivilegedExceptionAction<ZoneInfo>() {
-                        public ZoneInfo run() throws Exception {
-                            return (ZoneInfo) input.readObject();
-                        }
-                    },
-                    CalendarAccessControlContext.INSTANCE);
-        } catch (PrivilegedActionException pae) {
-            Exception e = pae.getException();
-            if (!(e instanceof OptionalDataException)) {
-                if (e instanceof RuntimeException) {
-                    throw (RuntimeException) e;
-                } else if (e instanceof IOException) {
-                    throw (IOException) e;
-                } else if (e instanceof ClassNotFoundException) {
-                    throw (ClassNotFoundException) e;
-                }
-                throw new RuntimeException(e);
-            }
-        }
+        TimeZone zi = null;
+//        try {
+//            zi = AccessController.doPrivileged(
+//                    new PrivilegedExceptionAction<ZoneInfo>() {
+//                        public ZoneInfo run() throws Exception {
+//                            return (ZoneInfo) input.readObject();
+//                        }
+//                    },
+//                    CalendarAccessControlContext.INSTANCE);
+//        } catch (PrivilegedActionException pae) {
+//            Exception e = pae.getException();
+//            if (!(e instanceof OptionalDataException)) {
+//                if (e instanceof RuntimeException) {
+//                    throw (RuntimeException) e;
+//                } else if (e instanceof IOException) {
+//                    throw (IOException) e;
+//                } else if (e instanceof ClassNotFoundException) {
+//                    throw (ClassNotFoundException) e;
+//                }
+//                throw new RuntimeException(e);
+//            }
+//        }
         if (zi != null) {
             zone = zi;
         }

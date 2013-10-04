@@ -35,14 +35,7 @@ import java.io.Serializable;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.logging.Level;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-import java.util.spi.CurrencyNameProvider;
-import java.util.spi.LocaleServiceProvider;
-import sun.util.LocaleServiceProviderPool;
-import sun.util.logging.PlatformLogger;
-import sun.util.resources.LocaleData;
-import sun.util.resources.OpenListResourceBundle;
+import java.util.logging.Logger;
 
 
 /**
@@ -227,27 +220,27 @@ public final class Currency implements Serializable {
                 }
 
                 // look for the properties file for overrides
-                try {
+//                try {
                     File propFile = new File(homeDir + File.separator +
                                              "lib" + File.separator +
                                              "currency.properties");
-                    if (propFile.exists()) {
-                        Properties props = new Properties();
-                        try (FileReader fr = new FileReader(propFile)) {
-                            props.load(fr);
-                        }
-                        Set<String> keys = props.stringPropertyNames();
-                        Pattern propertiesPattern =
-                            Pattern.compile("([A-Z]{3})\\s*,\\s*(\\d{3})\\s*,\\s*([0-3])");
-                        for (String key : keys) {
-                           replaceCurrencyData(propertiesPattern,
-                               key.toUpperCase(Locale.ROOT),
-                               props.getProperty(key).toUpperCase(Locale.ROOT));
-                        }
-                    }
-                } catch (IOException e) {
-                    info("currency.properties is ignored because of an IOException", e);
-                }
+//                    if (propFile.exists()) {
+//                        Properties props = new Properties();
+//                        try (FileReader fr = new FileReader(propFile)) {
+//                            props.load(fr);
+//                        }
+//                        Set<String> keys = props.stringPropertyNames();
+//                        Pattern propertiesPattern =
+//                            Pattern.compile("([A-Z]{3})\\s*,\\s*(\\d{3})\\s*,\\s*([0-3])");
+//                        for (String key : keys) {
+//                           replaceCurrencyData(propertiesPattern,
+//                               key.toUpperCase(Locale.ROOT),
+//                               props.getProperty(key).toUpperCase(Locale.ROOT));
+//                        }
+//                    }
+//                } catch (IOException e) {
+//                    info("currency.properties is ignored because of an IOException", e);
+//                }
                 return null;
             }
         });
@@ -472,6 +465,7 @@ public final class Currency implements Serializable {
         try {
             // Check whether a provider can provide an implementation that's closer
             // to the requested locale than what the Java runtime itself can provide.
+            /*
             LocaleServiceProviderPool pool =
                 LocaleServiceProviderPool.getPool(CurrencyNameProvider.class);
 
@@ -489,8 +483,8 @@ public final class Currency implements Serializable {
                     return symbol;
                 }
             }
-
-            ResourceBundle bundle = LocaleData.getCurrencyNames(locale);
+            */
+            ResourceBundle bundle = null; //LocaleData.getCurrencyNames(locale);
             return bundle.getString(currencyCode);
         } catch (MissingResourceException e) {
             // use currency code as symbol of last resort
@@ -545,31 +539,31 @@ public final class Currency implements Serializable {
      * @since 1.7
      */
     public String getDisplayName(Locale locale) {
-        try {
-            OpenListResourceBundle bundle = LocaleData.getCurrencyNames(locale);
-            String result = null;
-            String bundleKey = currencyCode.toLowerCase(Locale.ROOT);
-
-            // Check whether a provider can provide an implementation that's closer
-            // to the requested locale than what the Java runtime itself can provide.
-            LocaleServiceProviderPool pool =
-                LocaleServiceProviderPool.getPool(CurrencyNameProvider.class);
-            if (pool.hasProviders()) {
-                result = pool.getLocalizedObject(
-                                    CurrencyNameGetter.INSTANCE,
-                                    locale, bundleKey, bundle, currencyCode, DISPLAYNAME);
-            }
-
-            if (result == null) {
-                result = bundle.getString(bundleKey);
-            }
-
-            if (result != null) {
-                return result;
-            }
-        } catch (MissingResourceException e) {
-            // fall through
-        }
+//        try {
+//            OpenListResourceBundle bundle = LocaleData.getCurrencyNames(locale);
+//            String result = null;
+//            String bundleKey = currencyCode.toLowerCase(Locale.ROOT);
+//
+//            // Check whether a provider can provide an implementation that's closer
+//            // to the requested locale than what the Java runtime itself can provide.
+//            LocaleServiceProviderPool pool =
+//                LocaleServiceProviderPool.getPool(CurrencyNameProvider.class);
+//            if (pool.hasProviders()) {
+//                result = pool.getLocalizedObject(
+//                                    CurrencyNameGetter.INSTANCE,
+//                                    locale, bundleKey, bundle, currencyCode, DISPLAYNAME);
+//            }
+//
+//            if (result == null) {
+//                result = bundle.getString(bundleKey);
+//            }
+//
+//            if (result != null) {
+//                return result;
+//            }
+//        } catch (MissingResourceException e) {
+//            // fall through
+//        }
 
         // use currency code as symbol of last resort
         return currencyCode;
@@ -616,7 +610,6 @@ public final class Currency implements Serializable {
     /**
      * Obtains a localized currency names from a CurrencyNameProvider
      * implementation.
-     */
     private static class CurrencyNameGetter
         implements LocaleServiceProviderPool.LocalizedObjectGetter<CurrencyNameProvider,
                                                                    String> {
@@ -641,6 +634,7 @@ public final class Currency implements Serializable {
             return null;
         }
     }
+     */
 
     private static int[] readIntArray(DataInputStream dis, int count) throws IOException {
         int[] ret = new int[count];
@@ -679,7 +673,6 @@ public final class Currency implements Serializable {
      *    and "one-digit (0,1,2, or 3) default fraction digit".
      *    For example, "JPZ,392,0".
      * @throws
-     */
     private static void replaceCurrencyData(Pattern pattern, String ctry, String curdata) {
 
         if (ctry.length() != 2) {
@@ -727,12 +720,13 @@ public final class Currency implements Serializable {
         }
         setMainTableEntry(ctry.charAt(0), ctry.charAt(1), entry);
     }
+     */
 
     private static void info(String message, Throwable t) {
-        PlatformLogger logger = PlatformLogger.getLogger("java.util.Currency");
-        if (logger.isLoggable(PlatformLogger.INFO)) {
+        Logger logger = Logger.getLogger("java.util.Currency");
+        if (logger.isLoggable(Level.INFO)) {
             if (t != null) {
-                logger.info(message, t);
+                logger.log(Level.INFO, message, t);
             } else {
                 logger.info(message);
             }
