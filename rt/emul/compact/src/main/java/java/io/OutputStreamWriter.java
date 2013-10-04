@@ -25,6 +25,8 @@
 
 package java.io;
 
+import java.nio.charset.Charset;
+
 /**
  * An OutputStreamWriter is a bridge from character streams to byte streams:
  * Characters written to it are encoded into bytes using a specified {@link
@@ -116,12 +118,9 @@ public class OutputStreamWriter extends Writer {
      * @since 1.4
      * @spec JSR-51
      */
-//    public OutputStreamWriter(OutputStream out, Charset cs) {
-//        super(out);
-//        if (cs == null)
-//            throw new NullPointerException("charset");
-//        se = StreamEncoder.forOutputStreamWriter(out, this, cs);
-//    }
+    public OutputStreamWriter(OutputStream out, Charset cs) {
+        this(out);
+    }
 
     /**
      * Creates an OutputStreamWriter that uses the given charset encoder.  </p>

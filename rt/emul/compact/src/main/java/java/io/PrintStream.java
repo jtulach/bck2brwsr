@@ -25,6 +25,7 @@
 
 package java.io;
 
+import java.nio.charset.Charset;
 import java.util.Arrays;
 
 
@@ -86,9 +87,6 @@ public class PrintStream extends FilterOutputStream
     }
     
     static final class Formatter {
-    }
-    
-    static final class Charset {
     }
     
     static Charset toCharset(String ch) throws UnsupportedEncodingException {

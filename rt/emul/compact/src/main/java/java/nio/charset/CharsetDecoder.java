@@ -27,13 +27,13 @@
 
 package java.nio.charset;
 
-import java.nio.Buffer;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.BufferOverflowException;
-import java.nio.BufferUnderflowException;
+//import java.nio.Buffer;
+//import java.nio.ByteBuffer;
+//import java.nio.CharBuffer;
+//import java.nio.BufferOverflowException;
+//import java.nio.BufferUnderflowException;
 import java.lang.ref.WeakReference;
-import java.nio.charset.CoderMalfunctionError;                  // javadoc
+//import java.nio.charset.CoderMalfunctionError;                  // javadoc
 
 
 /**
@@ -140,10 +140,10 @@ public abstract class CharsetDecoder {
     private final float maxCharsPerByte;
 
     private String replacement;
-    private CodingErrorAction malformedInputAction
-        = CodingErrorAction.REPORT;
-    private CodingErrorAction unmappableCharacterAction
-        = CodingErrorAction.REPORT;
+//    private CodingErrorAction malformedInputAction
+//        = CodingErrorAction.REPORT;
+//    private CodingErrorAction unmappableCharacterAction
+//        = CodingErrorAction.REPORT;
 
     // Internal states
     //
@@ -191,12 +191,10 @@ public abstract class CharsetDecoder {
         if (maxCharsPerByte <= 0.0f)
             throw new IllegalArgumentException("Non-positive "
                                                + "maxCharsPerByte");
-        if (!Charset.atBugLevel("1.4")) {
-            if (averageCharsPerByte > maxCharsPerByte)
-                throw new IllegalArgumentException("averageCharsPerByte"
-                                                   + " exceeds "
-                                                   + "maxCharsPerByte");
-        }
+        if (averageCharsPerByte > maxCharsPerByte)
+            throw new IllegalArgumentException("averageCharsPerByte"
+                                               + " exceeds "
+                                               + "maxCharsPerByte");
         this.replacement = replacement;
         this.averageCharsPerByte = averageCharsPerByte;
         this.maxCharsPerByte = maxCharsPerByte;
@@ -346,9 +344,9 @@ public abstract class CharsetDecoder {
      *
      * @return The current malformed-input action, which is never <tt>null</tt>
      */
-    public CodingErrorAction malformedInputAction() {
-        return malformedInputAction;
-    }
+//    public CodingErrorAction malformedInputAction() {
+//        return malformedInputAction;
+//    }
 
     /**
      * Changes this decoder's action for malformed-input errors.  </p>
@@ -363,13 +361,13 @@ public abstract class CharsetDecoder {
      * @throws IllegalArgumentException
      *         If the precondition on the parameter does not hold
      */
-    public final CharsetDecoder onMalformedInput(CodingErrorAction newAction) {
-        if (newAction == null)
-            throw new IllegalArgumentException("Null action");
-        malformedInputAction = newAction;
-        implOnMalformedInput(newAction);
-        return this;
-    }
+//    public final CharsetDecoder onMalformedInput(CodingErrorAction newAction) {
+//        if (newAction == null)
+//            throw new IllegalArgumentException("Null action");
+//        malformedInputAction = newAction;
+//        implOnMalformedInput(newAction);
+//        return this;
+//    }
 
     /**
      * Reports a change to this decoder's malformed-input action.
@@ -378,7 +376,7 @@ public abstract class CharsetDecoder {
      * should be overridden by decoders that require notification of changes to
      * the malformed-input action.  </p>
      */
-    protected void implOnMalformedInput(CodingErrorAction newAction) { }
+//    protected void implOnMalformedInput(CodingErrorAction newAction) { }
 
     /**
      * Returns this decoder's current action for unmappable-character errors.
@@ -387,9 +385,9 @@ public abstract class CharsetDecoder {
      * @return The current unmappable-character action, which is never
      *         <tt>null</tt>
      */
-    public CodingErrorAction unmappableCharacterAction() {
-        return unmappableCharacterAction;
-    }
+//    public CodingErrorAction unmappableCharacterAction() {
+//        return unmappableCharacterAction;
+//    }
 
     /**
      * Changes this decoder's action for unmappable-character errors.
@@ -404,15 +402,15 @@ public abstract class CharsetDecoder {
      * @throws IllegalArgumentException
      *         If the precondition on the parameter does not hold
      */
-    public final CharsetDecoder onUnmappableCharacter(CodingErrorAction
-                                                      newAction)
-    {
-        if (newAction == null)
-            throw new IllegalArgumentException("Null action");
-        unmappableCharacterAction = newAction;
-        implOnUnmappableCharacter(newAction);
-        return this;
-    }
+//    public final CharsetDecoder onUnmappableCharacter(CodingErrorAction
+//                                                      newAction)
+//    {
+//        if (newAction == null)
+//            throw new IllegalArgumentException("Null action");
+//        unmappableCharacterAction = newAction;
+//        implOnUnmappableCharacter(newAction);
+//        return this;
+//    }
 
     /**
      * Reports a change to this decoder's unmappable-character action.
@@ -421,7 +419,7 @@ public abstract class CharsetDecoder {
      * should be overridden by decoders that require notification of changes to
      * the unmappable-character action.  </p>
      */
-    protected void implOnUnmappableCharacter(CodingErrorAction newAction) { }
+//    protected void implOnUnmappableCharacter(CodingErrorAction newAction) { }
 
     /**
      * Returns the average number of characters that will be produced for each
@@ -545,66 +543,66 @@ public abstract class CharsetDecoder {
      *          If an invocation of the decodeLoop method threw
      *          an unexpected exception
      */
-    public final CoderResult decode(ByteBuffer in, CharBuffer out,
-                                    boolean endOfInput)
-    {
-        int newState = endOfInput ? ST_END : ST_CODING;
-        if ((state != ST_RESET) && (state != ST_CODING)
-            && !(endOfInput && (state == ST_END)))
-            throwIllegalStateException(state, newState);
-        state = newState;
-
-        for (;;) {
-
-            CoderResult cr;
-            try {
-                cr = decodeLoop(in, out);
-            } catch (BufferUnderflowException x) {
-                throw new CoderMalfunctionError(x);
-            } catch (BufferOverflowException x) {
-                throw new CoderMalfunctionError(x);
-            }
-
-            if (cr.isOverflow())
-                return cr;
-
-            if (cr.isUnderflow()) {
-                if (endOfInput && in.hasRemaining()) {
-                    cr = CoderResult.malformedForLength(in.remaining());
-                    // Fall through to malformed-input case
-                } else {
-                    return cr;
-                }
-            }
-
-            CodingErrorAction action = null;
-            if (cr.isMalformed())
-                action = malformedInputAction;
-            else if (cr.isUnmappable())
-                action = unmappableCharacterAction;
-            else
-                assert false : cr.toString();
-
-            if (action == CodingErrorAction.REPORT)
-                return cr;
-
-            if (action == CodingErrorAction.REPLACE) {
-                if (out.remaining() < replacement.length())
-                    return CoderResult.OVERFLOW;
-                out.put(replacement);
-            }
-
-            if ((action == CodingErrorAction.IGNORE)
-                || (action == CodingErrorAction.REPLACE)) {
-                // Skip erroneous input either way
-                in.position(in.position() + cr.length());
-                continue;
-            }
-
-            assert false;
-        }
-
-    }
+//    public final CoderResult decode(ByteBuffer in, CharBuffer out,
+//                                    boolean endOfInput)
+//    {
+//        int newState = endOfInput ? ST_END : ST_CODING;
+//        if ((state != ST_RESET) && (state != ST_CODING)
+//            && !(endOfInput && (state == ST_END)))
+//            throwIllegalStateException(state, newState);
+//        state = newState;
+//
+//        for (;;) {
+//
+//            CoderResult cr;
+//            try {
+//                cr = decodeLoop(in, out);
+//            } catch (BufferUnderflowException x) {
+//                throw new CoderMalfunctionError(x);
+//            } catch (BufferOverflowException x) {
+//                throw new CoderMalfunctionError(x);
+//            }
+//
+//            if (cr.isOverflow())
+//                return cr;
+//
+//            if (cr.isUnderflow()) {
+//                if (endOfInput && in.hasRemaining()) {
+//                    cr = CoderResult.malformedForLength(in.remaining());
+//                    // Fall through to malformed-input case
+//                } else {
+//                    return cr;
+//                }
+//            }
+//
+//            CodingErrorAction action = null;
+//            if (cr.isMalformed())
+//                action = malformedInputAction;
+//            else if (cr.isUnmappable())
+//                action = unmappableCharacterAction;
+//            else
+//                assert false : cr.toString();
+//
+//            if (action == CodingErrorAction.REPORT)
+//                return cr;
+//
+//            if (action == CodingErrorAction.REPLACE) {
+//                if (out.remaining() < replacement.length())
+//                    return CoderResult.OVERFLOW;
+//                out.put(replacement);
+//            }
+//
+//            if ((action == CodingErrorAction.IGNORE)
+//                || (action == CodingErrorAction.REPLACE)) {
+//                // Skip erroneous input either way
+//                in.position(in.position() + cr.length());
+//                continue;
+//            }
+//
+//            assert false;
+//        }
+//
+//    }
 
     /**
      * Flushes this decoder.
@@ -645,19 +643,19 @@ public abstract class CharsetDecoder {
      *          with a value of <tt>true</tt> for the <tt>endOfInput</tt>
      *          parameter
      */
-    public final CoderResult flush(CharBuffer out) {
-        if (state == ST_END) {
-            CoderResult cr = implFlush(out);
-            if (cr.isUnderflow())
-                state = ST_FLUSHED;
-            return cr;
-        }
-
-        if (state != ST_FLUSHED)
-            throwIllegalStateException(state, ST_FLUSHED);
-
-        return CoderResult.UNDERFLOW; // Already flushed
-    }
+//    public final CoderResult flush(CharBuffer out) {
+//        if (state == ST_END) {
+//            CoderResult cr = implFlush(out);
+//            if (cr.isUnderflow())
+//                state = ST_FLUSHED;
+//            return cr;
+//        }
+//
+//        if (state != ST_FLUSHED)
+//            throwIllegalStateException(state, ST_FLUSHED);
+//
+//        return CoderResult.UNDERFLOW; // Already flushed
+//    }
 
     /**
      * Flushes this decoder.
@@ -673,9 +671,9 @@ public abstract class CharsetDecoder {
      * @return  A coder-result object, either {@link CoderResult#UNDERFLOW} or
      *          {@link CoderResult#OVERFLOW}
      */
-    protected CoderResult implFlush(CharBuffer out) {
-        return CoderResult.UNDERFLOW;
-    }
+//    protected CoderResult implFlush(CharBuffer out) {
+//        return CoderResult.UNDERFLOW;
+//    }
 
     /**
      * Resets this decoder, clearing any internal state.
@@ -736,8 +734,8 @@ public abstract class CharsetDecoder {
      *
      * @return  A coder-result object describing the reason for termination
      */
-    protected abstract CoderResult decodeLoop(ByteBuffer in,
-                                              CharBuffer out);
+//    protected abstract CoderResult decodeLoop(ByteBuffer in,
+//                                              CharBuffer out);
 
     /**
      * Convenience method that decodes the remaining content of a single input
@@ -770,36 +768,36 @@ public abstract class CharsetDecoder {
      *          the current unmappable-character action is {@link
      *          CodingErrorAction#REPORT}
      */
-    public final CharBuffer decode(ByteBuffer in)
-        throws CharacterCodingException
-    {
-        int n = (int)(in.remaining() * averageCharsPerByte());
-        CharBuffer out = CharBuffer.allocate(n);
-
-        if ((n == 0) && (in.remaining() == 0))
-            return out;
-        reset();
-        for (;;) {
-            CoderResult cr = in.hasRemaining() ?
-                decode(in, out, true) : CoderResult.UNDERFLOW;
-            if (cr.isUnderflow())
-                cr = flush(out);
-
-            if (cr.isUnderflow())
-                break;
-            if (cr.isOverflow()) {
-                n = 2*n + 1;    // Ensure progress; n might be 0!
-                CharBuffer o = CharBuffer.allocate(n);
-                out.flip();
-                o.put(out);
-                out = o;
-                continue;
-            }
-            cr.throwException();
-        }
-        out.flip();
-        return out;
-    }
+//    public final CharBuffer decode(ByteBuffer in)
+//        throws CharacterCodingException
+//    {
+//        int n = (int)(in.remaining() * averageCharsPerByte());
+//        CharBuffer out = CharBuffer.allocate(n);
+//
+//        if ((n == 0) && (in.remaining() == 0))
+//            return out;
+//        reset();
+//        for (;;) {
+//            CoderResult cr = in.hasRemaining() ?
+//                decode(in, out, true) : CoderResult.UNDERFLOW;
+//            if (cr.isUnderflow())
+//                cr = flush(out);
+//
+//            if (cr.isUnderflow())
+//                break;
+//            if (cr.isOverflow()) {
+//                n = 2*n + 1;    // Ensure progress; n might be 0!
+//                CharBuffer o = CharBuffer.allocate(n);
+//                out.flip();
+//                o.put(out);
+//                out = o;
+//                continue;
+//            }
+//            cr.throwException();
+//        }
+//        out.flip();
+//        return out;
+//    }
 
 
 

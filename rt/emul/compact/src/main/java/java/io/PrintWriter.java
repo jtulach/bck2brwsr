@@ -25,10 +25,9 @@
 
 package java.io;
 
-import java.io.PrintStream.Charset;
 import java.io.PrintStream.Formatter;
+import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.Objects;
 
 /**
  * Prints formatted representations of objects to a text-output stream.  This
