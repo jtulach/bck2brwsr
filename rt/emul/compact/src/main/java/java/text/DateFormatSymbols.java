@@ -42,19 +42,11 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.ref.SoftReference;
-import java.text.spi.DateFormatSymbolsProvider;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.spi.LocaleServiceProvider;
-import sun.util.LocaleServiceProviderPool;
-import sun.util.TimeZoneNameUtility;
-import sun.util.calendar.ZoneInfo;
-import sun.util.resources.LocaleData;
 
 /**
  * <code>DateFormatSymbols</code> is a public class for encapsulating
@@ -290,9 +282,10 @@ public class DateFormatSymbols implements Serializable, Cloneable {
      * @since 1.6
      */
     public static Locale[] getAvailableLocales() {
-        LocaleServiceProviderPool pool=
-            LocaleServiceProviderPool.getPool(DateFormatSymbolsProvider.class);
-        return pool.getAvailableLocales();
+        return new Locale[] { Locale.US };
+//        LocaleServiceProviderPool pool=
+//            LocaleServiceProviderPool.getPool(DateFormatSymbolsProvider.class);
+//        return pool.getAvailableLocales();
     }
 
     /**
@@ -348,12 +341,12 @@ public class DateFormatSymbols implements Serializable, Cloneable {
 
         // Check whether a provider can provide an implementation that's closer
         // to the requested locale than what the Java runtime itself can provide.
-        LocaleServiceProviderPool pool =
-            LocaleServiceProviderPool.getPool(DateFormatSymbolsProvider.class);
-        if (pool.hasProviders()) {
-            providersInstance = pool.getLocalizedObject(
-                                    DateFormatSymbolsGetter.INSTANCE, locale);
-        }
+//        LocaleServiceProviderPool pool =
+//            LocaleServiceProviderPool.getPool(DateFormatSymbolsProvider.class);
+//        if (pool.hasProviders()) {
+//            providersInstance = pool.getLocalizedObject(
+//                                    DateFormatSymbolsGetter.INSTANCE, locale);
+//        }
         return providersInstance;
     }
 
@@ -659,17 +652,17 @@ public class DateFormatSymbols implements Serializable, Cloneable {
         }
 
         // Initialize the fields from the ResourceBundle for locale.
-        ResourceBundle resource = LocaleData.getDateFormatData(locale);
-
-        eras = resource.getStringArray("Eras");
-        months = resource.getStringArray("MonthNames");
-        shortMonths = resource.getStringArray("MonthAbbreviations");
-        ampms = resource.getStringArray("AmPmMarkers");
-        localPatternChars = resource.getString("DateTimePatternChars");
-
-        // Day of week names are stored in a 1-based array.
-        weekdays = toOneBasedArray(resource.getStringArray("DayNames"));
-        shortWeekdays = toOneBasedArray(resource.getStringArray("DayAbbreviations"));
+//        ResourceBundle resource = LocaleData.getDateFormatData(locale);
+//
+//        eras = resource.getStringArray("Eras");
+//        months = resource.getStringArray("MonthNames");
+//        shortMonths = resource.getStringArray("MonthAbbreviations");
+//        ampms = resource.getStringArray("AmPmMarkers");
+//        localPatternChars = resource.getString("DateTimePatternChars");
+//
+//        // Day of week names are stored in a 1-based array.
+//        weekdays = toOneBasedArray(resource.getStringArray("DayNames"));
+//        shortWeekdays = toOneBasedArray(resource.getStringArray("DayAbbreviations"));
     }
 
     private static String[] toOneBasedArray(String[] src) {
@@ -718,7 +711,7 @@ public class DateFormatSymbols implements Serializable, Cloneable {
 
     private final String[][] getZoneStringsImpl(boolean needsCopy) {
         if (zoneStrings == null) {
-            zoneStrings = TimeZoneNameUtility.getZoneStrings(locale);
+//            zoneStrings = TimeZoneNameUtility.getZoneStrings(locale);
         }
 
         if (!needsCopy) {
@@ -765,7 +758,6 @@ public class DateFormatSymbols implements Serializable, Cloneable {
      * sure the backward compatibility.
      *
      * @since 1.6
-     */
     private void writeObject(ObjectOutputStream stream) throws IOException {
         if (zoneStrings == null) {
             zoneStrings = TimeZoneNameUtility.getZoneStrings(locale);
@@ -776,7 +768,6 @@ public class DateFormatSymbols implements Serializable, Cloneable {
     /**
      * Obtains a DateFormatSymbols instance from a DateFormatSymbolsProvider
      * implementation.
-     */
     private static class DateFormatSymbolsGetter
         implements LocaleServiceProviderPool.LocalizedObjectGetter<DateFormatSymbolsProvider,
                                                                    DateFormatSymbols> {
@@ -791,4 +782,5 @@ public class DateFormatSymbols implements Serializable, Cloneable {
             return dateFormatSymbolsProvider.getInstance(locale);
         }
     }
+     */
 }

@@ -26,7 +26,7 @@
 package java.text;
 
 import java.util.Calendar;
-import static java.util.GregorianCalendar.*;
+import static java.util.Calendar.*;
 
 /**
  * {@code CalendarBuilder} keeps field-value pairs for setting

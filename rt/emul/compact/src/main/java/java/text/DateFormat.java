@@ -39,18 +39,13 @@
 package java.text;
 
 import java.io.InvalidObjectException;
-import java.text.spi.DateFormatProvider;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 import java.util.TimeZone;
-import java.util.spi.LocaleServiceProvider;
-import sun.util.LocaleServiceProviderPool;
 
 /**
  * {@code DateFormat} is an abstract class for date/time formatting subclasses which
@@ -570,9 +565,7 @@ public abstract class DateFormat extends Format {
      */
     public static Locale[] getAvailableLocales()
     {
-        LocaleServiceProviderPool pool =
-            LocaleServiceProviderPool.getPool(DateFormatProvider.class);
-        return pool.getAvailableLocales();
+        return new Locale[] { Locale.US };
     }
 
     /**
@@ -755,6 +748,7 @@ public abstract class DateFormat extends Format {
         try {
             // Check whether a provider can provide an implementation that's closer
             // to the requested locale than what the Java runtime itself can provide.
+            /*
             LocaleServiceProviderPool pool =
                 LocaleServiceProviderPool.getPool(DateFormatProvider.class);
             if (pool.hasProviders()) {
@@ -768,6 +762,7 @@ public abstract class DateFormat extends Format {
                     return providersInstance;
                 }
             }
+            */
 
             return new SimpleDateFormat(timeStyle, dateStyle, loc);
         } catch (MissingResourceException e) {
@@ -998,7 +993,6 @@ public abstract class DateFormat extends Format {
     /**
      * Obtains a DateFormat instance from a DateFormatProvider
      * implementation.
-     */
     private static class DateFormatGetter
         implements LocaleServiceProviderPool.LocalizedObjectGetter<DateFormatProvider, DateFormat> {
         private static final DateFormatGetter INSTANCE = new DateFormatGetter();
@@ -1027,4 +1021,5 @@ public abstract class DateFormat extends Format {
             return null;
         }
     }
+     */
 }

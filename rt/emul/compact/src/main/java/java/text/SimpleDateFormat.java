@@ -43,7 +43,6 @@ import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
@@ -52,9 +51,6 @@ import java.util.SimpleTimeZone;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import sun.util.calendar.CalendarUtils;
-import sun.util.calendar.ZoneInfoFile;
-import sun.util.resources.LocaleData;
 
 import static java.text.DateFormatSymbols.*;
 
@@ -621,7 +617,7 @@ public class SimpleDateFormat extends DateFormat {
         /* try the cache first */
         String[] dateTimePatterns = cachedLocaleData.get(loc);
         if (dateTimePatterns == null) { /* cache miss */
-            ResourceBundle r = LocaleData.getDateFormatData(loc);
+            ResourceBundle r = null; // LocaleData.getDateFormatData(loc);
             if (!isGregorianCalendar()) {
                 try {
                     dateTimePatterns = r.getStringArray(getCalendarName() + ".DateTimePatterns");
@@ -1196,7 +1192,7 @@ public class SimpleDateFormat extends DateFormat {
                     if (zoneIndex == -1) {
                         value = calendar.get(Calendar.ZONE_OFFSET) +
                             calendar.get(Calendar.DST_OFFSET);
-                        buffer.append(ZoneInfoFile.toCustomID(value));
+//                        buffer.append(ZoneInfoFile.toCustomID(value));
                     } else {
                         int index = (calendar.get(Calendar.DST_OFFSET) == 0) ? 1: 3;
                         if (count < 4) {
@@ -1227,7 +1223,7 @@ public class SimpleDateFormat extends DateFormat {
             }
 
             int num = (value / 60) * 100 + (value % 60);
-            CalendarUtils.sprintf0d(buffer, num, width);
+//            CalendarUtils.sprintf0d(buffer, num, width);
             break;
 
         case PATTERN_ISO_ZONE:   // 'X'
@@ -1247,7 +1243,7 @@ public class SimpleDateFormat extends DateFormat {
                 value = -value;
             }
 
-            CalendarUtils.sprintf0d(buffer, value / 60, 2);
+//            CalendarUtils.sprintf0d(buffer, value / 60, 2);
             if (count == 1) {
                 break;
             }
@@ -1255,7 +1251,7 @@ public class SimpleDateFormat extends DateFormat {
             if (count == 3) {
                 buffer.append(':');
             }
-            CalendarUtils.sprintf0d(buffer, value % 60, 2);
+//            CalendarUtils.sprintf0d(buffer, value % 60, 2);
             break;
 
         default:
@@ -2347,4 +2343,41 @@ public class SimpleDateFormat extends DateFormat {
         }
     }
 
+    private static final class GregorianCalendar extends Calendar {
+        @Override
+        protected void computeTime() {
+        }
+
+        @Override
+        protected void computeFields() {
+        }
+
+        @Override
+        public void add(int field, int amount) {
+        }
+
+        @Override
+        public void roll(int field, boolean up) {
+        }
+
+        @Override
+        public int getMinimum(int field) {
+            return 0;
+        }
+
+        @Override
+        public int getMaximum(int field) {
+            return 0;
+        }
+
+        @Override
+        public int getGreatestMinimum(int field) {
+            return 0;
+        }
+
+        @Override
+        public int getLeastMaximum(int field) {
+            return 0;
+        }
+    }
 }

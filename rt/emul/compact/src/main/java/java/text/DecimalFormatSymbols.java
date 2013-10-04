@@ -41,14 +41,10 @@ package java.text;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
-import java.text.spi.DecimalFormatSymbolsProvider;
 import java.util.Currency;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
-
-import sun.util.LocaleServiceProviderPool;
-import sun.util.resources.LocaleData;
 
 /**
  * This class represents the set of symbols (such as the decimal separator,
@@ -109,9 +105,10 @@ public class DecimalFormatSymbols implements Cloneable, Serializable {
      * @since 1.6
      */
     public static Locale[] getAvailableLocales() {
-        LocaleServiceProviderPool pool =
-            LocaleServiceProviderPool.getPool(DecimalFormatSymbolsProvider.class);
-        return pool.getAvailableLocales();
+        return new Locale[] { Locale.US };
+//        LocaleServiceProviderPool pool =
+//            LocaleServiceProviderPool.getPool(DecimalFormatSymbolsProvider.class);
+//        return pool.getAvailableLocales();
     }
 
     /**
@@ -141,7 +138,7 @@ public class DecimalFormatSymbols implements Cloneable, Serializable {
      * @since 1.6
      */
     public static final DecimalFormatSymbols getInstance(Locale locale) {
-
+/*
         // Check whether a provider can provide an implementation that's closer
         // to the requested locale than what the Java runtime itself can provide.
         LocaleServiceProviderPool pool =
@@ -153,7 +150,7 @@ public class DecimalFormatSymbols implements Cloneable, Serializable {
                 return providersInstance;
             }
         }
-
+*/
         return new DecimalFormatSymbols(locale);
     }
 
@@ -537,8 +534,8 @@ public class DecimalFormatSymbols implements Cloneable, Serializable {
                 lookupLocale = new Locale("th", "TH", "TH");
             }
             data = new Object[3];
-            ResourceBundle rb = LocaleData.getNumberFormatData(lookupLocale);
-            data[0] = rb.getStringArray("NumberElements");
+//            ResourceBundle rb = LocaleData.getNumberFormatData(lookupLocale);
+//            data[0] = rb.getStringArray("NumberElements");
             needCacheUpdate = true;
         }
 
@@ -818,7 +815,6 @@ public class DecimalFormatSymbols implements Cloneable, Serializable {
     /**
      * Obtains a DecimalFormatSymbols instance from a DecimalFormatSymbolsProvider
      * implementation.
-     */
     private static class DecimalFormatSymbolsGetter
         implements LocaleServiceProviderPool.LocalizedObjectGetter<DecimalFormatSymbolsProvider,
                                                                    DecimalFormatSymbols> {
@@ -834,4 +830,5 @@ public class DecimalFormatSymbols implements Cloneable, Serializable {
             return decimalFormatSymbolsProvider.getInstance(locale);
         }
     }
+     */
 }

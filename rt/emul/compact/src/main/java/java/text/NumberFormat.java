@@ -44,7 +44,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.text.spi.NumberFormatProvider;
 import java.util.Currency;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -53,9 +52,6 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.spi.LocaleServiceProvider;
-import sun.util.LocaleServiceProviderPool;
-import sun.util.resources.LocaleData;
 
 /**
  * <code>NumberFormat</code> is the abstract base class for all number
@@ -393,8 +389,7 @@ public abstract class NumberFormat extends Format  {
         return getInstance(inLocale, NUMBERSTYLE);
     }
 
-    /**
-     * Returns a general-purpose number format for the current default locale.
+    /**     * Returns a general-purpose number format for the current default locale.
      */
     public final static NumberFormat getNumberInstance() {
         return getInstance(Locale.getDefault(Locale.Category.FORMAT), NUMBERSTYLE);
@@ -495,9 +490,10 @@ public abstract class NumberFormat extends Format  {
      *         <code>NumberFormat</code> instances are available.
      */
     public static Locale[] getAvailableLocales() {
-        LocaleServiceProviderPool pool =
-            LocaleServiceProviderPool.getPool(NumberFormatProvider.class);
-        return pool.getAvailableLocales();
+        return new Locale[] { Locale.US };
+//        LocaleServiceProviderPool pool =
+//            LocaleServiceProviderPool.getPool(NumberFormatProvider.class);
+//        return pool.getAvailableLocales();
     }
 
     /**
@@ -743,26 +739,26 @@ public abstract class NumberFormat extends Format  {
                                            int choice) {
         // Check whether a provider can provide an implementation that's closer
         // to the requested locale than what the Java runtime itself can provide.
-        LocaleServiceProviderPool pool =
-            LocaleServiceProviderPool.getPool(NumberFormatProvider.class);
-        if (pool.hasProviders()) {
-            NumberFormat providersInstance = pool.getLocalizedObject(
-                                    NumberFormatGetter.INSTANCE,
-                                    desiredLocale,
-                                    choice);
-            if (providersInstance != null) {
-                return providersInstance;
-            }
-        }
+//        LocaleServiceProviderPool pool =
+//            LocaleServiceProviderPool.getPool(NumberFormatProvider.class);
+//        if (pool.hasProviders()) {
+//            NumberFormat providersInstance = pool.getLocalizedObject(
+//                                    NumberFormatGetter.INSTANCE,
+//                                    desiredLocale,
+//                                    choice);
+//            if (providersInstance != null) {
+//                return providersInstance;
+//            }
+//        }
 
         /* try the cache first */
         String[] numberPatterns = (String[])cachedLocaleData.get(desiredLocale);
-        if (numberPatterns == null) { /* cache miss */
-            ResourceBundle resource = LocaleData.getNumberFormatData(desiredLocale);
-            numberPatterns = resource.getStringArray("NumberPatterns");
-            /* update cache */
-            cachedLocaleData.put(desiredLocale, numberPatterns);
-        }
+//        if (numberPatterns == null) { /* cache miss */
+//            ResourceBundle resource = LocaleData.getNumberFormatData(desiredLocale);
+//            numberPatterns = resource.getStringArray("NumberPatterns");
+//            /* update cache */
+//            cachedLocaleData.put(desiredLocale, numberPatterns);
+//        }
 
         DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(desiredLocale);
         int entry = (choice == INTEGERSTYLE) ? NUMBERSTYLE : choice;
@@ -1130,7 +1126,7 @@ public abstract class NumberFormat extends Format  {
 
     /**
      * Obtains a NumberFormat instance from a NumberFormatProvider implementation.
-     */
+     *
     private static class NumberFormatGetter
         implements LocaleServiceProviderPool.LocalizedObjectGetter<NumberFormatProvider,
                                                                    NumberFormat> {
@@ -1159,4 +1155,5 @@ public abstract class NumberFormat extends Format  {
             return null;
         }
     }
+    */
 }
