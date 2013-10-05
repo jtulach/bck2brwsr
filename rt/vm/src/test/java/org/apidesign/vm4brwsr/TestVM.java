@@ -153,6 +153,14 @@ final class TestVM {
     private static class EmulationResources implements Bck2Brwsr.Resources {
         @Override
         public InputStream get(String name) throws IOException {
+            if ("java/net/URI.class".equals(name)) {
+                // skip
+                return null;
+            }
+            if ("java/lang/System.class".equals(name)) {
+                // skip
+                return null;
+            }
             Enumeration<URL> en = StaticMethodTest.class.getClassLoader().getResources(name);
             URL u = null;
             while (en.hasMoreElements()) {

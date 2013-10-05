@@ -61,11 +61,15 @@ class VM extends ByteCodeToJavaScript {
         out.append("(function VM(global) {var fillInVMSkeleton = function(vm) {");
         StringArray processed = new StringArray();
         StringArray initCode = new StringArray();
+        StringArray skipClass = new StringArray();
         for (String baseClass : names.toArray()) {
             references.add(baseClass);
             for (;;) {
                 String name = null;
                 for (String n : references.toArray()) {
+                    if (skipClass.contains(n)) {
+                        continue;
+                    }
                     if (processed.contains(n)) {
                         continue;
                     }
@@ -76,7 +80,8 @@ class VM extends ByteCodeToJavaScript {
                 }
                 InputStream is = loadClass(l, name);
                 if (is == null) {
-                    throw new IOException("Can't find class " + name); 
+                    skipClass.add(name);
+                    continue;
                 }
                 try {
                     String ic = compile(is);
