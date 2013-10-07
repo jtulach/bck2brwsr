@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import static org.testng.Assert.*;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -39,12 +40,24 @@ public class VMinVMTest {
         compareCode("org/apidesign/vm4brwsr/Classes.class");
     }
 
+    @Test public void compareGeneratedCodeForToolkitClass() throws Exception {
+        String genCode = compareCode("org/apidesign/vm4brwsr/Bck2BrwsrToolkit.class");
+        int indx = genCode.indexOf("gt = 65604");
+        if (indx >= 0) {
+            fail("Goto to an invalid label:\n...." + genCode.substring(indx - 30, indx + 30) + "....");
+        }
+    }
+
     @BeforeClass
-    public void compileTheCode() throws Exception {
+    public static void compileTheCode() throws Exception {
         code = TestVM.compileClass("org/apidesign/vm4brwsr/VMinVM");
     }
+    @AfterClass
+    public static void releaseTheCode() {
+        code = null;
+    }
     
-    private void compareCode(final String nm) throws Exception, IOException {
+    private String compareCode(final String nm) throws Exception, IOException {
         byte[] arr = BytesLoader.readClass(nm);
         String ret1 = VMinVM.toJavaScript(arr);
         
@@ -83,5 +96,7 @@ public class VMinVMTest {
             msg.append(code.toString());
             fail(msg.toString());
         }
+        
+        return ret1;
     }
 }

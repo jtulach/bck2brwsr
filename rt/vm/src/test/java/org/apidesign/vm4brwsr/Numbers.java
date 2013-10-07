@@ -78,13 +78,26 @@ public class Numbers {
             case 4: return sevenNew().byteValue();
             case 8: return valueOf(Double.valueOf(7.0));
             case 9: return valueOf(Long.valueOf(Long.MAX_VALUE / 5));
+            case 30: return valueOf(Boolean.FALSE);
+            case 31: return valueOf(Boolean.TRUE);
+            case 65: return valueOf(Character.valueOf('A'));
+            default: throw new IllegalStateException();
+        }
+    }
+    static boolean bseven(int todo) {
+        switch (todo) {
+            case 30: return bvalueOf(Boolean.FALSE);
+            case 31: return bvalueOf(Boolean.TRUE);
             default: throw new IllegalStateException();
         }
     }
     
     @JavaScriptBody(args = {}, body = "return 7;")
     private static native Number sevenNew();
-    
+
     @JavaScriptBody(args = { "o" }, body = "return o.valueOf();")
     private static native double valueOf(Object o);
+    
+    @JavaScriptBody(args = { "o" }, body = "return o.valueOf();")
+    private static native boolean bvalueOf(Object o);
 }

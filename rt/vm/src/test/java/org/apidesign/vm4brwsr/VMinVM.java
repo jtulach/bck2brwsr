@@ -43,4 +43,9 @@ class VMinVM extends ByteCodeToJavaScript {
     @Override
     protected void requireScript(String resourcePath) {
     }
+
+    @Override
+    String getVMObject() {
+        return "global";
+    }
 }

@@ -2298,6 +2298,10 @@ class Character implements java.io.Serializable, Comparable<Character> {
      */
     @Deprecated
     public static boolean isSpace(char ch) {
+        return isSpaceChar(ch);
+    }
+
+    public static boolean isSpaceChar(int ch) {
         return (ch <= 0x0020) &&
             (((((1L << 0x0009) |
             (1L << 0x000A) |
@@ -2305,7 +2309,6 @@ class Character implements java.io.Serializable, Comparable<Character> {
             (1L << 0x000D) |
             (1L << 0x0020)) >> ch) & 1L) != 0);
     }
-
 
 
     /**
@@ -2372,7 +2375,14 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * @since   1.5
      */
     public static boolean isWhitespace(int codePoint) {
-        throw new UnsupportedOperationException();
+        if (
+            codePoint == SPACE_SEPARATOR || 
+            codePoint == LINE_SEPARATOR || 
+            codePoint == PARAGRAPH_SEPARATOR
+        ) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -2516,4 +2526,14 @@ class Character implements java.io.Serializable, Comparable<Character> {
         return (char) (((ch & 0xFF00) >> 8) | (ch << 8));
     }
 
+    static {
+        // as last step of initialization, initialize valueOf method
+        initValueOf();
+    }
+    @JavaScriptBody(args = {}, body = 
+        "vm.java_lang_Character(false)." +
+        "valueOf = function() { return this._value(); };"
+    )
+    private native static void initValueOf();
+    
 }

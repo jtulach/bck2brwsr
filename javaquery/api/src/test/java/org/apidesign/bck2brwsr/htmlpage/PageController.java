@@ -50,7 +50,7 @@ public class PageController {
         if (PAGE != ref) {
             throw new IllegalStateException("Both references should be the same. " + ref + " != " + PAGE);
         }
-        ref.PG_TITLE.setText("You want this window to be named " + ref.PG_TEXT.getValue());
+        ref.pg_title.setText("You want this window to be named " + ref.pg_text.getValue());
     }
     
     @On(event = CLICK, id={ "pg.title", "pg.text" })
@@ -58,6 +58,11 @@ public class PageController {
         if (!id.equals("pg.title")) {
             throw new IllegalStateException();
         }
-        PAGE.PG_TITLE.setText(id);
+        PAGE.pg_title.setText(id);
+    }
+    
+    @On(event = CLICK, id={ "pg.canvas" })
+    static void clickCanvas(String id, double layerX) {
+        PAGE.pg_canvas.setWidth((int) layerX);
     }
 }

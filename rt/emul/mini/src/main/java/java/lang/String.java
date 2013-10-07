@@ -115,15 +115,17 @@ public final class String
 
     /** use serialVersionUID from JDK 1.0.2 for interoperability */
     private static final long serialVersionUID = -6849794470754667710L;
-    
-    @JavaScriptOnly(name="toString", value="String.prototype._r")
-    private static void jsToString() {
-    }
-    
-    @JavaScriptOnly(name="valueOf", value="function() { return this.toString().valueOf(); }")
-    private static void jsValudOf() {
-    }
 
+    static {
+        registerToString();
+    }
+    @JavaScriptBody(args = {}, body = 
+          "var p = vm.java_lang_String(false);\n"
+        + "p.toString = function() {\nreturn this._r().toString();\n};\n"
+        + "p.valueOf = function() {\nreturn this._r().valueOf();\n}\n"
+    )
+    private static native void registerToString();
+    
     /**
      * Class String is special cased within the Serialization Stream Protocol.
      *
@@ -2218,9 +2220,19 @@ public final class String
      *         <code>replacement</code> is <code>null</code>.
      * @since 1.5
      */
-    public String replace(CharSequence target, CharSequence replacement) {
-        throw new UnsupportedOperationException("This one should be supported, but without dep on rest of regexp");
-    }
+    @JavaScriptBody(args = { "target", "replacement" }, body = 
+          "var s = this.toString();\n"
+        + "target = target.toString();\n"
+        + "replacement = replacement.toString();\n"
+        + "for (;;) {\n"
+        + "  var ret = s.replace(target, replacement);\n"
+        + "  if (ret === s) {\n"
+        + "    return ret;\n"
+        + "  }\n"
+        + "  s = ret;\n"
+        + "}"
+    )
+    public native String replace(CharSequence target, CharSequence replacement);
 
     /**
      * Splits this string around matches of the given
@@ -2303,8 +2315,35 @@ public final class String
      * @spec JSR-51
      */
     public String[] split(String regex, int limit) {
-        throw new UnsupportedOperationException("Needs regexp");
+        if (limit <= 0) {
+            Object[] arr = splitImpl(this, regex, Integer.MAX_VALUE);
+            int to = arr.length;
+            if (limit == 0) {
+                while (to > 1 && ((String)arr[--to]).isEmpty()) {
+                }
+                to++;
+            }
+            String[] ret = new String[to];
+            System.arraycopy(arr, 0, ret, 0, to);
+            return ret;
+        } else {
+            Object[] arr = splitImpl(this, regex, limit);
+            String[] ret = new String[arr.length];
+            int pos = 0;
+            for (int i = 0; i < arr.length; i++) {
+                final String s = (String)arr[i];
+                ret[i] = s;
+                pos = indexOf(s, pos) + s.length();
+            }
+            ret[arr.length - 1] += substring(pos);
+            return ret;
+        }
     }
+    
+    @JavaScriptBody(args = { "str", "regex", "limit"}, body = 
+        "return str.split(new RegExp(regex), limit);"
+    )
+    private static native Object[] splitImpl(String str, String regex, int limit);
 
     /**
      * Splits this string around matches of the given <a

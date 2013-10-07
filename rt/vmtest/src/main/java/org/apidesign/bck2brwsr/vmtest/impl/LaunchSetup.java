@@ -42,7 +42,14 @@ public final class LaunchSetup {
     } 
     private synchronized  Launcher js(boolean create) {
         if (js == null && create) {
-            js = Launcher.createJavaScript();
+            final String p = System.getProperty("vmtest.js", "script"); // NOI18N
+            switch (p) {
+                case "brwsr": js = Launcher.createBrowser(null); break; // NOI18N
+                case "script": js = Launcher.createJavaScript(); break; // NOI18N
+                default: throw new IllegalArgumentException(
+                    "Unknown value of vmtest.js property: " + p
+                );
+            }
         }
         return js;
     } 

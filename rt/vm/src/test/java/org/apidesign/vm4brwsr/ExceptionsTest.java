@@ -19,6 +19,7 @@ package org.apidesign.vm4brwsr;
 
 import javax.script.ScriptException;
 import static org.testng.Assert.*;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -107,6 +108,10 @@ public class ExceptionsTest {
     @BeforeClass 
     public void compileTheCode() throws Exception {
         code = TestVM.compileClass("org/apidesign/vm4brwsr/Exceptions");
+    }
+    @AfterClass
+    public static void releaseTheCode() {
+        code = null;
     }
     private static void assertExec(String msg, Class clazz, String method, Object expRes, Object... args) throws Exception {
         code.assertExec(msg, clazz, method, expRes, args);

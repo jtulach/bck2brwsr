@@ -17,7 +17,7 @@
  */
 package org.apidesign.vm4brwsr;
 
-import org.apidesign.javap.TypeArray;
+import org.apidesign.vm4brwsr.ByteCodeParser.TypeArray;
 
 final class StackMapper {
     private final TypeArray stackTypeIndexPairs;

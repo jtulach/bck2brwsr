@@ -17,6 +17,7 @@
  */
 package org.apidesign.bck2brwsr.vmtest.impl;
 
+import java.lang.annotation.Annotation;
 import org.apidesign.bck2brwsr.vmtest.*;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -53,26 +54,25 @@ public final class CompareCase implements ITest {
      * @param clazz the class to inspect
      * @return the set of created tests
      */
-    public static Object[] create(Class<?> clazz) {
-        Method[] arr = clazz.getMethods();
+    public static Object[] create(String[] brwsr, Class[] classes, Class<? extends Annotation> brwsrTest) {
         List<Object> ret = new ArrayList<>();
         
         final LaunchSetup l = LaunchSetup.INSTANCE;
         ret.add(l);
         
-        String[] brwsr;
         {
             String p = System.getProperty("vmtest.brwsrs");
             if (p != null) {
                 brwsr = p.split(",");
-            } else {
-                brwsr = new String[0];
             }
         }
         
-        for (Method m : arr) {
-            registerCompareCases(m, l, ret, brwsr);
-            registerBrwsrCases(m, l, ret, brwsr);
+        for (Class clazz : classes) {
+            Method[] arr = clazz.getMethods();
+            for (Method m : arr) {
+                registerCompareCases(m, l, ret, brwsr);
+                registerBrwsrCases(brwsrTest, m, l, ret, brwsr);
+            }
         }
         return ret.toArray();
     }
@@ -83,10 +83,34 @@ public final class CompareCase implements ITest {
     @Test(dependsOnGroups = "run") public void compareResults() throws Throwable {
         Object v1 = first.value;
         Object v2 = second.value;
-        if (v1 != null) {
-            v1 = v1.toString();
+        if (v1 instanceof Integer || v1 instanceof Long || v1 instanceof Byte || v1 instanceof Short) {
+            try {
+                v1 = Long.parseLong(v1.toString());
+            } catch (NumberFormatException nfe) {
+                v1 = "Can't parse " + v1.toString();
+            }
+            try {
+                v2 = Long.parseLong(v2.toString());
+            } catch (NumberFormatException nfe) {
+                v2 = "Can't parse " + v2.toString();
+            }
+        } else if (v1 instanceof Number) {
+            try {
+                v1 = Double.parseDouble(v1.toString());
+            } catch (NumberFormatException nfe) {
+                v1 = "Can't parse " + v1.toString();
+            }
+            try {
+                v2 = Double.parseDouble(v2.toString());
+            } catch (NumberFormatException nfe) {
+                v2 = "Can't parse " + v2.toString();
+            }
         } else {
-            v1 = "null";
+            if (v1 != null) {
+                v1 = v1.toString();
+            } else {
+                v1 = "null";
+            }
         }
         try {
             Assert.assertEquals(v2, v1, "Comparing results");
@@ -126,8 +150,8 @@ public final class CompareCase implements ITest {
             ret.add(new CompareCase(m, real, cse));
         }
     }
-    private static void registerBrwsrCases(Method m, final LaunchSetup l, List<Object> ret, String[] brwsr) {
-        BrwsrTest c = m.getAnnotation(BrwsrTest.class);
+    private static void registerBrwsrCases(Class<? extends Annotation> brwsrTest, Method m, final LaunchSetup l, List<Object> ret, String[] brwsr) {
+        Object c = m.getAnnotation(brwsrTest);
         if (c == null) {
             return;
         }

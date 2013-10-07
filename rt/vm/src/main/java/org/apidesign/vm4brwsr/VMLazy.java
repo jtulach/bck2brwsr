@@ -56,7 +56,7 @@ final class VMLazy {
             throw new ClassNotFoundException(name);
         }
 //        beingDefined(loader, name);
-        StringBuilder out = new StringBuilder();
+        StringBuilder out = new StringBuilder(65535);
         out.append("var loader = arguments[0];\n");
         out.append("var vm = loader.vm;\n");
         int prelude = out.length();
@@ -130,6 +130,14 @@ final class VMLazy {
 
         @Override
         protected void requireScript(String resourcePath) throws IOException {
+            if (!resourcePath.startsWith("/")) {
+                resourcePath = "/" + resourcePath;
+            }
+            String code = readCode(resourcePath);
+            applyCode(lazy.loader, null, code, false);
+        }
+
+        private String readCode(String resourcePath) throws IOException {
             InputStream is = getClass().getResourceAsStream(resourcePath);
             StringBuilder sb = new StringBuilder();
             for (;;) {
@@ -139,7 +147,7 @@ final class VMLazy {
                 }
                 sb.append((char)ch);
             }
-            applyCode(lazy.loader, null, sb.toString(), false);
+            return sb.toString();
         }
 
         @Override
@@ -150,6 +158,11 @@ final class VMLazy {
         @Override
         String accessClass(String classOperation) {
             return "vm." + classOperation;
+        }
+
+        @Override
+        String getVMObject() {
+            return "vm";
         }
     }
 }

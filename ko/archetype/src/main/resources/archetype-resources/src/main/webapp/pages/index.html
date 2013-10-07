@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+        <style type="text/css">
+            @-webkit-keyframes spin {
+                0% { -webkit-transform: rotate(0deg); }
+                100% { -webkit-transform: rotate(360deg); }
+            }
+
+            .rotate {
+                -webkit-animation-name: spin;
+                -webkit-animation-duration: 3s;
+                -webkit-animation-iteration-count: infinite;
+                -webkit-animation-direction: alternate;
+            }
+
+            #scene {
+                position: relative;
+                top: 60px;
+                text-align: center;
+            }
+            
+            #words span {
+                border: 1px solid #ccc;
+                background: rgba(255,255,155,0.8);
+                text-align: center;
+                font-size: 30px;                
+                -webkit-box-shadow: inset 0 0 40px rgba(0,0,0,0.4);
+                position: absolute;
+            }
+
+            #words span:nth-child(1) { left: 45%; top: 0px; }
+            #words span:nth-child(2) { left: 25%; top: 100px; }
+            #words span:nth-child(3) { left: 65%; top: 100px; }
+            #words span:nth-child(4) { left: 10%; top: 200px; }
+            #words span:nth-child(5) { left: 45%; top: 200px; }
+            #words span:nth-child(6) { left: 80%; top: 200px; }
+            
+        </style>
+
+    </head>
+    <body>
+        <h1>Words Demo</h1>
+        <input data-bind="value: message, valueUpdate: 'afterkeydown'" size="80">
+        <br>
+        <button data-bind="enable: !on(), click: $root.turnOn">Start</button>
+        <button data-bind="enable: on, click: $root.turnOff">Stop</button>
+
+        <div id="scene">
+            <span id="words" data-bind="foreach: words">
+                <span data-bind="text: $data, css: { 'rotate' : $root.on } "></span>
+            </span>
+        </div>
+        <script type="text/javascript" src="bck2brwsr.js"></script>
+        <script>
+            var vm = bck2brwsr('${project.build.finalName}.jar');
+            vm.loadClass('${package}.Main');
+        </script>
+    </body>
+</html>

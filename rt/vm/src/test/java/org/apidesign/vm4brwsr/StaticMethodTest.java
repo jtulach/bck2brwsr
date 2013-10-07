@@ -18,6 +18,7 @@
 package org.apidesign.vm4brwsr;
 
 import static org.testng.Assert.*;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -324,9 +325,13 @@ public class StaticMethodTest {
     private static TestVM code;
     
     @BeforeClass 
-    public void compileTheCode() throws Exception {
+    public static void compileTheCode() throws Exception {
         StringBuilder sb = new StringBuilder();
         code = TestVM.compileClass(sb, "org/apidesign/vm4brwsr/StaticMethod");
+    }
+    @AfterClass
+    public static void releaseTheCode() {
+        code = null;
     }
 
     private void assertExec(

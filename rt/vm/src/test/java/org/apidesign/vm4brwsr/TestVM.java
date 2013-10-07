@@ -51,7 +51,7 @@ final class TestVM {
             ret = code.invokeMethod(bck2brwsr, "loadClass", clazz.getName());
             ret = code.invokeMethod(ret, method, args);
         } catch (ScriptException ex) {
-            fail("Execution failed in " + dumpJS(codeSeq), ex);
+            fail("Execution failed in " + dumpJS(codeSeq) + ": " + ex.getMessage(), ex);
         } catch (NoSuchMethodException ex) {
             fail("Cannot find method in " + dumpJS(codeSeq), ex);
         }
@@ -68,9 +68,9 @@ final class TestVM {
                 ret = code.invokeMethod(ret, "toFP");
                 ret = code.invokeFunction("Number", ret);
             } catch (ScriptException ex) {
-                fail("Conversion to number failed in " + dumpJS(codeSeq), ex);
+                fail("Conversion to number failed in " + dumpJS(codeSeq) + ": " + ex.getMessage(), ex);
             } catch (NoSuchMethodException ex) {
-                fail("Cannot find global Number(x) function in " + dumpJS(codeSeq), ex);
+                fail("Cannot find global Number(x) function in " + dumpJS(codeSeq) + ": " + ex.getMessage(), ex);
             }
         }
         return ret;
@@ -115,7 +115,7 @@ final class TestVM {
             if (sb.length() > 2000) {
                 sb = dumpJS(sb);
             }
-            fail("Could not evaluate:\n" + sb, ex);
+            fail("Could not evaluate:" + ex.getClass() + ":" + ex.getMessage() + "\n" + sb, ex);
             return null;
         }
     }

@@ -19,6 +19,7 @@ package org.apidesign.vm4brwsr;
 
 import org.testng.annotations.Test;
 import static org.testng.Assert.*;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
 /**
@@ -190,6 +191,10 @@ public class ClassTest {
     public void compileTheCode() throws Exception {
         code = TestVM.compileClass("org/apidesign/vm4brwsr/Classes");
     }
+    @AfterClass
+    public static void releaseTheCode() {
+        code = null;
+    }
     
     private void assertExec(
         String msg, Class clazz, String method, Object expRes, Object... args
@@ -203,4 +208,24 @@ public class ClassTest {
         );
     }
     
+    @Test public void valueOfEnum() throws Exception {
+        assertExec("can get value of enum", Classes.class,
+            "valueEnum__Ljava_lang_String_2Ljava_lang_String_2",
+            "TWO", "TWO"
+        );
+    }
+
+    @Test public void typeOfFn() throws Exception {
+        assertExec("Type of function is Object", Classes.class,
+            "typeOfFn__Ljava_lang_String_2",
+            "java.lang.Object"
+        );
+    }
+    
+    @Test public void instanceOfSuperInterface() throws Exception {
+        assertExec("Is iof super interface", Classes.class,
+            "instanceOfSuperInterface__Z",
+            1.0
+        );
+    }
 }

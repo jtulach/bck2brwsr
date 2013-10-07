@@ -18,8 +18,7 @@
 package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
-import org.apidesign.javap.RuntimeConstants;
-import org.apidesign.javap.TypeArray;
+import org.apidesign.vm4brwsr.ByteCodeParser.TypeArray;
 
 final class LocalsMapper {
     private final TypeArray argTypeRecords;
@@ -113,7 +112,7 @@ final class LocalsMapper {
         final int srcSize = stackMapTypes.getSize();
         for (int i = 0, dstIndex = 0; i < srcSize; ++i) {
             final int smType = stackMapTypes.get(i);
-            if (smType == RuntimeConstants.ITEM_Bogus) {
+            if (smType == ByteCodeParser.ITEM_Bogus) {
                 ++dstIndex;
                 continue;
             }

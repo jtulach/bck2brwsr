@@ -1,15 +1,14 @@
 <?xml version="1.0"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apidesign.bck2brwsr</groupId>
     <artifactId>emul.pom</artifactId>
-    <version>0.3-SNAPSHOT</version>
+    <version>0.9-SNAPSHOT</version>
   </parent>
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>emul</artifactId>
-  <version>0.3-SNAPSHOT</version>
+  <version>0.9-SNAPSHOT</version>
   <name>Bck2Brwsr API Profile</name>
   <url>http://maven.apache.org</url>
   <properties>
@@ -29,6 +28,18 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>launcher.http</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+      <exclusions>
+          <exclusion>
+              <groupId>com.oracle</groupId>
+              <artifactId>javafx</artifactId>
+          </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
       <groupId>org.netbeans.api</groupId>
       <artifactId>org-openide-util-lookup</artifactId>
       <scope>test</scope>
@@ -46,6 +57,15 @@
                   </compilerArguments>
                  <source>1.7</source>
                  <target>1.7</target>
+              </configuration>
+          </plugin>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-javadoc-plugin</artifactId>
+              <configuration>
+                  <excludePackageNames>org.apidesign.bck2brwsr.emul.*</excludePackageNames>
+                  <skip>false</skip>
+                  <includeDependencySources>true</includeDependencySources>
               </configuration>
           </plugin>
          <plugin>

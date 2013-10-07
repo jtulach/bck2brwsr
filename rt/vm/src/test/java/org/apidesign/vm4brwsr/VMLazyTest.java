@@ -22,6 +22,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import org.testng.annotations.BeforeClass;
 import static org.testng.Assert.*;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
 /** Implements loading class by class.
@@ -32,7 +33,7 @@ public class VMLazyTest {
     private static TestVM code;
 
     @BeforeClass
-    public void compileTheCode() throws Exception {
+    public static void compileTheCode() throws Exception {
         StringBuilder sb = new StringBuilder();
         sb.append("\nvar data = {};");
         sb.append("\nfunction test(clazz, method) {");
@@ -50,6 +51,10 @@ public class VMLazyTest {
             new String[]{"org/apidesign/vm4brwsr/VM", "org/apidesign/vm4brwsr/StaticMethod"}
         );
         arr[0].getContext().setAttribute("loader", new BytesLoader(), ScriptContext.ENGINE_SCOPE);
+    }
+    @AfterClass
+    public static void releaseTheCode() {
+        code = null;
     }
     
     @Test public void invokeStaticMethod() throws Exception {

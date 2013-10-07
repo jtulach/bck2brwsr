@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apidesign</groupId>
   <artifactId>bck2brwsr</artifactId>
-  <version>0.3-SNAPSHOT</version>
+  <version>0.9-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Back 2 Browser</name>
   <parent>
@@ -11,11 +11,19 @@
     <artifactId>jvnet-parent</artifactId>
     <version>3</version>
   </parent>  
+  <properties>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <netbeans.version>RELEASE73</netbeans.version>
+      <license>COPYING</license>
+      <net.java.html.version>0.6</net.java.html.version>
+  </properties>
   <modules>
     <module>dew</module>
     <module>javaquery</module>
     <module>benchmarks</module>
     <module>ide</module>
+    <module>ko</module>
+    <module>launcher</module>
     <module>rt</module>
   </modules>
   <licenses>
@@ -33,6 +41,7 @@
       <connection>scm:hg:http://source.apidesign.org/hg/bck2brwsr</connection>
       <developerConnection>scm:hg:https://source.apidesign.org/hg/bck2brwsr</developerConnection>
       <url>http://source.apidesign.org/hg/bck2brwsr</url>
+    <tag>HEAD</tag>
   </scm>
   <repositories>
       <repository>
@@ -78,13 +87,25 @@
                        <exclude>*</exclude>
                        <exclude>.*/**</exclude>
                        <exclude>rt/emul/*/src/main/**</exclude>
-                       <exclude>rt/javap/**</exclude>
-                       <exclude>rt/mojo/src/main/resources/archetype-resources/**</exclude>
-                       <exclude>rt/vmtest/src/test/resources/**</exclude>
+                       <exclude>rt/vm/src/main/java/org/apidesign/vm4brwsr/ByteCodeParser.java</exclude>
+                       <exclude>rt/archetype/src/main/resources/archetype-resources/**</exclude>
+                       <exclude>rt/emul/compact/src/test/resources/**</exclude>
                        <exclude>dew/src/main/resources/org/apidesign/bck2brwsr/dew/**</exclude>
                        <exclude>javaquery/api/src/main/resources/org/apidesign/bck2brwsr/htmlpage/knockout*.js</exclude>
+                       <exclude>ko/archetype/src/main/resources/archetype-resources/**</exclude>
+                       <exclude>ko/*/src/main/resources/org/apidesign/*/*/knockout-2.2.1.js</exclude>
                   </excludes>
               </configuration>
+          </plugin>
+           <plugin>
+            <artifactId>maven-release-plugin</artifactId>
+            <version>2.4</version>
+            <configuration>
+              <mavenExecutorId>forked-path</mavenExecutorId>
+              <useReleaseProfile>false</useReleaseProfile>
+              <arguments>-Pjvnet-release -Pgpg</arguments>
+              <tag>release-${releaseVersion}</tag>
+            </configuration>
           </plugin>
       </plugins>
       <pluginManagement>
@@ -94,6 +115,23 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.13</version>
               </plugin>
+              <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+              </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
+            </plugin>
           </plugins>
       </pluginManagement>
   </build>
@@ -114,19 +152,137 @@
         <dependency>
           <groupId>org.netbeans.api</groupId>
           <artifactId>org-netbeans-modules-classfile</artifactId>
-          <version>RELEASE72</version>
+          <version>${netbeans.version}</version>
           <type>jar</type>
         </dependency>
         <dependency>
           <groupId>org.netbeans.api</groupId>
           <artifactId>org-openide-util-lookup</artifactId>
-          <version>RELEASE72</version>
+          <version>${netbeans.version}</version>
           <scope>compile</scope>
           <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-api-annotations-common</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-java-source</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-libs-javacapi</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-spi-java-hints</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-parsing-api</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-spi-editor-hints</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-util</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-java-lexer</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-lexer</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-java-hints-test</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-libs-junit4</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>org-netbeans-lib-nbjavac</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency> 
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>org-netbeans-modules-web-browser-api</artifactId>
+            <version>${netbeans.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>org-netbeans-core</artifactId>
+                    <groupId>org.netbeans.modules</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>org-netbeans-core-multiview</artifactId>
+                    <groupId>org.netbeans.api</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>org-netbeans-libs-lucene</artifactId>
+                    <groupId>org.netbeans.api</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>org-netbeans-modules-diff</artifactId>
+                    <groupId>org.netbeans.api</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>org-netbeans-modules-editor-fold</artifactId>
+                    <groupId>org.netbeans.api</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>org-netbeans-modules-editor-guards</artifactId>
+                    <groupId>org.netbeans.api</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <artifactId>org-netbeans-modules-projectapi</artifactId>
+            <groupId>org.netbeans.api</groupId>
+            <type>jar</type>
+            <version>${netbeans.version}</version>
+        </dependency>
       </dependencies>
   </dependencyManagement>
-  <properties>
-      <license>COPYING</license>
-  </properties>
+  <profiles>
+      <profile>
+          <id>jdk8</id>
+          <activation>
+              <file>
+                  <exists>${java.home}/lib/ext/jfxrt.jar</exists>
+              </file>
+          </activation>
+          <properties>
+            <jfxrt.jar>${java.home}/lib/ext/jfxrt.jar</jfxrt.jar>
+          </properties>
+      </profile>
+      <profile>
+          <id>jdk7</id>
+          <activation>
+              <file>
+                  <exists>${java.home}/lib/jfxrt.jar</exists>
+              </file>
+          </activation>
+          <properties>
+            <jfxrt.jar>${java.home}/lib/jfxrt.jar</jfxrt.jar>
+          </properties>
+      </profile>
+  </profiles>
 </project>

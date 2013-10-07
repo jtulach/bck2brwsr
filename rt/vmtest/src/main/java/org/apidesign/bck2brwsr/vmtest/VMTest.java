@@ -17,27 +17,123 @@
  */
 package org.apidesign.bck2brwsr.vmtest;
 
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.apidesign.bck2brwsr.launcher.Launcher;
 import org.apidesign.bck2brwsr.vmtest.impl.CompareCase;
 import org.testng.annotations.Factory;
 
-/** A TestNG {@link Factory} that seeks for {@link Compare} annotations
- * in provided class and builds set of tests that compare the computations
- * in real as well as JavaScript virtual machines. Use as:<pre>
+/** A TestNG {@link Factory} that seeks for {@link Compare} and {@link BrwsrTest} annotations
+ * in provided class and builds set of tests that verify the functionality of <b>Bck2Brwsr</b> 
+ * based system. Use as:
+ * <pre>
  * {@code @}{@link Factory} public static create() {
- *   return @{link VMTest}.{@link #create(YourClass.class);
+ *   return @{link VMTest}.{@link #create(java.lang.Class) create}(YourClass.class);
  * }</pre>
- *
+ * where <code>YourClass</code> contains methods annotated with
+ * {@link Compare} and {@link BrwsrTest} annotations.
+ * 
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public final class VMTest {
-    /** Inspects <code>clazz</code> and for each {@lik Compare} method creates
-     * instances of tests. Each instance runs the test in different virtual
+    private final List<Class> classes = new ArrayList<>();
+    private final List<String> launcher = new ArrayList<>();
+    private Class<? extends Annotation> annotation = BrwsrTest.class;
+    
+    private VMTest() {
+    }
+    
+    /** Inspects <code>clazz</code> and for each method annotated by
+     * {@link Compare} or {@link BrwsrTest} creates
+     * instances of tests. 
+     * <p>
+     * Each {@link Compare} instance runs the test in different virtual
      * machine and at the end they compare the results.
+     * <p>
+     * Each {@link BrwsrTest} annotated method is executed once in {@link Launcher started
+     * browser}.
      * 
-     * @param clazz the class to inspect
+     * @param clazz the class (or classes) to inspect
      * @return the set of created tests
      */
-    public static Object[] create(Class<?> clazz) {
-        return CompareCase.create(clazz);
+    public static Object[] create(Class clazz) {
+        return newTests().withClasses(clazz).build();
+    }
+    
+    /** Creates new builder for test execution. Continue with methods
+     * like {@link #withClasses(java.lang.Class[])} or {@link #withLaunchers(java.lang.String[])}.
+     * Finish the process by calling {@link #build()}.
+     * 
+     * @return new instance of a builder
+     * @since 0.7
+     */
+    public static VMTest newTests() {
+        return new VMTest();
+    }
+    
+    /** Adds class (or classes) to the test execution. The classes are inspected
+     * to contain methods annotated by
+     * {@link Compare} or {@link BrwsrTest}. Appropriate set of TestNG test
+     * cases is then created.
+     * <p>
+     * Each {@link Compare} instance runs the test in different virtual
+     * machine and at the end they compare the results.
+     * <p>
+     * Each {@link BrwsrTest} annotated method is executed once in {@link Launcher started
+     * browser}.
+     * 
+     * @param classes one or more classes to inspect
+     * @since 0.7
+     */
+    public final VMTest withClasses(Class... classes) {
+        this.classes.addAll(Arrays.asList(classes));
+        return this;
+    }
+
+    /** Adds list of launchers that should be used to execute tests defined
+     * by {@link Compare} and {@link BrwsrTest} annotations. This value 
+     * can be overrided by using <code>vmtest.brwsrs</code> property.
+     * List of supported launchers is available in the documentation of
+     * {@link Launcher}.
+     * 
+     * @param launcher names of one or more launchers to use for the execution
+     *   of tests
+     * @since 0.7
+     */
+    public final VMTest withLaunchers(String... launcher) {
+        this.launcher.addAll(Arrays.asList(launcher));
+        return this;
+    }
+
+    /** Specifies which annotation annotates the test methods
+     * to be executed. By 
+     * default it is the {@link BrwsrTest} annotation. Methods in
+     * {@link #withClasses(java.lang.Class[]) test classes} annotated by
+     * this annotation will be executed.
+     * 
+     * @param aClass an annotation class 
+     * @return this
+     * @since 0.8
+     */
+    public final VMTest withTestAnnotation(Class<? extends Annotation> aClass) {
+        if (!aClass.isAnnotation()) {
+            throw new IllegalStateException();
+        }
+        this.annotation = aClass;
+        return this;
+    }
+    
+    /** Assembles the provided information into the final array of tests.
+     * @return array of TestNG tests
+     * @since 0.7
+     */
+    public final Object[] build() {
+        return CompareCase.create(
+            launcher.toArray(new String[0]), 
+            classes.toArray(new Class[0]),
+            annotation
+        );
     }
 }

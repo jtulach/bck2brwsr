@@ -22,7 +22,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Controls how JavaScript inheritance should be handled.
+/** Influence the inheritance of your class when converted to JavaScript.
+ * Sometimes one does not want
+ * to mimic the Java hierarchy, but modify it a bit. For example it makes
+ * sense to treat every (JavaScript) string literal as {@link String}.
+ * One can do it by making {@link String} subclass JavaScript <code>String</code>
+ * and use <code>String.prototype</code> as a container for all {@link String}
+ * methods.
+ * 
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @Retention(RetentionPolicy.CLASS)

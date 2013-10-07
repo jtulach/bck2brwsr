@@ -1,18 +1,17 @@
 <?xml version="1.0"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apidesign.bck2brwsr</groupId>
     <artifactId>rt</artifactId>
-    <version>0.3-SNAPSHOT</version>
+    <version>0.9-SNAPSHOT</version>
   </parent>
   <groupId>org.apidesign.bck2brwsr</groupId>
-  <artifactId>mojo</artifactId>
-  <version>0.3-SNAPSHOT</version>
+  <artifactId>bck2brwsr-maven-plugin</artifactId>
+  <version>0.9-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
-  <name>Bck2Brwsr Maven Project</name>
-  <url>http://maven.apache.org</url>
+  <name>Bck2Brwsr Maven Plugin</name>
+  <url>http://bck2brwsr.apidesign.org/</url>
       <build>
         <plugins>
             <plugin>
@@ -63,7 +62,7 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>vm4brwsr</artifactId>
-      <version>0.3-SNAPSHOT</version>
+      <version>${project.version}</version>
       <exclusions>
         <exclusion>
           <artifactId>emul.mini</artifactId>
@@ -80,6 +79,16 @@
     <dependency>
         <groupId>${project.groupId}</groupId>
         <artifactId>launcher</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>launcher.http</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>launcher.fx</artifactId>
       <version>${project.version}</version>
     </dependency>
 </dependencies>

@@ -132,4 +132,8 @@ public class Array {
         arraycopy(arr()[0][0].chars, 0, arr, 0, 1);
         return arr[0];
     }
+    
+    public static int multiLen() {
+        return new int[1][0].length;
+    }
 }

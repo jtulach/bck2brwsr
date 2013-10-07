@@ -42,14 +42,21 @@ import org.apidesign.bck2brwsr.core.JavaScriptPrototype;
 public class Object {
 
     private static void registerNatives() {
-        try {
+        boolean assertsOn = false;
+        assert assertsOn = false;
+        if (assertsOn) try {
             Array.get(null, 0);
         } catch (Throwable ex) {
             // ignore
         }
     }
+    @JavaScriptBody(args = {}, body = "var p = vm.java_lang_Object(false);" +
+        "p.toString = function() { return this.toString__Ljava_lang_String_2(); };"
+    )
+    private static native void registerToString();
     static {
         registerNatives();
+        registerToString();
     }
 
     /**
@@ -72,9 +79,17 @@ public class Object {
      * @see    Class Literals, section 15.8.2 of
      *         <cite>The Java&trade; Language Specification</cite>.
      */
-    @JavaScriptBody(args={}, body="return this.constructor.$class;")
-    public final native Class<?> getClass();
+    public final Class<?> getClass() {
+        Class<?> c = getClassImpl();
+        return c == null ? Object.class : c;
+    }
 
+    @JavaScriptBody(args={}, body=
+          "var c = this.constructor.$class;\n"
+        + "return c ? c : null;\n"
+    )
+    private final native Class<?> getClassImpl();
+    
     /**
      * Returns a hash code value for the object. This method is
      * supported for the benefit of hash tables such as those provided by
@@ -110,12 +125,15 @@ public class Object {
      * @see     java.lang.Object#equals(java.lang.Object)
      * @see     java.lang.System#identityHashCode
      */
+    public int hashCode() {
+        return defaultHashCode();
+    }
     @JavaScriptBody(args = {}, body = 
         "if (this.$hashCode) return this.$hashCode;\n"
         + "var h = this.computeHashCode__I();\n"
         + "return this.$hashCode = h & h;"
     )
-    public native int hashCode();
+    final native int defaultHashCode();
 
     @JavaScriptBody(args = {}, body = "return Math.random() * Math.pow(2, 32);")
     native int computeHashCode();
@@ -310,7 +328,8 @@ public class Object {
      * @see        java.lang.Object#notifyAll()
      * @see        java.lang.Object#wait()
      */
-    public final native void notify();
+    public final void notify() {
+    }
 
     /**
      * Wakes up all threads that are waiting on this object's monitor. A
@@ -334,7 +353,8 @@ public class Object {
      * @see        java.lang.Object#notify()
      * @see        java.lang.Object#wait()
      */
-    public final native void notifyAll();
+    public final void notifyAll() {
+    }
 
     /**
      * Causes the current thread to wait until either another thread invokes the
@@ -421,7 +441,9 @@ public class Object {
      * @see        java.lang.Object#notify()
      * @see        java.lang.Object#notifyAll()
      */
-    public final native void wait(long timeout) throws InterruptedException;
+    public final void wait(long timeout) throws InterruptedException {
+        throw new InterruptedException();
+    }
 
     /**
      * Causes the current thread to wait until another thread invokes the
@@ -486,20 +508,7 @@ public class Object {
      *             this exception is thrown.
      */
     public final void wait(long timeout, int nanos) throws InterruptedException {
-        if (timeout < 0) {
-            throw new IllegalArgumentException("timeout value is negative");
-        }
-
-        if (nanos < 0 || nanos > 999999) {
-            throw new IllegalArgumentException(
-                                "nanosecond timeout value out of range");
-        }
-
-        if (nanos >= 500000 || (nanos != 0 && timeout == 0)) {
-            timeout++;
-        }
-
-        wait(timeout);
+        throw new InterruptedException();
     }
 
     /**
@@ -541,7 +550,7 @@ public class Object {
      * @see        java.lang.Object#notifyAll()
      */
     public final void wait() throws InterruptedException {
-        wait(0);
+        throw new InterruptedException();
     }
 
     /**

@@ -190,12 +190,12 @@ public final class Double extends Number implements Comparable<Double> {
      * @param   d   the {@code double} to be converted.
      * @return a string representation of the argument.
      */
-    @JavaScriptBody(args="d", body="var r = d.toString();"
-        + "if (isFinite(d) && (r.indexOf('.') === -1)) r = r + '.0';"
-        + "return r;")
-    public static String toString(double d) {
-        throw new UnsupportedOperationException();
-    }
+    @JavaScriptBody(args="d", body="var f = Math.floor(d);\n" +
+        "var r = d.toString();" +
+        "if (f === d && isFinite(d) && r.indexOf('e') === -1) return r + '.0';\n" +
+        " else return r;"
+    )
+    public static native String toString(double d);
 
     /**
      * Returns a hexadecimal string representation of the
@@ -502,10 +502,8 @@ public final class Double extends Number implements Comparable<Double> {
      * @throws     NumberFormatException  if the string does not contain a
      *             parsable number.
      */
-    @JavaScriptBody(args="s", body="return parseFloat(s);")
     public static Double valueOf(String s) throws NumberFormatException {
-        throw new UnsupportedOperationException();
-//        return new Double(FloatingDecimal.readJavaFormatString(s).doubleValue());
+        return new Double(parseDouble(s));
     }
 
     /**
@@ -810,15 +808,17 @@ public final class Double extends Number implements Comparable<Double> {
      * @return the bits that represent the floating-point number.
      */
     public static long doubleToLongBits(double value) {
-        throw new UnsupportedOperationException();
-//        long result = doubleToRawLongBits(value);
-//        // Check for NaN based on values of bit fields, maximum
-//        // exponent and nonzero significand.
-//        if ( ((result & DoubleConsts.EXP_BIT_MASK) ==
-//              DoubleConsts.EXP_BIT_MASK) &&
-//             (result & DoubleConsts.SIGNIF_BIT_MASK) != 0L)
-//            result = 0x7ff8000000000000L;
-//        return result;
+        final long EXP_BIT_MASK = 9218868437227405312L;
+        final long SIGNIF_BIT_MASK = 4503599627370495L;
+        
+        long result = doubleToRawLongBits(value);
+        // Check for NaN based on values of bit fields, maximum
+        // exponent and nonzero significand.
+        if ( ((result & EXP_BIT_MASK) ==
+              EXP_BIT_MASK) &&
+             (result & SIGNIF_BIT_MASK) != 0L)
+            result = 0x7ff8000000000000L;
+        return result;
     }
 
     /**
@@ -857,7 +857,21 @@ public final class Double extends Number implements Comparable<Double> {
      * @return the bits that represent the floating-point number.
      * @since 1.3
      */
-    public static native long doubleToRawLongBits(double value);
+    public static long doubleToRawLongBits(double value) {
+        int[] arr = { 0, 0 };
+        doubleToRawLongBits(value, arr);
+        long l = arr[1];
+        return (l << 32) | arr[0];
+    }
+    
+    @JavaScriptBody(args = { "value", "arr" }, body = ""
+        + "var a = new ArrayBuffer(8);"
+        + "new Float64Array(a)[0] = value;"
+        + "var out = new Int32Array(a);"
+        + "arr[0] = out[0];"
+        + "arr[1] = out[1];"
+    )
+    private static native void doubleToRawLongBits(double value, int[] arr);
 
     /**
      * Returns the {@code double} value corresponding to a given

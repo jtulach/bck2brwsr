@@ -710,15 +710,17 @@ public final class Float extends Number implements Comparable<Float> {
      * @return the bits that represent the floating-point number.
      */
     public static int floatToIntBits(float value) {
-        throw new UnsupportedOperationException();
-//        int result = floatToRawIntBits(value);
-//        // Check for NaN based on values of bit fields, maximum
-//        // exponent and nonzero significand.
-//        if ( ((result & FloatConsts.EXP_BIT_MASK) ==
-//              FloatConsts.EXP_BIT_MASK) &&
-//             (result & FloatConsts.SIGNIF_BIT_MASK) != 0)
-//            result = 0x7fc00000;
-//        return result;
+        final int EXP_BIT_MASK = 2139095040;
+        final int SIGNIF_BIT_MASK = 8388607;
+        
+        int result = floatToRawIntBits(value);
+        // Check for NaN based on values of bit fields, maximum
+        // exponent and nonzero significand.
+        if ( ((result & EXP_BIT_MASK) ==
+              EXP_BIT_MASK) &&
+             (result & SIGNIF_BIT_MASK) != 0)
+            result = 0x7fc00000;
+        return result;
     }
 
     /**
@@ -756,6 +758,11 @@ public final class Float extends Number implements Comparable<Float> {
      * @return the bits that represent the floating-point number.
      * @since 1.3
      */
+    @JavaScriptBody(args = { "value" }, body = ""
+        + "var a = new ArrayBuffer(4);"
+        + "new Float32Array(a)[0] = value;"
+        + "return new Int32Array(a)[0];"
+    )
     public static native int floatToRawIntBits(float value);
 
     /**

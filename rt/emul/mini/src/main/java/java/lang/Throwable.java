@@ -638,10 +638,9 @@ public class Throwable implements Serializable {
      *          ... 2 more
      * </pre>
      */
-//    public void printStackTrace() {
-//        printStackTrace(System.err);
-//    }
-//
+    @JavaScriptBody(args = {  }, body = "console.warn(this.toString());")
+    public native void printStackTrace();
+
 //    /**
 //     * Prints this throwable and its backtrace to the specified print stream.
 //     *
@@ -1084,5 +1083,23 @@ public class Throwable implements Serializable {
 //            return EMPTY_THROWABLE_ARRAY;
 //        else
 //            return suppressedExceptions.toArray(EMPTY_THROWABLE_ARRAY);
+    }
+    
+    private static Object bck2BrwsrCnvrt(Object o) {
+        if (o instanceof Throwable) {
+            return o;
+        }
+        final String msg = msg(o);
+        if (msg == null || msg.startsWith("TypeError")) {
+            return new NullPointerException(msg);
+        }
+        return new Throwable(msg);
+    }
+    
+    @JavaScriptBody(args = { "o" }, body = "return o ? o.toString() : null;")
+    private static native String msg(Object o);
+
+    @JavaScriptOnly(name = "bck2BrwsrCnvrt", value = "c.bck2BrwsrCnvrt__Ljava_lang_Object_2Ljava_lang_Object_2")
+    private static void bck2BrwsrCnvrtVM() {
     }
 }

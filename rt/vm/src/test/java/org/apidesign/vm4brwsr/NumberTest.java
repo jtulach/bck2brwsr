@@ -18,6 +18,7 @@
 package org.apidesign.vm4brwsr;
 
 import static org.testng.Assert.*;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -184,12 +185,35 @@ public class NumberTest {
             Double.valueOf(Long.MAX_VALUE / 5), 9
         );
     }
+    @Test public void valueOfLongCharA() throws Exception {
+        assertExec("Can we call JavaScripts valueOf on Character?", 
+            Numbers.class, "seven__DI", 
+            Double.valueOf('A'), 65
+        );
+    }
+
+    @Test public void valueOfLongBooleanTrue() throws Exception {
+        assertExec("Can we call JavaScripts valueOf on Boolean?", 
+            Numbers.class, "bseven__ZI", 
+            true, 31
+        );
+    }
+    @Test public void valueOfLongBooleanFalse() throws Exception {
+        assertExec("Can we call JavaScripts valueOf on Boolean?", 
+            Numbers.class, "bseven__ZI", 
+            false, 30
+        );
+    }
 
     private static TestVM code;
 
     @BeforeClass
-    public void compileTheCode() throws Exception {
+    public static void compileTheCode() throws Exception {
         code = TestVM.compileClass("org/apidesign/vm4brwsr/Numbers");
+    }
+    @AfterClass
+    public static void releaseTheCode() {
+        code = null;
     }
 
     private static void assertExec(

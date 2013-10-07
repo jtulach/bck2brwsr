@@ -19,6 +19,7 @@ package org.apidesign.vm4brwsr;
 
 import org.testng.annotations.Test;
 import static org.testng.Assert.*;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
 /**
@@ -193,14 +194,46 @@ public class StringTest {
         
     }
     
+    @Test public void toStringOnJSArray() throws Exception {
+        String exp = StringSample.toStringArray(false, true);
+        
+        assertExec(
+            "Treated as Java Object array",
+            StringSample.class, "toStringArray__Ljava_lang_String_2ZZ",
+            exp, true, true
+        );
+    }
+
+    @Test public void toStringOnRealArray() throws Exception {
+        String exp = StringSample.toStringArray(false, true);
+        
+        assertExec(
+            "Is Java Object array",
+            StringSample.class, "toStringArray__Ljava_lang_String_2ZZ",
+            exp, false, true
+        );
+    }
+
+    @Test public void valueOfOnJSArray() throws Exception {
+        assertExec(
+            "Treated as classical JavaScript array",
+            StringSample.class, "toStringArray__Ljava_lang_String_2ZZ",
+            "1,2", true, false
+        );
+    }
+    
     private static TestVM code;
     
     @BeforeClass 
-    public void compileTheCode() throws Exception {
+    public static void compileTheCode() throws Exception {
         code = TestVM.compileClass(
             "org/apidesign/vm4brwsr/StringSample",
             "java/lang/String"
         );
+    }
+    @AfterClass
+    public static void releaseTheCode() {
+        code = null;
     }
     
     private static void assertExec(String msg, 

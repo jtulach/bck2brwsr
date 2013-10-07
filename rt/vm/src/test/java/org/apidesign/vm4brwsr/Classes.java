@@ -18,6 +18,7 @@
 package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -230,4 +231,23 @@ public class Classes {
         return Application.class.isAssignableFrom(MyApplication.class);
     }
     
+    public static String valueEnum(String v) {
+        return ClassesMarker.E.valueOf(v).toString();
+    }
+    
+    public static String typeOfFn() {
+        return fn().getClass().getName();
+    }
+    
+    @JavaScriptBody(args = {  }, body = "return function() { alert('x'); };")
+    private native static Object fn();
+    
+    public static boolean instanceOfSuperInterface() {
+        Object obj = new SuperSerial() {
+        };
+        return obj instanceof Serializable;
+    }
+    
+    private static interface SuperSerial extends Serializable {
+    }
 }

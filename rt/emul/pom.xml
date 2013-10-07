@@ -4,15 +4,16 @@
   <parent>
     <groupId>org.apidesign.bck2brwsr</groupId>
     <artifactId>rt</artifactId>
-    <version>0.3-SNAPSHOT</version>
+    <version>0.9-SNAPSHOT</version>
   </parent>
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>emul.pom</artifactId>
-  <version>0.3-SNAPSHOT</version>
+  <version>0.9-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Emulation of Core Libraries</name>
   <modules>
     <module>mini</module>
     <module>compact</module>
+    <module>brwsrtest</module>
   </modules>
 </project>

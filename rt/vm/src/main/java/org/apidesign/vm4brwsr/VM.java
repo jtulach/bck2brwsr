@@ -28,7 +28,11 @@ class VM extends ByteCodeToJavaScript {
     public VM(Appendable out) {
         super(out);
     }
-    
+
+    private VM(Appendable out, ObfuscationDelegate obfuscationDelegate) {
+        super(out, obfuscationDelegate);
+    }
+
     static {
         // uses VMLazy to load dynamic classes
         boolean assertsOn = false;
@@ -47,6 +51,12 @@ class VM extends ByteCodeToJavaScript {
     static void compile(Bck2Brwsr.Resources l, Appendable out, StringArray names) throws IOException {
         new VM(out).doCompile(l, names);
     }
+
+    static void compile(Bck2Brwsr.Resources l, Appendable out, StringArray names,
+                        ObfuscationDelegate obfuscationDelegate) throws IOException {
+        new VM(out, obfuscationDelegate).doCompile(l, names);
+    }
+
     protected void doCompile(Bck2Brwsr.Resources l, StringArray names) throws IOException {
         out.append("(function VM(global) {var fillInVMSkeleton = function(vm) {");
         StringArray processed = new StringArray();
@@ -110,7 +120,10 @@ class VM extends ByteCodeToJavaScript {
             for (String ic : toInit.toArray()) {
                 int indx = processed.indexOf(ic);
                 if (indx >= 0) {
-                    out.append(initCode.toArray()[indx]).append("\n");
+                    final String theCode = initCode.toArray()[indx];
+                    if (!theCode.isEmpty()) {
+                        out.append(theCode).append("\n");
+                    }
                     initCode.toArray()[indx] = "";
                 }
             }
@@ -226,5 +239,10 @@ class VM extends ByteCodeToJavaScript {
     @Override
     String accessClass(String className) {
         return "vm." + className;
+    }
+
+    @Override
+    String getVMObject() {
+        return "vm";
     }
 }

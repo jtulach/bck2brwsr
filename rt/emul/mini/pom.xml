@@ -1,15 +1,14 @@
 <?xml version="1.0"?>
-<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apidesign.bck2brwsr</groupId>
     <artifactId>emul.pom</artifactId>
-    <version>0.3-SNAPSHOT</version>
+    <version>0.9-SNAPSHOT</version>
   </parent>
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>emul.mini</artifactId>
-  <version>0.3-SNAPSHOT</version>
+  <version>0.9-SNAPSHOT</version>
   <name>Minimal API Profile</name>
   <url>http://maven.apache.org</url>
   <properties>
@@ -19,7 +18,7 @@
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>core</artifactId>
-      <version>0.3-SNAPSHOT</version>
+      <version>0.9-SNAPSHOT</version>
       <type>jar</type>
     </dependency>
     <dependency>
@@ -42,6 +41,28 @@
                  <source>1.7</source>
                  <target>1.7</target>
               </configuration>
+          </plugin>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-javadoc-plugin</artifactId>
+              <configuration>
+                  <excludePackageNames>org.apidesign.bck2brwsr.emul.*</excludePackageNames>
+                  <skip>false</skip>
+              </configuration>
+          </plugin>
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-source-plugin</artifactId>
+              <version>2.2.1</version>
+              <executions>
+                  <execution>
+                      <id>prepare-sources</id>
+                      <goals>
+                          <goal>jar</goal>
+                      </goals>
+                      <phase>package</phase>
+                  </execution>
+              </executions>
           </plugin>
       </plugins>
   </build>

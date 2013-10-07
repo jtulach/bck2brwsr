@@ -43,6 +43,25 @@ class StringArray {
         }
         arr[arr.length - 1] = s;
     }
+
+    StringArray addAndNew(String... values) {
+        int j;
+        String[] tmp;
+        if (arr == null) {
+            tmp = new String[values.length];
+            j = 0;
+        } else {
+            tmp = new String[arr.length + values.length];
+            for (int i = 0; i < arr.length; i++) {
+                tmp[i] = arr[i];
+            }
+            j = arr.length;
+        }
+        for (int i = 0; i < values.length;) {
+            tmp[j++] = values[i++];
+        }
+        return new StringArray(tmp);
+    }
     
     public String[] toArray() {
         return arr == null ? new String[0] : arr;
@@ -93,5 +112,4 @@ class StringArray {
         }
         return -1;
     }
-    
 }

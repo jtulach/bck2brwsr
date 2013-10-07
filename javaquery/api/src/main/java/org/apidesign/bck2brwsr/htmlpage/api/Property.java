@@ -20,15 +20,36 @@ package org.apidesign.bck2brwsr.htmlpage.api;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.List;
 
-/** Represents a property in a generated model of an HTML
- * {@link Page}.
- *
+/** 
+ * @deprecated Replaced by new {@link net.java.html.json.Property net.java.html.json} API.
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target({})
+@Deprecated
 public @interface Property {
+    /** Name of the property. Will be used to define proper getter and setter
+     * in the associated class.
+     * 
+     * @return valid java identifier
+     */
     String name();
+    
+    /** Type of the property. Can either be primitive type (like <code>int.class</code>,
+     * <code>double.class</code>, etc.), {@link String} or complex model
+     * class (defined by {@link Model} property).
+     * 
+     * @return the class of the property
+     */
     Class<?> type();
+    
+    /** Is this property an array of the {@link #type()} or a single value?
+     * If the property is an array, only its getter (returning mutable {@link List} of
+     * the boxed {@link #type()}).
+     * 
+     * @return true, if this is supposed to be an array of values.
+     */
+    boolean array() default false;
 }

@@ -18,6 +18,7 @@
 package org.apidesign.vm4brwsr;
 
 import static org.testng.Assert.*;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -74,12 +75,19 @@ public class ArrayTest {
     @Test public void verifyInstanceOfArray() throws Exception {
         assertExec("Returns 'false'", Array.class, "instanceOfArray__ZLjava_lang_Object_2", Double.valueOf(0), "non-array");
     }
+    @Test public void verifyMultiLen() throws Exception {
+        assertExec("Multi len is one", Array.class, "multiLen__I", Double.valueOf(1));
+    }
     
     private static TestVM code;
     
     @BeforeClass 
     public void compileTheCode() throws Exception {
         code = TestVM.compileClass("org/apidesign/vm4brwsr/Array");
+    }
+    @AfterClass
+    public static void releaseTheCode() {
+        code = null;
     }
     private static void assertExec(String msg, Class clazz, String method, Object expRes, Object... args) throws Exception {
         code.assertExec(msg, clazz, method, expRes, args);

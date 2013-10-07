@@ -27,10 +27,10 @@ import org.testng.annotations.Test;
  */
 public class ZipVsJzLibTest {
     @Test public void r() throws IOException {
-        InputStream is = getClass().getResourceAsStream("demo.static.calculator-0.3-SNAPSHOT.jar");
+        InputStream is = getClass().getResourceAsStream("demo.static.calculator-TEST.jar");
         ZipArchive zip = ZipArchive.createZip(is);
         
-        is = getClass().getResourceAsStream("demo.static.calculator-0.3-SNAPSHOT.jar");
+        is = getClass().getResourceAsStream("demo.static.calculator-TEST.jar");
         ZipArchive real = ZipArchive.createReal(is);
         
         real.assertEquals(zip, "Are they the same?");
