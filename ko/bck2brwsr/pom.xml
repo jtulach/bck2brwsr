@@ -95,7 +95,7 @@
     <dependency>
       <groupId>org.apidesign.html</groupId>
       <artifactId>net.java.html.boot</artifactId>
-      <version>0.5</version>
+      <version>${net.java.html.version}</version>
       <type>jar</type>
     </dependency>
   </dependencies>
