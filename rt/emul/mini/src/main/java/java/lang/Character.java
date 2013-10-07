@@ -572,6 +572,46 @@ class Character implements java.io.Serializable, Comparable<Character> {
      */
     public static final int MAX_CODE_POINT = 0X10FFFF;
 
+    public static boolean isAlphabetic(int ch) {
+        throw new UnsupportedOperationException("isAlphabetic: " + (char)ch);
+    }
+
+    public static boolean isIdeographic(int ch) {
+        throw new UnsupportedOperationException("isIdeographic: " + (char)ch);
+    }
+
+    public static boolean isLowerCase(int ch) {
+        throw new UnsupportedOperationException("isLowerCase: " + (char)ch);
+    }
+
+    public static boolean isUpperCase(int ch) {
+        throw new UnsupportedOperationException("isUpperCase: " + (char)ch);
+    }
+
+    public static boolean isMirrored(int ch) {
+        throw new UnsupportedOperationException("isMirrored: " + (char)ch);
+    }
+
+    public static boolean isIdentifierIgnorable(int ch) {
+        throw new UnsupportedOperationException("isIdentifierIgnorable: " + (char)ch);
+    }
+
+    public static boolean isUnicodeIdentifierPart(int ch) {
+        throw new UnsupportedOperationException("isUnicodeIdentifierPart: " + (char)ch);
+    }
+
+    public static boolean isUnicodeIdentifierStart(int ch) {
+        throw new UnsupportedOperationException("isUnicodeIdentifierStart: " + (char)ch);
+    }
+
+    public static char toUpperCase(int ch) {
+        throw new UnsupportedOperationException("toUpperCase: " + (char)ch);
+    }
+
+    public static int toLowerCase(int ch) {
+        throw new UnsupportedOperationException("toLowerCase: " + (char)ch);
+    }
+
 
     /**
      * Instances of this class represent particular subsets of the Unicode
@@ -1892,8 +1932,8 @@ class Character implements java.io.Serializable, Comparable<Character> {
         return fromCodeChars(codePoint).matches("\\w");
     }
     
-    static int getType(int x) {
-        throw new UnsupportedOperationException();
+    public static int getType(int x) {
+        throw new UnsupportedOperationException("getType: " + (char)x);
     }
  
     /**

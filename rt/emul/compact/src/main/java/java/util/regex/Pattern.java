@@ -25,10 +25,6 @@
 
 package java.util.regex;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.text.CharacterIterator;
-import java.text.Normalizer;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ArrayList;
@@ -1350,7 +1346,7 @@ public final class Pattern
         int lastCodePoint = -1;
 
         // Convert pattern into normalizedD form
-        normalizedPattern = Normalizer.normalize(pattern, Normalizer.Form.NFD);
+        normalizedPattern = Normalizer.normalize(pattern, Normalizer.NFD);
         patternLength = normalizedPattern.length();
 
         // Modify pattern to match canonical equivalences
@@ -1541,7 +1537,7 @@ loop:   for(int x=0, offset=0; x<nCodePoints; x++, offset+=len) {
     }
 
     private int getClass(int c) {
-        return sun.text.Normalizer.getCombiningClass(c);
+        return Normalizer.getCombiningClass(c);
     }
 
     /**
@@ -1554,7 +1550,7 @@ loop:   for(int x=0, offset=0; x<nCodePoints; x++, offset+=len) {
     private String composeOneStep(String input) {
         int len = countChars(input, 0, 2);
         String firstTwoCharacters = input.substring(0, len);
-        String result = Normalizer.normalize(firstTwoCharacters, Normalizer.Form.NFC);
+        String result = Normalizer.normalize(firstTwoCharacters, Normalizer.NFC);
 
         if (result.equals(firstTwoCharacters))
             return null;
@@ -2651,18 +2647,18 @@ loop:   for(int x=0, offset=0; x<nCodePoints; x++, offset+=len) {
             // property construct \p{name=value}
             String value = name.substring(i + 1);
             name = name.substring(0, i).toLowerCase(Locale.ENGLISH);
-            if ("sc".equals(name) || "script".equals(name)) {
+    /*        if ("sc".equals(name) || "script".equals(name)) {
                 node = unicodeScriptPropertyFor(value);
             } else if ("blk".equals(name) || "block".equals(name)) {
                 node = unicodeBlockPropertyFor(value);
-            } else if ("gc".equals(name) || "general_category".equals(name)) {
+            } else*/ if ("gc".equals(name) || "general_category".equals(name)) {
                 node = charPropertyNodeFor(value);
             } else {
                 throw error("Unknown Unicode property {name=<" + name + ">, "
                              + "value=<" + value + ">}");
             }
         } else {
-            if (name.startsWith("In")) {
+            /*if (name.startsWith("In")) {
                 // \p{inBlockName}
                 node = unicodeBlockPropertyFor(name.substring(2));
             } else if (name.startsWith("Is")) {
@@ -2675,7 +2671,7 @@ loop:   for(int x=0, offset=0; x<nCodePoints; x++, offset+=len) {
                     node = CharPropertyNames.charPropertyFor(name);
                 if (node == null)
                     node = unicodeScriptPropertyFor(name);
-            } else {
+            } else*/ {
                 if (has(UNICODE_CHARACTER_CLASS)) {
                     UnicodeProp uprop = UnicodeProp.forPOSIXName(name);
                     if (uprop != null)
@@ -2686,7 +2682,7 @@ loop:   for(int x=0, offset=0; x<nCodePoints; x++, offset+=len) {
             }
         }
         if (maybeComplement) {
-            if (node instanceof Category || node instanceof Block)
+            if (node instanceof Category /*|| node instanceof Block*/)
                 hasSupplementary = true;
             node = node.complement();
         }
@@ -2697,7 +2693,7 @@ loop:   for(int x=0, offset=0; x<nCodePoints; x++, offset+=len) {
     /**
      * Returns a CharProperty matching all characters belong to
      * a UnicodeScript.
-     */
+     *
     private CharProperty unicodeScriptPropertyFor(String name) {
         final Character.UnicodeScript script;
         try {
@@ -2710,7 +2706,7 @@ loop:   for(int x=0, offset=0; x<nCodePoints; x++, offset+=len) {
 
     /**
      * Returns a CharProperty matching all characters in a UnicodeBlock.
-     */
+     *
     private CharProperty unicodeBlockPropertyFor(String name) {
         final Character.UnicodeBlock block;
         try {
@@ -3775,7 +3771,7 @@ loop:   for(int x=0, offset=0; x<nCodePoints; x++, offset+=len) {
 
     /**
      * Node class that matches a Unicode block.
-     */
+     *
     static final class Block extends CharProperty {
         final Character.UnicodeBlock block;
         Block(Character.UnicodeBlock block) {
@@ -3788,7 +3784,7 @@ loop:   for(int x=0, offset=0; x<nCodePoints; x++, offset+=len) {
 
     /**
      * Node class that matches a Unicode script
-     */
+     *
     static final class Script extends CharProperty {
         final Character.UnicodeScript script;
         Script(Character.UnicodeScript script) {
@@ -5643,6 +5639,19 @@ NEXT:       while (i <= last) {
             defClone("javaMirrored", new CloneableProperty() {
                 boolean isSatisfiedBy(int ch) {
                     return Character.isMirrored(ch);}});
+        }
+    }
+    
+    private static final class Normalizer {
+        public static final int NFD = 1;
+        public static final int NFC = 2;
+
+        static String normalize(String pattern, int NFD) {
+            return pattern;
+        }
+
+        private static int getCombiningClass(int c) {
+            return 1;
         }
     }
 }
