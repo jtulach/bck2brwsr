@@ -585,7 +585,8 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
             }
             if (u != null) {
                 if (u.toExternalForm().contains("rt.jar")) {
-                    LOG.log(Level.WARNING, "Fallback to bootclasspath for {0}", u);
+                    LOG.log(Level.WARNING, "No fallback to bootclasspath for {0}", u);
+                    return null;
                 }
                 return u.openStream();
             }

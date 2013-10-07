@@ -74,8 +74,8 @@ public class VerifyArchetypeTest {
         
         v.verifyErrorFreeLog();
         
-        // does pre-compilation to JavaScript
-        v.verifyTextInLog("j2js");
+        // no longer does pre-compilation to JavaScript
+        // v.verifyTextInLog("j2js");
         // uses Bck2BrwsrLauncher
         v.verifyTextInLog("BaseHTTPLauncher showBrwsr");
         // building zip:
