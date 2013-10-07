@@ -18,17 +18,15 @@
 package org.apidesign.bck2brwsr.dew;
 
 import java.io.IOException;
-import org.apidesign.bck2brwsr.vmtest.Compare;
-import org.apidesign.bck2brwsr.vmtest.VMTest;
 import static org.testng.Assert.*;
-import org.testng.annotations.Factory;
+import org.testng.annotations.Test;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class CompileTest  {
-    @Compare public void testCompile() throws IOException {
+    @Test public void testCompile() throws IOException {
         String html = "<html><body>"
                 + " <button id='btn'>Hello!</button>"
                 + "</body></html>";
@@ -40,12 +38,16 @@ public class CompileTest  {
             + "   @On(event=CLICK, id=\"btn\") static void clcs() {}"
             + "}";
         Compile result = Compile.create(html, java);
-
-        assertNotNull(result.get("x/y/z/X.class"), "Class X is compiled: " + result);
+        
+        final byte[] arrX = result.get("x/y/z/X.class");
+        assertNotNull(arrX, "Class X is compiled: " + result);
         assertNotNull(result.get("x/y/z/Index.class"), "Class Index is compiled: " + result);
+        
+//        return Arrays.toString(arrX);
     }
-    
+    /*
     @Factory public static Object[] create() {
         return VMTest.create(CompileTest.class);
     }
+    */
 }
