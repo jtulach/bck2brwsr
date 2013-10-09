@@ -153,10 +153,10 @@ abstract class ByteCodeToJavaScript {
         }
         for (FieldData v : jc.getFields()) {
             if (v.isStatic()) {
-                out.append("\n  CLS.").append(v.getName()).append(initField(v));
+                out.append("\n  CLS.fld_").append(v.getName()).append(initField(v));
                 out.append("\n  c._").append(v.getName()).append(" = function (v) {")
-                   .append("  if (arguments.length == 1) CLS.").append(v.getName())
-                   .append(" = v; return CLS.").
+                   .append("  if (arguments.length == 1) CLS.fld_").append(v.getName())
+                   .append(" = v; return CLS.fld_").
                     append(v.getName()).append("; };");
             } else {
                 out.append("\n  c._").append(v.getName()).append(" = function (v) {")
