@@ -1880,7 +1880,7 @@ abstract class ByteCodeToJavaScript {
                 requireReference(slashType);
                 
                 out.append(accessClass(slashType.replace('/', '_')))
-                   .append("(false).constructor.").append(value);
+                   .append("(false).constructor.fld_").append(value);
             }
         };
         ap.parse(data, cd);
