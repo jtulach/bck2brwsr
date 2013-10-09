@@ -91,7 +91,7 @@ final class Zips {
     )
     private static native byte[] callFunction(Object fn, String res);
     
-    @JavaScriptBody(args = { "msg" }, body = "if (console) console.log(msg.toString());")
+    @JavaScriptBody(args = { "msg" }, body = "if (typeof console !== 'undefined') console.log(msg.toString());")
     private static native void log(String msg);
 
     private byte[] findRes(String res) throws IOException {

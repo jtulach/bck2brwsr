@@ -472,7 +472,7 @@ public class Logger {
     }
     
     @JavaScriptBody(args = { "method", "logger", "msg" }, body = 
-        "if (console) console[method]('[' + logger + ']: ' + msg);"
+        "if (typeof console !== 'undefined') console[method]('[' + logger + ']: ' + msg);"
     )
     private static native void consoleLog(
         String method, String logger, String msg
