@@ -17,7 +17,6 @@
  */
 package org.apidesign.bck2brwsr.tck;
 
-import java.io.InputStream;
 import java.net.URL;
 import java.util.ResourceBundle;
 import org.apidesign.bck2brwsr.vmtest.Compare;

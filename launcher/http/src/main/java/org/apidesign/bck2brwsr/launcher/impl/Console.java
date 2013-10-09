@@ -227,7 +227,11 @@ public class Console {
             u = en.nextElement();
         }
         if (u == null) {
-            throw new IOException("Can't find " + name);
+            if (name.endsWith(".class")) {
+                throw new IOException("Can't find " + name);
+            } else {
+                return null;
+            }
         }
         try (InputStream is = u.openStream()) {
             byte[] arr;
