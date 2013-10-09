@@ -50,7 +50,7 @@ public class System {
         return null;
     }
     
-    @JavaScriptBody(args = {}, body = "return navigator.userAgent;")
+    @JavaScriptBody(args = {}, body = "return (typeof navigator !== 'undefined') ? navigator.userAgent : 'unknown';")
     private static native String userAgent();
     
     public static String getProperty(String key, String def) {
