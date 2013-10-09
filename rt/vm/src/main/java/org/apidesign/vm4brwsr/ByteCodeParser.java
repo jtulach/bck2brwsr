@@ -1845,6 +1845,12 @@ final class ByteCodeParser {
                             case '\"':
                                 sb.append('\\').append('\"');
                                 break;
+                            case '\u2028':
+                                sb.append("\\u2028");
+                                break;
+                            case '\u2029':
+                                sb.append("\\u2029");
+                                break;
                             default:
                                 sb.append(c);
                         }

@@ -80,6 +80,10 @@ public class StringSample {
         return sb.toString().toString();
     }
     
+    public static String unicode() {
+        return "\r\n\u2028\u2029]";
+    }
+    
     public static String insertBuffer() {
         StringBuilder sb = new StringBuilder();
         sb.append("Jardo!");

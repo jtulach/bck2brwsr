@@ -213,6 +213,16 @@ public class StringTest {
             exp, false, true
         );
     }
+    
+    @Test public void weirdUnicodeCharacters() throws Exception {
+        String exp = StringSample.unicode();
+        
+        assertExec(
+            "Unicode is OK",
+            StringSample.class, "unicode__Ljava_lang_String_2",
+            exp
+        );
+    }
 
     @Test public void valueOfOnJSArray() throws Exception {
         assertExec(
