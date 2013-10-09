@@ -304,6 +304,14 @@ public class LongArithmeticTest {
     @Compare public long shiftL3() {
         return shl(0x00fa37d7763e0ca1l, 45);
     }
+    
+    @Compare public long shiftL4() {
+        return shl(0x00fa37d7763e0ca1l, 0);
+    }
+    
+    @Compare public long shiftL5() {
+        return shl(0x00fa37d7763e0ca1l, 70);
+    }
 
     @Compare public long shiftR1() {
         return shr(0x00fa37d7763e0ca1l, 5);
@@ -316,6 +324,14 @@ public class LongArithmeticTest {
     @Compare public long shiftR3() {
         return shr(0x00fa37d7763e0ca1l, 45);
     }
+    
+    @Compare public long shiftR4() {
+        return shr(0x00fa37d7763e0ca1l, 0);
+    }
+    
+    @Compare public long shiftR5() {
+        return shr(0x00fa37d7763e0ca1l, 70);
+    }
 
     @Compare public long uShiftR1() {
         return ushr(0x00fa37d7763e0ca1l, 5);
@@ -324,13 +340,29 @@ public class LongArithmeticTest {
     @Compare public long uShiftR2() {
         return ushr(0x00fa37d7763e0ca1l, 45);
     }
-
+    
     @Compare public long uShiftR3() {
+        return ushr(0x00fa37d7763e0ca1l, 0);
+    }
+    
+    @Compare public long uShiftR4() {
+        return ushr(0x00fa37d7763e0ca1l, 70);
+    }
+
+    @Compare public long uShiftR5() {
         return ushr(0xf0fa37d7763e0ca1l, 5);
     }
 
-    @Compare public long uShiftR4() {
+    @Compare public long uShiftR6() {
         return ushr(0xf0fa37d7763e0ca1l, 45);
+    }
+    
+    @Compare public long uShiftR7() {
+        return ushr(0xf0fa37d7763e0ca1l, 0);
+    }
+    
+    @Compare public long uShiftR8() {
+        return ushr(0xf0fa37d7763e0ca1l, 70);
     }
 
     @Compare public long and1() {

@@ -176,6 +176,8 @@
     };
 
     numberPrototype.shl64 = function(x) {
+        x &= 0x3f;
+        if (x == 0) return this;
         if (x >= 32) {
             var hi = this << (x - 32);
             return hi.next32(0);
@@ -190,6 +192,8 @@
     };
 
     numberPrototype.shr64 = function(x) {
+        x &= 0x3f;
+        if (x == 0) return this;
         if (x >= 32) {
             var low = this.high32() >> (x - 32);
             low += (low < 0) ? (__m32 + 1) : 0;
@@ -205,6 +209,8 @@
     };
 
     numberPrototype.ushr64 = function(x) {
+        x &= 0x3f;
+        if (x == 0) return this;
         if (x >= 32) {
             var low = this.high32() >>> (x - 32);
             low += (low < 0) ? (__m32 + 1) : 0;

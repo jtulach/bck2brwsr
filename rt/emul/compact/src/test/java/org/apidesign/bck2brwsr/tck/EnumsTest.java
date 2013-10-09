@@ -32,7 +32,6 @@ public class EnumsTest {
         B, W;
     }
 
-    /*
     @Compare public String enumSet() {
         try { throw new Exception(); } catch (Exception ex) {}
         EnumSet<Color> c = EnumSet.allOf(Color.class);
@@ -43,7 +42,6 @@ public class EnumsTest {
         EnumSet<Color> c = EnumSet.of(Color.B, Color.W);
         return c.toString();
     }
-    */
 
     @Compare public boolean enumFirstContains() {
         EnumSet<Color> c = EnumSet.of(Color.B);
