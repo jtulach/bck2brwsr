@@ -457,16 +457,22 @@ public class Logger {
             case "WARNING": method = "warn"; break;
             default: method = "log"; break;
         }
+        
+        String msg = record.getMessage();
+        final Object[] params = record.getParameters();
+        if (params != null && params.length != 0) {
+            for (int i = 0; i < params.length; i++) {
+                msg = msg.replace("{" + i + "}", params[i] == null ? "null" : params[i].toString());
+            }
+        }
 
         consoleLog(
             method, 
-            record.getLoggerName(),
-            record.getMessage()
-        );
+            record.getLoggerName(), msg);
     }
     
     @JavaScriptBody(args = { "method", "logger", "msg" }, body = 
-        "window.console[method]('[' + logger + ']: ' + msg);"
+        "if (console) console[method]('[' + logger + ']: ' + msg);"
     )
     private static native void consoleLog(
         String method, String logger, String msg
