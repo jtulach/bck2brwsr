@@ -151,7 +151,7 @@ public final class Bck2Brwsr {
      * @since 0.5
      */
     public Bck2Brwsr resources(final ClassLoader loader) {
-        return resources(new LdrRsrcs(loader));
+        return resources(new LdrRsrcs(loader, false));
     }
     
     /** Generates virtual machine based on previous configuration of the 
@@ -161,7 +161,7 @@ public final class Bck2Brwsr {
      * @since 0.5
      */
     public void generate(Appendable out) throws IOException {
-        Resources r = res != null ? res : new LdrRsrcs(Bck2Brwsr.class.getClassLoader());
+        Resources r = res != null ? res : new LdrRsrcs(Bck2Brwsr.class.getClassLoader(), false);
         if (level != ObfuscationLevel.NONE) {
             try {
                 ClosureWrapper.produceTo(out, level, r, classes);
