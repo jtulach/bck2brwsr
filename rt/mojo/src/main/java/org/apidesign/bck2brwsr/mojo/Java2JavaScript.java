@@ -70,6 +70,10 @@ public class Java2JavaScript extends AbstractMojo {
      */
     @Parameter(defaultValue="NONE")
     private ObfuscationLevel obfuscation;
+    
+    /** Should classes from rt.jar be included? */
+    @Parameter(defaultValue = "false")
+    private boolean ignoreBootClassPath;
 
     @Override
     public void execute() throws MojoExecutionException {
@@ -94,7 +98,7 @@ public class Java2JavaScript extends AbstractMojo {
             FileWriter w = new FileWriter(javascript);
             Bck2Brwsr.newCompiler().
                 obfuscation(obfuscation).
-                resources(url).
+                resources(url, ignoreBootClassPath).
                 addRootClasses(arr.toArray(new String[0])).
                 generate(w);
             w.close();
