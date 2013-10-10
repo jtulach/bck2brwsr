@@ -80,6 +80,9 @@ public class Java2JavaScript extends AbstractMojo {
         if (!classes.isDirectory()) {
             throw new MojoExecutionException("Can't find " + classes);
         }
+        if (javascript == null) {
+            throw new MojoExecutionException("Need to define 'javascript' attribute with a path to file to generate");
+        }
 
         List<String> arr = new ArrayList<String>();
         long newest = collectAllClasses("", classes, arr);
