@@ -32,6 +32,10 @@ public class RegExpSplitTest {
         return Arrays.asList("How are you today?".split(" "));
     }
 
+    public @Compare String splitNewline() {
+        return Arrays.toString("initializer must be able to complete normally".split("\n"));
+    }
+
     public @Compare Object splitSpaceTrimMinusOne() {
         return Arrays.asList(" How are you today? ".split(" ", -1));
     }

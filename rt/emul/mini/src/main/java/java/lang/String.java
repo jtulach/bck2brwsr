@@ -2336,8 +2336,8 @@ public final class String
         if (limit <= 0) {
             Object[] arr = splitImpl(this, regex, Integer.MAX_VALUE);
             int to = arr.length;
-            if (limit == 0) {
-                while (to > 1 && ((String)arr[--to]).isEmpty()) {
+            if (limit == 0 && to > 0) {
+                while (to > 0 && ((String)arr[--to]).isEmpty()) {
                 }
                 to++;
             }
