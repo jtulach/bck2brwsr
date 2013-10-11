@@ -80,6 +80,7 @@ class VM extends ByteCodeToJavaScript {
                 }
                 InputStream is = loadClass(l, name);
                 if (is == null) {
+                    lazyReference(out, name);
                     skipClass.add(name);
                     continue;
                 }
@@ -249,5 +250,17 @@ class VM extends ByteCodeToJavaScript {
     @Override
     String getVMObject() {
         return "vm";
+    }
+    
+    private static void lazyReference(Appendable out, String n) throws IOException {
+        String cls = n.replace('/', '_');
+        String dot = n.replace('/', '.');
+        
+        out.append("\nvm.").append(cls).append(" = function() {");
+        out.append("\n  var instance = arguments.length == 0 || arguments[0] === true;");
+        out.append("\n  delete vm.").append(cls).append(";");
+        out.append("\n  var c = vm.loadClass('").append(dot).append("');");
+        out.append("\n  return vm.").append(cls).append("(instance);");
+        out.append("\n}");
     }
 }

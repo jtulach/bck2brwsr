@@ -19,6 +19,7 @@ package org.apidesign.bck2brwsr.tck;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Locale;
 import org.apidesign.bck2brwsr.vmtest.Compare;
@@ -63,6 +64,10 @@ public class CompareStringsTest {
     
     @Compare public static Object compareURLs() throws MalformedURLException {
         return new URL("http://apidesign.org:8080/wiki/").toExternalForm().toString();
+    }
+
+    @Compare public static Object compareURLsViaURIs() throws Exception {
+        return new URL("http://apidesign.org:8080/wiki/").toURI().toString();
     }
     
     @Compare public String deleteLastTwoCharacters() {

@@ -20,7 +20,6 @@ package org.apidesign.vm4brwsr;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Array;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
@@ -62,8 +61,6 @@ final class VMLazy {
         int prelude = out.length();
         String initCode = new Gen(this, out).compile(new ByteArrayInputStream(arr));
         String code = out.toString().toString();
-//        dump("Loading " + name);
-        dump(code);
         String under = name.replace('.', '_');
         Object fn = applyCode(loader, under, code, instance);
         
@@ -71,25 +68,11 @@ final class VMLazy {
             out.setLength(prelude);
             out.append(initCode);
             code = out.toString().toString();
-            dump(code);
             applyCode(loader, null, code, false);
         }            
         
         return fn;
     }
-
-//    @JavaScriptBody(args = "s", body = "java.lang.System.out.println(s.toString());")
-    static void dump(String s) {
-    }
-
-/* possibly not needed:
-    @JavaScriptBody(args = {"loader", "n" }, body =
-        "var cls = n.replace__Ljava_lang_String_2CC(n, '.','_').toString();" +
-        "loader.vm[cls] = true;\n"
-    )
-    private static native void beingDefined(Object loader, String name);
-*/
-    
 
     @JavaScriptBody(args = {"loader", "name", "script", "instance" }, body =
         "try {\n" +
