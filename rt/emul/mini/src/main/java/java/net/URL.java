@@ -1070,10 +1070,16 @@ public final class URL implements java.io.Serializable {
     }
     
     @JavaScriptBody(args = {}, body = 
-          "if (typeof window !== 'object') return null;\n"
-        + "if (!window.location) return null;\n"
-        + "if (!window.location.href) return null;\n"
-        + "return window.location.href;\n"
+          "var l;\n"
+        + "if (typeof location !== 'object') {"
+        + "  if (typeof window !== 'object') return null;\n"
+        + "  if (!window.location) return null;\n"
+        + "  l = window.location;\n"
+        + "} else {\n"
+        + "  l = location;\n"
+        + "}\n"
+        + "if (!l.href) return null;\n"
+        + "return l.href;\n"
     )
     private static native String findBaseURL();
 }
