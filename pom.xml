@@ -19,7 +19,6 @@
       <netbeans.compile.on.save>none</netbeans.compile.on.save>
   </properties>
   <modules>
-    <module>dew</module>
     <module>javaquery</module>
     <module>benchmarks</module>
     <module>ide</module>
