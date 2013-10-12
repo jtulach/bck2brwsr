@@ -1649,9 +1649,11 @@ public final
 
     @JavaScriptBody(args = { "ac" }, 
         body = 
-          "if (this.anno) {"
-        + "  return this.anno['L' + ac.jvmName + ';'];"
-        + "} else return null;"
+          "if (this.anno) {\n"
+        + "  var r = this.anno['L' + ac.jvmName + ';'];\n"
+        + "  if (typeof r === 'undefined') r = null;\n"
+        + "  return r;\n"
+        + "} else return null;\n"
     )
     private Object getAnnotationData(Class<?> annotationClass) {
         throw new UnsupportedOperationException();
