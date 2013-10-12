@@ -17,8 +17,14 @@
  */
 package org.apidesign.bck2brwsr.launcher;
 
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.URL;
+import java.util.logging.Level;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 
 /**
@@ -45,8 +51,23 @@ final class Bck2BrwsrLauncher extends BaseHTTPLauncher {
                 return loader.get(resource);
             }
         }
-
-        Bck2Brwsr.generate(sb, new R());
+        String b2b = System.getProperty("bck2brwsr.js");
+        if (b2b != null) {
+            LOG.log(Level.INFO, "Serving bck2brwsr.js from {0}", b2b);
+            try (Reader r = new InputStreamReader(new URL(b2b).openStream())) {
+                char[] arr = new char[4096];
+                for (;;) {
+                   int len = r.read(arr);
+                   if (len == -1) {
+                       break;
+                   }
+                   sb.append(arr, 0, len);
+                }
+            }
+        } else {
+            LOG.log(Level.INFO, "Generating bck2brwsr.js from scratch", b2b);
+            Bck2Brwsr.generate(sb, new R());
+        }
         sb.append(
               "(function WrapperVM(global) {"
             + "  function ldCls(res) {\n"
@@ -65,6 +86,7 @@ final class Bck2BrwsrLauncher extends BaseHTTPLauncher {
             + "  };\n"
             + "})(this);\n"
         );
+        LOG.log(Level.INFO, "Serving bck2brwsr.js", b2b);
     }
 
 }

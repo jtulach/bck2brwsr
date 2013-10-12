@@ -70,11 +70,17 @@ public class BrwsrMojo extends AbstractMojo {
     /** Root of all pages, and files, etc. */
     @Parameter
     private File directory;
+    
+    @Parameter(defaultValue="${project.build.directory}/bck2brwsr.js")
+    private File javascript;
 
     @Override
     public void execute() throws MojoExecutionException {
         if (startpage == null) {
             throw new MojoExecutionException("You have to provide a start page");
+        }
+        if (javascript != null && javascript.isFile()) {
+            System.setProperty("bck2brwsr.js", javascript.toURI().toString());
         }
         try {
             Closeable httpServer;

@@ -50,7 +50,7 @@ public class Java2JavaScript extends AbstractMojo {
     @Parameter(defaultValue="${project.build.directory}/classes")
     private File classes;
     /** JavaScript file to generate */
-    @Parameter
+    @Parameter(defaultValue="${project.build.directory}/bck2brwsr.js")
     private File javascript;
 
     /** Additional classes that should be pre-compiled into the javascript 
