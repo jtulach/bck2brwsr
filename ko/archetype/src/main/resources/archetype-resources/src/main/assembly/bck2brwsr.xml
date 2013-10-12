@@ -29,16 +29,6 @@
   </dependencySets> 
   <fileSets>
       <fileSet>
-          <directory>${project.build.directory}/classes/${package.replace('.','/')}/</directory>
-          <includes>
-              <include>**/*</include>
-          </includes>
-          <excludes>
-              <exclude>**/*.class</exclude>
-          </excludes>
-          <outputDirectory>/</outputDirectory>
-      </fileSet>
-      <fileSet>
           <directory>src/main/webapp/pages</directory>
           <outputDirectory>/</outputDirectory>
           <filtered>true</filtered>
