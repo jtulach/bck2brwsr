@@ -42,6 +42,11 @@ final class VMLazy {
     throws IOException, ClassNotFoundException {
         return new VMLazy(loader, arguments).load(name, false);
     }
+
+    static Object reload(Object loader, String name, Object[] arguments, byte[] arr) 
+    throws IOException, ClassNotFoundException {
+        return new VMLazy(loader, arguments).defineClass(arr, name, false);
+    }
     
     static byte[] loadBytes(Object loader, String name, Object[] arguments) throws Exception {
         return Zips.loadFromCp(arguments, name);
@@ -54,7 +59,11 @@ final class VMLazy {
         if (arr == null) {
             throw new ClassNotFoundException(name);
         }
-//        beingDefined(loader, name);
+        
+        return defineClass(arr, name, instance);
+    }
+
+    private Object defineClass(byte[] arr, String name, boolean instance) throws IOException {
         StringBuilder out = new StringBuilder(65535);
         out.append("var loader = arguments[0];\n");
         out.append("var vm = loader.vm;\n");

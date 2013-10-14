@@ -21,20 +21,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
-import java.util.Set;
-import java.util.TreeSet;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public final class BytesLoader {
-    private static Set<String> requested = new TreeSet<String>();
+    private static final StringArray requested = new StringArray();
 
     public byte[] get(String name) throws IOException {
-        if (!requested.add(name)) {
+        if (requested.contains(name)) {
             throw new IllegalStateException("Requested for second time: " + name);
         }
+        requested.add(name);
         byte[] arr = readClass(name);
         /*
         System.err.print("loader['" + name + "'] = [");
