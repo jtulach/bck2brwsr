@@ -1044,11 +1044,15 @@ public final class URL implements java.io.Serializable {
     public final Object getContent(Class[] classes)
     throws java.io.IOException {
         for (Class<?> c : classes) {
-            if (c == String.class) {
-                return loadText(toExternalForm());
-            }
-            if (c == byte[].class) {
-                return loadBytes(toExternalForm(), new byte[0]);
+            try {
+                if (c == String.class) {
+                    return loadText(toExternalForm());
+                }
+                if (c == byte[].class) {
+                    return loadBytes(toExternalForm(), new byte[0]);
+                }
+            } catch (Throwable t) {
+                throw new IOException(t);
             }
         }
         return null;
