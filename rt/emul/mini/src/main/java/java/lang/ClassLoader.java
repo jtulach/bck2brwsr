@@ -24,6 +24,7 @@
  */
 package java.lang;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -892,9 +893,45 @@ public abstract class ClassLoader {
         return Object.class.getResource("/" + name);
     }
 
+    @JavaScriptBody(args = { "name", "skip" }, body
+        = "return (vm.loadBytes) ? vm.loadBytes(name, skip) : null;"
+    )
+    static native byte[] getResourceAsStream0(String name, int skip);
+
     private static Enumeration<URL> getBootstrapResources(String name) {
-        URL u = Object.class.getResource("/" + name);
-        return new OneOrZeroEnum(u);
+        return new ResEnum(name);
+    }
+    
+    private static class ResEnum implements Enumeration<URL> {
+        private final String name;
+        private URL next;
+        private int skip;
+
+        public ResEnum(String name) {
+            this.name = name;
+        }
+
+
+        public boolean hasMoreElements() {
+            if (next == null && skip >= 0) {
+                byte[] arr = getResourceAsStream0(name, skip++);
+                if (arr != null) {
+                    next = Class.newResourceURL(name, new ByteArrayInputStream(arr));
+                } else {
+                    skip = -1;
+                }
+            }
+            return next != null;
+        }
+
+        public URL nextElement() {
+            URL r = next;
+            if (r == null) {
+                throw new NoSuchElementException();
+            }
+            next = null;
+            return r;
+        }
     }
     
     private static class OneOrZeroEnum implements Enumeration<URL> {

@@ -1365,15 +1365,10 @@ public final
      */
      public InputStream getResourceAsStream(String name) {
         name = resolveName(name);
-        byte[] arr = getResourceAsStream0(name);
+        byte[] arr = ClassLoader.getResourceAsStream0(name, 0);
         return arr == null ? null : new ByteArrayInputStream(arr);
      }
-     
-     @JavaScriptBody(args = "name", body = 
-         "return (vm.loadBytes) ? vm.loadBytes(name) : null;"
-     )
-     private static native byte[] getResourceAsStream0(String name);
-
+    
     /**
      * Finds a resource with a given name.  The rules for searching resources
      * associated with a given class are implemented by the defining
@@ -1409,8 +1404,11 @@ public final
      * @since  JDK1.1
      */
     public java.net.URL getResource(String name) {
-        InputStream is = getResourceAsStream(name);
-        return is == null ? null : newResourceURL(URL.class, "res:/" + name, is);
+        return newResourceURL(name, getResourceAsStream(name));
+    }
+
+    static URL newResourceURL(String name, InputStream is) {
+        return is == null ? null : newResourceURL0(URL.class, "res:/" + name, is);
     }
     
     @JavaScriptBody(args = { "url", "spec", "is" }, body = 
@@ -1418,7 +1416,7 @@ public final
       + "u.constructor.cons__VLjava_lang_String_2Ljava_io_InputStream_2.call(u, spec, is);\n"
       + "return u;"
     )
-    private static native URL newResourceURL(Class<URL> url, String spec, InputStream is);
+    private static native URL newResourceURL0(Class<URL> url, String spec, InputStream is);
 
    /**
      * Add a package name prefix if the name is not absolute Remove leading "/"

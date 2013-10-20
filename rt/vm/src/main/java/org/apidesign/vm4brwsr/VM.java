@@ -159,13 +159,13 @@ class VM extends ByteCodeToJavaScript {
             + "      return vm.org_apidesign_vm4brwsr_VMLazy(false).\n"
             + "        reload__Ljava_lang_Object_2Ljava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2_3B(loader, name, args, byteCode);\n"
             + "    };\n"
-            + "    vm.loadBytes = function(name) {\n"
+            + "    vm.loadBytes = function(name, skip) {\n"
             + "      return vm.org_apidesign_vm4brwsr_VMLazy(false).\n"
-            + "        loadBytes___3BLjava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2(loader, name, args);\n"
+            + "        loadBytes___3BLjava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2I(loader, name, args, typeof skip == 'number' ? skip : 0);\n"
             + "    }\n"
             + "    vm.java_lang_reflect_Array(false);\n"
             + "    vm.org_apidesign_vm4brwsr_VMLazy(false).\n"
-            + "      loadBytes___3BLjava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2(loader, null, args);\n"
+            + "      loadBytes___3BLjava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2I(loader, null, args, 0);\n"
             + "    return loader;\n"
             + "  };\n");
         out.append("}(this));");

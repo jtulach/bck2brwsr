@@ -572,7 +572,10 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
     }
 
     class Res {
-        public InputStream get(String resource) throws IOException {
+        public InputStream get(String resource, int skip) throws IOException {
+            if (!resource.endsWith(".class")) {
+                return getResource(resource, skip);
+            }
             URL u = null;
             for (ClassLoader l : loaders) {
                 Enumeration<URL> en = l.getResources(resource);
@@ -591,6 +594,23 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                 return u.openStream();
             }
             throw new IOException("Can't find " + resource);
+        }
+        private InputStream getResource(String resource, int skip) throws IOException {
+            URL u = null;
+            for (ClassLoader l : loaders) {
+                Enumeration<URL> en = l.getResources(resource);
+                while (en.hasMoreElements()) {
+                    final URL now = en.nextElement();
+                    if (--skip < 0) {
+                        u = now;
+                        break;
+                    }
+                }
+            }
+            if (u != null) {
+                return u.openStream();
+            }
+            return null;
         }
     }
 
@@ -624,7 +644,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
             }
             OutputStream os = response.getOutputStream();
             try { 
-                InputStream is = res.get(r);
+                InputStream is = res.get(r, 0);
                 copyStream(is, os, request.getRequestURL().toString(), replace);
             } catch (IOException ex) {
                 response.setDetailMessage(ex.getLocalizedMessage());
@@ -696,7 +716,9 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
             }
             InputStream is = null;
             try {
-                is = loader.get(res);
+                String skip = request.getParameter("skip");
+                int skipCnt = skip == null ? 0 : Integer.parseInt(skip);
+                is = loader.get(res, skipCnt);
                 response.setContentType("text/javascript");
                 Writer w = response.getWriter();
                 w.append("[");

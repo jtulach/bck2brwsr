@@ -49,7 +49,7 @@ final class Zips {
     @JavaScriptBody(args = { "arr", "index", "value" }, body = "arr[index] = value; return value;")
     private static native Object set(Object arr, int index, Object value);
     
-    public static byte[] loadFromCp(Object classpath, String res) 
+    public static byte[] loadFromCp(Object classpath, String res, int skip) 
     throws IOException, ClassNotFoundException {
         for (int i = 0; i < length(classpath); i++) {
             Object c = at(classpath, i);
@@ -75,9 +75,10 @@ final class Zips {
                 if (c instanceof Zips) {
                     checkRes = ((Zips)c).findRes(res);
                 } else {
-                    checkRes = callFunction(c, res);
+                    checkRes = callFunction(c, res, skip);
+                    skip = 0;
                 }
-                if (checkRes != null) {
+                if (checkRes != null && --skip < 0) {
                     return checkRes;
                 }
             }
@@ -85,11 +86,11 @@ final class Zips {
         return null;
     }
     
-    @JavaScriptBody(args = { "fn", "res" }, body = 
-        "if (typeof fn === 'function') return fn(res);\n"
+    @JavaScriptBody(args = { "fn", "res", "skip" }, body = 
+        "if (typeof fn === 'function') return fn(res, skip);\n"
       + "return null;"
     )
-    private static native byte[] callFunction(Object fn, String res);
+    private static native byte[] callFunction(Object fn, String res, int skip);
     
     @JavaScriptBody(args = { "msg" }, body = "if (typeof console !== 'undefined') console.log(msg.toString());")
     private static native void log(String msg);

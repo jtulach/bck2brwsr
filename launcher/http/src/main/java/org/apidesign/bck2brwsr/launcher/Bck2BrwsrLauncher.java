@@ -48,7 +48,7 @@ final class Bck2BrwsrLauncher extends BaseHTTPLauncher {
         class R implements Bck2Brwsr.Resources {
             @Override
             public InputStream get(String resource) throws IOException {
-                return loader.get(resource);
+                return loader.get(resource, 0);
             }
         }
         String b2b = System.getProperty("bck2brwsr.js");
@@ -70,9 +70,9 @@ final class Bck2BrwsrLauncher extends BaseHTTPLauncher {
         }
         sb.append(
               "(function WrapperVM(global) {"
-            + "  function ldCls(res) {\n"
+            + "  function ldCls(res, skip) {\n"
             + "    var request = new XMLHttpRequest();\n"
-            + "    request.open('GET', '/classes/' + res, false);\n"
+            + "    request.open('GET', '/classes/' + res + '?skip=' + skip, false);\n"
             + "    request.send();\n"
             + "    if (request.status !== 200) return null;\n"
             + "    var arr = eval('(' + request.responseText + ')');\n"
