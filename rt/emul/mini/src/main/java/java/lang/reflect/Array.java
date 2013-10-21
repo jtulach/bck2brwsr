@@ -106,7 +106,7 @@ class Array {
         if (type.getName().equals("void")) {
             throw new IllegalStateException("Can't create array for " + type);
         }
-        return "[L" + type.getName() + ";";
+        return "[L" + type.getName().replace('.', '/') + ";";
     }
     /**
      * Creates a new array

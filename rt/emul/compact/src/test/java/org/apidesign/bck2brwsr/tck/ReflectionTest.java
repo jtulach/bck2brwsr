@@ -21,6 +21,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -80,6 +81,10 @@ public class ReflectionTest {
     
     @Compare public String intValue() throws Exception {
         return Integer.class.getConstructor(int.class).newInstance(10).toString();
+    }
+    
+    @Compare public String getMethodWithArray() throws Exception {
+        return Proxy.class.getMethod("getProxyClass", ClassLoader.class, Class[].class).getName();
     }
     
     @Compare public String namesOfMethods() {
