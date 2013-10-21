@@ -596,21 +596,21 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
             throw new IOException("Can't find " + resource);
         }
         private InputStream getResource(String resource, int skip) throws IOException {
-            URL u = null;
             for (ClassLoader l : loaders) {
                 Enumeration<URL> en = l.getResources(resource);
                 while (en.hasMoreElements()) {
                     final URL now = en.nextElement();
+                    if (now.toExternalForm().contains("sisu-inject-bean")) {
+                        // certainly we don't want this resource, as that
+                        // module is not compiled with target 1.6, currently
+                        continue;
+                    }
                     if (--skip < 0) {
-                        u = now;
-                        break;
+                        return now.openStream();
                     }
                 }
             }
-            if (u != null) {
-                return u.openStream();
-            }
-            return null;
+            throw new IOException("Not found (anymore of) " + resource);
         }
     }
 
