@@ -325,7 +325,6 @@ public class Proxy implements java.io.Serializable {
         throws IllegalArgumentException
     {
         try {
-            try { throw new IllegalArgumentException(); } catch (Throwable t) {}
             return (Class<?>) getProxyClass.invoke(null, loader, interfaces);
         } catch (IllegalAccessException ex) {
             throw new IllegalStateException(ex);
