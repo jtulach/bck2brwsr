@@ -212,7 +212,16 @@ public class Proxy implements java.io.Serializable {
 
     private static final long serialVersionUID = -2222568056686623797L;
 
-
+    private final static Method getProxyClass;
+    static {
+        Class<?> pg;
+        try {
+            pg = Class.forName("org.apidesign.bck2brwsr.emul.reflect.ProxyImpl");
+            getProxyClass = pg.getMethod("getProxyClass", ClassLoader.class, Class[].class);
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
 
     /**
      * the invocation handler for this proxy instance.
@@ -315,7 +324,14 @@ public class Proxy implements java.io.Serializable {
                                          Class<?>... interfaces)
         throws IllegalArgumentException
     {
-        throw new IllegalArgumentException();
+        try {
+            try { throw new IllegalArgumentException(); } catch (Throwable t) {}
+            return (Class<?>) getProxyClass.invoke(null, loader, interfaces);
+        } catch (IllegalAccessException ex) {
+            throw new IllegalStateException(ex);
+        } catch (InvocationTargetException ex) {
+            throw (RuntimeException)ex.getTargetException();
+        }
     }
 
     /**
@@ -355,7 +371,27 @@ public class Proxy implements java.io.Serializable {
         if (h == null) {
             throw new NullPointerException();
         }
-        throw new IllegalArgumentException();
+
+        /*
+         * Look up or generate the designated proxy class.
+         */
+        Class<?> cl = getProxyClass(loader, interfaces);
+
+        /*
+         * Invoke its constructor with the designated invocation handler.
+         */
+        try {
+            Constructor cons = cl.getConstructor(InvocationHandler.class);
+            return cons.newInstance(new Object[] { h });
+        } catch (NoSuchMethodException e) {
+            throw new IllegalStateException(e.toString());
+        } catch (IllegalAccessException e) {
+            throw new IllegalStateException(e.toString());
+        } catch (InstantiationException e) {
+            throw new IllegalStateException(e.toString());
+        } catch (InvocationTargetException e) {
+            throw new IllegalStateException(e.toString());
+        }
     }
 
     /**
@@ -376,8 +412,7 @@ public class Proxy implements java.io.Serializable {
         if (cl == null) {
             throw new NullPointerException();
         }
-
-        return false;
+        return Proxy.class.isAssignableFrom(cl);
     }
 
     /**
@@ -401,7 +436,4 @@ public class Proxy implements java.io.Serializable {
         Proxy p = (Proxy) proxy;
         return p.h;
     }
-
-    private static native Class defineClass0(ClassLoader loader, String name,
-                                             byte[] b, int off, int len);
 }
