@@ -26,6 +26,8 @@
 package java.lang;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Comparator;
 import java.util.Locale;
 import org.apidesign.bck2brwsr.core.ExtraJavaScript;
@@ -2098,13 +2100,31 @@ public final class String
      * @since 1.4
      * @spec JSR-51
      */
+    public boolean matches(String regex) {
+        try {
+            return matchesViaJS(regex);
+        } catch (Throwable t) {
+            // fallback to classical behavior
+            try {
+                Method m = Class.forName("java.util.regex.Pattern").getMethod("matches", String.class, CharSequence.class);
+                return (Boolean)m.invoke(null, regex, this);
+            } catch (InvocationTargetException ex) {
+                if (ex.getTargetException() instanceof RuntimeException) {
+                    throw (RuntimeException)ex.getTargetException();
+                }
+            } catch (Throwable another) {
+                // will report the old one
+            }
+            throw new RuntimeException(t);
+        }
+    }
     @JavaScriptBody(args = { "regex" }, body = 
           "var self = this.toString();\n"
         + "var re = new RegExp(regex.toString());\n"
         + "var r = re.exec(self);\n"
         + "return r != null && r.length > 0 && self.length == r[0].length;"
     )
-    public boolean matches(String regex) {
+    private boolean matchesViaJS(String regex) {
         throw new UnsupportedOperationException();
     }
 

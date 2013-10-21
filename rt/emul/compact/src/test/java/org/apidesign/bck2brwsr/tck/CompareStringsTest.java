@@ -185,6 +185,10 @@ public class CompareStringsTest {
         return "org.apidesign.bck2brwsr.core.JavaScriptBody".replace(".", "\\.");
     }
     
+    @Compare public boolean matchWithComplicatedRegExp() {
+        return "Activates this model instance.".matches("(?sm).*^\\s*@deprecated( |$).*");
+    }
+    
     @Factory
     public static Object[] create() {
         return VMTest.create(CompareStringsTest.class);
