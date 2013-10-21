@@ -185,7 +185,7 @@ public final
      * constructor this object represents
      */
     public Class<?>[] getExceptionTypes() {
-        throw new UnsupportedOperationException();
+        return new Class[0];
     }
 
 

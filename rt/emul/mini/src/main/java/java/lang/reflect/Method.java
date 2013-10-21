@@ -239,8 +239,7 @@ public final
      * method this object represents
      */
     public Class<?>[] getExceptionTypes() {
-        throw new UnsupportedOperationException();
-        //return (Class<?>[]) exceptionTypes.clone();
+        return new Class[0];
     }
 
     /**
