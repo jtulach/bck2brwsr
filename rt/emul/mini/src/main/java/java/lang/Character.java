@@ -1995,7 +1995,8 @@ class Character implements java.io.Serializable, Comparable<Character> {
     public static boolean isJavaIdentifierStart(int codePoint) {
         return 
             ('A' <= codePoint && codePoint <= 'Z') ||
-            ('a' <= codePoint && codePoint <= 'z');
+            ('a' <= codePoint && codePoint <= 'z') ||
+            codePoint == '$';
     }
 
     /**
