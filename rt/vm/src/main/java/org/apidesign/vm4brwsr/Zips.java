@@ -74,12 +74,14 @@ final class Zips {
                 byte[] checkRes;
                 if (c instanceof Zips) {
                     checkRes = ((Zips)c).findRes(res);
+                    if (checkRes != null && --skip < 0) {
+                        return checkRes;
+                    }
                 } else {
                     checkRes = callFunction(c, res, skip);
-                    skip = 0;
-                }
-                if (checkRes != null && --skip < 0) {
-                    return checkRes;
+                    if (checkRes != null) {
+                        return checkRes;
+                    }
                 }
             }
         }
