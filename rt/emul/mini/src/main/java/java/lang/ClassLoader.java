@@ -850,12 +850,12 @@ public abstract class ClassLoader {
             SYSTEM = new ClassLoader() {
                 @Override
                 protected Enumeration<URL> findResources(String name) throws IOException {
-                    return getSystemResources(name);
+                    return getBootstrapResources(name);
                 }
 
                 @Override
                 protected URL findResource(String name) {
-                    return getSystemResource(name);
+                    return getBootstrapResource(name);
                 }
 
                 @Override
