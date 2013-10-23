@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
@@ -54,7 +55,18 @@ final class Bck2BrwsrLauncher extends BaseHTTPLauncher {
         String b2b = System.getProperty("bck2brwsr.js");
         if (b2b != null) {
             LOG.log(Level.INFO, "Serving bck2brwsr.js from {0}", b2b);
-            try (Reader r = new InputStreamReader(new URL(b2b).openStream())) {
+            URL bu;
+            try {
+                bu = new URL(b2b);
+            } catch (MalformedURLException ex) {
+                File f = new File(b2b);
+                if (f.exists()) {
+                    bu = f.toURI().toURL();
+                } else {
+                    throw ex;
+                }
+            }
+            try (Reader r = new InputStreamReader(bu.openStream())) {
                 char[] arr = new char[4096];
                 for (;;) {
                    int len = r.read(arr);
