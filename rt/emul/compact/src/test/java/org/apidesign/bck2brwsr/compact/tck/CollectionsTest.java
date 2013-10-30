@@ -20,6 +20,7 @@ package org.apidesign.bck2brwsr.compact.tck;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -96,6 +97,7 @@ public class CollectionsTest {
         
         List<Entry<String,Integer>> arr = new Vector<>();
         arr.addAll(map.entrySet());
+        Collections.sort(arr, new C());
         return arr.toString();
     }
     
