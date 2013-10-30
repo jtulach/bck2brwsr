@@ -117,7 +117,9 @@ final class BrowserToolbar extends ToolBar {
             zoom = Math.abs( zoom )/100;
             if( zoom <= 0.0 )
                 return null;
-            webView.impl_setScale( zoom );
+            webView.setScaleX(zoom);
+            webView.setScaleY(zoom);
+            webView.setScaleZ(zoom);
             return (int)(100*zoom) + "%"; //NOI18N
         } catch( NumberFormatException nfe ) {
             //ignore
