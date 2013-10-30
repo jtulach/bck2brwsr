@@ -94,12 +94,14 @@ public class ExceptionsTest {
         {
             // 2nd invocation
             Object ret = code.invokeMethod(clazz, method, "java.lang.String");
-            assertEquals(ret, Double.valueOf(2));
+            assertTrue(ret instanceof Number, "Is number: " + ret);
+            assertEquals(((Number)ret).doubleValue(), 2.0);
         }
         {
             // 3rd invocation
             Object ret = code.invokeMethod(clazz, method, "java.lang.Integer");
-            assertEquals(ret, Double.valueOf(3));
+            assertTrue(ret instanceof Number, "Is number: " + ret);
+            assertEquals(((Number)ret).doubleValue(), 3.0);
         }
     }
     

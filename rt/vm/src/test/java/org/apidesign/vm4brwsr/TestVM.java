@@ -75,7 +75,10 @@ public final class TestVM {
             // in case of Long it is necessary convert it to number
             // since the Long is represented by two numbers in JavaScript
             try {
-                ret = code.invokeMethod(ret, "toFP");
+                final Object toFP = ((ScriptEngine)code).eval("Number.prototype.toFP");
+                if (ret instanceof Long) {
+                    ret = code.invokeMethod(toFP, "call", ret);
+                }
                 ret = code.invokeFunction("Number", ret);
             } catch (ScriptException ex) {
                 fail("Conversion to number failed in " + dumpJS(codeSeq) + ": " + ex.getMessage(), ex);
@@ -92,6 +95,9 @@ public final class TestVM {
         Object ret = execCode(msg, clazz, method, expRes, args);
         if (ret == null) {
             return;
+        }
+        if (expRes instanceof Integer && ret instanceof Double) {
+            expRes = ((Integer)expRes).doubleValue();
         }
         if (expRes != null && expRes.equals(ret)) {
             return;
