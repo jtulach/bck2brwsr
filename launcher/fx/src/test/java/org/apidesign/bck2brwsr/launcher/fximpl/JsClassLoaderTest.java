@@ -92,7 +92,7 @@ public class JsClassLoaderTest {
                             all.addAll(Arrays.asList(args));
                             Invocable inv = (Invocable)eng;
                             Object ret = inv.invokeMethod(val, "call", all.toArray());
-                            return ret == val ? null : ret;
+                            return val.equals(ret) ? null : ret;
                         }
                     };
                 } catch (ScriptException ex) {
