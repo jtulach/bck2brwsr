@@ -49,6 +49,14 @@ public class CompareStringsTest {
         return "Ahoj".equals(null);
     }
     
+    @Compare public boolean internIsSame() {
+        return new String("Ahoj").intern() == another();
+    }
+    
+    private static String another() {
+        return new String("Ahoj").intern();
+    }
+    
     @Compare public int highByteLenght() {
         byte[] arr= { 77,97,110,105,102,101,115,116,45,86,101,114,115,105,111,110 };
         return new String(arr, 0).length();

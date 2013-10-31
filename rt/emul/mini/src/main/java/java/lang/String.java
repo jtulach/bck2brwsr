@@ -3109,6 +3109,14 @@ public final class String
      * @return  a string that has the same contents as this string, but is
      *          guaranteed to be from a pool of unique strings.
      */
+    @JavaScriptBody(args = {}, body = 
+        "var s = this.toString().toString();\n" +
+        "var i = String.intern || (String.intern = {})\n" + 
+        "if (!i[s]) {\n" +
+        "  i[s] = s;\n" +
+        "}\n" +
+        "return i[s];"
+    )
     public native String intern();
     
     
