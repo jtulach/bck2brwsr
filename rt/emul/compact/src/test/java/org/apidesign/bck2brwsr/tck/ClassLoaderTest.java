@@ -29,6 +29,11 @@ public class ClassLoaderTest {
     @Compare public Object unknownResource() {
         return ClassLoader.getSystemResource("really/unknown/resource.txt");
     }
+    
+    @Compare public boolean indenpotentSetOfClassloaderIsOK() {
+        Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader());
+        return Thread.currentThread().getContextClassLoader() == ClassLoader.getSystemClassLoader();
+    }
 
     @Factory public static Object[] create() {
         return VMTest.create(ClassLoaderTest.class);

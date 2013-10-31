@@ -1165,7 +1165,7 @@ class Thread implements Runnable {
      * @since 1.2
      */
     public ClassLoader getContextClassLoader() {
-        return null;
+        return ClassLoader.getSystemClassLoader();
     }
 
     /**
@@ -1191,6 +1191,9 @@ class Thread implements Runnable {
      * @since 1.2
      */
     public void setContextClassLoader(ClassLoader cl) {
+        if (cl == ClassLoader.getSystemClassLoader()) {
+            return;
+        }
         throw new SecurityException();
     }
 
