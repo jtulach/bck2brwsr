@@ -26,9 +26,6 @@
 package java.util;
 
 import java.io.*;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.LongBuffer;
 
 /**
  * This class implements a vector of bits that grows as needed. Each
@@ -212,15 +209,15 @@ public class BitSet implements Cloneable, java.io.Serializable {
      *        used as the initial bits of the new bit set
      * @since 1.7
      */
-    public static BitSet valueOf(LongBuffer lb) {
-        lb = lb.slice();
-        int n;
-        for (n = lb.remaining(); n > 0 && lb.get(n - 1) == 0; n--)
-            ;
-        long[] words = new long[n];
-        lb.get(words);
-        return new BitSet(words);
-    }
+//    public static BitSet valueOf(LongBuffer lb) {
+//        lb = lb.slice();
+//        int n;
+//        for (n = lb.remaining(); n > 0 && lb.get(n - 1) == 0; n--)
+//            ;
+//        long[] words = new long[n];
+//        lb.get(words);
+//        return new BitSet(words);
+//    }
 
     /**
      * Returns a new bit set containing all the bits in the given byte array.
@@ -237,9 +234,9 @@ public class BitSet implements Cloneable, java.io.Serializable {
      *        initial bits of the new bit set
      * @since 1.7
      */
-    public static BitSet valueOf(byte[] bytes) {
-        return BitSet.valueOf(ByteBuffer.wrap(bytes));
-    }
+//    public static BitSet valueOf(byte[] bytes) {
+//        return BitSet.valueOf(ByteBuffer.wrap(bytes));
+//    }
 
     /**
      * Returns a new bit set containing all the bits in the given byte
@@ -257,20 +254,20 @@ public class BitSet implements Cloneable, java.io.Serializable {
      *        used as the initial bits of the new bit set
      * @since 1.7
      */
-    public static BitSet valueOf(ByteBuffer bb) {
-        bb = bb.slice().order(ByteOrder.LITTLE_ENDIAN);
-        int n;
-        for (n = bb.remaining(); n > 0 && bb.get(n - 1) == 0; n--)
-            ;
-        long[] words = new long[(n + 7) / 8];
-        bb.limit(n);
-        int i = 0;
-        while (bb.remaining() >= 8)
-            words[i++] = bb.getLong();
-        for (int remaining = bb.remaining(), j = 0; j < remaining; j++)
-            words[i] |= (bb.get() & 0xffL) << (8 * j);
-        return new BitSet(words);
-    }
+//    public static BitSet valueOf(ByteBuffer bb) {
+//        bb = bb.slice().order(ByteOrder.LITTLE_ENDIAN);
+//        int n;
+//        for (n = bb.remaining(); n > 0 && bb.get(n - 1) == 0; n--)
+//            ;
+//        long[] words = new long[(n + 7) / 8];
+//        bb.limit(n);
+//        int i = 0;
+//        while (bb.remaining() >= 8)
+//            words[i++] = bb.getLong();
+//        for (int remaining = bb.remaining(), j = 0; j < remaining; j++)
+//            words[i] |= (bb.get() & 0xffL) << (8 * j);
+//        return new BitSet(words);
+//    }
 
     /**
      * Returns a new byte array containing all the bits in this bit set.
@@ -285,21 +282,21 @@ public class BitSet implements Cloneable, java.io.Serializable {
      *         of all the bits in this bit set
      * @since 1.7
     */
-    public byte[] toByteArray() {
-        int n = wordsInUse;
-        if (n == 0)
-            return new byte[0];
-        int len = 8 * (n-1);
-        for (long x = words[n - 1]; x != 0; x >>>= 8)
-            len++;
-        byte[] bytes = new byte[len];
-        ByteBuffer bb = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
-        for (int i = 0; i < n - 1; i++)
-            bb.putLong(words[i]);
-        for (long x = words[n - 1]; x != 0; x >>>= 8)
-            bb.put((byte) (x & 0xff));
-        return bytes;
-    }
+//    public byte[] toByteArray() {
+//        int n = wordsInUse;
+//        if (n == 0)
+//            return new byte[0];
+//        int len = 8 * (n-1);
+//        for (long x = words[n - 1]; x != 0; x >>>= 8)
+//            len++;
+//        byte[] bytes = new byte[len];
+//        ByteBuffer bb = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
+//        for (int i = 0; i < n - 1; i++)
+//            bb.putLong(words[i]);
+//        for (long x = words[n - 1]; x != 0; x >>>= 8)
+//            bb.put((byte) (x & 0xff));
+//        return bytes;
+//    }
 
     /**
      * Returns a new long array containing all the bits in this bit set.
