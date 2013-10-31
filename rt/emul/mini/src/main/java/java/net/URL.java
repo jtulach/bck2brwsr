@@ -965,9 +965,9 @@ public final class URL implements java.io.Serializable {
      * @see        java.net.URL#URL(java.lang.String, java.lang.String,
      *             int, java.lang.String)
      */
-//    public URLConnection openConnection() throws java.io.IOException {
-//        return handler.openConnection(this);
-//    }
+    public URLConnection openConnection() throws java.io.IOException {
+        return handler.openConnection(this);
+    }
 
 
     /**
@@ -1058,8 +1058,39 @@ public final class URL implements java.io.Serializable {
         return null;
     }
 
-    static URLStreamHandler getURLStreamHandler(String protocol) {
-        URLStreamHandler universal = new URLStreamHandler() {};
+    static URLStreamHandler getURLStreamHandler(final String protocol) {
+        URLStreamHandler universal = new URLStreamHandler() {
+            @Override
+            protected URLConnection openConnection(URL u) throws IOException {
+                return new URLConnection(u) {
+                    Object stream = url.is;
+                    
+                    @Override
+                    public void connect() throws IOException {
+                        if (stream == null) {
+                            try {
+                                byte[] arr = (byte[]) url.getContent(new Class[]{byte[].class});
+                                stream = new ByteArrayInputStream(arr);
+                            } catch (IOException ex) {
+                                stream = ex;
+                                throw ex;
+                            }
+                        }
+                    }
+
+                    @Override
+                    public InputStream getInputStream() throws IOException {
+                        connect();
+                        if (stream instanceof IOException) {
+                            throw (IOException)stream;
+                        }
+                        return (InputStream)stream;
+                    }
+                    
+                    
+                };
+            }
+        };
         return universal;
     }
 

@@ -58,6 +58,11 @@ public class ResourcesTest {
         InputStream is = getClass().getResourceAsStream("Resources.txt");
         return readString(is);
     }
+    
+    @Compare public String readResourceViaConnection() throws Exception {
+        InputStream is = getClass().getResource("Resources.txt").openConnection().getInputStream();
+        return readString(is);
+    }
 
     private String readString(InputStream is) throws IOException {
         StringBuilder sb = new StringBuilder();

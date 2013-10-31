@@ -28,16 +28,17 @@ package java.net;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Hashtable;
+import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.StringTokenizer;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.List;
-import java.security.Permission;
-import java.security.AccessController;
-import sun.security.util.SecurityConstants;
-import sun.net.www.MessageHeader;
+import java.util.NoSuchElementException;
 
 /**
  * The abstract class <code>URLConnection</code> is the superclass
@@ -314,7 +315,12 @@ public abstract class URLConnection {
      */
     public static synchronized FileNameMap getFileNameMap() {
         if ((fileNameMap == null) && !fileNameMapLoaded) {
-            fileNameMap = sun.net.www.MimeTable.loadTable();
+            fileNameMap = new FileNameMap() {
+                @Override
+                public String getContentTypeFor(String fileName) {
+                    return "text/plain";
+                }
+            };
             fileNameMapLoaded = true;
         }
 
@@ -342,9 +348,7 @@ public abstract class URLConnection {
      * @since 1.2
      */
     public static void setFileNameMap(FileNameMap map) {
-        SecurityManager sm = System.getSecurityManager();
-        if (sm != null) sm.checkSetFactory();
-        fileNameMap = map;
+        throw new SecurityException();
     }
 
     /**
@@ -816,9 +820,9 @@ public abstract class URLConnection {
      * requires network or file I/O and an exception occurs while
      * computing it.
      */
-    public Permission getPermission() throws IOException {
-        return SecurityConstants.ALL_PERMISSION;
-    }
+//    public Permission getPermission() throws IOException {
+//        return SecurityConstants.ALL_PERMISSION;
+//    }
 
     /**
      * Returns an input stream that reads from this open connection.
@@ -1226,14 +1230,7 @@ public abstract class URLConnection {
      * @see        SecurityManager#checkSetFactory
      */
     public static synchronized void setContentHandlerFactory(ContentHandlerFactory fac) {
-        if (factory != null) {
-            throw new Error("factory already defined");
-        }
-        SecurityManager security = System.getSecurityManager();
-        if (security != null) {
-            security.checkSetFactory();
-        }
-        factory = fac;
+        throw new SecurityException();
     }
 
     private static Hashtable handlers = new Hashtable();
@@ -1370,9 +1367,8 @@ public abstract class URLConnection {
      * the last one on the returned package list.
      */
     private String getContentHandlerPkgPrefixes() {
-        String packagePrefixList = AccessController.doPrivileged(
-            new sun.security.action.GetPropertyAction(contentPathProp, ""));
-
+        String packagePrefixList = "";
+        
         if (packagePrefixList != "") {
             packagePrefixList += "|";
         }
@@ -1794,4 +1790,525 @@ class UnknownContentHandler extends ContentHandler {
     public Object getContent(URLConnection uc) throws IOException {
         return uc.getInputStream();
     }
+}
+
+/** An RFC 844 or MIME message header.  Includes methods
+    for parsing headers from incoming streams, fetching
+    values, setting values, and printing headers.
+    Key values of null are legal: they indicate lines in
+    the header that don't have a valid key, but do have
+    a value (this isn't legal according to the standard,
+    but lines like this are everywhere). */
+class MessageHeader {
+    private String keys[];
+    private String values[];
+    private int nkeys;
+
+    public MessageHeader () {
+        grow();
+    }
+
+    public MessageHeader (InputStream is) throws java.io.IOException {
+        parseHeader(is);
+    }
+
+    /**
+     * Reset a message header (all key/values removed)
+     */
+    public synchronized void reset() {
+        keys = null;
+        values = null;
+        nkeys = 0;
+        grow();
+    }
+
+    /**
+     * Find the value that corresponds to this key.
+     * It finds only the first occurrence of the key.
+     * @param k the key to find.
+     * @return null if not found.
+     */
+    public synchronized String findValue(String k) {
+        if (k == null) {
+            for (int i = nkeys; --i >= 0;)
+                if (keys[i] == null)
+                    return values[i];
+        } else
+            for (int i = nkeys; --i >= 0;) {
+                if (k.equalsIgnoreCase(keys[i]))
+                    return values[i];
+            }
+        return null;
+    }
+
+    // return the location of the key
+    public synchronized int getKey(String k) {
+        for (int i = nkeys; --i >= 0;)
+            if ((keys[i] == k) ||
+                (k != null && k.equalsIgnoreCase(keys[i])))
+                return i;
+        return -1;
+    }
+
+    public synchronized String getKey(int n) {
+        if (n < 0 || n >= nkeys) return null;
+        return keys[n];
+    }
+
+    public synchronized String getValue(int n) {
+        if (n < 0 || n >= nkeys) return null;
+        return values[n];
+    }
+
+    /** Deprecated: Use multiValueIterator() instead.
+     *
+     *  Find the next value that corresponds to this key.
+     *  It finds the first value that follows v. To iterate
+     *  over all the values of a key use:
+     *  <pre>
+     *          for(String v=h.findValue(k); v!=null; v=h.findNextValue(k, v)) {
+     *              ...
+     *          }
+     *  </pre>
+     */
+    public synchronized String findNextValue(String k, String v) {
+        boolean foundV = false;
+        if (k == null) {
+            for (int i = nkeys; --i >= 0;)
+                if (keys[i] == null)
+                    if (foundV)
+                        return values[i];
+                    else if (values[i] == v)
+                        foundV = true;
+        } else
+            for (int i = nkeys; --i >= 0;)
+                if (k.equalsIgnoreCase(keys[i]))
+                    if (foundV)
+                        return values[i];
+                    else if (values[i] == v)
+                        foundV = true;
+        return null;
+    }
+
+    class HeaderIterator implements Iterator<String> {
+        int index = 0;
+        int next = -1;
+        String key;
+        boolean haveNext = false;
+        Object lock;
+
+        public HeaderIterator (String k, Object lock) {
+            key = k;
+            this.lock = lock;
+        }
+        public boolean hasNext () {
+            synchronized (lock) {
+                if (haveNext) {
+                    return true;
+                }
+                while (index < nkeys) {
+                    if (key.equalsIgnoreCase (keys[index])) {
+                        haveNext = true;
+                        next = index++;
+                        return true;
+                    }
+                    index ++;
+                }
+                return false;
+            }
+        }
+        public String next() {
+            synchronized (lock) {
+                if (haveNext) {
+                    haveNext = false;
+                    return values [next];
+                }
+                if (hasNext()) {
+                    return next();
+                } else {
+                    throw new NoSuchElementException ("No more elements");
+                }
+            }
+        }
+        public void remove () {
+            throw new UnsupportedOperationException ("remove not allowed");
+        }
+    }
+
+    /**
+     * return an Iterator that returns all values of a particular
+     * key in sequence
+     */
+    public Iterator<String> multiValueIterator (String k) {
+        return new HeaderIterator (k, this);
+    }
+
+    public synchronized Map<String, List<String>> getHeaders() {
+        return getHeaders(null);
+    }
+
+    public synchronized Map<String, List<String>> getHeaders(String[] excludeList) {
+        return filterAndAddHeaders(excludeList, null);
+    }
+
+    public synchronized Map<String, List<String>> filterAndAddHeaders(String[] excludeList, Map<String, List<String>>  include) {
+        boolean skipIt = false;
+        Map<String, List<String>> m = new HashMap<String, List<String>>();
+        for (int i = nkeys; --i >= 0;) {
+            if (excludeList != null) {
+                // check if the key is in the excludeList.
+                // if so, don't include it in the Map.
+                for (int j = 0; j < excludeList.length; j++) {
+                    if ((excludeList[j] != null) &&
+                        (excludeList[j].equalsIgnoreCase(keys[i]))) {
+                        skipIt = true;
+                        break;
+                    }
+                }
+            }
+            if (!skipIt) {
+                List<String> l = m.get(keys[i]);
+                if (l == null) {
+                    l = new ArrayList<String>();
+                    m.put(keys[i], l);
+                }
+                l.add(values[i]);
+            } else {
+                // reset the flag
+                skipIt = false;
+            }
+        }
+
+        if (include != null) {
+            Iterator entries = include.entrySet().iterator();
+            while (entries.hasNext()) {
+                Map.Entry entry = (Map.Entry)entries.next();
+                List l = (List)m.get(entry.getKey());
+                if (l == null) {
+                    l = new ArrayList();
+                    m.put((String)entry.getKey(), l);
+                }
+                l.add(entry.getValue());
+            }
+        }
+
+        for (String key : m.keySet()) {
+            m.put(key, Collections.unmodifiableList(m.get(key)));
+        }
+
+        return Collections.unmodifiableMap(m);
+    }
+
+    /** Prints the key-value pairs represented by this
+        header.  Also prints the RFC required blank line
+        at the end. Omits pairs with a null key. */
+    public synchronized void print(PrintStream p) {
+        for (int i = 0; i < nkeys; i++)
+            if (keys[i] != null) {
+                p.print(keys[i] +
+                    (values[i] != null ? ": "+values[i]: "") + "\r\n");
+            }
+        p.print("\r\n");
+        p.flush();
+    }
+
+    /** Adds a key value pair to the end of the
+        header.  Duplicates are allowed */
+    public synchronized void add(String k, String v) {
+        grow();
+        keys[nkeys] = k;
+        values[nkeys] = v;
+        nkeys++;
+    }
+
+    /** Prepends a key value pair to the beginning of the
+        header.  Duplicates are allowed */
+    public synchronized void prepend(String k, String v) {
+        grow();
+        for (int i = nkeys; i > 0; i--) {
+            keys[i] = keys[i-1];
+            values[i] = values[i-1];
+        }
+        keys[0] = k;
+        values[0] = v;
+        nkeys++;
+    }
+
+    /** Overwrite the previous key/val pair at location 'i'
+     * with the new k/v.  If the index didn't exist before
+     * the key/val is simply tacked onto the end.
+     */
+
+    public synchronized void set(int i, String k, String v) {
+        grow();
+        if (i < 0) {
+            return;
+        } else if (i >= nkeys) {
+            add(k, v);
+        } else {
+            keys[i] = k;
+            values[i] = v;
+        }
+    }
+
+
+    /** grow the key/value arrays as needed */
+
+    private void grow() {
+        if (keys == null || nkeys >= keys.length) {
+            String[] nk = new String[nkeys + 4];
+            String[] nv = new String[nkeys + 4];
+            if (keys != null)
+                System.arraycopy(keys, 0, nk, 0, nkeys);
+            if (values != null)
+                System.arraycopy(values, 0, nv, 0, nkeys);
+            keys = nk;
+            values = nv;
+        }
+    }
+
+    /**
+     * Remove the key from the header. If there are multiple values under
+     * the same key, they are all removed.
+     * Nothing is done if the key doesn't exist.
+     * After a remove, the other pairs' order are not changed.
+     * @param k the key to remove
+     */
+    public synchronized void remove(String k) {
+        if(k == null) {
+            for (int i = 0; i < nkeys; i++) {
+                while (keys[i] == null && i < nkeys) {
+                    for(int j=i; j<nkeys-1; j++) {
+                        keys[j] = keys[j+1];
+                        values[j] = values[j+1];
+                    }
+                    nkeys--;
+                }
+            }
+        } else {
+            for (int i = 0; i < nkeys; i++) {
+                while (k.equalsIgnoreCase(keys[i]) && i < nkeys) {
+                    for(int j=i; j<nkeys-1; j++) {
+                        keys[j] = keys[j+1];
+                        values[j] = values[j+1];
+                    }
+                    nkeys--;
+                }
+            }
+        }
+    }
+
+    /** Sets the value of a key.  If the key already
+        exists in the header, it's value will be
+        changed.  Otherwise a new key/value pair will
+        be added to the end of the header. */
+    public synchronized void set(String k, String v) {
+        for (int i = nkeys; --i >= 0;)
+            if (k.equalsIgnoreCase(keys[i])) {
+                values[i] = v;
+                return;
+            }
+        add(k, v);
+    }
+
+    /** Set's the value of a key only if there is no
+     *  key with that value already.
+     */
+
+    public synchronized void setIfNotSet(String k, String v) {
+        if (findValue(k) == null) {
+            add(k, v);
+        }
+    }
+
+    /** Convert a message-id string to canonical form (strips off
+        leading and trailing <>s) */
+    public static String canonicalID(String id) {
+        if (id == null)
+            return "";
+        int st = 0;
+        int len = id.length();
+        boolean substr = false;
+        int c;
+        while (st < len && ((c = id.charAt(st)) == '<' ||
+                            c <= ' ')) {
+            st++;
+            substr = true;
+        }
+        while (st < len && ((c = id.charAt(len - 1)) == '>' ||
+                            c <= ' ')) {
+            len--;
+            substr = true;
+        }
+        return substr ? id.substring(st, len) : id;
+    }
+
+    /** Parse a MIME header from an input stream. */
+    public void parseHeader(InputStream is) throws java.io.IOException {
+        synchronized (this) {
+            nkeys = 0;
+        }
+        mergeHeader(is);
+    }
+
+    /** Parse and merge a MIME header from an input stream. */
+    public void mergeHeader(InputStream is) throws java.io.IOException {
+        if (is == null)
+            return;
+        char s[] = new char[10];
+        int firstc = is.read();
+        while (firstc != '\n' && firstc != '\r' && firstc >= 0) {
+            int len = 0;
+            int keyend = -1;
+            int c;
+            boolean inKey = firstc > ' ';
+            s[len++] = (char) firstc;
+    parseloop:{
+                while ((c = is.read()) >= 0) {
+                    switch (c) {
+                      case ':':
+                        if (inKey && len > 0)
+                            keyend = len;
+                        inKey = false;
+                        break;
+                      case '\t':
+                        c = ' ';
+                      case ' ':
+                        inKey = false;
+                        break;
+                      case '\r':
+                      case '\n':
+                        firstc = is.read();
+                        if (c == '\r' && firstc == '\n') {
+                            firstc = is.read();
+                            if (firstc == '\r')
+                                firstc = is.read();
+                        }
+                        if (firstc == '\n' || firstc == '\r' || firstc > ' ')
+                            break parseloop;
+                        /* continuation */
+                        c = ' ';
+                        break;
+                    }
+                    if (len >= s.length) {
+                        char ns[] = new char[s.length * 2];
+                        System.arraycopy(s, 0, ns, 0, len);
+                        s = ns;
+                    }
+                    s[len++] = (char) c;
+                }
+                firstc = -1;
+            }
+            while (len > 0 && s[len - 1] <= ' ')
+                len--;
+            String k;
+            if (keyend <= 0) {
+                k = null;
+                keyend = 0;
+            } else {
+                k = String.copyValueOf(s, 0, keyend);
+                if (keyend < len && s[keyend] == ':')
+                    keyend++;
+                while (keyend < len && s[keyend] <= ' ')
+                    keyend++;
+            }
+            String v;
+            if (keyend >= len)
+                v = new String();
+            else
+                v = String.copyValueOf(s, keyend, len - keyend);
+            add(k, v);
+        }
+    }
+
+    public synchronized String toString() {
+        String result = super.toString() + nkeys + " pairs: ";
+        for (int i = 0; i < keys.length && i < nkeys; i++) {
+            result += "{"+keys[i]+": "+values[i]+"}";
+        }
+        return result;
+    }
+}
+
+interface ContentHandlerFactory {
+
+    public ContentHandler createContentHandler(String contentType);
+}
+
+abstract class ContentHandler {
+    /**
+     * Given a URL connect stream positioned at the beginning of the
+     * representation of an object, this method reads that stream and
+     * creates an object from it.
+     *
+     * @param      urlc   a URL connection.
+     * @return     the object read by the <code>ContentHandler</code>.
+     * @exception  IOException  if an I/O error occurs while reading the object.
+     */
+    abstract public Object getContent(URLConnection urlc) throws IOException;
+
+    /**
+     * Given a URL connect stream positioned at the beginning of the
+     * representation of an object, this method reads that stream and
+     * creates an object that matches one of the types specified.
+     *
+     * The default implementation of this method should call getContent()
+     * and screen the return type for a match of the suggested types.
+     *
+     * @param      urlc   a URL connection.
+     * @param      classes      an array of types requested
+     * @return     the object read by the <code>ContentHandler</code> that is
+     *                 the first match of the suggested types.
+     *                 null if none of the requested  are supported.
+     * @exception  IOException  if an I/O error occurs while reading the object.
+     * @since 1.3
+     */
+    public Object getContent(URLConnection urlc, Class[] classes) throws IOException {
+        Object obj = getContent(urlc);
+
+        for (int i = 0; i < classes.length; i++) {
+          if (classes[i].isInstance(obj)) {
+                return obj;
+          }
+        }
+        return null;
+    }
+
+}
+class UnknownServiceException extends IOException {
+    private static final long serialVersionUID = -4169033248853639508L;
+
+    /**
+     * Constructs a new <code>UnknownServiceException</code> with no
+     * detail message.
+     */
+    public UnknownServiceException() {
+    }
+
+    /**
+     * Constructs a new <code>UnknownServiceException</code> with the
+     * specified detail message.
+     *
+     * @param   msg   the detail message.
+     */
+    public UnknownServiceException(String msg) {
+        super(msg);
+    }
+}
+/**
+ * A simple interface which provides a mechanism to map
+ * between a file name and a MIME type string.
+ *
+ * @author  Steven B. Byrne
+ * @since   JDK1.1
+ */
+interface FileNameMap {
+
+    /**
+     * Gets the MIME type for the specified file name.
+     * @param fileName the specified file name
+     * @return a <code>String</code> indicating the MIME
+     * type for the specified file name.
+     */
+    public String getContentTypeFor(String fileName);
 }

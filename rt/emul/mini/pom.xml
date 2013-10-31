@@ -47,6 +47,7 @@
                                       -->
                                       <javaresource name="java/net/URI.class"/>
                                       <javaresource name="java/net/URISyntaxException.class"/>
+                                      <javaresource name="java/net/URLConnection.class"/>
                                       <javaresource name="java/util/Locale.class"/>
                                       <javaresource name="java/io/OutputStream.class"/>
                                       <javaresource name="java/io/FilterOutputStream.class"/>

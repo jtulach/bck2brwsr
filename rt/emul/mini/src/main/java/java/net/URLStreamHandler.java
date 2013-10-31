@@ -25,6 +25,8 @@
 
 package java.net;
 
+import java.io.IOException;
+
 
 /**
  * The abstract class <code>URLStreamHandler</code> is the common
@@ -62,7 +64,7 @@ public abstract class URLStreamHandler {
      * @exception  IOException  if an I/O error occurs while opening the
      *               connection.
      */
-//    abstract protected URLConnection openConnection(URL u) throws IOException;
+    abstract protected URLConnection openConnection(URL u) throws IOException;
 
     /**
      * Same as openConnection(URL), except that the connection will be
