@@ -173,6 +173,10 @@ public final class TestVM {
                 // skip
                 return null;
             }
+            if ("java/net/URLConnection.class".equals(name)) {
+                // skip
+                return null;
+            }
             if ("java/lang/System.class".equals(name)) {
                 // skip
                 return null;
