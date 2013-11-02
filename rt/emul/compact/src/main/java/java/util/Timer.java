@@ -26,6 +26,7 @@
 package java.util;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
  * A facility for threads to schedule tasks for future execution in a
@@ -111,7 +112,7 @@ public class Timer {
         protected void finalize() throws Throwable {
             synchronized(queue) {
                 thread.newTasksMayBeScheduled = false;
-                queue.notify(); // In case queue is empty.
+                thread.notifyQueue(1); // In case queue is empty.
             }
         }
     };
@@ -156,8 +157,6 @@ public class Timer {
      * @since 1.5
      */
     public Timer(String name) {
-        thread.setName(name);
-        thread.start();
     }
 
     /**
@@ -171,9 +170,6 @@ public class Timer {
      * @since 1.5
      */
     public Timer(String name, boolean isDaemon) {
-        thread.setName(name);
-        thread.setDaemon(isDaemon);
-        thread.start();
     }
 
     /**
@@ -407,7 +403,7 @@ public class Timer {
 
             queue.add(task);
             if (queue.getMin() == task)
-                queue.notify();
+                thread.notifyQueue(1);
         }
     }
 
@@ -429,10 +425,10 @@ public class Timer {
         synchronized(queue) {
             thread.newTasksMayBeScheduled = false;
             queue.clear();
-            queue.notify();  // In case queue was already empty.
+            thread.notifyQueue(1);  // In case queue was already empty.
         }
     }
-
+    
     /**
      * Removes all cancelled tasks from this timer's task queue.  <i>Calling
      * this method has no effect on the behavior of the timer</i>, but
@@ -478,7 +474,7 @@ public class Timer {
  * reschedules repeating tasks, and removes cancelled tasks and spent
  * non-repeating tasks from the queue.
  */
-class TimerThread extends Thread {
+class TimerThread implements Runnable {
     /**
      * This flag is set to false by the reaper to inform us that there
      * are no more live references to our Timer object.  Once this flag
@@ -500,30 +496,41 @@ class TimerThread extends Thread {
         this.queue = queue;
     }
 
-    public void run() {
-        try {
-            mainLoop();
-        } finally {
-            // Someone killed this Thread, behave as if Timer cancelled
-            synchronized(queue) {
-                newTasksMayBeScheduled = false;
-                queue.clear();  // Eliminate obsolete references
-            }
+    void notifyQueue(int delay) {
+        if (delay < 1) {
+            delay = 1;
         }
+        setTimeout(delay, this);
+    }
+    
+    @JavaScriptBody(args = { "delay", "r" }, body = "window.setTimeout(function() { r.run__V(); }, delay);")
+    private static native void setTimeout(int delay, Runnable r);
+    
+    public void run() {
+        mainLoop(1);
+//        try {
+//            mainLoop(0);
+//        } finally {
+//            // Someone killed this Thread, behave as if Timer cancelled
+//            synchronized(queue) {
+//                newTasksMayBeScheduled = false;
+//                queue.clear();  // Eliminate obsolete references
+//            }
+//        }
     }
 
     /**
      * The main timer loop.  (See class comment.)
      */
-    private void mainLoop() {
-        while (true) {
+    private void mainLoop(int inc) {
+        for (int i = 0; i < 1; i += inc) {
             try {
                 TimerTask task;
                 boolean taskFired;
                 synchronized(queue) {
                     // Wait for queue to become non-empty
                     while (queue.isEmpty() && newTasksMayBeScheduled)
-                        queue.wait();
+                        break;
                     if (queue.isEmpty())
                         break; // Queue is empty and will forever remain; die
 
@@ -548,12 +555,16 @@ class TimerThread extends Thread {
                             }
                         }
                     }
-                    if (!taskFired) // Task hasn't yet fired; wait
-                        queue.wait(executionTime - currentTime);
+                    if (!taskFired) {
+                        // Task hasn't yet fired; wait
+                        notifyQueue((int)(executionTime - currentTime));
+                        return;
+                    }
                 }
                 if (taskFired)  // Task fired; run it, holding no locks
                     task.run();
-            } catch(InterruptedException e) {
+            } catch(Exception e) {
+                e.printStackTrace();
             }
         }
     }
