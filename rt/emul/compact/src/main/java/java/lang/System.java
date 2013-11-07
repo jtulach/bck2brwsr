@@ -21,6 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.Properties;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /** Poor man's re-implementation of most important System methods.
@@ -55,6 +56,14 @@ public class System {
     
     public static String getProperty(String key, String def) {
         return def;
+    }
+    
+    public static Properties getProperties() {
+        throw new SecurityException();
+    }
+    
+    public static void setProperties(Properties p) {
+        throw new SecurityException();
     }
     
     /**
