@@ -45,7 +45,7 @@ final class LdrRsrcs implements Bck2Brwsr.Resources {
         if (u == null) {
             throw new IOException("Can't find " + name);
         }
-        if (skipRtJar && u.toExternalForm().contains("rt.jar!")) {
+        if (skipRtJar && u.toExternalForm().contains("lib/rt.jar!")) {
             return null;
         }
         return u.openStream();
