@@ -139,7 +139,7 @@ abstract class ByteCodeToJavaScript {
         if (proto == null) {
             String sc = jc.getSuperClassName(); // with _
             out.append("\n    var pp = ").
-                append(accessClass(sc.replace('/', '_'))).append("(true);");
+                append(accessClass(mangleClassName(sc))).append("(true);");
             out.append("\n    var p = CLS.prototype = pp;");
             out.append("\n    var c = p;");
             out.append("\n    var sprcls = pp.constructor.$class;");
@@ -975,7 +975,7 @@ abstract class ByteCodeToJavaScript {
                     int indx = readUShortArg(byteCodes, i);
                     String ci = jc.getClassName(indx);
                     emit(out, "var @1 = new @2;",
-                         smapper.pushA(), accessClass(ci.replace('/', '_')));
+                         smapper.pushA(), accessClass(mangleClassName(ci)));
                     addReference(ci);
                     i += 2;
                     break;
@@ -1214,7 +1214,7 @@ abstract class ByteCodeToJavaScript {
                     int indx = readUShortArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
-                    final String mangleClass = mangleSig(fi[0]);
+                    final String mangleClass = mangleClassName(fi[0]);
                     final String mangleClassAccess = accessClass(mangleClass);
                     emit(out, "var @2 = @4(false)._@3.call(@1);",
                          smapper.popA(),
@@ -1227,7 +1227,7 @@ abstract class ByteCodeToJavaScript {
                     int indx = readUShortArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
-                    final String mangleClass = mangleSig(fi[0]);
+                    final String mangleClass = mangleClassName(fi[0]);
                     final String mangleClassAccess = accessClass(mangleClass);
                     emit(out, "@4(false)._@3.call(@2, @1);",
                          smapper.popT(type),
@@ -1243,7 +1243,7 @@ abstract class ByteCodeToJavaScript {
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
                     emit(out, "var @1 = @2(false)._@3();",
                          smapper.pushT(type),
-                         accessClass(fi[0].replace('/', '_')), fi[1]);
+                         accessClass(mangleClassName(fi[0])), fi[1]);
                     i += 2;
                     addReference(fi[0]);
                     break;
@@ -1253,7 +1253,7 @@ abstract class ByteCodeToJavaScript {
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
                     emit(out, "@1(false)._@2(@3);",
-                         accessClass(fi[0].replace('/', '_')), fi[1],
+                         accessClass(mangleClassName(fi[0])), fi[1],
                          smapper.popT(type));
                     i += 2;
                     addReference(fi[0]);
@@ -1435,8 +1435,20 @@ abstract class ByteCodeToJavaScript {
         return mangleSig(sig, 0, sig.length());
     }
     
+    private static String mangleMethodName(String name) {
+        StringBuilder sb = new StringBuilder(name.length() * 2);
+        int last = name.length();
+        for (int i = 0; i < last; i++) {
+            final char ch = name.charAt(i);
+            switch (ch) {
+                case '_': sb.append("_1"); break;
+                default: sb.append(ch); break;
+            }
+        }
+        return sb.toString();
+    }
     private static String mangleSig(String txt, int first, int last) {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder((last - first) * 2);
         for (int i = first; i < last; i++) {
             final char ch = txt.charAt(i);
             switch (ch) {
@@ -1449,6 +1461,10 @@ abstract class ByteCodeToJavaScript {
         }
         return sb.toString();
     }
+    
+    private static String mangleClassName(String name) {
+        return mangleSig(name);
+    }
 
     private static String findMethodName(MethodData m, StringBuilder cnt) {
         StringBuilder name = new StringBuilder();
@@ -1457,7 +1473,7 @@ abstract class ByteCodeToJavaScript {
         } else if ("<clinit>".equals(m.getName())) { // NOI18N
             name.append("class"); // NOI18N
         } else {
-            name.append(m.getName());
+            name.append(mangleMethodName(m.getName()));
         } 
         
         countArgs(m.getInternalSig(), new char[1], name, cnt);
@@ -1471,7 +1487,7 @@ abstract class ByteCodeToJavaScript {
         if ("<init>".equals(nm)) { // NOI18N
             name.append("cons"); // NOI18N
         } else {
-            name.append(nm);
+            name.append(mangleMethodName(nm));
         }
         countArgs(descr, returnType, name, cnt);
         return name.toString();
@@ -1499,7 +1515,7 @@ abstract class ByteCodeToJavaScript {
         }
 
         final String in = mi[0];
-        out.append(accessClass(in.replace('/', '_')));
+        out.append(accessClass(mangleClassName(in)));
         out.append("(false).");
         if (mn.startsWith("cons_")) {
             out.append("constructor.");
@@ -1585,7 +1601,7 @@ abstract class ByteCodeToJavaScript {
                 s = accessClass("java_lang_Class") + "(false).forName__Ljava_lang_Class_2Ljava_lang_String_2('" + classRef[0] + "');";
             } else {
                 addReference(classRef[0]);
-                s = accessClass(s.replace('/', '_')) + "(false).constructor.$class";
+                s = accessClass(mangleClassName(s)) + "(false).constructor.$class";
             }
         }
         return s;
@@ -1695,7 +1711,7 @@ abstract class ByteCodeToJavaScript {
             int paramBeg = body.indexOf('(', sigEnd + 1);
             
             sb.append("vm.").append(pkgName.replace('/', '_')).append("_$JsCallbacks$(false)._VM().");
-            sb.append(mangle(fqn, method, params, false));
+            sb.append(mangleJsCallbacks(fqn, method, params, false));
             sb.append("(").append(refId);
             if (body.charAt(paramBeg + 1) != ')') {
                 sb.append(",");
@@ -1732,12 +1748,13 @@ abstract class ByteCodeToJavaScript {
             int paramBeg = body.indexOf('(', sigEnd + 1);
             
             sb.append("vm.").append(pkgName.replace('/', '_')).append("_$JsCallbacks$(false)._VM().");
-            sb.append(mangle(fqn, method, params, true));
+            sb.append(mangleJsCallbacks(fqn, method, params, true));
             sb.append("(");
             pos = paramBeg + 1;
         }
     }
-    private static String mangle(String fqn, String method, String params, boolean isStatic) {
+
+    static String mangleJsCallbacks(String fqn, String method, String params, boolean isStatic) {
         if (params.startsWith("(")) {
             params = params.substring(1);
         }
@@ -1745,28 +1762,23 @@ abstract class ByteCodeToJavaScript {
             params = params.substring(0, params.length() - 1);
         }
         StringBuilder sb = new StringBuilder();
-        final String rfqn = replace(fqn);
-        final String rm = replace(method);
-        final String rp = replace(params);
+        final String fqnu = fqn.replace('.', '_');
+        final String rfqn = mangleClassName(fqnu);
+        final String rm = mangleMethodName(method);
+        final String rp = mangleSig(params);
+        final String mrp = mangleMethodName(rp);
         sb.append(rfqn).append("$").append(rm).
-            append('$').append(rp).append("__Ljava_lang_Object_2");
+            append('$').append(mrp).append("__Ljava_lang_Object_2");
         if (!isStatic) {
-            sb.append('L').append(rfqn).append("_2");
+            sb.append('L').append(fqnu).append("_2");
         }
         sb.append(rp);
         return sb.toString();
     }
 
-    private static String replace(String orig) {
-        return orig.replace("_", "_1").
-            replace(";", "_2").
-            replace("[", "_3").
-            replace('.', '_').replace('/', '_');
-    }
-    
     private static String className(ClassData jc) {
         //return jc.getName().getInternalName().replace('/', '_');
-        return jc.getClassName().replace('/', '_');
+        return mangleClassName(jc.getClassName());
     }
     
     private static String[] findAnnotation(
@@ -1879,7 +1891,7 @@ abstract class ByteCodeToJavaScript {
                 final String slashType = attrType.substring(1, attrType.length() - 1);
                 requireReference(slashType);
                 
-                out.append(accessClass(slashType.replace('/', '_')))
+                out.append(accessClass(mangleClassName(slashType)))
                    .append("(false).constructor.fld_").append(value);
             }
         };
