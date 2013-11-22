@@ -34,6 +34,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.scene.web.WebEngine;
@@ -68,7 +69,9 @@ public class FXBrwsr extends Application {
         hbox.setStyle( "-fx-background-color: #808080;");
         hbox.setAlignment(Pos.CENTER);
         hbox.getChildren().add(vbox);
+        HBox.setHgrow(vbox, Priority.ALWAYS);
         vbox.getChildren().add(view);
+        VBox.setVgrow(view, Priority.ALWAYS);
 
         BorderPane root = new BorderPane();
         final boolean showToolbar = "true".equals(this.getParameters().getNamed().get("toolbar")); // NOI18N
