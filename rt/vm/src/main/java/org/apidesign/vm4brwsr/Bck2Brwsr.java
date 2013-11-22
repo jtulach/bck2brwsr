@@ -19,8 +19,6 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
-import java.util.Enumeration;
 
 /** Build your own virtual machine! Use methods in this class to generate
  * a skeleton JVM in JavaScript that contains pre-compiled classes of your
