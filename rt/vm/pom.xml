@@ -18,6 +18,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <author.name>Jaroslav Tulach</author.name>
     <author.email>jaroslav.tulach@apidesign.org</author.email>
+    <bck2brwsr.obfuscationlevel>MINIMAL</bck2brwsr.obfuscationlevel>
   </properties>
   
   <repositories>
@@ -91,7 +92,7 @@
                             <classpath />
                             <argument>org.apidesign.vm4brwsr.Main</argument>
                             <argument>--obfuscatelevel</argument>
-                            <argument>MINIMAL</argument>
+                            <argument>${bck2brwsr.obfuscationlevel}</argument>
                             <argument>${project.build.directory}/bck2brwsr.js</argument>
                             <argument>org/apidesign/vm4brwsr/Bck2Brwsr</argument>
                         </arguments>
