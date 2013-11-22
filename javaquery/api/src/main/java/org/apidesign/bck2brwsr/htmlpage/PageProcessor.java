@@ -1226,6 +1226,12 @@ public final class PageProcessor extends AbstractProcessor {
             isModel[0] = true;
         } else {
             ret = tm.toString();
+            int idx = ret.indexOf("<any?>.");
+            if (idx >= 0) {
+                ret = ret.substring(idx + 7);
+                isEnum[0] = false;
+                return ret;
+            }
         }
         TypeMirror enm = processingEnv.getElementUtils().getTypeElement("java.lang.Enum").asType();
         enm = processingEnv.getTypeUtils().erasure(enm);
