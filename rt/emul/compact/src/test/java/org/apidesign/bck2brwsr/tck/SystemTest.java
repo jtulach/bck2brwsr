@@ -17,6 +17,9 @@
  */
 package org.apidesign.bck2brwsr.tck;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
@@ -30,6 +33,30 @@ public class SystemTest {
         return System.getProperty("os.name") != null;
     }
 
+    @Compare public String captureStdOut() throws Exception {
+        Object capture = initCapture();
+        System.out.println("Ahoj");
+        return textCapture(capture);
+    }
+    
+    @JavaScriptBody(args = {}, body = ""
+        + "var lines = [];"
+        + "console.log = function(l) { lines.push(l); };"
+        + "return lines;")
+    Object initCapture() {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(os);
+        
+        System.setOut(ps);
+        return os;
+    }
+    
+    @JavaScriptBody(args = { "o" }, body = "return o.join('');")
+    String textCapture(Object o) throws java.io.IOException {
+        ByteArrayOutputStream b = (ByteArrayOutputStream) o;
+        return new String(b.toByteArray(), "UTF-8");
+    }
+    
     @Factory public static Object[] create() {
         return VMTest.create(SystemTest.class);
     }

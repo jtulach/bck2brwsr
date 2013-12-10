@@ -17,9 +17,11 @@
  */
 package java.lang;
 
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Properties;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
@@ -88,9 +90,42 @@ public class System {
 
     public final static PrintStream err;
     
-    static {
-        in = new ByteArrayInputStream(new byte[0]);
-        out = err = new PrintStream(new ByteArrayOutputStream());
+    public static void setOut(PrintStream out) {
+        throw new SecurityException();
+    }
+
+    public static void setIn(InputStream in) {
+        throw new SecurityException();
+    }
+
+    public static void setErr(PrintStream err) {
+        throw new SecurityException();
     }
     
+    static {
+        in = new ByteArrayInputStream(new byte[0]);
+        out = new PrintStream(new BufferedOutputStream(new SystemStream("log")));
+        err = new PrintStream(new BufferedOutputStream(new SystemStream("warn")));
+    }
+
+    private static final class SystemStream extends OutputStream {
+        private final String method;
+
+        public SystemStream(String method) {
+            this.method = method;
+        }
+
+        @Override
+        public void write(byte b[], int off, int len) throws IOException {
+            write(method, new String(b, off, len, "UTF-8"));
+        }
+
+        @JavaScriptBody(args = { "method", "b" }, body = "if (typeof console !== 'undefined') console[method](b.toString());")
+        private static native void write(String method, String b);
+
+        @Override
+        public void write(int b) throws IOException {
+            write(new byte[] { (byte)b });
+        }
+    } // end of SystemStream
 }
