@@ -19,6 +19,7 @@ package org.apidesign.bck2brwsr.tck;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
@@ -28,6 +29,7 @@ import org.testng.annotations.Factory;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
+@ExtraJavaScript(resource = "/org/apidesign/bck2brwsr/tck/console.js")
 public class SystemTest {
     @Compare public boolean nonNullOSName() {
         return System.getProperty("os.name") != null;
