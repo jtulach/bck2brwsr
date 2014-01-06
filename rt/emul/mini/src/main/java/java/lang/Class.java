@@ -632,6 +632,20 @@ public final
         return getAccess();
     }
 
+    /**
+     * If the class or interface represented by this {@code Class} object
+     * is a member of another class, returns the {@code Class} object
+     * representing the class in which it was declared.  This method returns
+     * null if this class or interface is not a member of any other class.  If
+     * this {@code Class} object represents an array class, a primitive
+     * type, or void,then this method returns null.
+     *
+     * @return the declaring class for this class
+     * @since JDK1.1
+     */
+    public Class<?> getDeclaringClass() {
+        throw new SecurityException();
+    }
 
     /**
      * Returns the simple name of the underlying class as given in the
