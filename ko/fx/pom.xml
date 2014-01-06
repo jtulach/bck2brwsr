@@ -40,7 +40,7 @@
       <type>jar</type>
     </dependency>
     <dependency>
-      <groupId>org.apidesign.html</groupId>
+      <groupId>org.netbeans.html</groupId>
       <artifactId>net.java.html.json</artifactId>
       <version>${net.java.html.version}</version>
     </dependency>
@@ -50,7 +50,7 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apidesign.html</groupId>
+      <groupId>org.netbeans.html</groupId>
       <artifactId>net.java.html.json.tck</artifactId>
       <version>${net.java.html.version}</version>
       <scope>test</scope>
@@ -67,13 +67,13 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apidesign.html</groupId>
+      <groupId>org.netbeans.html</groupId>
       <artifactId>net.java.html.boot</artifactId>
       <version>${net.java.html.version}</version>
       <type>jar</type>
     </dependency>
     <dependency>
-      <groupId>org.apidesign.html</groupId>
+      <groupId>org.netbeans.html</groupId>
       <artifactId>ko-fx</artifactId>
       <version>${net.java.html.version}</version>
       <type>jar</type>
@@ -86,7 +86,7 @@
       <type>jar</type>
     </dependency>
     <dependency>
-      <groupId>org.apidesign.html</groupId>
+      <groupId>org.netbeans.html</groupId>
       <artifactId>ko-ws-tyrus</artifactId>
       <version>${net.java.html.version}</version>
       <scope>test</scope>

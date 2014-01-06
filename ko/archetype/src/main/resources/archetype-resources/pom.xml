@@ -126,7 +126,7 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apidesign.html</groupId>
+      <groupId>org.netbeans.html</groupId>
       <artifactId>net.java.html.json</artifactId>
       <version>\${net.java.html.version}</version>
       <type>jar</type>
@@ -182,7 +182,7 @@
           </build>
           <dependencies>
               <dependency>
-                  <groupId>org.apidesign.html</groupId>
+                  <groupId>org.netbeans.html</groupId>
                   <artifactId>ko-fx</artifactId>
                   <version>\${net.java.html.version}</version>
               </dependency>

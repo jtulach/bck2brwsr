@@ -19,7 +19,6 @@ package org.apidesign.bck2brwsr.launcher.fximpl;
 
 import java.io.BufferedReader;
 import java.io.Reader;
-import org.apidesign.html.boot.spi.Fn;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,8 +28,9 @@ import java.util.TooManyListenersException;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.web.WebEngine;
 import netscape.javascript.JSObject;
-import org.apidesign.html.boot.impl.FindResources;
-import org.apidesign.html.boot.impl.FnUtils;
+import org.apidesign.html.boot.spi.Fn;
+import org.netbeans.html.boot.impl.FindResources;
+import org.netbeans.html.boot.impl.FnUtils;
 
 /**
  *
@@ -70,7 +70,7 @@ public final class JVMBridge {
     }
     
     public Class<?> loadClass(String name) throws ClassNotFoundException {
-        FnUtils.currentPresenter(presenter);
+        Fn.activate(presenter);
         return Class.forName(name, true, cl);
     }
     

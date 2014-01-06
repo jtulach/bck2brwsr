@@ -154,7 +154,7 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.apidesign.html</groupId>
+      <groupId>org.netbeans.html</groupId>
       <artifactId>net.java.html.boot</artifactId>
       <scope>test</scope>
       <version>${net.java.html.version}</version>

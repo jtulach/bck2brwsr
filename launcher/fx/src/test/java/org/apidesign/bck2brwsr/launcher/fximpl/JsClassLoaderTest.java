@@ -31,8 +31,8 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import org.apidesign.html.boot.spi.Fn;
-import org.apidesign.html.boot.impl.FindResources;
-import org.apidesign.html.boot.impl.FnUtils;
+import org.netbeans.html.boot.impl.FindResources;
+import org.netbeans.html.boot.impl.FnUtils;
 import static org.testng.Assert.*;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -118,7 +118,7 @@ public class JsClassLoaderTest {
     }
     
     @BeforeMethod public void registerPresenter() {
-        FnUtils.currentPresenter(presenter);
+        Fn.activate(presenter);
     }
     
     @Test public void noParamMethod() throws Throwable {
