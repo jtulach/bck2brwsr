@@ -21,10 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import org.apidesign.html.json.spi.FunctionBinding;
 import org.apidesign.html.json.spi.JSONCall;
-import org.apidesign.html.json.spi.PropertyBinding;
-import org.apidesign.html.json.spi.Technology;
 import org.apidesign.html.json.spi.Transfer;
 import org.apidesign.html.json.spi.WSTransfer;
 
@@ -32,7 +29,7 @@ import org.apidesign.html.json.spi.WSTransfer;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-final class BrwsrCtxImpl implements Technology<Object>, Transfer, WSTransfer<LoadWS> {
+final class BrwsrCtxImpl implements Transfer, WSTransfer<LoadWS> {
     private BrwsrCtxImpl() {}
     
     public static final BrwsrCtxImpl DEFAULT = new BrwsrCtxImpl();
@@ -92,45 +89,6 @@ final class BrwsrCtxImpl implements Technology<Object>, Transfer, WSTransfer<Loa
     }
 
     @Override
-    public Object wrapModel(Object model) {
-        return model;
-    }
-
-    @Override
-    public void bind(PropertyBinding b, Object model, Object data) {
-        Knockout.bind(data, b, b.getPropertyName(), 
-            "getValue__Ljava_lang_Object_2", 
-            b.isReadOnly() ? null : "setValue__VLjava_lang_Object_2", 
-            false, false
-        );
-    }
-
-    @Override
-    public void valueHasMutated(Object data, String propertyName) {
-        Knockout.valueHasMutated(data, propertyName);
-    }
-
-    @Override
-    public void expose(FunctionBinding fb, Object model, Object d) {
-        Knockout.expose(d, fb, fb.getFunctionName(), "call__VLjava_lang_Object_2Ljava_lang_Object_2");
-    }
-
-    @Override
-    public void applyBindings(Object data) {
-        Knockout.applyBindings(data);
-    }
-
-    @Override
-    public Object wrapArray(Object[] arr) {
-        return arr;
-    }
-
-    @Override
-    public <M> M toModel(Class<M> modelClass, Object data) {
-        return modelClass.cast(data);
-    }
-
-    @Override
     public Object toJSON(InputStream is) throws IOException {
         StringBuilder sb = new StringBuilder();
         InputStreamReader r = new InputStreamReader(is);
@@ -142,11 +100,6 @@ final class BrwsrCtxImpl implements Technology<Object>, Transfer, WSTransfer<Loa
             sb.append((char)ch);
         }
         return ConvertTypes.parse(sb.toString());
-    }
-
-    @Override
-    public void runSafe(Runnable r) {
-        r.run();
     }
 
     @Override

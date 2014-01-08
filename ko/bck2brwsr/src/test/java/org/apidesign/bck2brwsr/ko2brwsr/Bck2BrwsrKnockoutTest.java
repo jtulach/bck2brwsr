@@ -31,6 +31,7 @@ import org.apidesign.html.json.spi.Transfer;
 import org.apidesign.html.json.spi.WSTransfer;
 import org.apidesign.html.json.tck.KOTest;
 import org.apidesign.html.json.tck.KnockoutTCK;
+import org.netbeans.html.kofx.FXContext;
 import org.openide.util.lookup.ServiceProvider;
 import org.testng.annotations.Factory;
 
@@ -53,7 +54,7 @@ public final class Bck2BrwsrKnockoutTest extends KnockoutTCK {
         return Contexts.newBuilder().
             register(Transfer.class, BrwsrCtxImpl.DEFAULT, 9).
             register(WSTransfer.class, BrwsrCtxImpl.DEFAULT, 9).
-            register(Technology.class, BrwsrCtxImpl.DEFAULT, 9).build();
+            register(Technology.class, new FXContext(null), 9).build();
     }
 
 

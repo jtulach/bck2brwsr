@@ -40,9 +40,9 @@ public final class BrwsrCtxPrvdr implements Contexts.Provider {
     @Override
     public void fillContext(Contexts.Builder context, Class<?> requestor) {
         if (bck2BrwsrVM()) {
-            context.register(Technology.class, BrwsrCtxImpl.DEFAULT, 50).
-            register(Transfer.class, BrwsrCtxImpl.DEFAULT, 50).
-            register(WSTransfer.class, BrwsrCtxImpl.DEFAULT, 50);
+            context.
+              register(Transfer.class, BrwsrCtxImpl.DEFAULT, 50).
+              register(WSTransfer.class, BrwsrCtxImpl.DEFAULT, 50);
         }
     }
     
