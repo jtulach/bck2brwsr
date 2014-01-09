@@ -17,29 +17,10 @@
  */
 package org.apidesign.bck2brwsr.launcher.fximpl;
 
-import net.java.html.js.JavaScriptBody;
-
 /**
  *
- * @author Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class JsMethods {
-    @JavaScriptBody(args = {}, body = "return 42;")
-    public static Object fortyTwo() {
-        return -42;
-    }
-    
-    @JavaScriptBody(args = {"x", "y" }, body = "return x + y;")
-    public static native int plus(int x, int y);
-    
-    @JavaScriptBody(args = {"x"}, body = "return x;")
-    public static native int plus(int x);
-    
-    @JavaScriptBody(args = {}, body = "return this;")
-    public static native Object staticThis();
-    
-    @JavaScriptBody(args = {}, body = "return this;")
-    public native Object getThis();
-    @JavaScriptBody(args = {"x"}, body = "return x;")
-    public native int plusInst(int x);
+interface OnMessage {
+    public void onMessage(String msg);
 }
