@@ -81,7 +81,7 @@ public final class JVMBridge {
     }
     
     private final class WebPresenter 
-    implements FindResources, Fn.Presenter, Fn.ToJavaScript, Executor {
+    implements FindResources, Fn.Presenter, Fn.ToJavaScript, Fn.FromJavaScript, Executor {
         @Override
         public void findResources(String name, Collection<? super URL> results, boolean oneIsEnough) {
             if (ldrs != null) for (ClassLoader l : ldrs) {
@@ -131,6 +131,11 @@ public final class JVMBridge {
                 sb.append(l).append('\n');
             }
             engine.executeScript(sb.toString());
+        }
+
+        @Override
+        public Object toJava(Object js) {
+            return checkArray(js);
         }
 
         @Override

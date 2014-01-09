@@ -64,30 +64,32 @@ public final class KnockoutFXTest extends KnockoutTCK {
         TyrusContext tc = new TyrusContext();
         Contexts.Builder b = Contexts.newBuilder().
             register(Technology.class, ko.knockout(), 10).
-            register(Transfer.class, ko.transferViaOrgJSON(), 10);
+            register(Transfer.class, ko.transfer(), 10);
         try {
             Class.forName("java.util.function.Function");
             // prefer WebView's WebSockets on JDK8
-            b.register(WSTransfer.class, ko.websocketsViaBrowser(), 10);
+            b.register(WSTransfer.class, ko.websockets(), 10);
         } catch (ClassNotFoundException ex) {
             // ok, JDK7 needs tyrus
             b.register(WSTransfer.class, tc, 20);
+            b.register(Transfer.class, tc, 5);
         }
         return b.build();
     }
 
     @Override
     public Object createJSON(Map<String, Object> values) {
-        JSONObject json = new JSONObject();
+        Object json = createJSON();
         for (Map.Entry<String, Object> entry : values.entrySet()) {
-            try {
-                json.put(entry.getKey(), entry.getValue());
-            } catch (JSONException ex) {
-                throw new IllegalStateException(ex);
-            }
+            setProperty(json, entry.getKey(), entry.getValue());
         }
         return json;
     }
+    
+    @JavaScriptBody(args = {}, body = "return new Object();")
+    private static native Object createJSON();
+    @JavaScriptBody(args = { "json", "key", "value" }, body = "json[key] = value;")
+    private static native void setProperty(Object json, String key, Object value);
 
     @Override
     @JavaScriptBody(args = { "s", "args" }, body = ""
