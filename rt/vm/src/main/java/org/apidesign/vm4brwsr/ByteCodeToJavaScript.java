@@ -1773,6 +1773,23 @@ abstract class ByteCodeToJavaScript {
         final String fqnu = fqn.replace('.', '_');
         final String rfqn = mangleClassName(fqnu);
         final String rm = mangleMethodName(method);
+        final String srp;
+        {
+            StringBuilder pb = new StringBuilder();
+            int len = params.length();
+            int indx = 0;
+            while (indx < len) {
+                char ch = params.charAt(indx);
+                if (ch == '[' || ch == 'L') {
+                    pb.append("Ljava/lang/Object;");
+                    indx = params.indexOf(';', indx) + 1;
+                } else {
+                    pb.append(ch);
+                    indx++;
+                }
+            }
+            srp = mangleSig(pb.toString());
+        }
         final String rp = mangleSig(params);
         final String mrp = mangleMethodName(rp);
         sb.append(rfqn).append("$").append(rm).
@@ -1780,7 +1797,7 @@ abstract class ByteCodeToJavaScript {
         if (!isStatic) {
             sb.append('L').append(fqnu).append("_2");
         }
-        sb.append(rp);
+        sb.append(srp);
         return sb.toString();
     }
 
