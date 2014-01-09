@@ -638,8 +638,11 @@ public class Throwable implements Serializable {
      *          ... 2 more
      * </pre>
      */
-    @JavaScriptBody(args = {  }, body = "console.warn(this.toString());")
-    public native void printStackTrace();
+    public void printStackTrace() {
+        warn(getClass().getName() + ": " + getMessage());
+    }
+    @JavaScriptBody(args = { "msg" }, body = "if (console) console.warn(msg.toString());")
+    private native void warn(String msg);
 
     /**
      * Prints this throwable and its backtrace to the specified print stream.
