@@ -53,8 +53,8 @@ public final class Bck2BrwsrKnockoutTest extends KnockoutTCK {
     public BrwsrCtx createContext() {
         KO4J ko = new KO4J(null);
         return Contexts.newBuilder().
-            register(Transfer.class, BrwsrCtxImpl.DEFAULT, 9).
-            register(WSTransfer.class, BrwsrCtxImpl.DEFAULT, 9).
+            register(Transfer.class, ko.transfer(), 9).
+            register(WSTransfer.class, ko.websockets(), 9).
             register(Technology.class, ko.knockout(), 9).build();
     }
 
