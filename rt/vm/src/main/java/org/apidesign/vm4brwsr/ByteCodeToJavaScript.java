@@ -1623,6 +1623,7 @@ abstract class ByteCodeToJavaScript {
             String[] args = new String[30];
             String body;
             boolean javacall;
+            boolean html4j;
             
             @Override
             protected void visitAttr(String type, String attr, String at, String value) {
@@ -1636,6 +1637,7 @@ abstract class ByteCodeToJavaScript {
                     }
                 }
                 if (type.equals(htmlType)) {
+                    html4j = true;
                     if ("body".equals(attr)) {
                         body = value;
                     } else if ("args".equals(attr)) {
@@ -1659,12 +1661,18 @@ abstract class ByteCodeToJavaScript {
         out.append(" = function(");
         String space = "";
         int index = 0;
+        StringBuilder toValue = new StringBuilder();
         for (int i = 0; i < cnt.length(); i++) {
             out.append(space);
             space = outputArg(out, p.args, index);
+            if (p.html4j && space.length() > 0) {
+                toValue.append("\n  ").append(p.args[index]).append(" = vm.org_apidesign_bck2brwsr_emul_lang_System(false).toJS(").
+                    append(p.args[index]).append(");");
+            }
             index++;
         }
         out.append(") {").append("\n");
+        out.append(toValue.toString());
         if (p.javacall) {
             int lastSlash = jc.getClassName().lastIndexOf('/');
             final String pkg = jc.getClassName().substring(0, lastSlash);
