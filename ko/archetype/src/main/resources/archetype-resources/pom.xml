@@ -183,7 +183,7 @@
           <dependencies>
               <dependency>
                   <groupId>org.netbeans.html</groupId>
-                  <artifactId>ko-fx</artifactId>
+                  <artifactId>ko4j</artifactId>
                   <version>\${net.java.html.version}</version>
               </dependency>
               <dependency>
