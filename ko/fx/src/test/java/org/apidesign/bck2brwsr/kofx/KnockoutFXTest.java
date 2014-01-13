@@ -28,17 +28,17 @@ import java.util.Map;
 import net.java.html.BrwsrCtx;
 import net.java.html.js.JavaScriptBody;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
-import org.apidesign.html.boot.impl.FnUtils;
+import org.apidesign.html.boot.spi.Fn;
 import org.apidesign.html.context.spi.Contexts;
 import org.apidesign.html.json.spi.Technology;
 import org.apidesign.html.json.spi.Transfer;
 import org.apidesign.html.json.spi.WSTransfer;
 import org.apidesign.html.json.tck.KOTest;
 import org.apidesign.html.json.tck.KnockoutTCK;
-import org.apidesign.html.kofx.FXContext;
-import org.apidesign.html.wstyrus.TyrusContext;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.netbeans.html.ko4j.KO4J;
+import org.netbeans.html.wstyrus.TyrusContext;
 import org.openide.util.lookup.ServiceProvider;
 import org.testng.annotations.Factory;
 
@@ -60,34 +60,36 @@ public final class KnockoutFXTest extends KnockoutTCK {
 
     @Override
     public BrwsrCtx createContext() {
-        FXContext fx = new FXContext(FnUtils.currentPresenter());
+        KO4J ko = new KO4J(Fn.activePresenter());
         TyrusContext tc = new TyrusContext();
         Contexts.Builder b = Contexts.newBuilder().
-            register(Technology.class, fx, 10).
-            register(Transfer.class, fx, 10);
+            register(Technology.class, ko.knockout(), 10).
+            register(Transfer.class, ko.transfer(), 10);
         try {
             Class.forName("java.util.function.Function");
             // prefer WebView's WebSockets on JDK8
-            b.register(WSTransfer.class, fx, 10);
+            b.register(WSTransfer.class, ko.websockets(), 10);
         } catch (ClassNotFoundException ex) {
             // ok, JDK7 needs tyrus
             b.register(WSTransfer.class, tc, 20);
+            b.register(Transfer.class, tc, 5);
         }
         return b.build();
     }
 
     @Override
     public Object createJSON(Map<String, Object> values) {
-        JSONObject json = new JSONObject();
+        Object json = createJSON();
         for (Map.Entry<String, Object> entry : values.entrySet()) {
-            try {
-                json.put(entry.getKey(), entry.getValue());
-            } catch (JSONException ex) {
-                throw new IllegalStateException(ex);
-            }
+            setProperty(json, entry.getKey(), entry.getValue());
         }
         return json;
     }
+    
+    @JavaScriptBody(args = {}, body = "return new Object();")
+    private static native Object createJSON();
+    @JavaScriptBody(args = { "json", "key", "value" }, body = "json[key] = value;")
+    private static native void setProperty(Object json, String key, Object value);
 
     @Override
     @JavaScriptBody(args = { "s", "args" }, body = ""

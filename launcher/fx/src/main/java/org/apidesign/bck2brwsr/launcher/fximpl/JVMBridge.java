@@ -19,24 +19,30 @@ package org.apidesign.bck2brwsr.launcher.fximpl;
 
 import java.io.BufferedReader;
 import java.io.Reader;
-import org.apidesign.html.boot.spi.Fn;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.TooManyListenersException;
+import java.util.concurrent.Executor;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.web.WebEngine;
 import netscape.javascript.JSObject;
-import org.apidesign.html.boot.impl.FindResources;
-import org.apidesign.html.boot.impl.FnUtils;
+import org.apidesign.html.boot.spi.Fn;
+import org.netbeans.html.boot.impl.FindResources;
+import org.netbeans.html.boot.impl.FnUtils;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public final class JVMBridge {
+    static final Logger LOG = Logger.getLogger(JVMBridge.class.getName());
+    
     private final WebEngine engine;
     private final ClassLoader cl;
     private final WebPresenter presenter;
@@ -70,11 +76,12 @@ public final class JVMBridge {
     }
     
     public Class<?> loadClass(String name) throws ClassNotFoundException {
-        FnUtils.currentPresenter(presenter);
+        Fn.activate(presenter);
         return Class.forName(name, true, cl);
     }
     
-    private final class WebPresenter implements FindResources, Fn.Presenter {
+    private final class WebPresenter 
+    implements FindResources, Fn.Presenter, Fn.ToJavaScript, Fn.FromJavaScript, Executor {
         @Override
         public void findResources(String name, Collection<? super URL> results, boolean oneIsEnough) {
             if (ldrs != null) for (ClassLoader l : ldrs) {
@@ -87,6 +94,9 @@ public final class JVMBridge {
 
         @Override
         public Fn defineFn(String code, String... names) {
+            return defineJSFn(code, names);
+        }
+        private JSFn defineJSFn(String code, String... names) {
             StringBuilder sb = new StringBuilder();
             sb.append("(function() {");
             sb.append("  return function(");
@@ -122,6 +132,91 @@ public final class JVMBridge {
             }
             engine.executeScript(sb.toString());
         }
+
+        @Override
+        public Object toJava(Object js) {
+            return checkArray(js);
+        }
+
+        @Override
+        public Object toJavaScript(Object toReturn) {
+            if (toReturn instanceof Object[]) {
+                return convertArrays((Object[]) toReturn);
+            }
+            return toReturn;
+        }
+
+        @Override
+        public void execute(Runnable command) {
+            if (Platform.isFxApplicationThread()) {
+                command.run();
+            } else {
+                Platform.runLater(command);
+            }
+        }
+        
+        final JSObject convertArrays(Object[] arr) {
+            for (int i = 0; i < arr.length; i++) {
+                if (arr[i] instanceof Object[]) {
+                    arr[i] = convertArrays((Object[]) arr[i]);
+                }
+            }
+            final JSObject wrapArr = (JSObject) wrapArrFn().call("array", arr); // NOI18N
+            return wrapArr;
+        }
+
+        private JSObject wrapArrImpl;
+
+        private final JSObject wrapArrFn() {
+            if (wrapArrImpl == null) {
+                try {
+                    wrapArrImpl = (JSObject) defineJSFn("  var k = {};"
+                        + "  k.array= function() {"
+                        + "    return Array.prototype.slice.call(arguments);"
+                        + "  };"
+                        + "  return k;"
+                    ).invokeImpl(null, false);
+                } catch (Exception ex) {
+                    throw new IllegalStateException(ex);
+                }
+            }
+            return wrapArrImpl;
+        }
+
+        final Object checkArray(Object val) {
+            int length = ((Number) arraySizeFn().call("array", val, null)).intValue();
+            if (length == -1) {
+                return val;
+            }
+            Object[] arr = new Object[length];
+            arraySizeFn().call("array", val, arr);
+            return arr;
+        }
+        private JSObject arraySize;
+
+        private final JSObject arraySizeFn() {
+            if (arraySize == null) {
+                try {
+                    arraySize = (JSObject) defineJSFn("  var k = {};"
+                        + "  k.array = function(arr, to) {"
+                        + "    if (to === null) {"
+                        + "      if (Object.prototype.toString.call(arr) === '[object Array]') return arr.length;"
+                        + "      else return -1;"
+                        + "    } else {"
+                        + "      var l = arr.length;"
+                        + "      for (var i = 0; i < l; i++) to[i] = arr[i];"
+                        + "      return l;"
+                        + "    }"
+                        + "  };"
+                        + "  return k;"
+                    ).invokeImpl(null, false);
+                } catch (Exception ex) {
+                    throw new IllegalStateException(ex);
+                }
+            }
+            return arraySize;
+        }
+        
     }
     
     private static final class JSFn extends Fn {
@@ -134,12 +229,29 @@ public final class JVMBridge {
 
         @Override
         public Object invoke(Object thiz, Object... args) throws Exception {
+            return invokeImpl(thiz, true, args);
+        }
+
+        final Object invokeImpl(Object thiz, boolean arrayChecks, Object... args) throws Exception {
             try {
                 List<Object> all = new ArrayList<Object>(args.length + 1);
                 all.add(thiz == null ? fn : thiz);
-                all.addAll(Arrays.asList(args));
+                for (int i = 0; i < args.length; i++) {
+                    if (arrayChecks && args[i] instanceof Object[]) {
+                        Object[] arr = (Object[]) args[i];
+                        Object conv = ((WebPresenter) presenter()).convertArrays(arr);
+                        args[i] = conv;
+                    }
+                    all.add(args[i]);
+                }
                 Object ret = fn.call("call", all.toArray()); // NOI18N
-                return ret == fn ? null : ret;
+                if (ret == fn) {
+                    return null;
+                }
+                if (!arrayChecks) {
+                    return ret;
+                }
+                return ((WebPresenter) presenter()).checkArray(ret);
             } catch (Error t) {
                 t.printStackTrace();
                 throw t;

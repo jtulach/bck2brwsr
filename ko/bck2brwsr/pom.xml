@@ -62,6 +62,12 @@
       <version>${project.version}</version>
       <type>jar</type>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>json</artifactId>
+          <groupId>org.json</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
@@ -74,14 +80,20 @@
       <artifactId>launcher.http</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>asm</artifactId>
+          <groupId>org.ow2.asm</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.apidesign.html</groupId>
+      <groupId>org.netbeans.html</groupId>
       <artifactId>net.java.html.json</artifactId>
       <version>${net.java.html.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.apidesign.html</groupId>
+      <groupId>org.netbeans.html</groupId>
       <artifactId>net.java.html.json.tck</artifactId>
       <version>${net.java.html.version}</version>
       <scope>test</scope>
@@ -93,10 +105,31 @@
       <type>jar</type>
     </dependency>
     <dependency>
-      <groupId>org.apidesign.html</groupId>
+      <groupId>org.netbeans.html</groupId>
       <artifactId>net.java.html.boot</artifactId>
       <version>${net.java.html.version}</version>
       <type>jar</type>
+      <exclusions>
+        <exclusion>
+          <artifactId>asm</artifactId>
+          <groupId>org.ow2.asm</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.html</groupId>
+      <artifactId>ko4j</artifactId>
+      <version>${net.java.html.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>json</artifactId>
+          <groupId>org.json</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>org.json-osgi</artifactId>
+          <groupId>de.twentyeleven.skysail</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 </project>

@@ -15,21 +15,20 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
+package org.apidesign.bck2brwsr.ko2brwsr;
 
-package org.apidesign.bck2brwsr.launcher.fximpl;
+import org.apidesign.bck2brwsr.vmtest.VMTest;
+import org.apidesign.html.json.tck.JavaScriptTCK;
+import org.apidesign.html.json.tck.KOTest;
+import org.testng.annotations.Factory;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public final class Run implements Runnable {
-    private final Runnable r;
-    Run(Runnable r) {
-        this.r = r;
-    }
-
-    @Override
-    public void run() {
-        r.run();
+public class Bck2BrwsrJavaScriptBodyTest extends JavaScriptTCK {
+    @Factory public static Object[] tests() {
+        return VMTest.newTests().withClasses(testClasses())
+            .withTestAnnotation(KOTest.class).build();
     }
 }

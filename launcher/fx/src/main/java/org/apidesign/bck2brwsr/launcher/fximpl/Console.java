@@ -25,8 +25,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.Enumeration;
+import net.java.html.js.JavaScriptBody;
 import netscape.javascript.JSObject;
-import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
  *
@@ -60,8 +60,7 @@ public final class Console {
     }
     
     private static void beginTest(Case c) {
-        Object[] arr = new Object[2];
-        beginTest(c.getClassName() + "." + c.getMethodName(), c, arr);
+        Object[] arr = beginTest(c.getClassName() + "." + c.getMethodName(), c, new Object[2]);
         textArea = arr[0];
         statusArea = arr[1];
     }
@@ -102,23 +101,23 @@ public final class Console {
         + "ul.appendChild(li);\n"
         + "arr[0] = pre;\n"
         + "arr[1] = status;\n"
+        + "return arr;"
     )
-    private static native void beginTest(String test, Case c, Object[] arr);
+    private static native Object[] beginTest(String test, Case c, Object[] arr);
     
-    @JavaScriptBody(args = { "url", "callback", "arr" }, body =
+    @JavaScriptBody(args = { "url", "callback" }, javacall = true, body =
           "var request = new XMLHttpRequest();\n"
         + "request.open('GET', url, true);\n"
         + "request.setRequestHeader('Content-Type', 'text/plain; charset=utf-8');\n"
         + "request.onreadystatechange = function() {\n"
         + "  if (this.readyState!==4) return;\n"
         + " try {\n"
-        + "  arr[0] = this.responseText;\n"
-        + "  callback.run();\n"
+        + "  callback.@org.apidesign.bck2brwsr.launcher.fximpl.OnMessage::onMessage(Ljava/lang/String;)(this.responseText);\n"
         + " } catch (e) { alert(e); }\n"
         + "};\n"
         + "request.send();\n"
     )
-    private static native void loadText(String url, Runnable callback, String[] arr) throws IOException;
+    private static native void loadText(String url, OnMessage callback) throws IOException;
     
     public static void runHarness(String url) throws IOException {
         new Console().harness(url);
@@ -129,7 +128,7 @@ public final class Console {
         Request r = new Request(url);
     }
     
-    private static class Request implements Runnable {
+    private static class Request implements Runnable, OnMessage {
         private final String[] arr = { null };
         private final String url;
         private Case c;
@@ -137,11 +136,17 @@ public final class Console {
 
         private Request(String url) throws IOException {
             this.url = url;
-            loadText(url, new Run(this), arr);
+            loadText(url, this);
         }
         private Request(String url, String u) throws IOException {
             this.url = url;
-            loadText(u, new Run(this), arr);
+            loadText(u, this);
+        }
+
+        @Override
+        public void onMessage(String msg) {
+            arr[0] = msg;
+            run();
         }
         
         @Override
@@ -177,7 +182,7 @@ public final class Console {
             } catch (Exception ex) {
                 if (ex instanceof InterruptedException) {
                     log("Re-scheduling in 100ms");
-                    schedule(new Run(this), 100);
+                    schedule(this, 100);
                     return;
                 }
                 log(ex.getClass().getName() + ":" + ex.getMessage());
@@ -250,7 +255,11 @@ public final class Console {
     private static void turnAssetionStatusOn() {
     }
 
-    @JavaScriptBody(args = { "r", "time" }, body = "return window.setTimeout(function() { r.run(); }, time);")
+    @JavaScriptBody(args = { "r", "time" }, javacall = true, body = 
+        "return window.setTimeout(function() { "
+        + "r.@java.lang.Runnable::run()(); "
+        + "}, time);"
+    )
     private static native Object schedule(Runnable r, int time);
     
     private static final class Case {
