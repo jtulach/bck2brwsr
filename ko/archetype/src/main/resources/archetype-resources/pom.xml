@@ -43,6 +43,7 @@
     <bck2brwsr.launcher.version>${project.version}</bck2brwsr.launcher.version>
     <bck2brwsr.obfuscationlevel>MINIMAL</bck2brwsr.obfuscationlevel>
     <brwsr.startpage>pages/index.html</brwsr.startpage>
+    <netbeans.compile.on.save>none</netbeans.compile.on.save>
   </properties>
   <build>
       <plugins>
@@ -63,6 +64,19 @@
                   <launcher>${brwsr}</launcher>
               </configuration>
           </plugin>
+          <plugin>
+              <groupId>org.netbeans.html</groupId>
+              <artifactId>html4j-maven-plugin</artifactId>
+              <version>${net.java.html.version}</version>
+              <executions>
+                  <execution>
+                      <id>js-classes</id>
+                      <goals>
+                          <goal>process-js-annotations</goal>
+                      </goals>
+                  </execution>
+              </executions>
+          </plugin>          
           <plugin>
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-compiler-plugin</artifactId>
@@ -110,7 +124,7 @@
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
-      <version>6.5.2</version>
+      <version>6.7</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -131,6 +145,12 @@
       <version>\${net.java.html.version}</version>
       <type>jar</type>
     </dependency>
+    <dependency>
+      <groupId>org.netbeans.html</groupId>
+      <artifactId>net.java.html.boot</artifactId>
+      <version>\${net.java.html.version}</version>
+      <type>jar</type>
+    </dependency>    
   </dependencies>
   <profiles>
       <profile>
@@ -211,6 +231,9 @@
                           <compilerArguments>
                               <bootclasspath>netbeans.ignore.jdk.bootclasspath</bootclasspath>
                           </compilerArguments>
+                          <testExcludes>
+                              <exclude>**/JsInteractionTest*</exclude>
+                          </testExcludes>
                       </configuration>
                   </plugin>
                   <plugin>

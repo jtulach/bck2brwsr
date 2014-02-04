@@ -25,7 +25,21 @@ final class DataModel {
     @Function static void turnOn(Data model) {
         model.setOn(true);
     }
-    @Function static void turnOff(Data model) {
-        model.setOn(false);
+
+    @Function static void turnOff(final Data model) {
+        confirmByUser("Really turn off?", new Runnable() {
+            @Override
+            public void run() {
+                model.setOn(false);
+            }
+        });
     }
+    
+    /** Shows direct interaction with JavaScript */
+    @net.java.html.js.JavaScriptBody(
+        args = { "msg", "callback" }, 
+        javacall = true, 
+        body = "alert(msg); callback.@java.lang.Runnable::run()();"
+    )
+    static native void confirmByUser(String msg, Runnable callback);
 }
