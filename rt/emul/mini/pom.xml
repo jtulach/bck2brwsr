@@ -4,11 +4,11 @@
   <parent>
     <groupId>org.apidesign.bck2brwsr</groupId>
     <artifactId>emul.pom</artifactId>
-    <version>0.9-SNAPSHOT</version>
+    <version>0.8.1</version>
   </parent>
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>emul.mini</artifactId>
-  <version>0.9-SNAPSHOT</version>
+  <version>0.8.1</version>
   <name>Minimal API Profile</name>
   <url>http://maven.apache.org</url>
   <properties>
@@ -18,7 +18,7 @@
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>core</artifactId>
-      <version>0.9-SNAPSHOT</version>
+      <version>0.8.1</version>
       <type>jar</type>
     </dependency>
     <dependency>
@@ -38,22 +38,22 @@
                       <phase>generate-sources</phase>
                       <configuration>
                           <target>
-                              <mkdir dir="${project.build.directory}/bootcp"/>
+                              <mkdir dir="${project.build.directory}/bootcp" />
                               <copy todir="${project.build.directory}/bootcp">
                                   <resources>
                                       <!-- copy all resources that are in
                                         compact profile, but are referenced from
                                         the mini profile
                                       -->
-                                      <javaresource name="java/net/URI.class"/>
-                                      <javaresource name="java/net/URISyntaxException.class"/>
-                                      <javaresource name="java/net/URLConnection.class"/>
-                                      <javaresource name="java/util/Locale.class"/>
-                                      <javaresource name="java/io/OutputStream.class"/>
-                                      <javaresource name="java/io/FilterOutputStream.class"/>
-                                      <javaresource name="java/io/PrintStream.class"/>
-                                      <javaresource name="java/io/PrintWriter.class"/>
-                                      <javaresource name="java/io/Writer.class"/>
+                                      <javaresource name="java/net/URI.class" />
+                                      <javaresource name="java/net/URISyntaxException.class" />
+                                      <javaresource name="java/net/URLConnection.class" />
+                                      <javaresource name="java/util/Locale.class" />
+                                      <javaresource name="java/io/OutputStream.class" />
+                                      <javaresource name="java/io/FilterOutputStream.class" />
+                                      <javaresource name="java/io/PrintStream.class" />
+                                      <javaresource name="java/io/PrintWriter.class" />
+                                      <javaresource name="java/io/Writer.class" />
                                   </resources>
                               </copy>
                           </target>
