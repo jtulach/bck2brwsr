@@ -941,6 +941,7 @@ abstract class ByteCodeToJavaScript {
                                    ">=", topMostLabel);
                     break;
                 case opc_goto: {
+                    smapper.flush(out);
                     int indx = i + readShortArg(byteCodes, i);
                     goTo(out, i, indx, topMostLabel);
                     i += 2;
