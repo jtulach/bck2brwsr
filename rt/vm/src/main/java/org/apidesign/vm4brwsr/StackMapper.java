@@ -197,10 +197,6 @@ final class StackMapper {
 
     private void popImpl(final int count) {
         final int stackSize = stackTypeIndexPairs.getSize();
-        for (int i = stackSize - count; i < stackSize; ++i) {
-            final int value = stackTypeIndexPairs.get(i);
-        }
-
         stackTypeIndexPairs.setSize(stackSize - count);
     }
 
