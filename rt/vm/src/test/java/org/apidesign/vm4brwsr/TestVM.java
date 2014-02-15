@@ -164,7 +164,10 @@ public final class TestVM {
             return ex.toString();
         }
     }
-    
+
+    final CharSequence codeSeq() {
+        return codeSeq;
+    }
     
     private static class EmulationResources implements Bck2Brwsr.Resources {
         @Override

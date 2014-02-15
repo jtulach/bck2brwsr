@@ -17,6 +17,7 @@
  */
 package org.apidesign.vm4brwsr;
 
+import java.io.IOException;
 import org.apidesign.vm4brwsr.ByteCodeParser.TypeArray;
 
 final class StackMapper {
@@ -70,6 +71,10 @@ final class StackMapper {
         return getVariable(pushTypeImpl(type));
     }
 
+    void assign(Appendable out, int varType, CharSequence s) throws IOException {
+        ByteCodeToJavaScript.emit(out, "var @1 = @2;", pushT(varType), s);
+    }
+    
     public Variable popI() {
         return popT(VarType.INTEGER);
     }

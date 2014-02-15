@@ -367,72 +367,71 @@ abstract class ByteCodeToJavaScript {
             final int c = readUByte(byteCodes, i);
             switch (c) {
                 case opc_aload_0:
-                    emit(out, "var @1 = @2;", smapper.pushA(), lmapper.getA(0));
+                    smapper.assign(out, VarType.REFERENCE, lmapper.getA(0));
                     break;
                 case opc_iload_0:
-                    emit(out, "var @1 = @2;", smapper.pushI(), lmapper.getI(0));
+                    smapper.assign(out, VarType.INTEGER, lmapper.getI(0));
                     break;
                 case opc_lload_0:
-                    emit(out, "var @1 = @2;", smapper.pushL(), lmapper.getL(0));
+                    smapper.assign(out, VarType.LONG, lmapper.getL(0));
                     break;
                 case opc_fload_0:
-                    emit(out, "var @1 = @2;", smapper.pushF(), lmapper.getF(0));
+                    smapper.assign(out, VarType.FLOAT, lmapper.getF(0));
                     break;
                 case opc_dload_0:
-                    emit(out, "var @1 = @2;", smapper.pushD(), lmapper.getD(0));
+                    smapper.assign(out, VarType.DOUBLE, lmapper.getD(0));
                     break;
                 case opc_aload_1:
-                    emit(out, "var @1 = @2;", smapper.pushA(), lmapper.getA(1));
+                    smapper.assign(out, VarType.REFERENCE, lmapper.getA(1));
                     break;
                 case opc_iload_1:
-                    emit(out, "var @1 = @2;", smapper.pushI(), lmapper.getI(1));
+                    smapper.assign(out, VarType.INTEGER, lmapper.getI(1));
                     break;
                 case opc_lload_1:
-                    emit(out, "var @1 = @2;", smapper.pushL(), lmapper.getL(1));
+                    smapper.assign(out, VarType.LONG, lmapper.getL(1));
                     break;
                 case opc_fload_1:
-                    emit(out, "var @1 = @2;", smapper.pushF(), lmapper.getF(1));
+                    smapper.assign(out, VarType.FLOAT, lmapper.getF(1));
                     break;
                 case opc_dload_1:
-                    emit(out, "var @1 = @2;", smapper.pushD(), lmapper.getD(1));
+                    smapper.assign(out, VarType.DOUBLE, lmapper.getD(1));
                     break;
                 case opc_aload_2:
-                    emit(out, "var @1 = @2;", smapper.pushA(), lmapper.getA(2));
+                    smapper.assign(out, VarType.REFERENCE, lmapper.getA(2));
                     break;
                 case opc_iload_2:
-                    emit(out, "var @1 = @2;", smapper.pushI(), lmapper.getI(2));
+                    smapper.assign(out, VarType.INTEGER, lmapper.getI(2));
                     break;
                 case opc_lload_2:
-                    emit(out, "var @1 = @2;", smapper.pushL(), lmapper.getL(2));
+                    smapper.assign(out, VarType.LONG, lmapper.getL(2));
                     break;
                 case opc_fload_2:
-                    emit(out, "var @1 = @2;", smapper.pushF(), lmapper.getF(2));
+                    smapper.assign(out, VarType.FLOAT, lmapper.getF(2));
                     break;
                 case opc_dload_2:
-                    emit(out, "var @1 = @2;", smapper.pushD(), lmapper.getD(2));
+                    smapper.assign(out, VarType.DOUBLE, lmapper.getD(2));
                     break;
                 case opc_aload_3:
-                    emit(out, "var @1 = @2;", smapper.pushA(), lmapper.getA(3));
+                    smapper.assign(out, VarType.REFERENCE, lmapper.getA(3));
                     break;
                 case opc_iload_3:
-                    emit(out, "var @1 = @2;", smapper.pushI(), lmapper.getI(3));
+                    smapper.assign(out, VarType.INTEGER, lmapper.getI(3));
                     break;
                 case opc_lload_3:
-                    emit(out, "var @1 = @2;", smapper.pushL(), lmapper.getL(3));
+                    smapper.assign(out, VarType.LONG, lmapper.getL(3));
                     break;
                 case opc_fload_3:
-                    emit(out, "var @1 = @2;", smapper.pushF(), lmapper.getF(3));
+                    smapper.assign(out, VarType.FLOAT, lmapper.getF(3));
                     break;
                 case opc_dload_3:
-                    emit(out, "var @1 = @2;", smapper.pushD(), lmapper.getD(3));
+                    smapper.assign(out, VarType.DOUBLE, lmapper.getD(3));
                     break;
                 case opc_iload: {
                     ++i;
                     final int indx = wide ? readUShort(byteCodes, i++)
                                           : readUByte(byteCodes, i);
                     wide = false;
-                    emit(out, "var @1 = @2;",
-                         smapper.pushI(), lmapper.getI(indx));
+                    smapper.assign(out, VarType.INTEGER, lmapper.getI(indx));
                     break;
                 }
                 case opc_lload: {
@@ -440,8 +439,7 @@ abstract class ByteCodeToJavaScript {
                     final int indx = wide ? readUShort(byteCodes, i++)
                                           : readUByte(byteCodes, i);
                     wide = false;
-                    emit(out, "var @1 = @2;",
-                         smapper.pushL(), lmapper.getL(indx));
+                    smapper.assign(out, VarType.LONG, lmapper.getL(indx));
                     break;
                 }
                 case opc_fload: {
@@ -449,8 +447,7 @@ abstract class ByteCodeToJavaScript {
                     final int indx = wide ? readUShort(byteCodes, i++)
                                           : readUByte(byteCodes, i);
                     wide = false;
-                    emit(out, "var @1 = @2;",
-                         smapper.pushF(), lmapper.getF(indx));
+                    smapper.assign(out, VarType.FLOAT, lmapper.getF(indx));
                     break;
                 }
                 case opc_dload: {
@@ -458,8 +455,7 @@ abstract class ByteCodeToJavaScript {
                     final int indx = wide ? readUShort(byteCodes, i++)
                                           : readUByte(byteCodes, i);
                     wide = false;
-                    emit(out, "var @1 = @2;",
-                         smapper.pushD(), lmapper.getD(indx));
+                    smapper.assign(out, VarType.DOUBLE, lmapper.getD(indx));
                     break;
                 }
                 case opc_aload: {
@@ -467,8 +463,7 @@ abstract class ByteCodeToJavaScript {
                     final int indx = wide ? readUShort(byteCodes, i++)
                                           : readUByte(byteCodes, i);
                     wide = false;
-                    emit(out, "var @1 = @2;",
-                         smapper.pushA(), lmapper.getA(indx));
+                    smapper.assign(out, VarType.REFERENCE, lmapper.getA(indx));
                     break;
                 }
                 case opc_istore: {
@@ -1935,7 +1930,7 @@ abstract class ByteCodeToJavaScript {
         return ",";
     }
 
-    private static void emit(final Appendable out,
+    static void emit(final Appendable out,
                              final String format,
                              final CharSequence... params) throws IOException {
         final int length = format.length();
