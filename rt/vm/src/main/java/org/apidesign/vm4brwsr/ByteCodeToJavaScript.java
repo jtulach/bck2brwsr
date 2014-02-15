@@ -340,6 +340,7 @@ abstract class ByteCodeToJavaScript {
                 }
             }
             if (lastStackFrame != stackMapIterator.getFrameIndex()) {
+                smapper.flush(out);
                 if (i != 0) {
                     out.append("    }\n");
                 }
@@ -772,46 +773,46 @@ abstract class ByteCodeToJavaScript {
                     smapper.assign(out, VarType.REFERENCE, "null");
                     break;
                 case opc_iconst_m1:
-                    smapper.assign(out, VarType.INTEGER, "-1");
+                    smapper.assign(out, VarType.INTEGER, "(-1)");
                     break;
                 case opc_iconst_0:
-                    smapper.assign(out, VarType.INTEGER, "0");
+                    smapper.assign(out, VarType.INTEGER, "(0)");
                     break;
                 case opc_dconst_0:
-                    smapper.assign(out, VarType.DOUBLE, "0");
+                    smapper.assign(out, VarType.DOUBLE, "(0)");
                     break;
                 case opc_lconst_0:
-                    smapper.assign(out, VarType.LONG, "0");
+                    smapper.assign(out, VarType.LONG, "(0)");
                     break;
                 case opc_fconst_0:
-                    smapper.assign(out, VarType.FLOAT, "0");
+                    smapper.assign(out, VarType.FLOAT, "(0)");
                     break;
                 case opc_iconst_1:
-                    smapper.assign(out, VarType.INTEGER, "1");
+                    smapper.assign(out, VarType.INTEGER, "(1)");
                     break;
                 case opc_lconst_1:
-                    smapper.assign(out, VarType.LONG, "1");
+                    smapper.assign(out, VarType.LONG, "(1)");
                     break;
                 case opc_fconst_1:
-                    smapper.assign(out, VarType.FLOAT, "1");
+                    smapper.assign(out, VarType.FLOAT, "(1)");
                     break;
                 case opc_dconst_1:
-                    smapper.assign(out, VarType.DOUBLE, "1");
+                    smapper.assign(out, VarType.DOUBLE, "(1)");
                     break;
                 case opc_iconst_2:
-                    smapper.assign(out, VarType.INTEGER, "2");
+                    smapper.assign(out, VarType.INTEGER, "(2)");
                     break;
                 case opc_fconst_2:
-                    smapper.assign(out, VarType.FLOAT, "2");
+                    smapper.assign(out, VarType.FLOAT, "(2)");
                     break;
                 case opc_iconst_3:
-                    smapper.assign(out, VarType.INTEGER, "3");
+                    smapper.assign(out, VarType.INTEGER, "(3)");
                     break;
                 case opc_iconst_4:
-                    smapper.assign(out, VarType.INTEGER, "4");
+                    smapper.assign(out, VarType.INTEGER, "(4)");
                     break;
                 case opc_iconst_5:
-                    smapper.assign(out, VarType.INTEGER, "5");
+                    smapper.assign(out, VarType.INTEGER, "(5)");
                     break;
                 case opc_ldc: {
                     int indx = readUByte(byteCodes, ++i);
@@ -1542,10 +1543,10 @@ abstract class ByteCodeToJavaScript {
         String mn = findMethodName(mi, cnt, returnType);
 
         final int numArguments = cnt.length() + 1;
-        final Variable[] vars = new Variable[numArguments];
+        final CharSequence[] vars = new CharSequence[numArguments];
 
         for (int j = numArguments - 1; j >= 0; --j) {
-            vars[j] = mapper.pop(out);
+            vars[j] = mapper.popValue();
         }
 
         if (returnType[0] != 'V') {
