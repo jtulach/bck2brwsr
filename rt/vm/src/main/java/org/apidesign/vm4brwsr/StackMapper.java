@@ -22,19 +22,12 @@ import org.apidesign.vm4brwsr.ByteCodeParser.TypeArray;
 
 final class StackMapper {
     private final TypeArray stackTypeIndexPairs;
-    private int[] typeCounters;
-    private int[] typeMaxCounters;
 
     public StackMapper() {
         stackTypeIndexPairs = new TypeArray();
-        typeCounters = new int[VarType.LAST + 1];
-        typeMaxCounters = new int[VarType.LAST + 1];
     }
 
     public void clear() {
-        for (int type = 0; type <= VarType.LAST; ++type) {
-            typeCounters[type] = 0;
-        }
         stackTypeIndexPairs.clear();
     }
 
@@ -161,9 +154,8 @@ final class StackMapper {
     }
 
     private int pushTypeImpl(final int type) {
-        final int count = typeCounters[type];
+        final int count = stackTypeIndexPairs.getSize();
         final int value = (count << 8) | (type & 0xff);
-        incCounter(type);
         stackTypeIndexPairs.add(value);
 
         return value;
@@ -173,21 +165,9 @@ final class StackMapper {
         final int stackSize = stackTypeIndexPairs.getSize();
         for (int i = stackSize - count; i < stackSize; ++i) {
             final int value = stackTypeIndexPairs.get(i);
-            decCounter(value & 0xff);
         }
 
         stackTypeIndexPairs.setSize(stackSize - count);
-    }
-
-    private void incCounter(final int type) {
-        final int newValue = ++typeCounters[type];
-        if (typeMaxCounters[type] < newValue) {
-            typeMaxCounters[type] = newValue;
-        }
-    }
-
-    private void decCounter(final int type) {
-        --typeCounters[type];
     }
 
     public Variable getVariable(final int typeAndIndex) {
