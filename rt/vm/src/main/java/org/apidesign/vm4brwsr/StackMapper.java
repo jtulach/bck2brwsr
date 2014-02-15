@@ -22,13 +22,16 @@ import org.apidesign.vm4brwsr.ByteCodeParser.TypeArray;
 
 final class StackMapper {
     private final TypeArray stackTypeIndexPairs;
+    private final StringArray stackValues;
 
     public StackMapper() {
         stackTypeIndexPairs = new TypeArray();
+        stackValues = new StringArray();
     }
 
     public void clear() {
         stackTypeIndexPairs.clear();
+        stackValues.clear();
     }
 
     public void syncWithFrameStack(final TypeArray frameStack) {
@@ -65,7 +68,20 @@ final class StackMapper {
     }
 
     void assign(Appendable out, int varType, CharSequence s) throws IOException {
-        ByteCodeToJavaScript.emit(out, "var @1 = @2;", pushT(varType), s);
+        pushTypeAndValue(varType, s);
+        flush(out);
+    }
+    
+    void flush(Appendable out) throws IOException {
+        int count = stackTypeIndexPairs.getSize();
+        for (int i = 0; i < count; i++) {
+            String val = stackValues.getAndClear(i);
+            if (val == null) {
+                continue;
+            }
+            CharSequence var = getVariable(stackTypeIndexPairs.get(i));
+            ByteCodeToJavaScript.emitImpl(out, "var @1 = @2;", var, val);
+        }
     }
     
     public Variable popI() {
@@ -157,8 +173,26 @@ final class StackMapper {
         final int count = stackTypeIndexPairs.getSize();
         final int value = (count << 8) | (type & 0xff);
         stackTypeIndexPairs.add(value);
-
+        
+        addStackValue(count, null);
         return value;
+    }
+
+    private void pushTypeAndValue(final int type, CharSequence v) {
+        final int count = stackTypeIndexPairs.getSize();
+        final int value = (count << 8) | (type & 0xff);
+        stackTypeIndexPairs.add(value);
+        final String val = v.toString();
+        addStackValue(count, val);
+    }
+
+    private void addStackValue(int at, final String val) {
+        final String[] arr = stackValues.toArray();
+        if (arr.length > at) {
+            arr[at] = val;
+        } else {
+            stackValues.add(val);
+        }
     }
 
     private void popImpl(final int count) {

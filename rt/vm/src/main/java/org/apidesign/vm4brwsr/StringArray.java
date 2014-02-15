@@ -112,4 +112,14 @@ class StringArray {
         }
         return -1;
     }
+
+    String getAndClear(int count) {
+        String s = arr[count];
+        arr[count] = null;
+        return s;
+    }
+
+    void clear() {
+        arr = null;
+    }
 }
