@@ -23,6 +23,8 @@
 
 package org.apidesign.vm4brwsr;
 
+import java.io.IOException;
+import java.io.InputStream;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 import org.testng.annotations.AfterClass;
@@ -34,17 +36,32 @@ import org.testng.annotations.Test;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class SizeOfAMethodTest {
-    private static TestVM code;
+    private static String code;
 
     @Test public void sumXYShouldBeSmall() {
-        String s = code.codeSeq().toString();
+        String s = code;
         int beg = s.indexOf("c.sum__III");
         int end = s.indexOf("c.sum__III.access");
         
-        assertTrue(beg > 0, "Found sum method in " + code.toString());
-        assertTrue(beg < end, "Found end of sum method in " + code.toString());
+        assertTrue(beg > 0, "Found sum method in " + code);
+        assertTrue(beg < end, "Found end of sum method in " + code);
         
         String method = s.substring(beg, end);
+        
+        
+        assertEquals(method.indexOf("st"), -1, "There should be no stack operations:\n" + method);
+    }
+
+    @Test public void emptyConstructorRequiresNoStack() {
+        String s = code;
+        int beg = s.indexOf("CLS.cons__V");
+        int end = s.indexOf("CLS.cons__V.access");
+        
+        assertTrue(beg > 0, "Found constructor in " + code);
+        assertTrue(beg < end, "Found end of constructor in " + code);
+        
+        String method = s.substring(beg, end);
+        method = method.replace("constructor", "CNSTR");
         
         assertEquals(method.indexOf("st"), -1, "There should be no stack operations:\n" + method);
     }
@@ -52,8 +69,20 @@ public class SizeOfAMethodTest {
     
     @BeforeClass 
     public static void compileTheCode() throws Exception {
+        final String res = "org/apidesign/vm4brwsr/StaticMethod";
         StringBuilder sb = new StringBuilder();
-        code = TestVM.compileClass(sb, "org/apidesign/vm4brwsr/StaticMethod");
+        class JustStaticMethod implements Bck2Brwsr.Resources {
+            @Override
+            public InputStream get(String resource) throws IOException {
+                final String cn = res + ".class";
+                if (resource.equals(cn)) {
+                    return getClass().getClassLoader().getResourceAsStream(cn);
+                }
+                return null;
+            }
+        }
+        Bck2Brwsr.generate(sb, new JustStaticMethod(), res);
+        code = sb.toString();
     }
     @AfterClass
     public static void releaseTheCode() {

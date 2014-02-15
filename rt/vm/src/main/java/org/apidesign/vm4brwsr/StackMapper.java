@@ -69,7 +69,16 @@ final class StackMapper {
 
     void assign(Appendable out, int varType, CharSequence s) throws IOException {
         pushTypeAndValue(varType, s);
-        flush(out);
+    }
+
+    void replace(Appendable out, int varType, String format, CharSequence... arr) 
+    throws IOException {
+        StringBuilder sb = new StringBuilder();
+        ByteCodeToJavaScript.emitImpl(sb, format, arr);
+        String[] values = stackValues.toArray();
+        final int last = stackTypeIndexPairs.getSize() - 1;
+        values[last] = sb.toString();
+        stackTypeIndexPairs.set(last, varType);
     }
     
     void flush(Appendable out) throws IOException {
@@ -84,33 +93,39 @@ final class StackMapper {
         }
     }
     
-    public Variable popI() {
+    public CharSequence popI() {
         return popT(VarType.INTEGER);
     }
 
-    public Variable popL() {
+    public CharSequence popL() {
         return popT(VarType.LONG);
     }
 
-    public Variable popF() {
+    public CharSequence popF() {
         return popT(VarType.FLOAT);
     }
 
-    public Variable popD() {
+    public CharSequence popD() {
         return popT(VarType.DOUBLE);
     }
 
-    public Variable popA() {
+    public CharSequence popA() {
         return popT(VarType.REFERENCE);
     }
 
-    public Variable popT(final int type) {
-        final Variable variable = getT(0, type);
+    public CharSequence popT(final int type) {
+        final CharSequence variable = getT(0, type);
         popImpl(1);
         return variable;
     }
 
-    public Variable pop() {
+    public CharSequence popValue() {
+        final CharSequence variable = getT(0, -1);
+        popImpl(1);
+        return variable;
+    }
+    public Variable pop(Appendable out) throws IOException {
+        flush(out);
         final Variable variable = get(0);
         popImpl(1);
         return variable;
@@ -124,37 +139,41 @@ final class StackMapper {
         popImpl(count);
     }
 
-    public Variable getI(final int indexFromTop) {
+    public CharSequence getI(final int indexFromTop) {
         return getT(indexFromTop, VarType.INTEGER);
     }
 
-    public Variable getL(final int indexFromTop) {
+    public CharSequence getL(final int indexFromTop) {
         return getT(indexFromTop, VarType.LONG);
     }
 
-    public Variable getF(final int indexFromTop) {
+    public CharSequence getF(final int indexFromTop) {
         return getT(indexFromTop, VarType.FLOAT);
     }
 
-    public Variable getD(final int indexFromTop) {
+    public CharSequence getD(final int indexFromTop) {
         return getT(indexFromTop, VarType.DOUBLE);
     }
 
-    public Variable getA(final int indexFromTop) {
+    public CharSequence getA(final int indexFromTop) {
         return getT(indexFromTop, VarType.REFERENCE);
     }
 
-    public Variable getT(final int indexFromTop, final int type) {
+    public CharSequence getT(final int indexFromTop, final int type) {
         final int stackSize = stackTypeIndexPairs.getSize();
         if (indexFromTop >= stackSize) {
             throw new IllegalStateException("Stack underflow");
         }
         final int stackValue =
                 stackTypeIndexPairs.get(stackSize - indexFromTop - 1);
-        if ((stackValue & 0xff) != type) {
+        if (type != -1 && (stackValue & 0xff) != type) {
             throw new IllegalStateException("Type mismatch");
         }
-
+        String value =
+                stackValues.getAndClear(stackSize - indexFromTop - 1);
+        if (value != null) {
+            return value;
+        }
         return getVariable(stackValue);
     }
 

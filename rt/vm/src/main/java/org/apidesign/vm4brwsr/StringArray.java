@@ -105,7 +105,7 @@ class StringArray {
     }
 
     int indexOf(String ic) {
-        for (int i = 0; i < arr.length; i++) {
+        if (arr != null) for (int i = 0; i < arr.length; i++) {
             if (ic.equals(arr[i])) {
                 return i;
             }
