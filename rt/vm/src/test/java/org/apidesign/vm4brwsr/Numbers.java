@@ -55,6 +55,9 @@ public class Numbers {
         DataInputStream dis = new DataInputStream(is);
         return dis.readLong();
     }
+    static long deserLong(byte[] arr, int shift) throws IOException {
+        return deserLong(arr) >> shift;
+    }
     static int deserInt() throws IOException {
         byte[] arr = {(byte) 71, (byte) 84, (byte) 52, (byte) 83};
         ByteArrayInputStream is = new ByteArrayInputStream(arr);
