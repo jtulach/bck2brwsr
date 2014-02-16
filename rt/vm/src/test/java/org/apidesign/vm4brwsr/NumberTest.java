@@ -117,6 +117,12 @@ public class NumberTest {
         double f = 3.0;
         assertExec("Should be the same", Numbers.class, "deserDouble__D", f);
     }
+    
+    @Test public void bytesToLong() throws Exception {
+        long exp = Numbers.bytesToLong((byte)30, (byte)20, 32);
+        assertExec("Should be the same", Numbers.class, "bytesToLong__JBBI", 
+            Double.valueOf(exp), 30, 20, 32);
+    }
     /*
     @Test public void serDouble() throws IOException {
         double f = 3.0;

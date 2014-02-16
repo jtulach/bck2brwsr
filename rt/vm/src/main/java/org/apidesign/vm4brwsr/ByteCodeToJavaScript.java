@@ -831,10 +831,16 @@ abstract class ByteCodeToJavaScript {
                         final Long lv = new Long(v);
                         final int low = (int)(lv.longValue() & 0xFFFFFFFF);
                         final int hi = (int)(lv.longValue() >> 32);
-                        emit(smapper, out, "var @1 = 0x@3.next32(0x@2);", smapper.pushL(), 
-                                Integer.toHexString(low), Integer.toHexString(hi));
+                        if (hi == 0) {
+                            smapper.assign(out, VarType.LONG, "(0x" + Integer.toHexString(low) + ")");
+                        } else {
+                            smapper.assign(out, VarType.LONG,
+                                "0x" + Integer.toHexString(hi) + ".next32(0x" + 
+                                    Integer.toHexString(low) + ")"
+                            );
+                        }
                     } else {
-                        emit(smapper, out, "var @1 = @2;", smapper.pushT(type), v);
+                        smapper.assign(out, type, v);
                     }
                     break;
                 }
@@ -1198,13 +1204,13 @@ abstract class ByteCodeToJavaScript {
                     break;
                 }
                 case opc_bipush:
-                    emit(smapper, out, "var @1 = @2;",
-                         smapper.pushI(), Integer.toString(byteCodes[++i]));
+                    smapper.assign(out, VarType.INTEGER, 
+                        "(" + Integer.toString(byteCodes[++i]) + ")");
                     break;
                 case opc_sipush:
-                    emit(smapper, out, "var @1 = @2;",
-                         smapper.pushI(),
-                         Integer.toString(readShortArg(byteCodes, i)));
+                    smapper.assign(out, VarType.INTEGER, 
+                        "(" + Integer.toString(readShortArg(byteCodes, i)) + ")"
+                    );
                     i += 2;
                     break;
                 case opc_getfield: {
