@@ -1601,7 +1601,7 @@ abstract class ByteCodeToJavaScript {
         String s = jc.stringValue(entryIndex, classRef);
         if (classRef[0] != null) {
             if (classRef[0].startsWith("[")) {
-                s = accessClass("java_lang_Class") + "(false).forName__Ljava_lang_Class_2Ljava_lang_String_2('" + classRef[0] + "');";
+                s = accessClass("java_lang_Class") + "(false).forName__Ljava_lang_Class_2Ljava_lang_String_2('" + classRef[0] + "')";
             } else {
                 addReference(classRef[0]);
                 s = accessClass(mangleClassName(s)) + "(false).constructor.$class";
