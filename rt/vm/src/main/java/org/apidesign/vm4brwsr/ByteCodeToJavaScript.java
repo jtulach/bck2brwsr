@@ -573,10 +573,10 @@ abstract class ByteCodeToJavaScript {
                     emit(smapper, out, "var @1 = @2;", lmapper.setD(3), smapper.popD());
                     break;
                 case opc_iadd:
-                    smapper.replace(out, VarType.INTEGER, "@1.add32(@2)", smapper.getI(1), smapper.popI());
+                    smapper.replace(out, VarType.INTEGER, "(@1).add32(@2)", smapper.getI(1), smapper.popI());
                     break;
                 case opc_ladd:
-                    smapper.replace(out, VarType.LONG, "@1.add64(@2)", smapper.getL(1), smapper.popL());
+                    smapper.replace(out, VarType.LONG, "(@1).add64(@2)", smapper.getL(1), smapper.popL());
                     break;
                 case opc_fadd:
                     smapper.replace(out, VarType.FLOAT, "(@1 + @2)", smapper.getF(1), smapper.popF());
@@ -585,10 +585,10 @@ abstract class ByteCodeToJavaScript {
                     smapper.replace(out, VarType.DOUBLE, "(@1 + @2)", smapper.getD(1), smapper.popD());
                     break;
                 case opc_isub:
-                    smapper.replace(out, VarType.INTEGER, "@1.sub32(@2)", smapper.getI(1), smapper.popI());
+                    smapper.replace(out, VarType.INTEGER, "(@1).sub32(@2)", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lsub:
-                    smapper.replace(out, VarType.LONG, "@1.sub64(@2)", smapper.getL(1), smapper.popL());
+                    smapper.replace(out, VarType.LONG, "(@1).sub64(@2)", smapper.getL(1), smapper.popL());
                     break;
                 case opc_fsub:
                     smapper.replace(out, VarType.FLOAT, "(@1 - @2)", smapper.getF(1), smapper.popF());
@@ -597,10 +597,10 @@ abstract class ByteCodeToJavaScript {
                     smapper.replace(out, VarType.DOUBLE, "(@1 - @2)", smapper.getD(1), smapper.popD());
                     break;
                 case opc_imul:
-                    smapper.replace(out, VarType.INTEGER, "@1.mul32(@2)", smapper.getI(1), smapper.popI());
+                    smapper.replace(out, VarType.INTEGER, "(@1).mul32(@2)", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lmul:
-                    smapper.replace(out, VarType.LONG, "@1.mul64(@2)", smapper.getL(1), smapper.popL());
+                    smapper.replace(out, VarType.LONG, "(@1).mul64(@2)", smapper.getL(1), smapper.popL());
                     break;
                 case opc_fmul:
                     smapper.replace(out, VarType.FLOAT, "(@1 * @2)", smapper.getF(1), smapper.popF());
@@ -609,11 +609,11 @@ abstract class ByteCodeToJavaScript {
                     smapper.replace(out, VarType.DOUBLE, "(@1 * @2)", smapper.getD(1), smapper.popD());
                     break;
                 case opc_idiv:
-                    smapper.replace(out, VarType.INTEGER, "@1.div32(@2)",
+                    smapper.replace(out, VarType.INTEGER, "(@1).div32(@2)",
                          smapper.getI(1), smapper.popI());
                     break;
                 case opc_ldiv:
-                    smapper.replace(out, VarType.LONG, "@1.div64(@2)",
+                    smapper.replace(out, VarType.LONG, "(@1).div64(@2)",
                          smapper.getL(1), smapper.popL());
                     break;
                 case opc_fdiv:
@@ -623,11 +623,11 @@ abstract class ByteCodeToJavaScript {
                     smapper.replace(out, VarType.DOUBLE, "(@1 / @2)", smapper.getD(1), smapper.popD());
                     break;
                 case opc_irem:
-                    smapper.replace(out, VarType.INTEGER, "@1.mod32(@2)",
+                    smapper.replace(out, VarType.INTEGER, "(@1).mod32(@2)",
                          smapper.getI(1), smapper.popI());
                     break;
                 case opc_lrem:
-                    smapper.replace(out, VarType.LONG, "@1.mod64(@2)",
+                    smapper.replace(out, VarType.LONG, "(@1).mod64(@2)",
                          smapper.getL(1), smapper.popL());
                     break;
                 case opc_frem:
@@ -640,25 +640,25 @@ abstract class ByteCodeToJavaScript {
                     smapper.replace(out, VarType.INTEGER, "(@1 & @2)", smapper.getI(1), smapper.popI());
                     break;
                 case opc_land:
-                    smapper.replace(out, VarType.LONG, "@1.and64(@2)", smapper.getL(1), smapper.popL());
+                    smapper.replace(out, VarType.LONG, "(@1).and64(@2)", smapper.getL(1), smapper.popL());
                     break;
                 case opc_ior:
                     smapper.replace(out, VarType.INTEGER, "(@1 | @2)", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lor:
-                    smapper.replace(out, VarType.LONG, "@1.or64(@2)", smapper.getL(1), smapper.popL());
+                    smapper.replace(out, VarType.LONG, "(@1).or64(@2)", smapper.getL(1), smapper.popL());
                     break;
                 case opc_ixor:
                     smapper.replace(out, VarType.INTEGER, "(@1 ^ @2)", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lxor:
-                    smapper.replace(out, VarType.LONG, "@1.xor64(@2)", smapper.getL(1), smapper.popL());
+                    smapper.replace(out, VarType.LONG, "(@1).xor64(@2)", smapper.getL(1), smapper.popL());
                     break;
                 case opc_ineg:
-                    smapper.replace(out, VarType.INTEGER, "@1.neg32()", smapper.getI(0));
+                    smapper.replace(out, VarType.INTEGER, "(@1).neg32()", smapper.getI(0));
                     break;
                 case opc_lneg:
-                    smapper.replace(out, VarType.LONG, "@1.neg64()", smapper.getL(0));
+                    smapper.replace(out, VarType.LONG, "(@1).neg64()", smapper.getL(0));
                     break;
                 case opc_fneg:
                     smapper.replace(out, VarType.FLOAT, "(-@1)", smapper.getF(0));
@@ -670,19 +670,19 @@ abstract class ByteCodeToJavaScript {
                     smapper.replace(out, VarType.INTEGER, "(@1 << @2)", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lshl:
-                    smapper.replace(out, VarType.LONG, "@1.shl64(@2)", smapper.getL(1), smapper.popI());
+                    smapper.replace(out, VarType.LONG, "(@1).shl64(@2)", smapper.getL(1), smapper.popI());
                     break;
                 case opc_ishr:
                     smapper.replace(out, VarType.INTEGER, "(@1 >> @2)", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lshr:
-                    smapper.replace(out, VarType.LONG, "@1.shr64(@2)", smapper.getL(1), smapper.popI());
+                    smapper.replace(out, VarType.LONG, "(@1).shr64(@2)", smapper.getL(1), smapper.popI());
                     break;
                 case opc_iushr:
                     smapper.replace(out, VarType.INTEGER, "(@1 >>> @2)", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lushr:
-                    smapper.replace(out, VarType.LONG, "@1.ushr64(@2)", smapper.getL(1), smapper.popI());
+                    smapper.replace(out, VarType.LONG, "(@1).ushr64(@2)", smapper.getL(1), smapper.popI());
                     break;
                 case opc_iinc: {
                     ++i;
@@ -729,14 +729,14 @@ abstract class ByteCodeToJavaScript {
                     smapper.replace(out, VarType.DOUBLE, "@1", smapper.getI(0));
                     break;
                 case opc_l2i:
-                    smapper.replace(out, VarType.INTEGER, "@1.toInt32()", smapper.getL(0));
+                    smapper.replace(out, VarType.INTEGER, "(@1).toInt32()", smapper.getL(0));
                     break;
                     // max int check?
                 case opc_l2f:
-                    smapper.replace(out, VarType.FLOAT, "@1.toFP()", smapper.getL(0));
+                    smapper.replace(out, VarType.FLOAT, "(@1).toFP()", smapper.getL(0));
                     break;
                 case opc_l2d:
-                    smapper.replace(out, VarType.DOUBLE, "@1.toFP()", smapper.getL(0));
+                    smapper.replace(out, VarType.DOUBLE, "(@1).toFP()", smapper.getL(0));
                     break;
                 case opc_f2d:
                     smapper.replace(out, VarType.DOUBLE, "@1",
@@ -747,72 +747,72 @@ abstract class ByteCodeToJavaScript {
                          smapper.getD(0));
                     break;
                 case opc_f2i:
-                    smapper.replace(out, VarType.INTEGER, "@1.toInt32()",
+                    smapper.replace(out, VarType.INTEGER, "(@1).toInt32()",
                          smapper.getF(0));
                     break;
                 case opc_f2l:
-                    smapper.replace(out, VarType.LONG, "@1.toLong()",
+                    smapper.replace(out, VarType.LONG, "(@1).toLong()",
                          smapper.getF(0));
                     break;
                 case opc_d2i:
-                    smapper.replace(out, VarType.INTEGER, "@1.toInt32()",
+                    smapper.replace(out, VarType.INTEGER, "(@1).toInt32()",
                          smapper.getD(0));
                     break;
                 case opc_d2l:
-                    smapper.replace(out, VarType.LONG, "@1.toLong()", smapper.getD(0));
+                    smapper.replace(out, VarType.LONG, "(@1).toLong()", smapper.getD(0));
                     break;
                 case opc_i2b:
-                    smapper.replace(out, VarType.INTEGER, "@1.toInt8()", smapper.getI(0));
+                    smapper.replace(out, VarType.INTEGER, "(@1).toInt8()", smapper.getI(0));
                     break;
                 case opc_i2c:
                     break;
                 case opc_i2s:
-                    smapper.replace(out, VarType.INTEGER, "@1.toInt16()", smapper.getI(0));
+                    smapper.replace(out, VarType.INTEGER, "(@1).toInt16()", smapper.getI(0));
                     break;
                 case opc_aconst_null:
                     smapper.assign(out, VarType.REFERENCE, "null");
                     break;
                 case opc_iconst_m1:
-                    smapper.assign(out, VarType.INTEGER, "(-1)");
+                    smapper.assign(out, VarType.INTEGER, "-1");
                     break;
                 case opc_iconst_0:
-                    smapper.assign(out, VarType.INTEGER, "(0)");
+                    smapper.assign(out, VarType.INTEGER, "0");
                     break;
                 case opc_dconst_0:
-                    smapper.assign(out, VarType.DOUBLE, "(0)");
+                    smapper.assign(out, VarType.DOUBLE, "0");
                     break;
                 case opc_lconst_0:
-                    smapper.assign(out, VarType.LONG, "(0)");
+                    smapper.assign(out, VarType.LONG, "0");
                     break;
                 case opc_fconst_0:
-                    smapper.assign(out, VarType.FLOAT, "(0)");
+                    smapper.assign(out, VarType.FLOAT, "0");
                     break;
                 case opc_iconst_1:
-                    smapper.assign(out, VarType.INTEGER, "(1)");
+                    smapper.assign(out, VarType.INTEGER, "1");
                     break;
                 case opc_lconst_1:
-                    smapper.assign(out, VarType.LONG, "(1)");
+                    smapper.assign(out, VarType.LONG, "1");
                     break;
                 case opc_fconst_1:
-                    smapper.assign(out, VarType.FLOAT, "(1)");
+                    smapper.assign(out, VarType.FLOAT, "1");
                     break;
                 case opc_dconst_1:
-                    smapper.assign(out, VarType.DOUBLE, "(1)");
+                    smapper.assign(out, VarType.DOUBLE, "1");
                     break;
                 case opc_iconst_2:
-                    smapper.assign(out, VarType.INTEGER, "(2)");
+                    smapper.assign(out, VarType.INTEGER, "2");
                     break;
                 case opc_fconst_2:
-                    smapper.assign(out, VarType.FLOAT, "(2)");
+                    smapper.assign(out, VarType.FLOAT, "2");
                     break;
                 case opc_iconst_3:
-                    smapper.assign(out, VarType.INTEGER, "(3)");
+                    smapper.assign(out, VarType.INTEGER, "3");
                     break;
                 case opc_iconst_4:
-                    smapper.assign(out, VarType.INTEGER, "(4)");
+                    smapper.assign(out, VarType.INTEGER, "4");
                     break;
                 case opc_iconst_5:
-                    smapper.assign(out, VarType.INTEGER, "(5)");
+                    smapper.assign(out, VarType.INTEGER, "5");
                     break;
                 case opc_ldc: {
                     int indx = readUByte(byteCodes, ++i);
@@ -832,7 +832,7 @@ abstract class ByteCodeToJavaScript {
                         final int low = (int)(lv.longValue() & 0xFFFFFFFF);
                         final int hi = (int)(lv.longValue() >> 32);
                         if (hi == 0) {
-                            smapper.assign(out, VarType.LONG, "(0x" + Integer.toHexString(low) + ")");
+                            smapper.assign(out, VarType.LONG, "0x" + Integer.toHexString(low));
                         } else {
                             smapper.assign(out, VarType.LONG,
                                 "0x" + Integer.toHexString(hi) + ".next32(0x" + 
@@ -845,7 +845,7 @@ abstract class ByteCodeToJavaScript {
                     break;
                 }
                 case opc_lcmp:
-                    emit(smapper, out, "var @3 = @2.compare64(@1);",
+                    emit(smapper, out, "var @3 = (@2).compare64(@1);",
                          smapper.popL(), smapper.popL(), smapper.pushI());
                     break;
                 case opc_fcmpl:
