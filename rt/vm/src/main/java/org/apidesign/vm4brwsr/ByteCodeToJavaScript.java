@@ -322,11 +322,19 @@ abstract class ByteCodeToJavaScript {
             out.append("  var ").append(" lcA0 = this;\n");
         }
 
-        int lastStackFrame = -1;
+        int lastStackFrame;
         TrapData[] previousTrap = null;
         boolean wide = false;
+        boolean didBranches;
+        if (stackMapIterator.isEmpty()) {
+            didBranches = false;
+            lastStackFrame = 0;
+        } else {
+            didBranches = true;
+            lastStackFrame = -1;
+            out.append("\n  var gt = 0;\n");
+        }
         
-        out.append("\n  var gt = 0;\n");
         int openBraces = 0;
         int topMostLabel = 0;
         for (int i = 0; i < byteCodes.length; i++) {
@@ -1313,7 +1321,9 @@ abstract class ByteCodeToJavaScript {
         if (previousTrap != null) {
             generateCatch(previousTrap, byteCodes.length, topMostLabel);
         }
-        out.append("\n    }\n");
+        if (didBranches) {
+            out.append("\n    }\n");
+        }
         while (openBraces-- > 0) {
             out.append('}');
         }

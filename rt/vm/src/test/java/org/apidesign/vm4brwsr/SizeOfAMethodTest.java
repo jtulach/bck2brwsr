@@ -64,6 +64,7 @@ public class SizeOfAMethodTest {
         method = method.replace("constructor", "CNSTR");
         
         assertEquals(method.indexOf("st"), -1, "There should be no stack operations:\n" + method);
+        assertEquals(method.indexOf("for"), -1, "There should be no for blocks:\n" + method);
     }
     
     

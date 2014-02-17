@@ -2806,6 +2806,10 @@ final class ByteCodeParser {
             lastFrameByteCodeOffset = -1;
             advanceBy(0);
         }
+        
+        public boolean isEmpty() {
+            return stackMapTable.length == 0;
+        }
 
         public String getFrameAsString() {
             return (nextFrameIndex == 0)
