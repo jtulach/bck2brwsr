@@ -1938,6 +1938,13 @@ abstract class ByteCodeToJavaScript {
         return ",";
     }
 
+    final void emitNoFlush(
+        StackMapper sm, 
+        final Appendable out, 
+        final String format, final CharSequence... params
+    ) throws IOException {
+        emitImpl(out, format, params);
+    }
     final void emit(
         StackMapper sm, 
         final Appendable out, 
@@ -2127,12 +2134,12 @@ abstract class ByteCodeToJavaScript {
     private void generateCheckcast(int indx, final StackMapper smapper) throws IOException {
         final String type = jc.getClassName(indx);
         if (!type.startsWith("[")) {
-            emit(smapper, out,
+            emitNoFlush(smapper, out,
                  "if (@1 !== null && !@1.$instOf_@2) throw vm.java_lang_ClassCastException(true);",
-                 smapper.getA(0), type.replace('/', '_'));
+                 smapper.getT(0, VarType.REFERENCE, false), type.replace('/', '_'));
         } else {
-            emit(smapper, out, "vm.java_lang_Class(false).forName__Ljava_lang_Class_2Ljava_lang_String_2('@2').cast__Ljava_lang_Object_2Ljava_lang_Object_2(@1);",
-                 smapper.getA(0), type
+            emitNoFlush(smapper, out, "vm.java_lang_Class(false).forName__Ljava_lang_Class_2Ljava_lang_String_2('@2').cast__Ljava_lang_Object_2Ljava_lang_Object_2(@1);",
+                 smapper.getT(0, VarType.REFERENCE, false), type
             );
         }
     }

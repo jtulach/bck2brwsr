@@ -36,6 +36,15 @@ public class StaticMethodTest {
         );
     }
 
+    @Test public void cast() throws Exception {
+        assertExec(
+            "Length is four", 
+            StaticMethod.class, "castString__ILjava_lang_Object_2", 
+            Double.valueOf(4), 
+            "Ahoj"
+        );
+    }
+
     @Test public void checkReallyInitializedValues() throws Exception {
         assertExec(
             "Return true", 

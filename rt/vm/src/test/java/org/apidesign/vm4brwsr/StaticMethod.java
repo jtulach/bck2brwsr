@@ -128,6 +128,10 @@ public class StaticMethod {
         }
     }
     
+    public static int castString(Object o) {
+        return ((String)o).length();
+    }
+    
     static {
         // check order of initializers
         StaticUse.NON_NULL.equals(new Object());

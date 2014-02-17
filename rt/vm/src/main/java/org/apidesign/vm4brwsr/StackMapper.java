@@ -84,7 +84,7 @@ final class StackMapper {
     void flush(Appendable out) throws IOException {
         int count = stackTypeIndexPairs.getSize();
         for (int i = 0; i < count; i++) {
-            String val = stackValues.getAndClear(i);
+            String val = stackValues.getAndClear(i, true);
             if (val == null) {
                 continue;
             }
@@ -160,6 +160,9 @@ final class StackMapper {
     }
 
     public CharSequence getT(final int indexFromTop, final int type) {
+        return getT(indexFromTop, type, true);
+    }
+    public CharSequence getT(final int indexFromTop, final int type, boolean clear) {
         final int stackSize = stackTypeIndexPairs.getSize();
         if (indexFromTop >= stackSize) {
             throw new IllegalStateException("Stack underflow");
@@ -170,7 +173,7 @@ final class StackMapper {
             throw new IllegalStateException("Type mismatch");
         }
         String value =
-                stackValues.getAndClear(stackSize - indexFromTop - 1);
+            stackValues.getAndClear(stackSize - indexFromTop - 1, clear);
         if (value != null) {
             return value;
         }

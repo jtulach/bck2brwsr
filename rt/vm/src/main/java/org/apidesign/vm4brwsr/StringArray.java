@@ -113,9 +113,11 @@ class StringArray {
         return -1;
     }
 
-    String getAndClear(int count) {
+    String getAndClear(int count, boolean clear) {
         String s = arr[count];
-        arr[count] = null;
+        if (clear) {
+            arr[count] = null;
+        }
         return s;
     }
 
