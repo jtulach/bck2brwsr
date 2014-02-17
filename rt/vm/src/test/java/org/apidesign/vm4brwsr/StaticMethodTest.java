@@ -359,6 +359,13 @@ public class StaticMethodTest {
         );
     }
     
+    @Test public void stringConstantIsCopied() throws Exception {
+        assertExec("String constants are copied between class pools",
+            StaticMethod.class, "helloWorldLength__ILjava_lang_String_2", 
+            17, "Jardo"
+        );
+    }
+    
     private static TestVM code;
     
     @BeforeClass 

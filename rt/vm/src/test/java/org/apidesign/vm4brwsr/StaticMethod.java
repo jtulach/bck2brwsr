@@ -100,6 +100,10 @@ public class StaticMethod {
         return cnt;
     }
     
+    public static int helloWorldLength(String x) {
+        return (StringSample.HELLO + x).length();
+    }
+    
     @JavaScriptBody(
         args={"i","j"}, body="\n\r\treturn (i + j).toString();"
     )
