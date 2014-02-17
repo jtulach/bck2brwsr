@@ -137,4 +137,8 @@ public class Instance {
     
     @JavaScriptBody(args = { "instance" }, body = "return instance.getByte__B();")
     private static native int jsgetbytes(Instance instance);
+
+    int sum(int i, int i0) {
+        return i + i0;
+    }
 }

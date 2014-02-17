@@ -132,6 +132,11 @@ public class StaticMethod {
         return ((String)o).length();
     }
     
+    public static int initInflater(int w, boolean nowrap) {
+        Instance i = new Instance(w, 0.0);
+        return i.sum(nowrap?-w:w, 1);
+    }
+    
     static {
         // check order of initializers
         StaticUse.NON_NULL.equals(new Object());

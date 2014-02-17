@@ -78,7 +78,8 @@ final class StackMapper {
         String[] values = stackValues.toArray();
         final int last = stackTypeIndexPairs.getSize() - 1;
         values[last] = sb.toString();
-        stackTypeIndexPairs.set(last, varType);
+        final int value = (last << 8) | (varType & 0xff);
+        stackTypeIndexPairs.set(last, value);
     }
     
     void flush(Appendable out) throws IOException {

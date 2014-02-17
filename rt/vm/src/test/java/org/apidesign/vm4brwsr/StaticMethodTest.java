@@ -170,6 +170,25 @@ public class StaticMethodTest {
             3, 3.75
         );
     }
+  
+    @Test public void inflaterInit() throws Exception {
+        assertExec(
+            "Down and minus",
+            StaticMethod.class, "initInflater__IIZ",
+            Double.valueOf(-9),
+            10, true
+        );
+    }
+
+    @Test public void inflaterInitNoNeg() throws Exception {
+        assertExec(
+            "One up",
+            StaticMethod.class, "initInflater__IIZ",
+            Double.valueOf(11),
+            10, false
+        );
+    }
+    
     @Test public void mixedMethodFourParams() throws Exception {
         assertExec(
             "Should be two",
