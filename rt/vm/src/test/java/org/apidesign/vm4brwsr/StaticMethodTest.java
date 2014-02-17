@@ -224,6 +224,15 @@ public class StaticMethodTest {
         );
     }
     
+    @Test public void collectionToString() throws Exception {
+        String exp = StaticMethod.toStringArr();
+        assertExec(
+            "0 to 4",
+            StaticMethod.class, "toStringArr__Ljava_lang_String_2",
+            exp
+        );
+    }
+    
     @Test public void or() throws Exception {
         assertExec(
             "Or will be 7",

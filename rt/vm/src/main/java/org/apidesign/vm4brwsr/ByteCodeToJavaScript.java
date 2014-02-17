@@ -859,15 +859,15 @@ abstract class ByteCodeToJavaScript {
                          smapper.popD(), smapper.popD(), smapper.pushI());
                     break;
                 case opc_if_acmpeq:
-                    i = generateIf(byteCodes, i, smapper.popA(), smapper.popA(),
+                    i = generateIf(smapper, byteCodes, i, smapper.popA(), smapper.popA(),
                                    "===", topMostLabel);
                     break;
                 case opc_if_acmpne:
-                    i = generateIf(byteCodes, i, smapper.popA(), smapper.popA(),
+                    i = generateIf(smapper, byteCodes, i, smapper.popA(), smapper.popA(),
                                    "!==", topMostLabel);
                     break;
                 case opc_if_icmpeq:
-                    i = generateIf(byteCodes, i, smapper.popI(), smapper.popI(),
+                    i = generateIf(smapper, byteCodes, i, smapper.popI(), smapper.popI(),
                                    "==", topMostLabel);
                     break;
                 case opc_ifeq: {
@@ -927,23 +927,23 @@ abstract class ByteCodeToJavaScript {
                     break;
                 }
                 case opc_if_icmpne:
-                    i = generateIf(byteCodes, i, smapper.popI(), smapper.popI(),
+                    i = generateIf(smapper, byteCodes, i, smapper.popI(), smapper.popI(),
                                    "!=", topMostLabel);
                     break;
                 case opc_if_icmplt:
-                    i = generateIf(byteCodes, i, smapper.popI(), smapper.popI(),
+                    i = generateIf(smapper, byteCodes, i, smapper.popI(), smapper.popI(),
                                    "<", topMostLabel);
                     break;
                 case opc_if_icmple:
-                    i = generateIf(byteCodes, i, smapper.popI(), smapper.popI(),
+                    i = generateIf(smapper, byteCodes, i, smapper.popI(), smapper.popI(),
                                    "<=", topMostLabel);
                     break;
                 case opc_if_icmpgt:
-                    i = generateIf(byteCodes, i, smapper.popI(), smapper.popI(),
+                    i = generateIf(smapper, byteCodes, i, smapper.popI(), smapper.popI(),
                                    ">", topMostLabel);
                     break;
                 case opc_if_icmpge:
-                    i = generateIf(byteCodes, i, smapper.popI(), smapper.popI(),
+                    i = generateIf(smapper, byteCodes, i, smapper.popI(), smapper.popI(),
                                    ">=", topMostLabel);
                     break;
                 case opc_goto: {
@@ -1320,7 +1320,11 @@ abstract class ByteCodeToJavaScript {
         out.append("\n};");
     }
 
-    private int generateIf(byte[] byteCodes, int i, final CharSequence v2, final CharSequence v1, final String test, int topMostLabel) throws IOException {
+    private int generateIf(StackMapper mapper, byte[] byteCodes, 
+        int i, final CharSequence v2, final CharSequence v1, 
+        final String test, int topMostLabel
+    ) throws IOException {
+        mapper.flush(out);
         int indx = i + readShortArg(byteCodes, i);
         out.append("if (").append(v1)
            .append(' ').append(test).append(' ')
