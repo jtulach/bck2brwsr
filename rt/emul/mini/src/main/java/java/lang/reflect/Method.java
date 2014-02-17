@@ -528,15 +528,17 @@ public final
     }
     
     @JavaScriptBody(args = { "st", "method", "self", "args" }, body =
-          "var p;\n"
+          "var p; var cll;\n"
         + "if (st) {\n"
+        + "  cll = self[method._name() + '__' + method._sig()];\n"
         + "  p = new Array(1);\n"
         + "  p[0] = self;\n"
         + "  p = p.concat(args);\n"
         + "} else {\n"
         + "  p = args;\n"
+        + "  cll = method._data();"
         + "}\n"
-        + "return method._data().apply(self, p);\n"
+        + "return cll.apply(self, p);\n"
     )
     private static native Object invoke0(boolean isStatic, Method m, Object self, Object[] args);
     
