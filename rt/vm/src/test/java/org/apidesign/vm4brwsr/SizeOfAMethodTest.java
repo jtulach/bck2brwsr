@@ -67,6 +67,9 @@ public class SizeOfAMethodTest {
         assertEquals(method.indexOf("for"), -1, "There should be no for blocks:\n" + method);
     }
     
+    @Test public void dontGeneratePrimitiveFinalConstants() {
+        assertEquals(code.indexOf("MISSING_CONSTANT"), -1, "MISSING_CONSTANT field should not be generated");
+    }
     
     @BeforeClass 
     public static void compileTheCode() throws Exception {

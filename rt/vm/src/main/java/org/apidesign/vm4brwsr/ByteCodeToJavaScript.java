@@ -153,6 +153,11 @@ abstract class ByteCodeToJavaScript {
         }
         for (FieldData v : jc.getFields()) {
             if (v.isStatic()) {
+                if ((v.access & ACC_FINAL) != 0) {
+                    if (v.getInternalSig().length() == 1) {
+                        continue;
+                    }
+                }
                 out.append("\n  CLS.fld_").append(v.getName()).append(initField(v));
                 out.append("\n  c._").append(v.getName()).append(" = function (v) {")
                    .append("  if (arguments.length == 1) CLS.fld_").append(v.getName())

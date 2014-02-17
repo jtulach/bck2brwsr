@@ -24,6 +24,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class StaticMethod {
+    public static final int MISSING_CONSTANT = 1;
     private static int cnt;
     private static Object NULL;
 
@@ -82,7 +83,7 @@ public class StaticMethod {
         if (n <= 1) {
             return 1;
         } else {
-            return n * factRec(n - 1);
+            return n * factRec(n - MISSING_CONSTANT);
         }
     }
     public static long factIter(int n) {
