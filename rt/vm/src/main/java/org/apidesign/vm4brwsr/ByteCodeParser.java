@@ -1261,7 +1261,7 @@ final class ByteCodeParser {
         int name_index;
         int descriptor_index;
         int attributes_count;
-        int value_cpx = 0;
+        int value_cpx = -1;
         boolean isSynthetic = false;
         boolean isDeprecated = false;
         Vector attrs;
@@ -1382,11 +1382,8 @@ final class ByteCodeParser {
             return isDeprecated;
         }
 
-        /**
-         * Returns index of constant value in cpool.
-         */
-        public int getConstantValueIndex() {
-            return (value_cpx);
+        public boolean hasConstantValue() {
+            return value_cpx != -1;
         }
 
         /**

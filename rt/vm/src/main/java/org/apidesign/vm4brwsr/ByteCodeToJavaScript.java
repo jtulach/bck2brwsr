@@ -153,8 +153,8 @@ abstract class ByteCodeToJavaScript {
         }
         for (FieldData v : jc.getFields()) {
             if (v.isStatic()) {
-                if ((v.access & ACC_FINAL) != 0) {
-                    if (v.getInternalSig().length() == 1) {
+                if ((v.access & ACC_FINAL) != 0 && v.hasConstantValue()) {
+                    if (v.getInternalSig().length() == 1 || v.getInternalSig().equals("Ljava/lang/String;")) {
                         continue;
                     }
                 }
