@@ -254,6 +254,7 @@ final class ClosureWrapper extends CommandLineRunner {
             "shr64",
             "ushr64",
             "compare64",
+            "compare",
             "neg64",
             "div32",
             "mod32",

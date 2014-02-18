@@ -831,7 +831,7 @@ abstract class ByteCodeToJavaScript {
                     int indx = readUByte(byteCodes, ++i);
                     String v = encodeConstant(indx);
                     int type = VarType.fromConstantType(jc.getTag(indx));
-                    emit(smapper, out, "var @1 = @2;", smapper.pushT(type), v);
+                    smapper.assign(out, type, v);
                     break;
                 }
                 case opc_ldc_w:
@@ -858,18 +858,15 @@ abstract class ByteCodeToJavaScript {
                     break;
                 }
                 case opc_lcmp:
-                    emit(smapper, out, "var @3 = (@2).compare64(@1);",
-                         smapper.popL(), smapper.popL(), smapper.pushI());
+                    smapper.replace(out, VarType.INTEGER, "(@2).compare64(@1)", smapper.popL(), smapper.getL(0));
                     break;
                 case opc_fcmpl:
                 case opc_fcmpg:
-                    emit(smapper, out, "var @3 = (@2 == @1) ? 0 : ((@2 < @1) ? -1 : 1);",
-                         smapper.popF(), smapper.popF(), smapper.pushI());
+                    smapper.replace(out, VarType.INTEGER, "(@2).compare(@1)", smapper.popF(), smapper.getF(0));
                     break;
                 case opc_dcmpl:
                 case opc_dcmpg:
-                    emit(smapper, out, "var @3 = (@2 == @1) ? 0 : ((@2 < @1) ? -1 : 1);",
-                         smapper.popD(), smapper.popD(), smapper.pushI());
+                    smapper.replace(out, VarType.INTEGER, "(@2).compare(@1)", smapper.popD(), smapper.getD(0));
                     break;
                 case opc_if_acmpeq:
                     i = generateIf(smapper, byteCodes, i, smapper.popA(), smapper.popA(),
@@ -885,56 +882,56 @@ abstract class ByteCodeToJavaScript {
                     break;
                 case opc_ifeq: {
                     int indx = i + readShortArg(byteCodes, i);
-                    emitIf(smapper, out, "if (@1 == 0) ",
+                    emitIf(smapper, out, "if ((@1) == 0) ",
                          smapper.popI(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_ifne: {
                     int indx = i + readShortArg(byteCodes, i);
-                    emitIf(smapper, out, "if (@1 != 0) ",
+                    emitIf(smapper, out, "if ((@1) != 0) ",
                          smapper.popI(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_iflt: {
                     int indx = i + readShortArg(byteCodes, i);
-                    emitIf(smapper, out, "if (@1 < 0) ",
+                    emitIf(smapper, out, "if ((@1) < 0) ",
                          smapper.popI(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_ifle: {
                     int indx = i + readShortArg(byteCodes, i);
-                    emitIf(smapper, out, "if (@1 <= 0) ",
+                    emitIf(smapper, out, "if ((@1) <= 0) ",
                          smapper.popI(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_ifgt: {
                     int indx = i + readShortArg(byteCodes, i);
-                    emitIf(smapper, out, "if (@1 > 0) ",
+                    emitIf(smapper, out, "if ((@1) > 0) ",
                          smapper.popI(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_ifge: {
                     int indx = i + readShortArg(byteCodes, i);
-                    emitIf(smapper, out, "if (@1 >= 0) ",
+                    emitIf(smapper, out, "if ((@1) >= 0) ",
                          smapper.popI(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_ifnonnull: {
                     int indx = i + readShortArg(byteCodes, i);
-                    emitIf(smapper, out, "if (@1 !== null) ",
+                    emitIf(smapper, out, "if ((@1) !== null) ",
                          smapper.popA(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_ifnull: {
                     int indx = i + readShortArg(byteCodes, i);
-                    emitIf(smapper, out, "if (@1 === null) ",
+                    emitIf(smapper, out, "if ((@1) === null) ",
                          smapper.popA(), i, indx, topMostLabel);
                     i += 2;
                     break;
@@ -1013,8 +1010,7 @@ abstract class ByteCodeToJavaScript {
                     break;
                 }
                 case opc_arraylength:
-                    emit(smapper, out, "var @2 = @1.length;",
-                         smapper.popA(), smapper.pushI());
+                    smapper.replace(out, VarType.INTEGER, "(@1).length", smapper.getA(0));
                     break;
                 case opc_lastore:
                     emit(smapper, out, "Array.at(@3, @2, @1);",
@@ -1040,27 +1036,27 @@ abstract class ByteCodeToJavaScript {
                          smapper.popI(), smapper.popI(), smapper.popA());
                     break;
                 case opc_laload:
-                    emit(smapper, out, "var @3 = Array.at(@2, @1);",
-                         smapper.popI(), smapper.popA(), smapper.pushL());
+                    smapper.replace(out, VarType.LONG, "Array.at(@2, @1)",
+                         smapper.popI(), smapper.getA(0));
                     break;
                 case opc_faload:
-                    emit(smapper, out, "var @3 = Array.at(@2, @1);",
-                         smapper.popI(), smapper.popA(), smapper.pushF());
+                    smapper.replace(out, VarType.FLOAT, "Array.at(@2, @1)",
+                         smapper.popI(), smapper.getA(0));
                     break;
                 case opc_daload:
-                    emit(smapper, out, "var @3 = Array.at(@2, @1);",
-                         smapper.popI(), smapper.popA(), smapper.pushD());
+                    smapper.replace(out, VarType.DOUBLE, "Array.at(@2, @1)",
+                         smapper.popI(), smapper.getA(0));
                     break;
                 case opc_aaload:
-                    emit(smapper, out, "var @3 = Array.at(@2, @1);",
-                         smapper.popI(), smapper.popA(), smapper.pushA());
+                    smapper.replace(out, VarType.REFERENCE, "Array.at(@2, @1)",
+                         smapper.popI(), smapper.getA(0));
                     break;
                 case opc_iaload:
                 case opc_baload:
                 case opc_caload:
                 case opc_saload:
-                    emit(smapper, out, "var @3 = Array.at(@2, @1);",
-                         smapper.popI(), smapper.popA(), smapper.pushI());
+                    smapper.replace(out, VarType.INTEGER, "Array.at(@2, @1)",
+                         smapper.popI(), smapper.getA(0));
                     break;
                 case opc_pop:
                 case opc_pop2:
@@ -1232,9 +1228,9 @@ abstract class ByteCodeToJavaScript {
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
                     final String mangleClass = mangleClassName(fi[0]);
                     final String mangleClassAccess = accessClass(mangleClass);
-                    emit(smapper, out, "var @2 = @4(false)._@3.call(@1);",
-                         smapper.popA(),
-                         smapper.pushT(type), fi[1], mangleClassAccess
+                    smapper.replace(out, type, "@3(false)._@2.call(@1)",
+                         smapper.getA(0),
+                         fi[1], mangleClassAccess
                     );
                     i += 2;
                     break;
@@ -1257,9 +1253,8 @@ abstract class ByteCodeToJavaScript {
                     int indx = readUShortArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
-                    emit(smapper, out, "var @1 = @2(false)._@3();",
-                         smapper.pushT(type),
-                         accessClass(mangleClassName(fi[0])), fi[1]);
+                    String ac = accessClass(mangleClassName(fi[0]));
+                    smapper.assign(out, type, ac + "(false)._" + fi[1] + "()");
                     i += 2;
                     addReference(fi[0]);
                     break;
@@ -1297,13 +1292,13 @@ abstract class ByteCodeToJavaScript {
                 }
 
                 case opc_monitorenter: {
-                    out.append("/* monitor enter */");
+                    debug("/* monitor enter */");
                     smapper.popA();
                     break;
                 }
 
                 case opc_monitorexit: {
-                    out.append("/* monitor exit */");
+                    debug("/* monitor exit */");
                     smapper.popA();
                     break;
                 }
@@ -1341,9 +1336,9 @@ abstract class ByteCodeToJavaScript {
     ) throws IOException {
         mapper.flush(out);
         int indx = i + readShortArg(byteCodes, i);
-        out.append("if (").append(v1)
-           .append(' ').append(test).append(' ')
-           .append(v2).append(") ");
+        out.append("if ((").append(v1)
+           .append(") ").append(test).append(" (")
+           .append(v2).append(")) ");
         goTo(out, i, indx, topMostLabel);
         return i + 2;
     }
@@ -2101,7 +2096,9 @@ abstract class ByteCodeToJavaScript {
         table += 4;
         int high = readInt4(byteCodes, table);
         table += 4;
-        out.append("switch (").append(smapper.popI()).append(") {\n");
+        final CharSequence swVar = smapper.popValue();
+        smapper.flush(out);
+        out.append("switch (").append(swVar).append(") {\n");
         while (low <= high) {
             int offset = i + readInt4(byteCodes, table);
             table += 4;
@@ -2121,7 +2118,9 @@ abstract class ByteCodeToJavaScript {
         table += 4;
         int n = readInt4(byteCodes, table);
         table += 4;
-        out.append("switch (").append(smapper.popI()).append(") {\n");
+        final CharSequence swVar = smapper.popValue();
+        smapper.flush(out);
+        out.append("switch (").append(swVar).append(") {\n");
         while (n-- > 0) {
             int cnstnt = readInt4(byteCodes, table);
             table += 4;
