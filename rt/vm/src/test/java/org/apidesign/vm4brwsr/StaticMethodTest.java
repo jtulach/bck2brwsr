@@ -36,6 +36,15 @@ public class StaticMethodTest {
         );
     }
 
+    @Test public void cast() throws Exception {
+        assertExec(
+            "Length is four", 
+            StaticMethod.class, "castString__ILjava_lang_Object_2", 
+            Double.valueOf(4), 
+            "Ahoj"
+        );
+    }
+
     @Test public void checkReallyInitializedValues() throws Exception {
         assertExec(
             "Return true", 
@@ -161,6 +170,25 @@ public class StaticMethodTest {
             3, 3.75
         );
     }
+  
+    @Test public void inflaterInit() throws Exception {
+        assertExec(
+            "Down and minus",
+            StaticMethod.class, "initInflater__IIZ",
+            Double.valueOf(-9),
+            10, true
+        );
+    }
+
+    @Test public void inflaterInitNoNeg() throws Exception {
+        assertExec(
+            "One up",
+            StaticMethod.class, "initInflater__IIZ",
+            Double.valueOf(11),
+            10, false
+        );
+    }
+    
     @Test public void mixedMethodFourParams() throws Exception {
         assertExec(
             "Should be two",
@@ -193,6 +221,15 @@ public class StaticMethodTest {
             Double.valueOf(4),
             7,
             3
+        );
+    }
+    
+    @Test public void collectionToString() throws Exception {
+        String exp = StaticMethod.toStringArr();
+        assertExec(
+            "0 to 4",
+            StaticMethod.class, "toStringArr__Ljava_lang_String_2",
+            exp
         );
     }
     
@@ -319,6 +356,13 @@ public class StaticMethodTest {
         assertExec("Null can be cast to any type",
             StaticMethod.class, "castNull__Ljava_lang_String_2Z", 
             null, true
+        );
+    }
+    
+    @Test public void stringConstantIsCopied() throws Exception {
+        assertExec("String constants are copied between class pools",
+            StaticMethod.class, "helloWorldLength__ILjava_lang_String_2", 
+            17, "Jardo"
         );
     }
     

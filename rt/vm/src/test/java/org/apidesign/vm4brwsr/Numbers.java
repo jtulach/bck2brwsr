@@ -64,6 +64,10 @@ public class Numbers {
         DataInputStream dis = new DataInputStream(is);
         return dis.readInt();
     }
+    static long bytesToLong(byte b1, byte b2, int shift) {
+        return (((long)b1 << 56) +
+                ((long)b2 & 255) << 48) >> shift;
+    }
 
     static String intToString() {
         return new Integer(5).toString().toString();

@@ -79,7 +79,7 @@ public class VMinVMTest {
                 }
             }
             w.append("\n];\n");
-            w.append(code.toString());
+            w.append(code.codeSeq());
             w.close();
             throw new Exception(ex.getMessage() + " file: " + f, ex);
         }

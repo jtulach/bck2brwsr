@@ -250,6 +250,17 @@ public class ReflectionTest {
         }
     }
     
+    @Compare public int callAbst() throws Exception {
+        class Impl extends Abst {
+            @Override
+            public int abst() {
+                return 10;
+            }
+        }
+        Abst impl = new Impl();
+        return (int) Abst.class.getMethod("abst").invoke(impl);
+    }
+    
     @Compare public String componentGetNameForObjectArray() {
         return (new Object[3]).getClass().getComponentType().getName();
     }
@@ -296,4 +307,7 @@ public class ReflectionTest {
         return VMTest.create(ReflectionTest.class);
     }
     
+    public static abstract class Abst {
+        public abstract int abst();
+    }
 }

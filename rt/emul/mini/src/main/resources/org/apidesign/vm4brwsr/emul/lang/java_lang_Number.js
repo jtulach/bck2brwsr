@@ -224,6 +224,14 @@
             return hi.next32(low);
         }
     };
+    
+    numberPrototype.compare = function(x) {
+        if (this == x) {
+            return 0;
+        } else {
+            return (this < x) ? -1 : 1;
+        }
+    };
 
     numberPrototype.compare64 = function(x) {
         if (this.high32() === x.high32()) {

@@ -51,12 +51,12 @@ public class System {
     }
 
     @JavaScriptBody(args = { "arr", "expectedSize" }, body = 
-        "while (expectedSize-- > arr.length) { arr.push(0); }; return arr;"
+        "while (expectedSize > arr.length) { arr.push(0); }; return arr;"
     )
     public static native byte[] expandArray(byte[] arr, int expectedSize);
 
     @JavaScriptBody(args = { "arr", "expectedSize" }, body = 
-        "while (expectedSize-- > arr.length) { arr.push(0); }; return arr;"
+        "while (expectedSize > arr.length) { arr.push(0); }; return arr;"
     )
     public static native char[] expandArray(char[] arr, int expectedSize);
 

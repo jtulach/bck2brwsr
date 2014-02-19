@@ -17,24 +17,21 @@
  */
 package org.apidesign.vm4brwsr;
 
+import java.io.IOException;
 import org.apidesign.vm4brwsr.ByteCodeParser.TypeArray;
 
 final class StackMapper {
     private final TypeArray stackTypeIndexPairs;
-    private int[] typeCounters;
-    private int[] typeMaxCounters;
+    private final StringArray stackValues;
 
     public StackMapper() {
         stackTypeIndexPairs = new TypeArray();
-        typeCounters = new int[VarType.LAST + 1];
-        typeMaxCounters = new int[VarType.LAST + 1];
+        stackValues = new StringArray();
     }
 
     public void clear() {
-        for (int type = 0; type <= VarType.LAST; ++type) {
-            typeCounters[type] = 0;
-        }
         stackTypeIndexPairs.clear();
+        stackValues.clear();
     }
 
     public void syncWithFrameStack(final TypeArray frameStack) {
@@ -70,33 +67,66 @@ final class StackMapper {
         return getVariable(pushTypeImpl(type));
     }
 
-    public Variable popI() {
+    void assign(Appendable out, int varType, CharSequence s) throws IOException {
+        pushTypeAndValue(varType, s);
+    }
+
+    void replace(Appendable out, int varType, String format, CharSequence... arr) 
+    throws IOException {
+        StringBuilder sb = new StringBuilder();
+        ByteCodeToJavaScript.emitImpl(sb, format, arr);
+        String[] values = stackValues.toArray();
+        final int last = stackTypeIndexPairs.getSize() - 1;
+        values[last] = sb.toString();
+        final int value = (last << 8) | (varType & 0xff);
+        stackTypeIndexPairs.set(last, value);
+    }
+    
+    void flush(Appendable out) throws IOException {
+        int count = stackTypeIndexPairs.getSize();
+        for (int i = 0; i < count; i++) {
+            String val = stackValues.getAndClear(i, true);
+            if (val == null) {
+                continue;
+            }
+            CharSequence var = getVariable(stackTypeIndexPairs.get(i));
+            ByteCodeToJavaScript.emitImpl(out, "var @1 = @2;", var, val);
+        }
+    }
+    
+    public CharSequence popI() {
         return popT(VarType.INTEGER);
     }
 
-    public Variable popL() {
+    public CharSequence popL() {
         return popT(VarType.LONG);
     }
 
-    public Variable popF() {
+    public CharSequence popF() {
         return popT(VarType.FLOAT);
     }
 
-    public Variable popD() {
+    public CharSequence popD() {
         return popT(VarType.DOUBLE);
     }
 
-    public Variable popA() {
+    public CharSequence popA() {
         return popT(VarType.REFERENCE);
     }
 
-    public Variable popT(final int type) {
-        final Variable variable = getT(0, type);
+    public CharSequence popT(final int type) {
+        final CharSequence variable = getT(0, type);
         popImpl(1);
         return variable;
     }
 
-    public Variable pop() {
+    public CharSequence popValue() {
+        final CharSequence variable = getT(0, -1);
+        popImpl(1);
+        return variable;
+    }
+    public Variable pop(Appendable out) throws IOException {
+        flush(out);
         final Variable variable = get(0);
         popImpl(1);
         return variable;
@@ -110,37 +140,44 @@ final class StackMapper {
         popImpl(count);
     }
 
-    public Variable getI(final int indexFromTop) {
+    public CharSequence getI(final int indexFromTop) {
         return getT(indexFromTop, VarType.INTEGER);
     }
 
-    public Variable getL(final int indexFromTop) {
+    public CharSequence getL(final int indexFromTop) {
         return getT(indexFromTop, VarType.LONG);
     }
 
-    public Variable getF(final int indexFromTop) {
+    public CharSequence getF(final int indexFromTop) {
         return getT(indexFromTop, VarType.FLOAT);
     }
 
-    public Variable getD(final int indexFromTop) {
+    public CharSequence getD(final int indexFromTop) {
         return getT(indexFromTop, VarType.DOUBLE);
     }
 
-    public Variable getA(final int indexFromTop) {
+    public CharSequence getA(final int indexFromTop) {
         return getT(indexFromTop, VarType.REFERENCE);
     }
 
-    public Variable getT(final int indexFromTop, final int type) {
+    public CharSequence getT(final int indexFromTop, final int type) {
+        return getT(indexFromTop, type, true);
+    }
+    public CharSequence getT(final int indexFromTop, final int type, boolean clear) {
         final int stackSize = stackTypeIndexPairs.getSize();
         if (indexFromTop >= stackSize) {
             throw new IllegalStateException("Stack underflow");
         }
         final int stackValue =
                 stackTypeIndexPairs.get(stackSize - indexFromTop - 1);
-        if ((stackValue & 0xff) != type) {
+        if (type != -1 && (stackValue & 0xff) != type) {
             throw new IllegalStateException("Type mismatch");
         }
-
+        String value =
+            stackValues.getAndClear(stackSize - indexFromTop - 1, clear);
+        if (value != null) {
+            return value;
+        }
         return getVariable(stackValue);
     }
 
@@ -156,33 +193,34 @@ final class StackMapper {
     }
 
     private int pushTypeImpl(final int type) {
-        final int count = typeCounters[type];
+        final int count = stackTypeIndexPairs.getSize();
         final int value = (count << 8) | (type & 0xff);
-        incCounter(type);
         stackTypeIndexPairs.add(value);
-
+        
+        addStackValue(count, null);
         return value;
+    }
+
+    private void pushTypeAndValue(final int type, CharSequence v) {
+        final int count = stackTypeIndexPairs.getSize();
+        final int value = (count << 8) | (type & 0xff);
+        stackTypeIndexPairs.add(value);
+        final String val = v.toString();
+        addStackValue(count, val);
+    }
+
+    private void addStackValue(int at, final String val) {
+        final String[] arr = stackValues.toArray();
+        if (arr.length > at) {
+            arr[at] = val;
+        } else {
+            stackValues.add(val);
+        }
     }
 
     private void popImpl(final int count) {
         final int stackSize = stackTypeIndexPairs.getSize();
-        for (int i = stackSize - count; i < stackSize; ++i) {
-            final int value = stackTypeIndexPairs.get(i);
-            decCounter(value & 0xff);
-        }
-
         stackTypeIndexPairs.setSize(stackSize - count);
-    }
-
-    private void incCounter(final int type) {
-        final int newValue = ++typeCounters[type];
-        if (typeMaxCounters[type] < newValue) {
-            typeMaxCounters[type] = newValue;
-        }
-    }
-
-    private void decCounter(final int type) {
-        --typeCounters[type];
     }
 
     public Variable getVariable(final int typeAndIndex) {

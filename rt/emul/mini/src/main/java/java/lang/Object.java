@@ -43,7 +43,7 @@ public class Object {
 
     private static void registerNatives() {
         boolean assertsOn = false;
-        assert assertsOn = false;
+ //       assert assertsOn = true;
         if (assertsOn) try {
             Array.get(null, 0);
         } catch (Throwable ex) {
