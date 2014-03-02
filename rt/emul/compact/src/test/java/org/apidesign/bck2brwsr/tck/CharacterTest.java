@@ -41,7 +41,17 @@ public class CharacterTest {
     @Compare public boolean numberJavaPart() {
         return Character.isJavaIdentifierPart('3');
     }
-    
+
+    @Compare public String testWhiteSpaces() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 1; i < 128; i++) {
+            char ch = (char)i;
+            if (Character.isWhitespace(ch)) {
+                sb.append(i).append(",");
+            }
+        }
+        return sb.toString();
+    }
     
     @Factory
     public static Object[] create() {

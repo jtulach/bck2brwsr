@@ -2416,11 +2416,11 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * @since   1.5
      */
     public static boolean isWhitespace(int codePoint) {
-        if (
-            codePoint == SPACE_SEPARATOR || 
-            codePoint == LINE_SEPARATOR || 
-            codePoint == PARAGRAPH_SEPARATOR
-        ) {
+        // values up to 128: [9,10,11,12,13,28,29,30,31,32]
+        if (9 <= codePoint && 13 >= codePoint) {
+            return true;
+        }
+        if (28 <= codePoint && 32 >= codePoint) {
             return true;
         }
         return false;
