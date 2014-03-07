@@ -25,6 +25,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Map;
+import java.util.concurrent.Executor;
 import net.java.html.BrwsrCtx;
 import net.java.html.js.JavaScriptBody;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
@@ -60,11 +61,15 @@ public final class KnockoutFXTest extends KnockoutTCK {
 
     @Override
     public BrwsrCtx createContext() {
-        KO4J ko = new KO4J(Fn.activePresenter());
+        final Fn.Presenter p = Fn.activePresenter();
+        KO4J ko = new KO4J(p);
         TyrusContext tc = new TyrusContext();
         Contexts.Builder b = Contexts.newBuilder().
             register(Technology.class, ko.knockout(), 10).
             register(Transfer.class, ko.transfer(), 10);
+        if (p instanceof Executor) {
+            b.register(Executor.class, (Executor)p, 10);
+        }
         try {
             Class.forName("java.util.function.Function");
             // prefer WebView's WebSockets on JDK8
