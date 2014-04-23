@@ -43,7 +43,7 @@ public class System {
     }
     
     public static int identityHashCode(Object obj) {
-        return obj.defaultHashCode();
+        return Class.defaultHashCode(obj);
     }
 
     public static String getProperty(String name) {

@@ -25,7 +25,6 @@
 
 package java.lang;
 
-import java.lang.reflect.Array;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.core.JavaScriptPrototype;
 
@@ -40,23 +39,9 @@ import org.apidesign.bck2brwsr.core.JavaScriptPrototype;
  */
 @JavaScriptPrototype(container = "Object.prototype", prototype = "new Object")
 public class Object {
-
-    private static void registerNatives() {
-        boolean assertsOn = false;
-        assert assertsOn = false;
-        if (assertsOn) try {
-            Array.get(null, 0);
-        } catch (Throwable ex) {
-            // ignore
-        }
-    }
-    @JavaScriptBody(args = {}, body = "var p = vm.java_lang_Object(false);" +
-        "p.toString = function() { return this.toString__Ljava_lang_String_2(); };"
-    )
-    private static native void registerToString();
     static {
-        registerNatives();
-        registerToString();
+        Class.registerNatives();
+        Class.registerToString();
     }
 
     /**
@@ -80,16 +65,10 @@ public class Object {
      *         <cite>The Java&trade; Language Specification</cite>.
      */
     public final Class<?> getClass() {
-        Class<?> c = getClassImpl();
+        Class<?> c = Class.classFor(this);
         return c == null ? Object.class : c;
     }
 
-    @JavaScriptBody(args={}, body=
-          "var c = this.constructor.$class;\n"
-        + "return c ? c : null;\n"
-    )
-    private final native Class<?> getClassImpl();
-    
     /**
      * Returns a hash code value for the object. This method is
      * supported for the benefit of hash tables such as those provided by
@@ -126,18 +105,9 @@ public class Object {
      * @see     java.lang.System#identityHashCode
      */
     public int hashCode() {
-        return defaultHashCode();
+        return Class.defaultHashCode(this);
     }
-    @JavaScriptBody(args = {}, body = 
-        "if (this.$hashCode) return this.$hashCode;\n"
-        + "var h = this.computeHashCode__I();\n"
-        + "return this.$hashCode = h & h;"
-    )
-    final native int defaultHashCode();
 
-    @JavaScriptBody(args = {}, body = "return Math.random() * Math.pow(2, 32);")
-    native int computeHashCode();
-    
     /**
      * Indicates whether some other object is "equal to" this one.
      * <p>
@@ -249,27 +219,12 @@ public class Object {
      * @see java.lang.Cloneable
      */
     protected Object clone() throws CloneNotSupportedException {
-        Object ret = clone(this);
+        Object ret = Class.clone(this);
         if (ret == null) {
             throw new CloneNotSupportedException(getClass().getName());
         }
         return ret;
     }
-
-    @JavaScriptBody(args = "self", body = 
-          "\nif (!self.$instOf_java_lang_Cloneable) {"
-        + "\n  return null;"
-        + "\n} else {"
-        + "\n  var clone = self.constructor(true);"
-        + "\n  var props = Object.getOwnPropertyNames(self);"
-        + "\n  for (var i = 0; i < props.length; i++) {"
-        + "\n    var p = props[i];"
-        + "\n    clone[p] = self[p];"
-        + "\n  };"
-        + "\n  return clone;"
-        + "\n}"
-    )
-    private static native Object clone(Object self) throws CloneNotSupportedException;
 
     /**
      * Returns a string representation of the object. In general, the

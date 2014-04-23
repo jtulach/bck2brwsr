@@ -26,15 +26,16 @@
 package java.lang;
 
 import java.io.ByteArrayInputStream;
-import org.apidesign.bck2brwsr.emul.reflect.AnnotationImpl;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.TypeVariable;
 import java.net.URL;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
+import org.apidesign.bck2brwsr.emul.reflect.AnnotationImpl;
 import org.apidesign.bck2brwsr.emul.reflect.MethodImpl;
 
 /**
@@ -1727,4 +1728,50 @@ public final
         "return vm.desiredAssertionStatus ? vm.desiredAssertionStatus : false;"
     )
     public native boolean desiredAssertionStatus();
+    
+    static void registerNatives() {
+        boolean assertsOn = false;
+        assert assertsOn = false;
+        if (assertsOn) {
+            try {
+                Array.get(null, 0);
+            } catch (Throwable ex) {
+                // ignore
+            }
+        }
+    }
+
+    @JavaScriptBody(args = {}, body = "var p = vm.java_lang_Object(false);"
+            + "p.toString = function() { return this.toString__Ljava_lang_String_2(); };"
+    )
+    static native void registerToString();
+    
+    @JavaScriptBody(args = {"self"}, body
+            = "var c = self.constructor.$class;\n"
+            + "return c ? c : null;\n"
+    )
+    static native Class<?> classFor(Object self);
+    
+    @JavaScriptBody(args = { "self" }, body
+            = "if (self.$hashCode) return self.$hashCode;\n"
+            + "var h = self.computeHashCode__I ? self.computeHashCode__I() : Math.random() * Math.pow(2, 31);\n"
+            + "return self.$hashCode = h & h;"
+    )
+    static native int defaultHashCode(Object self);
+
+    @JavaScriptBody(args = "self", body
+            = "\nif (!self.$instOf_java_lang_Cloneable) {"
+            + "\n  return null;"
+            + "\n} else {"
+            + "\n  var clone = self.constructor(true);"
+            + "\n  var props = Object.getOwnPropertyNames(self);"
+            + "\n  for (var i = 0; i < props.length; i++) {"
+            + "\n    var p = props[i];"
+            + "\n    clone[p] = self[p];"
+            + "\n  };"
+            + "\n  return clone;"
+            + "\n}"
+    )
+    static native Object clone(Object self) throws CloneNotSupportedException;
+    
 }
