@@ -90,6 +90,9 @@ public class VMLazyTest {
         if (ret == null && expRes == null) {
             return;
         }
+        if (expRes instanceof Double && ret instanceof Number) {
+            ret = ((Number)ret).doubleValue();
+        }
         if (expRes.equals(ret)) {
             return;
         }

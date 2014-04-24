@@ -1003,49 +1003,49 @@ abstract class ByteCodeToJavaScript {
                          smapper.popA(), smapper.pushI());
                     break;
                 case opc_lastore:
-                    emit(out, "@3.at(@2, @1);",
+                    emit(out, "Array.at(@3, @2, @1);",
                          smapper.popL(), smapper.popI(), smapper.popA());
                     break;
                 case opc_fastore:
-                    emit(out, "@3.at(@2, @1);",
+                    emit(out, "Array.at(@3, @2, @1);",
                          smapper.popF(), smapper.popI(), smapper.popA());
                     break;
                 case opc_dastore:
-                    emit(out, "@3.at(@2, @1);",
+                    emit(out, "Array.at(@3, @2, @1);",
                          smapper.popD(), smapper.popI(), smapper.popA());
                     break;
                 case opc_aastore:
-                    emit(out, "@3.at(@2, @1);",
+                    emit(out, "Array.at(@3, @2, @1);",
                          smapper.popA(), smapper.popI(), smapper.popA());
                     break;
                 case opc_iastore:
                 case opc_bastore:
                 case opc_castore:
                 case opc_sastore:
-                    emit(out, "@3.at(@2, @1);",
+                    emit(out, "Array.at(@3, @2, @1);",
                          smapper.popI(), smapper.popI(), smapper.popA());
                     break;
                 case opc_laload:
-                    emit(out, "var @3 = @2.at(@1);",
+                    emit(out, "var @3 = Array.at(@2, @1);",
                          smapper.popI(), smapper.popA(), smapper.pushL());
                     break;
                 case opc_faload:
-                    emit(out, "var @3 = @2.at(@1);",
+                    emit(out, "var @3 = Array.at(@2, @1);",
                          smapper.popI(), smapper.popA(), smapper.pushF());
                     break;
                 case opc_daload:
-                    emit(out, "var @3 = @2.at(@1);",
+                    emit(out, "var @3 = Array.at(@2, @1);",
                          smapper.popI(), smapper.popA(), smapper.pushD());
                     break;
                 case opc_aaload:
-                    emit(out, "var @3 = @2.at(@1);",
+                    emit(out, "var @3 = Array.at(@2, @1);",
                          smapper.popI(), smapper.popA(), smapper.pushA());
                     break;
                 case opc_iaload:
                 case opc_baload:
                 case opc_caload:
                 case opc_saload:
-                    emit(out, "var @3 = @2.at(@1);",
+                    emit(out, "var @3 = Array.at(@2, @1);",
                          smapper.popI(), smapper.popA(), smapper.pushI());
                     break;
                 case opc_pop:
