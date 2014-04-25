@@ -984,12 +984,12 @@ public final class String
                 continue;
             }
             if (v < 0x0800) {
-                arr = System.expandArray(arr, i + 1);
+                arr = System.expandArray(arr, arr.length + 1);
                 arr[i++] = (byte) (0xC0 | (v >> 6));
                 arr[i++] = (byte) (0x80 | (0x3F & v));
                 continue;
             }
-            arr = System.expandArray(arr, i + 2);
+            arr = System.expandArray(arr, arr.length + 2);
             arr[i++] = (byte) (0xE0 | (v >> 12));
             arr[i++] = (byte) (0x80 | ((v >> 6) & 0x7F));
             arr[i++] = (byte) (0x80 | (0x3F & v));
