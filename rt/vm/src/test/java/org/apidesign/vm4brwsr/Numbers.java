@@ -26,6 +26,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
+@org.apidesign.bck2brwsr.core.Exported 
 public class Numbers {
     private static Double autoboxDbl() {
         return 3.3;

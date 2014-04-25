@@ -125,6 +125,34 @@ final class TestVM {
             return null;
         }
     }
+    
+    static TestVM compileClassAsExtension(StringBuilder sb, ScriptEngine[] eng, String... names) throws ScriptException, IOException {
+        if (sb == null) {
+            sb = new StringBuilder();
+        }
+        Bck2Brwsr.generate(sb, new EmulationResources());
+        Bck2Brwsr b2b = Bck2Brwsr.newCompiler().
+            resources(new EmulationResources()).
+            addRootClasses(names).
+            extension(true);
+        b2b.generate(sb);
+        ScriptEngineManager sem = new ScriptEngineManager();
+        ScriptEngine js = sem.getEngineByExtension("js");
+        if (eng != null) {
+            eng[0] = js;
+        }
+        try {
+            Object res = js.eval(sb.toString());
+            assertTrue(js instanceof Invocable, "It is invocable object: " + res);
+            return new TestVM((Invocable) js, sb);
+        } catch (Exception ex) {
+            if (sb.length() > 2000) {
+                sb = dumpJS(sb);
+            }
+            fail("Could not evaluate:" + ex.getClass() + ":" + ex.getMessage() + "\n" + sb, ex);
+            return null;
+        }
+    }
 
     Object loadClass(String loadClass, String name) throws ScriptException, NoSuchMethodException {
         return code.invokeMethod(bck2brwsr, "loadClass", Exceptions.class.getName());
