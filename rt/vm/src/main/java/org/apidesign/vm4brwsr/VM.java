@@ -433,14 +433,24 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "    for (var i = 0; i < extensions.length; ++i) {\n"
                 + "      extensions[i](vm);\n"
                 + "    }\n"
+                + "    var knownExtensions = extensions.length;\n"
                 + "    var loader = {};\n"
                 + "    loader.vm = vm;\n"
                 + "    loader.loadClass = function(name) {\n"
                 + "      var attr = name.replace__Ljava_lang_String_2CC('.','_');\n"
                 + "      var fn = vm[attr];\n"
                 + "      if (fn) return fn(false);\n"
-                + "      return vm.org_apidesign_vm4brwsr_VMLazy(false).\n"
-                + "        load__Ljava_lang_Object_2Ljava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2(loader, name, args);\n"
+                + "      try {\n"
+                + "        return vm.org_apidesign_vm4brwsr_VMLazy(false).\n"
+                + "          load__Ljava_lang_Object_2Ljava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2(loader, name, args);\n"
+                + "      } catch (err) {\n"
+                + "        while (knownExtensions < extensions.length) {\n"
+                + "          extensions[knownExtensions++](vm);\n"
+                + "        }\n"
+                + "        fn = vm[attr];\n"
+                + "        if (fn) return fn(false);\n"
+                + "        throw err;\n"
+                + "      }\n"
                 + "    }\n"
                 + "    if (vm.loadClass) {\n"
                 + "      throw 'Cannot initialize the bck2brwsr VM twice!';\n"
@@ -456,9 +466,9 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "    return loader;\n"
                 + "  };\n");
             out.append(
-                  "  global.bck2brwsr.registerExtension"
-                             + " = function(extension) {\n"
+                  "  global.bck2brwsr.registerExtension = function(extension) {\n"
                 + "    extensions.push(extension);\n"
+                + "    return null;\n"
                 + "  };\n");
             out.append("}(this));");
         }

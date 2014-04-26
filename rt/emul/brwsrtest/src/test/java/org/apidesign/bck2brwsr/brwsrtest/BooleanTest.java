@@ -19,7 +19,6 @@ package org.apidesign.bck2brwsr.brwsrtest;
 
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.vmtest.BrwsrTest;
-import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
 
@@ -27,6 +26,7 @@ import org.testng.annotations.Factory;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
+@org.apidesign.bck2brwsr.core.Exported
 public class BooleanTest {
     @JavaScriptBody(args = { "tr" }, body = "return tr ? true : false;")
     private static native Object trueFalse(boolean tr);

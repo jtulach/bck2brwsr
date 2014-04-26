@@ -17,8 +17,11 @@
  */
 package org.apidesign.bck2brwsr.launcher;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.util.jar.JarFile;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 
 /**
@@ -36,13 +39,27 @@ final class Bck2BrwsrLauncher extends BaseHTTPLauncher {
     String harnessResource() {
         return "org/apidesign/bck2brwsr/launcher/harness.xhtml";
     }
+
+    @Override
+    String compileJar(JarFile jar) throws IOException {
+        return CompileCP.compileJAR(jar);
+    }
+
+    @Override String compileFromClassPath(URL f) {
+        try {
+            return CompileCP.compileFromClassPath(f);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
     
     @Override
     void generateBck2BrwsrJS(StringBuilder sb, final Res loader) throws IOException {
         class R implements Bck2Brwsr.Resources {
             @Override
             public InputStream get(String resource) throws IOException {
-                return loader.get(resource);
+                return loader.get(resource).openStream();
             }
         }
 
@@ -54,7 +71,7 @@ final class Bck2BrwsrLauncher extends BaseHTTPLauncher {
             + "    request.open('GET', '/classes/' + res, false);\n"
             + "    request.send();\n"
             + "    if (request.status !== 200) return null;\n"
-            + "    var arr = eval('(' + request.responseText + ')');\n"
+            + "    var arr = eval(request.responseText);\n"
             + "    return arr;\n"
             + "  }\n"
             + "  var prevvm = global.bck2brwsr;\n"
@@ -63,6 +80,7 @@ final class Bck2BrwsrLauncher extends BaseHTTPLauncher {
             + "    args.unshift(ldCls);\n"
             + "    return prevvm.apply(null, args);\n"
             + "  };\n"
+            + "  global.bck2brwsr.registerExtension = prevvm.registerExtension;\n"
             + "})(this);\n"
         );
     }

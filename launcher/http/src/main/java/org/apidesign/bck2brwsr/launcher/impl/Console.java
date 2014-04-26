@@ -31,6 +31,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
+@org.apidesign.bck2brwsr.core.Exported 
 public class Console {
     private Console() {
     }
