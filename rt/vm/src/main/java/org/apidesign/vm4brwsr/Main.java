@@ -105,8 +105,7 @@ final class Main {
         }
         
         try (Writer w = new BufferedWriter(new FileWriter(gt))) {
-            Bck2Brwsr.newCompiler().
-                extension(createExtension).
+            Bck2Brwsr.newCompiler().library(createExtension).
                 obfuscation(obfLevel).
                 addRootClasses(classes.toArray()).
                 resources(new LdrRsrcs(mainClassLoader)).

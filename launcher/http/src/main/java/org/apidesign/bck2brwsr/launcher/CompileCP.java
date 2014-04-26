@@ -51,8 +51,8 @@ class CompileCP {
             }
             
             Bck2Brwsr.newCompiler()
-                .addRootClasses(classes.toArray(new String[0]))
-                .extension(true)
+                .addClasses(classes.toArray(new String[0]))
+                .library(true)
                 .resources(new JarRes())
                 .generate(w);
             w.flush();
@@ -78,7 +78,7 @@ class CompileCP {
             try {
                 Bck2Brwsr.newCompiler()
                     .addRootClasses(classes.toArray(new String[0]))
-                    .extension(true)
+                    .library(true)
                     .resources(new EmulationResources())
                     .generate(w);
                 w.flush();

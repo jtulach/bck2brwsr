@@ -30,15 +30,20 @@ import org.apidesign.vm4brwsr.ByteCodeParser.MethodData;
 @ExtraJavaScript(processByteCode = false, resource="")
 final class ExportedSymbols {
     private final Bck2Brwsr.Resources resources;
+    private final StringArray exported;
     private final Map<Object, Boolean> isMarkedAsExportedCache;
 
-    ExportedSymbols(final Bck2Brwsr.Resources resources) {
+    ExportedSymbols(final Bck2Brwsr.Resources resources, StringArray explicitlyExported) {
         this.resources = resources;
+        this.exported = explicitlyExported;
 
         isMarkedAsExportedCache = new HashMap<Object, Boolean>();
     }
 
     boolean isExported(ClassData classData) throws IOException {
+        if (exported.contains(classData.getClassName())) {
+            return true;
+        }
         return classData.isPublic() && isMarkedAsExportedPackage(
                                            classData.getPkgName())
                    || isMarkedAsExported(classData);

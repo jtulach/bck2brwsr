@@ -38,6 +38,7 @@ final class ClosureWrapper extends CommandLineRunner {
     private final Bck2Brwsr.Resources res;
     private final StringArray classes;
     private final boolean extension;
+    private final StringArray rootClasses;
 
     private String compiledCode;
     private String externsCode;
@@ -45,6 +46,7 @@ final class ClosureWrapper extends CommandLineRunner {
     private ClosureWrapper(Appendable out, 
                            String compilationLevel,
                            Bck2Brwsr.Resources res,
+                           StringArray rootClasses,
                            StringArray classes,
                            boolean extension) {
         super(
@@ -52,6 +54,7 @@ final class ClosureWrapper extends CommandLineRunner {
             new PrintStream(new APS(out)), System.err
         );
         this.res = res;
+        this.rootClasses = rootClasses;
         this.classes = classes;
         this.extension = extension;
     }
@@ -96,7 +99,7 @@ final class ClosureWrapper extends CommandLineRunner {
         if (compiledCode == null) {
             StringBuilder sb = new StringBuilder();
             try {
-                VM.compile(sb, res, classes, extension);
+                VM.compile(sb, res, rootClasses, classes, extension);
                 compiledCode = sb.toString();
             } catch (IOException ex) {
                 compiledCode = ex.getMessage();
@@ -141,6 +144,7 @@ final class ClosureWrapper extends CommandLineRunner {
     static int produceTo(Appendable output,
                          ObfuscationLevel obfuscationLevel,
                          Bck2Brwsr.Resources resources,
+                         StringArray rootArr,
                          StringArray arr,
                          boolean extension) throws IOException {
         final ClosureWrapper cw =
@@ -148,7 +152,7 @@ final class ClosureWrapper extends CommandLineRunner {
                                    (obfuscationLevel == ObfuscationLevel.FULL)
                                            ? "ADVANCED_OPTIMIZATIONS"
                                            : "SIMPLE_OPTIMIZATIONS",
-                                   resources, arr, extension);
+                                   resources, rootArr, arr, extension);
         try {
             return cw.doRun();
         } catch (FlagUsageException ex) {

@@ -40,11 +40,11 @@ abstract class VM extends ByteCodeToJavaScript {
             VM.class
         };
 
-    private VM(Appendable out, Bck2Brwsr.Resources resources) {
+    private VM(Appendable out, Bck2Brwsr.Resources resources, StringArray explicitlyExported) {
         super(out);
         this.resources = resources;
         this.classDataCache = new ClassDataCache(resources);
-        this.exportedSymbols = new ExportedSymbols(resources);
+        this.exportedSymbols = new ExportedSymbols(resources, explicitlyExported);
         this.invokerMethods = new StringArray();
     }
 
@@ -63,9 +63,16 @@ abstract class VM extends ByteCodeToJavaScript {
         return false;
     }
     
-    static void compile(Appendable out, Bck2Brwsr.Resources l, StringArray names, boolean extension) throws IOException {
-        VM vm = extension ? new Extension(out, l, names.toArray())
-                          : new Standalone(out, l);
+    static void compile(Appendable out, 
+        Bck2Brwsr.Resources l, 
+        StringArray rootNames, 
+        StringArray names, 
+        boolean extension
+    ) throws IOException {
+        StringArray both = names.addAndNew(rootNames.toArray());
+        
+        VM vm = extension ? new Extension(out, l, both.toArray(), rootNames)
+                          : new Standalone(out, l, rootNames);
 
         final StringArray fixedNames = new StringArray();
 
@@ -73,7 +80,7 @@ abstract class VM extends ByteCodeToJavaScript {
             fixedNames.add(fixedClass.getName().replace('.', '/'));
         }
 
-        vm.doCompile(fixedNames.addAndNew(names.toArray()));
+        vm.doCompile(fixedNames.addAndNew(both.toArray()));
     }
 
     private void doCompile(StringArray names) throws IOException {
@@ -412,8 +419,8 @@ abstract class VM extends ByteCodeToJavaScript {
     }
 
     private static final class Standalone extends VM {
-        private Standalone(Appendable out, Bck2Brwsr.Resources resources) {
-            super(out, resources);
+        private Standalone(Appendable out, Bck2Brwsr.Resources resources, StringArray explicitlyExported) {
+            super(out, resources, explicitlyExported);
         }
 
         @Override
@@ -488,8 +495,8 @@ abstract class VM extends ByteCodeToJavaScript {
         private final StringArray extensionClasses;
 
         private Extension(Appendable out, Bck2Brwsr.Resources resources,
-                          String[] extClassesArray) {
-            super(out, resources);
+                          String[] extClassesArray, StringArray explicitlyExported) {
+            super(out, resources, explicitlyExported);
             this.extensionClasses = StringArray.asList(extClassesArray);
         }
 

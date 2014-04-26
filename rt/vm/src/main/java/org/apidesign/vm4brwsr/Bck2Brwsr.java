@@ -20,6 +20,7 @@ package org.apidesign.vm4brwsr;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import org.apidesign.bck2brwsr.core.Exported;
 
 /** Build your own virtual machine! Use methods in this class to generate
  * a skeleton JVM in JavaScript that contains pre-compiled classes of your
@@ -54,12 +55,14 @@ import java.net.URL;
  */
 public final class Bck2Brwsr {
     private final ObfuscationLevel level;
+    private final StringArray rootcls;
     private final StringArray classes;
     private final Resources res;
     private final boolean extension;
 
-    private Bck2Brwsr(ObfuscationLevel level, StringArray classes, Resources resources, boolean extension) {
+    private Bck2Brwsr(ObfuscationLevel level, StringArray rootcls, StringArray classes, Resources resources, boolean extension) {
         this.level = level;
+        this.rootcls = rootcls;
         this.classes = classes;
         this.res = resources;
         this.extension = extension;
@@ -99,23 +102,48 @@ public final class Bck2Brwsr {
      * @since 0.5
      */
     public static Bck2Brwsr newCompiler() {
-        return new Bck2Brwsr(ObfuscationLevel.NONE, new StringArray(), null, false);
+        return new Bck2Brwsr(ObfuscationLevel.NONE, new StringArray(), new StringArray(), null, false);
     }
 
-    /** Creates new instance of the Bck2Brwsr compiler which inherits
-     * all values from <code>this</code> instance and adds additional classes 
-     * to the list of those that should be compiled by the {@link #generate(java.lang.Appendable)} 
-     * method.
+    /** Adds additional classes 
+     * to the list of those that should be included in the generated
+     * JavaScript file.
+     * These classes are guaranteed to be available in the
+     * generated virtual machine code accessible using their fully 
+     * qualified name. This brings the same behavior as if the
+     * classes were added by {@link #addClasses(java.lang.String...) } and
+     * were annotated with {@link Exported} annotation.
      * 
      * @param classes the classes to add to the compilation
-     * @return new instance of the compiler
+     * @return new instance of the Bck2Brwsr compiler which inherits
+     * all values from <code>this</code>
      */
     public Bck2Brwsr addRootClasses(String... classes) {
         if (classes.length == 0) {
             return this;
         } else {
-            return new Bck2Brwsr(level, this.classes.addAndNew(classes), res,
+            return new Bck2Brwsr(level, rootcls.addAndNew(classes), this.classes, res,
                                  extension);
+        }
+    }
+    
+    /** Adds additional classes 
+     * to the list of those that should be included in the generated
+     * JavaScript file. These classes are guaranteed to be present,
+     * but they may not be accessible through their fully qualified
+     * name.
+     * 
+     * @param classes the classes to add to the compilation
+     * @return new instance of the Bck2Brwsr compiler which inherits
+     * all values from <code>this</code>
+     * @since 0.9
+     */
+    public Bck2Brwsr addClasses(String... classes) {
+        if (classes.length == 0) {
+            return this;
+        } else {
+            return new Bck2Brwsr(level, rootcls, this.classes.addAndNew(classes), res,
+                extension);
         }
     }
     
@@ -128,7 +156,7 @@ public final class Bck2Brwsr {
      * @since 0.5
      */
     public Bck2Brwsr obfuscation(ObfuscationLevel level) {
-        return new Bck2Brwsr(level, classes, res, extension);
+        return new Bck2Brwsr(level, rootcls, classes, res, extension);
     }
     
     /** A way to change the provider of additional resources (classes) for the 
@@ -140,11 +168,22 @@ public final class Bck2Brwsr {
      * @since 0.5
      */
     public Bck2Brwsr resources(Resources res) {
-        return new Bck2Brwsr(level, classes, res, extension);
+        return new Bck2Brwsr(level, rootcls, classes, res, extension);
     }
 
-    public Bck2Brwsr extension(boolean extension) {
-        return new Bck2Brwsr(level, classes, res, extension);
+    /** Should one generate a library? By default the system generates
+     * all transitive classes needed by the the transitive closure of
+     * {@link #addRootClasses(java.lang.String...)} and {@link #addClasses(java.lang.String...)}.
+     * By turning on the library mode, only classes explicitly listed
+     * will be included in the archive. The others will be referenced
+     * as external ones.
+     * 
+     * @param library turn on the library mode?
+     * @return new instance of the compiler with library flag changed
+     * @since 0.9
+     */
+    public Bck2Brwsr library(boolean library) {
+        return new Bck2Brwsr(level, rootcls, classes, res, library);
     }
 
     /** A way to change the provider of additional resources (classes) for the 
@@ -169,7 +208,7 @@ public final class Bck2Brwsr {
         Resources r = res != null ? res : new LdrRsrcs(Bck2Brwsr.class.getClassLoader());
         if (level != ObfuscationLevel.NONE) {
             try {
-                ClosureWrapper.produceTo(out, level, r, classes, extension);
+                ClosureWrapper.produceTo(out, level, r, rootcls, classes, extension);
                 return;
             } catch (IOException ex) {
                 throw ex;
@@ -179,7 +218,7 @@ public final class Bck2Brwsr {
             }
         }
 
-        VM.compile(out, r, classes, extension);
+        VM.compile(out, r, rootcls, classes, extension);
     }
 
     /** Provider of resources (classes and other files). The 

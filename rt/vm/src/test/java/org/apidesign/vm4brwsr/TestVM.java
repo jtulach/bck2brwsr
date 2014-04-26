@@ -133,8 +133,7 @@ final class TestVM {
         Bck2Brwsr.generate(sb, new EmulationResources());
         Bck2Brwsr b2b = Bck2Brwsr.newCompiler().
             resources(new EmulationResources()).
-            addRootClasses(names).
-            extension(true);
+            addRootClasses(names).library(true);
         b2b.generate(sb);
         ScriptEngineManager sem = new ScriptEngineManager();
         ScriptEngine js = sem.getEngineByExtension("js");
