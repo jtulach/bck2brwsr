@@ -19,7 +19,6 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import org.apidesign.bck2brwsr.core.Exported;
 
 /** Build your own virtual machine! Use methods in this class to generate
@@ -57,14 +56,16 @@ public final class Bck2Brwsr {
     private final ObfuscationLevel level;
     private final StringArray rootcls;
     private final StringArray classes;
+    private final StringArray resources;
     private final Resources res;
     private final boolean extension;
 
-    private Bck2Brwsr(ObfuscationLevel level, StringArray rootcls, StringArray classes, Resources resources, boolean extension) {
+    private Bck2Brwsr(ObfuscationLevel level, StringArray rootcls, StringArray classes, StringArray resources, Resources res, boolean extension) {
         this.level = level;
         this.rootcls = rootcls;
         this.classes = classes;
-        this.res = resources;
+        this.resources = resources;
+        this.res = res;
         this.extension = extension;
     }
     
@@ -102,7 +103,7 @@ public final class Bck2Brwsr {
      * @since 0.5
      */
     public static Bck2Brwsr newCompiler() {
-        return new Bck2Brwsr(ObfuscationLevel.NONE, new StringArray(), new StringArray(), null, false);
+        return new Bck2Brwsr(ObfuscationLevel.NONE, new StringArray(), new StringArray(), new StringArray(), null, false);
     }
 
     /** Adds additional classes 
@@ -122,7 +123,7 @@ public final class Bck2Brwsr {
         if (classes.length == 0) {
             return this;
         } else {
-            return new Bck2Brwsr(level, rootcls.addAndNew(classes), this.classes, res,
+            return new Bck2Brwsr(level, rootcls.addAndNew(classes), this.classes, resources, res,
                                  extension);
         }
     }
@@ -142,8 +143,29 @@ public final class Bck2Brwsr {
         if (classes.length == 0) {
             return this;
         } else {
-            return new Bck2Brwsr(level, rootcls, this.classes.addAndNew(classes), res,
+            return new Bck2Brwsr(level, rootcls, this.classes.addAndNew(classes), resources, res,
                 extension);
+        }
+    }
+    
+    /** These resources should be made available in the compiled file in
+     * binary form. These resources can then be loaded
+     * by {@link ClassLoader#getResource(java.lang.String)} and similar 
+     * methods.
+     * 
+     * @param resources names of the resources to be loaded by {@link Resources#get(java.lang.String)}
+     * @return new instance of the Bck2Brwsr compiler which inherits
+     *   all values from <code>this</code> just adds few more resource names
+     *   for processing
+     * @since 0.9
+     */
+    public Bck2Brwsr addResources(String... resources) {
+        if (resources.length == 0) {
+            return this;
+        } else {
+            return new Bck2Brwsr(level, rootcls, this.classes, 
+                this.resources.addAndNew(resources), res, extension
+            );
         }
     }
     
@@ -156,7 +178,7 @@ public final class Bck2Brwsr {
      * @since 0.5
      */
     public Bck2Brwsr obfuscation(ObfuscationLevel level) {
-        return new Bck2Brwsr(level, rootcls, classes, res, extension);
+        return new Bck2Brwsr(level, rootcls, classes, resources, res, extension);
     }
     
     /** A way to change the provider of additional resources (classes) for the 
@@ -168,7 +190,7 @@ public final class Bck2Brwsr {
      * @since 0.5
      */
     public Bck2Brwsr resources(Resources res) {
-        return new Bck2Brwsr(level, rootcls, classes, res, extension);
+        return new Bck2Brwsr(level, rootcls, classes, resources, res, extension);
     }
 
     /** Should one generate a library? By default the system generates
@@ -183,7 +205,7 @@ public final class Bck2Brwsr {
      * @since 0.9
      */
     public Bck2Brwsr library(boolean library) {
-        return new Bck2Brwsr(level, rootcls, classes, res, library);
+        return new Bck2Brwsr(level, rootcls, classes, resources, res, library);
     }
 
     /** A way to change the provider of additional resources (classes) for the 
@@ -205,10 +227,9 @@ public final class Bck2Brwsr {
      * @since 0.5
      */
     public void generate(Appendable out) throws IOException {
-        Resources r = res != null ? res : new LdrRsrcs(Bck2Brwsr.class.getClassLoader());
         if (level != ObfuscationLevel.NONE) {
             try {
-                ClosureWrapper.produceTo(out, level, r, rootcls, classes, extension);
+                ClosureWrapper.produceTo(out, level, this);
                 return;
             } catch (IOException ex) {
                 throw ex;
@@ -218,7 +239,27 @@ public final class Bck2Brwsr {
             }
         }
 
-        VM.compile(out, r, rootcls, classes, extension);
+        VM.compile(out, this);
+    }
+    
+    //
+    // Internal getters
+    // 
+    
+    Resources getResources() {
+        return res != null ? res : new LdrRsrcs(Bck2Brwsr.class.getClassLoader());
+    }
+    
+    String[] allClasses() {
+        return classes.addAndNew(rootcls.toArray()).toArray();
+    }
+    
+    StringArray rootClasses() {
+        return rootcls;
+    }
+    
+    boolean isExtension() {
+        return extension;
     }
 
     /** Provider of resources (classes and other files). The 

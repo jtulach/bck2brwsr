@@ -15,32 +15,26 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.tck;
+package org.apidesign.vm4brwsr;
 
+import java.io.IOException;
 import java.io.InputStream;
-import org.apidesign.bck2brwsr.vmtest.Compare;
-import org.apidesign.bck2brwsr.vmtest.VMTest;
-import org.testng.annotations.Factory;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class ResourcesTest {
-    
-    @Compare public String readResourceAsStream() throws Exception {
-        InputStream is = getClass().getResourceAsStream("Resources.txt");
-        assert is != null : "The stream for Resources.txt should be found";
-        byte[] b = new byte[30];
-        int len = is.read(b);
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < len; i++) {
-            sb.append((char)b[i]);
+public class Resources {
+    public static String loadKO() throws IOException {
+        InputStream is = Resources.class.getResourceAsStream("ko.js");
+        if (is == null) {
+            return "No resource found!";
         }
-        return sb.toString();
-    }
-    
-    @Factory public static Object[] create() {
-        return VMTest.create(ResourcesTest.class);
+        byte[] arr = new byte[4092];
+        int len = is.read(arr);
+        if (len == -1) {
+            return "No data read!";
+        }
+        return new String(arr, 0, len, "UTF-8");
     }
 }

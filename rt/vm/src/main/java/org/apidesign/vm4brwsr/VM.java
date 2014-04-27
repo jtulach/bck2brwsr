@@ -64,15 +64,14 @@ abstract class VM extends ByteCodeToJavaScript {
     }
     
     static void compile(Appendable out, 
-        Bck2Brwsr.Resources l, 
-        StringArray rootNames, 
-        StringArray names, 
-        boolean extension
+        Bck2Brwsr config
     ) throws IOException {
-        StringArray both = names.addAndNew(rootNames.toArray());
+        String[] both = config.allClasses();
         
-        VM vm = extension ? new Extension(out, l, both.toArray(), rootNames)
-                          : new Standalone(out, l, rootNames);
+        VM vm = config.isExtension() ? 
+            new Extension(out, config.getResources(), both, config.rootClasses())
+            : 
+            new Standalone(out, config.getResources(), config.rootClasses());
 
         final StringArray fixedNames = new StringArray();
 
@@ -80,7 +79,7 @@ abstract class VM extends ByteCodeToJavaScript {
             fixedNames.add(fixedClass.getName().replace('.', '/'));
         }
 
-        vm.doCompile(fixedNames.addAndNew(both.toArray()));
+        vm.doCompile(fixedNames.addAndNew(both));
     }
 
     private void doCompile(StringArray names) throws IOException {

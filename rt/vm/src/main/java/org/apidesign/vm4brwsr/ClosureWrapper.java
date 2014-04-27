@@ -35,28 +35,18 @@ import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 final class ClosureWrapper extends CommandLineRunner {
     private static final String[] ARGS = { "--compilation_level", "SIMPLE_OPTIMIZATIONS", "--js", "bck2brwsr-raw.js" /*, "--debug", "--formatting", "PRETTY_PRINT" */ };
 
-    private final Bck2Brwsr.Resources res;
-    private final StringArray classes;
-    private final boolean extension;
-    private final StringArray rootClasses;
+    private final Bck2Brwsr config;
 
     private String compiledCode;
     private String externsCode;
 
-    private ClosureWrapper(Appendable out, 
-                           String compilationLevel,
-                           Bck2Brwsr.Resources res,
-                           StringArray rootClasses,
-                           StringArray classes,
-                           boolean extension) {
+    private ClosureWrapper(Appendable out,
+                           String compilationLevel, Bck2Brwsr config) {
         super(
             generateArguments(compilationLevel),
             new PrintStream(new APS(out)), System.err
         );
-        this.res = res;
-        this.rootClasses = rootClasses;
-        this.classes = classes;
-        this.extension = extension;
+        this.config = config;
     }
 
     @Override
@@ -99,7 +89,7 @@ final class ClosureWrapper extends CommandLineRunner {
         if (compiledCode == null) {
             StringBuilder sb = new StringBuilder();
             try {
-                VM.compile(sb, res, rootClasses, classes, extension);
+                VM.compile(sb, config);
                 compiledCode = sb.toString();
             } catch (IOException ex) {
                 compiledCode = ex.getMessage();
@@ -142,17 +132,15 @@ final class ClosureWrapper extends CommandLineRunner {
     }
 
     static int produceTo(Appendable output,
-                         ObfuscationLevel obfuscationLevel,
-                         Bck2Brwsr.Resources resources,
-                         StringArray rootArr,
-                         StringArray arr,
-                         boolean extension) throws IOException {
+        ObfuscationLevel obfuscationLevel,
+        Bck2Brwsr config
+    ) throws IOException {
         final ClosureWrapper cw =
                 new ClosureWrapper(output,
                                    (obfuscationLevel == ObfuscationLevel.FULL)
                                            ? "ADVANCED_OPTIMIZATIONS"
                                            : "SIMPLE_OPTIMIZATIONS",
-                                   resources, rootArr, arr, extension);
+                                   config);
         try {
             return cw.doRun();
         } catch (FlagUsageException ex) {
