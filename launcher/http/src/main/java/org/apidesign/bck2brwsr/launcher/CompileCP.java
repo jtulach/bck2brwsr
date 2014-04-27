@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.net.JarURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
+import org.apidesign.bck2brwsr.launcher.BaseHTTPLauncher.Res;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 
 /**
@@ -97,6 +99,9 @@ class CompileCP {
         while (en.hasMoreElements()) {
             JarEntry e = en.nextElement();
             final String n = e.getName();
+            if (n.contains("package-info")) {
+                continue;
+            }
             if (n.endsWith("/")) {
                 continue;
             }
@@ -131,6 +136,19 @@ class CompileCP {
                 listDir(ch, pref == null ? "" : pref + f.getName() + "/", classes, resources);
             }
         }
+    }
+
+    static void compileVM(StringBuilder sb, Res r) throws IOException {
+        URL u = r.get(InterruptedException.class.getName().replace('.', '/') + ".class");
+        JarURLConnection juc = (JarURLConnection)u.openConnection();
+        
+        List<String> arr = new ArrayList<>();
+        List<String> classes = new ArrayList<>();
+        listJAR(juc.getJarFile(), classes, arr);
+
+        Bck2Brwsr.newCompiler().addRootClasses(classes.toArray(new String[0]))
+            .resources(new EmulationResources())
+            .generate(sb);
     }
 
     static class EmulationResources implements Bck2Brwsr.Resources {

@@ -56,14 +56,7 @@ final class Bck2BrwsrLauncher extends BaseHTTPLauncher {
     
     @Override
     void generateBck2BrwsrJS(StringBuilder sb, final Res loader) throws IOException {
-        class R implements Bck2Brwsr.Resources {
-            @Override
-            public InputStream get(String resource) throws IOException {
-                return loader.get(resource).openStream();
-            }
-        }
-
-        Bck2Brwsr.generate(sb, new R());
+        CompileCP.compileVM(sb, loader);
         sb.append(
               "(function WrapperVM(global) {"
             + "  function ldCls(res) {\n"
