@@ -35,13 +35,26 @@ public class ResourcesTest {
             exp
         );
     }
+
+    @Test public void loadBinaryPrecompiledResource() throws Exception {
+        String exp = Resources.loadClazz();
+        
+        assertExec("Loading a precompiled resource:",
+            Resources.class, "loadClazz__Ljava_lang_String_2", 
+            exp
+        );
+    }
     
     private static TestVM code;
     
     @BeforeClass 
     public static void compileTheCode() throws Exception {
         StringBuilder sb = new StringBuilder();
-        code = TestVM.compileClassAndResources(sb, null, "org/apidesign/vm4brwsr/Resources", "org/apidesign/vm4brwsr/ko.js");
+        code = TestVM.compileClassAndResources(sb, null, 
+            "org/apidesign/vm4brwsr/Resources", 
+            "org/apidesign/vm4brwsr/ko.js",
+            "org/apidesign/vm4brwsr/Bck2BrwsrToolkit.class"
+        );
     }
     @AfterClass
     public static void releaseTheCode() {
@@ -56,6 +69,12 @@ public class ResourcesTest {
     }
     
     public static String parseBase64Binary(String s) throws UnsupportedEncodingException {
-        return new String(javax.xml.bind.DatatypeConverter.parseBase64Binary(s), "UTF-8");
+        final byte[] arr = javax.xml.bind.DatatypeConverter.parseBase64Binary(s);
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < arr.length; i++) {
+            int ch = arr[i];
+            sb.append((char)ch);
+        }
+        return sb.toString();
     }
 }

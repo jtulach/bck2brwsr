@@ -38,4 +38,23 @@ public class Resources {
         final Object str = new String(arr, 0, len, "UTF-8");
         return str.toString();
     }
+    static String loadClazz() throws IOException {
+        InputStream is = Resources.class.getResourceAsStream("Bck2BrwsrToolkit.class");
+        if (is == null) {
+            return "No resource found!";
+        }
+        byte[] arr = new byte[4092];
+        int len = is.read(arr);
+        if (len < 10) {
+            return "No data read! Len: " + len;
+        }
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        for (int i = 0; i < len; i++) {
+            sb.append(arr[i]).append(", ");
+        }
+        
+        return sb.toString().toString();
+    }
 }
