@@ -17,8 +17,7 @@
  */
 package org.apidesign.vm4brwsr;
 
-import javax.script.ScriptEngine;
-import static org.testng.Assert.*;
+import java.io.UnsupportedEncodingException;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -54,5 +53,9 @@ public class ResourcesTest {
         Object ret, Object... args
     ) throws Exception {
         code.assertExec(msg, clazz, method, ret, args);
+    }
+    
+    public static String parseBase64Binary(String s) throws UnsupportedEncodingException {
+        return new String(javax.xml.bind.DatatypeConverter.parseBase64Binary(s), "UTF-8");
     }
 }

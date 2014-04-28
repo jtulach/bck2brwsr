@@ -169,6 +169,11 @@ final class TestVM {
             eng[0] = js;
         }
         try {
+            js.eval("atob = function(s) { return org.apidesign.vm4brwsr.ResourcesTest.parseBase64Binary(s); }");
+            
+            Object ahoj = js.eval("atob('QWhvag==')");
+            assertEquals(ahoj, "Ahoj", "Verify the atob function behaves properly");
+            
             Object res = js.eval(sb.toString());
             assertTrue(js instanceof Invocable, "It is invocable object: " + res);
             return new TestVM((Invocable) js, sb);

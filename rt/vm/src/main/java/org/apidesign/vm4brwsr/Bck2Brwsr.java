@@ -253,6 +253,10 @@ public final class Bck2Brwsr {
     String[] allClasses() {
         return classes.addAndNew(rootcls.toArray()).toArray();
     }
+    StringArray allResources() {
+        return resources;
+    }
+
     
     StringArray rootClasses() {
         return rootcls;

@@ -35,6 +35,7 @@ public class Resources {
         if (len == -1) {
             return "No data read!";
         }
-        return new String(arr, 0, len, "UTF-8");
+        final Object str = new String(arr, 0, len, "UTF-8");
+        return str.toString();
     }
 }

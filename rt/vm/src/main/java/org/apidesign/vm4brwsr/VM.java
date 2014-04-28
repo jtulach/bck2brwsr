@@ -19,6 +19,7 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.vm4brwsr.ByteCodeParser.ClassData;
 import org.apidesign.vm4brwsr.ByteCodeParser.FieldData;
 import org.apidesign.vm4brwsr.ByteCodeParser.MethodData;
@@ -79,10 +80,10 @@ abstract class VM extends ByteCodeToJavaScript {
             fixedNames.add(fixedClass.getName().replace('.', '/'));
         }
 
-        vm.doCompile(fixedNames.addAndNew(both));
+        vm.doCompile(fixedNames.addAndNew(both), config.allResources());
     }
 
-    private void doCompile(StringArray names) throws IOException {
+    private void doCompile(StringArray names, StringArray asBinary) throws IOException {
         generatePrologue();
         out.append(
                 "\n  var invoker = function Invoker() {"
@@ -97,8 +98,27 @@ abstract class VM extends ByteCodeToJavaScript {
                            + "\n    return invoker;"
                            + "\n  };");
         }
+        
+        for (String r : asBinary.toArray()) {
+            out.append("\n  ").append(getExportsObject()).append(".registerResource('");
+            out.append(r).append("', '");
+            InputStream is = this.resources.get(r);
+            byte[] arr = new byte[is.available()];
+            int len = is.read(arr);
+            if (len != arr.length) {
+                throw new IOException("Not read as much as expected for " + r + " expected: " + arr.length + " was: " + len);
+            }
+            out.append(btoa(arr));
+            out.append("');");
+        }
+        
         out.append("\n");
         generateEpilogue();
+    }
+
+    @JavaScriptBody(args = { "arr" }, body = "return btoa(arr);")
+    private static String btoa(byte[] arr) {
+        return javax.xml.bind.DatatypeConverter.printBase64Binary(arr);
     }
 
     protected abstract void generatePrologue() throws IOException;
@@ -435,10 +455,19 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "  var extensions = [];\n"
                 + "  global.bck2brwsr = function() {\n"
                 + "    var args = Array.prototype.slice.apply(arguments);\n"
-                + "    var vm = fillInVMSkeleton({});\n"
+                + "    var resources = {};\n"
+                + "    function registerResource(n, a64) {\n"
+                + "      var str = atob(a64);\n"
+                + "      var arr = [];\n"
+                + "      for (var i = 0; i < str.length; i++) arr.push(str.charCodeAt(i) & 0xff);\n"
+                + "      if (!resources[n]) resources[n] = [arr];\n"
+                + "      else resources[n].push(arr);\n"
+                + "    }\n"
+                + "    var vm = fillInVMSkeleton({ 'registerResource' : registerResource });\n"
                 + "    for (var i = 0; i < extensions.length; ++i) {\n"
                 + "      extensions[i](vm);\n"
                 + "    }\n"
+                + "    vm.registerResource = null;\n"
                 + "    var knownExtensions = extensions.length;\n"
                 + "    var loader = {};\n"
                 + "    loader.vm = vm;\n"
@@ -451,7 +480,9 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "          load__Ljava_lang_Object_2Ljava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2(loader, name, args);\n"
                 + "      } catch (err) {\n"
                 + "        while (knownExtensions < extensions.length) {\n"
+                + "          vm.registerResource = registerResource;\n"
                 + "          extensions[knownExtensions++](vm);\n"
+                + "          vm.registerResource = null;\n"
                 + "        }\n"
                 + "        fn = vm[attr];\n"
                 + "        if (fn) return fn(false);\n"
@@ -463,6 +494,7 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "    }\n"
                 + "    vm.loadClass = loader.loadClass;\n"
                 + "    vm.loadBytes = function(name) {\n"
+                + "      if (resources[name]) return resources[name][0];\n"
                 + "      return vm.org_apidesign_vm4brwsr_VMLazy(false).\n"
                 + "        loadBytes___3BLjava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2(loader, name, args);\n"
                 + "    }\n"
