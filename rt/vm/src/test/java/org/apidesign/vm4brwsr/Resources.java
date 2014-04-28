@@ -19,6 +19,8 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.util.Enumeration;
 
 /**
  *
@@ -27,26 +29,26 @@ import java.io.InputStream;
 public class Resources {
     public static String loadKO() throws IOException {
         InputStream is = Resources.class.getResourceAsStream("ko.js");
-        if (is == null) {
-            return "No resource found!";
-        }
-        byte[] arr = new byte[4092];
-        int len = is.read(arr);
-        if (len == -1) {
-            return "No data read!";
-        }
-        final Object str = new String(arr, 0, len, "UTF-8");
-        return str.toString();
+        return readIS(is, false);
     }
+    
     static String loadClazz() throws IOException {
         InputStream is = Resources.class.getResourceAsStream("Bck2BrwsrToolkit.class");
+        return readIS(is, false);
+    }
+
+    private static String readIS(InputStream is, boolean asString) throws IOException {
         if (is == null) {
             return "No resource found!";
         }
         byte[] arr = new byte[4092];
         int len = is.read(arr);
-        if (len < 10) {
+        if (len < 5) {
             return "No data read! Len: " + len;
+        }
+        
+        if (asString) {
+            return new String(arr, 0, len, "UTF-8").toString().toString();
         }
         
         StringBuilder sb = new StringBuilder();
@@ -55,6 +57,27 @@ public class Resources {
             sb.append(arr[i]).append(", ");
         }
         
+        return sb.toString().toString();
+    }
+
+    static String loadHello() throws IOException {
+        Enumeration<URL> en;
+        try {
+            en = Resources.class.getClassLoader().getResources("META-INF/ahoj");
+        } catch (SecurityException ex) {
+            return "SecurityException";
+        }
+        StringBuilder sb = new StringBuilder();
+        while (en.hasMoreElements()) {
+            URL url = en.nextElement();
+            sb.append(readIS(url.openStream(), true));
+        }
+        return sb.toString().toString();
+    }
+    static String loadJustHello() throws IOException {
+        URL url = Resources.class.getResource("/META-INF/ahoj");
+        StringBuilder sb = new StringBuilder();
+        sb.append(readIS(url.openStream(), true));
         return sb.toString().toString();
     }
 }

@@ -17,6 +17,7 @@
  */
 package org.apidesign.vm4brwsr;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -126,24 +127,39 @@ final class TestVM {
         }
     }
     
-    static TestVM compileClassAsExtension(StringBuilder sb, ScriptEngine[] eng, String... names) throws ScriptException, IOException {
+    static TestVM compileClassAsExtension(
+        StringBuilder sb, ScriptEngine[] eng, 
+        String name, final String resourceName, final String resourceContent
+    ) throws ScriptException, IOException {
         if (sb == null) {
             sb = new StringBuilder();
         }
-        Bck2Brwsr.generate(sb, new EmulationResources());
-        Bck2Brwsr b2b = Bck2Brwsr.newCompiler().
-            resources(new EmulationResources()).
-            addRootClasses(names).library(true);
-        b2b.generate(sb);
-        ScriptEngineManager sem = new ScriptEngineManager();
-        ScriptEngine js = sem.getEngineByExtension("js");
-        if (eng != null) {
+        if (eng[0] == null) {
+            ScriptEngineManager sem = new ScriptEngineManager();
+            ScriptEngine js = sem.getEngineByExtension("js");
             eng[0] = js;
+            Bck2Brwsr.generate(sb, new EmulationResources());
         }
+        Bck2Brwsr b2b = Bck2Brwsr.newCompiler().
+            resources(new EmulationResources() {
+                @Override
+                public InputStream get(String name) throws IOException {
+                    if (name.equals(resourceName)) {
+                        return new ByteArrayInputStream(resourceContent.getBytes("UTF-8"));
+                    }
+                    return super.get(name);
+                }
+            }).
+            addRootClasses(name).library(true);
+        if (resourceName != null) {
+            b2b = b2b.addResources(resourceName);
+        }
+        b2b.generate(sb);
         try {
-            Object res = js.eval(sb.toString());
-            assertTrue(js instanceof Invocable, "It is invocable object: " + res);
-            return new TestVM((Invocable) js, sb);
+            defineAtoB(eng[0]);
+            Object res = eng[0].eval(sb.toString());
+            assertTrue(eng[0] instanceof Invocable, "It is invocable object: " + res);
+            return new TestVM((Invocable) eng[0], sb);
         } catch (Exception ex) {
             if (sb.length() > 2000) {
                 sb = dumpJS(sb);
@@ -169,10 +185,7 @@ final class TestVM {
             eng[0] = js;
         }
         try {
-            js.eval("atob = function(s) { return org.apidesign.vm4brwsr.ResourcesTest.parseBase64Binary(s); }");
-            
-            Object ahoj = js.eval("atob('QWhvag==')");
-            assertEquals(ahoj, "Ahoj", "Verify the atob function behaves properly");
+            defineAtoB(js);
             
             Object res = js.eval(sb.toString());
             assertTrue(js instanceof Invocable, "It is invocable object: " + res);
@@ -184,6 +197,13 @@ final class TestVM {
             fail("Could not evaluate:" + ex.getClass() + ":" + ex.getMessage() + "\n" + sb, ex);
             return null;
         }
+    }
+
+    private static void defineAtoB(ScriptEngine js) throws ScriptException {
+        js.eval("atob = function(s) { return org.apidesign.vm4brwsr.ResourcesTest.parseBase64Binary(s); }");
+        
+        Object ahoj = js.eval("atob('QWhvag==')");
+        assertEquals(ahoj, "Ahoj", "Verify the atob function behaves properly");
     }
 
     Object loadClass(String loadClass, String name) throws ScriptException, NoSuchMethodException {

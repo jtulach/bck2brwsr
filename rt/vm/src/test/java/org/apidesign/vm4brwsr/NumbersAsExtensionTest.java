@@ -17,6 +17,7 @@
  */
 package org.apidesign.vm4brwsr;
 
+import javax.script.ScriptEngine;
 import static org.testng.Assert.*;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -209,7 +210,8 @@ public class NumbersAsExtensionTest {
 
     @BeforeClass
     public static void compileTheCode() throws Exception {
-        code = TestVM.compileClassAsExtension(null, null, "org/apidesign/vm4brwsr/Numbers");
+        ScriptEngine[] eng = { null };
+        code = TestVM.compileClassAsExtension(null, eng, "org/apidesign/vm4brwsr/Numbers", null, null);
     }
     @AfterClass
     public static void releaseTheCode() {
