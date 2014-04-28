@@ -17,6 +17,7 @@
  */
 package org.apidesign.vm4brwsr;
 
+import javax.script.ScriptEngine;
 import static org.testng.Assert.*;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -27,7 +28,7 @@ import org.testng.annotations.Test;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class ResourcesTest {
-    @Test public void checkNullCast() throws Exception {
+    @Test public void loadPrecompiledResource() throws Exception {
         String exp = Resources.loadKO();
         
         assertExec("Loading a precompiled resource:",
