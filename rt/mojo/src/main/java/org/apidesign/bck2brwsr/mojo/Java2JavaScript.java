@@ -68,13 +68,13 @@ public class Java2JavaScript extends AbstractMojo {
     private ObfuscationLevel obfuscation;
 
     /**
-     * Indicates whether to create an extension module instead of a standalone
-     * JavaScript VM.
+     * Indicates whether to create an extension library 
+     * module instead of a standalone JavaScript VM.
      *
-     * @since 0.6
+     * @since 0.9
      */
     @Parameter(defaultValue="false")
-    private boolean extension;
+    private boolean library;
 
     @Override
     public void execute() throws MojoExecutionException {
@@ -99,7 +99,7 @@ public class Java2JavaScript extends AbstractMojo {
             FileWriter w = new FileWriter(javascript);
             Bck2Brwsr.newCompiler().
                 obfuscation(obfuscation).
-                extension(extension).
+                library(library).
                 resources(url).
                 addRootClasses(arr.toArray(new String[0])).
                 generate(w);
