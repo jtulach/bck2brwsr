@@ -54,6 +54,7 @@ class CompileCP {
             
             Bck2Brwsr.newCompiler()
                 .addClasses(classes.toArray(new String[0]))
+                .addResources(arr.toArray(new String[0]))
                 .library(true)
                 .resources(new JarRes())
                 .generate(w);
@@ -80,6 +81,7 @@ class CompileCP {
             try {
                 Bck2Brwsr.newCompiler()
                     .addRootClasses(classes.toArray(new String[0]))
+                    .addResources(arr.toArray(new String[0]))
                     .library(true)
                     .resources(new EmulationResources())
                     .generate(w);
