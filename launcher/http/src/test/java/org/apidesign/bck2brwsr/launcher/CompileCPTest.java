@@ -35,7 +35,7 @@ public class CompileCPTest {
         assertNotNull(u, "URL found");
         assertEquals(u.getProtocol(), "file", "It comes from a disk");
         
-        String resources = CompileCP.compileFromClassPath(u);
+        String resources = CompileCP.compileFromClassPath(u, null);
         assertNotNull(resources, "something compiled");
     }
 }

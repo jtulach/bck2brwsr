@@ -500,7 +500,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
     String compileJar(JarFile jar) throws IOException {
         return null;
     }
-    String compileFromClassPath(URL f) {
+    String compileFromClassPath(URL f, Res loader) {
         return null;
     }
 
@@ -509,7 +509,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
             return BaseHTTPLauncher.this.compileJar(jar);
         }
         String compileFromClassPath(URL f) {
-            return BaseHTTPLauncher.this.compileFromClassPath(f);
+            return BaseHTTPLauncher.this.compileFromClassPath(f, this);
         }
         public URL get(String resource) throws IOException {
             URL u = null;

@@ -67,7 +67,7 @@ class CompileCP {
         }
     }
     
-    static String compileFromClassPath(URL u) throws IOException, URISyntaxException {
+    static String compileFromClassPath(URL u, final Res r) throws IOException, URISyntaxException {
         File f = new File(u.toURI());
         for (String s : System.getProperty("java.class.path").split(File.pathSeparator)) {
             if (!f.getPath().startsWith(s)) {
@@ -83,7 +83,12 @@ class CompileCP {
                     .addRootClasses(classes.toArray(new String[0]))
                     .addResources(arr.toArray(new String[0]))
                     .library(true)
-                    .resources(new EmulationResources())
+                    .resources(new EmulationResources() {
+                        @Override
+                        public InputStream get(String resource) throws IOException {
+                            return r != null ? r.get(resource).openStream() : super.get(resource);
+                        }
+                    })
                     .generate(w);
                 w.flush();
                 return w.toString();
@@ -127,6 +132,9 @@ class CompileCP {
     private static void listDir(File f, String pref, List<String> classes, List<String> resources) throws IOException {
         File[] arr = f.listFiles();
         if (arr == null) {
+            if (f.getName().equals("package-info.class")) {
+                return;
+            }
             if (f.getName().endsWith(".class")) {
                 classes.add(pref + f.getName().substring(0, f.getName().length() - 6));
             } else {
@@ -140,7 +148,7 @@ class CompileCP {
         }
     }
 
-    static void compileVM(StringBuilder sb, Res r) throws IOException {
+    static void compileVM(StringBuilder sb, final Res r) throws IOException {
         URL u = r.get(InterruptedException.class.getName().replace('.', '/') + ".class");
         JarURLConnection juc = (JarURLConnection)u.openConnection();
         
@@ -149,8 +157,12 @@ class CompileCP {
         listJAR(juc.getJarFile(), classes, arr);
 
         Bck2Brwsr.newCompiler().addRootClasses(classes.toArray(new String[0]))
-            .resources(new EmulationResources())
-            .generate(sb);
+            .resources(new Bck2Brwsr.Resources() {
+                @Override
+                public InputStream get(String resource) throws IOException {
+                    return r.get(resource).openStream();
+                }
+            }).generate(sb);
     }
 
     static class EmulationResources implements Bck2Brwsr.Resources {

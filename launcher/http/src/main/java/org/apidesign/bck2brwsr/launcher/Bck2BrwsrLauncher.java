@@ -17,12 +17,9 @@
  */
 package org.apidesign.bck2brwsr.launcher;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.jar.JarFile;
-import org.apidesign.vm4brwsr.Bck2Brwsr;
 
 /**
  * Lightweight server to launch Bck2Brwsr applications and tests.
@@ -45,9 +42,9 @@ final class Bck2BrwsrLauncher extends BaseHTTPLauncher {
         return CompileCP.compileJAR(jar);
     }
 
-    @Override String compileFromClassPath(URL f) {
+    @Override String compileFromClassPath(URL f, Res loader) {
         try {
-            return CompileCP.compileFromClassPath(f);
+            return CompileCP.compileFromClassPath(f, loader);
         } catch (Exception ex) {
             ex.printStackTrace();
             return null;
