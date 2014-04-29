@@ -58,7 +58,7 @@ class VM extends ByteCodeToJavaScript {
     }
 
     protected void doCompile(Bck2Brwsr.Resources l, StringArray names) throws IOException {
-        out.append("(function VM(global) {var fillInVMSkeleton = function(vm) {");
+        append("(function VM(global) {var fillInVMSkeleton = function(vm) {");
         StringArray processed = new StringArray();
         StringArray initCode = new StringArray();
         StringArray skipClass = new StringArray();
@@ -80,7 +80,7 @@ class VM extends ByteCodeToJavaScript {
                 }
                 InputStream is = loadClass(l, name);
                 if (is == null) {
-                    lazyReference(out, name);
+                    lazyReference(this, name);
                     skipClass.add(name);
                     continue;
                 }
@@ -89,22 +89,7 @@ class VM extends ByteCodeToJavaScript {
                     processed.add(name);
                     initCode.add(ic == null ? "" : ic);
                 } catch (RuntimeException ex) {
-                    if (out instanceof CharSequence) {
-                        CharSequence seq = (CharSequence)out;
-                        int lastBlock = seq.length();
-                        while (lastBlock-- > 0) {
-                            if (seq.charAt(lastBlock) == '{') {
-                                break;
-                            }
-                        }
-                        throw new IOException("Error while compiling " + name + "\n" 
-                            + seq.subSequence(lastBlock + 1, seq.length()), ex
-                        );
-                    } else {
-                        throw new IOException("Error while compiling " + name + "\n" 
-                            + out, ex
-                        );
-                    }
+                    throw new IOException("Error while compiling " + name + "\n", ex);
                 }
             }
 
@@ -116,7 +101,7 @@ class VM extends ByteCodeToJavaScript {
                 if (emul == null) {
                     throw new IOException("Can't find " + resource);
                 }
-                readResource(emul, out);
+                readResource(emul, this);
             }
             scripts = new StringArray();
             
@@ -128,13 +113,13 @@ class VM extends ByteCodeToJavaScript {
                 if (indx >= 0) {
                     final String theCode = initCode.toArray()[indx];
                     if (!theCode.isEmpty()) {
-                        out.append(theCode).append("\n");
+                        append(theCode).append("\n");
                     }
                     initCode.toArray()[indx] = "";
                 }
             }
         }
-        out.append(
+        append(
               "  return vm;\n"
             + "  };\n"
             + "  function mangleClass(name) {\n"
@@ -172,7 +157,7 @@ class VM extends ByteCodeToJavaScript {
             + "      loadBytes___3BLjava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2I(loader, null, args, 0);\n"
             + "    return loader;\n"
             + "  };\n");
-        out.append("}(this));");
+        append("}(this));");
     }
     private static void readResource(InputStream emul, Appendable out) throws IOException {
         try {
