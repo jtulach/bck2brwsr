@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.Locale;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
+import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import static org.testng.Assert.*;
 import org.testng.annotations.Test;
 
@@ -28,6 +29,7 @@ import org.testng.annotations.Test;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
+@ExtraJavaScript(processByteCode = false, resource = "")
 public class PageTest {
     @Test public void verifyWrongType() throws IOException {
         String html = "<html><body>"

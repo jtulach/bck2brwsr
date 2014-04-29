@@ -53,7 +53,6 @@ import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.grizzly.http.server.ServerConfiguration;
 import org.glassfish.grizzly.http.util.HttpStatus;
-import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 
 /**
  * Lightweight server to launch Bck2Brwsr applications and tests.
@@ -500,7 +499,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
     String compileJar(JarFile jar) throws IOException {
         return null;
     }
-    String compileFromClassPath(URL f, Res loader) {
+    String compileFromClassPath(URL f, Res loader) throws IOException {
         return null;
     }
 
@@ -508,7 +507,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         String compileJar(JarFile jar) throws IOException {
             return BaseHTTPLauncher.this.compileJar(jar);
         }
-        String compileFromClassPath(URL f) {
+        String compileFromClassPath(URL f) throws IOException {
             return BaseHTTPLauncher.this.compileFromClassPath(f, this);
         }
         public URL get(String resource) throws IOException {

@@ -60,6 +60,7 @@ import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
+import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
 import org.apidesign.bck2brwsr.htmlpage.api.Model;
 import org.apidesign.bck2brwsr.htmlpage.api.On;
@@ -75,6 +76,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
+@ExtraJavaScript(processByteCode = false, resource = "")
 @ServiceProvider(service=Processor.class)
 @SupportedAnnotationTypes({
     "org.apidesign.bck2brwsr.htmlpage.api.Model",
@@ -556,7 +558,7 @@ public final class PageProcessor extends AbstractProcessor {
                     w.write("}})");
                 }
                 w.write(";\n");
-
+                
                 w.write("@Exported\n");
                 w.write("public java.util.List<" + tn + "> " + gs[0] + "() {\n");
                 w.write("  if (locked) throw new IllegalStateException();\n");
@@ -625,7 +627,7 @@ public final class PageProcessor extends AbstractProcessor {
             
             final String sn = ee.getSimpleName().toString();
             String[] gs = toGetSet(sn, tn, array);
-
+            
             w.write("@Exported\n");
             w.write("public " + tn + " " + gs[0] + "() {\n");
             w.write("  if (locked) throw new IllegalStateException();\n");
@@ -1233,6 +1235,12 @@ public final class PageProcessor extends AbstractProcessor {
             isModel[0] = true;
         } else {
             ret = tm.toString();
+            int idx = ret.indexOf("<any?>.");
+            if (idx >= 0) {
+                ret = ret.substring(idx + 7);
+                isEnum[0] = false;
+                return ret;
+            }
         }
         TypeMirror enm = processingEnv.getElementUtils().getTypeElement("java.lang.Enum").asType();
         enm = processingEnv.getTypeUtils().erasure(enm);

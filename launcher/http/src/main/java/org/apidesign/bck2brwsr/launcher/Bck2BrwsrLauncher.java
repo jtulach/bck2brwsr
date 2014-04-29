@@ -42,13 +42,8 @@ final class Bck2BrwsrLauncher extends BaseHTTPLauncher {
         return CompileCP.compileJAR(jar);
     }
 
-    @Override String compileFromClassPath(URL f, Res loader) {
-        try {
-            return CompileCP.compileFromClassPath(f, loader);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return null;
-        }
+    @Override String compileFromClassPath(URL f, Res loader) throws IOException {
+        return CompileCP.compileFromClassPath(f, loader);
     }
     
     @Override

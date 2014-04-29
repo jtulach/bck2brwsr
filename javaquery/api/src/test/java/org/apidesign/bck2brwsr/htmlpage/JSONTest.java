@@ -281,31 +281,31 @@ public class JSONTest {
         assert Sex.FEMALE.equals(p.getSex()) : "Expecting FEMALE: " + p.getSex();
     }
     
-    @Http(@Http.Resource(
-        content = "{'info':[{'firstName': 'Gitar', 'sex': 'FEMALE'}]}", 
-        path="/people.json", 
-        mimeType = "application/json"
-    ))
-    @BrwsrTest public void loadAndParseArrayInPeople() throws InterruptedException {
-        if (js == null) {
-            js = new JSONik();
-            js.applyBindings();
-        
-            js.fetchPeople("people.json");
-        }
-        
-        if (0 == js.getFetchedCount()) {
-            throw new InterruptedException();
-        }
-
-        assert js.getFetchedCount() == 1 : "One person loaded: " + js.getFetchedCount();
-        
-        Person p = js.getFetched();
-        
-        assert p != null : "We should get our person back: " + p;
-        assert "Gitar".equals(p.getFirstName()) : "Expecting Gitar: " + p.getFirstName();
-        assert Sex.FEMALE.equals(p.getSex()) : "Expecting FEMALE: " + p.getSex();
-    }
+//    @Http(@Http.Resource(
+//        content = "{'info':[{'firstName': 'Gitar', 'sex': 'FEMALE'}]}", 
+//        path="/people.json", 
+//        mimeType = "application/json"
+//    ))
+//    @BrwsrTest public void loadAndParseArrayInPeople() throws InterruptedException {
+//        if (js == null) {
+//            js = new JSONik();
+//            js.applyBindings();
+//        
+//            js.fetchPeople("people.json");
+//        }
+//        
+//        if (0 == js.getFetchedCount()) {
+//            throw new InterruptedException();
+//        }
+//
+//        assert js.getFetchedCount() == 1 : "One person loaded: " + js.getFetchedCount();
+//        
+//        Person p = js.getFetched();
+//        
+//        assert p != null : "We should get our person back: " + p;
+//        assert "Gitar".equals(p.getFirstName()) : "Expecting Gitar: " + p.getFirstName();
+//        assert Sex.FEMALE.equals(p.getSex()) : "Expecting FEMALE: " + p.getSex();
+//    }
     
     @Http(@Http.Resource(
         content = "{'age':[1, 2, 3]}", 

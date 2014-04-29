@@ -29,6 +29,8 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import org.apidesign.bck2brwsr.launcher.BaseHTTPLauncher.Res;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
@@ -67,8 +69,13 @@ class CompileCP {
         }
     }
     
-    static String compileFromClassPath(URL u, final Res r) throws IOException, URISyntaxException {
-        File f = new File(u.toURI());
+    static String compileFromClassPath(URL u, final Res r) throws IOException {
+        File f;
+        try {
+            f = new File(u.toURI());
+        } catch (URISyntaxException ex) {
+            throw new IOException(ex);
+        }
         for (String s : System.getProperty("java.class.path").split(File.pathSeparator)) {
             if (!f.getPath().startsWith(s)) {
                 continue;

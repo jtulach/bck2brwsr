@@ -42,11 +42,13 @@ import javax.tools.SimpleJavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
+import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
+@ExtraJavaScript(processByteCode = false, resource = "")
 final class Compile implements DiagnosticListener<JavaFileObject> {
     private final List<Diagnostic<? extends JavaFileObject>> errors = new ArrayList<>();
     private final Map<String, byte[]> classes;
@@ -114,52 +116,7 @@ final class Compile implements DiagnosticListener<JavaFileObject> {
             throw new IOException(ex);
         }
         
-        JavaFileManager jfm = new ForwardingJavaFileManager<JavaFileManager>(sjfm) {
-            @Override
-            public JavaFileObject getJavaFileForOutput(Location location, String className, Kind kind, FileObject sibling) throws IOException {
-                if (kind  == Kind.CLASS) {
-                    final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-
-                    class2BAOS.put(className.replace('.', '/') + ".class", buffer);
-                    return new SimpleJavaFileObject(sibling.toUri(), kind) {
-                        @Override
-                        public OutputStream openOutputStream() throws IOException {
-                            return buffer;
-                        }
-                    };
-                }
-                
-                if (kind == Kind.SOURCE) {
-                    return new SimpleJavaFileObject(scratch/*sibling.toUri()*/, kind) {
-                        private final ByteArrayOutputStream data = new ByteArrayOutputStream();
-                        @Override
-                        public OutputStream openOutputStream() throws IOException {
-                            return data;
-                        }
-
-                        @Override
-                        public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
-                            data.close();
-                            return new String(data.toByteArray());
-                        }
-                    };
-                }
-                
-                throw new IllegalStateException();
-            }
-
-            @Override
-            public FileObject getFileForInput(Location location, String packageName, String relativeName) throws IOException {
-                if (location == StandardLocation.SOURCE_PATH) {
-                    if (packageName.equals(pkg)) {
-                        return htmlFile;
-                    }
-                }
-                
-                return null;
-            }
-            
-        };
+        JavaFileManager jfm = new ForwardingJavaFileManagerImpl(sjfm, class2BAOS, scratch, htmlFile);
 
         ToolProvider.getSystemJavaCompiler().getTask(null, jfm, this, /*XXX:*/Arrays.asList("-source", "1.7", "-target", "1.7"), null, Arrays.asList(file)).call();
 
@@ -199,5 +156,64 @@ final class Compile implements DiagnosticListener<JavaFileObject> {
     String getHtml() {
         String fqn = "'" + pkg + '.' + cls + "'";
         return html.replace("'${fqn}'", fqn);
+    }
+
+    @ExtraJavaScript(processByteCode = false, resource = "")
+    private class ForwardingJavaFileManagerImpl extends ForwardingJavaFileManager<JavaFileManager> {
+
+        private final Map<String, ByteArrayOutputStream> class2BAOS;
+        private final URI scratch;
+        private final JavaFileObject htmlFile;
+
+        public ForwardingJavaFileManagerImpl(JavaFileManager fileManager, Map<String, ByteArrayOutputStream> class2BAOS, URI scratch, JavaFileObject htmlFile) {
+            super(fileManager);
+            this.class2BAOS = class2BAOS;
+            this.scratch = scratch;
+            this.htmlFile = htmlFile;
+        }
+
+        @Override
+        public JavaFileObject getJavaFileForOutput(Location location, String className, Kind kind, FileObject sibling) throws IOException {
+            if (kind  == Kind.CLASS) {
+                final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                
+                class2BAOS.put(className.replace('.', '/') + ".class", buffer);
+                return new SimpleJavaFileObject(sibling.toUri(), kind) {
+                    @Override
+                    public OutputStream openOutputStream() throws IOException {
+                        return buffer;
+                    }
+                };
+            }
+            
+            if (kind == Kind.SOURCE) {
+                return new SimpleJavaFileObject(scratch/*sibling.toUri()*/, kind) {
+                    private final ByteArrayOutputStream data = new ByteArrayOutputStream();
+                    @Override
+                    public OutputStream openOutputStream() throws IOException {
+                        return data;
+                    }
+                    
+                    @Override
+                    public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
+                        data.close();
+                        return new String(data.toByteArray());
+                    }
+                };
+            }
+            
+            throw new IllegalStateException();
+        }
+
+            @Override
+            public FileObject getFileForInput(Location location, String packageName, String relativeName) throws IOException {
+                if (location == StandardLocation.SOURCE_PATH) {
+                    if (packageName.equals(pkg)) {
+                        return htmlFile;
+                    }
+                }
+                
+                return null;
+            }
     }
 }
