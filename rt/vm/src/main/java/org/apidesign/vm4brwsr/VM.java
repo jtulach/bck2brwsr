@@ -86,17 +86,15 @@ abstract class VM extends ByteCodeToJavaScript {
     private void doCompile(StringArray names, StringArray asBinary) throws IOException {
         generatePrologue();
         out.append(
-                "\n  var invoker = function Invoker() {"
-                    + "\n    return Invoker.target[Invoker.method]"
-                                      + ".apply(Invoker.target, arguments);"
-                    + "\n  };");
+                "\n  var invoker = {};");
         generateBody(names);
         for (String invokerMethod: invokerMethods.toArray()) {
             out.append("\n  invoker." + invokerMethod + " = function(target) {"
-                           + "\n    invoker.target = target;"
-                           + "\n    invoker.method = '" + invokerMethod + "';"
-                           + "\n    return invoker;"
-                           + "\n  };");
+                + "\n    return function() {"
+                + "\n      return target['" + invokerMethod + "'].apply(target, arguments);"
+                + "\n    };"
+                + "\n  };"
+            );
         }
         
         for (String r : asBinary.toArray()) {
