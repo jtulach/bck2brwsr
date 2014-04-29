@@ -152,7 +152,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
     
     private HttpServer initServer(String path, boolean addClasses) throws IOException {
         HttpServer s = HttpServer.createSimpleServer(path, new PortRange(8080, 65535));
-
+/*
         ThreadPoolConfig fewThreads = ThreadPoolConfig.defaultConfig().copy().
             setPoolName("Fx/Bck2 Brwsr").
             setCorePoolSize(1).
@@ -165,7 +165,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
             nl.getTransport().setWorkerThreadPoolConfig(fewThreads);
             nl.getTransport().setKernelThreadPoolConfig(oneKernel);
         }
-        
+*/        
         final ServerConfiguration conf = s.getServerConfiguration();
         if (addClasses) {
             conf.addHttpHandler(new VM(), "/bck2brwsr.js");
