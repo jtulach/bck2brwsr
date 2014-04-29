@@ -366,6 +366,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
         int topMostLabel = 0;
         for (int i = 0; i < byteCodes.length; i++) {
             int prev = i;
+            outChanged = false;
             stackMapIterator.advanceTo(i);
             boolean changeInCatch = trap.advanceTo(i);
             if (changeInCatch || lastStackFrame != stackMapIterator.getFrameIndex()) {
@@ -1338,7 +1339,9 @@ abstract class ByteCodeToJavaScript implements Appendable {
             if (debug(" //")) {
                 generateByteCodeComment(prev, i, byteCodes);
             }
-            append("\n");            
+            if (outChanged) {
+                append("\n");
+            }
         }
         if (previousTrap != null) {
             generateCatch(previousTrap, byteCodes.length, topMostLabel);
