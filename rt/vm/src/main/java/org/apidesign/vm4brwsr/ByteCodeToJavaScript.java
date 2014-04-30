@@ -1586,7 +1586,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
         }
 
         final String in = mi[0];
-        String object = accessClass(in.replace('/', '_')) + "(false)";
+        String object = accessClass(mangleClassName(in)) + "(false)";
         if (mn.startsWith("cons_")) {
             object += ".constructor";
         }
