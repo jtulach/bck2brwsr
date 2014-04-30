@@ -15,5 +15,6 @@
     <module>mini</module>
     <module>compact</module>
     <module>brwsrtest</module>
+    <module>fake</module>
   </modules>
 </project>

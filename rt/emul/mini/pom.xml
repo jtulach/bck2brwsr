@@ -22,58 +22,27 @@
       <type>jar</type>
     </dependency>
     <dependency>
+      <groupId>org.apidesign.bck2brwsr</groupId>
+      <artifactId>fake</artifactId>
+      <version>0.9-SNAPSHOT</version>
+      <scope>provided</scope>
+      <type>jar</type>
+    </dependency>
+    <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
-      <version>6.5.2</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
   <build>
       <plugins>
           <plugin>
-              <artifactId>maven-antrun-plugin</artifactId>
-              <version>1.7</version>
-              <executions>
-                  <execution>
-                      <phase>generate-sources</phase>
-                      <configuration>
-                          <target>
-                              <mkdir dir="${project.build.directory}/bootcp" />
-                              <copy todir="${project.build.directory}/bootcp">
-                                  <resources>
-                                      <!-- copy all resources that are in
-                                        compact profile, but are referenced from
-                                        the mini profile
-                                      -->
-                                      <javaresource name="java/net/URI.class" />
-                                      <javaresource name="java/net/URISyntaxException.class" />
-                                      <javaresource name="java/net/URLConnection.class" />
-                                      <javaresource name="java/util/Locale.class" />
-                                      <javaresource name="java/io/OutputStream.class" />
-                                      <javaresource name="java/io/FilterOutputStream.class" />
-                                      <javaresource name="java/io/PrintStream.class" />
-                                      <javaresource name="java/io/PrintWriter.class" />
-                                      <javaresource name="java/io/Writer.class" />
-                                  </resources>
-                              </copy>
-                          </target>
-                      </configuration>
-                      <goals>
-                          <goal>run</goal>
-                      </goals>
-                  </execution>
-              </executions>
-          </plugin>
-          <plugin>
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-compiler-plugin</artifactId>
               <version>2.5.1</version>
               <configuration>
                   <compilerArguments>
-                      <!--
-                        <bootclasspath>netbeans.ignore.jdk.bootsclasspath</bootclasspath>
-                      -->
-                      <bootclasspath>${project.build.directory}/bootcp/</bootclasspath>
+                      <bootclasspath>netbeans.ignore.jdk.bootsclasspath</bootclasspath>
                   </compilerArguments>
                  <source>1.7</source>
                  <target>1.7</target>
