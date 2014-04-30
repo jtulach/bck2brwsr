@@ -28,9 +28,11 @@ import java.util.Enumeration;
  */
 final class LdrRsrcs implements Bck2Brwsr.Resources {
     private final ClassLoader loader;
+    private final boolean skipRtJar;
 
-    LdrRsrcs(ClassLoader loader) {
+    LdrRsrcs(ClassLoader loader, boolean skipRtJar) {
         this.loader = loader;
+        this.skipRtJar = skipRtJar;
     }
 
     @Override
@@ -40,6 +42,12 @@ final class LdrRsrcs implements Bck2Brwsr.Resources {
         while (en.hasMoreElements()) {
             u = en.nextElement();
         }
-        return (u != null) ? u.openStream() : null;
+        if (u == null) {
+            throw new IOException("Can't find " + name);
+        }
+        if (skipRtJar && u.toExternalForm().contains("lib/rt.jar!")) {
+            return null;
+        }
+        return u.openStream();
     }
 }

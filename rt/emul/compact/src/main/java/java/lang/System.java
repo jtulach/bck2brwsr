@@ -17,6 +17,15 @@
  */
 package java.lang;
 
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.util.Properties;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+
 /** Poor man's re-implementation of most important System methods.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
@@ -33,4 +42,90 @@ public class System {
         return org.apidesign.bck2brwsr.emul.lang.System.currentTimeMillis();
     }
     
+    public static int identityHashCode(Object obj) {
+        return Class.defaultHashCode(obj);
+    }
+
+    public static String getProperty(String name) {
+        if ("os.name".equals(name)) {
+            return userAgent();
+        }
+        return null;
+    }
+    
+    @JavaScriptBody(args = {}, body = "return (typeof navigator !== 'undefined') ? navigator.userAgent : 'unknown';")
+    private static native String userAgent();
+    
+    public static String getProperty(String key, String def) {
+        return def;
+    }
+    
+    public static Properties getProperties() {
+        throw new SecurityException();
+    }
+    
+    public static void setProperties(Properties p) {
+        throw new SecurityException();
+    }
+    
+    /**
+     * Returns the system-dependent line separator string.  It always
+     * returns the same value - the initial value of the {@linkplain
+     * #getProperty(String) system property} {@code line.separator}.
+     *
+     * <p>On UNIX systems, it returns {@code "\n"}; on Microsoft
+     * Windows systems it returns {@code "\r\n"}.
+     */
+    public static String lineSeparator() {
+        return "\n";
+    }
+
+    @JavaScriptBody(args = { "exitCode" }, body = "window.close();")
+    public static void exit(int exitCode) {
+    }
+    
+    public final static InputStream in;
+
+    public final static PrintStream out;
+
+    public final static PrintStream err;
+    
+    public static void setOut(PrintStream out) {
+        throw new SecurityException();
+    }
+
+    public static void setIn(InputStream in) {
+        throw new SecurityException();
+    }
+
+    public static void setErr(PrintStream err) {
+        throw new SecurityException();
+    }
+    
+    static {
+        in = new ByteArrayInputStream(new byte[0]);
+        out = new PrintStream(new BufferedOutputStream(new SystemStream("log")));
+        err = new PrintStream(new BufferedOutputStream(new SystemStream("warn")));
+    }
+
+    private static final class SystemStream extends OutputStream {
+        private final String method;
+
+        public SystemStream(String method) {
+            this.method = method;
+        }
+
+        @Override
+        public void write(byte b[], int off, int len) throws IOException {
+            write(method, new String(b, off, len, "UTF-8"));
+        }
+
+        @JavaScriptBody(args = { "method", "b" }, body = "if (typeof console !== 'undefined') console[method](b.toString());")
+        private static native void write(String method, String b);
+
+        @Override
+        public void write(int b) throws IOException {
+            write(new byte[] { (byte)b });
+        }
+    } // end of SystemStream
 }

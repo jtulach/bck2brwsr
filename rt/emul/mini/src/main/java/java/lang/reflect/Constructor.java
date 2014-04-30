@@ -26,6 +26,10 @@
 package java.lang.reflect;
 
 import java.lang.annotation.Annotation;
+import static java.lang.reflect.Method.fromPrimitive;
+import static java.lang.reflect.Method.getAccess;
+import static java.lang.reflect.Method.getParameterTypes;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.emul.reflect.TypeProvider;
 
 /**
@@ -53,44 +57,20 @@ public final
                                                     GenericDeclaration,
                                                     Member {
 
-    private Class<T>            clazz;
-    private int                 slot;
-    private Class<?>[]          parameterTypes;
-    private Class<?>[]          exceptionTypes;
-    private int                 modifiers;
-    // Generics and annotations support
-    private transient String    signature;
-    private byte[]              annotations;
-    private byte[]              parameterAnnotations;
-
-
-    // For sharing of ConstructorAccessors. This branching structure
-    // is currently only two levels deep (i.e., one root Constructor
-    // and potentially many Constructor objects pointing to it.)
-    private Constructor<T>      root;
+    private final Class<T> clazz;
+    private final Object data;
+    private final String sig;
 
     /**
      * Package-private constructor used by ReflectAccess to enable
      * instantiation of these objects in Java code from the java.lang
      * package via sun.reflect.LangReflectAccess.
      */
-    Constructor(Class<T> declaringClass,
-                Class<?>[] parameterTypes,
-                Class<?>[] checkedExceptions,
-                int modifiers,
-                int slot,
-                String signature,
-                byte[] annotations,
-                byte[] parameterAnnotations)
+    Constructor(Class<T> declaringClass, Object data, String sig)
     {
         this.clazz = declaringClass;
-        this.parameterTypes = parameterTypes;
-        this.exceptionTypes = checkedExceptions;
-        this.modifiers = modifiers;
-        this.slot = slot;
-        this.signature = signature;
-        this.annotations = annotations;
-        this.parameterAnnotations = parameterAnnotations;
+        this.data = data;
+        this.sig = sig;
     }
 
     /**
@@ -126,7 +106,7 @@ public final
      * @see Modifier
      */
     public int getModifiers() {
-        return modifiers;
+        return getAccess(data);
     }
 
     /**
@@ -159,7 +139,7 @@ public final
      * represents
      */
     public Class<?>[] getParameterTypes() {
-        return (Class<?>[]) parameterTypes.clone();
+        return Method.getParameterTypes(sig);
     }
 
 
@@ -205,7 +185,7 @@ public final
      * constructor this object represents
      */
     public Class<?>[] getExceptionTypes() {
-        return (Class<?>[])exceptionTypes.clone();
+        return new Class[0];
     }
 
 
@@ -242,20 +222,9 @@ public final
      * same formal parameter types.
      */
     public boolean equals(Object obj) {
-        if (obj != null && obj instanceof Constructor) {
-            Constructor<?> other = (Constructor<?>)obj;
-            if (getDeclaringClass() == other.getDeclaringClass()) {
-                /* Avoid unnecessary cloning */
-                Class<?>[] params1 = parameterTypes;
-                Class<?>[] params2 = other.parameterTypes;
-                if (params1.length == params2.length) {
-                    for (int i = 0; i < params1.length; i++) {
-                        if (params1[i] != params2[i])
-                            return false;
-                    }
-                    return true;
-                }
-            }
+        if (obj instanceof Constructor) {
+            Constructor other = (Constructor)obj;
+            return data == other.data;
         }
         return false;
     }
@@ -293,13 +262,14 @@ public final
             }
             sb.append(Field.getTypeName(getDeclaringClass()));
             sb.append("(");
-            Class<?>[] params = parameterTypes; // avoid clone
+            Class<?>[] params = getParameterTypes(); // avoid clone
             for (int j = 0; j < params.length; j++) {
                 sb.append(Field.getTypeName(params[j]));
                 if (j < (params.length - 1))
                     sb.append(",");
             }
             sb.append(")");
+            /*
             Class<?>[] exceptions = exceptionTypes; // avoid clone
             if (exceptions.length > 0) {
                 sb.append(" throws ");
@@ -309,6 +279,7 @@ public final
                         sb.append(",");
                 }
             }
+            */
             return sb.toString();
         } catch (Exception e) {
             return "<" + e + ">";
@@ -452,9 +423,29 @@ public final
         throws InstantiationException, IllegalAccessException,
                IllegalArgumentException, InvocationTargetException
     {
-        throw new SecurityException();
+        Class[] types = getParameterTypes();
+        if (types.length != initargs.length) {
+            throw new IllegalArgumentException("Types len " + types.length + " args: " + initargs.length);
+        } else {
+            initargs = initargs.clone();
+            for (int i = 0; i < types.length; i++) {
+                Class c = types[i];
+                if (c.isPrimitive() && initargs[i] != null) {
+                    initargs[i] = Method.toPrimitive(initargs[i]);
+                }
+            }
+        }
+        return (T) newInstance0(this.getDeclaringClass(), "cons__" + sig, initargs);
     }
 
+    @JavaScriptBody(args = { "self", "sig", "args" }, body =
+          "\nvar c = self.cnstr;"
+        + "\nvar inst = c();"
+        + "\nc[sig].apply(inst, args);"
+        + "\nreturn inst;"
+    )
+    private static native Object newInstance0(Class<?> self, String sig, Object[] args);
+    
     /**
      * Returns {@code true} if this constructor was declared to take
      * a variable number of arguments; returns {@code false}
@@ -479,22 +470,6 @@ public final
      */
     public boolean isSynthetic() {
         return Modifier.isSynthetic(getModifiers());
-    }
-
-    int getSlot() {
-        return slot;
-    }
-
-   String getSignature() {
-            return signature;
-   }
-
-    byte[] getRawAnnotations() {
-        return annotations;
-    }
-
-    byte[] getRawParameterAnnotations() {
-        return parameterAnnotations;
     }
 
     /**
@@ -532,11 +507,11 @@ public final
      * @since 1.5
      */
     public Annotation[][] getParameterAnnotations() {
-        int numParameters = parameterTypes.length;
-        if (parameterAnnotations == null)
-            return new Annotation[numParameters][0];
+//        int numParameters = parameterTypes.length;
+//        if (parameterAnnotations == null)
+//            return new Annotation[numParameters][0];
         
-        return new Annotation[numParameters][0]; // XXX
+        return new Annotation[0][0]; // XXX
 /*
         Annotation[][] result = AnnotationParser.parseParameterAnnotations(
             parameterAnnotations,

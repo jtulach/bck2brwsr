@@ -572,6 +572,46 @@ class Character implements java.io.Serializable, Comparable<Character> {
      */
     public static final int MAX_CODE_POINT = 0X10FFFF;
 
+    public static boolean isAlphabetic(int ch) {
+        throw new UnsupportedOperationException("isAlphabetic: " + (char)ch);
+    }
+
+    public static boolean isIdeographic(int ch) {
+        throw new UnsupportedOperationException("isIdeographic: " + (char)ch);
+    }
+
+    public static boolean isLowerCase(int ch) {
+        throw new UnsupportedOperationException("isLowerCase: " + (char)ch);
+    }
+
+    public static boolean isUpperCase(int ch) {
+        throw new UnsupportedOperationException("isUpperCase: " + (char)ch);
+    }
+
+    public static boolean isMirrored(int ch) {
+        throw new UnsupportedOperationException("isMirrored: " + (char)ch);
+    }
+
+    public static boolean isIdentifierIgnorable(int ch) {
+        throw new UnsupportedOperationException("isIdentifierIgnorable: " + (char)ch);
+    }
+
+    public static boolean isUnicodeIdentifierPart(int ch) {
+        throw new UnsupportedOperationException("isUnicodeIdentifierPart: " + (char)ch);
+    }
+
+    public static boolean isUnicodeIdentifierStart(int ch) {
+        throw new UnsupportedOperationException("isUnicodeIdentifierStart: " + (char)ch);
+    }
+
+    public static char toUpperCase(int ch) {
+        throw new UnsupportedOperationException("toUpperCase: " + (char)ch);
+    }
+
+    public static int toLowerCase(int ch) {
+        throw new UnsupportedOperationException("toLowerCase: " + (char)ch);
+    }
+
 
     /**
      * Instances of this class represent particular subsets of the Unicode
@@ -1892,8 +1932,8 @@ class Character implements java.io.Serializable, Comparable<Character> {
         return fromCodeChars(codePoint).matches("\\w");
     }
     
-    static int getType(int x) {
-        throw new UnsupportedOperationException();
+    public static int getType(int x) {
+        throw new UnsupportedOperationException("getType: " + (char)x);
     }
  
     /**
@@ -1955,7 +1995,8 @@ class Character implements java.io.Serializable, Comparable<Character> {
     public static boolean isJavaIdentifierStart(int codePoint) {
         return 
             ('A' <= codePoint && codePoint <= 'Z') ||
-            ('a' <= codePoint && codePoint <= 'z');
+            ('a' <= codePoint && codePoint <= 'z') ||
+            codePoint == '$';
     }
 
     /**
@@ -2298,6 +2339,10 @@ class Character implements java.io.Serializable, Comparable<Character> {
      */
     @Deprecated
     public static boolean isSpace(char ch) {
+        return isSpaceChar(ch);
+    }
+
+    public static boolean isSpaceChar(int ch) {
         return (ch <= 0x0020) &&
             (((((1L << 0x0009) |
             (1L << 0x000A) |
@@ -2305,7 +2350,6 @@ class Character implements java.io.Serializable, Comparable<Character> {
             (1L << 0x000D) |
             (1L << 0x0020)) >> ch) & 1L) != 0);
     }
-
 
 
     /**
@@ -2372,7 +2416,14 @@ class Character implements java.io.Serializable, Comparable<Character> {
      * @since   1.5
      */
     public static boolean isWhitespace(int codePoint) {
-        throw new UnsupportedOperationException();
+        // values up to 128: [9,10,11,12,13,28,29,30,31,32]
+        if (9 <= codePoint && 13 >= codePoint) {
+            return true;
+        }
+        if (28 <= codePoint && 32 >= codePoint) {
+            return true;
+        }
+        return false;
     }
 
     /**

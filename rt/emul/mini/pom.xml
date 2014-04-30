@@ -4,11 +4,11 @@
   <parent>
     <groupId>org.apidesign.bck2brwsr</groupId>
     <artifactId>emul.pom</artifactId>
-    <version>0.8-SNAPSHOT</version>
+    <version>0.9-SNAPSHOT</version>
   </parent>
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>emul.mini</artifactId>
-  <version>0.8-SNAPSHOT</version>
+  <version>0.9-SNAPSHOT</version>
   <name>Minimal API Profile</name>
   <url>http://maven.apache.org</url>
   <properties>
@@ -18,13 +18,19 @@
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>core</artifactId>
-      <version>0.8-SNAPSHOT</version>
+      <version>0.9-SNAPSHOT</version>
+      <type>jar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.apidesign.bck2brwsr</groupId>
+      <artifactId>fake</artifactId>
+      <version>0.9-SNAPSHOT</version>
+      <scope>provided</scope>
       <type>jar</type>
     </dependency>
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
-      <version>6.5.2</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

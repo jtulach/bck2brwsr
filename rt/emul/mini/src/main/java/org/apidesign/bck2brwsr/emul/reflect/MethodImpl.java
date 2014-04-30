@@ -18,6 +18,7 @@
 package org.apidesign.bck2brwsr.emul.reflect;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Enumeration;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
@@ -37,15 +38,17 @@ public abstract class MethodImpl {
     }
 
     protected abstract Method create(Class<?> declaringClass, String name, Object data, String sig);
+    protected abstract Constructor create(Class<?> declaringClass, Object data, String sig);
     
     
     //
     // bck2brwsr implementation
     //
 
-    @JavaScriptBody(args = {"clazz", "prefix"},
+    @JavaScriptBody(args = {"clazz", "prefix", "cnstr"},
         body = ""
-        + "var c = clazz.cnstr.prototype;"
+        + "var c = clazz.cnstr;\n"
+        + "if (!cnstr) c = c.prototype;"
         + "var arr = new Array();\n"
         + "for (m in c) {\n"
         + "  if (m.indexOf(prefix) === 0) {\n"
@@ -57,11 +60,55 @@ public abstract class MethodImpl {
         + "}\n"
         + "return arr;")
     private static native Object[] findMethodData(
-        Class<?> clazz, String prefix);
+        Class<?> clazz, String prefix, boolean cnstr);
 
+    public static Constructor findConstructor(
+        Class<?> clazz, Class<?>... parameterTypes) {
+        Object[] data = findMethodData(clazz, "cons__", true);
+        BIG: for (int i = 0; i < data.length; i += 3) {
+            String sig = ((String) data[i]).substring(6);
+            Class<?> cls = (Class<?>) data[i + 2];
+            Constructor tmp = INSTANCE.create(cls, data[i + 1], sig);
+            Class<?>[] tmpParms = tmp.getParameterTypes();
+            if (parameterTypes.length != tmpParms.length) {
+                continue;
+            }
+            for (int j = 0; j < tmpParms.length; j++) {
+                if (!parameterTypes[j].equals(tmpParms[j])) {
+                    continue BIG;
+                }
+            }
+            return tmp;
+        }
+        return null;
+    }
+
+    public static Constructor[] findConstructors(Class<?> clazz, int mask) {
+        Object[] namesAndData = findMethodData(clazz, "", true);
+        int cnt = 0;
+        for (int i = 0; i < namesAndData.length; i += 3) {
+            String sig = (String) namesAndData[i];
+            Object data = namesAndData[i + 1];
+            if (!sig.startsWith("cons__")) {
+                continue;
+            }
+            sig = sig.substring(6);
+            Class<?> cls = (Class<?>) namesAndData[i + 2];
+            final Constructor m = INSTANCE.create(cls, data, sig);
+            if ((m.getModifiers() & mask) == 0) {
+                continue;
+            }
+            namesAndData[cnt++] = m;
+        }
+        Constructor[] arr = new Constructor[cnt];
+        for (int i = 0; i < cnt; i++) {
+            arr[i] = (Constructor) namesAndData[i];
+        }
+        return arr;
+    }
     public static Method findMethod(
         Class<?> clazz, String name, Class<?>... parameterTypes) {
-        Object[] data = findMethodData(clazz, name + "__");
+        Object[] data = findMethodData(clazz, name + "__", false);
         BIG: for (int i = 0; i < data.length; i += 3) {
             String sig = ((String) data[i]).substring(name.length() + 2);
             Class<?> cls = (Class<?>) data[i + 2];
@@ -81,7 +128,7 @@ public abstract class MethodImpl {
     }
 
     public static Method[] findMethods(Class<?> clazz, int mask) {
-        Object[] namesAndData = findMethodData(clazz, "");
+        Object[] namesAndData = findMethodData(clazz, "", false);
         int cnt = 0;
         for (int i = 0; i < namesAndData.length; i += 3) {
             String sig = (String) namesAndData[i];

@@ -235,7 +235,7 @@ public abstract class Enum<E extends Enum<E>>
         throw new IllegalArgumentException();
     }
     
-    @JavaScriptBody(args = { "enumType" }, body = "return enumType.cnstr.$VALUES;")
+    @JavaScriptBody(args = { "enumType" }, body = "return enumType.cnstr.fld_$VALUES;")
     private static native Object[] values(Class<?> enumType);
 
     /**

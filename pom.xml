@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apidesign</groupId>
   <artifactId>bck2brwsr</artifactId>
-  <version>0.8-SNAPSHOT</version>
+  <version>0.9-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Back 2 Browser</name>
   <parent>
@@ -15,13 +15,13 @@
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <netbeans.version>RELEASE80</netbeans.version>
       <license>COPYING</license>
+      <net.java.html.version>0.7.6</net.java.html.version>
       <netbeans.compile.on.save>none</netbeans.compile.on.save>
   </properties>
   <modules>
-    <module>dew</module>
     <module>javaquery</module>
     <module>benchmarks</module>
-    <module>ide</module>
+    <module>ko</module>
     <module>launcher</module>
     <module>rt</module>
   </modules>
@@ -85,12 +85,13 @@
                   <excludes>
                        <exclude>*</exclude>
                        <exclude>.*/**</exclude>
-                       <exclude>rt/emul/*/src/main/**</exclude>
+                       <exclude>rt/emul/mini/src/main/**</exclude>
+                       <exclude>rt/emul/compact/src/main/**</exclude>
                        <exclude>rt/vm/src/main/java/org/apidesign/vm4brwsr/ByteCodeParser.java</exclude>
                        <exclude>rt/archetype/src/main/resources/archetype-resources/**</exclude>
                        <exclude>rt/emul/*/src/test/resources/**</exclude>
-                       <exclude>dew/src/main/resources/org/apidesign/bck2brwsr/dew/**</exclude>
                        <exclude>javaquery/api/src/main/resources/org/apidesign/bck2brwsr/htmlpage/knockout*.js</exclude>
+                       <exclude>ko/archetype/src/main/resources/archetype-resources/**</exclude>
                   </excludes>
               </configuration>
           </plugin>

@@ -26,7 +26,10 @@
 package java.lang;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Comparator;
+import java.util.Locale;
 import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.core.JavaScriptOnly;
@@ -2097,13 +2100,31 @@ public final class String
      * @since 1.4
      * @spec JSR-51
      */
+    public boolean matches(String regex) {
+        try {
+            return matchesViaJS(regex);
+        } catch (Throwable t) {
+            // fallback to classical behavior
+            try {
+                Method m = Class.forName("java.util.regex.Pattern").getMethod("matches", String.class, CharSequence.class);
+                return (Boolean)m.invoke(null, regex, this);
+            } catch (InvocationTargetException ex) {
+                if (ex.getTargetException() instanceof RuntimeException) {
+                    throw (RuntimeException)ex.getTargetException();
+                }
+            } catch (Throwable another) {
+                // will report the old one
+            }
+            throw new RuntimeException(t);
+        }
+    }
     @JavaScriptBody(args = { "regex" }, body = 
           "var self = this.toString();\n"
         + "var re = new RegExp(regex.toString());\n"
         + "var r = re.exec(self);\n"
         + "return r != null && r.length > 0 && self.length == r[0].length;"
     )
-    public boolean matches(String regex) {
+    private boolean matchesViaJS(String regex) {
         throw new UnsupportedOperationException();
     }
 
@@ -2159,6 +2180,14 @@ public final class String
      * @since 1.4
      * @spec JSR-51
      */
+    @JavaScriptBody(args = { "regex", "newText" }, body = 
+          "var self = this.toString();\n"
+        + "var re = new RegExp(regex.toString());\n"
+        + "var r = re.exec(self);\n"
+        + "if (r === null || r.length === 0) return this;\n"
+        + "var from = self.indexOf(r[0]);\n"
+        + "return this.substring(0, from) + newText + this.substring(from + r[0].length);\n"
+    )
     public String replaceFirst(String regex, String replacement) {
         throw new UnsupportedOperationException();
     }
@@ -2203,7 +2232,14 @@ public final class String
      * @spec JSR-51
      */
     public String replaceAll(String regex, String replacement) {
-        throw new UnsupportedOperationException();
+        String p = this;
+        for (;;) {
+            String n = p.replaceFirst(regex, replacement);
+            if (n == p) {
+                return n;
+            }
+            p = n;
+        }
     }
 
     /**
@@ -2224,12 +2260,14 @@ public final class String
           "var s = this.toString();\n"
         + "target = target.toString();\n"
         + "replacement = replacement.toString();\n"
+        + "var pos = 0;\n"
         + "for (;;) {\n"
-        + "  var ret = s.replace(target, replacement);\n"
-        + "  if (ret === s) {\n"
-        + "    return ret;\n"
+        + "  var indx = s.indexOf(target, pos);\n"
+        + "  if (indx === -1) {\n"
+        + "    return s;\n"
         + "  }\n"
-        + "  s = ret;\n"
+        + "  pos = indx + replacement.length;\n"
+        + "  s = s.substring(0, indx) + replacement + s.substring(indx + target.length);\n"
         + "}"
     )
     public native String replace(CharSequence target, CharSequence replacement);
@@ -2315,8 +2353,35 @@ public final class String
      * @spec JSR-51
      */
     public String[] split(String regex, int limit) {
-        throw new UnsupportedOperationException("Needs regexp");
+        if (limit <= 0) {
+            Object[] arr = splitImpl(this, regex, Integer.MAX_VALUE);
+            int to = arr.length;
+            if (limit == 0 && to > 0) {
+                while (to > 0 && ((String)arr[--to]).isEmpty()) {
+                }
+                to++;
+            }
+            String[] ret = new String[to];
+            System.arraycopy(arr, 0, ret, 0, to);
+            return ret;
+        } else {
+            Object[] arr = splitImpl(this, regex, limit);
+            String[] ret = new String[arr.length];
+            int pos = 0;
+            for (int i = 0; i < arr.length; i++) {
+                final String s = (String)arr[i];
+                ret[i] = s;
+                pos = indexOf(s, pos) + s.length();
+            }
+            ret[arr.length - 1] += substring(pos);
+            return ret;
+        }
     }
+    
+    @JavaScriptBody(args = { "str", "regex", "limit"}, body = 
+        "return str.split(new RegExp(regex), limit);"
+    )
+    private static native Object[] splitImpl(String str, String regex, int limit);
 
     /**
      * Splits this string around matches of the given <a
@@ -2412,7 +2477,9 @@ public final class String
      * @see     java.lang.String#toUpperCase(Locale)
      * @since   1.1
      */
-//    public String toLowerCase(Locale locale) {
+    public String toLowerCase(java.util.Locale locale) {
+        return toLowerCase();
+    }
 //        if (locale == null) {
 //            throw new NullPointerException();
 //        }
@@ -2527,7 +2594,7 @@ public final class String
      */
     @JavaScriptBody(args = {}, body = "return this.toLowerCase();")
     public String toLowerCase() {
-        throw new UnsupportedOperationException("Should be supported but without connection to locale");
+        return null;
     }
 
     /**
@@ -2578,8 +2645,10 @@ public final class String
      * @see     java.lang.String#toLowerCase(Locale)
      * @since   1.1
      */
-    /* not for javascript 
     public String toUpperCase(Locale locale) {
+        return toUpperCase();
+    }
+    /* not for javascript 
         if (locale == null) {
             throw new NullPointerException();
         }
@@ -2693,7 +2762,7 @@ public final class String
      */
     @JavaScriptBody(args = {}, body = "return this.toUpperCase();")
     public String toUpperCase() {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     /**
@@ -2804,7 +2873,7 @@ public final class String
      * @since  1.5
      */
     public static String format(String format, Object ... args) {
-        throw new UnsupportedOperationException();
+        return format((Locale)null, format, args);
     }
 
     /**
@@ -2847,9 +2916,15 @@ public final class String
      * @see  java.util.Formatter
      * @since  1.5
      */
-//    public static String format(Locale l, String format, Object ... args) {
-//        return new Formatter(l).format(format, args).toString();
-//    }
+    public static String format(Locale l, String format, Object ... args) {
+        String p = format;
+        for (int i = 0; i < args.length; i++) {
+            String v = args[i] == null ? "null" : args[i].toString();
+            p = p.replaceFirst("%s", v);
+        }
+        return p;
+        // return new Formatter(l).format(format, args).toString();
+    }
 
     /**
      * Returns the string representation of the <code>Object</code> argument.
@@ -3034,6 +3109,14 @@ public final class String
      * @return  a string that has the same contents as this string, but is
      *          guaranteed to be from a pool of unique strings.
      */
+    @JavaScriptBody(args = {}, body = 
+        "var s = this.toString().toString();\n" +
+        "var i = String.intern || (String.intern = {})\n" + 
+        "if (!i[s]) {\n" +
+        "  i[s] = s;\n" +
+        "}\n" +
+        "return i[s];"
+    )
     public native String intern();
     
     

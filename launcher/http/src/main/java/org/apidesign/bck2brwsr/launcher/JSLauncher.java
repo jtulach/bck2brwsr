@@ -126,6 +126,10 @@ final class JSLauncher extends Launcher {
                     u = en.nextElement();
                 }
                 if (u != null) {
+                    if (u.toExternalForm().contains("rt.jar")) {
+                        LOG.log(Level.WARNING, "No fallback to bootclasspath for {0}", u);
+                        return null;
+                    }
                     return u.openStream();
                 }
             }

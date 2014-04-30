@@ -108,7 +108,7 @@ final class Main {
             Bck2Brwsr.newCompiler().library(createExtension).
                 obfuscation(obfLevel).
                 addRootClasses(classes.toArray()).
-                resources(new LdrRsrcs(mainClassLoader)).
+                resources(new LdrRsrcs(Main.class.getClassLoader(), true)).
                 generate(w);
         }
     }

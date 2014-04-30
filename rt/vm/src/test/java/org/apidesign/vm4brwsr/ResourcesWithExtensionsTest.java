@@ -46,7 +46,7 @@ public class ResourcesWithExtensionsTest {
         );
     }
     */
-    
+
     private static TestVM code;
     
     @BeforeClass 

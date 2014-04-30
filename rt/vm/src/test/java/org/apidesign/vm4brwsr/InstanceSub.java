@@ -31,7 +31,7 @@ public class InstanceSub extends Instance implements GetByte {
     
     @Override
     public void setByte(byte b) {
-        super.setByte((byte) (b + 1));
+        super.setByte((byte) (b + StaticMethod.MISSING_CONSTANT));
     }
     
     public static double recallDbl() {

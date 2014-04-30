@@ -25,7 +25,6 @@
 
 package java.lang;
 
-import java.lang.reflect.Array;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.core.JavaScriptPrototype;
 
@@ -40,23 +39,9 @@ import org.apidesign.bck2brwsr.core.JavaScriptPrototype;
  */
 @JavaScriptPrototype(container = "Object.prototype", prototype = "new Object")
 public class Object {
-
-    private static void registerNatives() {
-        boolean assertsOn = false;
-        assert assertsOn = false;
-        if (assertsOn) try {
-            Array.get(null, 0);
-        } catch (Throwable ex) {
-            // ignore
-        }
-    }
-    @JavaScriptBody(args = {}, body = "var p = vm.java_lang_Object(false);" +
-        "p.toString = function() { return this.toString__Ljava_lang_String_2(); };"
-    )
-    private static native void registerToString();
     static {
-        registerNatives();
-        registerToString();
+        Class.registerNatives();
+        Class.registerToString();
     }
 
     /**
@@ -79,8 +64,10 @@ public class Object {
      * @see    Class Literals, section 15.8.2 of
      *         <cite>The Java&trade; Language Specification</cite>.
      */
-    @JavaScriptBody(args={}, body="return this.constructor.$class;")
-    public final native Class<?> getClass();
+    public final Class<?> getClass() {
+        Class<?> c = Class.classFor(this);
+        return c == null ? Object.class : c;
+    }
 
     /**
      * Returns a hash code value for the object. This method is
@@ -117,16 +104,10 @@ public class Object {
      * @see     java.lang.Object#equals(java.lang.Object)
      * @see     java.lang.System#identityHashCode
      */
-    @JavaScriptBody(args = {}, body = 
-        "if (this.$hashCode) return this.$hashCode;\n"
-        + "var h = this.computeHashCode__I();\n"
-        + "return this.$hashCode = h & h;"
-    )
-    public native int hashCode();
+    public int hashCode() {
+        return Class.defaultHashCode(this);
+    }
 
-    @JavaScriptBody(args = {}, body = "return Math.random() * Math.pow(2, 32);")
-    native int computeHashCode();
-    
     /**
      * Indicates whether some other object is "equal to" this one.
      * <p>
@@ -238,27 +219,12 @@ public class Object {
      * @see java.lang.Cloneable
      */
     protected Object clone() throws CloneNotSupportedException {
-        Object ret = clone(this);
+        Object ret = Class.clone(this);
         if (ret == null) {
             throw new CloneNotSupportedException(getClass().getName());
         }
         return ret;
     }
-
-    @JavaScriptBody(args = "self", body = 
-          "\nif (!self['$instOf_java_lang_Cloneable']) {"
-        + "\n  return null;"
-        + "\n} else {"
-        + "\n  var clone = self.constructor(true);"
-        + "\n  var props = Object.getOwnPropertyNames(self);"
-        + "\n  for (var i = 0; i < props.length; i++) {"
-        + "\n    var p = props[i];"
-        + "\n    clone[p] = self[p];"
-        + "\n  };"
-        + "\n  return clone;"
-        + "\n}"
-    )
-    private static native Object clone(Object self) throws CloneNotSupportedException;
 
     /**
      * Returns a string representation of the object. In general, the
@@ -317,7 +283,8 @@ public class Object {
      * @see        java.lang.Object#notifyAll()
      * @see        java.lang.Object#wait()
      */
-    public final native void notify();
+    public final void notify() {
+    }
 
     /**
      * Wakes up all threads that are waiting on this object's monitor. A
@@ -341,7 +308,8 @@ public class Object {
      * @see        java.lang.Object#notify()
      * @see        java.lang.Object#wait()
      */
-    public final native void notifyAll();
+    public final void notifyAll() {
+    }
 
     /**
      * Causes the current thread to wait until either another thread invokes the
@@ -428,7 +396,9 @@ public class Object {
      * @see        java.lang.Object#notify()
      * @see        java.lang.Object#notifyAll()
      */
-    public final native void wait(long timeout) throws InterruptedException;
+    public final void wait(long timeout) throws InterruptedException {
+        throw new InterruptedException();
+    }
 
     /**
      * Causes the current thread to wait until another thread invokes the
@@ -493,20 +463,7 @@ public class Object {
      *             this exception is thrown.
      */
     public final void wait(long timeout, int nanos) throws InterruptedException {
-        if (timeout < 0) {
-            throw new IllegalArgumentException("timeout value is negative");
-        }
-
-        if (nanos < 0 || nanos > 999999) {
-            throw new IllegalArgumentException(
-                                "nanosecond timeout value out of range");
-        }
-
-        if (nanos >= 500000 || (nanos != 0 && timeout == 0)) {
-            timeout++;
-        }
-
-        wait(timeout);
+        throw new InterruptedException();
     }
 
     /**
@@ -548,7 +505,7 @@ public class Object {
      * @see        java.lang.Object#notifyAll()
      */
     public final void wait() throws InterruptedException {
-        wait(0);
+        throw new InterruptedException();
     }
 
     /**

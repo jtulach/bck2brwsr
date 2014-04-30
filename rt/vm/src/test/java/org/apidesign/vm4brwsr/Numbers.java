@@ -55,11 +55,18 @@ public class Numbers {
         DataInputStream dis = new DataInputStream(is);
         return dis.readLong();
     }
+    static long deserLong(byte[] arr, int shift) throws IOException {
+        return deserLong(arr) >> shift;
+    }
     static int deserInt() throws IOException {
         byte[] arr = {(byte) 71, (byte) 84, (byte) 52, (byte) 83};
         ByteArrayInputStream is = new ByteArrayInputStream(arr);
         DataInputStream dis = new DataInputStream(is);
         return dis.readInt();
+    }
+    static long bytesToLong(byte b1, byte b2, int shift) {
+        return (((long)b1 << 56) +
+                ((long)b2 & 255) << 48) >> shift;
     }
 
     static String intToString() {

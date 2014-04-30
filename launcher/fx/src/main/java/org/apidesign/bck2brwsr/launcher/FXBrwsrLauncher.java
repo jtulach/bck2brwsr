@@ -17,13 +17,17 @@
  */
 package org.apidesign.bck2brwsr.launcher;
 
+import java.io.File;
 import org.apidesign.bck2brwsr.launcher.fximpl.FXBrwsr;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.net.JarURLConnection;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -67,7 +71,17 @@ final class FXBrwsrLauncher extends BaseHTTPLauncher {
                 public void run() {
                     LOG.log(Level.INFO, "In FX thread. Launching!");
                     try {
-                        FXBrwsr.launch(FXBrwsr.class, url.toString());
+                        List<String> params = new ArrayList<String>();
+                        params.add(url.toString());
+                        if (isDebugged()) {
+                            params.add("--toolbar=true");
+                            params.add("--firebug=true");
+                            String ud = System.getProperty("netbeans.user");
+                            if (ud != null) {
+                                params.add("--userdir=" + ud);
+                            }
+                        }
+                        FXBrwsr.launch(FXBrwsr.class, params.toArray(new String[params.size()]));
                         LOG.log(Level.INFO, "Launcher is back. Closing");
                         close();
                         System.exit(0);
@@ -87,17 +101,6 @@ final class FXBrwsrLauncher extends BaseHTTPLauncher {
         sb.append("(function() {\n"
             + "  var impl = this.bck2brwsr;\n"
             + "  this.bck2brwsr = function() { return impl; };\n");
-        if (isDebugged()) {
-            sb.append("var scr = window.document.createElement('script');\n");
-            sb.append("scr.type = 'text/javascript';\n");
-            sb.append("scr.src = 'https://getfirebug.com/firebug-lite.js';\n");
-            sb.append("scr.text = '{ startOpened: true }';\n");
-            sb.append("var head = window.document.getElementsByTagName('head')[0];");
-            sb.append("head.appendChild(scr);\n");
-            sb.append("var html = window.document.getElementsByTagName('html')[0];");
-            sb.append("html.debug = true;\n");
-        }
-        
         sb.append("})(window);\n");
         JVMBridge.onBck2BrwsrLoad();
     }
@@ -116,25 +119,46 @@ final class FXBrwsrLauncher extends BaseHTTPLauncher {
         String startPage = null;
 
         final ClassLoader cl = FXBrwsrLauncher.class.getClassLoader();
-        startPage = findStartPage(cl, startPage);
+        URL[] manifestURL = { null };
+        startPage = findStartPage(cl, startPage, manifestURL);
         if (startPage == null) {
             throw new NullPointerException("Can't find StartPage tag in manifests!");
         }
         
-        Launcher.showURL("fxbrwsr", cl, startPage);
+        File dir = new File(".");
+        if (manifestURL[0].getProtocol().equals("jar")) {
+            try {
+                dir = new File(
+                    ((JarURLConnection)manifestURL[0].openConnection()).getJarFileURL().toURI()
+                ).getParentFile();
+            } catch (URISyntaxException ex) {
+                LOG.log(Level.WARNING, "Can't find root directory", ex);
+            }
+        }
+        
+        Launcher.showDir("fxbrwsr", dir, cl, startPage);
     }
     
-    private static String findStartPage(final ClassLoader cl, String startPage) throws IOException {
+    private static String findStartPage(
+        final ClassLoader cl, String startPage, URL[] startURL
+    ) throws IOException {
         Enumeration<URL> en = cl.getResources("META-INF/MANIFEST.MF");
         while (en.hasMoreElements()) {
             URL url = en.nextElement();
             Manifest mf;
-            try (InputStream is = url.openStream()) {
+            InputStream is = null;
+            try {
+                is = url.openStream();
                 mf = new Manifest(is);
+            } finally {
+                if (is != null) is.close();
             }
             String sp = mf.getMainAttributes().getValue("StartPage");
             if (sp != null) {
                 startPage = sp;
+                if (startURL != null) {
+                    startURL[0] = url;
+                }
                 break;
             }
         }

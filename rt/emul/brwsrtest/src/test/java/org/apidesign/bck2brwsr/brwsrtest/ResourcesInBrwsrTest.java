@@ -17,7 +17,10 @@
  */
 package org.apidesign.bck2brwsr.brwsrtest;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.util.Enumeration;
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
@@ -30,14 +33,36 @@ public class ResourcesInBrwsrTest {
     
     @Compare public String readResourceAsStream() throws Exception {
         InputStream is = getClass().getResourceAsStream("Resources.txt");
-        assert is != null : "The stream for Resources.txt should be found";
-        byte[] b = new byte[30];
-        int len = is.read(b);
+        return readString(is);
+    }
+    
+    @Compare public String readResourceViaConnection() throws Exception {
+        InputStream is = getClass().getResource("Resources.txt").openConnection().getInputStream();
+        return readString(is);
+    }
+
+    private String readString(InputStream is) throws IOException {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < len; i++) {
-            sb.append((char)b[i]);
+        byte[] b = new byte[512];
+        for (;;) { 
+            int len = is.read(b);
+            if (len == -1) {
+                return sb.toString();
+            }
+            for (int i = 0; i < len; i++) {
+                sb.append((char)b[i]);
+            }
         }
-        return sb.toString();
+    }
+
+    @Compare public String readResourceAsStreamFromClassLoader() throws Exception {
+        InputStream is = getClass().getClassLoader().getResourceAsStream("org/apidesign/bck2brwsr/brwsrtest/Resources.txt");
+        return readString(is);
+    }
+    
+    @Compare public String toURIFromURL() throws Exception {
+        URL u = new URL("http://apidesign.org");
+        return u.toURI().toString();
     }
     
     @Factory public static Object[] create() {

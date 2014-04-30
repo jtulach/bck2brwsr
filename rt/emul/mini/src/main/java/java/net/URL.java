@@ -920,6 +920,23 @@ public final class URL implements java.io.Serializable {
     }
 
     /**
+     * Returns a {@link java.net.URI} equivalent to this URL.
+     * This method functions in the same way as <code>new URI (this.toString())</code>.
+     * <p>Note, any URL instance that complies with RFC 2396 can be converted
+     * to a URI. However, some URLs that are not strictly in compliance
+     * can not be converted to a URI.
+     *
+     * @exception URISyntaxException if this URL is not formatted strictly according to
+     *            to RFC2396 and cannot be converted to a URI.
+     *
+     * @return    a URI instance equivalent to this URL.
+     * @since 1.5
+     */
+    public URI toURI() throws URISyntaxException {
+        return new URI (toString());
+    }
+
+    /**
      * Returns a {@link java.net.URLConnection URLConnection} instance that
      * represents a connection to the remote object referred to by the
      * {@code URL}.
@@ -948,9 +965,9 @@ public final class URL implements java.io.Serializable {
      * @see        java.net.URL#URL(java.lang.String, java.lang.String,
      *             int, java.lang.String)
      */
-//    public URLConnection openConnection() throws java.io.IOException {
-//        return handler.openConnection(this);
-//    }
+    public URLConnection openConnection() throws java.io.IOException {
+        return handler.openConnection(this);
+    }
 
 
     /**
@@ -1027,18 +1044,53 @@ public final class URL implements java.io.Serializable {
     public final Object getContent(Class[] classes)
     throws java.io.IOException {
         for (Class<?> c : classes) {
-            if (c == String.class) {
-                return loadText(toExternalForm());
-            }
-            if (c == byte[].class) {
-                return loadBytes(toExternalForm(), new byte[0]);
+            try {
+                if (c == String.class) {
+                    return loadText(toExternalForm());
+                }
+                if (c == byte[].class) {
+                    return loadBytes(toExternalForm(), new byte[0]);
+                }
+            } catch (Throwable t) {
+                throw new IOException(t);
             }
         }
         return null;
     }
 
-    static URLStreamHandler getURLStreamHandler(String protocol) {
-        URLStreamHandler universal = new URLStreamHandler() {};
+    static URLStreamHandler getURLStreamHandler(final String protocol) {
+        URLStreamHandler universal = new URLStreamHandler() {
+            @Override
+            protected URLConnection openConnection(URL u) throws IOException {
+                return new URLConnection(u) {
+                    Object stream = url.is;
+                    
+                    @Override
+                    public void connect() throws IOException {
+                        if (stream == null) {
+                            try {
+                                byte[] arr = (byte[]) url.getContent(new Class[]{byte[].class});
+                                stream = new ByteArrayInputStream(arr);
+                            } catch (IOException ex) {
+                                stream = ex;
+                                throw ex;
+                            }
+                        }
+                    }
+
+                    @Override
+                    public InputStream getInputStream() throws IOException {
+                        connect();
+                        if (stream instanceof IOException) {
+                            throw (IOException)stream;
+                        }
+                        return (InputStream)stream;
+                    }
+                    
+                    
+                };
+            }
+        };
         return universal;
     }
 
@@ -1053,10 +1105,16 @@ public final class URL implements java.io.Serializable {
     }
     
     @JavaScriptBody(args = {}, body = 
-          "if (typeof window !== 'object') return null;\n"
-        + "if (!window.location) return null;\n"
-        + "if (!window.location.href) return null;\n"
-        + "return window.location.href;\n"
+          "var l;\n"
+        + "if (typeof location !== 'object') {"
+        + "  if (typeof window !== 'object') return null;\n"
+        + "  if (!window.location) return null;\n"
+        + "  l = window.location;\n"
+        + "} else {\n"
+        + "  l = location;\n"
+        + "}\n"
+        + "if (!l.href) return null;\n"
+        + "return l.href;\n"
     )
     private static native String findBaseURL();
 }

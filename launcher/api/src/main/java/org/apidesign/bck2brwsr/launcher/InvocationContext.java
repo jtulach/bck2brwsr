@@ -19,6 +19,7 @@ package org.apidesign.bck2brwsr.launcher;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -94,7 +95,6 @@ public final class InvocationContext {
         this.exception = e;
         wait.countDown();
     }
-
 
     static final class Resource {
         final InputStream httpContent;

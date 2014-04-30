@@ -77,16 +77,22 @@ public class NumberTest {
             new byte[] { (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)13, (byte)126 }
         );
     }
-    /* XXX: JavaScript cannot represent as big longs as Java. 
+    @Test public void deserializeMiddleLong() throws Exception {
+        final byte[] arr = new byte[] {
+            (byte)0, (byte)0, (byte)64, (byte)32, (byte)23, (byte)0, (byte)0, (byte)0
+        };
+        long exp = Numbers.deserLong(arr, 16);
+        assertExec("Should be " + exp, Numbers.class, "deserLong__J_3BI", 
+            Double.valueOf(exp), arr, 16);
+    }
     @Test public void deserializeLargeLong() throws Exception {
         final byte[] arr = new byte[] {
             (byte)64, (byte)8, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0
         };
-        long exp = Numbers.deserLong(arr);
-        assertExec("Should be " + exp, "org_apidesign_vm4brwsr_Numbers_deserLong__JAB", 
-            Double.valueOf(exp), arr);
+        long exp = Numbers.deserLong(arr, 32);
+        assertExec("Should be " + exp, Numbers.class, "deserLong__J_3BI", 
+            Double.valueOf(exp), arr, 32);
     }
-    */
     
     @Test public void deserializeFloatInJava() throws Exception {
         float f = 54324.32423f;
@@ -110,6 +116,12 @@ public class NumberTest {
     @Test public void deserializeDoubleInJS() throws Exception {
         double f = 3.0;
         assertExec("Should be the same", Numbers.class, "deserDouble__D", f);
+    }
+    
+    @Test public void bytesToLong() throws Exception {
+        long exp = Numbers.bytesToLong((byte)30, (byte)20, 32);
+        assertExec("Should be the same", Numbers.class, "bytesToLong__JBBI", 
+            Double.valueOf(exp), 30, 20, 32);
     }
     /*
     @Test public void serDouble() throws IOException {

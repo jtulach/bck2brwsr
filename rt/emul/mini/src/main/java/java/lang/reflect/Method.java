@@ -113,7 +113,7 @@ public final
     }
     
     @JavaScriptBody(args = "self", body = "return self.access;")
-    private static native int getAccess(Object self);
+    static native int getAccess(Object self);
     
     /**
      * Returns an array of {@code TypeVariable} objects that represent the
@@ -183,6 +183,10 @@ public final
      * represents
      */
     public Class<?>[] getParameterTypes() {
+        return getParameterTypes(sig);
+    }
+    
+    static Class<?>[] getParameterTypes(String sig) {
         Class[] arr = new Class[MethodImpl.signatureElements(sig) - 1];
         Enumeration<Class> en = MethodImpl.signatureParser(sig);
         en.nextElement(); // return type
@@ -235,8 +239,7 @@ public final
      * method this object represents
      */
     public Class<?>[] getExceptionTypes() {
-        throw new UnsupportedOperationException();
-        //return (Class<?>[]) exceptionTypes.clone();
+        return new Class[0];
     }
 
     /**
@@ -525,15 +528,17 @@ public final
     }
     
     @JavaScriptBody(args = { "st", "method", "self", "args" }, body =
-          "var p;\n"
+          "var p; var cll;\n"
         + "if (st) {\n"
+        + "  cll = self[method._name() + '__' + method._sig()];\n"
         + "  p = new Array(1);\n"
         + "  p[0] = self;\n"
         + "  p = p.concat(args);\n"
         + "} else {\n"
         + "  p = args;\n"
+        + "  cll = method._data();"
         + "}\n"
-        + "return method._data().apply(self, p);\n"
+        + "return cll.apply(self, p);\n"
     )
     private static native Object invoke0(boolean isStatic, Method m, Object self, Object[] args);
     
@@ -583,7 +588,7 @@ public final
     private static native Integer fromRaw(Class<?> cls, String m, Object o);
 
     @JavaScriptBody(args = { "o" }, body = "return o.valueOf();")
-    private static native Object toPrimitive(Object o);
+    static native Object toPrimitive(Object o);
     
     /**
      * Returns {@code true} if this method is a bridge
@@ -691,6 +696,11 @@ public final
         MethodImpl.INSTANCE = new MethodImpl() {
             protected Method create(Class<?> declaringClass, String name, Object data, String sig) {
                 return new Method(declaringClass, name, data, sig);
+            }
+
+            @Override
+            protected Constructor create(Class<?> declaringClass, Object data, String sig) {
+                return new Constructor(declaringClass, data, sig);
             }
         };
     }

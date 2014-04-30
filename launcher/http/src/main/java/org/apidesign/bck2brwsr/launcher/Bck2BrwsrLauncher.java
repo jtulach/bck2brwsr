@@ -17,9 +17,17 @@
  */
 package org.apidesign.bck2brwsr.launcher;
 
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import org.apidesign.vm4brwsr.Bck2Brwsr;
 
 /**
  * Lightweight server to launch Bck2Brwsr applications and tests.
@@ -48,15 +56,54 @@ final class Bck2BrwsrLauncher extends BaseHTTPLauncher {
     
     @Override
     void generateBck2BrwsrJS(StringBuilder sb, final Res loader) throws IOException {
-        CompileCP.compileVM(sb, loader);
+        String b2b = System.getProperty("bck2brwsr.js");
+        if (b2b != null) {
+            LOG.log(Level.INFO, "Serving bck2brwsr.js from {0}", b2b);
+            URL bu;
+            try {
+                bu = new URL(b2b);
+            } catch (MalformedURLException ex) {
+                File f = new File(b2b);
+                if (f.exists()) {
+                    bu = f.toURI().toURL();
+                } else {
+                    throw ex;
+                }
+            }
+            try (Reader r = new InputStreamReader(bu.openStream())) {
+                char[] arr = new char[4096];
+                for (;;) {
+                   int len = r.read(arr);
+                   if (len == -1) {
+                       break;
+                   }
+                   sb.append(arr, 0, len);
+                }
+            }
+        } else {
+            LOG.log(Level.INFO, "Generating bck2brwsr.js from scratch", b2b);
+            CompileCP.compileVM(sb, loader);
+        }
         sb.append(
-              "(function WrapperVM(global) {"
-            + "  function ldCls(res) {\n"
+              "(function WrapperVM(global) {\n"
+            + "  var cache = {};\n"
+            + "  function ldCls(res, skip) {\n"
+            + "    var c = cache[res];\n"
+            + "    if (c) {\n"
+            + "      if (c[skip]) return c[skip];\n"
+            + "      if (c[skip] === null) return null;\n"
+            + "    } else {\n"
+            + "      cache[res] = c = new Array();\n"
+            + "    }\n"
             + "    var request = new XMLHttpRequest();\n"
-            + "    request.open('GET', '/classes/' + res, false);\n"
+            + "    request.open('GET', '/classes/' + res + '?skip=' + skip, false);\n"
             + "    request.send();\n"
-            + "    if (request.status !== 200) return null;\n"
+            + "    if (request.status !== 200) {\n"
+            + "      c[skip] = null;\n"
+            + "      return null;\n"
+            + "    }\n"
             + "    var arr = eval(request.responseText);\n"
+            + "    c[skip] = arr;\n"
             + "    return arr;\n"
             + "  }\n"
             + "  var prevvm = global.bck2brwsr;\n"
@@ -68,6 +115,7 @@ final class Bck2BrwsrLauncher extends BaseHTTPLauncher {
             + "  global.bck2brwsr.registerExtension = prevvm.registerExtension;\n"
             + "})(this);\n"
         );
+        LOG.log(Level.INFO, "Serving bck2brwsr.js", b2b);
     }
 
 }

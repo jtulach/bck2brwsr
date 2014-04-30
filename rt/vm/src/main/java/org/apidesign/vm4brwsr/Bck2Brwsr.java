@@ -217,7 +217,21 @@ public final class Bck2Brwsr {
      * @since 0.5
      */
     public Bck2Brwsr resources(final ClassLoader loader) {
-        return resources(new LdrRsrcs(loader));
+        return resources(loader, false);
+    }
+
+    /** A way to change the provider of additional resources (classes) for the 
+     * compiler by specifying classloader to use for loading them.
+     * 
+     * @param loader class loader to load the resources from
+     * @param ignoreBootClassPath <code>true</code> if classes loaded
+     *    from <code>rt.jar</code> 
+     * @return new instance of the compiler with all values being the same, just 
+     *   different resources provider
+     * @since 0.9
+     */
+    public Bck2Brwsr resources(final ClassLoader loader, boolean ignoreBootClassPath) {
+        return resources(new LdrRsrcs(loader, ignoreBootClassPath));
     }
     
     /** Generates virtual machine based on previous configuration of the 
@@ -247,7 +261,7 @@ public final class Bck2Brwsr {
     // 
     
     Resources getResources() {
-        return res != null ? res : new LdrRsrcs(Bck2Brwsr.class.getClassLoader());
+        return res != null ? res : new LdrRsrcs(Bck2Brwsr.class.getClassLoader(), false);
     }
     
     String[] allClasses() {

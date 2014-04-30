@@ -30,6 +30,16 @@ public class CompareHashTest {
         return "Ahoj".hashCode();
     }
     
+    @Compare public boolean hashOfIntegerDifferentToOwnHash() {
+        Integer i = 120;
+        return System.identityHashCode(i) != i.hashCode();
+    }
+
+    @Compare public int hashOfObjectSameAsOwnHash() {
+        Object o = new Object();
+        return System.identityHashCode(o) - o.hashCode();
+    }
+    
     @Compare public int hashRemainsYieldsZero() {
         Object o = new Object();
         return o.hashCode() - o.hashCode();

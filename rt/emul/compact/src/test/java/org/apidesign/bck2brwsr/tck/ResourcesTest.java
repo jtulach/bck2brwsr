@@ -17,7 +17,10 @@
  */
 package org.apidesign.bck2brwsr.tck;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.util.Enumeration;
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
@@ -27,17 +30,62 @@ import org.testng.annotations.Factory;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class ResourcesTest {
+    @Compare public String allManifests() throws Exception {
+        Enumeration<URL> en = ClassLoader.getSystemResources("META-INF/MANIFEST.MF");
+        assert en.hasMoreElements() : "Should have at least one manifest";
+        String first = readString(en.nextElement().openStream());
+        boolean different = false;
+        int cnt = 1;
+        while (en.hasMoreElements()) {
+            URL url = en.nextElement();
+            String now = readString(url.openStream());
+            if (!first.equals(now)) {
+                different = true;
+            }
+            cnt++;
+            if (cnt > 500) {
+                throw new IllegalStateException(
+                    "Giving up. First manifest:\n" + first + 
+                    "\nLast manifest:\n" + now
+                );
+            }
+        }
+        assert different : "Not all manifests should look like first one:\n" + first;
+        return "" + cnt;
+    }
     
     @Compare public String readResourceAsStream() throws Exception {
         InputStream is = getClass().getResourceAsStream("Resources.txt");
-        assert is != null : "The stream for Resources.txt should be found";
-        byte[] b = new byte[30];
-        int len = is.read(b);
+        return readString(is);
+    }
+    
+    @Compare public String readResourceViaConnection() throws Exception {
+        InputStream is = getClass().getResource("Resources.txt").openConnection().getInputStream();
+        return readString(is);
+    }
+
+    private String readString(InputStream is) throws IOException {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < len; i++) {
-            sb.append((char)b[i]);
+        byte[] b = new byte[512];
+        for (;;) { 
+            int len = is.read(b);
+            if (len == -1) {
+                return sb.toString();
+            }
+            for (int i = 0; i < len; i++) {
+                sb.append((char)b[i]);
+            }
         }
-        return sb.toString();
+    }
+
+    @Compare public String readResourceAsStreamFromClassLoader() throws Exception {
+        InputStream is = getClass().getClassLoader().getResourceAsStream("org/apidesign/bck2brwsr/tck/Resources.txt");
+        return readString(is);
+    }
+    
+    @Compare public String toURIFromURL() throws Exception {
+        URL u = new URL("http://apidesign.org");
+        return u.toURI().toString();
     }
     
     @Factory public static Object[] create() {

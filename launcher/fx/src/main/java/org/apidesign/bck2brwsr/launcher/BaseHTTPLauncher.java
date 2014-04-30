@@ -17,6 +17,8 @@
  */
 package org.apidesign.bck2brwsr.launcher;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -52,7 +54,13 @@ import org.glassfish.grizzly.http.server.NetworkListener;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.grizzly.http.server.ServerConfiguration;
+import org.glassfish.grizzly.http.server.StaticHttpHandler;
 import org.glassfish.grizzly.http.util.HttpStatus;
+import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
+import org.glassfish.grizzly.websockets.WebSocket;
+import org.glassfish.grizzly.websockets.WebSocketAddOn;
+import org.glassfish.grizzly.websockets.WebSocketApplication;
+import org.glassfish.grizzly.websockets.WebSocketEngine;
 
 /**
  * Lightweight server to launch Bck2Brwsr applications and tests.
@@ -62,8 +70,8 @@ import org.glassfish.grizzly.http.util.HttpStatus;
 abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<HttpServer> {
     static final Logger LOG = Logger.getLogger(BaseHTTPLauncher.class.getName());
     private static final InvocationContext END = new InvocationContext(null, null, null);
-    private final Set<ClassLoader> loaders = new LinkedHashSet<>();
-    private final BlockingQueue<InvocationContext> methods = new LinkedBlockingQueue<>();
+    private final Set<ClassLoader> loaders = new LinkedHashSet<ClassLoader>();
+    private final BlockingQueue<InvocationContext> methods = new LinkedBlockingQueue<InvocationContext>();
     private long timeOut;
     private final Res resources = new Res();
     private final String cmd;
@@ -105,7 +113,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         if (!startpage.startsWith("/")) {
             startpage = "/" + startpage;
         }
-        HttpServer s = initServer(".", true);
+        HttpServer s = initServer(".", true, "");
         int last = startpage.lastIndexOf('/');
         String prefix = startpage.substring(0, last);
         String simpleName = startpage.substring(last);
@@ -113,19 +121,24 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         server = s;
         try {
             launchServerAndBrwsr(s, simpleName);
-        } catch (URISyntaxException | InterruptedException ex) {
+        } catch (Exception ex) {
             throw new IOException(ex);
         }
     }
 
-    void showDirectory(File dir, String startpage) throws IOException {
+    void showDirectory(File dir, String startpage, boolean addClasses) throws IOException {
         if (!startpage.startsWith("/")) {
             startpage = "/" + startpage;
         }
-        HttpServer s = initServer(dir.getPath(), false);
+        String prefix = "";
+        int last = startpage.lastIndexOf('/');
+        if (last >= 0) {
+            prefix = startpage.substring(0, last);
+        }
+        HttpServer s = initServer(dir.getPath(), addClasses, prefix);
         try {
             launchServerAndBrwsr(s, startpage);
-        } catch (URISyntaxException | InterruptedException ex) {
+        } catch (Exception ex) {
             throw new IOException(ex);
         }
     }
@@ -149,16 +162,16 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         }
     }
     
-    private HttpServer initServer(String path, boolean addClasses) throws IOException {
-        HttpServer s = HttpServer.createSimpleServer(path, new PortRange(8080, 65535));
-/*
+    private HttpServer initServer(String path, boolean addClasses, String vmPrefix) throws IOException {
+        HttpServer s = HttpServer.createSimpleServer(null, new PortRange(8080, 65535));
+        /*
         ThreadPoolConfig fewThreads = ThreadPoolConfig.defaultConfig().copy().
             setPoolName("Fx/Bck2 Brwsr").
-            setCorePoolSize(1).
+            setCorePoolSize(3).
             setMaxPoolSize(5);
         ThreadPoolConfig oneKernel = ThreadPoolConfig.defaultConfig().copy().
             setPoolName("Kernel Fx/Bck2").
-            setCorePoolSize(1).
+            setCorePoolSize(3).
             setMaxPoolSize(3);
         for (NetworkListener nl : s.getListeners()) {
             nl.getTransport().setWorkerThreadPoolConfig(fewThreads);
@@ -166,36 +179,81 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         }
 */        
         final ServerConfiguration conf = s.getServerConfiguration();
+        VMAndPages vm = new VMAndPages();
+        conf.addHttpHandler(vm, "/");
+        if (vmPrefix != null) {
+            vm.registerVM(vmPrefix + "/bck2brwsr.js");
+        }
+        if (path != null) {
+            vm.addDocRoot(path);
+        }
         if (addClasses) {
-            conf.addHttpHandler(new VM(), "/bck2brwsr.js");
             conf.addHttpHandler(new Classes(resources), "/classes/");
+        }
+        final WebSocketAddOn addon = new WebSocketAddOn();
+        for (NetworkListener listener : s.getListeners()) {
+            listener.registerAddOn(addon);
         }
         return s;
     }
     
     private void executeInBrowser() throws InterruptedException, URISyntaxException, IOException {
         wait = new CountDownLatch(1);
-        server = initServer(".", true);
+        server = initServer(".", true, "");
         final ServerConfiguration conf = server.getServerConfiguration();
         
         class DynamicResourceHandler extends HttpHandler {
             private final InvocationContext ic;
+            private int resourcesCount;
+            DynamicResourceHandler delegate;
             public DynamicResourceHandler(InvocationContext ic) {
-                if (ic == null || ic.resources.isEmpty()) {
-                    throw new NullPointerException();
-                }
                 this.ic = ic;
                 for (Resource r : ic.resources) {
                     conf.addHttpHandler(this, r.httpPath);
                 }
             }
 
-            public void close() {
+            public void close(DynamicResourceHandler del) {
                 conf.removeHttpHandler(this);
+                delegate = del;
             }
             
             @Override
             public void service(Request request, Response response) throws Exception {
+                if (delegate != null) {
+                    delegate.service(request, response);
+                    return;
+                }
+                
+                if ("/dynamic".equals(request.getRequestURI())) {
+                    boolean webSocket = false;
+                    String mimeType = request.getParameter("mimeType");
+                    List<String> params = new ArrayList<String>();
+                    for (int i = 0; ; i++) {
+                        String p = request.getParameter("param" + i);
+                        if (p == null) {
+                            break;
+                        }
+                        params.add(p);
+                        if ("protocol:ws".equals(p)) {
+                            webSocket = true;
+                            continue;
+                        }                    }
+                    final String cnt = request.getParameter("content");
+                    String mangle = cnt.replace("%20", " ").replace("%0A", "\n");
+                    ByteArrayInputStream is = new ByteArrayInputStream(mangle.getBytes("UTF-8"));
+                    URI url;
+                    final Resource res = new Resource(is, mimeType, "/dynamic/res" + ++resourcesCount, params.toArray(new String[params.size()]));
+                    if (webSocket) {
+                        url = registerWebSocket(res);
+                    } else {
+                        url = registerResource(res);
+                    }
+                    response.getWriter().write(url.toString());
+                    response.getWriter().write("\n");
+                    return;
+                }
+                
                 for (Resource r : ic.resources) {
                     if (r.httpPath.equals(request.getRequestURI())) {
                         LOG.log(Level.INFO, "Serving HttpResource for {0}", request.getRequestURI());
@@ -232,13 +290,26 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                     }
                 }
             }
+            
+            private URI registerWebSocket(Resource r) {
+                WebSocketEngine.getEngine().register("", r.httpPath, new WS(r));
+                return pageURL("ws", server, r.httpPath);
+            }
+
+            private URI registerResource(Resource r) {
+                if (!ic.resources.contains(r)) {
+                    ic.resources.add(r);
+                    conf.addHttpHandler(this, r.httpPath);
+                }
+                return pageURL("http", server, r.httpPath);
+            }
         }
         
         conf.addHttpHandler(new Page(resources, harnessResource()), "/execute");
         
         conf.addHttpHandler(new HttpHandler() {
             int cnt;
-            List<InvocationContext> cases = new ArrayList<>();
+            List<InvocationContext> cases = new ArrayList<InvocationContext>();
             DynamicResourceHandler prev;
             @Override
             public void service(Request request, Response response) throws Exception {
@@ -270,11 +341,6 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                     }
                 }
                 
-                if (prev != null) {
-                    prev.close();
-                    prev = null;
-                }
-                
                 if (mi == null) {
                     mi = methods.take();
                     caseNmbr = cnt++;
@@ -286,10 +352,12 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                     LOG.log(Level.INFO, "End of data reached. Exiting.");
                     return;
                 }
-                
-                if (!mi.resources.isEmpty()) {
-                    prev = new DynamicResourceHandler(mi);
+                final DynamicResourceHandler newRH = new DynamicResourceHandler(mi);
+                if (prev != null) {
+                    prev.close(newRH);
                 }
+                prev = newRH;
+                conf.addHttpHandler(prev, "/dynamic");
                 
                 cases.add(mi);
                 final String cn = mi.clazz.getName();
@@ -382,10 +450,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
 
     private Object[] launchServerAndBrwsr(HttpServer server, final String page) throws IOException, URISyntaxException, InterruptedException {
         server.start();
-        NetworkListener listener = server.getListeners().iterator().next();
-        int port = listener.getPort();
-        
-        URI uri = new URI("http://localhost:" + port + page);
+        URI uri = pageURL("http", server, page);
         return showBrwsr(uri);
     }
     private static String toUTF8(String value) throws UnsupportedEncodingException {
@@ -503,6 +568,16 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         return null;
     }
 
+    private static URI pageURL(String protocol, HttpServer server, final String page) {
+        NetworkListener listener = server.getListeners().iterator().next();
+        int port = listener.getPort();
+        try {
+            return new URI(protocol + "://localhost:" + port + page);
+        } catch (URISyntaxException ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
+
     final class Res {
         String compileJar(JarFile jar) throws IOException {
             return BaseHTTPLauncher.this.compileJar(jar);
@@ -510,7 +585,10 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         String compileFromClassPath(URL f) throws IOException {
             return BaseHTTPLauncher.this.compileFromClassPath(f, this);
         }
-        public URL get(String resource) throws IOException {
+        public URL get(String resource, int skip) throws IOException {
+            if (!resource.endsWith(".class")) {
+                return getResource(resource, skip);
+            }
             URL u = null;
             for (ClassLoader l : loaders) {
                 Enumeration<URL> en = l.getResources(resource);
@@ -523,11 +601,29 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
             }
             if (u != null) {
                 if (u.toExternalForm().contains("rt.jar")) {
-                    LOG.log(Level.WARNING, "Fallback to bootclasspath for {0}", u);
+                    LOG.log(Level.WARNING, "No fallback to bootclasspath for {0}", u);
+                    return null;
                 }
                 return u;
             }
             throw new IOException("Can't find " + resource);
+        }
+        private URL getResource(String resource, int skip) throws IOException {
+            for (ClassLoader l : loaders) {
+                Enumeration<URL> en = l.getResources(resource);
+                while (en.hasMoreElements()) {
+                    final URL now = en.nextElement();
+                    if (now.toExternalForm().contains("sisu-inject-bean")) {
+                        // certainly we don't want this resource, as that
+                        // module is not compiled with target 1.6, currently
+                        continue;
+                    }
+                    if (--skip < 0) {
+                        return now;
+                    }
+                }
+            }
+            throw new IOException("Not found (anymore of) " + resource);
         }
     }
 
@@ -560,7 +656,8 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                 replace = args;
             }
             OutputStream os = response.getOutputStream();
-            try (InputStream is = res.get(r).openStream()) {
+            try { 
+                InputStream is = res.get(r, 0).openStream();
                 copyStream(is, os, request.getRequestURL().toString(), replace);
             } catch (IOException ex) {
                 response.setDetailMessage(ex.getLocalizedMessage());
@@ -592,14 +689,28 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         
     }
 
-    private class VM extends HttpHandler {
+    private class VMAndPages extends StaticHttpHandler {
+        private String vmResource;
+        
+        public VMAndPages() {
+            super((String[]) null);
+        }
+        
         @Override
         public void service(Request request, Response response) throws Exception {
-            response.setCharacterEncoding("UTF-8");
-            response.setContentType("text/javascript");
-            StringBuilder sb = new StringBuilder();
-            generateBck2BrwsrJS(sb, BaseHTTPLauncher.this.resources);
-            response.getWriter().write(sb.toString());
+            if (request.getRequestURI().equals(vmResource)) {
+                response.setCharacterEncoding("UTF-8");
+                response.setContentType("text/javascript");
+                StringBuilder sb = new StringBuilder();
+                generateBck2BrwsrJS(sb, BaseHTTPLauncher.this.resources);
+                response.getWriter().write(sb.toString());
+            } else {
+                super.service(request, response);
+            }
+        }
+
+        private void registerVM(String vmResource) {
+            this.vmResource = vmResource;
         }
     }
 
@@ -616,7 +727,9 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
             if (res.startsWith("/")) {
                 res = res.substring(1);
             }
-            URL url = loader.get(res);
+            String skip = request.getParameter("skip");
+            int skipCnt = skip == null ? 0 : Integer.parseInt(skip);
+            URL url = loader.get(res, skipCnt);
             if (url.getProtocol().equals("jar")) {
                 JarURLConnection juc = (JarURLConnection) url.openConnection();
                 String s = loader.compileJar(juc.getJarFile());
@@ -639,6 +752,13 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
             Exception ex = new Exception("Won't server bytes of " + url);
             /*
             try (InputStream is = url.openStream()) {
+=======
+            InputStream is = null;
+            try {
+                String skip = request.getParameter("skip");
+                int skipCnt = skip == null ? 0 : Integer.parseInt(skip);
+                is = loader.get(res, skipCnt);
+>>>>>>> other
                 response.setContentType("text/javascript");
                 Writer w = response.getWriter();
                 w.append("([");
@@ -664,8 +784,33 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                 response.setStatus(HttpStatus.NOT_FOUND_404);
                 response.setError();
                 response.setDetailMessage(ex.getMessage());
-            }
+            } /*finally {
+                if (is != null) {
+                    is.close();
+                }
+            }*/
         }
 
     }
-}
+    private static class WS extends WebSocketApplication {
+
+        private final Resource r;
+
+        private WS(Resource r) {
+            this.r = r;
+        }
+
+        @Override
+        public void onMessage(WebSocket socket, String text) {
+            try {
+                r.httpContent.reset();
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                copyStream(r.httpContent, out, null, text);
+                String s = new String(out.toByteArray(), "UTF-8");
+                socket.send(s);
+            } catch (IOException ex) {
+                LOG.log(Level.WARNING, null, ex);
+            }
+        }
+
+    }}

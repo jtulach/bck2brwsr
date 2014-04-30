@@ -19,7 +19,9 @@ package org.apidesign.bck2brwsr.tck;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Locale;
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
@@ -47,6 +49,14 @@ public class CompareStringsTest {
         return "Ahoj".equals(null);
     }
     
+    @Compare public boolean internIsSame() {
+        return new String("Ahoj").intern() == another();
+    }
+    
+    private static String another() {
+        return new String("Ahoj").intern();
+    }
+    
     @Compare public int highByteLenght() {
         byte[] arr= { 77,97,110,105,102,101,115,116,45,86,101,114,115,105,111,110 };
         return new String(arr, 0).length();
@@ -62,6 +72,10 @@ public class CompareStringsTest {
     
     @Compare public static Object compareURLs() throws MalformedURLException {
         return new URL("http://apidesign.org:8080/wiki/").toExternalForm().toString();
+    }
+
+    @Compare public static Object compareURLsViaURIs() throws Exception {
+        return new URL("http://apidesign.org:8080/wiki/").toURI().toString();
     }
     
     @Compare public String deleteLastTwoCharacters() {
@@ -161,7 +175,28 @@ public class CompareStringsTest {
         assert res.equals("ba") : "Expecting ba: " + res;
         return res;
     }
+    
+    @Compare public String localeUS() {
+        return Locale.US.toString();
+    }
+    
+    @Compare public String localeFrench() {
+        return Locale.FRENCH.toString();
+    }
+    
+    
+    @Compare public String formatSimple() {
+        return String.format((Locale)null, "Hello %s!", "World");
+    }
 
+    @Compare public String replaceWithItself() {
+        return "org.apidesign.bck2brwsr.core.JavaScriptBody".replace(".", "\\.");
+    }
+    
+    @Compare public boolean matchWithComplicatedRegExp() {
+        return "Activates this model instance.".matches("(?sm).*^\\s*@deprecated( |$).*");
+    }
+    
     @Factory
     public static Object[] create() {
         return VMTest.create(CompareStringsTest.class);

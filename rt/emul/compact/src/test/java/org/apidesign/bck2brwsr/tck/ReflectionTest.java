@@ -19,7 +19,9 @@ package org.apidesign.bck2brwsr.tck;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -72,12 +74,37 @@ public class ReflectionTest {
     @Compare public String isRunnableHasRunMethod() throws NoSuchMethodException {
         return Runnable.class.getMethod("run").getName();
     }
+
+    @Compare public String isRunnableDeclaresRunMethod() throws NoSuchMethodException {
+        return Runnable.class.getDeclaredMethod("run").getName();
+    }
+    
+    @Compare public String intValue() throws Exception {
+        return Integer.class.getConstructor(int.class).newInstance(10).toString();
+    }
+    
+    @Compare public String getMethodWithArray() throws Exception {
+        return Proxy.class.getMethod("getProxyClass", ClassLoader.class, Class[].class).getName();
+    }
     
     @Compare public String namesOfMethods() {
         StringBuilder sb = new StringBuilder();
         String[] arr = new String[20];
         int i = 0;
         for (Method m : StaticUse.class.getMethods()) {
+            arr[i++] = m.getName();
+        }
+        for (String s : sort(arr, i)) {
+            sb.append(s).append("\n");
+        }
+        return sb.toString();
+    }
+
+    @Compare public String paramsOfConstructors() {
+        StringBuilder sb = new StringBuilder();
+        String[] arr = new String[20];
+        int i = 0;
+        for (Constructor<?> m : StaticUse.class.getConstructors()) {
             arr[i++] = m.getName();
         }
         for (String s : sort(arr, i)) {
@@ -223,6 +250,17 @@ public class ReflectionTest {
         }
     }
     
+    @Compare public int callAbst() throws Exception {
+        class Impl extends Abst {
+            @Override
+            public int abst() {
+                return 10;
+            }
+        }
+        Abst impl = new Impl();
+        return (int) Abst.class.getMethod("abst").invoke(impl);
+    }
+    
     @Compare public String componentGetNameForObjectArray() {
         return (new Object[3]).getClass().getComponentType().getName();
     }
@@ -269,4 +307,7 @@ public class ReflectionTest {
         return VMTest.create(ReflectionTest.class);
     }
     
+    public static abstract class Abst {
+        public abstract int abst();
+    }
 }

@@ -27,16 +27,13 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.geometry.VPos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
+import javafx.scene.control.ToolBar;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -55,30 +52,52 @@ import netscape.javascript.JSObject;
  */
 public class FXBrwsr extends Application {
     private static final Logger LOG = Logger.getLogger(FXBrwsr.class.getName());
-
+    
     @Override
     public void start(Stage primaryStage) throws Exception {
-        Pane root = new WebViewPane(getParameters().getUnnamed());
-        primaryStage.setScene(new Scene(root, 1024, 768));
-        LOG.info("Showing the stage");
+        WebView view = new WebView();
+        WebController wc = new WebController(view, getParameters().getUnnamed());
+        
+        FXInspect.initialize(view.getEngine());
+
+        final VBox vbox = new VBox();
+        vbox.setAlignment( Pos.CENTER );
+        vbox.setStyle( "-fx-background-color: #808080;");
+
+
+        HBox hbox = new HBox();
+        hbox.setStyle( "-fx-background-color: #808080;");
+        hbox.setAlignment(Pos.CENTER);
+        hbox.getChildren().add(vbox);
+        HBox.setHgrow(vbox, Priority.ALWAYS);
+        vbox.getChildren().add(view);
+        VBox.setVgrow(view, Priority.ALWAYS);
+
+        BorderPane root = new BorderPane();
+        final boolean showToolbar = "true".equals(this.getParameters().getNamed().get("toolbar")); // NOI18N
+        final boolean useFirebug = "true".equals(this.getParameters().getNamed().get("firebug")); // NOI18N
+        if (showToolbar) {
+            final ToolBar toolbar = new BrowserToolbar(view, vbox, useFirebug);
+            root.setTop( toolbar );
+        }
+        root.setCenter(hbox);
+
+        Scene scene = new Scene(root, 800, 600);
+
+        primaryStage.setTitle( "Device Emulator" );
+        primaryStage.setScene( scene );
         primaryStage.show();
-        LOG.log(Level.INFO, "State shown: {0}", primaryStage.isShowing());
     }
     
     /**
      * Create a resizable WebView pane
      */
-    private class WebViewPane extends Pane {
-        private final JVMBridge bridge = new JVMBridge();
+    private static class WebController {
+        private final JVMBridge bridge;
 
-        public WebViewPane(List<String> params) {
+        public WebController(WebView view, List<String> params) {
+            this.bridge = new JVMBridge(view.getEngine());
             LOG.log(Level.INFO, "Initializing WebView with {0}", params);
-            VBox.setVgrow(this, Priority.ALWAYS);
-            setMaxWidth(Double.MAX_VALUE);
-            setMaxHeight(Double.MAX_VALUE);
-            WebView view = new WebView();
-            view.setMinSize(500, 400);
-            view.setPrefSize(500, 400);
             final WebEngine eng = view.getEngine();
             try {
                 JVMBridge.addBck2BrwsrLoad(new InitBck2Brwsr(eng));
@@ -120,13 +139,6 @@ public class FXBrwsr extends Application {
                     dialogStage.showAndWait();
                 }
             });
-            GridPane grid = new GridPane();
-            grid.setVgap(5);
-            grid.setHgap(5);
-            GridPane.setConstraints(view, 0, 1, 2, 1, HPos.CENTER, VPos.CENTER, Priority.ALWAYS, Priority.ALWAYS);
-            grid.getColumnConstraints().addAll(new ColumnConstraints(100, 100, Double.MAX_VALUE, Priority.ALWAYS, HPos.CENTER, true), new ColumnConstraints(40, 40, 40, Priority.NEVER, HPos.CENTER, true));
-            grid.getChildren().addAll(view);
-            getChildren().add(grid);
         }
 
         boolean initBck2Brwsr(WebEngine webEngine) {
@@ -134,26 +146,10 @@ public class FXBrwsr extends Application {
             LOG.log(Level.FINE, "window: {0}", jsobj);
             Object prev = jsobj.getMember("bck2brwsr");
             if ("undefined".equals(prev)) {
-                System.getProperties().put("webEngine", webEngine);
                 jsobj.setMember("bck2brwsr", bridge);
                 return true;
             }
             return false;
-        }
-
-        @Override
-        protected void layoutChildren() {
-            List<Node> managed = getManagedChildren();
-            double width = getWidth();
-            double height = getHeight();
-            double top = getInsets().getTop();
-            double right = getInsets().getRight();
-            double left = getInsets().getLeft();
-            double bottom = getInsets().getBottom();
-            for (int i = 0; i < managed.size(); i++) {
-                Node child = managed.get(i);
-                layoutInArea(child, left, top, width - left - right, height - top - bottom, 0, Insets.EMPTY, true, true, HPos.CENTER, VPos.CENTER);
-            }
         }
 
         private class InitBck2Brwsr implements ChangeListener<Void>, Runnable {

@@ -221,14 +221,22 @@ public class Console {
      * @return the array of bytes in the given resource
      * @throws IOException I/O in case something goes wrong
      */
-    public static byte[] read(String name) throws IOException {
+    public static byte[] read(String name, int skip) throws IOException {
         URL u = null;
-        Enumeration<URL> en = Console.class.getClassLoader().getResources(name);
-        while (en.hasMoreElements()) {
-            u = en.nextElement();
+        if (!name.endsWith(".class")) {
+            u = getResource(name, skip);
+        } else {
+            Enumeration<URL> en = Console.class.getClassLoader().getResources(name);
+            while (en.hasMoreElements()) {
+                u = en.nextElement();
+            }
         }
         if (u == null) {
-            throw new IOException("Can't find " + name);
+            if (name.endsWith(".class")) {
+                throw new IOException("Can't find " + name);
+            } else {
+                return null;
+            }
         }
         try (InputStream is = u.openStream()) {
             byte[] arr;
@@ -245,6 +253,19 @@ public class Console {
         }
     }
    
+    private static URL getResource(String resource, int skip) throws IOException {
+        URL u = null;
+        Enumeration<URL> en = Console.class.getClassLoader().getResources(resource);
+        while (en.hasMoreElements()) {
+            final URL now = en.nextElement();
+            if (--skip < 0) {
+                u = now;
+                break;
+            }
+        }
+        return u;
+    }
+    
     @JavaScriptBody(args = {}, body = "vm.desiredAssertionStatus = true;")
     private static void turnAssetionStatusOn() {
     }

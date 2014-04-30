@@ -29,15 +29,21 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apidesign.bck2brwsr.launcher.Launcher;
 
 /** Executes given HTML page in a browser. */
-@Mojo(name="brwsr", defaultPhase=LifecyclePhase.NONE)
+@Mojo(
+    name="brwsr",
+    requiresDependencyResolution = ResolutionScope.RUNTIME,
+    defaultPhase=LifecyclePhase.NONE
+)
 public class BrwsrMojo extends AbstractMojo {
     public BrwsrMojo() {
     }
@@ -64,20 +70,33 @@ public class BrwsrMojo extends AbstractMojo {
     /** Root of all pages, and files, etc. */
     @Parameter
     private File directory;
+    
+    @Parameter(defaultValue="${project.build.directory}/bck2brwsr.js")
+    private File javascript;
 
     @Override
     public void execute() throws MojoExecutionException {
         if (startpage == null) {
             throw new MojoExecutionException("You have to provide a start page");
         }
-        
+        if (javascript != null && javascript.isFile()) {
+            System.setProperty("bck2brwsr.js", javascript.toURI().toString());
+        }
         try {
             Closeable httpServer;
             if (directory != null) {
-                httpServer = Launcher.showDir(directory, startpage);
+                URLClassLoader url = buildClassLoader(classes, prj.getArtifacts());
+                httpServer = Launcher.showDir(launcher, directory, url, startpage);
             } else {
-                URLClassLoader url = buildClassLoader(classes, prj.getDependencyArtifacts());
+                URLClassLoader url = buildClassLoader(classes, prj.getArtifacts());
                 try {
+                    for (Resource r : prj.getResources()) {
+                        File f = new File(r.getDirectory(), startpage().replace('/', File.separatorChar));
+                        if (f.exists()) {
+                            System.setProperty("startpage.file", f.getPath());
+                        }
+                    }
+                    
                     httpServer = Launcher.showURL(launcher, url, startpage());
                 } catch (Exception ex) {
                     throw new MojoExecutionException("Can't open " + startpage(), ex);

@@ -18,8 +18,10 @@
 package org.apidesign.bck2brwsr.compact.tck;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import org.apidesign.bck2brwsr.vmtest.Compare;
@@ -40,7 +42,10 @@ public class ReaderTest {
         };
         ByteArrayInputStream is = new ByteArrayInputStream(arr);
         InputStreamReader r = new InputStreamReader(is, "UTF-8");
-        
+        return readReader(r);        
+    }
+
+    private String readReader(InputStreamReader r) throws IOException {
         StringBuilder sb = new StringBuilder();
         for (;;) {
             int ch = r.read();
@@ -52,7 +57,19 @@ public class ReaderTest {
         return sb.toString().toString();
     }
     @Compare public String stringToBytes() throws UnsupportedEncodingException {
-        return Arrays.toString("\u017dlu\u0165ou\u010dk\u00fd k\u016f\u0148".getBytes("UTF-8"));
+        return Arrays.toString(YellowHorse.getBytes("UTF-8"));
+    }
+    private final String YellowHorse = "\u017dlu\u0165ou\u010dk\u00fd k\u016f\u0148";
+    
+    @Compare public String readAndWrite() throws Exception {
+        ByteArrayOutputStream arr = new ByteArrayOutputStream();
+        OutputStreamWriter w = new OutputStreamWriter(arr);
+        w.write(YellowHorse);
+        w.close();
+        
+        ByteArrayInputStream is = new ByteArrayInputStream(arr.toByteArray());
+        InputStreamReader r = new InputStreamReader(is, "UTF-8");
+        return readReader(r);
     }
     
     @Factory public static Object[] create() {

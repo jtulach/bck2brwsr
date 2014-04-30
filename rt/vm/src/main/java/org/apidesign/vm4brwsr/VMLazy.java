@@ -20,7 +20,6 @@ package org.apidesign.vm4brwsr;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Array;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
@@ -43,27 +42,34 @@ final class VMLazy {
     throws IOException, ClassNotFoundException {
         return new VMLazy(loader, arguments).load(name, false);
     }
+
+    static Object reload(Object loader, String name, Object[] arguments, byte[] arr) 
+    throws IOException, ClassNotFoundException {
+        return new VMLazy(loader, arguments).defineClass(arr, name, false);
+    }
     
-    static byte[] loadBytes(Object loader, String name, Object[] arguments) throws Exception {
-        return Zips.loadFromCp(arguments, name);
+    static byte[] loadBytes(Object loader, String name, Object[] arguments, int skip) throws Exception {
+        return Zips.loadFromCp(arguments, name, skip);
     }
     
     private Object load(String name, boolean instance)
     throws IOException, ClassNotFoundException {
         String res = name.replace('.', '/') + ".class";
-        byte[] arr = Zips.loadFromCp(args, res);
+        byte[] arr = Zips.loadFromCp(args, res, 0);
         if (arr == null) {
             throw new ClassNotFoundException(name);
         }
-//        beingDefined(loader, name);
+        
+        return defineClass(arr, name, instance);
+    }
+
+    private Object defineClass(byte[] arr, String name, boolean instance) throws IOException {
         StringBuilder out = new StringBuilder(65535);
         out.append("var loader = arguments[0];\n");
         out.append("var vm = loader.vm;\n");
         int prelude = out.length();
         String initCode = new Gen(this, out).compile(new ByteArrayInputStream(arr));
         String code = out.toString().toString();
-//        dump("Loading " + name);
-        dump(code);
         String under = name.replace('.', '_');
         Object fn = applyCode(loader, under, code, instance);
         
@@ -71,25 +77,11 @@ final class VMLazy {
             out.setLength(prelude);
             out.append(initCode);
             code = out.toString().toString();
-            dump(code);
             applyCode(loader, null, code, false);
         }            
         
         return fn;
     }
-
-//    @JavaScriptBody(args = "s", body = "java.lang.System.out.println(s.toString());")
-    static void dump(String s) {
-    }
-
-/* possibly not needed:
-    @JavaScriptBody(args = {"loader", "n" }, body =
-        "var cls = n.replace__Ljava_lang_String_2CC(n, '.','_').toString();" +
-        "loader.vm[cls] = true;\n"
-    )
-    private static native void beingDefined(Object loader, String name);
-*/
-    
 
     @JavaScriptBody(args = {"loader", "name", "script", "instance" }, body =
         "try {\n" +
@@ -130,6 +122,14 @@ final class VMLazy {
 
         @Override
         protected void requireScript(String resourcePath) throws IOException {
+            if (!resourcePath.startsWith("/")) {
+                resourcePath = "/" + resourcePath;
+            }
+            String code = readCode(resourcePath);
+            applyCode(lazy.loader, null, code, false);
+        }
+
+        private String readCode(String resourcePath) throws IOException {
             InputStream is = getClass().getResourceAsStream(resourcePath);
             StringBuilder sb = new StringBuilder();
             for (;;) {
@@ -139,7 +139,7 @@ final class VMLazy {
                 }
                 sb.append((char)ch);
             }
-            applyCode(lazy.loader, null, sb.toString(), false);
+            return sb.toString();
         }
 
         @Override

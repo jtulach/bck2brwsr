@@ -25,23 +25,33 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
 import javax.script.Invocable;
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import static org.testng.Assert.*;
 
-final class TestVM {
+public final class TestVM {
     private final Invocable code;
     private final CharSequence codeSeq;
     private final Object bck2brwsr;
+    private BytesLoader resources;
     
     
     private TestVM(Invocable code, CharSequence codeSeq) throws ScriptException, NoSuchMethodException {
         this.code = code;
         this.codeSeq = codeSeq;
-        this.bck2brwsr = code.invokeFunction("bck2brwsr");
+        this.bck2brwsr = ((ScriptEngine)code).eval("bck2brwsr(function(n) { return loader.get(n); })");
+        ((ScriptEngine)code).getContext().setAttribute("loader", this, ScriptContext.ENGINE_SCOPE);
     }
     
+    public void register(BytesLoader res) {
+        this.resources = res;
+    }
+    
+    public byte[] get(String res) throws IOException {
+        return resources != null ? resources.get(res) : null;
+    }
 
     public Object execCode(
         String msg, Class<?> clazz, String method, 
@@ -234,11 +244,26 @@ final class TestVM {
             return ex.toString();
         }
     }
-    
+
+    final CharSequence codeSeq() {
+        return codeSeq;
+    }
     
     private static class EmulationResources implements Bck2Brwsr.Resources {
         @Override
         public InputStream get(String name) throws IOException {
+            if ("java/net/URI.class".equals(name)) {
+                // skip
+                return null;
+            }
+            if ("java/net/URLConnection.class".equals(name)) {
+                // skip
+                return null;
+            }
+            if ("java/lang/System.class".equals(name)) {
+                // skip
+                return null;
+            }
             Enumeration<URL> en = StaticMethodTest.class.getClassLoader().getResources(name);
             URL u = null;
             while (en.hasMoreElements()) {

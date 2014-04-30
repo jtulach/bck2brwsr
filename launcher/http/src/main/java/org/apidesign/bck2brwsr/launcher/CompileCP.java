@@ -93,7 +93,7 @@ class CompileCP {
                     .resources(new EmulationResources() {
                         @Override
                         public InputStream get(String resource) throws IOException {
-                            return r != null ? r.get(resource).openStream() : super.get(resource);
+                            return r != null ? r.get(resource, 0).openStream() : super.get(resource);
                         }
                     })
                     .generate(w);
@@ -156,7 +156,7 @@ class CompileCP {
     }
 
     static void compileVM(StringBuilder sb, final Res r) throws IOException {
-        URL u = r.get(InterruptedException.class.getName().replace('.', '/') + ".class");
+        URL u = r.get(InterruptedException.class.getName().replace('.', '/') + ".class", 0);
         JarURLConnection juc = (JarURLConnection)u.openConnection();
         
         List<String> arr = new ArrayList<>();
@@ -167,7 +167,7 @@ class CompileCP {
             .resources(new Bck2Brwsr.Resources() {
                 @Override
                 public InputStream get(String resource) throws IOException {
-                    return r.get(resource).openStream();
+                    return r.get(resource, 0).openStream();
                 }
             }).generate(sb);
     }

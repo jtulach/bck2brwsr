@@ -59,6 +59,10 @@ public class Resources {
         
         return sb.toString().toString();
     }
+    static long bytesToLong(byte b1, byte b2, int shift) {
+        return (((long)b1 << 56) +
+                ((long)b2 & 255) << 48) >> shift;
+    }
 
     static String loadHello() throws IOException {
         Enumeration<URL> en;

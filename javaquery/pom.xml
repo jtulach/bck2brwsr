@@ -4,17 +4,16 @@
   <parent>
     <artifactId>bck2brwsr</artifactId>
     <groupId>org.apidesign</groupId>
-    <version>0.8-SNAPSHOT</version>
+    <version>0.9-SNAPSHOT</version>
   </parent>
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>javaquery</artifactId>
-  <version>0.8-SNAPSHOT</version>
+  <version>0.9-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>JavaQuery API and Demo</name>
     <modules>
         <module>api</module>
         <module>demo-calculator</module>
         <module>demo-calculator-dynamic</module>
-    <module>demo-twitter</module>
   </modules>
 </project>

@@ -33,12 +33,16 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 import org.apidesign.vm4brwsr.ObfuscationLevel;
 
 /** Compiles classes into JavaScript. */
-@Mojo(name="j2js", defaultPhase=LifecyclePhase.PROCESS_CLASSES)
+@Mojo(name="j2js", 
+    requiresDependencyResolution = ResolutionScope.COMPILE,
+    defaultPhase=LifecyclePhase.PROCESS_CLASSES
+)
 public class Java2JavaScript extends AbstractMojo {
     public Java2JavaScript() {
     }
@@ -46,7 +50,7 @@ public class Java2JavaScript extends AbstractMojo {
     @Parameter(defaultValue="${project.build.directory}/classes")
     private File classes;
     /** JavaScript file to generate */
-    @Parameter
+    @Parameter(defaultValue="${project.build.directory}/bck2brwsr.js")
     private File javascript;
 
     /** Additional classes that should be pre-compiled into the javascript 
@@ -66,6 +70,10 @@ public class Java2JavaScript extends AbstractMojo {
      */
     @Parameter(defaultValue="NONE")
     private ObfuscationLevel obfuscation;
+    
+    /** Should classes from rt.jar be included? */
+    @Parameter(defaultValue = "false")
+    private boolean ignoreBootClassPath;
 
     /**
      * Indicates whether to create an extension library 
@@ -81,6 +89,9 @@ public class Java2JavaScript extends AbstractMojo {
         if (!classes.isDirectory()) {
             throw new MojoExecutionException("Can't find " + classes);
         }
+        if (javascript == null) {
+            throw new MojoExecutionException("Need to define 'javascript' attribute with a path to file to generate");
+        }
 
         List<String> arr = new ArrayList<String>();
         long newest = collectAllClasses("", classes, arr);
@@ -95,12 +106,12 @@ public class Java2JavaScript extends AbstractMojo {
         }
 
         try {
-            URLClassLoader url = buildClassLoader(classes, prj.getDependencyArtifacts());
+            URLClassLoader url = buildClassLoader(classes, prj.getArtifacts());
             FileWriter w = new FileWriter(javascript);
             Bck2Brwsr.newCompiler().
                 obfuscation(obfuscation).
                 library(library).
-                resources(url).
+                resources(url, ignoreBootClassPath).
                 addRootClasses(arr.toArray(new String[0])).
                 generate(w);
             w.close();

@@ -1,2 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/jackpot30/test/hints/Bundle.properties

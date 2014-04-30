@@ -24,6 +24,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class StaticMethod {
+    public static final int MISSING_CONSTANT = 1;
     private static int cnt;
     private static Object NULL;
 
@@ -82,7 +83,7 @@ public class StaticMethod {
         if (n <= 1) {
             return 1;
         } else {
-            return n * factRec(n - 1);
+            return n * factRec(n - MISSING_CONSTANT);
         }
     }
     public static long factIter(int n) {
@@ -97,6 +98,10 @@ public class StaticMethod {
         cnt+=2;
         cnt++;
         return cnt;
+    }
+    
+    public static int helloWorldLength(String x) {
+        return (StringSample.HELLO + x).length();
     }
     
     @JavaScriptBody(
@@ -127,6 +132,62 @@ public class StaticMethod {
             default: return "Marda";
         }
     }
+    
+    public static int castString(Object o) {
+        return ((String)o).length();
+    }
+    
+    public static int initInflater(int w, boolean nowrap) {
+        Instance i = new Instance(w, 0.0);
+        return i.sum(nowrap?-w:w, 1);
+    }
+    
+    public static String toStringArr() {
+        class N implements Next {
+            int idx = 0;
+            
+            @Override
+            public boolean hasNext() {
+                return idx < 5;
+            }
+
+            @Override
+            public String next() {
+                switch (idx++) {
+                    case 0: return "Zero";
+                    case 1: return "One";
+                    case 2: return "Two";
+                    case 3: return "Three";
+                    case 4: return "Four";
+                }
+                throw new IllegalStateException();
+            }
+        }
+        return toString(null, new N()).toString();
+    }
+    
+    static String toString(Object thiz, Next it) {
+        if (!it.hasNext()) {
+            return "[]";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append('[');
+        for (;;) {
+            String e = it.next();
+            sb.append(e == thiz ? "(this Collection)" : e);
+            if (!it.hasNext()) {
+                return sb.append(']').toString();
+            }
+            sb.append(',').append(' ');
+        }
+    }
+    
+    static interface Next {
+        boolean hasNext();
+        String next();
+    }
+    
     
     static {
         // check order of initializers

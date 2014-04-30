@@ -638,94 +638,34 @@ public class Throwable implements Serializable {
      *          ... 2 more
      * </pre>
      */
-//    public void printStackTrace() {
-//        printStackTrace(System.err);
-//    }
-//
-//    /**
-//     * Prints this throwable and its backtrace to the specified print stream.
-//     *
-//     * @param s {@code PrintStream} to use for output
-//     */
-//    public void printStackTrace(PrintStream s) {
-//        printStackTrace(new WrappedPrintStream(s));
-//    }
-//
-//    private void printStackTrace(PrintStreamOrWriter s) {
-//        // Guard against malicious overrides of Throwable.equals by
-//        // using a Set with identity equality semantics.
-////        Set<Throwable> dejaVu =
-////            Collections.newSetFromMap(new IdentityHashMap<Throwable, Boolean>());
-////        dejaVu.add(this);
-//
-//        synchronized (s.lock()) {
-//            // Print our stack trace
-//            s.println(this);
-//            StackTraceElement[] trace = getOurStackTrace();
-//            for (StackTraceElement traceElement : trace)
-//                s.println("\tat " + traceElement);
-//
-//            // Print suppressed exceptions, if any
-////            for (Throwable se : getSuppressed())
-////                se.printEnclosedStackTrace(s, trace, SUPPRESSED_CAPTION, "\t", dejaVu);
-//
-//            // Print cause, if any
-//            Throwable ourCause = getCause();
-////            if (ourCause != null)
-////                ourCause.printEnclosedStackTrace(s, trace, CAUSE_CAPTION, "", dejaVu);
-//        }
-//    }
-//
-//    /**
-//     * Print our stack trace as an enclosed exception for the specified
-//     * stack trace.
-//     */
-//    private void printEnclosedStackTrace(PrintStreamOrWriter s,
-//                                         StackTraceElement[] enclosingTrace,
-//                                         String caption,
-//                                         String prefix,
-//                                         Object dejaVu) {
-//        assert Thread.holdsLock(s.lock());
-//        {
-//            // Compute number of frames in common between this and enclosing trace
-//            StackTraceElement[] trace = getOurStackTrace();
-//            int m = trace.length - 1;
-//            int n = enclosingTrace.length - 1;
-//            while (m >= 0 && n >=0 && trace[m].equals(enclosingTrace[n])) {
-//                m--; n--;
-//            }
-//            int framesInCommon = trace.length - 1 - m;
-//
-//            // Print our stack trace
-//            s.println(prefix + caption + this);
-//            for (int i = 0; i <= m; i++)
-//                s.println(prefix + "\tat " + trace[i]);
-//            if (framesInCommon != 0)
-//                s.println(prefix + "\t... " + framesInCommon + " more");
-//
-//            // Print suppressed exceptions, if any
-//            for (Throwable se : getSuppressed())
-//                se.printEnclosedStackTrace(s, trace, SUPPRESSED_CAPTION,
-//                                           prefix +"\t", dejaVu);
-//
-//            // Print cause, if any
-//            Throwable ourCause = getCause();
-//            if (ourCause != null)
-//                ourCause.printEnclosedStackTrace(s, trace, CAUSE_CAPTION, prefix, dejaVu);
-//        }
-//    }
-//
-//    /**
-//     * Prints this throwable and its backtrace to the specified
-//     * print writer.
-//     *
-//     * @param s {@code PrintWriter} to use for output
-//     * @since   JDK1.1
-//     */
-//    public void printStackTrace(PrintWriter s) {
-//        printStackTrace(new WrappedPrintWriter(s));
-//    }
-//
+    public void printStackTrace() {
+        warn(getClass().getName() + ": " + getMessage());
+    }
+    @JavaScriptBody(args = { "msg" }, body = "if (console) console.warn(msg.toString());")
+    private native void warn(String msg);
+
+    /**
+     * Prints this throwable and its backtrace to the specified print stream.
+     *
+     * @param s {@code PrintStream} to use for output
+     */
+    public void printStackTrace(PrintStream s) {
+        s.print(getClass().getName());
+        s.print(": ");
+        s.println(getMessage());
+    }
+
+    /**
+     * Prints this throwable and its backtrace to the specified
+     * print writer.
+     *
+     * @param s {@code PrintWriter} to use for output
+     * @since   JDK1.1
+     */
+    public void printStackTrace(PrintWriter s) {
+        s.append(getClass().getName()).append(": ").println(getMessage());
+    }
+
 //    /**
 //     * Wrapper class for PrintStream and PrintWriter to enable a single
 //     * implementation of printStackTrace.

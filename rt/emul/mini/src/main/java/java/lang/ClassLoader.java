@@ -24,6 +24,7 @@
  */
 package java.lang;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -180,7 +181,7 @@ public abstract class ClassLoader {
      * @since  1.2
      */
     protected ClassLoader(ClassLoader parent) {
-        throw new SecurityException();
+        this.parent = parent;
     }
 
     /**
@@ -199,7 +200,7 @@ public abstract class ClassLoader {
      *          of a new class loader.
      */
     protected ClassLoader() {
-        throw new SecurityException();
+        this.parent = null;
     }
 
     // -- Class --
@@ -845,8 +846,27 @@ public abstract class ClassLoader {
      * @revised  1.4
      */
     public static ClassLoader getSystemClassLoader() {
-        throw new SecurityException();
+        if (SYSTEM == null) {
+            SYSTEM = new ClassLoader() {
+                @Override
+                protected Enumeration<URL> findResources(String name) throws IOException {
+                    return getBootstrapResources(name);
+                }
+
+                @Override
+                protected URL findResource(String name) {
+                    return getBootstrapResource(name);
+                }
+
+                @Override
+                protected Class<?> findClass(String name) throws ClassNotFoundException {
+                    return Class.forName(name);
+                }
+            };
+        }
+        return SYSTEM;
     }
+    private static ClassLoader SYSTEM;
 
     // Returns true if the specified class loader can be found in this class
     // loader's delegation chain.
@@ -870,12 +890,48 @@ public abstract class ClassLoader {
     }
 
     private static URL getBootstrapResource(String name) {
-        throw new UnsupportedOperationException();
+        return Object.class.getResource("/" + name);
     }
 
+    @JavaScriptBody(args = { "name", "skip" }, body
+        = "return (vm.loadBytes) ? vm.loadBytes(name, skip) : null;"
+    )
+    static native byte[] getResourceAsStream0(String name, int skip);
+
     private static Enumeration<URL> getBootstrapResources(String name) {
-        URL u = Object.class.getResource("/" + name);
-        return new OneOrZeroEnum(u);
+        return new ResEnum(name);
+    }
+    
+    private static class ResEnum implements Enumeration<URL> {
+        private final String name;
+        private URL next;
+        private int skip;
+
+        public ResEnum(String name) {
+            this.name = name;
+        }
+
+
+        public boolean hasMoreElements() {
+            if (next == null && skip >= 0) {
+                byte[] arr = getResourceAsStream0(name, skip++);
+                if (arr != null) {
+                    next = Class.newResourceURL(name, new ByteArrayInputStream(arr));
+                } else {
+                    skip = -1;
+                }
+            }
+            return next != null;
+        }
+
+        public URL nextElement() {
+            URL r = next;
+            if (r == null) {
+                throw new NoSuchElementException();
+            }
+            next = null;
+            return r;
+        }
     }
     
     private static class OneOrZeroEnum implements Enumeration<URL> {
@@ -910,7 +966,7 @@ public abstract class ClassLoader {
         }
 
         public boolean hasMoreElements() {
-            if (next == null) {
+            if (next == null && index < arr.length) {
                 if (arr[index].hasMoreElements()) {
                     next = (URL) arr[index].nextElement();
                 } else {

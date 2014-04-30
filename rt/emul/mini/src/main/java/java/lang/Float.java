@@ -412,8 +412,7 @@ public final class Float extends Number implements Comparable<Float> {
      *          parsable number.
      */
     public static Float valueOf(String s) throws NumberFormatException {
-        throw new UnsupportedOperationException();
-//        return new Float(FloatingDecimal.readJavaFormatString(s).floatValue());
+        return new Float(parseFloat(s));
     }
 
     /**
@@ -447,9 +446,9 @@ public final class Float extends Number implements Comparable<Float> {
      * @see    java.lang.Float#valueOf(String)
      * @since 1.2
      */
+    @JavaScriptBody(args="s", body="return parseFloat(s);")
     public static float parseFloat(String s) throws NumberFormatException {
-        throw new UnsupportedOperationException();
-//        return FloatingDecimal.readJavaFormatString(s).floatValue();
+        return 0;
     }
 
     /**

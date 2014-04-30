@@ -4,11 +4,11 @@
   <parent>
     <artifactId>bck2brwsr</artifactId>
     <groupId>org.apidesign</groupId>
-    <version>0.8-SNAPSHOT</version>
+    <version>0.9-SNAPSHOT</version>
   </parent>
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>benchmarks</artifactId>
-  <version>0.8-SNAPSHOT</version>
+  <version>0.9-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Performance benchmarks</name>
   <modules>

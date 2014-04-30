@@ -215,4 +215,17 @@ public class ClassTest {
         );
     }
 
+    @Test public void typeOfFn() throws Exception {
+        assertExec("Type of function is Object", Classes.class,
+            "typeOfFn__Ljava_lang_String_2",
+            "java.lang.Object"
+        );
+    }
+    
+    @Test public void instanceOfSuperInterface() throws Exception {
+        assertExec("Is iof super interface", Classes.class,
+            "instanceOfSuperInterface__Z",
+            1.0
+        );
+    }
 }
