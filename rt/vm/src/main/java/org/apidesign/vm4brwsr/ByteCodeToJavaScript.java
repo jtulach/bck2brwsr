@@ -29,6 +29,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
     private ClassData jc;
     private final Appendable out;
     private boolean outChanged;
+    private boolean callbacks;
 
     protected ByteCodeToJavaScript(Appendable out) {
         this.out = out;
@@ -140,6 +141,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
 
     protected String compile(ClassData classData) throws IOException {
         this.jc = classData;
+        this.callbacks = this.jc.getClassName().endsWith("/$JsCallbacks$");
         if (jc.getMajor_version() < 50) {
             throw new IOException("Can't compile " + jc.getClassName() + ". Class file version " + jc.getMajor_version() + "."
                 + jc.getMinor_version() + " - recompile with -target 1.6 (at least)."
@@ -1586,7 +1588,13 @@ abstract class ByteCodeToJavaScript implements Appendable {
         }
 
         final String in = mi[0];
-        String object = accessClass(mangleClassName(in)) + "(false)";
+        String mcn;
+        if (callbacks && in.equals("org/apidesign/html/boot/spi/Fn")) {
+            mcn = "java_lang_Class";
+        } else {
+            mcn = mangleClassName(in);
+        }
+        String object = accessClass(mcn) + "(false)";
         if (mn.startsWith("cons_")) {
             object += ".constructor";
         }
@@ -1735,7 +1743,8 @@ abstract class ByteCodeToJavaScript implements Appendable {
             append(space);
             space = outputArg(this, p.args, index);
             if (p.html4j && space.length() > 0) {
-                toValue.append("\n  ").append(p.args[index]).append(" = vm.org_apidesign_bck2brwsr_emul_lang_System(false).toJS(").
+                toValue.append("\n  ").append(p.args[index]).append(" = ")
+                    .append(accessClass("java_lang_Class")).append("(false).toJS(").
                     append(p.args[index]).append(");");
             }
             index++;

@@ -17,9 +17,10 @@
  */
 package org.apidesign.bck2brwsr.emul.lang;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
-import org.apidesign.bck2brwsr.core.JavaScriptOnly;
 
 /**
  *
@@ -73,15 +74,15 @@ public class System {
     @JavaScriptBody(args = { "obj" }, body="return vm.java_lang_Object(false).hashCode__I.call(obj);")
     public static native int identityHashCode(Object obj);
     
-    @JavaScriptOnly(name = "toJS", value = "function(v) {\n" + 
-        "  if (v === null) return null;\n" +
-        "  if (Object.prototype.toString.call(v) === '[object Array]') {\n" +
-        "    return vm.org_apidesign_bck2brwsr_emul_lang_System(false).convArray__Ljava_lang_Object_2Ljava_lang_Object_2(v);\n" +
-        "  }\n" +
-        "  return v.valueOf();\n" +
-        "}\n"
-    )
-    public static native int toJS();
+    public static Closeable activate() {
+        return DUMMY;
+    }
+    private static final Closeable DUMMY = new Closeable() {
+        @Override
+        public void close() throws IOException {
+        }
+    };
+    
     
     private static Object convArray(Object o) {
         if (o instanceof Object[]) {
