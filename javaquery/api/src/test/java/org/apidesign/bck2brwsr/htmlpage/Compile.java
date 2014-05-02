@@ -91,23 +91,8 @@ final class Compile implements DiagnosticListener<JavaFileObject> {
 
         final Map<String, ByteArrayOutputStream> class2BAOS = new HashMap<>();
 
-        JavaFileObject file = new SimpleJavaFileObject(URI.create("mem://mem"), Kind.SOURCE) {
-            @Override
-            public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
-                return code;
-            }
-        };
-        final JavaFileObject htmlFile = new SimpleJavaFileObject(URI.create("mem://mem2"), Kind.OTHER) {
-            @Override
-            public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
-                return html;
-            }
-
-            @Override
-            public InputStream openInputStream() throws IOException {
-                return new ByteArrayInputStream(html.getBytes());
-            }
-        };
+        JavaFileObject file = new Mem(URI.create("mem://mem"), Kind.SOURCE, code);
+        final JavaFileObject htmlFile = new Mem2(URI.create("mem://mem2"), Kind.OTHER, html);
         
         final URI scratch;
         try {
@@ -178,28 +163,11 @@ final class Compile implements DiagnosticListener<JavaFileObject> {
                 final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
                 
                 class2BAOS.put(className.replace('.', '/') + ".class", buffer);
-                return new SimpleJavaFileObject(sibling.toUri(), kind) {
-                    @Override
-                    public OutputStream openOutputStream() throws IOException {
-                        return buffer;
-                    }
-                };
+                return new Sibling(sibling.toUri(), kind, buffer);
             }
             
             if (kind == Kind.SOURCE) {
-                return new SimpleJavaFileObject(scratch/*sibling.toUri()*/, kind) {
-                    private final ByteArrayOutputStream data = new ByteArrayOutputStream();
-                    @Override
-                    public OutputStream openOutputStream() throws IOException {
-                        return data;
-                    }
-                    
-                    @Override
-                    public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
-                        data.close();
-                        return new String(data.toByteArray());
-                    }
-                };
+                return new Source(scratch/*sibling.toUri()*/, kind);
             }
             
             throw new IllegalStateException();
@@ -215,5 +183,76 @@ final class Compile implements DiagnosticListener<JavaFileObject> {
                 
                 return null;
             }
+
+      @ExtraJavaScript(processByteCode = false, resource = "")
+      private class Sibling extends SimpleJavaFileObject {
+            private final ByteArrayOutputStream buffer;
+
+            public Sibling(URI uri, Kind kind, ByteArrayOutputStream buffer) {
+                super(uri, kind);
+                this.buffer = buffer;
+            }
+
+            @Override
+            public OutputStream openOutputStream() throws IOException {
+                return buffer;
+            }
+        }
+
+      @ExtraJavaScript(processByteCode = false, resource = "")
+      private class Source extends SimpleJavaFileObject {
+            public Source(URI uri, Kind kind) {
+                super(uri, kind);
+            }
+            private final ByteArrayOutputStream data = new ByteArrayOutputStream();
+
+            @Override
+            public OutputStream openOutputStream() throws IOException {
+                return data;
+            }
+
+            @Override
+            public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
+                data.close();
+                return new String(data.toByteArray());
+            }
+        }
+    }
+
+    @ExtraJavaScript(processByteCode = false, resource = "")
+    private static class Mem extends SimpleJavaFileObject {
+
+        private final String code;
+
+        public Mem(URI uri, Kind kind, String code) {
+            super(uri, kind);
+            this.code = code;
+        }
+
+        @Override
+        public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
+            return code;
+        }
+    }
+
+    @ExtraJavaScript(processByteCode = false, resource = "")
+    private static class Mem2 extends SimpleJavaFileObject {
+
+        private final String html;
+
+        public Mem2(URI uri, Kind kind, String html) {
+            super(uri, kind);
+            this.html = html;
+        }
+
+        @Override
+        public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
+            return html;
+        }
+
+        @Override
+        public InputStream openInputStream() throws IOException {
+            return new ByteArrayInputStream(html.getBytes());
+        }
     }
 }

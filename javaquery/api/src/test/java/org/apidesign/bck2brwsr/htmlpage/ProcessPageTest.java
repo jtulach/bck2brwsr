@@ -24,10 +24,12 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 import org.testng.annotations.Test;
 import static org.testng.Assert.*;
 
+@ExtraJavaScript(processByteCode = false, resource = "")
 public class ProcessPageTest {
     
     
