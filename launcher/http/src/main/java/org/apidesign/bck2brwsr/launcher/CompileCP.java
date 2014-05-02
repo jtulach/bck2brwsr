@@ -93,7 +93,11 @@ class CompileCP {
                     .resources(new EmulationResources() {
                         @Override
                         public InputStream get(String resource) throws IOException {
-                            return r != null ? r.get(resource, 0).openStream() : super.get(resource);
+                            if (r != null) {
+                                final URL url = r.get(resource, 0);
+                                return url == null ? null : url.openStream();
+                            }
+                            return super.get(resource);
                         }
                     })
                     .generate(w);
