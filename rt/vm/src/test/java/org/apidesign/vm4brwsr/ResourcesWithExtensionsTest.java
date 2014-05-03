@@ -36,7 +36,7 @@ public class ResourcesWithExtensionsTest {
             exp
         );
     }
-    /*
+
     @Test public void checkHelloWorld() throws Exception {
         String exp = "Hello World!";
         
@@ -45,7 +45,6 @@ public class ResourcesWithExtensionsTest {
             exp
         );
     }
-    */
 
     private static TestVM code;
     
