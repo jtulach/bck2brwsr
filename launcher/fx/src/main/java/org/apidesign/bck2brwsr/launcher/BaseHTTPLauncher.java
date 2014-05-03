@@ -730,24 +730,29 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
             String skip = request.getParameter("skip");
             int skipCnt = skip == null ? 0 : Integer.parseInt(skip);
             URL url = loader.get(res, skipCnt);
-            if (url.getProtocol().equals("jar")) {
-                JarURLConnection juc = (JarURLConnection) url.openConnection();
-                String s = loader.compileJar(juc.getJarFile());
-                if (s != null) {
-                    Writer w = response.getWriter();
-                    w.append(s);
-                    w.close();
-                    return;
+            try {
+                if (url.getProtocol().equals("jar")) {
+                    JarURLConnection juc = (JarURLConnection) url.openConnection();
+                    String s = loader.compileJar(juc.getJarFile());
+                    if (s != null) {
+                        Writer w = response.getWriter();
+                        w.append(s);
+                        w.close();
+                        return;
+                    }
                 }
-            }
-            if (url.getProtocol().equals("file")) {
-                String s = loader.compileFromClassPath(url);
-                if (s != null) {
-                    Writer w = response.getWriter();
-                    w.append(s);
-                    w.close();
-                    return;
+                if (url.getProtocol().equals("file")) {
+                    String s = loader.compileFromClassPath(url);
+                    if (s != null) {
+                        Writer w = response.getWriter();
+                        w.append(s);
+                        w.close();
+                        return;
+                    }
                 }
+            } catch (IOException ex) {
+                LOG.log(Level.SEVERE, "Cannot handle " + res, ex);
+                throw ex;
             }
             Exception ex = new Exception("Won't server bytes of " + url);
             /*
