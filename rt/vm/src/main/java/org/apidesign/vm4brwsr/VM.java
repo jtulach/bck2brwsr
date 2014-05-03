@@ -102,9 +102,23 @@ abstract class VM extends ByteCodeToJavaScript {
             append(r).append("', '");
             InputStream is = this.resources.get(r);
             byte[] arr = new byte[is.available()];
-            int len = is.read(arr);
-            if (len != arr.length) {
-                throw new IOException("Not read as much as expected for " + r + " expected: " + arr.length + " was: " + len);
+            int offset = 0;
+            for (;;) {
+                if (offset == arr.length) {
+                    byte[] tmp = new byte[arr.length * 2];
+                    System.arraycopy(arr, 0, tmp, 0, arr.length);
+                    arr = tmp;
+                }
+                int len = is.read(arr, offset, arr.length - offset);
+                if (len == -1) {
+                    break;
+                }
+                offset += len;
+            }
+            if (offset != arr.length) {
+                byte[] tmp = new byte[offset];
+                System.arraycopy(arr, 0, tmp, 0, offset);
+                arr = tmp;
             }
             append(btoa(arr));
             append("');");
@@ -544,11 +558,22 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "      skip = typeof skip == 'number' ? skip : 0;\n"
                 + "      var arr = resources[name];\n"
                 + "      if (arr) {\n"
-                + "        if (skip < arr.length) return arr[skip];\n"
-                + "        skip -= arr.length;\n"
+                + "        var arrSize = arr.length;\n"
+                + "        if (skip < arrSize) return arr[skip];\n"
+                + "        skip -= arrSize;\n"
+                + "      } else {\n"
+                + "        var arrSize = 0;\n"
                 + "      };\n"
-                + "      return vm.org_apidesign_vm4brwsr_VMLazy(false).\n"
+                + "      var ret = vm.org_apidesign_vm4brwsr_VMLazy(false).\n"
                 + "        loadBytes___3BLjava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2I(loader, name, args, skip);\n"
+                + "      if (ret !== null) return ret;\n"
+                + "      while (knownExtensions < extensions.length) {\n"
+                + "        vm.registerResource = registerResource;\n"
+                + "        extensions[knownExtensions++](vm);\n"
+                + "        vm.registerResource = null;\n"
+                + "      }\n"
+                + "      var arr = resources[name];\n"
+                + "      return (arr && arr.length > arrSize) ? arr[arrSize] : null;\n"
                 + "    }\n"
                 + "    vm.java_lang_reflect_Array(false);\n"
                 + "    vm.org_apidesign_vm4brwsr_VMLazy(false).\n"
