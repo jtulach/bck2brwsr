@@ -1790,4 +1790,23 @@ public final
         + "}\n"
     )
     static native int activate();
+    
+    private static Object bck2BrwsrCnvrt(Object o) {
+        if (o instanceof Throwable) {
+            return o;
+        }
+        final String msg = msg(o);
+        if (msg == null || msg.startsWith("TypeError")) {
+            return new NullPointerException(msg);
+        }
+        return new Throwable(msg);
+    }
+
+    @JavaScriptBody(args = {"o"}, body = "return o ? o.toString() : null;")
+    private static native String msg(Object o);
+
+    @JavaScriptOnly(name = "bck2BrwsrThrwrbl", value = "c.bck2BrwsrCnvrt__Ljava_lang_Object_2Ljava_lang_Object_2")
+    private static void bck2BrwsrCnvrtVM() {
+    }
+    
 }

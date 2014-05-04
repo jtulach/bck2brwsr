@@ -2062,7 +2062,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
             if (e.catch_cpx != 0) { //not finally
                 final String classInternalName = jc.getClassName(e.catch_cpx);
                 addReference(classInternalName);
-                append("e = vm.java_lang_Throwable(false).bck2BrwsrCnvrt(e);");
+                append("e = vm.java_lang_Class(false).bck2BrwsrThrwrbl(e);");
                 append("if (e['$instOf_" + classInternalName.replace('/', '_') + "']) {");
                 append("var stA0 = e;");
                 goTo(this, current, e.handler_pc, topMostLabel);

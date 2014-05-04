@@ -150,7 +150,7 @@ final class ClosureWrapper extends CommandLineRunner {
 
     private static final String[] FIXED_EXTERNS = {
         "bck2brwsr",
-        "bck2BrwsrCnvrt",
+        "bck2BrwsrThrwrbl",
         "registerExtension",
         "$class",
         "anno",
