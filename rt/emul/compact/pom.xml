@@ -86,7 +86,25 @@
                         </configuration>
                     </execution>
                 </executions>                
-            </plugin>      
+            </plugin> 
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>brwsr</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <phase>verify</phase>
+                        <configuration>
+                            <systemProperties>
+                                <vmtest.js>brwsr</vmtest.js>
+                            </systemProperties>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>     
       </plugins>
   </build>
 </project>
