@@ -35,6 +35,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -579,8 +580,12 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
     }
 
     final class Res {
-        String compileJar(JarFile jar) throws IOException {
-            return BaseHTTPLauncher.this.compileJar(jar);
+        private final Set<URL> ignore = new HashSet<URL>();
+        
+        String compileJar(JarFile jar, URL jarURL) throws IOException {
+            String ret = BaseHTTPLauncher.this.compileJar(jar);
+            ignore.add(jarURL);
+            return ret;
         }
         String compileFromClassPath(URL f) throws IOException {
             return BaseHTTPLauncher.this.compileFromClassPath(f, this);
@@ -617,6 +622,12 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                         // certainly we don't want this resource, as that
                         // module is not compiled with target 1.6, currently
                         continue;
+                    }
+                    if (now.getProtocol().equals("jar")) {
+                        JarURLConnection juc = (JarURLConnection) now.openConnection();
+                        if (ignore.contains(juc.getJarFileURL())) {
+                            continue;
+                        }
                     }
                     if (--skip < 0) {
                         return now;
@@ -730,11 +741,11 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
             String skip = request.getParameter("skip");
             int skipCnt = skip == null ? 0 : Integer.parseInt(skip);
             URL url = loader.get(res, skipCnt);
-            try {
+            if (url != null && !res.equals("META-INF/MANIFEST.MF")) try {
                 response.setCharacterEncoding("UTF-8");
                 if (url.getProtocol().equals("jar")) {
                     JarURLConnection juc = (JarURLConnection) url.openConnection();
-                    String s = loader.compileJar(juc.getJarFile());
+                    String s = loader.compileJar(juc.getJarFile(), juc.getJarFileURL());
                     if (s != null) {
                         Writer w = response.getWriter();
                         w.append(s);
@@ -753,18 +764,13 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                 }
             } catch (IOException ex) {
                 LOG.log(Level.SEVERE, "Cannot handle " + res, ex);
-                throw ex;
             }
-            Exception ex = new Exception("Won't server bytes of " + url);
-            /*
-            try (InputStream is = url.openStream()) {
-=======
             InputStream is = null;
             try {
-                String skip = request.getParameter("skip");
-                int skipCnt = skip == null ? 0 : Integer.parseInt(skip);
-                is = loader.get(res, skipCnt);
->>>>>>> other
+                if (url == null) {
+                    throw new IOException("Resource not found");
+                }
+                is = url.openStream();
                 response.setContentType("text/javascript");
                 Writer w = response.getWriter();
                 w.append("([");
@@ -785,16 +791,15 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                     w.append(Integer.toString(b));
                 }
                 w.append("\n])");
-            } catch (IOException ex) 
-            */ {
+            } catch (IOException ex) {
                 response.setStatus(HttpStatus.NOT_FOUND_404);
                 response.setError();
                 response.setDetailMessage(ex.getMessage());
-            } /*finally {
+            } finally {
                 if (is != null) {
                     is.close();
                 }
-            }*/
+            }
         }
 
     }
