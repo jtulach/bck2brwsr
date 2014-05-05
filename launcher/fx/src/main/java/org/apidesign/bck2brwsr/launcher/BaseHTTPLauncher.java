@@ -731,6 +731,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
             int skipCnt = skip == null ? 0 : Integer.parseInt(skip);
             URL url = loader.get(res, skipCnt);
             try {
+                response.setCharacterEncoding("UTF-8");
                 if (url.getProtocol().equals("jar")) {
                     JarURLConnection juc = (JarURLConnection) url.openConnection();
                     String s = loader.compileJar(juc.getJarFile());
