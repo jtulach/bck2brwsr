@@ -43,6 +43,7 @@ public final class Bck2BrwsrCase implements ITest {
     private final boolean fail;
     private final HtmlFragment html;
     private final Http.Resource[] http;
+    private final InvocationContext c;
     Object value;
 
     Bck2BrwsrCase(Method m, String type, Launcher l, boolean fail, HtmlFragment html, Http.Resource[] http) {
@@ -52,12 +53,12 @@ public final class Bck2BrwsrCase implements ITest {
         this.fail = fail;
         this.html = html;
         this.http = http;
+        this.c = l != null ? l.createInvocation(m.getDeclaringClass(), m.getName()) : null;
     }
 
     @Test(groups = "run")
     public void executeCode() throws Throwable {
         if (l != null) {
-            InvocationContext c = l.createInvocation(m.getDeclaringClass(), m.getName());
             if (html != null) {
                 c.setHtmlFragment(html.value());
             }

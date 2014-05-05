@@ -17,16 +17,20 @@
  */
 package org.apidesign.bck2brwsr.launcher;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.net.JarURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -41,10 +45,26 @@ import org.apidesign.vm4brwsr.Bck2Brwsr;
  */
 class CompileCP {
     private static final Logger LOG = Logger.getLogger(CompileCP.class.getName());
-    static String compileJAR(final JarFile jar) throws IOException {
+    static String compileJAR(final JarFile jar, Set<String> testClasses) 
+    throws IOException {
         List<String> arr = new ArrayList<>();
         List<String> classes = new ArrayList<>();
-        listJAR(jar, classes, arr);
+        Set<String> exported = new HashSet<String>();
+        Set<String> keep = new HashSet<String>(testClasses);
+        listJAR(jar, classes, arr, exported, keep);
+        List<String> root = new ArrayList<>();
+        for (String c : classes) {
+            if (keep.contains(c)) {
+                root.add(c);
+                continue;
+            }
+            int slash = c.lastIndexOf('/');
+            String pkg = c.substring(0, slash + 1);
+            if (exported.contains(pkg)) {
+                root.add(c);
+            }
+        }
+        
         StringWriter w = new StringWriter();
         try {
             class JarRes extends EmulationResources implements Bck2Brwsr.Resources {
@@ -57,6 +77,7 @@ class CompileCP {
             
             Bck2Brwsr.newCompiler()
                 .addClasses(classes.toArray(new String[0]))
+                .addRootClasses(root.toArray(new String[0]))
                 .addResources(arr.toArray(new String[0]))
                 .library(true)
                 .resources(new JarRes())
@@ -115,7 +136,10 @@ class CompileCP {
         return null;
     }
     
-    private static void listJAR(JarFile j, List<String> classes, List<String> resources) throws IOException {
+    private static void listJAR(
+        JarFile j, List<String> classes,
+        List<String> resources, Set<String> exported, Set<String> keep
+    ) throws IOException {
         Enumeration<JarEntry> en = j.entries();
         while (en.hasMoreElements()) {
             JarEntry e = en.nextElement();
@@ -135,6 +159,28 @@ class CompileCP {
                 classes.add(n.substring(0, n.length() - 6));
             } else {
                 resources.add(n);
+                if (n.startsWith("META-INF/services/") && keep != null) {
+                    BufferedReader r = new BufferedReader(new InputStreamReader(j.getInputStream(e)));
+                    for (;;) {
+                        String l = r.readLine();
+                        if (l == null) {
+                            break;
+                        }
+                        if (l.startsWith("#")) {
+                            continue;
+                        }
+                        keep.add(l.replace('.', '/'));
+                    }
+                }
+            }
+        }
+        String exp = j.getManifest().getMainAttributes().getValue("Export-Package");
+        if (exp != null && exported != null) {
+            for (String def : exp.split(",")) {
+                for (String sep : def.split(";")) {
+                    exported.add(sep.replace('.', '/') + "/");
+                    break;
+                }
             }
         }
     }
@@ -168,7 +214,7 @@ class CompileCP {
         
         List<String> arr = new ArrayList<>();
         List<String> classes = new ArrayList<>();
-        listJAR(juc.getJarFile(), classes, arr);
+        listJAR(juc.getJarFile(), classes, arr, null, null);
 
         Bck2Brwsr.newCompiler().addRootClasses(classes.toArray(new String[0]))
             .resources(new Bck2Brwsr.Resources() {

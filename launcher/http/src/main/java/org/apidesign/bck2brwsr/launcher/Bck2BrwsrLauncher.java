@@ -25,9 +25,10 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
-import org.apidesign.vm4brwsr.Bck2Brwsr;
 
 /**
  * Lightweight server to launch Bck2Brwsr applications and tests.
@@ -35,6 +36,7 @@ import org.apidesign.vm4brwsr.Bck2Brwsr;
  * execution engine.
  */
 final class Bck2BrwsrLauncher extends BaseHTTPLauncher {
+    private Set<String> testClasses = new HashSet<String>();
     
     public Bck2BrwsrLauncher(String cmd) {
         super(cmd);
@@ -47,7 +49,13 @@ final class Bck2BrwsrLauncher extends BaseHTTPLauncher {
 
     @Override
     String compileJar(JarFile jar) throws IOException {
-        return CompileCP.compileJAR(jar);
+        return CompileCP.compileJAR(jar, testClasses);
+    }
+
+    @Override
+    public InvocationContext createInvocation(Class<?> clazz, String method) {
+        testClasses.add(clazz.getName().replace('.', '/'));
+        return super.createInvocation(clazz, method);
     }
 
     @Override String compileFromClassPath(URL f, Res loader) throws IOException {
