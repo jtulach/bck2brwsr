@@ -40,6 +40,7 @@ import org.apidesign.vm4brwsr.Bck2Brwsr;
  * @author Jaroslav Tulach
  */
 class CompileCP {
+    private static final Logger LOG = Logger.getLogger(CompileCP.class.getName());
     static String compileJAR(final JarFile jar) throws IOException {
         List<String> arr = new ArrayList<>();
         List<String> classes = new ArrayList<>();
@@ -62,6 +63,8 @@ class CompileCP {
                 .generate(w);
             w.flush();
             return w.toString();
+        } catch (IOException ex) {
+            throw ex;
         } catch (Throwable ex) {
             throw new IOException("Cannot compile: ", ex);
         } finally {
@@ -171,7 +174,8 @@ class CompileCP {
             .resources(new Bck2Brwsr.Resources() {
                 @Override
                 public InputStream get(String resource) throws IOException {
-                    return r.get(resource, 0).openStream();
+                    final URL url = r.get(resource, 0);
+                    return url == null ? null : url.openStream();
                 }
             }).generate(sb);
     }
@@ -186,10 +190,12 @@ class CompileCP {
                 u = en.nextElement();
             }
             if (u == null) {
-                throw new IOException("Can't find " + name);
+                LOG.log(Level.WARNING, "Cannot find {0}", name);
+                return null;
             }
-            if (u.toExternalForm().contains("rt.jar!")) {
-                throw new IOException("No emulation for " + u);
+            if (u.toExternalForm().contains("/rt.jar!")) {
+                LOG.warning(name + "No bootdelegation for ");
+                return null;
             }
             return u.openStream();
         }
