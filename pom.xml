@@ -13,7 +13,7 @@
   </parent>  
   <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-      <netbeans.version>RELEASE74</netbeans.version>
+      <netbeans.version>RELEASE80</netbeans.version>
       <license>COPYING</license>
       <net.java.html.version>0.7.6</net.java.html.version>
       <netbeans.compile.on.save>none</netbeans.compile.on.save>
@@ -89,7 +89,7 @@
                        <exclude>rt/emul/compact/src/main/**</exclude>
                        <exclude>rt/vm/src/main/java/org/apidesign/vm4brwsr/ByteCodeParser.java</exclude>
                        <exclude>rt/archetype/src/main/resources/archetype-resources/**</exclude>
-                       <exclude>rt/emul/compact/src/test/resources/**</exclude>
+                       <exclude>rt/emul/*/src/test/resources/**</exclude>
                        <exclude>javaquery/api/src/main/resources/org/apidesign/bck2brwsr/htmlpage/knockout*.js</exclude>
                        <exclude>ko/archetype/src/main/resources/archetype-resources/**</exclude>
                   </excludes>

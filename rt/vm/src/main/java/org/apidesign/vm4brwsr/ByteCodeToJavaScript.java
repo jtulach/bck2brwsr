@@ -29,16 +29,10 @@ abstract class ByteCodeToJavaScript implements Appendable {
     private ClassData jc;
     private final Appendable out;
     private boolean outChanged;
-    final ObfuscationDelegate obfuscationDelegate;
+    private boolean callbacks;
 
     protected ByteCodeToJavaScript(Appendable out) {
-        this(out, ObfuscationDelegate.NULL);
-    }
-
-    protected ByteCodeToJavaScript(
-            Appendable out, ObfuscationDelegate obfuscationDelegate) {
         this.out = out;
-        this.obfuscationDelegate = obfuscationDelegate;
     }
     
     @Override
@@ -88,7 +82,38 @@ abstract class ByteCodeToJavaScript implements Appendable {
         return classOperation;
     }
 
-    abstract String getVMObject();
+    protected String accessField(String object, String mangledName,
+                                 String[] fieldInfoName) throws IOException {
+        return object + "." + mangledName;
+    }
+
+    protected String accessStaticMethod(
+                             String object,
+                             String mangledName,
+                             String[] fieldInfoName) throws IOException {
+        return object + "." + mangledName;
+    }
+
+    protected String accessVirtualMethod(
+                             String object,
+                             String mangledName,
+                             String[] fieldInfoName) throws IOException {
+        return object + "." + mangledName;
+    }
+
+    protected void declaredClass(ClassData classData, String mangledName)
+            throws IOException {
+    }
+
+    protected void declaredField(FieldData fieldData,
+                                 String destObject,
+                                 String mangledName) throws IOException {
+    }
+
+    protected void declaredMethod(MethodData methodData,
+                                  String destObject,
+                                  String mangledName) throws IOException {
+    }
 
     /** Prints out a debug message. 
      * 
@@ -111,7 +136,12 @@ abstract class ByteCodeToJavaScript implements Appendable {
      */
     
     public String compile(InputStream classFile) throws IOException {
-        this.jc = new ClassData(classFile);
+        return compile(new ClassData(classFile));
+    }
+
+    protected String compile(ClassData classData) throws IOException {
+        this.jc = classData;
+        this.callbacks = this.jc.getClassName().endsWith("/$JsCallbacks$");
         if (jc.getMajor_version() < 50) {
             throw new IOException("Can't compile " + jc.getClassName() + ". Class file version " + jc.getMajor_version() + "."
                 + jc.getMinor_version() + " - recompile with -target 1.6 (at least)."
@@ -194,7 +224,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                    .append("; };");
             }
 
-            obfuscationDelegate.exportField(this, "c", "_" + v.getName(), v);
+            declaredField(v, "c", "_" + v.getName());
         }
         for (MethodData m : jc.getMethods()) {
             byte[] onlyArr = m.findAnnotationData(true);
@@ -224,7 +254,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     mn = generateInstanceMethod(destObject, m);
                 }
             }
-            obfuscationDelegate.exportMethod(this, destObject, mn, m);
+            declaredMethod(m, destObject, mn);
             byte[] runAnno = m.findAnnotationData(false);
             if (runAnno != null) {
                 append("\n    ").append(destObject).append(".").append(mn).append(".anno = {");
@@ -237,16 +267,16 @@ abstract class ByteCodeToJavaScript implements Appendable {
         append("\n    c.constructor = CLS;");
         append("\n    function fillInstOf(x) {");
         String instOfName = "$instOf_" + className;
-        append("\n        x.").append(instOfName).append(" = true;");
+        append("\n        x['").append(instOfName).append("'] = true;");
         for (String superInterface : jc.getSuperInterfaces()) {
             String intrfc = superInterface.replace('/', '_');
-            append("\n      vm.").append(intrfc).append("(false).fillInstOf(x);");
+            append("\n      vm.").append(intrfc).append("(false)['fillInstOf'](x);");
             requireReference(superInterface);
         }
         append("\n    }");
-        append("\n    c.fillInstOf = fillInstOf;");
+        append("\n    c['fillInstOf'] = fillInstOf;");
         append("\n    fillInstOf(c);");
-        obfuscationDelegate.exportJSProperty(this, "c", instOfName);
+//        obfuscationDelegate.exportJSProperty(this, "c", instOfName);
         append("\n    CLS.$class = 'temp';");
         append("\n    CLS.$class = ");
         append(accessClass("java_lang_Class(true);"));
@@ -292,7 +322,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
         append("\n  return arguments[0] ? new CLS() : CLS.prototype;");
         append("\n};");
 
-        obfuscationDelegate.exportClass(this, getVMObject(), className, jc);
+        declaredClass(jc, className);
 
 //        StringBuilder sb = new StringBuilder();
 //        for (String init : toInitilize.toArray()) {
@@ -1251,9 +1281,10 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
                     final String mangleClass = mangleClassName(fi[0]);
                     final String mangleClassAccess = accessClass(mangleClass);
-                    smapper.replace(this, type, "@3(false)._@2.call(@1)",
+                    smapper.replace(this, type, "@2.call(@1)",
                          smapper.getA(0),
-                         fi[1], mangleClassAccess
+                         accessField(mangleClassAccess + "(false)",
+                                     "_" + fi[1], fi)
                     );
                     i += 2;
                     break;
@@ -1264,11 +1295,11 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
                     final String mangleClass = mangleClassName(fi[0]);
                     final String mangleClassAccess = accessClass(mangleClass);
-                    emit(smapper, this, "@4(false)._@3.call(@2, @1);",
+                    emit(smapper, this, "@3.call(@2, @1);",
                          smapper.popT(type),
-                         smapper.popA(), fi[1], 
-                         mangleClassAccess
-                    );
+                         smapper.popA(),
+                         accessField(mangleClassAccess + "(false)",
+                                     "_" + fi[1], fi));
                     i += 2;
                     break;
                 }
@@ -1557,12 +1588,17 @@ abstract class ByteCodeToJavaScript implements Appendable {
         }
 
         final String in = mi[0];
-        append(accessClass(mangleClassName(in)));
-        append("(false).");
-        if (mn.startsWith("cons_")) {
-            append("constructor.");
+        String mcn;
+        if (callbacks && in.equals("org/apidesign/html/boot/spi/Fn")) {
+            mcn = "java_lang_Class";
+        } else {
+            mcn = mangleClassName(in);
         }
-        append(mn);
+        String object = accessClass(mcn) + "(false)";
+        if (mn.startsWith("cons_")) {
+            object += ".constructor";
+        }
+        append(accessStaticMethod(object, mn, mi));
         if (isStatic) {
             append('(');
         } else {
@@ -1601,8 +1637,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                .append(" = ");
         }
 
-        append(vars[0]).append('.');
-        append(mn);
+        append(accessVirtualMethod(vars[0].toString(), mn, mi));
         append('(');
         String sep = "";
         for (int j = 1; j < numArguments; ++j) {
@@ -1640,7 +1675,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
         String s = jc.stringValue(entryIndex, classRef);
         if (classRef[0] != null) {
             if (classRef[0].startsWith("[")) {
-                s = accessClass("java_lang_Class") + "(false).forName__Ljava_lang_Class_2Ljava_lang_String_2('" + classRef[0] + "')";
+                s = accessClass("java_lang_Class") + "(false)['forName__Ljava_lang_Class_2Ljava_lang_String_2']('" + classRef[0] + "')";
             } else {
                 addReference(classRef[0]);
                 s = accessClass(mangleClassName(s)) + "(false).constructor.$class";
@@ -1708,7 +1743,8 @@ abstract class ByteCodeToJavaScript implements Appendable {
             append(space);
             space = outputArg(this, p.args, index);
             if (p.html4j && space.length() > 0) {
-                toValue.append("\n  ").append(p.args[index]).append(" = vm.org_apidesign_bck2brwsr_emul_lang_System(false).toJS(").
+                toValue.append("\n  ").append(p.args[index]).append(" = ")
+                    .append(accessClass("java_lang_Class")).append("(false).toJS(").
                     append(p.args[index]).append(");");
             }
             index++;
@@ -2026,8 +2062,8 @@ abstract class ByteCodeToJavaScript implements Appendable {
             if (e.catch_cpx != 0) { //not finally
                 final String classInternalName = jc.getClassName(e.catch_cpx);
                 addReference(classInternalName);
-                append("e = vm.java_lang_Throwable(false).bck2BrwsrCnvrt(e);");
-                append("if (e.$instOf_" + classInternalName.replace('/', '_') + ") {");
+                append("e = vm.java_lang_Class(false).bck2BrwsrThrwrbl(e);");
+                append("if (e['$instOf_" + classInternalName.replace('/', '_') + "']) {");
                 append("var stA0 = e;");
                 goTo(this, current, e.handler_pc, topMostLabel);
                 append("}\n");
@@ -2080,19 +2116,23 @@ abstract class ByteCodeToJavaScript implements Appendable {
             case 11: jvmType = "[J"; break;
             default: throw new IllegalStateException("Array type: " + atype);
         }
-        emit(smapper, this, "var @2 = Array.prototype.newArray__Ljava_lang_Object_2ZLjava_lang_String_2I(true, '@3', @1);",
+        emit(smapper, this, 
+            "var @2 = Array.prototype['newArray__Ljava_lang_Object_2ZLjava_lang_String_2Ljava_lang_Object_2I'](true, '@3', null, @1);",
              smapper.popI(), smapper.pushA(), jvmType);
     }
 
     private void generateANewArray(int type, final StackMapper smapper) throws IOException {
         String typeName = jc.getClassName(type);
+        String ref = "null";
         if (typeName.startsWith("[")) {
-            typeName = "[" + typeName;
+            typeName = "'[" + typeName + "'";
         } else {
-            typeName = "[L" + typeName + ";";
+            ref = "vm." + mangleClassName(typeName);
+            typeName = "'[L" + typeName + ";'";
         }
-        emit(smapper, this, "var @2 = Array.prototype.newArray__Ljava_lang_Object_2ZLjava_lang_String_2I(false, '@3', @1);",
-             smapper.popI(), smapper.pushA(), typeName);
+        emit(smapper, this,
+            "var @2 = Array.prototype['newArray__Ljava_lang_Object_2ZLjava_lang_String_2Ljava_lang_Object_2I'](false, @3, @4, @1);",
+             smapper.popI(), smapper.pushA(), typeName, ref);
     }
 
     private int generateMultiANewArray(int type, final byte[] byteCodes, int i, final StackMapper smapper) throws IOException {
@@ -2107,8 +2147,14 @@ abstract class ByteCodeToJavaScript implements Appendable {
             dims.insert(1, smapper.popI());
         }
         dims.append(']');
-        emit(smapper, this, "var @2 = Array.prototype.multiNewArray__Ljava_lang_Object_2Ljava_lang_String_2_3II('@3', @1, 0);",
-             dims.toString(), smapper.pushA(), typeName);
+        String fn = "null";
+        if (typeName.charAt(dim) == 'L') {
+            fn = "vm." + mangleClassName(typeName.substring(dim + 1, typeName.length() - 1));
+        }
+        emit(smapper, this, 
+            "var @2 = Array.prototype['multiNewArray__Ljava_lang_Object_2Ljava_lang_String_2_3ILjava_lang_Object_2']('@3', @1, @4);",
+             dims.toString(), smapper.pushA(), typeName, fn
+        );
         return i;
     }
 
@@ -2160,29 +2206,56 @@ abstract class ByteCodeToJavaScript implements Appendable {
     }
 
     private void generateInstanceOf(int indx, final StackMapper smapper) throws IOException {
-        final String type = jc.getClassName(indx);
+        String type = jc.getClassName(indx);
         if (!type.startsWith("[")) {
-            emit(smapper, this, "var @2 = @1 != null && @1.$instOf_@3 ? 1 : 0;",
+            emit(smapper, this, 
+                    "var @2 = @1 != null && @1['$instOf_@3'] ? 1 : 0;",
                  smapper.popA(), smapper.pushI(),
                  type.replace('/', '_'));
         } else {
-            emit(smapper, this, "var @2 = vm.java_lang_Class(false).forName__Ljava_lang_Class_2Ljava_lang_String_2('@3').isInstance__ZLjava_lang_Object_2(@1);",
-                smapper.popA(), smapper.pushI(),
-                type
-            );
+            int cnt = 0;
+            while (type.charAt(cnt) == '[') {
+                cnt++;
+            }
+            if (type.charAt(cnt) == 'L') {
+                type = "vm." + mangleClassName(type.substring(cnt + 1, type.length() - 1));
+                emit(smapper, this, 
+                    "var @2 = Array.prototype['isInstance__ZLjava_lang_Object_2ILjava_lang_Object_2'](@1, @4, @3);",
+                    smapper.popA(), smapper.pushI(),
+                    type, "" + cnt
+                );
+            } else {
+                emit(smapper, this, 
+                    "var @2 = Array.prototype['isInstance__ZLjava_lang_Object_2Ljava_lang_String_2'](@1, '@3');",
+                    smapper.popA(), smapper.pushI(), type
+                );
+            }
         }
     }
 
     private void generateCheckcast(int indx, final StackMapper smapper) throws IOException {
-        final String type = jc.getClassName(indx);
+        String type = jc.getClassName(indx);
         if (!type.startsWith("[")) {
             emitNoFlush(smapper, 
-                 "if (@1 !== null && !@1.$instOf_@2) throw vm.java_lang_ClassCastException(true);",
+                 "if (@1 !== null && !@1['$instOf_@2']) throw vm.java_lang_ClassCastException(true);",
                  smapper.getT(0, VarType.REFERENCE, false), type.replace('/', '_'));
         } else {
-            emitNoFlush(smapper, "vm.java_lang_Class(false).forName__Ljava_lang_Class_2Ljava_lang_String_2('@2').cast__Ljava_lang_Object_2Ljava_lang_Object_2(@1);",
-                 smapper.getT(0, VarType.REFERENCE, false), type
-            );
+            int cnt = 0;
+            while (type.charAt(cnt) == '[') {
+                cnt++;
+            }
+            if (type.charAt(cnt) == 'L') {
+                type = "vm." + mangleClassName(type.substring(cnt + 1, type.length() - 1));
+                emitNoFlush(smapper, 
+                    "if (@1 !== null && !Array.prototype['isInstance__ZLjava_lang_Object_2ILjava_lang_Object_2'](@1, @3, @2)) throw vm.java_lang_ClassCastException(true);",
+                     smapper.getT(0, VarType.REFERENCE, false), type, "" + cnt
+                );
+            } else {
+                emitNoFlush(smapper, 
+                    "if (@1 !== null && !Array.prototype['isInstance__ZLjava_lang_Object_2Ljava_lang_String_2'](@1, '@2')) throw vm.java_lang_ClassCastException(true);",
+                     smapper.getT(0, VarType.REFERENCE, false), type
+                );
+            }
         }
     }
 

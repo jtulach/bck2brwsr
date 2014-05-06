@@ -25,6 +25,7 @@
 
 package java.lang.reflect;
 
+import org.apidesign.bck2brwsr.core.Exported;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.core.JavaScriptPrototype;
 
@@ -75,7 +76,7 @@ class Array {
             throw new NegativeArraySizeException();
         }
         String sig = findSignature(componentType);
-        return newArray(componentType.isPrimitive(), sig, length);
+        return newArray(componentType.isPrimitive(), sig, null, length);
     }
     
     private static String findSignature(Class<?> type) {
@@ -629,25 +630,67 @@ class Array {
      * Private
      */
 
-    @JavaScriptBody(args = { "primitive", "sig", "length" }, body =
+    @JavaScriptBody(args = { "primitive", "sig", "fn", "length" }, body =
           "var arr = new Array(length);\n"
         + "var value = primitive ? 0 : null;\n"
         + "for(var i = 0; i < length; i++) arr[i] = value;\n"
         + "arr.jvmName = sig;\n"
+        + "arr.fnc = fn;\n"
+//        + "java.lang.System.out.println('Assigned ' + arr.jvmName + ' fn: ' + (!!arr.fnc));\n"
         + "return arr;"
     )
-    static native Object newArray(boolean primitive, String sig, int length);
+    @Exported
+    private static native Object newArray(boolean primitive, String sig, Object fn, int length);
 
-    static Object multiNewArray(String sig, int[] dims, int index)
+    @Exported
+    private static boolean isInstance(Object arr, String sig)  {
+        if (arr == null) {
+            return false;
+        }
+        return sig.equals(arr.getClass().getName());
+    }
+    
+    @Exported
+    private static boolean isInstance(Object arr, int dimensions, Object fn) throws ClassNotFoundException {
+        if (arr == null) {
+            return false;
+        }
+//        log("isInstance for " + arr + " and " + dimensions);
+        Class<?> c = arr.getClass();
+        while (dimensions-- > 0) {
+//            log(" class: " + c);
+            c = c.getComponentType();
+//            log(" next class: " + c);
+            if (c == null) {
+                return false;
+            }
+        }
+        Class<?> t = classFromFn(fn);
+//        log(" to check: " + t);
+        return t.isAssignableFrom(c);
+    }
+    
+    @JavaScriptBody(args = { "cntstr" }, body = "return cntstr(false).constructor.$class;")
+    private static native Class<?> classFromFn(Object cntstr);
+
+//    @JavaScriptBody(args = { "m" }, body = "java.lang.System.out.println(m.toString().toString());")
+//    private static native void log(Object m);
+    
+    @Exported
+    private static Object multiNewArray(String sig, int[] dims, Object fn)
+    throws IllegalArgumentException, NegativeArraySizeException {
+        return multiNewArray(sig, dims, 0, fn);
+    }
+    private static Object multiNewArray(String sig, int[] dims, int index, Object fn)
     throws IllegalArgumentException, NegativeArraySizeException {
         if (dims.length == index + 1) {
-            return newArray(sig.length() == 2, sig, dims[index]);
+            return newArray(sig.length() == 2, sig, fn, dims[index]);
         }
-        Object arr = newArray(false, sig, dims[index]);
+        Object arr = newArray(false, sig, null, dims[index]);
         String compsig = sig.substring(1);
         int len = getLength(arr);
         for (int i = 0; i < len; i++) {
-            setArray(arr, i, multiNewArray(compsig, dims, index + 1));
+            setArray(arr, i, multiNewArray(compsig, dims, index + 1, fn));
         }
         return arr;
     }

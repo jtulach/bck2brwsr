@@ -40,7 +40,11 @@ public final class VM {
         reloadImpl(clazz.getName(), byteCode);
     }
     
-    @JavaScriptBody(args = { "name", "byteCode" }, body = "vm._reload(name, byteCode);")
+    @JavaScriptBody(args = { "name", "byteCode" }, body = 
+        "var r = vm._reload;"
+      + "if (!r) r = exports._reload;"
+      + "r(name, byteCode);"
+    )
     private static void reloadImpl(String name, byte[] byteCode) throws IOException {
         throw new IOException();
     }

@@ -17,6 +17,7 @@
  */
 package org.apidesign.vm4brwsr;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -134,6 +135,82 @@ public final class TestVM {
             fail("Could not evaluate:" + ex.getClass() + ":" + ex.getMessage() + "\n" + sb, ex);
             return null;
         }
+    }
+    
+    static TestVM compileClassAsExtension(
+        StringBuilder sb, ScriptEngine[] eng, 
+        String name, final String resourceName, final String resourceContent
+    ) throws ScriptException, IOException {
+        if (sb == null) {
+            sb = new StringBuilder();
+        }
+        if (eng[0] == null) {
+            ScriptEngineManager sem = new ScriptEngineManager();
+            ScriptEngine js = sem.getEngineByExtension("js");
+            eng[0] = js;
+            Bck2Brwsr.generate(sb, new EmulationResources());
+        }
+        Bck2Brwsr b2b = Bck2Brwsr.newCompiler().
+            resources(new EmulationResources() {
+                @Override
+                public InputStream get(String name) throws IOException {
+                    if (name.equals(resourceName)) {
+                        return new ByteArrayInputStream(resourceContent.getBytes("UTF-8"));
+                    }
+                    return super.get(name);
+                }
+            }).
+            addRootClasses(name).library(true);
+        if (resourceName != null) {
+            b2b = b2b.addResources(resourceName);
+        }
+        b2b.generate(sb);
+        try {
+            defineAtoB(eng[0]);
+            Object res = eng[0].eval(sb.toString());
+            assertTrue(eng[0] instanceof Invocable, "It is invocable object: " + res);
+            return new TestVM((Invocable) eng[0], sb);
+        } catch (Exception ex) {
+            if (sb.length() > 2000) {
+                sb = dumpJS(sb);
+            }
+            fail("Could not evaluate:" + ex.getClass() + ":" + ex.getMessage() + "\n" + sb, ex);
+            return null;
+        }
+    }
+    
+    static TestVM compileClassAndResources(StringBuilder sb, ScriptEngine[] eng, String name, String... resources) throws ScriptException, IOException {
+        if (sb == null) {
+            sb = new StringBuilder();
+        }
+        Bck2Brwsr b2b = Bck2Brwsr.newCompiler().
+            resources(new EmulationResources()).
+            addRootClasses(name).
+            addResources(resources).
+            library(false);
+        b2b.generate(sb);
+        ScriptEngineManager sem = new ScriptEngineManager();
+        ScriptEngine js = sem.getEngineByExtension("js");
+        if (eng != null) {
+            eng[0] = js;
+        }
+        try {
+            defineAtoB(js);
+            
+            Object res = js.eval(sb.toString());
+            assertTrue(js instanceof Invocable, "It is invocable object: " + res);
+            return new TestVM((Invocable) js, sb);
+        } catch (Exception ex) {
+            if (sb.length() > 2000) {
+                sb = dumpJS(sb);
+            }
+            fail("Could not evaluate:" + ex.getClass() + ":" + ex.getMessage() + "\n" + sb, ex);
+            return null;
+        }
+    }
+
+    private static void defineAtoB(ScriptEngine js) throws ScriptException {
+        js.eval("atob = function(s) { return new String(org.apidesign.vm4brwsr.ResourcesTest.parseBase64Binary(s)); }");
     }
 
     Object loadClass(String loadClass, String name) throws ScriptException, NoSuchMethodException {

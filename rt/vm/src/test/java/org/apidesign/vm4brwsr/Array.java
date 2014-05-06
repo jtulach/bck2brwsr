@@ -17,6 +17,8 @@
  */
 package org.apidesign.vm4brwsr;
 
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
@@ -75,6 +77,7 @@ public class Array {
     }
     
     public static double sum() {
+        disableClassForName();
         double sum = 0.0;
         for (Array[] row : arr()) {
             int indx = -1;
@@ -109,11 +112,48 @@ public class Array {
     }
     
     public static String objectArrayClass() {
-        return Object[].class.getName();
+        enableClassForName(prevClassForName);
+        prevClassForName = null;
+        String s = Object[].class.getName();
+        disableClassForName();
+        return s;
     }
     
     public static boolean instanceOfArray(Object obj) {
+        if ("string-array".equals(obj)) {
+            obj = new String[] { "Ahoj" };
+        }
         return obj instanceof Object[];
+    }
+    
+    public static boolean castArray(int type) {
+        try {
+            Object orig = new Object();
+            Object res = orig;
+            if (type == 0) {
+                Object[] arr = new Integer[1];
+                String[] str = (String[]) arr;
+                res = str;
+            }
+            if (type == 1) {
+                Object[] arr = null;
+                String[] str = (String[]) arr;
+                res = str;
+            }
+            if (type == 2) {
+                Object[] arr = new String[1];
+                String[] str = (String[]) arr;
+                res = str;
+            }
+            if (type == 3) {
+                Object[] arr = new String[1];
+                CharSequence[] str = (CharSequence[]) arr;
+                res = str;
+            }
+            return res != orig;
+        } catch (ClassCastException ex) {
+            return false;
+        }
     }
     
     public static int sum(int size) {
@@ -131,6 +171,37 @@ public class Array {
         char[] arr = { '0' };
         arraycopy(arr()[0][0].chars, 0, arr, 0, 1);
         return arr[0];
+    }
+    
+    @JavaScriptBody(args = {  }, body = 
+        "var prev = vm.java_lang_Class(false).forName__Ljava_lang_Class_2Ljava_lang_String_2;\n"
+      + "if (!prev) throw 'forName not defined';\n"
+      + "vm.java_lang_Class(false).forName__Ljava_lang_Class_2Ljava_lang_String_2 = function(s) {\n"
+      + "  throw 'Do not call me: ' + s;\n"
+      + "};\n"
+      + "return prev;\n")
+    private static Object disableClassForNameImpl() {
+        return null;
+    }
+    
+    private static void disableClassForName() {
+        if (prevClassForName == null) {
+            prevClassForName = disableClassForNameImpl();
+        }
+    }
+    
+    @JavaScriptBody(args = { "fn" }, body = 
+        "if (fn !== null) vm.java_lang_Class(false).forName__Ljava_lang_Class_2Ljava_lang_String_2 = fn;"
+    )
+    private static void enableClassForName(Object fn) {
+    }
+    
+    private static Object prevClassForName;
+    public static String nameOfClonedComponent() {
+        disableClassForName();
+        Object[] intArr = new Integer[10];
+        intArr = intArr.clone();
+        return intArr.getClass().getComponentType().getName();
     }
     
     public static int multiLen() {

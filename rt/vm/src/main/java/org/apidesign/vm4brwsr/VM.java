@@ -19,18 +19,34 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+import org.apidesign.vm4brwsr.ByteCodeParser.ClassData;
+import org.apidesign.vm4brwsr.ByteCodeParser.FieldData;
+import org.apidesign.vm4brwsr.ByteCodeParser.MethodData;
 
 /** Generator of JavaScript from bytecode of classes on classpath of the VM.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-class VM extends ByteCodeToJavaScript {
-    public VM(Appendable out) {
-        super(out);
-    }
+abstract class VM extends ByteCodeToJavaScript {
+    protected final ClassDataCache classDataCache;
 
-    private VM(Appendable out, ObfuscationDelegate obfuscationDelegate) {
-        super(out, obfuscationDelegate);
+    private final Bck2Brwsr.Resources resources;
+    private final ExportedSymbols exportedSymbols;
+    private final StringArray invokerMethods;
+
+    private static final Class<?> FIXED_DEPENDENCIES[] = {
+            Class.class,
+            ArithmeticException.class,
+            VM.class
+        };
+
+    private VM(Appendable out, Bck2Brwsr.Resources resources, StringArray explicitlyExported) {
+        super(out);
+        this.resources = resources;
+        this.classDataCache = new ClassDataCache(resources);
+        this.exportedSymbols = new ExportedSymbols(resources, explicitlyExported);
+        this.invokerMethods = new StringArray();
     }
 
     static {
@@ -48,17 +64,131 @@ class VM extends ByteCodeToJavaScript {
         return false;
     }
     
-    static void compile(Bck2Brwsr.Resources l, Appendable out, StringArray names) throws IOException {
-        new VM(out).doCompile(l, names);
+    static void compile(Appendable out, 
+        Bck2Brwsr config
+    ) throws IOException {
+        String[] both = config.allClasses();
+        
+        VM vm = config.isExtension() ? 
+            new Extension(out, config.getResources(), both, config.rootClasses())
+            : 
+            new Standalone(out, config.getResources(), config.rootClasses());
+
+        final StringArray fixedNames = new StringArray();
+
+        for (final Class<?> fixedClass: FIXED_DEPENDENCIES) {
+            fixedNames.add(fixedClass.getName().replace('.', '/'));
+        }
+
+        vm.doCompile(fixedNames.addAndNew(both), config.allResources());
     }
 
-    static void compile(Bck2Brwsr.Resources l, Appendable out, StringArray names,
-                        ObfuscationDelegate obfuscationDelegate) throws IOException {
-        new VM(out, obfuscationDelegate).doCompile(l, names);
+    private void doCompile(StringArray names, StringArray asBinary) throws IOException {
+        generatePrologue();
+        append(
+                "\n  var invoker = {};");
+        generateBody(names);
+        for (String invokerMethod: invokerMethods.toArray()) {
+            append("\n  invoker." + invokerMethod + " = function(target) {"
+                + "\n    return function() {"
+                + "\n      return target['" + invokerMethod + "'].apply(target, arguments);"
+                + "\n    };"
+                + "\n  };"
+            );
+        }
+        
+        for (String r : asBinary.toArray()) {
+            append("\n  ").append(getExportsObject()).append(".registerResource('");
+            append(r).append("', '");
+            InputStream is = this.resources.get(r);
+            byte[] arr = new byte[is.available()];
+            int offset = 0;
+            for (;;) {
+                if (offset == arr.length) {
+                    byte[] tmp = new byte[arr.length * 2];
+                    System.arraycopy(arr, 0, tmp, 0, arr.length);
+                    arr = tmp;
+                }
+                int len = is.read(arr, offset, arr.length - offset);
+                if (len == -1) {
+                    break;
+                }
+                offset += len;
+            }
+            if (offset != arr.length) {
+                byte[] tmp = new byte[offset];
+                System.arraycopy(arr, 0, tmp, 0, offset);
+                arr = tmp;
+            }
+            append(btoa(arr));
+            append("');");
+        }
+        
+        append("\n");
+        generateEpilogue();
     }
 
-    protected void doCompile(Bck2Brwsr.Resources l, StringArray names) throws IOException {
-        append("(function VM(global) {var fillInVMSkeleton = function(vm) {");
+    @JavaScriptBody(args = { "arr" }, body = "return btoa(arr);")
+    private static String btoa(byte[] arr) {
+        return javax.xml.bind.DatatypeConverter.printBase64Binary(arr);
+    }
+
+    protected abstract void generatePrologue() throws IOException;
+
+    protected abstract void generateEpilogue() throws IOException;
+
+    protected abstract String getExportsObject();
+
+    protected abstract boolean isExternalClass(String className);
+
+    @Override
+    protected final void declaredClass(ClassData classData, String mangledName)
+            throws IOException {
+        if (exportedSymbols.isExported(classData)) {
+            append("\n").append(getExportsObject()).append("['")
+                                               .append(mangledName)
+                                               .append("'] = ")
+                            .append(accessClass(mangledName))
+               .append(";\n");
+        }
+    }
+
+    protected String generateClass(String className) throws IOException {
+        ClassData classData = classDataCache.getClassData(className);
+        if (classData == null) {
+            throw new IOException("Can't find class " + className);
+        }
+        return compile(classData);
+    }
+
+    @Override
+    protected void declaredField(FieldData fieldData,
+                                 String destObject,
+                                 String mangledName) throws IOException {
+        if (exportedSymbols.isExported(fieldData)) {
+            exportMember(destObject, mangledName);
+        }
+    }
+
+    @Override
+    protected void declaredMethod(MethodData methodData,
+                                  String destObject,
+                                  String mangledName) throws IOException {
+        if (isHierarchyExported(methodData)) {
+            exportMember(destObject, mangledName);
+        }
+    }
+
+    private void exportMember(String destObject, String memberName)
+            throws IOException {
+        append("\n").append(destObject).append("['")
+                                           .append(memberName)
+                                           .append("'] = ")
+                        .append(destObject).append(".").append(memberName)
+           .append(";\n");
+    }
+
+    private void generateBody(StringArray names) throws IOException {
         StringArray processed = new StringArray();
         StringArray initCode = new StringArray();
         StringArray skipClass = new StringArray();
@@ -78,14 +208,14 @@ class VM extends ByteCodeToJavaScript {
                 if (name == null) {
                     break;
                 }
-                InputStream is = loadClass(l, name);
+                InputStream is = resources.get(name + ".class");
                 if (is == null) {
                     lazyReference(this, name);
                     skipClass.add(name);
                     continue;
                 }
                 try {
-                    String ic = compile(is);
+                    String ic = generateClass(name);
                     processed.add(name);
                     initCode.add(ic == null ? "" : ic);
                 } catch (RuntimeException ex) {
@@ -97,14 +227,14 @@ class VM extends ByteCodeToJavaScript {
                 while (resource.startsWith("/")) {
                     resource = resource.substring(1);
                 }
-                InputStream emul = l.get(resource);
+                InputStream emul = resources.get(resource);
                 if (emul == null) {
                     throw new IOException("Can't find " + resource);
                 }
                 readResource(emul, this);
             }
             scripts = new StringArray();
-            
+
             StringArray toInit = StringArray.asList(references.toArray());
             toInit.reverse();
 
@@ -119,6 +249,7 @@ class VM extends ByteCodeToJavaScript {
                 }
             }
         }
+/*
         append(
               "  return vm;\n"
             + "  };\n"
@@ -158,7 +289,9 @@ class VM extends ByteCodeToJavaScript {
             + "    return loader;\n"
             + "  };\n");
         append("}(this));");
+*/
     }
+
     private static void readResource(InputStream emul, Appendable out) throws IOException {
         try {
             int state = 0;
@@ -205,10 +338,6 @@ class VM extends ByteCodeToJavaScript {
         }
     }
 
-    private static InputStream loadClass(Bck2Brwsr.Resources l, String name) throws IOException {
-        return l.get(name + ".class"); // NOI18N
-    }
-
     static String toString(String name) throws IOException {
         StringBuilder sb = new StringBuilder();
 //        compile(sb, name);
@@ -243,8 +372,287 @@ class VM extends ByteCodeToJavaScript {
     }
 
     @Override
-    String getVMObject() {
-        return "vm";
+    protected String accessField(String object, String mangledName,
+                                 String[] fieldInfoName) throws IOException {
+        final FieldData field =
+                classDataCache.findField(fieldInfoName[0],
+                                         fieldInfoName[1],
+                                         fieldInfoName[2]);
+        return accessNonVirtualMember(object, mangledName,
+                                      (field != null) ? field.cls : null);
+    }
+
+    @Override
+    protected String accessStaticMethod(
+                             String object,
+                             String mangledName,
+                             String[] fieldInfoName) throws IOException {
+        final MethodData method =
+                classDataCache.findMethod(fieldInfoName[0],
+                                          fieldInfoName[1],
+                                          fieldInfoName[2]);
+        return accessNonVirtualMember(object, mangledName,
+                                      (method != null) ? method.cls : null);
+    }
+
+    @Override
+    protected String accessVirtualMethod(
+                             String object,
+                             String mangledName,
+                             String[] fieldInfoName) throws IOException {
+        final ClassData referencedClass =
+                classDataCache.getClassData(fieldInfoName[0]);
+        final MethodData method =
+                classDataCache.findMethod(referencedClass,
+                                          fieldInfoName[1],
+                                          fieldInfoName[2]);
+
+        if ((method != null)
+                && !isExternalClass(method.cls.getClassName())
+                && (((method.access & ByteCodeParser.ACC_FINAL) != 0)
+                        || ((referencedClass.getAccessFlags()
+                                 & ByteCodeParser.ACC_FINAL) != 0)
+                        || !isHierarchyExported(method))) {
+            return object + "." + mangledName;
+        }
+
+        return accessThroughInvoker(object, mangledName);
+    }
+
+    private String accessThroughInvoker(String object, String mangledName) {
+        if (!invokerMethods.contains(mangledName)) {
+            invokerMethods.add(mangledName);
+        }
+        return "invoker." + mangledName + '(' + object + ')';
+    }
+
+    private boolean isHierarchyExported(final MethodData methodData)
+            throws IOException {
+        if (exportedSymbols.isExported(methodData)) {
+            return true;
+        }
+        if ((methodData.access & (ByteCodeParser.ACC_PRIVATE
+                                      | ByteCodeParser.ACC_STATIC)) != 0) {
+            return false;
+        }
+
+        final ExportedMethodFinder exportedMethodFinder =
+                new ExportedMethodFinder(exportedSymbols);
+
+        classDataCache.findMethods(
+                methodData.cls,
+                methodData.getName(),
+                methodData.getInternalSig(),
+                exportedMethodFinder);
+
+        return (exportedMethodFinder.getFound() != null);
+    }
+
+    private String accessNonVirtualMember(String object,
+                                          String mangledName,
+                                          ClassData declaringClass) {
+        return ((declaringClass != null)
+                    && !isExternalClass(declaringClass.getClassName()))
+                            ? object + "." + mangledName
+                            : object + "['" + mangledName + "']";
+    }
+
+    private static final class ExportedMethodFinder
+            implements ClassDataCache.TraversalCallback<MethodData> {
+        private final ExportedSymbols exportedSymbols;
+        private MethodData found;
+
+        public ExportedMethodFinder(final ExportedSymbols exportedSymbols) {
+            this.exportedSymbols = exportedSymbols;
+        }
+
+        @Override
+        public boolean traverse(final MethodData methodData) {
+            try {
+                if (exportedSymbols.isExported(methodData)) {
+                    found = methodData;
+                    return false;
+                }
+            } catch (final IOException e) {
+            }
+
+            return true;
+        }
+
+        public MethodData getFound() {
+            return found;
+        }
+    }
+
+    private static final class Standalone extends VM {
+        private Standalone(Appendable out, Bck2Brwsr.Resources resources, StringArray explicitlyExported) {
+            super(out, resources, explicitlyExported);
+        }
+
+        @Override
+        protected void generatePrologue() throws IOException {
+            append("(function VM(global) {var fillInVMSkeleton = function(vm) {");
+        }
+
+        @Override
+        protected void generateEpilogue() throws IOException {
+            append(
+                  "  return vm;\n"
+                + "  };\n"
+                + "  var extensions = [];\n"
+                + "  function mangleClass(name) {\n"
+                + "    return name.replace__Ljava_lang_String_2Ljava_lang_CharSequence_2Ljava_lang_CharSequence_2(\n"
+                + "      '_', '_1').replace__Ljava_lang_String_2CC('.','_');\n"
+                + "  };\n"
+                + "  global.bck2brwsr = function() {\n"
+                + "    var args = Array.prototype.slice.apply(arguments);\n"
+                + "    var resources = {};\n"
+                + "    function registerResource(n, a64) {\n"
+                + "      var str = atob(a64);\n"
+                + "      var arr = [];\n"
+                + "      for (var i = 0; i < str.length; i++) {\n"
+                + "        var ch = str.charCodeAt(i) & 0xff;\n"
+                + "        if (ch > 127) ch -= 256;\n"
+                + "        arr.push(ch);\n"
+                + "      }\n"
+                + "      if (!resources[n]) resources[n] = [arr];\n"
+                + "      else resources[n].push(arr);\n"
+                + "    }\n"
+                + "    var vm = fillInVMSkeleton({ 'registerResource' : registerResource });\n"
+                + "    for (var i = 0; i < extensions.length; ++i) {\n"
+                + "      extensions[i](vm);\n"
+                + "    }\n"
+                + "    vm.registerResource = null;\n"
+                + "    var knownExtensions = extensions.length;\n"
+                + "    var loader = {};\n"
+                + "    loader.vm = vm;\n"
+                + "    loader.loadClass = function(name) {\n"
+                + "      var attr = mangleClass(name);\n"
+                + "      var fn = vm[attr];\n"
+                + "      if (fn) return fn(false);\n"
+                + "      try {\n"
+                + "        return vm.org_apidesign_vm4brwsr_VMLazy(false).\n"
+                + "          load__Ljava_lang_Object_2Ljava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2(loader, name, args);\n"
+                + "      } catch (err) {\n"
+                + "        while (knownExtensions < extensions.length) {\n"
+                + "          vm.registerResource = registerResource;\n"
+                + "          extensions[knownExtensions++](vm);\n"
+                + "          vm.registerResource = null;\n"
+                + "        }\n"
+                + "        fn = vm[attr];\n"
+                + "        if (fn) return fn(false);\n"
+                + "        throw err;\n"
+                + "      }\n"
+                + "    }\n"
+                + "    if (vm.loadClass) {\n"
+                + "      throw 'Cannot initialize the bck2brwsr VM twice!';\n"
+                + "    }\n"
+                + "    vm.loadClass = loader.loadClass;\n"
+                + "    vm._reload = function(name, byteCode) {;\n"
+                + "      var attr = mangleClass(name);\n"
+                + "      delete vm[attr];\n"
+                + "      return vm.org_apidesign_vm4brwsr_VMLazy(false).\n"
+                + "        reload__Ljava_lang_Object_2Ljava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2_3B(loader, name, args, byteCode);\n"
+                + "    };\n"
+                + "    vm.loadBytes = function(name, skip) {\n"
+                + "      skip = typeof skip == 'number' ? skip : 0;\n"
+                + "      var arr = resources[name];\n"
+                + "      if (arr) {\n"
+                + "        var arrSize = arr.length;\n"
+                + "        if (skip < arrSize) return arr[skip];\n"
+                + "        skip -= arrSize;\n"
+                + "      } else {\n"
+                + "        var arrSize = 0;\n"
+                + "      };\n"
+                + "      var ret = vm.org_apidesign_vm4brwsr_VMLazy(false).\n"
+                + "        loadBytes___3BLjava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2I(loader, name, args, skip);\n"
+                + "      if (ret !== null) return ret;\n"
+                + "      while (knownExtensions < extensions.length) {\n"
+                + "        vm.registerResource = registerResource;\n"
+                + "        extensions[knownExtensions++](vm);\n"
+                + "        vm.registerResource = null;\n"
+                + "      }\n"
+                + "      var arr = resources[name];\n"
+                + "      return (arr && arr.length > arrSize) ? arr[arrSize] : null;\n"
+                + "    }\n"
+                + "    vm.java_lang_reflect_Array(false);\n"
+                + "    vm.org_apidesign_vm4brwsr_VMLazy(false).\n"
+                + "      loadBytes___3BLjava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2I(loader, null, args, 0);\n"
+                + "    return loader;\n"
+                + "  };\n");
+            append(
+                  "  global.bck2brwsr.registerExtension = function(extension) {\n"
+                + "    extensions.push(extension);\n"
+                + "    return null;\n"
+                + "  };\n");
+            append("}(this));");
+        }
+
+        @Override
+        protected String getExportsObject() {
+            return "vm";
+        }
+
+        @Override
+        protected boolean isExternalClass(String className) {
+            return false;
+        }
+    }
+
+    private static final class Extension extends VM {
+        private final StringArray extensionClasses;
+
+        private Extension(Appendable out, Bck2Brwsr.Resources resources,
+                          String[] extClassesArray, StringArray explicitlyExported) {
+            super(out, resources, explicitlyExported);
+            this.extensionClasses = StringArray.asList(extClassesArray);
+        }
+
+        @Override
+        protected void generatePrologue() throws IOException {
+            append("bck2brwsr.registerExtension(function(exports) {\n"
+                           + "  var vm = {};\n");
+            append("  function link(n, inst) {\n"
+                           + "    var cls = n['replace__Ljava_lang_String_2CC']"
+                                                  + "('/', '_').toString();\n"
+                           + "    var dot = n['replace__Ljava_lang_String_2CC']"
+                                                  + "('/', '.').toString();\n"
+                           + "    exports.loadClass(dot);\n"
+                           + "    vm[cls] = exports[cls];\n"
+                           + "    return vm[cls](inst);\n"
+                           + "  };\n");
+        }
+
+        @Override
+        protected void generateEpilogue() throws IOException {
+            append("});");
+        }
+
+        @Override
+        protected String generateClass(String className) throws IOException {
+            if (isExternalClass(className)) {
+                append("\n").append(assignClass(
+                                            className.replace('/', '_')))
+                   .append("function() {\n  return link('")
+                   .append(className)
+                   .append("', arguments.length == 0 || arguments[0] === true);"
+                               + "\n};");
+
+                return null;
+            }
+
+            return super.generateClass(className);
+        }
+
+        @Override
+        protected String getExportsObject() {
+            return "exports";
+        }
+
+        @Override
+        protected boolean isExternalClass(String className) {
+            return !extensionClasses.contains(className);
+        }
     }
     
     private static void lazyReference(Appendable out, String n) throws IOException {

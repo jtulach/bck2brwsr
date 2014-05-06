@@ -75,6 +75,15 @@ public class Java2JavaScript extends AbstractMojo {
     @Parameter(defaultValue = "false")
     private boolean ignoreBootClassPath;
 
+    /**
+     * Indicates whether to create an extension library 
+     * module instead of a standalone JavaScript VM.
+     *
+     * @since 0.9
+     */
+    @Parameter(defaultValue="false")
+    private boolean library;
+
     @Override
     public void execute() throws MojoExecutionException {
         if (!classes.isDirectory()) {
@@ -101,6 +110,7 @@ public class Java2JavaScript extends AbstractMojo {
             FileWriter w = new FileWriter(javascript);
             Bck2Brwsr.newCompiler().
                 obfuscation(obfuscation).
+                library(library).
                 resources(url, ignoreBootClassPath).
                 addRootClasses(arr.toArray(new String[0])).
                 generate(w);
@@ -123,7 +133,9 @@ public class Java2JavaScript extends AbstractMojo {
             return newest;
         } else if (toCheck.getName().endsWith(".class")) {
             final String cls = prefix.substring(0, prefix.length() - 7);
-            arr.add(cls);
+            if (!cls.endsWith("package-info")) {
+                arr.add(cls);
+            }
             return toCheck.lastModified();
         } else {
             return 0L;

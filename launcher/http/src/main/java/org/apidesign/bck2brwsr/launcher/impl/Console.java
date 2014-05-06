@@ -31,6 +31,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
+@org.apidesign.bck2brwsr.core.Exported 
 public class Console {
     private Console() {
     }
@@ -265,7 +266,7 @@ public class Console {
         return u;
     }
     
-    @JavaScriptBody(args = {}, body = "vm.desiredAssertionStatus = true;")
+    @JavaScriptBody(args = {}, body = "vm.java_lang_Class(false).desiredAssertionStatus = true;")
     private static void turnAssetionStatusOn() {
     }
 

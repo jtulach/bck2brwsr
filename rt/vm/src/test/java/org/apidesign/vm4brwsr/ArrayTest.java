@@ -43,6 +43,13 @@ public class ArrayTest {
             Double.valueOf(15), true
         );
     }
+
+    @Test public void cloneOnArrayAndComponentType() throws Exception {
+        String exp = Array.nameOfClonedComponent();
+        assertExec("getComponentType on clone", Array.class, "nameOfClonedComponent__Ljava_lang_String_2", 
+            exp
+        );
+    }
     
     @Test public void realOperationOnArrays() throws Exception {
         assertEquals(Array.sum(), 105.0, "Computes to 105");
@@ -75,8 +82,27 @@ public class ArrayTest {
     @Test public void verifyInstanceOfArray() throws Exception {
         assertExec("Returns 'false'", Array.class, "instanceOfArray__ZLjava_lang_Object_2", Double.valueOf(0), "non-array");
     }
+    @Test public void verifyInstanceOfArrayOnNull() throws Exception {
+        assertFalse(Array.instanceOfArray(null), "Null is not an instance of array");
+        assertExec("Returns 'false'", Array.class, "instanceOfArray__ZLjava_lang_Object_2", Double.valueOf(0), (Object) null);
+    }
+    @Test public void verifyInstanceOfArrayStrings() throws Exception {
+        assertExec("Returns 'false'", Array.class, "instanceOfArray__ZLjava_lang_Object_2", Double.valueOf(1), "string-array");
+    }
     @Test public void verifyMultiLen() throws Exception {
         assertExec("Multi len is one", Array.class, "multiLen__I", Double.valueOf(1));
+    }
+    @Test public void upCastAnArray() throws Exception {
+        assertExec("Cannot cast int to string array", Array.class, "castArray__ZI", Double.valueOf(0), Double.valueOf(0));
+    }
+    @Test public void upCastANullArray() throws Exception {
+        assertExec("Can cast null to string array", Array.class, "castArray__ZI", Double.valueOf(1), Double.valueOf(1));
+    }
+    @Test public void upCastOK() throws Exception {
+        assertExec("Can cast string to string array", Array.class, "castArray__ZI", Double.valueOf(1), Double.valueOf(2));
+    }
+    @Test public void upCastOK2() throws Exception {
+        assertExec("Can cast string to char sequence array", Array.class, "castArray__ZI", Double.valueOf(1), Double.valueOf(3));
     }
     
     private static TestVM code;

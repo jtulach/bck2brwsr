@@ -58,11 +58,13 @@
       <artifactId>testng</artifactId>
       <scope>test</scope>
     </dependency>
+    <!--
     <dependency>
       <groupId>org.netbeans.modules</groupId>
       <artifactId>org-netbeans-bootstrap</artifactId>
       <version>RELEASE73</version>
     </dependency>
+    -->
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>core</artifactId>

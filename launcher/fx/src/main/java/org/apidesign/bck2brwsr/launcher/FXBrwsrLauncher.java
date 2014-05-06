@@ -37,7 +37,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
 import org.apidesign.bck2brwsr.launcher.fximpl.JVMBridge;
-import org.openide.util.Exceptions;
 
 /**
  *

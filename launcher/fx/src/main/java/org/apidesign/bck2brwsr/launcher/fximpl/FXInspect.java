@@ -29,7 +29,6 @@ import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.scene.web.WebEngine;
 import javafx.util.Callback;
-import org.openide.util.Exceptions;
 
 /**
  *

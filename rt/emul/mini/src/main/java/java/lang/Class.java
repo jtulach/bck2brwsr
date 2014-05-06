@@ -35,6 +35,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.TypeVariable;
 import java.net.URL;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
+import org.apidesign.bck2brwsr.core.JavaScriptOnly;
 import org.apidesign.bck2brwsr.emul.reflect.AnnotationImpl;
 import org.apidesign.bck2brwsr.emul.reflect.MethodImpl;
 
@@ -150,7 +151,7 @@ public final
     public static Class<?> forName(String className)
     throws ClassNotFoundException {
         if (className.startsWith("[")) {
-            Class<?> arrType = defineArray(className);
+            Class<?> arrType = defineArray(className, null);
             Class<?> c = arrType;
             while (c != null && c.isArray()) {
                 c = c.getComponentType0(); // verify component type is sane
@@ -1543,13 +1544,24 @@ public final
     public Class<?> getComponentType() {
         if (isArray()) {
             try {
-                return getComponentType0();
+                Class<?> c = getComponentTypeByFnc();
+                return c != null ? c : getComponentType0();
             } catch (ClassNotFoundException cnfe) {
                 throw new IllegalStateException(cnfe);
             }
         }
         return null;
     }
+    
+    @JavaScriptBody(args = {  }, body = 
+        "if (this.fnc) {\n"
+      + "  var c = this.fnc(false).constructor.$class;\n"
+//      + "  java.lang.System.out.println('will call: ' + (!!this.fnc) + ' res: ' + c.jvmName);\n"
+      + "  if (c) return c;\n"
+      + "}\n"
+      + "return null;"
+    )
+    private native Class<?> getComponentTypeByFnc();
 
     private Class<?> getComponentType0() throws ClassNotFoundException {
         String n = getName().substring(1);
@@ -1576,24 +1588,26 @@ public final
             case 'C':
                 return Character.TYPE;
             case '[':
-                return defineArray(n);
+                return defineArray(n, null);
             default:
                 throw new ClassNotFoundException("Unknown component type of " + getName());
         }
     }
     
-    @JavaScriptBody(args = { "sig" }, body = 
+    @JavaScriptBody(args = { "sig", "fnc" }, body = 
         "if (!sig) sig = '[Ljava/lang/Object;';\n" +
         "var c = Array[sig];\n" +
-        "if (c) return c;\n" +
-        "c = vm.java_lang_Class(true);\n" +
-        "c.jvmName = sig;\n" +
-        "c.superclass = vm.java_lang_Object(false).$class;\n" +
-        "c.array = true;\n" +
-        "Array[sig] = c;\n" +
+        "if (!c) {\n" +
+        "  c = vm.java_lang_Class(true);\n" +
+        "  c.jvmName = sig;\n" +
+        "  c.superclass = vm.java_lang_Object(false).$class;\n" +
+        "  c.array = true;\n" +
+        "  Array[sig] = c;\n" +
+        "}\n" +
+        "if (!c.fnc) c.fnc = fnc;\n" +
         "return c;"
     )
-    private static native Class<?> defineArray(String sig);
+    private static native Class<?> defineArray(String sig, Object fnc);
     
     /**
      * Returns true if and only if this class was declared as an enum in the
@@ -1725,7 +1739,7 @@ public final
     native static Class getPrimitiveClass(String type);
 
     @JavaScriptBody(args = {}, body = 
-        "return vm.desiredAssertionStatus ? vm.desiredAssertionStatus : false;"
+        "return this.desiredAssertionStatus ? this.desiredAssertionStatus : false;"
     )
     public native boolean desiredAssertionStatus();
     
@@ -1760,7 +1774,7 @@ public final
     static native int defaultHashCode(Object self);
 
     @JavaScriptBody(args = "self", body
-            = "\nif (!self.$instOf_java_lang_Cloneable) {"
+            = "\nif (!self['$instOf_java_lang_Cloneable']) {"
             + "\n  return null;"
             + "\n} else {"
             + "\n  var clone = self.constructor(true);"
@@ -1773,5 +1787,39 @@ public final
             + "\n}"
     )
     static native Object clone(Object self) throws CloneNotSupportedException;
+
+    @JavaScriptOnly(name = "toJS", value = "function(v) {\n"
+        + "  if (v === null) return null;\n"
+        + "  if (Object.prototype.toString.call(v) === '[object Array]') {\n"
+        + "    return vm.org_apidesign_bck2brwsr_emul_lang_System(false).convArray__Ljava_lang_Object_2Ljava_lang_Object_2(v);\n"
+        + "  }\n"
+        + "  return v.valueOf();\n"
+        + "}\n"
+    )
+    static native int toJS();
+
+    @JavaScriptOnly(name = "activate__Ljava_io_Closeable_2Lorg_apidesign_html_boot_spi_Fn$Presenter_2", value = "function() {\n"
+        + "  return vm.org_apidesign_bck2brwsr_emul_lang_System(false).activate__Ljava_io_Closeable_2();"
+        + "}\n"
+    )
+    static native int activate();
+    
+    private static Object bck2BrwsrCnvrt(Object o) {
+        if (o instanceof Throwable) {
+            return o;
+        }
+        final String msg = msg(o);
+        if (msg == null || msg.startsWith("TypeError")) {
+            return new NullPointerException(msg);
+        }
+        return new Throwable(msg);
+    }
+
+    @JavaScriptBody(args = {"o"}, body = "return o ? o.toString() : null;")
+    private static native String msg(Object o);
+
+    @JavaScriptOnly(name = "bck2BrwsrThrwrbl", value = "c.bck2BrwsrCnvrt__Ljava_lang_Object_2Ljava_lang_Object_2")
+    private static void bck2BrwsrCnvrtVM() {
+    }
     
 }

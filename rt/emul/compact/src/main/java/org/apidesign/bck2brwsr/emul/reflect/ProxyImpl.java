@@ -50,6 +50,7 @@ import java.util.ListIterator;
 import java.util.WeakHashMap;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.emul.reflect.MethodImpl;
+import org.apidesign.vm4brwsr.api.VM;
 
 /**
  * {@code Proxy} provides static methods for creating dynamic proxy
@@ -677,7 +678,10 @@ public final class ProxyImpl implements java.io.Serializable {
     }
 
     @JavaScriptBody(args = { "ignore", "name", "byteCode" }, 
-        body = "return vm._reload(name, byteCode).constructor.$class;"
+        body = 
+            "var r = vm._reload;"
+          + "if (!r) r = exports._reload;"
+          + "return r(name, byteCode).constructor.$class;"
     )
     private static native Class defineClass0(
         ClassLoader loader, String name, byte[] b

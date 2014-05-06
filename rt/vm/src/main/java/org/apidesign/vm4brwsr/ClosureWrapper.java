@@ -23,14 +23,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.apidesign.bck2brwsr.core.ExtraJavaScript;
-import org.apidesign.vm4brwsr.ByteCodeParser.ClassData;
-import org.apidesign.vm4brwsr.ByteCodeParser.FieldData;
-import org.apidesign.vm4brwsr.ByteCodeParser.MethodData;
 
 /**
  *
@@ -40,24 +35,18 @@ import org.apidesign.vm4brwsr.ByteCodeParser.MethodData;
 final class ClosureWrapper extends CommandLineRunner {
     private static final String[] ARGS = { "--compilation_level", "SIMPLE_OPTIMIZATIONS", "--js", "bck2brwsr-raw.js" /*, "--debug", "--formatting", "PRETTY_PRINT" */ };
 
-    private final ClosuresObfuscationDelegate obfuscationDelegate;
-    private final Bck2Brwsr.Resources res;
-    private final StringArray classes;
+    private final Bck2Brwsr config;
 
     private String compiledCode;
     private String externsCode;
 
-    private ClosureWrapper(Appendable out, 
-                           String compilationLevel,
-                           ClosuresObfuscationDelegate obfuscationDelegate,
-                           Bck2Brwsr.Resources res, StringArray classes) {
+    private ClosureWrapper(Appendable out,
+                           String compilationLevel, Bck2Brwsr config) {
         super(
             generateArguments(compilationLevel),
             new PrintStream(new APS(out)), System.err
         );
-        this.obfuscationDelegate = obfuscationDelegate;
-        this.res = res;
-        this.classes = classes;
+        this.config = config;
     }
 
     @Override
@@ -100,7 +89,7 @@ final class ClosureWrapper extends CommandLineRunner {
         if (compiledCode == null) {
             StringBuilder sb = new StringBuilder();
             try {
-                VM.compile(res, sb, classes, obfuscationDelegate);
+                VM.compile(sb, config);
                 compiledCode = sb.toString();
             } catch (IOException ex) {
                 compiledCode = ex.getMessage();
@@ -115,7 +104,7 @@ final class ClosureWrapper extends CommandLineRunner {
             getCompiledCode();
 
             final StringBuilder sb = new StringBuilder("function RAW() {};\n");
-            for (final String extern: obfuscationDelegate.getExterns()) {
+            for (final String extern: FIXED_EXTERNS) {
                 sb.append("RAW.prototype.").append(extern).append(";\n");
             }
             externsCode = sb.toString();
@@ -142,8 +131,16 @@ final class ClosureWrapper extends CommandLineRunner {
         return finalArgs;
     }
 
-    static int produceTo(Appendable w, ObfuscationLevel obfuscationLevel, Bck2Brwsr.Resources resources, StringArray arr) throws IOException {
-        ClosureWrapper cw = create(w, obfuscationLevel, resources, arr);
+    static int produceTo(Appendable output,
+        ObfuscationLevel obfuscationLevel,
+        Bck2Brwsr config
+    ) throws IOException {
+        final ClosureWrapper cw =
+                new ClosureWrapper(output,
+                                   (obfuscationLevel == ObfuscationLevel.FULL)
+                                           ? "ADVANCED_OPTIMIZATIONS"
+                                           : "SIMPLE_OPTIMIZATIONS",
+                                   config);
         try {
             return cw.doRun();
         } catch (FlagUsageException ex) {
@@ -151,185 +148,51 @@ final class ClosureWrapper extends CommandLineRunner {
         }
     }
 
-    private static ClosureWrapper create(Appendable w,
-                                         ObfuscationLevel obfuscationLevel,
-                                         Bck2Brwsr.Resources resources,
-                                         StringArray arr) {
-        switch (obfuscationLevel) {
-            case MINIMAL:
-                return new ClosureWrapper(w, "SIMPLE_OPTIMIZATIONS",
-                                          new SimpleObfuscationDelegate(),
-                                          resources, arr);
-/*                
-            case MEDIUM:
-                return new ClosureWrapper(w, "ADVANCED_OPTIMIZATIONS",
-                                          new MediumObfuscationDelegate(),
-                                          resources, arr);
-*/
-            case FULL:
-                return new ClosureWrapper(w, "ADVANCED_OPTIMIZATIONS",
-                                          new FullObfuscationDelegate(),
-                                          resources, arr);
-            default:
-                throw new IllegalArgumentException(
-                        "Unsupported level: " + obfuscationLevel);
-        }
-    }
-
-    private static abstract class ClosuresObfuscationDelegate
-            extends ObfuscationDelegate {
-        public abstract Collection<String> getExterns();
-    }
-
-    private static final class SimpleObfuscationDelegate
-            extends ClosuresObfuscationDelegate {
-        @Override
-        public void exportJSProperty(Appendable out,
-                                     String destObject,
-                                     String propertyName) throws IOException {
-        }
-
-        @Override
-        public void exportClass(Appendable out,
-                                String destObject,
-                                String mangledName,
-                                ClassData classData) throws IOException {
-        }
-
-        @Override
-        public void exportMethod(Appendable out,
-                                 String destObject,
-                                 String mangledName,
-                                 MethodData methodData) throws IOException {
-        }
-
-        @Override
-        public void exportField(Appendable out,
-                                String destObject,
-                                String mangledName,
-                                FieldData fieldData) throws IOException {
-        }
-
-        @Override
-        public Collection<String> getExterns() {
-            return Collections.EMPTY_LIST;
-        }
-    }
-
-    private static abstract class AdvancedObfuscationDelegate
-            extends ClosuresObfuscationDelegate {
-        private static final String[] INITIAL_EXTERNS = {
-            "bck2brwsr",
-            "$class",
-            "anno",
-            "array",
-            "access",
-            "cls",
-            "vm",
-            "loadClass",
-            "loadBytes",
-            "jvmName",
-            "primitive",
-            "superclass",
-            "cnstr",
-            "add32",
-            "sub32",
-            "mul32",
-            "neg32",
-            "toInt8",
-            "toInt16",
-            "next32",
-            "high32",
-            "toInt32",
-            "toFP",
-            "toLong",
-            "toExactString",
-            "add64",
-            "sub64",
-            "mul64",
-            "and64",
-            "or64",
-            "xor64",
-            "shl64",
-            "shr64",
-            "ushr64",
-            "compare64",
-            "compare",
-            "neg64",
-            "div32",
-            "mod32",
-            "div64",
-            "mod64",
-            "at",
-            "getClass__Ljava_lang_Class_2",
-            "clone__Ljava_lang_Object_2"
-        };
-
-        private final Collection<String> externs;
-
-        protected AdvancedObfuscationDelegate() {
-            externs = new ArrayList<String>(Arrays.asList(INITIAL_EXTERNS));
-        }
-
-        @Override
-        public void exportClass(Appendable out,
-                                String destObject,
-                                String mangledName,
-                                ClassData classData) throws IOException {
-            exportJSProperty(out, destObject, mangledName);
-        }
-
-        @Override
-        public void exportMethod(Appendable out,
-                                 String destObject,
-                                 String mangledName,
-                                 MethodData methodData) throws IOException {
-            if ((methodData.access & ByteCodeParser.ACC_PRIVATE) == 0) {
-                exportJSProperty(out, destObject, mangledName);
-            }
-        }
-
-        @Override
-        public void exportField(Appendable out,
-                                String destObject,
-                                String mangledName,
-                                FieldData fieldData) throws IOException {
-            if ((fieldData.access & ByteCodeParser.ACC_PRIVATE) == 0) {
-                exportJSProperty(out, destObject, mangledName);
-            }
-        }
-
-        @Override
-        public Collection<String> getExterns() {
-            return externs;
-        }
-
-        protected void addExtern(String extern) {
-            externs.add(extern);
-        }
-    }
-
-    private static final class MediumObfuscationDelegate
-            extends AdvancedObfuscationDelegate {
-        @Override
-        public void exportJSProperty(Appendable out,
-                                     String destObject,
-                                     String propertyName) {
-            addExtern(propertyName);
-        }
-    }
-
-    private static final class FullObfuscationDelegate
-            extends AdvancedObfuscationDelegate {
-        @Override
-        public void exportJSProperty(Appendable out,
-                                     String destObject,
-                                     String propertyName) throws IOException {
-            out.append("\n").append(destObject).append("['")
-                                               .append(propertyName)
-                                               .append("'] = ")
-                            .append(destObject).append(".").append(propertyName)
-               .append(";\n");
-        }
-    }
+    private static final String[] FIXED_EXTERNS = {
+        "bck2brwsr",
+        "bck2BrwsrThrwrbl",
+        "registerExtension",
+        "$class",
+        "anno",
+        "array",
+        "access",
+        "cls",
+        "vm",
+        "loadClass",
+        "loadBytes",
+        "jvmName",
+        "primitive",
+        "superclass",
+        "cnstr",
+        "add32",
+        "sub32",
+        "mul32",
+        "neg32",
+        "toInt8",
+        "toInt16",
+        "next32",
+        "high32",
+        "toInt32",
+        "toFP",
+        "toLong",
+        "toExactString",
+        "add64",
+        "sub64",
+        "mul64",
+        "and64",
+        "or64",
+        "xor64",
+        "shl64",
+        "shr64",
+        "ushr64",
+        "compare64",
+        "neg64",
+        "div32",
+        "mod32",
+        "div64",
+        "mod64",
+        "at",
+        "getClass__Ljava_lang_Class_2",
+        "clone__Ljava_lang_Object_2"
+    };
 }

@@ -588,6 +588,9 @@ public abstract class ClassLoader {
      * @since  1.2
      */
     public Enumeration<URL> getResources(String name) throws IOException {
+        if (this == SYSTEM) {
+            return findResources(name);
+        }
         Enumeration[] tmp = new Enumeration[2];
         if (parent != null) {
             tmp[0] = parent.getResources(name);

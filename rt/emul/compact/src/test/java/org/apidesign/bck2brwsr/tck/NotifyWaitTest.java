@@ -28,6 +28,7 @@ import org.testng.annotations.Factory;
  */
 public class NotifyWaitTest {
     
+
     @Compare public synchronized String canCallNotify() throws Exception {
         notify();
         return "OK";

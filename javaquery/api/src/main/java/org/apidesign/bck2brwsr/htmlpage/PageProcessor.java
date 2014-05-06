@@ -60,6 +60,7 @@ import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
+import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
 import org.apidesign.bck2brwsr.htmlpage.api.Model;
 import org.apidesign.bck2brwsr.htmlpage.api.On;
@@ -75,6 +76,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
+@ExtraJavaScript(processByteCode = false, resource = "")
 @ServiceProvider(service=Processor.class)
 @SupportedAnnotationTypes({
     "org.apidesign.bck2brwsr.htmlpage.api.Model",
@@ -193,6 +195,7 @@ public final class PageProcessor extends AbstractProcessor {
                 w.append("package " + pkg + ";\n");
                 w.append("import org.apidesign.bck2brwsr.htmlpage.api.*;\n");
                 w.append("import org.apidesign.bck2brwsr.htmlpage.KOList;\n");
+                w.append("import org.apidesign.bck2brwsr.core.Exported;\n");
                 w.append("import org.apidesign.bck2brwsr.core.JavaScriptOnly;\n");
                 w.append("final class ").append(className).append(" implements Cloneable {\n");
                 w.append("  private boolean locked;\n");
@@ -344,6 +347,7 @@ public final class PageProcessor extends AbstractProcessor {
                 w.append("package " + pkg + ";\n");
                 w.append("import org.apidesign.bck2brwsr.htmlpage.api.*;\n");
                 w.append("import org.apidesign.bck2brwsr.htmlpage.KOList;\n");
+                w.append("import org.apidesign.bck2brwsr.core.Exported;\n");
                 w.append("final class ").append(className).append(" {\n");
                 w.append("  private boolean locked;\n");
                 if (!initializeOnClick(className, (TypeElement) e, w, pp)) {
@@ -555,6 +559,7 @@ public final class PageProcessor extends AbstractProcessor {
                 }
                 w.write(";\n");
                 
+                w.write("@Exported\n");
                 w.write("public java.util.List<" + tn + "> " + gs[0] + "() {\n");
                 w.write("  if (locked) throw new IllegalStateException();\n");
                 w.write("  prop_" + p.name() + ".assign(ko);\n");
@@ -562,10 +567,12 @@ public final class PageProcessor extends AbstractProcessor {
                 w.write("}\n");
             } else {
                 w.write("private " + tn + " prop_" + p.name() + ";\n");
+                w.write("@Exported\n");
                 w.write("public " + tn + " " + gs[0] + "() {\n");
                 w.write("  if (locked) throw new IllegalStateException();\n");
                 w.write("  return prop_" + p.name() + ";\n");
                 w.write("}\n");
+                w.write("@Exported\n");
                 w.write("public void " + gs[1] + "(" + tn + " v) {\n");
                 w.write("  if (locked) throw new IllegalStateException();\n");
                 w.write("  prop_" + p.name() + " = v;\n");
@@ -621,6 +628,7 @@ public final class PageProcessor extends AbstractProcessor {
             final String sn = ee.getSimpleName().toString();
             String[] gs = toGetSet(sn, tn, array);
             
+            w.write("@Exported\n");
             w.write("public " + tn + " " + gs[0] + "() {\n");
             w.write("  if (locked) throw new IllegalStateException();\n");
             int arg = 0;
@@ -796,6 +804,7 @@ public final class PageProcessor extends AbstractProcessor {
                 return false;
             }
             String n = e.getSimpleName().toString();
+            body.append("@Exported\n");
             body.append("private void ").append(n).append("(Object data, Object ev) {\n");
             body.append("  ").append(clazz.getSimpleName()).append(".").append(n).append("(");
             body.append(wrapParams(e, null, className, "ev", "data"));

@@ -25,11 +25,13 @@ import java.util.Set;
 import java.util.TreeMap;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+@ExtraJavaScript(processByteCode = false, resource = "")
 class ProcessPage {
     private final Map<String,String> ids2Elems = new TreeMap<String, String>();
     

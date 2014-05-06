@@ -1186,7 +1186,7 @@ final class ByteCodeParser {
             pkgPrefixLen = classname.lastIndexOf("/") + 1;
             if (pkgPrefixLen != 0) {
                 pkgPrefix = classname.substring(0, pkgPrefixLen);
-                return ("package  " + pkgPrefix.substring(0, pkgPrefixLen - 1) + ";\n");
+                return /* ("package  " + */ pkgPrefix.substring(0, pkgPrefixLen - 1) /* + ";\n") */;
             } else {
                 return null;
             }
@@ -1237,6 +1237,30 @@ final class ByteCodeParser {
             String[] arr = new String[3];
             arr[0] = getClassName(c2.cpx1);
             return getNameAndType(c2.cpx2, 1, arr);
+        }
+
+        public MethodData findMethod(String name, String signature) {
+            for (MethodData md: methods) {
+                if (md.getName().equals(name)
+                        && md.getInternalSig().equals(signature)) {
+                    return md;
+                }
+            }
+
+            // not found
+            return null;
+        }
+
+        public FieldData findField(String name, String signature) {
+            for (FieldData fd: fields) {
+                if (fd.getName().equals(name)
+                        && fd.getInternalSig().equals(signature)) {
+                    return fd;
+                }
+            }
+
+            // not found
+            return null;
         }
 
         static byte[] findAttr(String n, AttrData[] attrs) {
