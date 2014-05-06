@@ -639,11 +639,8 @@ class Array {
 //        + "java.lang.System.out.println('Assigned ' + arr.jvmName + ' fn: ' + (!!arr.fnc));\n"
         + "return arr;"
     )
-    private static native Object newArray0(boolean primitive, String sig, Object fn, int length);
     @Exported
-    private static Object newArray(boolean primitive, String sig, Object fn, int length) {
-        return newArray0(primitive, sig, fn, length);
-    }
+    private static native Object newArray(boolean primitive, String sig, Object fn, int length);
 
 
     @Exported
