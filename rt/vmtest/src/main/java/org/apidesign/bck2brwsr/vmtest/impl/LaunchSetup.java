@@ -18,8 +18,10 @@
 package org.apidesign.bck2brwsr.vmtest.impl;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import org.apidesign.bck2brwsr.launcher.Launcher;
 import org.testng.annotations.AfterGroups;
 import org.testng.annotations.BeforeGroups;
@@ -44,7 +46,14 @@ public final class LaunchSetup {
         if (js == null && create) {
             final String p = System.getProperty("vmtest.js", "script"); // NOI18N
             switch (p) {
-                case "brwsr": js = Launcher.createBrowser(null); break; // NOI18N
+                case "brwsr": // NOI18N
+                    String cmd = null;
+                    String pb = System.getProperty("vmtest.brwsrs"); // NOI18N
+                    if (pb != null) {
+                        cmd = pb.split(",")[0]; // NOI18N
+                    }
+                    js = brwsr(cmd);
+                    break;
                 case "script": js = Launcher.createJavaScript(); break; // NOI18N
                 default: throw new IllegalArgumentException(
                     "Unknown value of vmtest.js property: " + p
@@ -65,20 +74,22 @@ public final class LaunchSetup {
 
     @BeforeGroups("run")
     public void initializeLauncher() throws IOException {
+        Set<Launcher> all = new HashSet<>(brwsrs.values());
         if (js(false) != null) {
-            js(true).initialize();
+            all.add(js(true));
         }
-        for (Launcher launcher : brwsrs.values()) {
+        for (Launcher launcher : all) {
             launcher.initialize();
         }
     }
 
     @AfterGroups("run")
     public void shutDownLauncher() throws IOException, InterruptedException {
+        Set<Launcher> all = new HashSet<>(brwsrs.values());
         if (js(false) != null) {
-            js(true).shutdown();
+            all.add(js(true));
         }
-        for (Launcher launcher : brwsrs.values()) {
+        for (Launcher launcher : all) {
             launcher.shutdown();
         }
     }
