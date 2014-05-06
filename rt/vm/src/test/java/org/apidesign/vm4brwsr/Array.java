@@ -115,7 +115,40 @@ public class Array {
     }
     
     public static boolean instanceOfArray(Object obj) {
+        if ("string-array".equals(obj)) {
+            obj = new String[] { "Ahoj" };
+        }
         return obj instanceof Object[];
+    }
+    
+    public static boolean castArray(int type) {
+        try {
+            Object orig = new Object();
+            Object res = orig;
+            if (type == 0) {
+                Object[] arr = new Integer[1];
+                String[] str = (String[]) arr;
+                res = str;
+            }
+            if (type == 1) {
+                Object[] arr = null;
+                String[] str = (String[]) arr;
+                res = str;
+            }
+            if (type == 2) {
+                Object[] arr = new String[1];
+                String[] str = (String[]) arr;
+                res = str;
+            }
+            if (type == 3) {
+                Object[] arr = new String[1];
+                CharSequence[] str = (CharSequence[]) arr;
+                res = str;
+            }
+            return res != orig;
+        } catch (ClassCastException ex) {
+            return false;
+        }
     }
     
     public static int sum(int size) {

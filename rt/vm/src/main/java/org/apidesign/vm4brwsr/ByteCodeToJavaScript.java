@@ -2201,32 +2201,56 @@ abstract class ByteCodeToJavaScript implements Appendable {
     }
 
     private void generateInstanceOf(int indx, final StackMapper smapper) throws IOException {
-        final String type = jc.getClassName(indx);
+        String type = jc.getClassName(indx);
         if (!type.startsWith("[")) {
             emit(smapper, this, 
                     "var @2 = @1 != null && @1['$instOf_@3'] ? 1 : 0;",
                  smapper.popA(), smapper.pushI(),
                  type.replace('/', '_'));
         } else {
-            emit(smapper, this, 
-                "var @2 = vm.java_lang_Class(false)['forName__Ljava_lang_Class_2Ljava_lang_String_2']('@3')['isInstance__ZLjava_lang_Object_2'](@1);",
-                smapper.popA(), smapper.pushI(),
-                type
-            );
+            int cnt = 0;
+            while (type.charAt(cnt) == '[') {
+                cnt++;
+            }
+            if (type.charAt(cnt) == 'L') {
+                type = "vm." + mangleClassName(type.substring(cnt + 1, type.length() - 1));
+                emit(smapper, this, 
+                    "var @2 = Array.prototype['isInstance__ZLjava_lang_Object_2ILjava_lang_Object_2'](@1, @4, @3);",
+                    smapper.popA(), smapper.pushI(),
+                    type, "" + cnt
+                );
+            } else {
+                emit(smapper, this, 
+                    "var @2 = Array.prototype['isInstance__ZLjava_lang_Object_2Ljava_lang_String_2'](@1, '@3');",
+                    smapper.popA(), smapper.pushI(), type
+                );
+            }
         }
     }
 
     private void generateCheckcast(int indx, final StackMapper smapper) throws IOException {
-        final String type = jc.getClassName(indx);
+        String type = jc.getClassName(indx);
         if (!type.startsWith("[")) {
             emitNoFlush(smapper, 
                  "if (@1 !== null && !@1['$instOf_@2']) throw vm.java_lang_ClassCastException(true);",
                  smapper.getT(0, VarType.REFERENCE, false), type.replace('/', '_'));
         } else {
-            emitNoFlush(smapper, 
-                "vm.java_lang_Class(false)['forName__Ljava_lang_Class_2Ljava_lang_String_2']('@2')['cast__Ljava_lang_Object_2Ljava_lang_Object_2'](@1);",
-                 smapper.getT(0, VarType.REFERENCE, false), type
-            );
+            int cnt = 0;
+            while (type.charAt(cnt) == '[') {
+                cnt++;
+            }
+            if (type.charAt(cnt) == 'L') {
+                type = "vm." + mangleClassName(type.substring(cnt + 1, type.length() - 1));
+                emitNoFlush(smapper, 
+                    "if (@1 !== null && !Array.prototype['isInstance__ZLjava_lang_Object_2ILjava_lang_Object_2'](@1, @3, @2)) throw vm.java_lang_ClassCastException(true);",
+                     smapper.getT(0, VarType.REFERENCE, false), type, "" + cnt
+                );
+            } else {
+                emitNoFlush(smapper, 
+                    "if (@1 !== null && !Array.prototype['isInstance__ZLjava_lang_Object_2Ljava_lang_String_2'](@1, '@2')) throw vm.java_lang_ClassCastException(true);",
+                     smapper.getT(0, VarType.REFERENCE, false), type
+                );
+            }
         }
     }
 

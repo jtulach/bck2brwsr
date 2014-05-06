@@ -642,7 +642,40 @@ class Array {
     @Exported
     private static native Object newArray(boolean primitive, String sig, Object fn, int length);
 
+    @Exported
+    private static boolean isInstance(Object arr, String sig)  {
+        if (arr == null) {
+            return false;
+        }
+        return sig.equals(arr.getClass().getName());
+    }
+    
+    @Exported
+    private static boolean isInstance(Object arr, int dimensions, Object fn) throws ClassNotFoundException {
+        if (arr == null) {
+            return false;
+        }
+//        log("isInstance for " + arr + " and " + dimensions);
+        Class<?> c = arr.getClass();
+        while (dimensions-- > 0) {
+//            log(" class: " + c);
+            c = c.getComponentType();
+//            log(" next class: " + c);
+            if (c == null) {
+                return false;
+            }
+        }
+        Class<?> t = classFromFn(fn);
+//        log(" to check: " + t);
+        return t.isAssignableFrom(c);
+    }
+    
+    @JavaScriptBody(args = { "cntstr" }, body = "return cntstr(false).constructor.$class;")
+    private static native Class<?> classFromFn(Object cntstr);
 
+//    @JavaScriptBody(args = { "m" }, body = "java.lang.System.out.println(m.toString().toString());")
+//    private static native void log(Object m);
+    
     @Exported
     private static Object multiNewArray(String sig, int[] dims, int index)
     throws IllegalArgumentException, NegativeArraySizeException {
