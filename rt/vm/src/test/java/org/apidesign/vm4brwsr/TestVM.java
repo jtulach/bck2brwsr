@@ -210,10 +210,7 @@ public final class TestVM {
     }
 
     private static void defineAtoB(ScriptEngine js) throws ScriptException {
-        js.eval("atob = function(s) { return org.apidesign.vm4brwsr.ResourcesTest.parseBase64Binary(s); }");
-        
-        Object ahoj = js.eval("atob('QWhvag==')");
-        assertEquals(ahoj, "Ahoj", "Verify the atob function behaves properly");
+        js.eval("atob = function(s) { return new String(org.apidesign.vm4brwsr.ResourcesTest.parseBase64Binary(s)); }");
     }
 
     Object loadClass(String loadClass, String name) throws ScriptException, NoSuchMethodException {
