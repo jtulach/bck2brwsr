@@ -151,7 +151,7 @@ public final
     public static Class<?> forName(String className)
     throws ClassNotFoundException {
         if (className.startsWith("[")) {
-            Class<?> arrType = defineArray(className);
+            Class<?> arrType = defineArray(className, null);
             Class<?> c = arrType;
             while (c != null && c.isArray()) {
                 c = c.getComponentType0(); // verify component type is sane
@@ -1544,13 +1544,24 @@ public final
     public Class<?> getComponentType() {
         if (isArray()) {
             try {
-                return getComponentType0();
+                Class<?> c = getComponentTypeByFnc();
+                return c != null ? c : getComponentType0();
             } catch (ClassNotFoundException cnfe) {
                 throw new IllegalStateException(cnfe);
             }
         }
         return null;
     }
+    
+    @JavaScriptBody(args = {  }, body = 
+        "if (this.fnc) {\n"
+      + "  var c = this.fnc(false).constructor.$class;\n"
+//      + "  java.lang.System.out.println('will call: ' + (!!this.fnc) + ' res: ' + c.jvmName);\n"
+      + "  if (c) return c;\n"
+      + "}\n"
+      + "return null;"
+    )
+    private native Class<?> getComponentTypeByFnc();
 
     private Class<?> getComponentType0() throws ClassNotFoundException {
         String n = getName().substring(1);
@@ -1577,24 +1588,26 @@ public final
             case 'C':
                 return Character.TYPE;
             case '[':
-                return defineArray(n);
+                return defineArray(n, null);
             default:
                 throw new ClassNotFoundException("Unknown component type of " + getName());
         }
     }
     
-    @JavaScriptBody(args = { "sig" }, body = 
+    @JavaScriptBody(args = { "sig", "fnc" }, body = 
         "if (!sig) sig = '[Ljava/lang/Object;';\n" +
         "var c = Array[sig];\n" +
-        "if (c) return c;\n" +
-        "c = vm.java_lang_Class(true);\n" +
-        "c.jvmName = sig;\n" +
-        "c.superclass = vm.java_lang_Object(false).$class;\n" +
-        "c.array = true;\n" +
-        "Array[sig] = c;\n" +
+        "if (!c) {\n" +
+        "  c = vm.java_lang_Class(true);\n" +
+        "  c.jvmName = sig;\n" +
+        "  c.superclass = vm.java_lang_Object(false).$class;\n" +
+        "  c.array = true;\n" +
+        "  Array[sig] = c;\n" +
+        "}\n" +
+        "if (!c.fnc) c.fnc = fnc;\n" +
         "return c;"
     )
-    private static native Class<?> defineArray(String sig);
+    private static native Class<?> defineArray(String sig, Object fnc);
     
     /**
      * Returns true if and only if this class was declared as an enum in the

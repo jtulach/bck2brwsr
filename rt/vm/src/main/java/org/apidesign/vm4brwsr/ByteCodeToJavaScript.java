@@ -2117,20 +2117,22 @@ abstract class ByteCodeToJavaScript implements Appendable {
             default: throw new IllegalStateException("Array type: " + atype);
         }
         emit(smapper, this, 
-            "var @2 = Array.prototype['newArray__Ljava_lang_Object_2ZLjava_lang_String_2I'](true, '@3', @1);",
+            "var @2 = Array.prototype['newArray__Ljava_lang_Object_2ZLjava_lang_String_2Ljava_lang_Object_2I'](true, '@3', null, @1);",
              smapper.popI(), smapper.pushA(), jvmType);
     }
 
     private void generateANewArray(int type, final StackMapper smapper) throws IOException {
         String typeName = jc.getClassName(type);
+        String ref = "null";
         if (typeName.startsWith("[")) {
-            typeName = "[" + typeName;
+            typeName = "'[" + typeName + "'";
         } else {
-            typeName = "[L" + typeName + ";";
+            ref = "vm." + mangleClassName(typeName);
+            typeName = "'[L" + typeName + ";'";
         }
         emit(smapper, this,
-            "var @2 = Array.prototype['newArray__Ljava_lang_Object_2ZLjava_lang_String_2I'](false, '@3', @1);",
-             smapper.popI(), smapper.pushA(), typeName);
+            "var @2 = Array.prototype['newArray__Ljava_lang_Object_2ZLjava_lang_String_2Ljava_lang_Object_2I'](false, @3, @4, @1);",
+             smapper.popI(), smapper.pushA(), typeName, ref);
     }
 
     private int generateMultiANewArray(int type, final byte[] byteCodes, int i, final StackMapper smapper) throws IOException {

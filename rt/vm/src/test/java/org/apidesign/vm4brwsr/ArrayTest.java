@@ -43,6 +43,13 @@ public class ArrayTest {
             Double.valueOf(15), true
         );
     }
+
+    @Test public void cloneOnArrayAndComponentType() throws Exception {
+        String exp = Array.nameOfClonedComponent();
+        assertExec("getComponentType on clone", Array.class, "nameOfClonedComponent__Ljava_lang_String_2", 
+            exp
+        );
+    }
     
     @Test public void realOperationOnArrays() throws Exception {
         assertEquals(Array.sum(), 105.0, "Computes to 105");

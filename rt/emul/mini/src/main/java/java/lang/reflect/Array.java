@@ -76,7 +76,7 @@ class Array {
             throw new NegativeArraySizeException();
         }
         String sig = findSignature(componentType);
-        return newArray(componentType.isPrimitive(), sig, length);
+        return newArray(componentType.isPrimitive(), sig, null, length);
     }
     
     private static String findSignature(Class<?> type) {
@@ -630,24 +630,29 @@ class Array {
      * Private
      */
 
-    @JavaScriptBody(args = { "primitive", "sig", "length" }, body =
+    @JavaScriptBody(args = { "primitive", "sig", "fn", "length" }, body =
           "var arr = new Array(length);\n"
         + "var value = primitive ? 0 : null;\n"
         + "for(var i = 0; i < length; i++) arr[i] = value;\n"
         + "arr.jvmName = sig;\n"
+        + "arr.fnc = fn;\n"
+//        + "java.lang.System.out.println('Assigned ' + arr.jvmName + ' fn: ' + (!!arr.fnc));\n"
         + "return arr;"
     )
+    private static native Object newArray0(boolean primitive, String sig, Object fn, int length);
     @Exported
-    private static native Object newArray(boolean primitive, String sig, int length);
+    private static Object newArray(boolean primitive, String sig, Object fn, int length) {
+        return newArray0(primitive, sig, fn, length);
+    }
 
 
     @Exported
     private static Object multiNewArray(String sig, int[] dims, int index)
     throws IllegalArgumentException, NegativeArraySizeException {
         if (dims.length == index + 1) {
-            return newArray(sig.length() == 2, sig, dims[index]);
+            return newArray(sig.length() == 2, sig, null, dims[index]);
         }
-        Object arr = newArray(false, sig, dims[index]);
+        Object arr = newArray(false, sig, null, dims[index]);
         String compsig = sig.substring(1);
         int len = getLength(arr);
         for (int i = 0; i < len; i++) {

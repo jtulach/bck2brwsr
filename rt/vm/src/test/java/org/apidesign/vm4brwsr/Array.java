@@ -17,6 +17,8 @@
  */
 package org.apidesign.vm4brwsr;
 
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
@@ -131,6 +133,21 @@ public class Array {
         char[] arr = { '0' };
         arraycopy(arr()[0][0].chars, 0, arr, 0, 1);
         return arr[0];
+    }
+    
+    @JavaScriptBody(args = {  }, body = 
+        "if (!vm.java_lang_Class(false).forName__Ljava_lang_Class_2Ljava_lang_String_2) throw 'forName not defined';\n"
+      + "vm.java_lang_Class(false).forName__Ljava_lang_Class_2Ljava_lang_String_2 = function(s) {\n"
+      + "  throw 'Do not call me: ' + s;\n"
+      + "};\n")
+    private static void disableClassForName() {
+    }
+    
+    public static String nameOfClonedComponent() {
+        disableClassForName();
+        Object[] intArr = new Integer[10];
+        intArr = intArr.clone();
+        return intArr.getClass().getComponentType().getName();
     }
     
     public static int multiLen() {

@@ -14,7 +14,7 @@ Array.at = function(arr, indx, value) {
   return arr[indx];
 };
 Array.prototype.getClass__Ljava_lang_Class_2 = function() {
-  return vm.java_lang_Class(false).defineArray__Ljava_lang_Class_2Ljava_lang_String_2(this.jvmName);
+  return vm.java_lang_Class(false).defineArray__Ljava_lang_Class_2Ljava_lang_String_2Ljava_lang_Object_2(this.jvmName, this.fnc);
 };
 Array.prototype.clone__Ljava_lang_Object_2 = function() {
   var s = this.length;
@@ -23,5 +23,6 @@ Array.prototype.clone__Ljava_lang_Object_2 = function() {
       ret[i] = this[i];
   }
   ret.jvmName = this.jvmName;
+  ret.fnc = this.fnc;
   return ret;
 };
