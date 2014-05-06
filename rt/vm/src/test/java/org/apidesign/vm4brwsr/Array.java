@@ -77,6 +77,7 @@ public class Array {
     }
     
     public static double sum() {
+        disableClassForName();
         double sum = 0.0;
         for (Array[] row : arr()) {
             int indx = -1;
@@ -111,7 +112,11 @@ public class Array {
     }
     
     public static String objectArrayClass() {
-        return Object[].class.getName();
+        enableClassForName(prevClassForName);
+        prevClassForName = null;
+        String s = Object[].class.getName();
+        disableClassForName();
+        return s;
     }
     
     public static boolean instanceOfArray(Object obj) {
@@ -169,13 +174,29 @@ public class Array {
     }
     
     @JavaScriptBody(args = {  }, body = 
-        "if (!vm.java_lang_Class(false).forName__Ljava_lang_Class_2Ljava_lang_String_2) throw 'forName not defined';\n"
+        "var prev = vm.java_lang_Class(false).forName__Ljava_lang_Class_2Ljava_lang_String_2;\n"
+      + "if (!prev) throw 'forName not defined';\n"
       + "vm.java_lang_Class(false).forName__Ljava_lang_Class_2Ljava_lang_String_2 = function(s) {\n"
       + "  throw 'Do not call me: ' + s;\n"
-      + "};\n")
-    private static void disableClassForName() {
+      + "};\n"
+      + "return prev;\n")
+    private static Object disableClassForNameImpl() {
+        return null;
     }
     
+    private static void disableClassForName() {
+        if (prevClassForName == null) {
+            prevClassForName = disableClassForNameImpl();
+        }
+    }
+    
+    @JavaScriptBody(args = { "fn" }, body = 
+        "if (fn !== null) vm.java_lang_Class(false).forName__Ljava_lang_Class_2Ljava_lang_String_2 = fn;"
+    )
+    private static void enableClassForName(Object fn) {
+    }
+    
+    private static Object prevClassForName;
     public static String nameOfClonedComponent() {
         disableClassForName();
         Object[] intArr = new Integer[10];

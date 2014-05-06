@@ -2147,9 +2147,14 @@ abstract class ByteCodeToJavaScript implements Appendable {
             dims.insert(1, smapper.popI());
         }
         dims.append(']');
+        String fn = "null";
+        if (typeName.charAt(dim) == 'L') {
+            fn = "vm." + mangleClassName(typeName.substring(dim + 1, typeName.length() - 1));
+        }
         emit(smapper, this, 
-            "var @2 = Array.prototype['multiNewArray__Ljava_lang_Object_2Ljava_lang_String_2_3II']('@3', @1, 0);",
-             dims.toString(), smapper.pushA(), typeName);
+            "var @2 = Array.prototype['multiNewArray__Ljava_lang_Object_2Ljava_lang_String_2_3ILjava_lang_Object_2']('@3', @1, @4);",
+             dims.toString(), smapper.pushA(), typeName, fn
+        );
         return i;
     }
 

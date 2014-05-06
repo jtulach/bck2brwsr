@@ -677,16 +677,20 @@ class Array {
 //    private static native void log(Object m);
     
     @Exported
-    private static Object multiNewArray(String sig, int[] dims, int index)
+    private static Object multiNewArray(String sig, int[] dims, Object fn)
+    throws IllegalArgumentException, NegativeArraySizeException {
+        return multiNewArray(sig, dims, 0, fn);
+    }
+    private static Object multiNewArray(String sig, int[] dims, int index, Object fn)
     throws IllegalArgumentException, NegativeArraySizeException {
         if (dims.length == index + 1) {
-            return newArray(sig.length() == 2, sig, null, dims[index]);
+            return newArray(sig.length() == 2, sig, fn, dims[index]);
         }
         Object arr = newArray(false, sig, null, dims[index]);
         String compsig = sig.substring(1);
         int len = getLength(arr);
         for (int i = 0; i < len; i++) {
-            setArray(arr, i, multiNewArray(compsig, dims, index + 1));
+            setArray(arr, i, multiNewArray(compsig, dims, index + 1, fn));
         }
         return arr;
     }
