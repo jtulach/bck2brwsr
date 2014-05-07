@@ -1118,7 +1118,11 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     break;
                 case opc_dup: {
                     final Variable v = smapper.get(0);
-                    emit(smapper, this, "var @1 = @2;", smapper.pushT(v.getType()), v);
+                    if (smapper.isDirty()) {
+                        emit(smapper, this, "var @1 = @2;", smapper.pushT(v.getType()), v);
+                    } else {
+                        smapper.assign(this, v.getType(), v);
+                    }   
                     break;
                 }
                 case opc_dup2: {
