@@ -1185,8 +1185,6 @@ public final class String
         int len1 = length();
         int len2 = anotherString.length();
         int n = Math.min(len1, len2);
-        char v1[] = toCharArray();
-        char v2[] = anotherString.toCharArray();
         int i = offset();
         int j = anotherString.offset();
 
@@ -1194,8 +1192,8 @@ public final class String
             int k = i;
             int lim = n + i;
             while (k < lim) {
-                char c1 = v1[k];
-                char c2 = v2[k];
+                char c1 = this.charAt(k);
+                char c2 = anotherString.charAt(k);
                 if (c1 != c2) {
                     return c1 - c2;
                 }
@@ -1203,8 +1201,8 @@ public final class String
             }
         } else {
             while (n-- != 0) {
-                char c1 = v1[i++];
-                char c2 = v2[j++];
+                char c1 = this.charAt(i++);
+                char c2 = anotherString.charAt(j++);
                 if (c1 != c2) {
                     return c1 - c2;
                 }
