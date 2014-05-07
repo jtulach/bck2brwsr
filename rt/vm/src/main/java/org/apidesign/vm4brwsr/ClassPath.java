@@ -19,25 +19,15 @@ package org.apidesign.vm4brwsr;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
-import org.apidesign.bck2brwsr.emul.zip.FastJar;
 
 /** Conversion from classpath to load function.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-final class Zips {
-    private final FastJar fj;
-
-    private Zips(String path, byte[] zipData) throws IOException {
-        long bef = timeNow();
-        fj = new FastJar(zipData);
-        for (FastJar.Entry e : fj.list()) {
-            putRes(e.name, e);
-        }
-        log("Iterating thru " + path + " took " + (timeNow() - bef) + "ms");
+final class ClassPath {
+    private ClassPath() {
     }
     
     public static void init() {
@@ -56,7 +46,7 @@ final class Zips {
             if (c instanceof String) {
                 try {
                     String url = (String)c;
-                    final Zips z = toZip(url);
+                    final ZipHandler z = ZipHandler.toZip(url);
                     c = set(classpath, i, z);
                     final byte[] man = z.findRes("META-INF/MANIFEST.MF");
                     if (man != null) {
@@ -72,8 +62,8 @@ final class Zips {
             }
             if (res != null) {
                 byte[] checkRes;
-                if (c instanceof Zips) {
-                    checkRes = ((Zips)c).findRes(res);
+                if (c instanceof ZipHandler) {
+                    checkRes = ((ZipHandler)c).findRes(res);
                     if (checkRes != null && --skip < 0) {
                         return checkRes;
                     }
@@ -96,30 +86,6 @@ final class Zips {
     
     @JavaScriptBody(args = { "msg" }, body = "if (typeof console !== 'undefined') console.log(msg.toString());")
     private static native void log(String msg);
-
-    private byte[] findRes(String res) throws IOException {
-        Object arr = findResImpl(res);
-        if (arr instanceof FastJar.Entry) {
-            long bef = timeNow();
-            InputStream zip = fj.getInputStream((FastJar.Entry)arr);
-            arr = readFully(new byte[512], zip);
-            putRes(res, arr);
-            log("Reading " + res + " took " + (timeNow() - bef) + "ms");
-        }
-        return (byte[]) arr;
-    }
-
-    @JavaScriptBody(args = { "res" }, body = "var r = this[res]; return r ? r : null;")
-    private native Object findResImpl(String res);
-
-    @JavaScriptBody(args = { "res", "arr" }, body = "this[res] = arr;")
-    private native void putRes(String res, Object arr);
-    
-    private static Zips toZip(String path) throws IOException {
-        URL u = new URL(path);
-        byte[] zipData = (byte[]) u.getContent(new Class[] { byte[].class });
-        return new Zips(path, zipData);
-    }
 
     private static String processClassPathAttr(final byte[] man, String url, Object classpath) throws IOException {
         try (ParseMan is = new ParseMan(new ByteArrayInputStream(man))) {
@@ -150,41 +116,4 @@ final class Zips {
 
     @JavaScriptBody(args = { "arr", "len" }, body = "while (arr.length < len) arr.push(null); return arr;")
     private static native Object enlargeArray(Object arr, int len);
-    @JavaScriptBody(args = { "arr", "len" }, body = "while (arr.length < len) arr.push(0);")
-    private static native void enlargeBytes(byte[] arr, int len);
-
-    @JavaScriptBody(args = { "arr", "len" }, body = "arr.splice(len, arr.length - len);")
-    private static native void sliceArray(byte[] arr, int len);
-
-    private static Object readFully(byte[] arr, InputStream zip) throws IOException {
-        int offset = 0;
-        for (;;) {
-            int len = zip.read(arr, offset, arr.length - offset);
-            if (len == -1) {
-                break;
-            }
-            offset += len;
-            if (offset == arr.length) {
-                enlargeBytes(arr, arr.length + 4096);
-            }
-        }
-        sliceArray(arr, offset);
-        return arr;
-    }
-
-    private static long timeNow() {
-        double time = m();
-        if (time >= 0) {
-            return (long)time;
-        }
-        return org.apidesign.bck2brwsr.emul.lang.System.currentTimeMillis();
-    }
-    @JavaScriptBody(args = {}, body = 
-        "if (typeof window.performance === 'undefined') return -1;\n"
-      + "if (typeof window.performance.now === 'undefined') return -1;\n"
-      + "return window.performance.now();"
-    )
-    private static native double m();
-    
-    
 }

@@ -55,7 +55,7 @@ abstract class VM extends ByteCodeToJavaScript {
         assert assertsOn = true;
         if (assertsOn) {
             VMLazy.init();
-            Zips.init();
+            ClassPath.init();
         }
     }
 
