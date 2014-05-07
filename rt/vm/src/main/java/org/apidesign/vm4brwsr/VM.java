@@ -612,15 +612,18 @@ abstract class VM extends ByteCodeToJavaScript {
         protected void generatePrologue() throws IOException {
             append("bck2brwsr.registerExtension(function(exports) {\n"
                            + "  var vm = {};\n");
-            append("  function link(n, inst) {\n"
-                           + "    var cls = n['replace__Ljava_lang_String_2CC']"
-                                                  + "('/', '_').toString();\n"
-                           + "    var dot = n['replace__Ljava_lang_String_2CC']"
-                                                  + "('/', '.').toString();\n"
-                           + "    exports.loadClass(dot);\n"
-                           + "    vm[cls] = exports[cls];\n"
-                           + "    return vm[cls](inst);\n"
-                           + "  };\n");
+            append("  function link(n) {\n"
+                + "    return function() {\n"
+                + "      var cls = n['replace__Ljava_lang_String_2CC']"
+                                       + "('/', '_').toString();\n"
+                + "      var dot = n['replace__Ljava_lang_String_2CC']"
+                                       + "('/', '.').toString();\n"
+                + "      exports.loadClass(dot);\n"
+                + "      vm[cls] = exports[cls];\n"
+                + "      return vm[cls](arguments);\n"
+                + "    };\n"
+                + "  };\n"
+            );
         }
 
         @Override
@@ -633,10 +636,9 @@ abstract class VM extends ByteCodeToJavaScript {
             if (isExternalClass(className)) {
                 append("\n").append(assignClass(
                                             className.replace('/', '_')))
-                   .append("function() {\n  return link('")
+                   .append("link('")
                    .append(className)
-                   .append("', arguments.length == 0 || arguments[0] === true);"
-                               + "\n};");
+                   .append("');");
 
                 return null;
             }
