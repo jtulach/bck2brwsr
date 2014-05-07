@@ -144,9 +144,6 @@ class CompileCP {
         while (en.hasMoreElements()) {
             JarEntry e = en.nextElement();
             final String n = e.getName();
-            if (n.contains("package-info")) {
-                continue;
-            }
             if (n.endsWith("/")) {
                 continue;
             }
@@ -192,9 +189,6 @@ class CompileCP {
     private static void listDir(File f, String pref, List<String> classes, List<String> resources) throws IOException {
         File[] arr = f.listFiles();
         if (arr == null) {
-            if (f.getName().equals("package-info.class")) {
-                return;
-            }
             if (f.getName().endsWith(".class")) {
                 classes.add(pref + f.getName().substring(0, f.getName().length() - 6));
             } else {

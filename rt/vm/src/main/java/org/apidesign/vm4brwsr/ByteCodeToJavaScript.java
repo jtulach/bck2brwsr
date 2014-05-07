@@ -19,6 +19,7 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Locale;
 import static org.apidesign.vm4brwsr.ByteCodeParser.*;
 
 /** Translator of the code inside class files to JavaScript.
@@ -1533,7 +1534,18 @@ abstract class ByteCodeToJavaScript implements Appendable {
                 case '_': sb.append("_1"); break;
                 case ';': sb.append("_2"); break;
                 case '[': sb.append("_3"); break;
-                default: sb.append(ch); break;
+                default: 
+                    if (Character.isJavaIdentifierPart(ch)) {
+                        sb.append(ch);
+                    } else {
+                        sb.append("_0");
+                        String hex = Integer.toHexString(ch).toLowerCase(Locale.ENGLISH);
+                        for (int m = hex.length(); m < 4; m++) {
+                            sb.append("0");
+                        }
+                        sb.append(hex);
+                    }
+                break;
             }
         }
         return sb.toString();
