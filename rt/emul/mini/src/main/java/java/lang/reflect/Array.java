@@ -75,40 +75,10 @@ class Array {
         if (length < 0) {
             throw new NegativeArraySizeException();
         }
-        String sig = findSignature(componentType);
+        String sig = Method.findArraySignature(componentType);
         return newArray(componentType.isPrimitive(), sig, null, length);
     }
     
-    private static String findSignature(Class<?> type) {
-        if (type == Integer.TYPE) {
-            return "[I";
-        }
-        if (type == Long.TYPE) {
-            return "[J";
-        }
-        if (type == Double.TYPE) {
-            return "[D";
-        }
-        if (type == Float.TYPE) {
-            return "[F";
-        }
-        if (type == Byte.TYPE) {
-            return "[B";
-        }
-        if (type == Boolean.TYPE) {
-            return "[Z";
-        }
-        if (type == Short.TYPE) {
-            return "[S";
-        }
-        if (type == Character.TYPE) {
-            return "[C";
-        }
-        if (type.getName().equals("void")) {
-            throw new IllegalStateException("Can't create array for " + type);
-        }
-        return "[L" + type.getName().replace('.', '/') + ";";
-    }
     /**
      * Creates a new array
      * with the specified component type and dimensions.
@@ -148,7 +118,7 @@ class Array {
         for (int i = 1; i < dimensions.length; i++) {
             sig.append('[');
         }
-        sig.append(findSignature(componentType));
+        sig.append(Method.findArraySignature(componentType));
         return multiNewArray(sig.toString(), dimensions, 0);
     }
 
@@ -234,7 +204,7 @@ class Array {
      */
     public static byte getByte(Object array, int index)
     throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
-        if (array.getClass().getComponentType() != Byte.TYPE) {
+        if (!Method.samePrimitive(array.getClass().getComponentType(), Byte.TYPE)) {
             throw new IllegalArgumentException();
         }
         byte[] arr = (byte[]) array;
@@ -279,7 +249,7 @@ class Array {
     public static short getShort(Object array, int index)
     throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
         final Class<?> t = array.getClass().getComponentType();
-        if (t == Short.TYPE) {
+        if (Method.samePrimitive(t, Short.TYPE)) {
             short[] arr = (short[]) array;
             return arr[index];
         }
@@ -305,7 +275,7 @@ class Array {
     public static int getInt(Object array, int index) 
     throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
         final Class<?> t = array.getClass().getComponentType();
-        if (t == Integer.TYPE) {
+        if (Method.samePrimitive(t, Integer.TYPE)) {
             int[] arr = (int[]) array;
             return arr[index];
         }
@@ -331,7 +301,7 @@ class Array {
     public static long getLong(Object array, int index)
     throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
         final Class<?> t = array.getClass().getComponentType();
-        if (t == Long.TYPE) {
+        if (Method.samePrimitive(t, Long.TYPE)) {
             long[] arr = (long[]) array;
             return arr[index];
         }
@@ -357,7 +327,7 @@ class Array {
     public static float getFloat(Object array, int index)
     throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
         final Class<?> t = array.getClass().getComponentType();
-        if (t == Float.TYPE) {
+        if (Method.samePrimitive(t, Float.TYPE)) {
             float[] arr = (float[]) array;
             return arr[index];
         }
@@ -383,7 +353,7 @@ class Array {
     public static double getDouble(Object array, int index)
     throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
         final Class<?> t = array.getClass().getComponentType();
-        if (t == Double.TYPE) {
+        if (Method.samePrimitive(t, Double.TYPE)) {
             double[] arr = (double[]) array;
             return arr[index];
         }
@@ -457,7 +427,7 @@ class Array {
     public static void setByte(Object array, int index, byte b)
     throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
         Class<?> t = array.getClass().getComponentType();
-        if (t == Byte.TYPE) {
+        if (Method.samePrimitive(t, Byte.TYPE)) {
             byte[] arr = (byte[]) array;
             arr[index] = b;
         } else {
@@ -505,7 +475,7 @@ class Array {
     public static void setShort(Object array, int index, short s)
     throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
         Class<?> t = array.getClass().getComponentType();
-        if (t == Short.TYPE) {
+        if (Method.samePrimitive(t, Short.TYPE)) {
             short[] arr = (short[]) array;
             arr[index] = s;
         } else {
@@ -534,7 +504,7 @@ class Array {
     public static void setInt(Object array, int index, int i)
     throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
         Class<?> t = array.getClass().getComponentType();
-        if (t == Integer.TYPE) {
+        if (Method.samePrimitive(t, Integer.TYPE)) {
             int[] arr = (int[]) array;
             arr[index] = i;
         } else {
@@ -562,7 +532,7 @@ class Array {
     public static void setLong(Object array, int index, long l)
     throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
         Class<?> t = array.getClass().getComponentType();
-        if (t == Long.TYPE) {
+        if (Method.samePrimitive(t, Long.TYPE)) {
             long[] arr = (long[]) array;
             arr[index] = l;
         } else {
@@ -590,7 +560,7 @@ class Array {
     public static void setFloat(Object array, int index, float f)
     throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
         Class<?> t = array.getClass().getComponentType();
-        if (t == Float.TYPE) {
+        if (Method.samePrimitive(t, Float.TYPE)) {
             float[] arr = (float[])array;
             arr[index] = f;
         } else {
@@ -618,7 +588,7 @@ class Array {
     public static void setDouble(Object array, int index, double d)
     throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
         Class<?> t = array.getClass().getComponentType();
-        if (t == Double.TYPE) {
+        if (Method.samePrimitive(t, Double.TYPE)) {
             double[] arr = (double[])array;
             arr[index] = d;
         } else {
