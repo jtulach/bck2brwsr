@@ -142,6 +142,18 @@ public class StaticMethod {
         return i.sum(nowrap?-w:w, 1);
     }
     
+    public static int intHolder() {
+        return new IntHolder(new Integer(10)).i.intValue();
+    }
+
+    private static class IntHolder {
+        Integer i;
+
+        public IntHolder(Integer i) {
+            this.i = i;
+        }
+    }
+    
     public static String toStringArr() {
         class N implements Next {
             int idx = 0;

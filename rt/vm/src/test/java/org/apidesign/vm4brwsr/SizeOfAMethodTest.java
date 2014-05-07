@@ -64,6 +64,19 @@ public class SizeOfAMethodTest {
         assertEquals(method.indexOf("stA1"), -1, "No need for stA1 register:\n" + method);
     }
 
+    @Test public void deepConstructor() {
+        String s = code;
+        int beg = s.indexOf("c.intHolder__I");
+        int end = s.indexOf("c.intHolder__I.access");
+        
+        assertTrue(beg > 0, "Found intHolder method in " + code);
+        assertTrue(beg < end, "Found end of intHolder method in " + code);
+        
+        String method = s.substring(beg, end);
+        
+        assertEquals(method.indexOf("stA3"), -1, "No need for stA3 register on second constructor:\n" + method);
+    }
+
     @Test public void emptyConstructorRequiresNoStack() {
         String s = code;
         int beg = s.indexOf("CLS.cons__V");
