@@ -15,25 +15,27 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.compact.tck;
+package org.apidesign.bck2brwsr.emul.zip;
 
-import java.io.IOException;
-import java.io.InputStream;
-import org.testng.annotations.Test;
+import java.io.UnsupportedEncodingException;
+import java.util.zip.CRC32;
+import org.apidesign.bck2brwsr.vmtest.Compare;
+import org.apidesign.bck2brwsr.vmtest.VMTest;
+import org.testng.annotations.Factory;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class ZipVsJzLibTest {
-    @Test public void r() throws IOException {
-        InputStream is = getClass().getResourceAsStream("demo.static.calculator-TEST.jar");
-        ZipArchive zip = ZipArchive.createZip(is);
-        
-        is = getClass().getResourceAsStream("demo.static.calculator-TEST.jar");
-        ZipArchive real = ZipArchive.createReal(is);
-        
-        real.assertEquals(zip, "Are they the same?");
+public class CRC32Test {
+
+    @Compare public long crc1() throws UnsupportedEncodingException {
+        CRC32 crc = new CRC32();
+        crc.update("Hello World!".getBytes("UTF-8"));
+        return crc.getValue();
     }
     
+    @Factory public static Object[] create() {
+        return VMTest.create(CRC32Test.class);
+    }
 }

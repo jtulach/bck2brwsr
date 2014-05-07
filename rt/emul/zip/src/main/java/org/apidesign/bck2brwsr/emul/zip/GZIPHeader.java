@@ -34,7 +34,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package org.apidesign.bck2brwsr.emul.zip;
 
-import org.apidesign.bck2brwsr.emul.lang.System;
+
 import java.io.UnsupportedEncodingException;
 
 /**

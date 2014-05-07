@@ -16,5 +16,6 @@
     <module>compact</module>
     <module>brwsrtest</module>
     <module>fake</module>
+    <module>zip</module>
   </modules>
 </project>

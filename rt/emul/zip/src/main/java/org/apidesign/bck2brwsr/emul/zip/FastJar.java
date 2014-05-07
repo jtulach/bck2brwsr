@@ -100,7 +100,7 @@ public final class FastJar {
         int giveup = 0;
 
         do {
-            org.apidesign.bck2brwsr.emul.lang.System.arraycopy(arr, at, data, 0, data.length);
+            System.arraycopy(arr, at, data, 0, data.length);
             at--;
             giveup++;
             if (giveup > GIVE_UP) {
@@ -117,7 +117,7 @@ public final class FastJar {
         int cenread = 0;
         data = new byte[ZipInputStream.CENHDR];
         while (cenread < censize) {
-            org.apidesign.bck2brwsr.emul.lang.System.arraycopy(arr, at, data, 0, data.length);
+            System.arraycopy(arr, at, data, 0, data.length);
             at += data.length;
             if (getsig(data) != ZipInputStream.CENSIG) {
                 throw new IOException("No central table");          //NOI18N
@@ -141,7 +141,7 @@ public final class FastJar {
     private Entry[] addEntry(Entry[] result, Entry entry) {
         Entry[] e = new Entry[result.length + 1];
         e[result.length] = entry;
-        org.apidesign.bck2brwsr.emul.lang.System.arraycopy(result, 0, e, 0, result.length);
+        System.arraycopy(result, 0, e, 0, result.length);
         return e;
     }
 

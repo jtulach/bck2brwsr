@@ -34,7 +34,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package org.apidesign.bck2brwsr.emul.zip;
 
-import org.apidesign.bck2brwsr.emul.lang.System;
+
 
 final class Inflate{
   
@@ -684,7 +684,7 @@ final class Inflate{
   
   private static byte[] copy(byte[] arr, int len) {
       byte[] ret = new byte[len];
-      org.apidesign.bck2brwsr.emul.lang.System.arraycopy(arr, 0, ret, 0, len);
+      System.arraycopy(arr, 0, ret, 0, len);
       return ret;
   }
   private static byte[] append(byte[] arr, byte b, int index) {
