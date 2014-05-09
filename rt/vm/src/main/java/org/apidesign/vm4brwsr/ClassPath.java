@@ -19,6 +19,7 @@ package org.apidesign.vm4brwsr;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
@@ -46,9 +47,9 @@ final class ClassPath {
             if (c instanceof String) {
                 try {
                     String url = (String)c;
-                    final ZipHandler z = ZipHandler.toZip(url);
+                    final Bck2Brwsr.Resources z = toZip(url);
                     c = set(classpath, i, z);
-                    final byte[] man = z.findRes("META-INF/MANIFEST.MF");
+                    final byte[] man = readBytes(z, "META-INF/MANIFEST.MF");
                     if (man != null) {
                         String mainClass = processClassPathAttr(man, url, classpath);
 //                        if (mainClass != null) {
@@ -62,8 +63,8 @@ final class ClassPath {
             }
             if (res != null) {
                 byte[] checkRes;
-                if (c instanceof ZipHandler) {
-                    checkRes = ((ZipHandler)c).findRes(res);
+                if (c instanceof Bck2Brwsr.Resources) {
+                    checkRes = readBytes((Bck2Brwsr.Resources)c, res);
                     if (checkRes != null && --skip < 0) {
                         return checkRes;
                     }
@@ -116,4 +117,36 @@ final class ClassPath {
 
     @JavaScriptBody(args = { "arr", "len" }, body = "while (arr.length < len) arr.push(null); return arr;")
     private static native Object enlargeArray(Object arr, int len);
+    
+    private static Bck2Brwsr.Resources toZip(String path) throws IOException {
+        URL u = new URL(path);
+        byte[] zipData = (byte[]) u.getContent(new Class[]{byte[].class});
+        Bck2Brwsr.Resources r;
+        try {
+            Class<?> fastJar = Class.forName("org.apidesign.bck2brwsr.vmzip.ZipResources");
+            return (Bck2Brwsr.Resources) fastJar.getConstructor(byte[].class).newInstance(zipData);
+        } catch (Exception ex) {
+            log("Reading JARs is only possible with enum.zip module included: " + ex.getMessage());
+            ex.printStackTrace();
+            throw new IOException(ex);
+        }
+    }
+    
+    private static byte[] readBytes(Bck2Brwsr.Resources r, String res) throws IOException {
+        InputStream is = r.get(res);
+        if (is == null) {
+            return null;
+        }
+        byte[] arr = new byte[is.available()];
+        int off = 0;
+        for (;;) {
+            int len = is.read(arr, off, arr.length - off);
+            if (len == -1) {
+                break;
+            }
+            off += len;
+        }
+        is.close();
+        return arr;
+    }
 }

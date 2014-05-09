@@ -17,7 +17,6 @@
  */
 package org.apidesign.bck2brwsr.vmtest.impl;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import org.apidesign.bck2brwsr.emul.zip.FastJar;
