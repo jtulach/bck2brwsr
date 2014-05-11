@@ -40,12 +40,14 @@ final class ClassPath {
     @JavaScriptBody(args = { "arr", "index", "value" }, body = "arr[index] = value; return value;")
     private static native Object set(Object arr, int index, Object value);
     
+    private static boolean doingToZip;
     public static byte[] loadFromCp(Object classpath, String res, int skip) 
     throws IOException, ClassNotFoundException {
         for (int i = 0; i < length(classpath); i++) {
             Object c = at(classpath, i);
-            if (c instanceof String) {
+            if (c instanceof String && !doingToZip) {
                 try {
+                    doingToZip = true;
                     String url = (String)c;
                     final Bck2Brwsr.Resources z = toZip(url);
                     c = set(classpath, i, z);
@@ -59,6 +61,8 @@ final class ClassPath {
                 } catch (IOException ex) {
                     set(classpath, i, ex);
                     log("Cannot load " + c + " - " + ex.getClass().getName() + ":" + ex.getMessage());
+                } finally {
+                    doingToZip = false;
                 }
             }
             if (res != null) {
@@ -117,7 +121,7 @@ final class ClassPath {
 
     @JavaScriptBody(args = { "arr", "len" }, body = "while (arr.length < len) arr.push(null); return arr;")
     private static native Object enlargeArray(Object arr, int len);
-    
+
     private static Bck2Brwsr.Resources toZip(String path) throws IOException {
         URL u = new URL(path);
         byte[] zipData = (byte[]) u.getContent(new Class[]{byte[].class});
