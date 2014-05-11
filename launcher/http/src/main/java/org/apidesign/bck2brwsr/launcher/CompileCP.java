@@ -203,12 +203,19 @@ class CompileCP {
     }
 
     static void compileVM(StringBuilder sb, final Res r) throws IOException {
-        URL u = r.get(InterruptedException.class.getName().replace('.', '/') + ".class", 0);
-        JarURLConnection juc = (JarURLConnection)u.openConnection();
-        
         List<String> arr = new ArrayList<>();
         List<String> classes = new ArrayList<>();
-        listJAR(juc.getJarFile(), classes, arr, null, null);
+
+        {
+            URL u = r.get(InterruptedException.class.getName().replace('.', '/') + ".class", 0);
+            JarURLConnection juc = (JarURLConnection)u.openConnection();
+            listJAR(juc.getJarFile(), classes, arr, null, null);
+        }
+        {
+            URL u = r.get(Bck2Brwsr.class.getName().replace('.', '/') + ".class", 0);
+            JarURLConnection juc = (JarURLConnection)u.openConnection();
+            listJAR(juc.getJarFile(), classes, arr, null, null);
+        }
 
         Bck2Brwsr.newCompiler().addRootClasses(classes.toArray(new String[0]))
             .resources(new Bck2Brwsr.Resources() {
