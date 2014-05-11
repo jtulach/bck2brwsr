@@ -98,7 +98,7 @@ abstract class VM extends ByteCodeToJavaScript {
         }
         
         for (String r : asBinary.toArray()) {
-            append("\n  ").append(getExportsObject()).append(".registerResource('");
+            append("\n  ").append(getExportsObject()).append("['registerResource']('");
             append(r).append("', '");
             InputStream is = this.resources.get(r);
             byte[] arr = new byte[is.available()];
@@ -522,7 +522,7 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "    for (var i = 0; i < extensions.length; ++i) {\n"
                 + "      extensions[i](vm);\n"
                 + "    }\n"
-                + "    vm.registerResource = null;\n"
+                + "    vm['registerResource'] = null;\n"
                 + "    var knownExtensions = extensions.length;\n"
                 + "    var loader = {};\n"
                 + "    loader.vm = vm;\n"
@@ -535,9 +535,9 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "          load__Ljava_lang_Object_2Ljava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2(loader, name, args);\n"
                 + "      } catch (err) {\n"
                 + "        while (knownExtensions < extensions.length) {\n"
-                + "          vm.registerResource = registerResource;\n"
+                + "          vm['registerResource'] = registerResource;\n"
                 + "          extensions[knownExtensions++](vm);\n"
-                + "          vm.registerResource = null;\n"
+                + "          vm['registerResource'] = null;\n"
                 + "        }\n"
                 + "        fn = vm[attr];\n"
                 + "        if (fn) return fn(false);\n"
@@ -568,9 +568,9 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "        loadBytes___3BLjava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2I(loader, name, args, skip);\n"
                 + "      if (ret !== null) return ret;\n"
                 + "      while (knownExtensions < extensions.length) {\n"
-                + "        vm.registerResource = registerResource;\n"
+                + "        vm['registerResource'] = registerResource;\n"
                 + "        extensions[knownExtensions++](vm);\n"
-                + "        vm.registerResource = null;\n"
+                + "        vm['registerResource'] = null;\n"
                 + "      }\n"
                 + "      var arr = resources[name];\n"
                 + "      return (arr && arr.length > arrSize) ? arr[arrSize] : null;\n"
