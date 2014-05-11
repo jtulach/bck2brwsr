@@ -14,6 +14,19 @@
         virtual machine.
     </description>
     <packaging>jar</packaging>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemProperties>
+                        <vmtest.js>brwsr</vmtest.js>
+                    </systemProperties>
+                </configuration>
+            </plugin>     
+        </plugins>
+    </build>
     <dependencies>
         <dependency>
             <groupId>org.apidesign.bck2brwsr</groupId>
