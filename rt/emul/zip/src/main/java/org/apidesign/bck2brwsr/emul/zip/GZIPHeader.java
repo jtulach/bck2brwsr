@@ -194,19 +194,19 @@ final class GZIPHeader implements Cloneable {
     byte[] tmp;
     if(gheader.extra!=null){
       tmp=new byte[gheader.extra.length];
-      System.arraycopy(gheader.extra, 0, tmp, 0, tmp.length);
+      FastJar.arraycopy(gheader.extra, 0, tmp, 0, tmp.length);
       gheader.extra = tmp;
     }
 
     if(gheader.name!=null){
       tmp=new byte[gheader.name.length];
-      System.arraycopy(gheader.name, 0, tmp, 0, tmp.length);
+      FastJar.arraycopy(gheader.name, 0, tmp, 0, tmp.length);
       gheader.name = tmp;
     }
 
     if(gheader.comment!=null){
       tmp=new byte[gheader.comment.length];
-      System.arraycopy(gheader.comment, 0, tmp, 0, tmp.length);
+      FastJar.arraycopy(gheader.comment, 0, tmp, 0, tmp.length);
       gheader.comment = tmp;
     }
 

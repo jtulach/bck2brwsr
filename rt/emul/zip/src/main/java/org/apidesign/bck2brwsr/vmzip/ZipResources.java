@@ -54,7 +54,7 @@ public final class ZipResources implements Bck2Brwsr.Resources {
     private byte[] findRes(String res) throws IOException {
         Object arr = findResImpl(res);
         if (arr instanceof FastJar.Entry) {
-            long bef = timeNow();
+            double bef = timeNow();
             InputStream zip = fj.getInputStream((FastJar.Entry)arr);
             arr = readFully(new byte[512], zip);
             putRes(res, arr);
@@ -97,19 +97,12 @@ public final class ZipResources implements Bck2Brwsr.Resources {
         return arr;
     }
 
-    private static long timeNow() {
-        double time = m();
-        if (time >= 0) {
-            return (long)time;
-        }
-        return org.apidesign.bck2brwsr.emul.lang.System.currentTimeMillis();
-    }
     @JavaScriptBody(args = {}, body = 
         "if (typeof window.performance === 'undefined') return -1;\n"
       + "if (typeof window.performance.now === 'undefined') return -1;\n"
       + "return window.performance.now();"
     )
-    private static native double m();
+    private static native double timeNow();
 
     
 }

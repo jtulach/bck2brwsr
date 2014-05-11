@@ -270,7 +270,7 @@ final class InfBlocks{
 	t = left;
 	if(t>n) t = n;
 	if(t>m) t = m;
-	System.arraycopy(z.next_in, p, window, q, t);
+	FastJar.arraycopy(z.next_in, p, window, q, t);
 	p += t;  n -= t;
 	q += t;  m -= t;
 	if ((left -= t) != 0)
@@ -540,7 +540,7 @@ final class InfBlocks{
   }
 
   void set_dictionary(byte[] d, int start, int n){
-    System.arraycopy(d, start, window, 0, n);
+    FastJar.arraycopy(d, start, window, 0, n);
     read = write = n;
   }
 
@@ -575,7 +575,7 @@ final class InfBlocks{
     }
 
     // copy as far as end of window
-    System.arraycopy(window, q, z.next_out, p, n);
+    FastJar.arraycopy(window, q, z.next_out, p, n);
     p += n;
     q += n;
 
@@ -601,7 +601,7 @@ final class InfBlocks{
       }
 
       // copy
-      System.arraycopy(window, q, z.next_out, p, n);
+      FastJar.arraycopy(window, q, z.next_out, p, n);
       p += n;
       q += n;
     }

@@ -372,7 +372,7 @@ final class InfTree{
             r[1]=(byte)l;     // bits to dump before this table
             j=i>>>(w - l);
             r[2] = (int)(q - u[h-1] - j);               // offset to this table
-            System.arraycopy(r, 0, hp, (u[h-1]+j)*3, 3); // connect to last table
+            FastJar.arraycopy(r, 0, hp, (u[h-1]+j)*3, 3); // connect to last table
           }
           else{
             t[0] = q;               // first table is returned result
@@ -396,7 +396,7 @@ final class InfTree{
         // fill code-like entries with r
         f=1<<(k-w);
         for (j=i>>>w;j<z;j+=f){
-          System.arraycopy(r, 0, hp, (q+j)*3, 3);
+          FastJar.arraycopy(r, 0, hp, (q+j)*3, 3);
 	}
 
 	// backwards increment the k-bit code i
@@ -514,7 +514,7 @@ final class InfTree{
     for(int i=0; i<vsize; i++){v[i]=0;}
     for(int i=0; i<BMAX+1; i++){c[i]=0;}
     for(int i=0; i<3; i++){r[i]=0;}
-    System.arraycopy(c, 0, u, 0, BMAX);
-    System.arraycopy(c, 0, x, 0, BMAX+1);
+    FastJar.arraycopy(c, 0, u, 0, BMAX);
+    FastJar.arraycopy(c, 0, x, 0, BMAX+1);
   }
 }

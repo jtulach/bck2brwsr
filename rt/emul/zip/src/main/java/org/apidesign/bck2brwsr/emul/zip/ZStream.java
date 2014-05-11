@@ -170,8 +170,8 @@ class ZStream{
 
     if(avail_in>0 && append){  
       byte[] tmp = new byte[avail_in+len];
-      System.arraycopy(next_in, next_in_index, tmp, 0, avail_in);
-      System.arraycopy(buf, off, tmp, avail_in, len);
+      FastJar.arraycopy(next_in, next_in_index, tmp, 0, avail_in);
+      FastJar.arraycopy(buf, off, tmp, avail_in, len);
       next_in=tmp;
       next_in_index=0;
       avail_in+=len;

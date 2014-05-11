@@ -33,8 +33,10 @@ package org.apidesign.bck2brwsr.emul.zip;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
  *
@@ -100,7 +102,7 @@ public final class FastJar {
         int giveup = 0;
 
         do {
-            System.arraycopy(arr, at, data, 0, data.length);
+            FastJar.arraycopy(arr, at, data, 0, data.length);
             at--;
             giveup++;
             if (giveup > GIVE_UP) {
@@ -117,7 +119,7 @@ public final class FastJar {
         int cenread = 0;
         data = new byte[ZipInputStream.CENHDR];
         while (cenread < censize) {
-            System.arraycopy(arr, at, data, 0, data.length);
+            FastJar.arraycopy(arr, at, data, 0, data.length);
             at += data.length;
             if (getsig(data) != ZipInputStream.CENSIG) {
                 throw new IOException("No central table");          //NOI18N
@@ -141,7 +143,7 @@ public final class FastJar {
     private Entry[] addEntry(Entry[] result, Entry entry) {
         Entry[] e = new Entry[result.length + 1];
         e[result.length] = entry;
-        System.arraycopy(result, 0, e, 0, result.length);
+        FastJar.arraycopy(result, 0, e, 0, result.length);
         return e;
     }
 
@@ -170,6 +172,27 @@ public final class FastJar {
 	final int s1 = get16(b, off);
 	final int s2 = get16(b, off+2);
         return s1 | ((long)s2 << 16);
+    }
+    
+    @JavaScriptBody(args = {"value", "srcBegin", "dst", "dstBegin", "count"}, body
+            = "if (srcBegin < dstBegin) {\n"
+            + "    while (count-- > 0) {\n"
+            + "        dst[dstBegin + count] = value[srcBegin + count];\n"
+            + "    }\n"
+            + "} else {\n"
+            + "    while (count-- > 0) {\n"
+            + "        dst[dstBegin++] = value[srcBegin++];\n"
+            + "    }\n"
+            + "}"
+    )
+    static void arraycopy(Object src, int srcBegin, Object dst, int dstBegin, int count) {
+        try {
+            Class<?> system = Class.forName("java.lang.System");
+            Method m = system.getMethod("arraycopy", Object.class, int.class, Object.class, int.class, int.class);
+            m.invoke(null, src, srcBegin, dst, dstBegin, count);
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
+        }
     }
 
 }

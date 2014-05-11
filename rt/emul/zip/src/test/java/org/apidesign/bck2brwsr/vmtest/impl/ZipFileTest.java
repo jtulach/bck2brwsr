@@ -19,7 +19,6 @@ package org.apidesign.bck2brwsr.vmtest.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
@@ -99,7 +98,16 @@ public class ZipFileTest {
     }
     
     private static void assertEquals(Object real, Object exp, String msg) {
-        assert Objects.equals(exp, real) : msg + " exp: " + exp + " real: " + real;
+        if (real == null) {
+            if (exp == null) {
+                return;
+            }
+        } else {
+            if (real.equals(exp)) {
+                return;
+            }
+        }
+        assert false : msg + " exp: " + exp + " real: " + real;
     }
     
     @Factory public static Object[] create() {

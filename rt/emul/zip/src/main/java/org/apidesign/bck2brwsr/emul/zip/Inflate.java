@@ -457,7 +457,7 @@ final class Inflate{
               byte[] foo = tmp_array;
               tmp_array=null;
               if(foo.length == gheader.extra.length){
-                System.arraycopy(foo, 0, gheader.extra, 0, foo.length);
+                FastJar.arraycopy(foo, 0, gheader.extra, 0, foo.length);
 	      }
               else{
                 z.msg = "bad extra field length";
@@ -684,7 +684,7 @@ final class Inflate{
   
   private static byte[] copy(byte[] arr, int len) {
       byte[] ret = new byte[len];
-      System.arraycopy(arr, 0, ret, 0, len);
+      FastJar.arraycopy(arr, 0, ret, 0, len);
       return ret;
   }
   private static byte[] append(byte[] arr, byte b, int index) {
