@@ -15,27 +15,8 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.vmtest.impl;
+@Exported
+package java.util.zip;
 
-import java.io.UnsupportedEncodingException;
-import java.util.zip.CRC32;
-import org.apidesign.bck2brwsr.vmtest.Compare;
-import org.apidesign.bck2brwsr.vmtest.VMTest;
-import org.testng.annotations.Factory;
+import org.apidesign.bck2brwsr.core.Exported;
 
-/**
- *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
- */
-public class CRC32Test {
-
-    @Compare public long crc1() throws UnsupportedEncodingException {
-        CRC32 crc = new CRC32();
-        crc.update("Hello World!".getBytes("UTF-8"));
-        return crc.getValue();
-    }
-    
-    @Factory public static Object[] create() {
-        return VMTest.create(CRC32Test.class);
-    }
-}

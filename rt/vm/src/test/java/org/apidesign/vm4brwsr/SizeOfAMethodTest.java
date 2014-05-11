@@ -25,8 +25,7 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.*;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -50,6 +49,32 @@ public class SizeOfAMethodTest {
         
         
         assertEquals(method.indexOf("st"), -1, "There should be no stack operations:\n" + method);
+    }
+
+    @Test public void betterConstructor() {
+        String s = code;
+        int beg = s.indexOf("c.initInflater__IIZ");
+        int end = s.indexOf("c.initInflater__IIZ.access");
+        
+        assertTrue(beg > 0, "Found initInflater method in " + code);
+        assertTrue(beg < end, "Found end of initInflater method in " + code);
+        
+        String method = s.substring(beg, end);
+        
+        assertEquals(method.indexOf("stA1"), -1, "No need for stA1 register:\n" + method);
+    }
+
+    @Test public void deepConstructor() {
+        String s = code;
+        int beg = s.indexOf("c.intHolder__I");
+        int end = s.indexOf("c.intHolder__I.access");
+        
+        assertTrue(beg > 0, "Found intHolder method in " + code);
+        assertTrue(beg < end, "Found end of intHolder method in " + code);
+        
+        String method = s.substring(beg, end);
+        
+        assertEquals(method.indexOf("stA3"), -1, "No need for stA3 register on second constructor:\n" + method);
     }
 
     @Test public void emptyConstructorRequiresNoStack() {

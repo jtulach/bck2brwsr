@@ -154,7 +154,7 @@ class Inflater extends java.util.zip.Inflater {
             arr = b;
         } else {
             arr = new byte[len];
-            org.apidesign.bck2brwsr.emul.lang.System.arraycopy(b, off, arr, 0, len);
+            FastJar.arraycopy(b, off, arr, 0, len);
         }
         impl.setDictionary(arr, len);
     }

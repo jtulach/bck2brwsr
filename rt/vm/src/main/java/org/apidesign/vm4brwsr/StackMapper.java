@@ -23,6 +23,7 @@ import org.apidesign.vm4brwsr.ByteCodeParser.TypeArray;
 final class StackMapper {
     private final TypeArray stackTypeIndexPairs;
     private final StringArray stackValues;
+    private boolean dirty;
 
     public StackMapper() {
         stackTypeIndexPairs = new TypeArray();
@@ -32,6 +33,7 @@ final class StackMapper {
     public void clear() {
         stackTypeIndexPairs.clear();
         stackValues.clear();
+        dirty = false;
     }
 
     public void syncWithFrameStack(final TypeArray frameStack) {
@@ -70,7 +72,7 @@ final class StackMapper {
     void assign(Appendable out, int varType, CharSequence s) throws IOException {
         pushTypeAndValue(varType, s);
     }
-
+    
     void replace(Appendable out, int varType, String format, CharSequence... arr) 
     throws IOException {
         StringBuilder sb = new StringBuilder();
@@ -78,6 +80,7 @@ final class StackMapper {
         String[] values = stackValues.toArray();
         final int last = stackTypeIndexPairs.getSize() - 1;
         values[last] = sb.toString();
+        dirty = true;
         final int value = (last << 8) | (varType & 0xff);
         stackTypeIndexPairs.set(last, value);
     }
@@ -92,6 +95,11 @@ final class StackMapper {
             CharSequence var = getVariable(stackTypeIndexPairs.get(i));
             ByteCodeToJavaScript.emitImpl(out, "var @1 = @2;", var, val);
         }
+        dirty = false;
+    }
+    
+    public boolean isDirty() {
+        return dirty;
     }
     
     public CharSequence popI() {
@@ -216,6 +224,7 @@ final class StackMapper {
         } else {
             stackValues.add(val);
         }
+        dirty = true;
     }
 
     private void popImpl(final int count) {

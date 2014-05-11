@@ -34,7 +34,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package org.apidesign.bck2brwsr.emul.zip;
 
-import org.apidesign.bck2brwsr.emul.lang.System;
+
 
 final class InfCodes{
 
@@ -503,7 +503,7 @@ final class InfCodes{
 		  c-=2;
 		}
 		else{
-		  System.arraycopy(s.window, r, s.window, q, 2);
+		  FastJar.arraycopy(s.window, r, s.window, q, 2);
 		  q+=2; r+=2; c-=2;
 		}
 	      }
@@ -520,7 +520,7 @@ final class InfCodes{
 		    while(--e!=0);
 		  }
 		  else{
-		    System.arraycopy(s.window, r, s.window, q, e);
+		    FastJar.arraycopy(s.window, r, s.window, q, e);
 		    q+=e; r+=e; e=0;
 		  }
 		  r = 0;                  // copy rest from start of window
@@ -534,7 +534,7 @@ final class InfCodes{
 		while(--c!=0);
 	      }
 	      else{
-		System.arraycopy(s.window, r, s.window, q, c);
+		FastJar.arraycopy(s.window, r, s.window, q, c);
 		q+=c; r+=c; c=0;
 	      }
 	      break;

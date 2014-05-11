@@ -87,6 +87,7 @@
                        <exclude>.*/**</exclude>
                        <exclude>rt/emul/mini/src/main/**</exclude>
                        <exclude>rt/emul/compact/src/main/**</exclude>
+                       <exclude>rt/emul/zip/src/main/**</exclude>
                        <exclude>rt/vm/src/main/java/org/apidesign/vm4brwsr/ByteCodeParser.java</exclude>
                        <exclude>rt/archetype/src/main/resources/archetype-resources/**</exclude>
                        <exclude>rt/emul/*/src/test/resources/**</exclude>

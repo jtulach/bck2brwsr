@@ -15,24 +15,19 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.compact.tck;
+package org.apidesign.bck2brwsr.emul.zip;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
 import java.util.zip.ZipEntry;
-import org.apidesign.bck2brwsr.emul.zip.ZipInputStream;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 final class ZipArchive {
-    private final Map<String, byte[]> entries = new LinkedHashMap<>();
+    private Entry first;
 
     public static ZipArchive createZip(InputStream is) throws IOException {
         ZipArchive a = new ZipArchive();
@@ -50,45 +45,29 @@ final class ZipArchive {
      * Registers entry name and data
      */
     final void register(String entry, InputStream is) throws IOException {
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        for (;;) {
+        byte[] arr = new byte[12 * 4096];
+        for (int i = 0; i < arr.length; i++) {
             int ch = is.read();
             if (ch == -1) {
+                byte[] tmp = new byte[i];
+                FastJar.arraycopy(arr, 0, tmp, 0, i);
+                arr = tmp;
                 break;
             }
-            os.write(ch);
+            arr[i] = (byte) ch;
         }
-        os.close();
-        entries.put(entry, os.toByteArray());
+        first = new Entry (entry, arr, first);
     }
-
-    @Override
-    public int hashCode() {
-        return entries.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final ZipArchive other = (ZipArchive) obj;
-        if (!Objects.deepEquals(this.entries, other.entries)) {
-            return false;
-        }
-        return true;
-    }
-
+    
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, byte[]> en : entries.entrySet()) {
-            String string = en.getKey();
-            byte[] bs = en.getValue();
-            sb.append(string).append(" = ").append(Arrays.toString(bs)).append("\n");
+        Entry e = first;
+        while (e != null) {
+            String string = e.name;
+            byte[] bs = e.arr;
+            sb.append(string).append(" = ").append(toString(bs)).append("\n");
+            e = e.next;
         }
         return sb.toString();
     }
@@ -97,32 +76,37 @@ final class ZipArchive {
         boolean ok = true;
         StringBuilder sb = new StringBuilder();
         sb.append(msg);
-        for (Map.Entry<String, byte[]> en : entries.entrySet()) {
-            String string = en.getKey();
-            byte[] bs = en.getValue();
-            byte[] other = zip.entries.get(string);
+        Entry e = first;
+        while (e != null) {
+            String string = e.name;
+            byte[] bs = e.arr;
+            byte[] other = zip.find(string);
+            e = e.next;
+            
             sb.append("\n");
             if (other == null) {
-                sb.append("EXTRA ").append(string).append(" = ").append(Arrays.toString(bs));
+                sb.append("EXTRA ").append(string).append(" = ").append(toString(bs));
                 ok = false;
                 continue;
             }
-            if (Arrays.equals(bs, other)) {
+            if (equals(bs, other)) {
                 sb.append("OK    ").append(string);
                 continue;
             } else {
-                sb.append("DIFF  ").append(string).append(" = ").append(Arrays.toString(bs)).append("\n");
-                sb.append("    TO").append(string).append(" = ").append(Arrays.toString(other)).append("\n");
+                sb.append("DIFF  ").append(string).append(" = ").append(toString(bs)).append("\n");
+                sb.append("    TO").append(string).append(" = ").append(toString(other)).append("\n");
                 ok = false;
                 continue;
             }
         }
-        for (Map.Entry<String, byte[]> entry : zip.entries.entrySet()) {
-            String string = entry.getKey();
-            if (entries.get(string) == null) {
-                sb.append("MISS  ").append(string).append(" = ").append(Arrays.toString(entry.getValue()));
+        e = zip.first;
+        while (e != null) {
+            String string = e.name;
+            if (find(string) == null) {
+                sb.append("MISS  ").append(string).append(" = ").append(toString(e.arr));
                 ok = false;
             }
+            e = e.next;
         }
         if (!ok) {
             assert false : sb.toString();
@@ -150,5 +134,51 @@ final class ZipArchive {
             data.register(en.getName(), zip);
         }
     }
-    
+
+    private byte[] find(String name) {
+        Entry e = first;
+        while (e != null) {
+            if (e.name.equals(name)) {
+                return e.arr;
+            }
+            e = e.next;
+        }
+        return null;
+    }
+
+    private boolean equals(byte[] bs, byte[] other) {
+        if (bs.length != other.length) {
+            return false;
+        }
+        for (int i = 0; i < bs.length; i++) {
+            if (bs[i] != other[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private Object toString(byte[] arr) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        String sep = "";
+        for (int i = 0; i < arr.length; i++) {
+            sb.append(sep).append(arr[i]);
+            sep = ", ";
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+
+    private static final class Entry {
+        final String name;
+        final byte[] arr;
+        final Entry next;
+
+        public Entry(String name, byte[] arr, Entry next) {
+            this.name = name;
+            this.arr = arr;
+            this.next = next;
+        }
+    }
 }

@@ -144,9 +144,6 @@ class CompileCP {
         while (en.hasMoreElements()) {
             JarEntry e = en.nextElement();
             final String n = e.getName();
-            if (n.contains("package-info")) {
-                continue;
-            }
             if (n.endsWith("/")) {
                 continue;
             }
@@ -192,9 +189,6 @@ class CompileCP {
     private static void listDir(File f, String pref, List<String> classes, List<String> resources) throws IOException {
         File[] arr = f.listFiles();
         if (arr == null) {
-            if (f.getName().equals("package-info.class")) {
-                return;
-            }
             if (f.getName().endsWith(".class")) {
                 classes.add(pref + f.getName().substring(0, f.getName().length() - 6));
             } else {
@@ -209,12 +203,19 @@ class CompileCP {
     }
 
     static void compileVM(StringBuilder sb, final Res r) throws IOException {
-        URL u = r.get(InterruptedException.class.getName().replace('.', '/') + ".class", 0);
-        JarURLConnection juc = (JarURLConnection)u.openConnection();
-        
         List<String> arr = new ArrayList<>();
         List<String> classes = new ArrayList<>();
-        listJAR(juc.getJarFile(), classes, arr, null, null);
+
+        {
+            URL u = r.get(InterruptedException.class.getName().replace('.', '/') + ".class", 0);
+            JarURLConnection juc = (JarURLConnection)u.openConnection();
+            listJAR(juc.getJarFile(), classes, arr, null, null);
+        }
+        {
+            URL u = r.get(Bck2Brwsr.class.getName().replace('.', '/') + ".class", 0);
+            JarURLConnection juc = (JarURLConnection)u.openConnection();
+            listJAR(juc.getJarFile(), classes, arr, null, null);
+        }
 
         Bck2Brwsr.newCompiler().addRootClasses(classes.toArray(new String[0]))
             .resources(new Bck2Brwsr.Resources() {

@@ -34,7 +34,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package org.apidesign.bck2brwsr.emul.zip;
 
-import org.apidesign.bck2brwsr.emul.lang.System;
+
 
 final class CRC32 implements Checksum {
 
@@ -175,7 +175,7 @@ final class CRC32 implements Checksum {
 
   public static int[] getCRC32Table(){
     int[] tmp = new int[crc_table.length];
-    System.arraycopy(crc_table, 0, tmp, 0, tmp.length);
+    FastJar.arraycopy(crc_table, 0, tmp, 0, tmp.length);
     return tmp;
   }
 }
