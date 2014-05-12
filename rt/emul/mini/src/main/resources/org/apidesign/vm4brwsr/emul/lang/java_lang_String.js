@@ -4,7 +4,7 @@ vm.java_lang_String(false);
 
 Array.at = function(arr, indx, value) {
   var prev = arr[indx];
-  if (typeof prev === 'undefined' && (x < 0 || indx >= arr.length)) {
+  if (typeof prev === 'undefined' && (indx < 0 || indx >= arr.length)) {
     var e = vm.java_lang_ArrayIndexOutOfBoundsException(true);
     e.constructor.cons__VLjava_lang_String_2.call(e, indx.toString());
     throw e;
