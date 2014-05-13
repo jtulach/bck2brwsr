@@ -140,7 +140,7 @@ public final class KOList<T> extends ArrayList<T> {
     }
     
     
-    @JavaScriptOnly(name = "koArray", value = "function() { return this.toArray___3Ljava_lang_Object_2(); }")
+    @JavaScriptOnly(name = "koArray", value = "function() { return this['toArray___3Ljava_lang_Object_2'](); }")
     private static native int koArray();
 
     private void notifyChange() {

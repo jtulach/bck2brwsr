@@ -96,7 +96,7 @@ public final class ConvertTypes {
       + "  var el = window.document.getElementById(name);\n"
       + "  el.parentNode.removeChild(el);\n"
       + "  arr[0] = data;\n"
-      + "  run.run__V();\n"
+      + "  run['run__V']();\n"
       + "};\n"
       + "return true;\n"
     )
@@ -115,7 +115,7 @@ public final class ConvertTypes {
         + "  } catch (error) {;\n"
         + "    throw 'Cannot parse' + error + ':' + this.response;\n"
         + "  };\n"
-        + "  callback.run__V();\n"
+        + "  callback['run__V']();\n"
         + "};"
         + "request.send();"
     )
