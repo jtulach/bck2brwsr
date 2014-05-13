@@ -1981,7 +1981,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                 }
                 cnt[++depth] = 0;
                 if (attrName != null) {
-                    append(attrName).append(" : ");
+                    append('"').append(attrName).append("\" : ");
                 }
                 if (type == '[') {
                     append("[");
@@ -2011,8 +2011,13 @@ abstract class ByteCodeToJavaScript implements Appendable {
                 final String slashType = attrType.substring(1, attrType.length() - 1);
                 requireReference(slashType);
                 
-                append(accessClass(mangleClassName(slashType)))
-                   .append("(false).constructor.fld_").append(value);
+                final String cn = mangleClassName(slashType);
+                append(accessClass(cn))
+                   .append("(false)['valueOf__L").
+                    append(cn).
+                    append("_2Ljava_lang_String_2']('").
+                    append(value).
+                    append("')");
             }
         };
         ap.parse(data, cd);
