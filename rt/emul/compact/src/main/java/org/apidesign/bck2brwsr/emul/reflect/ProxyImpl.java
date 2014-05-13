@@ -907,7 +907,6 @@ public final class ProxyImpl implements java.io.Serializable {
         }
 
         @JavaScriptBody(args = { "c", "sig", "method", "primitive" }, body = 
-            "console.log('defineMethod: ' + sig.toString() + ' m: ' + method.toString().toString());\n" +
             "var p = c.cnstr.prototype;\n" +
             "p[sig] = function() {\n" +
             "  var h = this['_h']();\n" +
