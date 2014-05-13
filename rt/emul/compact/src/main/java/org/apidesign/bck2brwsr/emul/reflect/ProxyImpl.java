@@ -907,10 +907,11 @@ public final class ProxyImpl implements java.io.Serializable {
         }
 
         @JavaScriptBody(args = { "c", "sig", "method", "primitive" }, body = 
+            "console.log('defineMethod: ' + sig.toString() + ' m: ' + method.toString().toString());\n" +
             "var p = c.cnstr.prototype;\n" +
             "p[sig] = function() {\n" +
-            "  var h = this._h();\n" +
-            "  var res = h.invoke__Ljava_lang_Object_2Ljava_lang_Object_2Ljava_lang_reflect_Method_2_3Ljava_lang_Object_2(this, method, arguments);\n" +
+            "  var h = this['_h']();\n" +
+            "  var res = h['invoke__Ljava_lang_Object_2Ljava_lang_Object_2Ljava_lang_reflect_Method_2_3Ljava_lang_Object_2'](this, method, arguments);\n" +
             "  \n" +
             "  \n" +
             "  return res;\n" +
@@ -919,8 +920,8 @@ public final class ProxyImpl implements java.io.Serializable {
         private static native void defineMethod(Class<?> proxyClass, String sig, Method method, boolean primitive);
 
         @JavaScriptBody(args = "c", body = 
-              "var h = c.cnstr.cons__VLjava_lang_reflect_InvocationHandler_2 = function(h) {\n"
-            + "  c.superclass.cnstr.cons__VLjava_lang_reflect_InvocationHandler_2.call(this, h);\n"
+              "var h = c.cnstr['cons__VLjava_lang_reflect_InvocationHandler_2'] = function(h) {\n"
+            + "  c.superclass.cnstr['cons__VLjava_lang_reflect_InvocationHandler_2'].call(this, h);\n"
             + "}\n"
             + "h.cls = c.cnstr;\n"
         )
