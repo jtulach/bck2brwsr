@@ -737,7 +737,7 @@ public class EnumMap<K extends Enum<K>, V> extends AbstractMap<K, V>
      * Returns all of the values comprising K.
      * The result is uncloned, cached, and shared by all callers.
      */
-    @JavaScriptBody(args = { "enumType" }, body = "return enumType.cnstr.fld_$VALUES;")
+    @JavaScriptBody(args = { "enumType" }, body = "return enumType.cnstr.prototype['_$VALUES']();")
     private static native <K extends Enum<K>> K[] getKeyUniverse(Class<K> keyType);
 
     private static final long serialVersionUID = 458661240069192865L;

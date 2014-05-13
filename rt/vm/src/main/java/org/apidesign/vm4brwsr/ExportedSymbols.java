@@ -55,8 +55,20 @@ final class ExportedSymbols {
     }
 
     boolean isExported(FieldData fieldData) throws IOException {
-        return isAccessible(fieldData.access) && isExported(fieldData.cls)
-                   || isMarkedAsExported(fieldData);
+        if (
+            isAccessible(fieldData.access) && 
+            isExported(fieldData.cls) || isMarkedAsExported(fieldData)
+        ) {
+            return true;
+        }
+        if (
+            fieldData.isStatic() && fieldData.getName().equals("$VALUES") &&
+            "java/lang/Enum".equals(fieldData.cls.getSuperClassName())
+        ) {
+            // enum values need to be exported
+            return true;
+        }
+        return false;
     }
 
     private boolean isMarkedAsExportedPackage(String pkgName) {

@@ -384,7 +384,7 @@ public abstract class EnumSet<E extends Enum<E>> extends AbstractSet<E>
      * Returns all of the values comprising E.
      * The result is uncloned, cached, and shared by all callers.
      */
-    @JavaScriptBody(args = { "enumType" }, body = "return enumType.cnstr.fld_$VALUES;")
+    @JavaScriptBody(args = { "enumType" }, body = "return enumType.cnstr.prototype['_$VALUES']();")
     private static native <E extends Enum<E>> E[] getUniverse(Class<E> elementType);
 
     /**
