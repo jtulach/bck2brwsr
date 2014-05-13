@@ -679,8 +679,8 @@ public final class ProxyImpl implements java.io.Serializable {
 
     @JavaScriptBody(args = { "ignore", "name", "byteCode" }, 
         body = 
-            "var r = vm._reload;"
-          + "if (!r) r = exports._reload;"
+            "var r = vm['_reload'];"
+          + "if (!r) r = exports['_reload'];"
           + "return r(name, byteCode).constructor.$class;"
     )
     private static native Class defineClass0(
