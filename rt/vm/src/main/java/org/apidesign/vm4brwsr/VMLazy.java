@@ -51,7 +51,7 @@ final class VMLazy {
     private Object load(String name, boolean instance)
     throws IOException, ClassNotFoundException {
         String res = name.replace('.', '/') + ".class";
-        byte[] arr = ClassPath.loadFromCp(args, res, 0);
+        byte[] arr = ClassPath.loadBytes(res, args, 0);
         if (arr == null) {
             throw new ClassNotFoundException(name);
         }

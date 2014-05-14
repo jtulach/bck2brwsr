@@ -44,10 +44,7 @@ final class ClassPath {
     private static boolean doingToZip;
     
     
-    @Exported static byte[] loadBytes(Object loader, String name, Object[] arguments, int skip) throws Exception {
-        return ClassPath.loadFromCp(arguments, name, skip);
-    }
-    static byte[] loadFromCp(Object classpath, String res, int skip) 
+    @Exported static byte[] loadBytes(String resource, Object classpath, int skip) 
     throws IOException, ClassNotFoundException {
         for (int i = 0; i < length(classpath); i++) {
             Object c = at(classpath, i);
@@ -71,15 +68,15 @@ final class ClassPath {
                     doingToZip = false;
                 }
             }
-            if (res != null) {
+            if (resource != null) {
                 byte[] checkRes;
                 if (c instanceof Bck2Brwsr.Resources) {
-                    checkRes = readBytes((Bck2Brwsr.Resources)c, res);
+                    checkRes = readBytes((Bck2Brwsr.Resources)c, resource);
                     if (checkRes != null && --skip < 0) {
                         return checkRes;
                     }
                 } else {
-                    checkRes = callFunction(c, res, skip);
+                    checkRes = callFunction(c, resource, skip);
                     if (checkRes != null) {
                         return checkRes;
                     }

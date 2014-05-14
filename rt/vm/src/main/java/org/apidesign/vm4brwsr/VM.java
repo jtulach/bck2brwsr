@@ -565,7 +565,7 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "        var arrSize = 0;\n"
                 + "      };\n"
                 + "      var ret = vm['org_apidesign_vm4brwsr_ClassPath'](false).\n"
-                + "        loadBytes___3BLjava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2I(loader, name, args, skip);\n"
+                + "        loadBytes___3BLjava_lang_String_2Ljava_lang_Object_2I(name, args, skip);\n"
                 + "      if (ret !== null) return ret;\n"
                 + "      while (knownExtensions < extensions.length) {\n"
                 + "        vm['registerResource'] = registerResource;\n"
