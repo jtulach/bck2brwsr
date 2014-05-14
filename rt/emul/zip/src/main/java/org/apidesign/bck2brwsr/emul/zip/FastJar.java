@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import org.apidesign.bck2brwsr.core.Exported;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
@@ -185,6 +186,8 @@ public final class FastJar {
             + "    }\n"
             + "}"
     )
+    
+    @Exported
     static void arraycopy(Object src, int srcBegin, Object dst, int dstBegin, int count) {
         try {
             Class<?> system = Class.forName("java.lang.System");

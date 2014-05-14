@@ -266,7 +266,7 @@ public class Console {
         return u;
     }
     
-    @JavaScriptBody(args = {}, body = "vm.java_lang_Class(false).desiredAssertionStatus = true;")
+    @JavaScriptBody(args = {}, body = "vm['java_lang_Class'](false)['desiredAssertionStatus'] = true;")
     private static void turnAssetionStatusOn() {
     }
 

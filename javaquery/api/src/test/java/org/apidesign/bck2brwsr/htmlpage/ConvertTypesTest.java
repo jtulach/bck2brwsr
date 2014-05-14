@@ -28,9 +28,9 @@ import org.testng.annotations.Factory;
  */
 public class ConvertTypesTest {
     @JavaScriptBody(args = { "includeSex" }, body = "var json = new Object();"
-        + "json.firstName = 'son';\n"
-        + "json.lastName = 'dj';\n"
-        + "if (includeSex) json.sex = 'MALE';\n"
+        + "json['firstName'] = 'son';\n"
+        + "json['lastName'] = 'dj';\n"
+        + "if (includeSex) json['sex'] = 'MALE';\n"
         + "return json;"
     )
     private static native Object createJSON(boolean includeSex);

@@ -178,11 +178,13 @@ public class ReflectionTest {
         return "".getClass().isEnum();
     }
     
-    @Compare public String newInstanceFails() throws InstantiationException {
+    @Compare public String newInstanceFails() {
         try {
             return "success: " + StaticUseSub.class.newInstance();
         } catch (IllegalAccessException ex) {
-            return ex.getClass().getName();
+            return "failure";
+        } catch (InstantiationException ex) {
+            return "failure";
         }
     }
     

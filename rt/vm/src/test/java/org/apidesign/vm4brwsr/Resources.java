@@ -64,7 +64,7 @@ public class Resources {
                 ((long)b2 & 255) << 48) >> shift;
     }
 
-    static String loadHello() throws IOException {
+    public static String loadHello() throws IOException {
         Enumeration<URL> en;
         try {
             en = Resources.class.getClassLoader().getResources("META-INF/ahoj");
@@ -78,7 +78,7 @@ public class Resources {
         }
         return sb.toString().toString();
     }
-    static String loadJustHello() throws IOException {
+    public static String loadJustHello() throws IOException {
         URL url = Resources.class.getResource("/META-INF/ahoj");
         StringBuilder sb = new StringBuilder();
         sb.append(readIS(url.openStream(), true));

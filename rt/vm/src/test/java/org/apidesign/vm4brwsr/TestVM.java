@@ -160,7 +160,9 @@ public final class TestVM {
                     return super.get(name);
                 }
             }).
-            addRootClasses(name).library(true);
+            addRootClasses(name).
+            obfuscation(ObfuscationLevel.FULL).
+            library(true);
         if (resourceName != null) {
             b2b = b2b.addResources(resourceName);
         }

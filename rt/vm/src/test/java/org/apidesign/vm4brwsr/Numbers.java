@@ -37,46 +37,46 @@ public class Numbers {
         return a % b;
     }
 
-    static float deserFloat() throws IOException {
+    public static float deserFloat() throws IOException {
         byte[] arr = {(byte) 71, (byte) 84, (byte) 52, (byte) 83};
         ByteArrayInputStream is = new ByteArrayInputStream(arr);
         DataInputStream dis = new DataInputStream(is);
         float r = dis.readFloat();
         return r;
     }
-    static double deserDouble() throws IOException {
+    public static double deserDouble() throws IOException {
         byte[] arr = {(byte)64, (byte)8, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0};
         ByteArrayInputStream is = new ByteArrayInputStream(arr);
         DataInputStream dis = new DataInputStream(is);
         return dis.readDouble();
     }
-    static long deserLong(byte[] arr) throws IOException {
+    public static long deserLong(byte[] arr) throws IOException {
         ByteArrayInputStream is = new ByteArrayInputStream(arr);
         DataInputStream dis = new DataInputStream(is);
         return dis.readLong();
     }
-    static long deserLong(byte[] arr, int shift) throws IOException {
+    public static long deserLong(byte[] arr, int shift) throws IOException {
         return deserLong(arr) >> shift;
     }
-    static int deserInt() throws IOException {
+    public static int deserInt() throws IOException {
         byte[] arr = {(byte) 71, (byte) 84, (byte) 52, (byte) 83};
         ByteArrayInputStream is = new ByteArrayInputStream(arr);
         DataInputStream dis = new DataInputStream(is);
         return dis.readInt();
     }
-    static long bytesToLong(byte b1, byte b2, int shift) {
+    public static long bytesToLong(byte b1, byte b2, int shift) {
         return (((long)b1 << 56) +
                 ((long)b2 & 255) << 48) >> shift;
     }
 
-    static String intToString() {
+    public static String intToString() {
         return new Integer(5).toString().toString();
     }
-    static String floatToString() {
+    public static String floatToString() {
         return new Float(7.0).toString().toString();
     }
     
-    static double seven(int todo) {
+    public static double seven(int todo) {
         switch (todo) {
             case 0: return sevenNew().doubleValue();
             case 1: return sevenNew().intValue();
@@ -91,7 +91,7 @@ public class Numbers {
             default: throw new IllegalStateException();
         }
     }
-    static boolean bseven(int todo) {
+    public static boolean bseven(int todo) {
         switch (todo) {
             case 30: return bvalueOf(Boolean.FALSE);
             case 31: return bvalueOf(Boolean.TRUE);

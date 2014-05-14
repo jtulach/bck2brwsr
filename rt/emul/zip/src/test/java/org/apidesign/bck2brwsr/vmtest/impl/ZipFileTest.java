@@ -54,8 +54,8 @@ public class ZipFileTest {
     
     @JavaScriptBody(args = { "res", "path" }, body = 
           "var myvm = bck2brwsr.apply(null, path);\n"
-        + "var cls = myvm.loadClass('java.lang.String');\n"
-        + "return cls.getClass__Ljava_lang_Class_2().getResourceAsStream__Ljava_io_InputStream_2Ljava_lang_String_2(res);\n"
+        + "var cls = myvm['loadClass']('java.lang.String');\n"
+        + "return cls['getClass__Ljava_lang_Class_2']()['getResourceAsStream__Ljava_io_InputStream_2Ljava_lang_String_2'](res);\n"
     )
     private static native Object loadVMResource(String res, String...path);
 

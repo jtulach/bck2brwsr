@@ -33,7 +33,13 @@ import org.apidesign.bck2brwsr.core.ExtraJavaScript;
  */
 @ExtraJavaScript(processByteCode = false, resource="")
 final class ClosureWrapper extends CommandLineRunner {
-    private static final String[] ARGS = { "--compilation_level", "SIMPLE_OPTIMIZATIONS", "--js", "bck2brwsr-raw.js" /*, "--debug", "--formatting", "PRETTY_PRINT" */ };
+    private static final String[] ARGS = { 
+        "--compilation_level", 
+        "SIMPLE_OPTIMIZATIONS", 
+        "--js", "bck2brwsr-raw.js" 
+        //, "--debug"
+        //, "--formatting", "PRETTY_PRINT"
+    };
 
     private final Bck2Brwsr config;
 
@@ -175,6 +181,7 @@ final class ClosureWrapper extends CommandLineRunner {
         "toInt32",
         "toFP",
         "toLong",
+        "toJS",
         "toExactString",
         "add64",
         "sub64",
@@ -185,6 +192,7 @@ final class ClosureWrapper extends CommandLineRunner {
         "shl64",
         "shr64",
         "ushr64",
+        "compare",
         "compare64",
         "neg64",
         "div32",
