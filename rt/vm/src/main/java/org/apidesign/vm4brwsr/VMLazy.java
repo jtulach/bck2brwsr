@@ -20,6 +20,7 @@ package org.apidesign.vm4brwsr;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import org.apidesign.bck2brwsr.core.Exported;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
@@ -38,6 +39,7 @@ final class VMLazy {
     static void init() {
     }
     
+    @Exported
     static Object load(Object loader, String name, Object[] arguments, byte[] arr) 
     throws IOException, ClassNotFoundException {
         if (arr == null) {
@@ -46,12 +48,8 @@ final class VMLazy {
         return new VMLazy(loader, arguments).defineClass(arr, name, false);
     }
 
-    static Object reload(Object loader, String name, Object[] arguments, byte[] arr) 
-    throws IOException, ClassNotFoundException {
-        return new VMLazy(loader, arguments).defineClass(arr, name, false);
-    }
-    
-    private Object load(String name, boolean instance)
+    @Exported
+    Object load(String name, boolean instance)
     throws IOException, ClassNotFoundException {
         String res = name.replace('.', '/') + ".class";
         byte[] arr = ClassPath.loadBytes(res, args, 0);
