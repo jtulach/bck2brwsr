@@ -38,9 +38,12 @@ final class VMLazy {
     static void init() {
     }
     
-    static Object load(Object loader, String name, Object[] arguments) 
+    static Object load(Object loader, String name, Object[] arguments, byte[] arr) 
     throws IOException, ClassNotFoundException {
-        return new VMLazy(loader, arguments).load(name, false);
+        if (arr == null) {
+            throw new ClassNotFoundException(name);
+        }
+        return new VMLazy(loader, arguments).defineClass(arr, name, false);
     }
 
     static Object reload(Object loader, String name, Object[] arguments, byte[] arr) 
