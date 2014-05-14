@@ -564,7 +564,7 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "      } else {\n"
                 + "        var arrSize = 0;\n"
                 + "      };\n"
-                + "      var ret = vm.org_apidesign_vm4brwsr_VMLazy(false).\n"
+                + "      var ret = vm['org_apidesign_vm4brwsr_ClassPath'](false).\n"
                 + "        loadBytes___3BLjava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2I(loader, name, args, skip);\n"
                 + "      if (ret !== null) return ret;\n"
                 + "      while (knownExtensions < extensions.length) {\n"
@@ -576,8 +576,6 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "      return (arr && arr.length > arrSize) ? arr[arrSize] : null;\n"
                 + "    }\n"
                 + "    vm.java_lang_reflect_Array(false);\n"
-                + "    vm.org_apidesign_vm4brwsr_VMLazy(false).\n"
-                + "      loadBytes___3BLjava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2I(loader, null, args, 0);\n"
                 + "    return loader;\n"
                 + "  };\n");
             append(

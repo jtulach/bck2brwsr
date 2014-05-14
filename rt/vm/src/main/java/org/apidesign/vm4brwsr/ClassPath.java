@@ -21,6 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import org.apidesign.bck2brwsr.core.Exported;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /** Conversion from classpath to load function.
@@ -41,7 +42,12 @@ final class ClassPath {
     private static native Object set(Object arr, int index, Object value);
     
     private static boolean doingToZip;
-    public static byte[] loadFromCp(Object classpath, String res, int skip) 
+    
+    
+    @Exported static byte[] loadBytes(Object loader, String name, Object[] arguments, int skip) throws Exception {
+        return ClassPath.loadFromCp(arguments, name, skip);
+    }
+    static byte[] loadFromCp(Object classpath, String res, int skip) 
     throws IOException, ClassNotFoundException {
         for (int i = 0; i < length(classpath); i++) {
             Object c = at(classpath, i);
