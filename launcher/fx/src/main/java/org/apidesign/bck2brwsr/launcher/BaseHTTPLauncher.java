@@ -547,6 +547,9 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
             } catch (UnsupportedOperationException ex) {
                 LOG.log(Level.INFO, "Desktop.browse not supported: {0}", ex.getMessage());
                 LOG.log(Level.FINE, null, ex);
+            } catch (IOException ex) {
+                LOG.log(Level.INFO, "Desktop.browse failed: {0}", ex.getMessage());
+                LOG.log(Level.FINE, null, ex);
             }
         }
         {
