@@ -43,43 +43,50 @@ final class ClassPath {
     
     private static boolean doingToZip;
     
-    
-    @Exported static byte[] loadBytes(String resource, Object classpath, int skip) 
+    static byte[] loadBytes(String resource, Object classpath, int skip)
     throws IOException, ClassNotFoundException {
         for (int i = 0; i < length(classpath); i++) {
-            Object c = at(classpath, i);
-            if (c instanceof String && !doingToZip) {
-                try {
-                    doingToZip = true;
-                    String url = (String)c;
-                    final Bck2Brwsr.Resources z = toZip(url);
-                    c = set(classpath, i, z);
-                    final byte[] man = readBytes(z, "META-INF/MANIFEST.MF");
-                    if (man != null) {
-                        String mainClass = processClassPathAttr(man, url, classpath);
+            byte[] arr = loadBytes(resource, classpath, i, skip);
+            if (arr != null) {
+                return arr;
+            }
+        }
+        return null;
+    }
+    @Exported static byte[] loadBytes(String resource, Object classpath, int i, int skip) 
+    throws IOException, ClassNotFoundException {
+        Object c = at(classpath, i);
+        if (c instanceof String && !doingToZip) {
+            try {
+                doingToZip = true;
+                String url = (String)c;
+                final Bck2Brwsr.Resources z = toZip(url);
+                c = set(classpath, i, z);
+                final byte[] man = readBytes(z, "META-INF/MANIFEST.MF");
+                if (man != null) {
+                    String mainClass = processClassPathAttr(man, url, classpath);
 //                        if (mainClass != null) {
 //                            Class.forName(mainClass);
 //                        }
-                    }
-                } catch (IOException ex) {
-                    set(classpath, i, ex);
-                    log("Cannot load " + c + " - " + ex.getClass().getName() + ":" + ex.getMessage());
-                } finally {
-                    doingToZip = false;
                 }
+            } catch (IOException ex) {
+                set(classpath, i, ex);
+                log("Cannot load " + c + " - " + ex.getClass().getName() + ":" + ex.getMessage());
+            } finally {
+                doingToZip = false;
             }
-            if (resource != null) {
-                byte[] checkRes;
-                if (c instanceof Bck2Brwsr.Resources) {
-                    checkRes = readBytes((Bck2Brwsr.Resources)c, resource);
-                    if (checkRes != null && --skip < 0) {
-                        return checkRes;
-                    }
-                } else {
-                    checkRes = callFunction(c, resource, skip);
-                    if (checkRes != null) {
-                        return checkRes;
-                    }
+        }
+        if (resource != null) {
+            byte[] checkRes;
+            if (c instanceof Bck2Brwsr.Resources) {
+                checkRes = readBytes((Bck2Brwsr.Resources)c, resource);
+                if (checkRes != null && --skip < 0) {
+                    return checkRes;
+                }
+            } else {
+                checkRes = callFunction(c, resource, skip);
+                if (checkRes != null) {
+                    return checkRes;
                 }
             }
         }
