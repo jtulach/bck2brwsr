@@ -115,6 +115,9 @@ final class ExportedSymbols {
     }
 
     private boolean resolveIsMarkedAsExportedPackage(String pkgName) {
+        if (exported.contains(pkgName + '/')) {
+            return true;
+        }
         try {
             final InputStream is =
                     resources.get(pkgName + "/package-info.class");

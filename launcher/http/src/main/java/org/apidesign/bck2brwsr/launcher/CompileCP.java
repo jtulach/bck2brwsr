@@ -49,21 +49,8 @@ class CompileCP {
     throws IOException {
         List<String> arr = new ArrayList<>();
         List<String> classes = new ArrayList<>();
-        Set<String> exported = new HashSet<String>();
         Set<String> keep = new HashSet<String>(testClasses);
-        listJAR(jar, classes, arr, exported, keep);
-        List<String> root = new ArrayList<>();
-        for (String c : classes) {
-            if (keep.contains(c)) {
-                root.add(c);
-                continue;
-            }
-            int slash = c.lastIndexOf('/');
-            String pkg = c.substring(0, slash + 1);
-            if (exported.contains(pkg)) {
-                root.add(c);
-            }
-        }
+        listJAR(jar, classes, arr, keep);
         
         StringWriter w = new StringWriter();
         try {
@@ -77,7 +64,7 @@ class CompileCP {
             
             Bck2Brwsr.newCompiler()
                 .addClasses(classes.toArray(new String[0]))
-                .addRootClasses(root.toArray(new String[0]))
+                .addExported(keep.toArray(new String[0]))
                 .addResources(arr.toArray(new String[0]))
                 .library(true)
                 .resources(new JarRes())
@@ -138,7 +125,7 @@ class CompileCP {
     
     private static void listJAR(
         JarFile j, List<String> classes,
-        List<String> resources, Set<String> exported, Set<String> keep
+        List<String> resources, Set<String> keep
     ) throws IOException {
         Enumeration<JarEntry> en = j.entries();
         while (en.hasMoreElements()) {
@@ -172,10 +159,10 @@ class CompileCP {
             }
         }
         String exp = j.getManifest().getMainAttributes().getValue("Export-Package");
-        if (exp != null && exported != null) {
+        if (exp != null && keep != null) {
             for (String def : exp.split(",")) {
                 for (String sep : def.split(";")) {
-                    exported.add(sep.replace('.', '/') + "/");
+                    keep.add(sep.replace('.', '/') + "/");
                     break;
                 }
             }
@@ -209,12 +196,12 @@ class CompileCP {
         {
             URL u = r.get(InterruptedException.class.getName().replace('.', '/') + ".class", 0);
             JarURLConnection juc = (JarURLConnection)u.openConnection();
-            listJAR(juc.getJarFile(), classes, arr, null, null);
+            listJAR(juc.getJarFile(), classes, arr, null);
         }
         {
             URL u = r.get(Bck2Brwsr.class.getName().replace('.', '/') + ".class", 0);
             JarURLConnection juc = (JarURLConnection)u.openConnection();
-            listJAR(juc.getJarFile(), classes, arr, null, null);
+            listJAR(juc.getJarFile(), classes, arr, null);
         }
 
         Bck2Brwsr.newCompiler().addRootClasses(classes.toArray(new String[0]))

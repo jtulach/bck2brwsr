@@ -67,12 +67,12 @@ abstract class VM extends ByteCodeToJavaScript {
     static void compile(Appendable out, 
         Bck2Brwsr config
     ) throws IOException {
-        String[] both = config.allClasses();
+        String[] both = config.classes().toArray();
         
         VM vm = config.isExtension() ? 
-            new Extension(out, config.getResources(), both, config.rootClasses())
+            new Extension(out, config.getResources(), both, config.exported())
             : 
-            new Standalone(out, config.getResources(), config.rootClasses());
+            new Standalone(out, config.getResources(), config.exported());
 
         final StringArray fixedNames = new StringArray();
 
