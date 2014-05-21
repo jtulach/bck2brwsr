@@ -1329,6 +1329,7 @@ public final class PageProcessor extends AbstractProcessor {
         return ret;
     }
     
+    @ExtraJavaScript(processByteCode = false, resource = "")
     private static class Prprt {
         private final Element e;
         private final AnnotationMirror tm;
