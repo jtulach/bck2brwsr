@@ -36,6 +36,7 @@ final class ClosureWrapper extends CommandLineRunner {
     private static final String[] ARGS = { 
         "--compilation_level", 
         "SIMPLE_OPTIMIZATIONS", 
+        "--output_wrapper", "(function() {%output%})(this);",
         "--js", "bck2brwsr-raw.js" 
         //, "--debug"
         //, "--formatting", "PRETTY_PRINT"
