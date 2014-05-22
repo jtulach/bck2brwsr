@@ -57,9 +57,13 @@ public final class Bck2Brwsr {
     private final StringArray classes;
     private final StringArray resources;
     private final Resources res;
-    private final boolean extension;
+    private final Boolean extension;
 
-    private Bck2Brwsr(ObfuscationLevel level, StringArray exported, StringArray classes, StringArray resources, Resources res, boolean extension) {
+    private Bck2Brwsr(
+        ObfuscationLevel level, 
+        StringArray exported, StringArray classes, StringArray resources, 
+        Resources res, Boolean extension
+    ) {
         this.level = level;
         this.exported = exported;
         this.classes = classes;
@@ -226,6 +230,19 @@ public final class Bck2Brwsr {
     public Bck2Brwsr library(boolean library) {
         return new Bck2Brwsr(level, exported, classes, resources, res, library);
     }
+    
+    /** Turns on the standalone mode. E.g. acts like {@link #library(boolean) library(false)},
+     * but also allows to specify whether the <em>Bck2Brwsr VM</em> should
+     * be included at all. If not, only the skeleton of the launcher is
+     * generated without any additional VM classes referenced.
+     * 
+     * @param includeVM should the VM be compiled in, or left out
+     * @return new instance of the compiler with standalone mode on
+     * @since 0.9
+     */
+    public Bck2Brwsr standalone(boolean includeVM) {
+        return new Bck2Brwsr(level, exported, classes, resources, res, includeVM ? false : null);
+    }
 
     /** A way to change the provider of additional resources (classes) for the 
      * compiler by specifying classloader to use for loading them.
@@ -296,7 +313,11 @@ public final class Bck2Brwsr {
     }
     
     boolean isExtension() {
-        return extension;
+        return Boolean.TRUE.equals(extension);
+    }
+    
+    boolean includeVM() {
+        return extension != null;
     }
 
     /** Provider of resources (classes and other files). The 

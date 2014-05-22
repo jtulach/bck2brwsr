@@ -35,12 +35,6 @@ abstract class VM extends ByteCodeToJavaScript {
     private final ExportedSymbols exportedSymbols;
     private final StringArray invokerMethods;
 
-    private static final Class<?> FIXED_DEPENDENCIES[] = {
-            Class.class,
-            ArithmeticException.class,
-            VM.class
-        };
-
     private VM(Appendable out, Bck2Brwsr.Resources resources, StringArray explicitlyExported) {
         super(out);
         this.resources = resources;
@@ -69,17 +63,20 @@ abstract class VM extends ByteCodeToJavaScript {
     ) throws IOException {
         String[] both = config.classes().toArray();
         
-        VM vm = config.isExtension() ? 
-            new Extension(out, config.getResources(), both, config.exported())
-            : 
-            new Standalone(out, config.getResources(), config.exported());
-
         final StringArray fixedNames = new StringArray();
-
-        for (final Class<?> fixedClass: FIXED_DEPENDENCIES) {
-            fixedNames.add(fixedClass.getName().replace('.', '/'));
-        }
-
+        fixedNames.add(Class.class.getName().replace('.', '/'));
+        fixedNames.add(ArithmeticException.class.getName().replace('.', '/'));
+        
+        VM vm;
+        if (config.isExtension()) {
+            fixedNames.add(VM.class.getName().replace('.', '/'));
+            vm = new Extension(out, config.getResources(), both, config.exported());
+        } else {
+            if (config.includeVM()) {
+                fixedNames.add(VM.class.getName().replace('.', '/'));
+            }
+            vm = new Standalone(out, config.getResources(), config.exported());
+        }            
         vm.doCompile(fixedNames.addAndNew(both), config.allResources());
     }
 
@@ -490,6 +487,10 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "      else resources[n].push(arr);\n"
                 + "    }\n"
                 + "    var vm = fillInVMSkeleton({ 'registerResource' : registerResource });\n"
+                + "    function initVM() {\n"
+                + "      var clsArray = vm['java_lang_reflect_Array'];\n"
+                + "      if (clsArray) clsArray(false);\n"
+                + "    }\n"
                 + "    for (var i = 0; i < extensions.length; ++i) {\n"
                 + "      extensions[i](vm);\n"
                 + "    }\n"
@@ -518,6 +519,7 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "        vm['registerResource'] = registerResource;\n"
                 + "        extensions[knownExtensions++](vm);\n"
                 + "        vm['registerResource'] = null;\n"
+                + "        initVM();\n"
                 + "      }\n"
                 + "      var arr = resources[name];\n"
                 + "      return (arr && arr.length > arrSize) ? arr[arrSize] : null;\n"
@@ -536,7 +538,7 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "      var fn = vm[attr];\n"
                 + "      if (fn) return fn(false);\n"
                 + "      try {\n"
-                + "        var arr = loadBytes(name.replace__Ljava_lang_String_2CC('.', '/') + '.class');\n"
+                + "        var arr = loadBytes(replaceAll(name, '.', '/') + '.class');\n"
                 + "        return reload(name, arr, true);\n"
                 + "      } catch (err) {\n"
                 + "        fn = vm[attr];\n"
@@ -550,7 +552,7 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "    vm['loadClass'] = loader.loadClass;\n"
                 + "    vm['_reload'] = reload;\n"
                 + "    vm['loadBytes'] = loadBytes;\n"
-                + "    vm['java_lang_reflect_Array'](false);\n"
+                + "    initVM();\n"
                 + "    return loader;\n"
                 + "  };\n");
             append(

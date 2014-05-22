@@ -38,13 +38,20 @@
         </includes>
     </dependencySet>
   </dependencySets> 
+  <fileSets>
+      <fileSet>
+          <directory>${project.build.directory}</directory>
+          <outputDirectory>/</outputDirectory>
+          <includes>
+              <include>bck2brwsr.js</include>
+              <include>app.js</include>
+              <include>lib/*.js</include>
+          </includes>
+      </fileSet>
+  </fileSets>
   <files>
     <file>
       <source>${project.build.directory}/${project.build.finalName}.jar</source>
-      <outputDirectory>/</outputDirectory>
-    </file>
-    <file>
-      <source>${project.build.directory}/bck2brwsr.js</source>
       <outputDirectory>/</outputDirectory>
     </file>
     <file>
