@@ -34,13 +34,18 @@ abstract class VM extends ByteCodeToJavaScript {
     private final Bck2Brwsr.Resources resources;
     private final ExportedSymbols exportedSymbols;
     private final StringArray invokerMethods;
+    private final StringArray asBinary;
 
-    private VM(Appendable out, Bck2Brwsr.Resources resources, StringArray explicitlyExported) {
+    private VM(
+        Appendable out, Bck2Brwsr.Resources resources, 
+        StringArray explicitlyExported, StringArray asBinary
+    ) {
         super(out);
         this.resources = resources;
         this.classDataCache = new ClassDataCache(resources);
         this.exportedSymbols = new ExportedSymbols(resources, explicitlyExported);
         this.invokerMethods = new StringArray();
+        this.asBinary = asBinary;
     }
 
     static {
@@ -70,17 +75,23 @@ abstract class VM extends ByteCodeToJavaScript {
         VM vm;
         if (config.isExtension()) {
             fixedNames.add(VM.class.getName().replace('.', '/'));
-            vm = new Extension(out, config.getResources(), both, config.exported());
+            vm = new Extension(out, 
+                config.getResources(), both, config.exported(),
+                config.allResources()
+            );
         } else {
             if (config.includeVM()) {
                 fixedNames.add(VM.class.getName().replace('.', '/'));
             }
-            vm = new Standalone(out, config.getResources(), config.exported());
+            vm = new Standalone(out, 
+                config.getResources(), config.exported(),
+                config.allResources()
+            );
         }            
-        vm.doCompile(fixedNames.addAndNew(both), config.allResources());
+        vm.doCompile(fixedNames.addAndNew(both));
     }
 
-    private void doCompile(StringArray names, StringArray asBinary) throws IOException {
+    private void doCompile(StringArray names) throws IOException {
         generatePrologue();
         append(
                 "\n  var invoker = {};");
@@ -229,6 +240,7 @@ abstract class VM extends ByteCodeToJavaScript {
                     throw new IOException("Can't find " + resource);
                 }
                 readResource(emul, this);
+                asBinary.remove(resource);
             }
             scripts = new StringArray();
 
@@ -441,8 +453,11 @@ abstract class VM extends ByteCodeToJavaScript {
     }
 
     private static final class Standalone extends VM {
-        private Standalone(Appendable out, Bck2Brwsr.Resources resources, StringArray explicitlyExported) {
-            super(out, resources, explicitlyExported);
+        private Standalone(Appendable out,
+            Bck2Brwsr.Resources resources, 
+            StringArray explicitlyExported, StringArray asBinary
+        ) {
+            super(out, resources, explicitlyExported, asBinary);
         }
 
         @Override
@@ -578,8 +593,10 @@ abstract class VM extends ByteCodeToJavaScript {
         private final StringArray extensionClasses;
 
         private Extension(Appendable out, Bck2Brwsr.Resources resources,
-                          String[] extClassesArray, StringArray explicitlyExported) {
-            super(out, resources, explicitlyExported);
+            String[] extClassesArray, StringArray explicitlyExported,
+            StringArray asBinary
+        ) {
+            super(out, resources, explicitlyExported, asBinary);
             this.extensionClasses = StringArray.asList(extClassesArray);
         }
 

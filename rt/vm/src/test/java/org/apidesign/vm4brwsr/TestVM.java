@@ -161,6 +161,7 @@ public final class TestVM {
                 }
             }).
             addRootClasses(name).
+            addResources("org/apidesign/vm4brwsr/obj.js").
             obfuscation(ObfuscationLevel.FULL).
             library(true);
         if (resourceName != null) {

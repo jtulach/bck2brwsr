@@ -21,12 +21,27 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
+import net.java.html.js.JavaScriptBody;
+import net.java.html.js.JavaScriptResource;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
+@JavaScriptResource("obj.js")
 public class Resources {
+    @JavaScriptBody(args = {}, body = "return obj;")
+    static Object retObj() {
+        return null;
+    }
+    
+    public static boolean isObj() {
+        return retObj() != null;
+    }
+    public static boolean isResource() {
+        return Resources.class.getResource("obj.js") != null;
+    }
+    
     public static String loadKO() throws IOException {
         InputStream is = Resources.class.getResourceAsStream("ko.js");
         return readIS(is, false);
