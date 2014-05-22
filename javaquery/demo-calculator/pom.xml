@@ -12,7 +12,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <bck2brwsr.obfuscationlevel>MINIMAL</bck2brwsr.obfuscationlevel>
+    <bck2brwsr.obfuscationlevel>FULL</bck2brwsr.obfuscationlevel>
   </properties>
   <build>
       <plugins>

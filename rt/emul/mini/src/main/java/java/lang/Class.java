@@ -238,14 +238,18 @@ public final
     }
     
     @JavaScriptBody(args = {"n", "c" }, body =
-        "if (!vm[c]) {\n"
-      + "  if (vm.loadClass) {\n"
-      + "    vm.loadClass(n);\n"
+        "var m = vm[c];\n"
+      + "if (!m) {\n"
+      + "  var l = vm.loadClass ? vm.loadClass : exports ? exports.loadClass : null;\n"
+      + "  if (l) {\n"
+      + "    l(n);\n"
       + "  }\n"
-      + "  if (!vm[c]) return null;\n"
+      + "  if (vm[c]) m = vm[c];\n"
+      + "  else if (exports[c]) m = exports[c];\n"
       + "}\n"
-      + "vm[c](false);"
-      + "return vm[c].$class;"
+      + "if (!m) return null;"
+      + "m(false);"
+      + "return m.$class;"
     )
     private static native Class<?> loadCls(String n, String c);
 
