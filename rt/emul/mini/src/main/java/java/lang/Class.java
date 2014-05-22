@@ -34,6 +34,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.TypeVariable;
 import java.net.URL;
+import org.apidesign.bck2brwsr.core.Exported;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.core.JavaScriptOnly;
 import org.apidesign.bck2brwsr.emul.reflect.AnnotationImpl;
@@ -1743,7 +1744,7 @@ public final
     native static Class getPrimitiveClass(String type);
 
     @JavaScriptBody(args = {}, body = 
-        "return this.desiredAssertionStatus ? this.desiredAssertionStatus : false;"
+        "return this['desiredAssertionStatus'] ? this['desiredAssertionStatus'] : false;"
     )
     public native boolean desiredAssertionStatus();
     
@@ -1770,10 +1771,11 @@ public final
     )
     static native Class<?> classFor(Object self);
     
+    @Exported
     @JavaScriptBody(args = { "self" }, body
-            = "if (self.$hashCode) return self.$hashCode;\n"
-            + "var h = self.computeHashCode__I ? self.computeHashCode__I() : Math.random() * Math.pow(2, 31);\n"
-            + "return self.$hashCode = h & h;"
+            = "if (self['$hashCode']) return self['$hashCode'];\n"
+            + "var h = self['computeHashCode__I'] ? self['computeHashCode__I']() : Math.random() * Math.pow(2, 31);\n"
+            + "return self['$hashCode'] = h & h;"
     )
     static native int defaultHashCode(Object self);
 
@@ -1802,6 +1804,7 @@ public final
     )
     static native int toJS();
 
+    @Exported
     @JavaScriptOnly(name = "activate__Ljava_io_Closeable_2Lorg_apidesign_html_boot_spi_Fn$Presenter_2", value = "function() {\n"
         + "  return vm.org_apidesign_bck2brwsr_emul_lang_System(false).activate__Ljava_io_Closeable_2();"
         + "}\n"
@@ -1822,6 +1825,7 @@ public final
     @JavaScriptBody(args = {"o"}, body = "return o ? o.toString() : null;")
     private static native String msg(Object o);
 
+    @Exported
     @JavaScriptOnly(name = "bck2BrwsrThrwrbl", value = "c.bck2BrwsrCnvrt__Ljava_lang_Object_2Ljava_lang_Object_2")
     private static void bck2BrwsrCnvrtVM() {
     }

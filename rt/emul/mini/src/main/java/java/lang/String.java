@@ -30,6 +30,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Comparator;
 import java.util.Locale;
+import org.apidesign.bck2brwsr.core.Exported;
 import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.core.JavaScriptOnly;
@@ -1457,7 +1458,7 @@ public final class String
     public int hashCode() {
         return super.hashCode();
     }
-    int computeHashCode() {
+    @Exported int computeHashCode() {
         int h = 0;
         if (h == 0 && length() > 0) {
             int off = offset();

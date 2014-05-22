@@ -38,6 +38,7 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import org.apidesign.bck2brwsr.launcher.BaseHTTPLauncher.Res;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
+import org.apidesign.vm4brwsr.ObfuscationLevel;
 
 /**
  *
@@ -66,6 +67,7 @@ class CompileCP {
                 .addClasses(classes.toArray(new String[0]))
                 .addExported(keep.toArray(new String[0]))
                 .addResources(arr.toArray(new String[0]))
+                //.obfuscation(ObfuscationLevel.FULL)
                 .library(true)
                 .resources(new JarRes())
                 .generate(w);
@@ -101,6 +103,7 @@ class CompileCP {
                     .addRootClasses(classes.toArray(new String[0]))
                     .addResources(arr.toArray(new String[0]))
                     .library(true)
+                    //.obfuscation(ObfuscationLevel.FULL)
                     .resources(new EmulationResources() {
                         @Override
                         public InputStream get(String resource) throws IOException {
@@ -205,6 +208,7 @@ class CompileCP {
         }
 
         Bck2Brwsr.newCompiler().addRootClasses(classes.toArray(new String[0]))
+            //.obfuscation(ObfuscationLevel.FULL)
             .resources(new Bck2Brwsr.Resources() {
                 @Override
                 public InputStream get(String resource) throws IOException {

@@ -138,7 +138,7 @@ final class ExportedSymbols {
         }
     }
 
-    private boolean isMarkedAsExported(byte[] arrData, ClassData cd)
+    static boolean isMarkedAsExported(byte[] arrData, ClassData cd)
             throws IOException {
         if (arrData == null) {
             return false;
