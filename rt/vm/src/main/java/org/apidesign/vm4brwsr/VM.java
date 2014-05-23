@@ -533,6 +533,7 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "      };\n"
                 + "      for (var i = 0; i < args.length; i++) {\n"
                 + "        var at = args[i];\n"
+                + "        if(!at) continue;\n"
                 + "        var ret;\n"
                 + "        if (typeof at === 'string' && at.substring(at.length - 3) === '.js') {\n"
                 + "          loadExtension(at);\n"
