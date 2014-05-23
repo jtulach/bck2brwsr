@@ -90,11 +90,12 @@
         
         <div data-bind="text: displayPreview"></div>
         <script src="bck2brwsr.js"></script>
-        <script src="lib/emul-0.9-SNAPSHOT-rt.js"></script>
-        <script src="lib/javaquery.api-0.9-SNAPSHOT.js"></script>
-        <script src="app.js"></script>
         <script>
-            var vm = bck2brwsr();
+            var vm = bck2brwsr(
+                'app.js',
+                'lib/emul-0.9-SNAPSHOT-rt.js',
+                'lib/javaquery.api-0.9-SNAPSHOT.js'
+            );
             vm.loadClass('org.apidesign.bck2brwsr.demo.calc.staticcompilation.Calc');
         </script>
     </body>
