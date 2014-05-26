@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -81,21 +83,33 @@ public class AheadOfTime extends AbstractMojo {
     
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        URLClassLoader loader;
         try {
-            URLClassLoader loader = buildClassLoader(null, prj.getArtifacts());
-            for (Artifact a : prj.getArtifacts()) {
-                if (a.getFile() == null) {
-                    continue;
-                }
-                String n = a.getFile().getName();
-                if (!n.endsWith(".jar")) {
-                    continue;
-                }
-                aot.mkdirs();
-                File js = new File(aot, n.substring(0, n.length() - 4) + ".js");
-                aotLibrary(a, js , loader);
+            loader = buildClassLoader(null, prj.getArtifacts());
+        } catch (MalformedURLException ex) {
+            throw new MojoFailureException("Can't initialize classloader");
+        }
+        for (Artifact a : prj.getArtifacts()) {
+            if (a.getFile() == null) {
+                continue;
             }
+            String n = a.getFile().getName();
+            if (!n.endsWith(".jar")) {
+                continue;
+            }
+            if ("provided".equals(a.getScope())) {
+                continue;
+            }
+            aot.mkdirs();
+            File js = new File(aot, n.substring(0, n.length() - 4) + ".js");
+            try {
+                aotLibrary(a, js , loader);
+            } catch (IOException ex) {
+                throw new MojoFailureException("Can't compile" + a.getFile(), ex);
+            }
+        }
             
+        try {
             FileWriter w = new FileWriter(vm);
             Bck2Brwsr.newCompiler().
                     obfuscation(obfuscation).
