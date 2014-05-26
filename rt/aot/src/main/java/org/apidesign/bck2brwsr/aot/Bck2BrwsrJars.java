@@ -63,28 +63,27 @@ public final class Bck2BrwsrJars {
      * @throws IOException if something goes wrong
      */
     public static Bck2Brwsr configureFrom(Bck2Brwsr c, File jar) throws IOException {
-        try (JarFile jf = new JarFile(jar)) {
-            List<String> classes = new ArrayList<>();
-            List<String> resources = new ArrayList<>();
-            Set<String> exported = new HashSet<>();
-            
-            listJAR(jf, classes, resources, exported);
-            
-            class JarRes extends EmulationResources implements Bck2Brwsr.Resources {
+        final JarFile jf = new JarFile(jar);
+        List<String> classes = new ArrayList<>();
+        List<String> resources = new ArrayList<>();
+        Set<String> exported = new HashSet<>();
 
-                @Override
-                public InputStream get(String resource) throws IOException {
-                    InputStream is = jf.getInputStream(new ZipEntry(resource));
-                    return is == null ? super.get(resource) : is;
-                }
+        listJAR(jf, classes, resources, exported);
+
+        class JarRes extends EmulationResources implements Bck2Brwsr.Resources {
+
+            @Override
+            public InputStream get(String resource) throws IOException {
+                InputStream is = jf.getInputStream(new ZipEntry(resource));
+                return is == null ? super.get(resource) : is;
             }
-            return Bck2Brwsr.newCompiler()
-                .library(true)
-                .addClasses(classes.toArray(new String[classes.size()]))
-                .addExported(exported.toArray(new String[exported.size()]))
-                .addResources(resources.toArray(new String[resources.size()]))
-                .resources(new JarRes());
         }
+        return Bck2Brwsr.newCompiler()
+            .library(true)
+            .addClasses(classes.toArray(new String[classes.size()]))
+            .addExported(exported.toArray(new String[exported.size()]))
+            .addResources(resources.toArray(new String[resources.size()]))
+            .resources(new JarRes());
     }
     
     private static void listJAR(
