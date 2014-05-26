@@ -91,5 +91,11 @@
         <artifactId>launcher.fx</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+        <groupId>org.apidesign.bck2brwsr</groupId>
+        <artifactId>aot</artifactId>
+      <version>0.9-SNAPSHOT</version>
+      <type>jar</type>
+    </dependency>
 </dependencies>
 </project>

@@ -562,7 +562,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
 
     abstract void generateBck2BrwsrJS(StringBuilder sb, Res loader) throws IOException;
     abstract String harnessResource();
-    String compileJar(JarFile jar) throws IOException {
+    String compileJar(URL jar) throws IOException {
         return null;
     }
     String compileFromClassPath(URL f, Res loader) throws IOException {
@@ -582,8 +582,8 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
     final class Res {
         private final Set<URL> ignore = new HashSet<URL>();
         
-        String compileJar(JarFile jar, URL jarURL) throws IOException {
-            String ret = BaseHTTPLauncher.this.compileJar(jar);
+        String compileJar(URL jarURL) throws IOException {
+            String ret = BaseHTTPLauncher.this.compileJar(jarURL);
             ignore.add(jarURL);
             return ret;
         }
@@ -745,7 +745,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                 response.setCharacterEncoding("UTF-8");
                 if (url.getProtocol().equals("jar")) {
                     JarURLConnection juc = (JarURLConnection) url.openConnection();
-                    String s = loader.compileJar(juc.getJarFile(), juc.getJarFileURL());
+                    String s = loader.compileJar(juc.getJarFileURL());
                     if (s != null) {
                         Writer w = response.getWriter();
                         w.append(s);

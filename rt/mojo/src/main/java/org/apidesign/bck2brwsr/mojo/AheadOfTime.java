@@ -46,6 +46,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
+import org.apidesign.bck2brwsr.aot.Bck2BrwsrJars;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 import org.apidesign.vm4brwsr.ObfuscationLevel;
 
@@ -130,22 +131,12 @@ public class AheadOfTime extends AbstractMojo {
     }
 
     private void aotLibrary(Artifact a, File js, URLClassLoader loader) throws IOException {
-        List<String> classes = new ArrayList<String>();
-        List<String> resources = new ArrayList<String>();
-        Set<String> exported = new HashSet<String>();
-        
-        JarFile jf = new JarFile(a.getFile());
-        listJAR(jf, classes , resources, exported);
-        
         FileWriter w = new FileWriter(js);
-        Bck2Brwsr.newCompiler().
-                obfuscation(obfuscation).
-                library(true).
-                resources(loader).
-                addResources(resources.toArray(new String[0])).
-                addClasses(classes.toArray(new String[0])).
-                addExported(exported.toArray(new String[0])).
-                generate(w);
+        Bck2Brwsr c = Bck2BrwsrJars.configureFrom(null, a.getFile());
+        c.
+            obfuscation(obfuscation).
+            resources(loader).
+            generate(w);
         w.close();
     }
     private static URLClassLoader buildClassLoader(File root, Collection<Artifact> deps) throws MalformedURLException {
@@ -160,54 +151,4 @@ public class AheadOfTime extends AbstractMojo {
         }
         return new URLClassLoader(arr.toArray(new URL[0]), Java2JavaScript.class.getClassLoader());
     }
-    
-    private static void listJAR(
-            JarFile j, List<String> classes,
-            List<String> resources, Set<String> exported
-    ) throws IOException {
-        Enumeration<JarEntry> en = j.entries();
-        while (en.hasMoreElements()) {
-            JarEntry e = en.nextElement();
-            final String n = e.getName();
-            if (n.endsWith("/")) {
-                continue;
-            }
-            int last = n.lastIndexOf('/');
-            String pkg = n.substring(0, last + 1);
-            if (n.endsWith(".class")) {
-                classes.add(n.substring(0, n.length() - 6));
-            } else {
-                resources.add(n);
-                if (n.startsWith("META-INF/services/") && exported != null) {
-                    final InputStream is = j.getInputStream(e);
-                    exportedServices(is, exported);
-                    is.close();
-                }
-            }
-        }
-        String exp = j.getManifest().getMainAttributes().getValue("Export-Package");
-        if (exp != null && exported != null) {
-            for (String def : exp.split(",")) {
-                for (String sep : def.split(";")) {
-                    exported.add(sep.replace('.', '/') + "/");
-                    break;
-                }
-            }
-        }
-    }
-
-    static void exportedServices(final InputStream is, Set<String> exported) throws IOException {
-        BufferedReader r = new BufferedReader(new InputStreamReader(is));
-        for (;;) {
-            String l = r.readLine();
-            if (l == null) {
-                break;
-            }
-            if (l.startsWith("#")) {
-                continue;
-            }
-            exported.add(l.replace('.', '/'));
-        }
-    }
-    
 }
