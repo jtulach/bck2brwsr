@@ -588,7 +588,11 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "    return loader;\n"
                 + "  };\n");
             append(
-                  "  global.bck2brwsr.registerExtension = function(extension) {\n"
+                  "  global.bck2brwsr.register = function(config, extension) {\n"
+                + "    if (!config || config['magic'] !== 'kafíčko') {\n"
+                + "      console.log('Will not register: ' + extension);\n"
+                + "      return false;\n"
+                + "    }\n"
                 + "    extensions.push(extension);\n"
                 + "    return null;\n"
                 + "  };\n");
@@ -619,7 +623,9 @@ abstract class VM extends ByteCodeToJavaScript {
 
         @Override
         protected void generatePrologue() throws IOException {
-            append("bck2brwsr.registerExtension(function(exports) {\n"
+            append("bck2brwsr.register({\n"
+                    + "'magic' : 'kafíčko'\n"
+                + "}, function(exports) {\n"
                            + "  var vm = {};\n");
             append("  function link(n) {\n"
                 + "    return function() {\n"

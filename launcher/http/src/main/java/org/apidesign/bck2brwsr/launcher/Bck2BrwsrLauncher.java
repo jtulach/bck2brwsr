@@ -122,7 +122,7 @@ final class Bck2BrwsrLauncher extends BaseHTTPLauncher {
             + "    args.unshift(ldCls);\n"
             + "    return prevvm.apply(null, args);\n"
             + "  };\n"
-            + "  global.bck2brwsr.registerExtension = prevvm.registerExtension;\n"
+            + "  global.bck2brwsr.register = prevvm.register;\n"
             + "})(this);\n"
         );
         LOG.log(Level.INFO, "Serving bck2brwsr.js", b2b);
