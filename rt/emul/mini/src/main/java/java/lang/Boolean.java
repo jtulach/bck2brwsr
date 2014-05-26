@@ -289,8 +289,9 @@ public final class Boolean implements java.io.Serializable,
         initValueOf();
     }
     @JavaScriptBody(args = {  }, body = 
-        "vm.java_lang_Boolean(false)" +
-        ".valueOf = function() { return this._value() ? true : false; };"
+        "var bc = vm.java_lang_Boolean(false);\n" +
+        "bc.valueOf = function() { return this._value() ? true : false; };\n" +
+        "bc.toString = function() { return this.valueOf().toString(); };\n"
     )
     private native static void initValueOf();
 }
