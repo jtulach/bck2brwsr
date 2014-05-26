@@ -897,7 +897,8 @@ public abstract class ClassLoader {
     }
 
     @JavaScriptBody(args = { "name", "skip" }, body
-        = "return (vm.loadBytes) ? vm.loadBytes(name, skip) : null;"
+        = "var lb = vm.loadBytes ? vm.loadBytes : exports.loadBytes;"
+        + "return lb ? lb(name, skip) : null;"
     )
     static native byte[] getResourceAsStream0(String name, int skip);
 
