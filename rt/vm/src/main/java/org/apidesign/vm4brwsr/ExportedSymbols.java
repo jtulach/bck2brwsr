@@ -75,6 +75,9 @@ final class ExportedSymbols {
         if (pkgName == null) {
             return false;
         }
+        if (pkgName.startsWith("java/")) {
+            return true;
+        }
 
         final Boolean cachedValue = isMarkedAsExportedCache.get(pkgName);
         if (cachedValue != null) {
