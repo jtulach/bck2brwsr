@@ -97,6 +97,9 @@ public final class Bck2BrwsrJars {
             if (n.endsWith("/")) {
                 continue;
             }
+            if (n.startsWith("META-INF/maven/")) {
+                continue;
+            }
             int last = n.lastIndexOf('/');
             String pkg = n.substring(0, last + 1);
             if (pkg.startsWith("java/")) {
