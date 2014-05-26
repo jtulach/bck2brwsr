@@ -216,6 +216,14 @@ public class NumberTest {
             false, 30
         );
     }
+    
+    @Test public void computeAround() throws Exception {
+        double exp = Numbers.around(new Object(), 5, 8);
+        assertExec("Computes the same value", 
+            Numbers.class, "around__ILjava_lang_Object_2II", 
+            exp, null, 5, 8
+        );
+    }
 
     private static TestVM code;
 

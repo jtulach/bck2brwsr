@@ -1598,6 +1598,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
         }
 
         if (returnType[0] != 'V') {
+            mapper.flush(this);
             append("var ")
                .append(mapper.pushT(VarType.fromFieldType(returnType[0])))
                .append(" = ");
