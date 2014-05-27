@@ -1747,6 +1747,14 @@ public final
         "return this['desiredAssertionStatus'] ? this['desiredAssertionStatus'] : false;"
     )
     public native boolean desiredAssertionStatus();
+
+    public boolean equals(Object obj) {
+        if (isPrimitive() && obj instanceof Class) {
+            Class c = ((Class)obj);
+            return c.isPrimitive() && getName().equals(c.getName());
+        }
+        return super.equals(obj);
+    }
     
     static void registerNatives() {
         boolean assertsOn = false;
