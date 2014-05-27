@@ -58,11 +58,13 @@ public final class Bck2Brwsr {
     private final StringArray resources;
     private final Resources res;
     private final Boolean extension;
+    private final StringArray classpath;
 
     private Bck2Brwsr(
-        ObfuscationLevel level, 
-        StringArray exported, StringArray classes, StringArray resources, 
-        Resources res, Boolean extension
+            ObfuscationLevel level, 
+            StringArray exported, StringArray classes, StringArray resources, 
+            Resources res, 
+            Boolean extension, StringArray classpath
     ) {
         this.level = level;
         this.exported = exported;
@@ -70,6 +72,7 @@ public final class Bck2Brwsr {
         this.resources = resources;
         this.res = res;
         this.extension = extension;
+        this.classpath = classpath;
     }
     
     /** Helper method to generate virtual machine from bytes served by a <code>resources</code>
@@ -106,7 +109,11 @@ public final class Bck2Brwsr {
      * @since 0.5
      */
     public static Bck2Brwsr newCompiler() {
-        return new Bck2Brwsr(ObfuscationLevel.NONE, new StringArray(), new StringArray(), new StringArray(), null, false);
+        return new Bck2Brwsr(
+            ObfuscationLevel.NONE, 
+            new StringArray(), new StringArray(), new StringArray(), 
+            null, false, null
+        );
     }
     
     /** Adds exported classes or packages. If the string ends 
@@ -126,7 +133,7 @@ public final class Bck2Brwsr {
     public Bck2Brwsr addExported(String... exported) {
         return new Bck2Brwsr(
             level, this.exported.addAndNew(exported), 
-            classes, resources, res, extension
+            classes, resources, res, extension, classpath
         );
     }
 
@@ -167,7 +174,7 @@ public final class Bck2Brwsr {
         } else {
             return new Bck2Brwsr(level, exported, 
                 this.classes.addAndNew(classes), resources, res,
-                extension);
+                extension, classpath);
         }
     }
     
@@ -187,7 +194,7 @@ public final class Bck2Brwsr {
             return this;
         } else {
             return new Bck2Brwsr(level, exported, this.classes, 
-                this.resources.addAndNew(resources), res, extension
+                this.resources.addAndNew(resources), res, extension, classpath
             );
         }
     }
@@ -201,7 +208,7 @@ public final class Bck2Brwsr {
      * @since 0.5
      */
     public Bck2Brwsr obfuscation(ObfuscationLevel level) {
-        return new Bck2Brwsr(level, exported, classes, resources, res, extension);
+        return new Bck2Brwsr(level, exported, classes, resources, res, extension, classpath);
     }
     
     /** A way to change the provider of additional resources (classes) for the 
@@ -213,7 +220,10 @@ public final class Bck2Brwsr {
      * @since 0.5
      */
     public Bck2Brwsr resources(Resources res) {
-        return new Bck2Brwsr(level, exported, classes, resources, res, extension);
+        return new Bck2Brwsr(
+            level, exported, classes, resources, 
+            res, extension, classpath
+        );
     }
 
     /** Should one generate a library? By default the system generates
@@ -222,13 +232,25 @@ public final class Bck2Brwsr {
      * By turning on the library mode, only classes explicitly listed
      * will be included in the archive. The others will be referenced
      * as external ones.
+     * <p>
+     * A library archive may specify its <em>classpath</em> - e.g. link to
+     * other libraries that should also be included in the application. 
+     * One can specify the list of libraries as vararg to this method.
+     * These are relative URL with respect to location of this library.
+     * The runtime system then prefers seek for ".js" suffix of the library
+     * and only then seeks for the classical ".jar" path.
      * 
-     * @param library turn on the library mode?
+     * @param classpath the array of JARs that are referenced by this library -
+     *   by default gets turned into 
      * @return new instance of the compiler with library flag changed
      * @since 0.9
      */
-    public Bck2Brwsr library(boolean library) {
-        return new Bck2Brwsr(level, exported, classes, resources, res, library);
+    public Bck2Brwsr library(String... classpath) {
+        return new Bck2Brwsr(
+            level, exported, classes, 
+            resources, res, true, 
+            StringArray.asList(classpath)
+        );
     }
     
     /** Turns on the standalone mode. E.g. acts like {@link #library(boolean) library(false)},
@@ -241,7 +263,10 @@ public final class Bck2Brwsr {
      * @since 0.9
      */
     public Bck2Brwsr standalone(boolean includeVM) {
-        return new Bck2Brwsr(level, exported, classes, resources, res, includeVM ? false : null);
+        return new Bck2Brwsr(
+            level, exported, classes, resources, 
+            res, includeVM ? false : null, null
+        );
     }
 
     /** A way to change the provider of additional resources (classes) for the 
@@ -318,6 +343,10 @@ public final class Bck2Brwsr {
     
     boolean includeVM() {
         return extension != null;
+    }
+    
+    StringArray classpath() {
+        return classpath;
     }
 
     /** Provider of resources (classes and other files). The 

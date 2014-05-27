@@ -70,6 +70,9 @@ public final class Bck2BrwsrJars {
         Set<String> exported = new HashSet<>();
 
         listJAR(jf, classes, resources, exported);
+        
+        String cp = jf.getManifest().getMainAttributes().getValue("Class-Path"); // NOI18N
+        String[] classpath = cp == null ? new String[0] : cp.split(" ");
 
         class JarRes extends EmulationResources implements Bck2Brwsr.Resources {
 
@@ -80,7 +83,7 @@ public final class Bck2BrwsrJars {
             }
         }
         return Bck2Brwsr.newCompiler()
-            .library(true)
+            .library(classpath)
             .addClasses(classes.toArray(new String[classes.size()]))
             .addExported(exported.toArray(new String[exported.size()]))
             .addResources(resources.toArray(new String[resources.size()]))

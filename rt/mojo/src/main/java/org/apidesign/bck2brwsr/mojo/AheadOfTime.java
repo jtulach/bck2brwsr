@@ -18,25 +18,16 @@
 
 package org.apidesign.bck2brwsr.mojo;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -62,13 +53,22 @@ import org.apidesign.vm4brwsr.ObfuscationLevel;
 public class AheadOfTime extends AbstractMojo {
     @Parameter(defaultValue = "${project}")
     private MavenProject prj;
+    
+    @Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}.jar")
+    private File mainJar;
 
+    @Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}.js")
+    private File mainJavaScript;
+    
+    @Parameter
+    private String[] exports;
+    
     /**
      * Directory where to generate ahead-of-time JavaScript files for
      * required libraries.
      */
-    @Parameter(defaultValue = "${project.build.directory}/lib")
-    private File aot;
+    @Parameter(defaultValue = "lib")
+    private String classPathPrefix;
 
     /** Root JavaScript file to generate */
     @Parameter(defaultValue="${project.build.directory}/bck2brwsr.js")
@@ -86,7 +86,7 @@ public class AheadOfTime extends AbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         URLClassLoader loader;
         try {
-            loader = buildClassLoader(null, prj.getArtifacts());
+            loader = buildClassLoader(mainJar, prj.getArtifacts());
         } catch (MalformedURLException ex) {
             throw new MojoFailureException("Can't initialize classloader");
         }
@@ -101,6 +101,7 @@ public class AheadOfTime extends AbstractMojo {
             if ("provided".equals(a.getScope())) {
                 continue;
             }
+            File aot = new File(prj.getBuild().getDirectory(), classPathPrefix);
             aot.mkdirs();
             File js = new File(aot, n.substring(0, n.length() - 4) + ".js");
             try {
@@ -108,6 +109,23 @@ public class AheadOfTime extends AbstractMojo {
             } catch (IOException ex) {
                 throw new MojoFailureException("Can't compile" + a.getFile(), ex);
             }
+        }
+        
+        try {
+            Bck2Brwsr c = Bck2BrwsrJars.configureFrom(null, mainJar);
+            if (exports != null) {
+                for (String e : exports) {
+                    c = c.addExported(e.replace('.', '/'));
+                }
+            }
+            FileWriter w = new FileWriter(mainJavaScript);
+            c.
+                    obfuscation(obfuscation).
+                    resources(loader).
+                    generate(w);
+            w.close();
+        } catch (IOException ex) {
+            throw new MojoFailureException("Cannot generate script for " + mainJar, ex);
         }
             
         try {

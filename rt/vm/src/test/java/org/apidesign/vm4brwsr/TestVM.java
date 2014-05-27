@@ -163,7 +163,7 @@ public final class TestVM {
             addRootClasses(name).
             addResources("org/apidesign/vm4brwsr/obj.js").
             obfuscation(ObfuscationLevel.FULL).
-            library(true);
+            library();
         if (resourceName != null) {
             b2b = b2b.addResources(resourceName);
         }
@@ -189,8 +189,7 @@ public final class TestVM {
         Bck2Brwsr b2b = Bck2Brwsr.newCompiler().
             resources(new EmulationResources()).
             addRootClasses(name).
-            addResources(resources).
-            library(false);
+            addResources(resources);
         b2b.generate(sb);
         ScriptEngineManager sem = new ScriptEngineManager();
         ScriptEngine js = sem.getEngineByExtension("js");

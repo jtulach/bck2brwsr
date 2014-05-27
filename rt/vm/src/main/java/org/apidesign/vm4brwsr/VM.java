@@ -77,7 +77,7 @@ abstract class VM extends ByteCodeToJavaScript {
             fixedNames.add(VM.class.getName().replace('.', '/'));
             vm = new Extension(out, 
                 config.getResources(), both, config.exported(),
-                config.allResources()
+                config.allResources(), config.classpath()
             );
         } else {
             if (config.includeVM()) {
@@ -487,10 +487,9 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "    name = replaceAll(name, '.', '_');\n"
                 + "    return name;\n"
                 + "  };\n"
-                + "  global.bck2brwsr = function() {\n"
-                + "    var args = Array.prototype.slice.apply(arguments);\n"
-                + "    var resources = {};\n"
-                + "    function loadExtension(url) {\n"
+                + "  function loadExtension(url) {\n"
+                + "      if (url.substring(url.length - 4) == '.jar')\n"
+                + "        url = url.substring(0, url.length - 4) + '.js';\n"
                 + "      var xhr = new XMLHttpRequest();\n"
                 + "      xhr.open('GET', url, false);\n"
                 + "      xhr.send();\n"
@@ -498,7 +497,10 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "      script.type = 'text/javascript';\n"
                 + "      script.text = xhr.responseText;\n"
                 + "      document.getElementsByTagName('head')[0].appendChild(script);\n"
-                + "    }\n"
+                + "  }\n"
+                + "  global.bck2brwsr = function() {\n"
+                + "    var args = Array.prototype.slice.apply(arguments);\n"
+                + "    var resources = {};\n"
                 + "    function registerResource(n, a64) {\n"
                 + "      var str = atob(a64);\n"
                 + "      var arr = [];\n"
@@ -556,12 +558,15 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "      var arr = resources[name];\n"
                 + "      return (arr && arr.length > arrSize) ? arr[arrSize] : null;\n"
                 + "    }\n"
-                + "    var reload = function(name, arr, keep) {;\n"
+                + "    var reload = function(name, arr, keep) {\n"
+                + "      if (!arr) throw 'Cannot find ' + name;\n"
+                + "      var lazy = vm['org_apidesign_vm4brwsr_VMLazy'];\n"
+                + "      if (!lazy) throw 'No bck2brwsr VM module to compile ' + name;\n"
                 + "      if (!keep) {\n"
                 + "        var attr = mangleClass(name);\n"
                 + "        delete vm[attr];\n"
                 + "      }\n"
-                + "      return vm['org_apidesign_vm4brwsr_VMLazy'](false)\n"
+                + "      return lazy(false)\n"
                 + "        ['load__Ljava_lang_Object_2Ljava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2_3B']\n"
                 + "        (vm, name, args, arr);\n"
                 + "    };\n"
@@ -594,6 +599,10 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "      return false;\n"
                 + "    }\n"
                 + "    extensions.push(extension);\n"
+                + "    var cp = config['classpath'];\n"
+                + "    if (cp) for (var i = 0; i < cp.length; i++) {\n"
+                + "      loadExtension(cp[i]);\n"
+                + "    }\n"
                 + "    return null;\n"
                 + "  };\n");
             append("}(this));");
@@ -612,21 +621,39 @@ abstract class VM extends ByteCodeToJavaScript {
 
     private static final class Extension extends VM {
         private final StringArray extensionClasses;
+        private final StringArray classpath;
 
         private Extension(Appendable out, Bck2Brwsr.Resources resources,
             String[] extClassesArray, StringArray explicitlyExported,
-            StringArray asBinary
+            StringArray asBinary, StringArray classpath
         ) {
             super(out, resources, explicitlyExported, asBinary);
             this.extensionClasses = StringArray.asList(extClassesArray);
+            this.classpath = classpath;
         }
 
         @Override
         protected void generatePrologue() throws IOException {
-            append("bck2brwsr.register({\n"
-                    + "'magic' : 'kafíčko'\n"
-                + "}, function(exports) {\n"
-                           + "  var vm = {};\n");
+            append(
+                  "bck2brwsr.register({\n"
+                + "  'magic' : 'kafíčko'"
+            );
+            if (classpath != null && classpath.toArray().length > 0) {
+                append(
+                  ",\n  'classpath' : [\n"
+                );
+                String sep = "    ";
+                for (String s : classpath.toArray()) {
+                    append(sep).append("'").append(s).append("'");
+                    sep = ",\n    ";
+                }
+                append(
+                  "\n  ]"
+                );
+            }
+            append(
+                  "\n}, function(exports) {\n"
+                + "  var vm = {};\n");
             append("  function link(n) {\n"
                 + "    return function() {\n"
                 + "      var cls = n['replace__Ljava_lang_String_2CC']"

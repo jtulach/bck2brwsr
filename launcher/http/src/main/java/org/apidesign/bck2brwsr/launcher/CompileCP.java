@@ -76,7 +76,7 @@ class CompileCP {
                 Bck2Brwsr.newCompiler()
                     .addRootClasses(classes.toArray(new String[0]))
                     .addResources(arr.toArray(new String[0]))
-                    .library(true)
+                    .library()
                     //.obfuscation(ObfuscationLevel.FULL)
                     .resources(new EmulationResources() {
                         @Override
@@ -135,7 +135,7 @@ class CompileCP {
             throw new IOException(ex);
         }
 
-        all.library(false)
+        all
             //.obfuscation(ObfuscationLevel.FULL)
             .resources(new Bck2Brwsr.Resources() {
                 @Override

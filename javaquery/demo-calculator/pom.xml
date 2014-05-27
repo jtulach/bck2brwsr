@@ -23,7 +23,6 @@
                 <executions>
                     <execution>
                         <goals>
-                            <goal>j2js</goal>
                             <goal>aot</goal>
                             <goal>brwsr</goal>
                         </goals>
@@ -32,9 +31,11 @@
                 <configuration>
                     <directory>${project.build.directory}/${project.build.finalName}-bck2brwsr/public_html/</directory>
                     <startpage>index.xhtml</startpage>
-                    <javascript>${project.build.directory}/app.js</javascript>
-                    <library>true</library>
+                    <mainJavaScript>${project.build.directory}/calculator.js</mainJavaScript>
                     <obfuscation>${bck2brwsr.obfuscationlevel}</obfuscation>
+                    <exports>
+                        <param>org/apidesign/bck2brwsr/demo/calc/staticcompilation/</param>
+                    </exports>
                 </configuration>
             </plugin>
          <plugin>
