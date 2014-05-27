@@ -136,6 +136,7 @@ class CompileCP {
         }
 
         all
+            .standalone(true)
             //.obfuscation(ObfuscationLevel.FULL)
             .resources(new Bck2Brwsr.Resources() {
                 @Override
