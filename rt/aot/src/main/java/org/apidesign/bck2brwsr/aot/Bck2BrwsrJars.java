@@ -36,8 +36,9 @@ import java.util.zip.ZipEntry;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 
 /** Utilities to process JAR files and set a compiler
- * up 
+ * up.
  *
+ * @since 0.9
  * @author Jaroslav Tulach
  */
 public final class Bck2BrwsrJars {
