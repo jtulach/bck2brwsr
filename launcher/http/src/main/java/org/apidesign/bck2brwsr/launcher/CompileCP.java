@@ -44,7 +44,9 @@ class CompileCP {
     throws IOException {
         StringWriter w = new StringWriter();
         try {
-            Bck2BrwsrJars.configureFrom(null, jar).generate(w);
+            Bck2BrwsrJars.configureFrom(null, jar)
+                .addExported(testClasses.toArray(new String[0]))
+                .generate(w);
             w.flush();
             return w.toString();
         } catch (IOException ex) {
