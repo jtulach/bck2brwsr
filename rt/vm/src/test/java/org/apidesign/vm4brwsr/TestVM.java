@@ -23,7 +23,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 import javax.script.Invocable;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
@@ -60,7 +63,10 @@ public final class TestVM {
         Object ret = null;
         try {
             ret = code.invokeMethod(bck2brwsr, "loadClass", clazz.getName());
-            ret = code.invokeMethod(ret, method, args);
+            List<Object> ma = new ArrayList<>();
+            ma.add(method);
+            ma.addAll(Arrays.asList(args));
+            ret = code.invokeMethod(ret, "invoke", ma.toArray());
         } catch (ScriptException ex) {
             fail("Execution failed in " + dumpJS(codeSeq) + ": " + ex.getMessage(), ex);
         } catch (NoSuchMethodException ex) {

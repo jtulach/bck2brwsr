@@ -39,7 +39,7 @@ import org.apidesign.bck2brwsr.htmlpage.api.Property;
     @Property(name = "history", type = double.class, array = true)
 })
 public class Calc {
-    static {
+    public static void main(String... args) throws Exception {
         new Calculator().applyBindings().setOperation("plus");
     }
     

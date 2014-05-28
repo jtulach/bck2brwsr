@@ -92,7 +92,8 @@
         <script src="bck2brwsr.js"></script>
         <script>
             var vm = bck2brwsr('calculator.js');
-            vm.loadClass('org.apidesign.bck2brwsr.demo.calc.staticcompilation.Calc');
+            var c = vm.loadClass('org.apidesign.bck2brwsr.demo.calc.staticcompilation.Calc');
+            c.invoke('main');
         </script>
     </body>
 </html>

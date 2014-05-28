@@ -26,7 +26,7 @@ import java.io.InputStream;
  * be used to bootstrap and load the virtual machine: <pre>
  * var vm = bck2brwsr();
  * var main = vm.loadClass('org.your.pkg.Main');
- * main.main__V_3Ljava_lang_String_2(null);
+ * main.invoke('main');
  * </pre>
  * In case one wants to initialize the virtual machine with ability to
  * load classes lazily when needed, one can provide a loader function to
@@ -39,15 +39,27 @@ import java.io.InputStream;
  * function is asked for its byte code and the system dynamically transforms
  * it to JavaScript.
  * <p>
- * Instead of a loader function, one can also provide a URL to a JAR file.
+ * Instead of a loader function, one can also provide a URL to a JAR file
+ * or a library JavaScript file generated with {@link #library(java.lang.String...)}
+ * option on.
  * The <code>bck2brwsr</code> system will do its best to download the file
- * and provide loader function for it automatically.
+ * and provide loader function for it automatically. In order to use
+ * the JAR file <code>emul.zip</code> module needs to be available in the system.
  * <p>
- * One can provide as many loader functions and JAR URL references as necessary.
+ * One can provide as many loader functions and URL references as necessary.
  * Then the initialization code would look like:<pre>
  * var vm = bck2brwsr(url1, url2, fnctn1, url3, functn2);
  * </pre>
  * The provided URLs and loader functions will be consulted one by one.
+ * <p>
+ * The initialization of the <b>Bck2Brwsr</b> is done asynchronously since 
+ * version 0.9. E.g. call to <pre>
+ * var vm = bck2brwsr('myapp.js');
+ * var main = vm.loadClass('org.your.pkg.Main');
+ * main.invoke('main');
+ * </pre>
+ * returns immediately and the call to the static main method will happen
+ * once the virtual machine is initialized and the class available.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
