@@ -69,6 +69,7 @@ abstract class VM extends ByteCodeToJavaScript {
         String[] both = config.classes().toArray();
         
         final StringArray fixedNames = new StringArray();
+        fixedNames.add(Object.class.getName().replace('.', '/'));
         fixedNames.add(Class.class.getName().replace('.', '/'));
         fixedNames.add(ArithmeticException.class.getName().replace('.', '/'));
         

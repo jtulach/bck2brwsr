@@ -147,6 +147,12 @@ public final class TestVM {
         StringBuilder sb, ScriptEngine[] eng, 
         String name, final String resourceName, final String resourceContent
     ) throws ScriptException, IOException {
+        return compileClassesAsExtension(sb, eng, resourceName, resourceContent, name);
+    }
+    static TestVM compileClassesAsExtension(
+        StringBuilder sb, ScriptEngine[] eng, 
+        final String resourceName, final String resourceContent, String... names
+    ) throws ScriptException, IOException {
         if (sb == null) {
             sb = new StringBuilder();
         }
@@ -166,8 +172,9 @@ public final class TestVM {
                     return super.get(name);
                 }
             }).
-            addRootClasses(name).
+            addClasses(names).
             addResources("org/apidesign/vm4brwsr/obj.js").
+            addExported("org/apidesign/vm4brwsr/").
             obfuscation(ObfuscationLevel.FULL).
             library();
         if (resourceName != null) {
