@@ -305,9 +305,9 @@ public final
     @JavaScriptBody(args = { "self", "illegal" }, body =
           "\nvar c = self.cnstr;"
         + "\nif (c['cons__V']) {"
-        + "\n  if ((c.cons__V.access & 0x1) != 0) {"
+        + "\n  if ((c['cons__V'].access & 0x1) != 0) {"
         + "\n    var inst = c();"
-        + "\n    c.cons__V.call(inst);"
+        + "\n    c['cons__V'].call(inst);"
         + "\n    return inst;"
         + "\n  }"
         + "\n  return illegal;"
