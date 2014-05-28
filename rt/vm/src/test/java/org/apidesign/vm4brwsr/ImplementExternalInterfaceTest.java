@@ -44,7 +44,7 @@ public class ImplementExternalInterfaceTest {
         StringBuilder sb = new StringBuilder();
         ScriptEngine[] eng = { null };
         code = TestVM.compileClassAsExtension(sb, eng, 
-            "org/apidesign/vm4brwsr/ImplementInterface", null, null
+            "org/apidesign/vm4brwsr/extrnl/ImplementInterface", null, null
         );
         code = TestVM.compileClassesAsExtension(sb, eng, null, null,
             "org/apidesign/vm4brwsr/ImplementFactory", 

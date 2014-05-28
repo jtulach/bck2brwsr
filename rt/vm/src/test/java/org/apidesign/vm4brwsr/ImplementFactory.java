@@ -17,6 +17,8 @@
  */
 package org.apidesign.vm4brwsr;
 
+import org.apidesign.vm4brwsr.extrnl.ImplementInterface;
+
 /**
  *
  * @author Jaroslav Tulach

@@ -426,7 +426,7 @@ abstract class VM extends ByteCodeToJavaScript {
                             : object + "['" + mangledName + "']";
     }
 
-    private static final class ExportedMethodFinder
+    private final class ExportedMethodFinder
             implements ClassDataCache.TraversalCallback<MethodData> {
         private final ExportedSymbols exportedSymbols;
         private MethodData found;
@@ -438,7 +438,10 @@ abstract class VM extends ByteCodeToJavaScript {
         @Override
         public boolean traverse(final MethodData methodData) {
             try {
-                if (exportedSymbols.isExported(methodData)) {
+                if (
+                    exportedSymbols.isExported(methodData) ||
+                    isExternalClass(methodData.cls.getClassName())
+                ) {
                     found = methodData;
                     return false;
                 }

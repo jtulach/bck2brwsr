@@ -26,7 +26,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.script.Invocable;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
@@ -162,6 +164,11 @@ public final class TestVM {
             eng[0] = js;
             Bck2Brwsr.generate(sb, new EmulationResources());
         }
+        Set<String> exp = new HashSet<String>();
+        for (String n : names) {
+            int last = n.lastIndexOf('/');
+            exp.add(n.substring(0, last + 1));
+        }
         Bck2Brwsr b2b = Bck2Brwsr.newCompiler().
             resources(new EmulationResources() {
                 @Override
@@ -174,7 +181,7 @@ public final class TestVM {
             }).
             addClasses(names).
             addResources("org/apidesign/vm4brwsr/obj.js").
-            addExported("org/apidesign/vm4brwsr/").
+            addExported(exp.toArray(new String[0])).
             obfuscation(ObfuscationLevel.FULL).
             library();
         if (resourceName != null) {
