@@ -96,10 +96,12 @@ abstract class ByteCodeToJavaScript implements Appendable {
     }
 
     protected String accessVirtualMethod(
-                             String object,
-                             String mangledName,
-                             String[] fieldInfoName) throws IOException {
-        return object + "." + mangledName;
+            String object, 
+            String mangledName, 
+            String[] fieldInfoName, 
+            int params
+    ) throws IOException {
+        return object + "." + mangledName + '(';
     }
 
     protected void declaredClass(ClassData classData, String mangledName)
@@ -1654,8 +1656,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                .append(" = ");
         }
 
-        append(accessVirtualMethod(vars[0].toString(), mn, mi));
-        append('(');
+        append(accessVirtualMethod(vars[0].toString(), mn, mi, numArguments));
         String sep = "";
         for (int j = 1; j < numArguments; ++j) {
             append(sep);

@@ -98,10 +98,9 @@ abstract class VM extends ByteCodeToJavaScript {
                 "\n  var invoker = {};");
         generateBody(names);
         for (String invokerMethod: invokerMethods.toArray()) {
-            append("\n  invoker." + invokerMethod + " = function(target) {"
-                + "\n    return function() {"
-                + "\n      return target['" + invokerMethod + "'].apply(target, arguments);"
-                + "\n    };"
+            append("\n  invoker." + invokerMethod + " = function() {"
+                + "\n    var target = arguments[0];"
+                + "\n    return target['" + invokerMethod + "'].apply(target, Array.prototype.slice.call(arguments, 1));"
                 + "\n  };"
             );
         }
@@ -366,9 +365,11 @@ abstract class VM extends ByteCodeToJavaScript {
 
     @Override
     protected String accessVirtualMethod(
-                             String object,
-                             String mangledName,
-                             String[] fieldInfoName) throws IOException {
+            String object, 
+            String mangledName, 
+            String[] fieldInfoName, 
+            int params
+    ) throws IOException {
         final ClassData referencedClass =
                 classDataCache.getClassData(fieldInfoName[0]);
         final MethodData method =
@@ -382,17 +383,17 @@ abstract class VM extends ByteCodeToJavaScript {
                         || ((referencedClass.getAccessFlags()
                                  & ByteCodeParser.ACC_FINAL) != 0)
                         || !isHierarchyExported(method))) {
-            return object + "." + mangledName;
+            return object + "." + mangledName + '(';
         }
 
-        return accessThroughInvoker(object, mangledName);
+        return accessThroughInvoker(object, mangledName, params > 1 ? "," : "");
     }
 
-    private String accessThroughInvoker(String object, String mangledName) {
+    private String accessThroughInvoker(String object, String mangledName, String sep) {
         if (!invokerMethods.contains(mangledName)) {
             invokerMethods.add(mangledName);
         }
-        return "invoker." + mangledName + '(' + object + ')';
+        return "invoker." + mangledName + '(' + object + sep;
     }
 
     private boolean isHierarchyExported(final MethodData methodData)
