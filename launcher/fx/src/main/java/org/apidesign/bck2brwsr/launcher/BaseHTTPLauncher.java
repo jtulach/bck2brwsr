@@ -754,6 +754,15 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                     }
                 }
                 if (url.getProtocol().equals("file")) {
+                    final String filePart = url.getFile();
+                    if (filePart.endsWith(res)) {
+                        url = new URL(
+                            url.getProtocol(), 
+                            url.getHost(), 
+                            url.getPort(), 
+                            filePart.substring(0, filePart.length() - res.length())
+                        );
+                    }
                     String s = loader.compileFromClassPath(url);
                     if (s != null) {
                         Writer w = response.getWriter();

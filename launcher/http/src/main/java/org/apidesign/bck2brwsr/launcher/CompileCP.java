@@ -65,10 +65,17 @@ class CompileCP {
         } catch (URISyntaxException ex) {
             throw new IOException(ex);
         }
-        for (String s : System.getProperty("java.class.path").split(File.pathSeparator)) {
-            if (!f.getPath().startsWith(s)) {
-                continue;
+        String s = f.isDirectory() ? f.getPath() : null;
+        
+        for (String candidate : System.getProperty("java.class.path").split(File.pathSeparator)) {
+            if (s != null) {
+                break;
             }
+            if (f.getPath().startsWith(candidate)) {
+                s = candidate;
+            }
+        }
+        if (s != null) {
             File root = new File(s);
             List<String> arr = new ArrayList<>();
             List<String> classes = new ArrayList<>();
