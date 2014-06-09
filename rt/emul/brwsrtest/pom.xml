@@ -4,11 +4,11 @@
   <parent>
     <groupId>org.apidesign.bck2brwsr</groupId>
     <artifactId>emul.pom</artifactId>
-    <version>0.9-SNAPSHOT</version>
+    <version>0.9</version>
   </parent>
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>brwsrtest</artifactId>
-  <version>0.9-SNAPSHOT</version>
+  <version>0.9</version>
   <name>Tests Inside Real Browser</name>
   <url>http://maven.apache.org</url>
   <properties>

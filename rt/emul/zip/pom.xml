@@ -4,11 +4,11 @@
     <parent>
         <groupId>org.apidesign.bck2brwsr</groupId>
         <artifactId>emul.pom</artifactId>
-        <version>0.9-SNAPSHOT</version>
+        <version>0.9</version>
     </parent>
     <artifactId>emul.zip</artifactId>
     <name>Unzip by JCraft for Bck2Brwsr</name>
-    <description>>
+    <description>&gt;
         100% pure Java re-implementation of Zlib
         that allows usage of JAR files with Bck2Brwsr 
         virtual machine.
