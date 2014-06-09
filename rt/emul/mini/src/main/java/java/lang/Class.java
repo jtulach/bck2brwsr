@@ -1627,7 +1627,7 @@ public final
         // the ENUM bit set; classes for specialized enum constants
         // don't do the former.
         return (this.getModifiers() & ENUM) != 0 &&
-        this.getSuperclass() == java.lang.Enum.class;
+        this.getSuperclass().getName().equals("java.lang.Enum");
     }
 
     /**

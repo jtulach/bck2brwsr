@@ -194,7 +194,7 @@ public abstract class Enum<E extends Enum<E>>
     public final Class<E> getDeclaringClass() {
         Class clazz = getClass();
         Class zuper = clazz.getSuperclass();
-        return (zuper == Enum.class) ? clazz : zuper;
+        return zuper.getName().equals("java.lang.Enum") ? clazz : zuper;
     }
 
     /**
