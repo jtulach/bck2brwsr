@@ -104,7 +104,12 @@ public class AheadOfTime extends AbstractMojo {
             File aot = new File(prj.getBuild().getDirectory(), classPathPrefix);
             aot.mkdirs();
             File js = new File(aot, n.substring(0, n.length() - 4) + ".js");
+            if (js.exists()) {
+                getLog().info("Skipping " + js + " as it already exists.");
+                continue;
+            }
             try {
+                getLog().info("Generating " + js);
                 aotLibrary(a, js , loader);
             } catch (IOException ex) {
                 throw new MojoFailureException("Can't compile" + a.getFile(), ex);
@@ -112,18 +117,23 @@ public class AheadOfTime extends AbstractMojo {
         }
         
         try {
-            Bck2Brwsr c = Bck2BrwsrJars.configureFrom(null, mainJar);
-            if (exports != null) {
-                for (String e : exports) {
-                    c = c.addExported(e.replace('.', '/'));
+            if (mainJavaScript.exists()) {
+                getLog().info("Skipping " + mainJavaScript + " as it already exists.");
+            } else {
+                getLog().info("Generating " + mainJavaScript);
+                Bck2Brwsr c = Bck2BrwsrJars.configureFrom(null, mainJar);
+                if (exports != null) {
+                    for (String e : exports) {
+                        c = c.addExported(e.replace('.', '/'));
+                    }
                 }
+                FileWriter w = new FileWriter(mainJavaScript);
+                c.
+                        obfuscation(obfuscation).
+                        resources(loader).
+                        generate(w);
+                w.close();
             }
-            FileWriter w = new FileWriter(mainJavaScript);
-            c.
-                    obfuscation(obfuscation).
-                    resources(loader).
-                    generate(w);
-            w.close();
         } catch (IOException ex) {
             throw new MojoFailureException("Cannot generate script for " + mainJar, ex);
         }
