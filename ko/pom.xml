@@ -12,8 +12,6 @@
     <version>0.9-SNAPSHOT</version>
   </parent>  
   <modules>
-    <module>archetype</module>
-    <module>archetype-test</module>
     <module>bck2brwsr</module>
     <module>fx</module>
   </modules>
