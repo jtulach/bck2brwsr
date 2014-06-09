@@ -82,7 +82,11 @@ public final class Bck2BrwsrJars {
                 return is == null ? super.get(resource) : is;
             }
         }
-        return Bck2Brwsr.newCompiler()
+        if (c == null) {
+            c = Bck2Brwsr.newCompiler();
+        }
+        
+        return c
             .library(classpath)
             .addClasses(classes.toArray(new String[classes.size()]))
             .addExported(exported.toArray(new String[exported.size()]))
