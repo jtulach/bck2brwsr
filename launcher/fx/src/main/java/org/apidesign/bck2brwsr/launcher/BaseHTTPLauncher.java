@@ -131,10 +131,12 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         if (!startpage.startsWith("/")) {
             startpage = "/" + startpage;
         }
-        String prefix = "";
-        int last = startpage.lastIndexOf('/');
-        if (last >= 0) {
-            prefix = startpage.substring(0, last);
+        String prefix = null;
+        if (!new File(dir, "bck2brwsr.js").exists()) {
+            int last = startpage.lastIndexOf('/');
+            if (last >= 0) {
+                prefix = startpage.substring(0, last);
+            }
         }
         HttpServer s = initServer(dir.getPath(), addClasses, prefix);
         try {

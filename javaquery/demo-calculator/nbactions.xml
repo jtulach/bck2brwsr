@@ -23,10 +23,11 @@
             <actionName>run</actionName>
             <goals>
                 <goal>package</goal>
-                <goal>bck2brwsr:brwsr</goal>
+                <goal>bck2brwsr:show</goal>
             </goals>
             <properties>
                 <skipTests>true</skipTests>
+                <bck2brwsr.obfuscationlevel>NONE</bck2brwsr.obfuscationlevel>
             </properties>
         </action>
 </actions>

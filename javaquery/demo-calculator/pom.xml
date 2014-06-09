@@ -13,6 +13,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <bck2brwsr.obfuscationlevel>FULL</bck2brwsr.obfuscationlevel>
+    <netbeans.compile.on.save>NONE</netbeans.compile.on.save>
   </properties>
   <build>
       <plugins>
@@ -24,7 +25,7 @@
                     <execution>
                         <goals>
                             <goal>aot</goal>
-                            <goal>brwsr</goal>
+                            <goal>show</goal>
                         </goals>
                     </execution>
                 </executions>
