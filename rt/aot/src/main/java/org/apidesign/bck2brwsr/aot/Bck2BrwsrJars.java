@@ -51,7 +51,7 @@ public final class Bck2BrwsrJars {
      * provided JAR file. The compiler will compile all classes.
      * The system understands OSGi manifest entries and will export
      * all packages that are exported in the JAR file. The system
-     * also recognizes META-INF/services and makes sure the file names
+     * also recognizes META-INF/services and makes sure the class names
      * are not mangled.
      * 
      * @param c the compiler to {@link Bck2Brwsr#addClasses(java.lang.String...) add classes},

@@ -25,6 +25,14 @@
                     </systemProperties>
                 </configuration>
             </plugin>     
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-javadoc-plugin</artifactId>
+               <configuration>
+                 <skip>false</skip>
+                 <subpackages>java.util.zip</subpackages>
+               </configuration>
+             </plugin>
         </plugins>
     </build>
     <dependencies>
