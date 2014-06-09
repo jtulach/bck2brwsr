@@ -17,5 +17,6 @@
     <module>mojo</module>
     <module>vm</module>
     <module>vmtest</module>
+    <module>aot</module>
   </modules>
 </project>

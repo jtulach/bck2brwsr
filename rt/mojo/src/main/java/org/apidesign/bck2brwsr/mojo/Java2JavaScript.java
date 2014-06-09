@@ -108,12 +108,14 @@ public class Java2JavaScript extends AbstractMojo {
         try {
             URLClassLoader url = buildClassLoader(classes, prj.getArtifacts());
             FileWriter w = new FileWriter(javascript);
-            Bck2Brwsr.newCompiler().
+            Bck2Brwsr c = Bck2Brwsr.newCompiler().
                 obfuscation(obfuscation).
-                library(library).
                 resources(url, ignoreBootClassPath).
-                addRootClasses(arr.toArray(new String[0])).
-                generate(w);
+                addRootClasses(arr.toArray(new String[0]));
+            if (library) {
+                c = c.library();
+            }
+            c.generate(w);
             w.close();
         } catch (IOException ex) {
             throw new MojoExecutionException("Can't compile", ex);

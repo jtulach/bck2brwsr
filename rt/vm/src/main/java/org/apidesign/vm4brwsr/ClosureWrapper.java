@@ -36,6 +36,7 @@ final class ClosureWrapper extends CommandLineRunner {
     private static final String[] ARGS = { 
         "--compilation_level", 
         "SIMPLE_OPTIMIZATIONS", 
+        "--output_wrapper", "(function() {%output%})(this);",
         "--js", "bck2brwsr-raw.js" 
         //, "--debug"
         //, "--formatting", "PRETTY_PRINT"
@@ -157,7 +158,7 @@ final class ClosureWrapper extends CommandLineRunner {
     private static final String[] FIXED_EXTERNS = {
         "bck2brwsr",
         "bck2BrwsrThrwrbl",
-        "registerExtension",
+        "register",
         "$class",
         "anno",
         "array",

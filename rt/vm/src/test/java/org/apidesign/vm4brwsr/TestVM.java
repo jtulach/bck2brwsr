@@ -23,7 +23,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.script.Invocable;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
@@ -60,7 +65,10 @@ public final class TestVM {
         Object ret = null;
         try {
             ret = code.invokeMethod(bck2brwsr, "loadClass", clazz.getName());
-            ret = code.invokeMethod(ret, method, args);
+            List<Object> ma = new ArrayList<>();
+            ma.add(method);
+            ma.addAll(Arrays.asList(args));
+            ret = code.invokeMethod(ret, "invoke", ma.toArray());
         } catch (ScriptException ex) {
             fail("Execution failed in " + dumpJS(codeSeq) + ": " + ex.getMessage(), ex);
         } catch (NoSuchMethodException ex) {
@@ -141,6 +149,12 @@ public final class TestVM {
         StringBuilder sb, ScriptEngine[] eng, 
         String name, final String resourceName, final String resourceContent
     ) throws ScriptException, IOException {
+        return compileClassesAsExtension(sb, eng, resourceName, resourceContent, name);
+    }
+    static TestVM compileClassesAsExtension(
+        StringBuilder sb, ScriptEngine[] eng, 
+        final String resourceName, final String resourceContent, String... names
+    ) throws ScriptException, IOException {
         if (sb == null) {
             sb = new StringBuilder();
         }
@@ -149,6 +163,11 @@ public final class TestVM {
             ScriptEngine js = sem.getEngineByExtension("js");
             eng[0] = js;
             Bck2Brwsr.generate(sb, new EmulationResources());
+        }
+        Set<String> exp = new HashSet<String>();
+        for (String n : names) {
+            int last = n.lastIndexOf('/');
+            exp.add(n.substring(0, last + 1));
         }
         Bck2Brwsr b2b = Bck2Brwsr.newCompiler().
             resources(new EmulationResources() {
@@ -160,9 +179,11 @@ public final class TestVM {
                     return super.get(name);
                 }
             }).
-            addRootClasses(name).
+            addClasses(names).
+            addResources("org/apidesign/vm4brwsr/obj.js").
+            addExported(exp.toArray(new String[0])).
             obfuscation(ObfuscationLevel.FULL).
-            library(true);
+            library();
         if (resourceName != null) {
             b2b = b2b.addResources(resourceName);
         }
@@ -188,8 +209,7 @@ public final class TestVM {
         Bck2Brwsr b2b = Bck2Brwsr.newCompiler().
             resources(new EmulationResources()).
             addRootClasses(name).
-            addResources(resources).
-            library(false);
+            addResources(resources);
         b2b.generate(sb);
         ScriptEngineManager sem = new ScriptEngineManager();
         ScriptEngine js = sem.getEngineByExtension("js");

@@ -131,10 +131,12 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         if (!startpage.startsWith("/")) {
             startpage = "/" + startpage;
         }
-        String prefix = "";
-        int last = startpage.lastIndexOf('/');
-        if (last >= 0) {
-            prefix = startpage.substring(0, last);
+        String prefix = null;
+        if (!new File(dir, "bck2brwsr.js").exists()) {
+            int last = startpage.lastIndexOf('/');
+            if (last >= 0) {
+                prefix = startpage.substring(0, last);
+            }
         }
         HttpServer s = initServer(dir.getPath(), addClasses, prefix);
         try {
@@ -565,7 +567,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
 
     abstract void generateBck2BrwsrJS(StringBuilder sb, Res loader) throws IOException;
     abstract String harnessResource();
-    String compileJar(JarFile jar) throws IOException {
+    String compileJar(URL jar) throws IOException {
         return null;
     }
     String compileFromClassPath(URL f, Res loader) throws IOException {
@@ -585,8 +587,8 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
     final class Res {
         private final Set<URL> ignore = new HashSet<URL>();
         
-        String compileJar(JarFile jar, URL jarURL) throws IOException {
-            String ret = BaseHTTPLauncher.this.compileJar(jar);
+        String compileJar(URL jarURL) throws IOException {
+            String ret = BaseHTTPLauncher.this.compileJar(jarURL);
             ignore.add(jarURL);
             return ret;
         }
@@ -748,7 +750,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                 response.setCharacterEncoding("UTF-8");
                 if (url.getProtocol().equals("jar")) {
                     JarURLConnection juc = (JarURLConnection) url.openConnection();
-                    String s = loader.compileJar(juc.getJarFile(), juc.getJarFileURL());
+                    String s = loader.compileJar(juc.getJarFileURL());
                     if (s != null) {
                         Writer w = response.getWriter();
                         w.append(s);
@@ -757,6 +759,15 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                     }
                 }
                 if (url.getProtocol().equals("file")) {
+                    final String filePart = url.getFile();
+                    if (filePart.endsWith(res)) {
+                        url = new URL(
+                            url.getProtocol(), 
+                            url.getHost(), 
+                            url.getPort(), 
+                            filePart.substring(0, filePart.length() - res.length())
+                        );
+                    }
                     String s = loader.compileFromClassPath(url);
                     if (s != null) {
                         Writer w = response.getWriter();

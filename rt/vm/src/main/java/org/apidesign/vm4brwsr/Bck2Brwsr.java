@@ -19,7 +19,6 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
-import org.apidesign.bck2brwsr.core.Exported;
 
 /** Build your own virtual machine! Use methods in this class to generate
  * a skeleton JVM in JavaScript that contains pre-compiled classes of your
@@ -27,7 +26,7 @@ import org.apidesign.bck2brwsr.core.Exported;
  * be used to bootstrap and load the virtual machine: <pre>
  * var vm = bck2brwsr();
  * var main = vm.loadClass('org.your.pkg.Main');
- * main.main__V_3Ljava_lang_String_2(null);
+ * main.invoke('main');
  * </pre>
  * In case one wants to initialize the virtual machine with ability to
  * load classes lazily when needed, one can provide a loader function to
@@ -40,33 +39,52 @@ import org.apidesign.bck2brwsr.core.Exported;
  * function is asked for its byte code and the system dynamically transforms
  * it to JavaScript.
  * <p>
- * Instead of a loader function, one can also provide a URL to a JAR file.
+ * Instead of a loader function, one can also provide a URL to a JAR file
+ * or a library JavaScript file generated with {@link #library(java.lang.String...)}
+ * option on.
  * The <code>bck2brwsr</code> system will do its best to download the file
- * and provide loader function for it automatically.
+ * and provide loader function for it automatically. In order to use
+ * the JAR file <code>emul.zip</code> module needs to be available in the system.
  * <p>
- * One can provide as many loader functions and JAR URL references as necessary.
+ * One can provide as many loader functions and URL references as necessary.
  * Then the initialization code would look like:<pre>
  * var vm = bck2brwsr(url1, url2, fnctn1, url3, functn2);
  * </pre>
  * The provided URLs and loader functions will be consulted one by one.
+ * <p>
+ * The initialization of the <b>Bck2Brwsr</b> is done asynchronously since 
+ * version 0.9. E.g. call to <pre>
+ * var vm = bck2brwsr('myapp.js');
+ * var main = vm.loadClass('org.your.pkg.Main');
+ * main.invoke('main');
+ * </pre>
+ * returns immediately and the call to the static main method will happen
+ * once the virtual machine is initialized and the class available.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public final class Bck2Brwsr {
     private final ObfuscationLevel level;
-    private final StringArray rootcls;
+    private final StringArray exported;
     private final StringArray classes;
     private final StringArray resources;
     private final Resources res;
-    private final boolean extension;
+    private final Boolean extension;
+    private final StringArray classpath;
 
-    private Bck2Brwsr(ObfuscationLevel level, StringArray rootcls, StringArray classes, StringArray resources, Resources res, boolean extension) {
+    private Bck2Brwsr(
+            ObfuscationLevel level, 
+            StringArray exported, StringArray classes, StringArray resources, 
+            Resources res, 
+            Boolean extension, StringArray classpath
+    ) {
         this.level = level;
-        this.rootcls = rootcls;
+        this.exported = exported;
         this.classes = classes;
         this.resources = resources;
         this.res = res;
         this.extension = extension;
+        this.classpath = classpath;
     }
     
     /** Helper method to generate virtual machine from bytes served by a <code>resources</code>
@@ -103,7 +121,32 @@ public final class Bck2Brwsr {
      * @since 0.5
      */
     public static Bck2Brwsr newCompiler() {
-        return new Bck2Brwsr(ObfuscationLevel.NONE, new StringArray(), new StringArray(), new StringArray(), null, false);
+        return new Bck2Brwsr(
+            ObfuscationLevel.NONE, 
+            new StringArray(), new StringArray(), new StringArray(), 
+            null, false, null
+        );
+    }
+    
+    /** Adds exported classes or packages. If the string ends 
+     * with slash, it is considered a name of package. If it does not,
+     * it is a name of a class (without <code>.class</code> suffix).
+     * The exported classes are prevented from being obfuscated. 
+     * All public classes in exported packages are prevented from
+     * being obfuscated. By listing the packages or classes in this 
+     * method, these classes are not guaranteed to be included in
+     * the generated script. Use {@link #addClasses} to include
+     * the classes.
+     * 
+     * @param exported names of classes and packages to treat as exported
+     * @return new instances of the Bck2Brwsr compiler which inherits
+     *   all values from <code>this</code> except list of exported classes
+     */
+    public Bck2Brwsr addExported(String... exported) {
+        return new Bck2Brwsr(
+            level, this.exported.addAndNew(exported), 
+            classes, resources, res, extension, classpath
+        );
     }
 
     /** Adds additional classes 
@@ -113,7 +156,7 @@ public final class Bck2Brwsr {
      * generated virtual machine code accessible using their fully 
      * qualified name. This brings the same behavior as if the
      * classes were added by {@link #addClasses(java.lang.String...) } and
-     * were annotated with {@link Exported} annotation.
+     * exported via {@link #addExported(java.lang.String...)}.
      * 
      * @param classes the classes to add to the compilation
      * @return new instance of the Bck2Brwsr compiler which inherits
@@ -122,10 +165,8 @@ public final class Bck2Brwsr {
     public Bck2Brwsr addRootClasses(String... classes) {
         if (classes.length == 0) {
             return this;
-        } else {
-            return new Bck2Brwsr(level, rootcls.addAndNew(classes), this.classes, resources, res,
-                                 extension);
-        }
+        } 
+        return addExported(classes).addClasses(classes);
     }
     
     /** Adds additional classes 
@@ -143,8 +184,9 @@ public final class Bck2Brwsr {
         if (classes.length == 0) {
             return this;
         } else {
-            return new Bck2Brwsr(level, rootcls, this.classes.addAndNew(classes), resources, res,
-                extension);
+            return new Bck2Brwsr(level, exported, 
+                this.classes.addAndNew(classes), resources, res,
+                extension, classpath);
         }
     }
     
@@ -163,8 +205,8 @@ public final class Bck2Brwsr {
         if (resources.length == 0) {
             return this;
         } else {
-            return new Bck2Brwsr(level, rootcls, this.classes, 
-                this.resources.addAndNew(resources), res, extension
+            return new Bck2Brwsr(level, exported, this.classes, 
+                this.resources.addAndNew(resources), res, extension, classpath
             );
         }
     }
@@ -178,7 +220,7 @@ public final class Bck2Brwsr {
      * @since 0.5
      */
     public Bck2Brwsr obfuscation(ObfuscationLevel level) {
-        return new Bck2Brwsr(level, rootcls, classes, resources, res, extension);
+        return new Bck2Brwsr(level, exported, classes, resources, res, extension, classpath);
     }
     
     /** A way to change the provider of additional resources (classes) for the 
@@ -190,7 +232,10 @@ public final class Bck2Brwsr {
      * @since 0.5
      */
     public Bck2Brwsr resources(Resources res) {
-        return new Bck2Brwsr(level, rootcls, classes, resources, res, extension);
+        return new Bck2Brwsr(
+            level, exported, classes, resources, 
+            res, extension, classpath
+        );
     }
 
     /** Should one generate a library? By default the system generates
@@ -199,13 +244,41 @@ public final class Bck2Brwsr {
      * By turning on the library mode, only classes explicitly listed
      * will be included in the archive. The others will be referenced
      * as external ones.
+     * <p>
+     * A library archive may specify its <em>classpath</em> - e.g. link to
+     * other libraries that should also be included in the application. 
+     * One can specify the list of libraries as vararg to this method.
+     * These are relative URL with respect to location of this library.
+     * The runtime system then prefers seek for ".js" suffix of the library
+     * and only then seeks for the classical ".jar" path.
      * 
-     * @param library turn on the library mode?
+     * @param classpath the array of JARs that are referenced by this library -
+     *   by default gets turned into 
      * @return new instance of the compiler with library flag changed
      * @since 0.9
      */
-    public Bck2Brwsr library(boolean library) {
-        return new Bck2Brwsr(level, rootcls, classes, resources, res, library);
+    public Bck2Brwsr library(String... classpath) {
+        return new Bck2Brwsr(
+            level, exported, classes, 
+            resources, res, true, 
+            StringArray.asList(classpath)
+        );
+    }
+    
+    /** Turns on the standalone mode. E.g. acts like {@link #library(boolean) library(false)},
+     * but also allows to specify whether the <em>Bck2Brwsr VM</em> should
+     * be included at all. If not, only the skeleton of the launcher is
+     * generated without any additional VM classes referenced.
+     * 
+     * @param includeVM should the VM be compiled in, or left out
+     * @return new instance of the compiler with standalone mode on
+     * @since 0.9
+     */
+    public Bck2Brwsr standalone(boolean includeVM) {
+        return new Bck2Brwsr(
+            level, exported, classes, resources, 
+            res, includeVM ? false : null, null
+        );
     }
 
     /** A way to change the provider of additional resources (classes) for the 
@@ -264,20 +337,28 @@ public final class Bck2Brwsr {
         return res != null ? res : new LdrRsrcs(Bck2Brwsr.class.getClassLoader(), false);
     }
     
-    String[] allClasses() {
-        return classes.addAndNew(rootcls.toArray()).toArray();
-    }
     StringArray allResources() {
         return resources;
     }
 
-    
-    StringArray rootClasses() {
-        return rootcls;
+    StringArray classes() {
+        return classes;
+    }
+
+    StringArray exported() {
+        return exported;
     }
     
     boolean isExtension() {
-        return extension;
+        return Boolean.TRUE.equals(extension);
+    }
+    
+    boolean includeVM() {
+        return extension != null;
+    }
+    
+    StringArray classpath() {
+        return classpath;
     }
 
     /** Provider of resources (classes and other files). The 

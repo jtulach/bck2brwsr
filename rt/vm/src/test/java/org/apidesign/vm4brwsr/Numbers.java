@@ -107,4 +107,19 @@ public class Numbers {
     
     @JavaScriptBody(args = { "o" }, body = "return o.valueOf();")
     private static native boolean bvalueOf(Object o);
+    
+    public static int around(Object model, int x, int y) {
+        return minesAt(model, x - 1, y - 1)
+            + minesAt(model, x - 1, y)
+            + minesAt(model, x - 1, y + 1)
+            + minesAt(model, x, y - 1)
+            + minesAt(model, x, y + 1)
+            + minesAt(model, x + 1, y - 1)
+            + minesAt(model, x + 1, y)
+            + minesAt(model, x + 1, y + 1);
+    }
+
+    private static int minesAt(Object model, int x, int y) {
+        return x + y;
+    }    
 }

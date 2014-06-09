@@ -51,7 +51,11 @@ public class ResourcesTest {
             }
         }
         assert different : "Not all manifests should look like first one:\n" + first;
-        return "" + cnt;
+        if (cnt > 40 && cnt < 50) {
+            return "OK";
+        } else {
+            return "" + cnt;
+        }
     }
     
     @Compare public String readResourceAsStream() throws Exception {

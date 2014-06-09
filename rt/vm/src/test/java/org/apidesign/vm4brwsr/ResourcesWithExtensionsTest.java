@@ -45,6 +45,17 @@ public class ResourcesWithExtensionsTest {
             exp
         );
     }
+    
+    @Test public void objJSResourceIsNotFound() throws Exception {
+        assertExec("Objects from @JavaScriptResource resources are available",
+            Resources.class, "isObj__Z", 1.0
+        );
+    }
+    @Test public void objJSIsFound() throws Exception {
+        assertExec("The resources used as @JavaScriptResource aren't available",
+            Resources.class, "isResource__Z", 0.0
+        );
+    }
 
     private static TestVM code;
     

@@ -105,11 +105,16 @@ final class Main {
         }
         
         try (Writer w = new BufferedWriter(new FileWriter(gt))) {
-            Bck2Brwsr.newCompiler().library(createExtension).
+            Bck2Brwsr c = Bck2Brwsr.newCompiler().
                 obfuscation(obfLevel).
                 addRootClasses(classes.toArray()).
-                resources(new LdrRsrcs(Main.class.getClassLoader(), true)).
-                generate(w);
+                resources(new LdrRsrcs(Main.class.getClassLoader(), true));
+            
+            if (createExtension) {
+                c = c.library();
+            }
+            
+            c.generate(w);
         }
     }
 

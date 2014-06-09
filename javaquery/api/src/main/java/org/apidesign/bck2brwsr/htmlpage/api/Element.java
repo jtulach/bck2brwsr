@@ -69,7 +69,7 @@ public abstract class Element {
         body="var e = window.document.getElementById(this._id());\n"
            + "e[ev._id()] = function(ev) {\n"
         + "  var d = ev ? ev : null;\n"
-        + "  r.onEvent__VLjava_lang_Object_2(d);\n"
+        + "  r['onEvent__VLjava_lang_Object_2'](d);\n"
         + "};\n"
     )
     final void on(OnEvent ev, OnHandler r) {

@@ -34,6 +34,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.TypeVariable;
 import java.net.URL;
+import org.apidesign.bck2brwsr.core.Exported;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.core.JavaScriptOnly;
 import org.apidesign.bck2brwsr.emul.reflect.AnnotationImpl;
@@ -238,14 +239,18 @@ public final
     }
     
     @JavaScriptBody(args = {"n", "c" }, body =
-        "if (!vm[c]) {\n"
-      + "  if (vm.loadClass) {\n"
-      + "    vm.loadClass(n);\n"
+        "var m = vm[c];\n"
+      + "if (!m) {\n"
+      + "  var l = vm.loadClass ? vm.loadClass : exports ? exports.loadClass : null;\n"
+      + "  if (l) {\n"
+      + "    l(n);\n"
       + "  }\n"
-      + "  if (!vm[c]) return null;\n"
+      + "  if (vm[c]) m = vm[c];\n"
+      + "  else if (exports[c]) m = exports[c];\n"
       + "}\n"
-      + "vm[c](false);"
-      + "return vm[c].$class;"
+      + "if (!m) return null;"
+      + "m(false);"
+      + "return m.$class;"
     )
     private static native Class<?> loadCls(String n, String c);
 
@@ -300,9 +305,9 @@ public final
     @JavaScriptBody(args = { "self", "illegal" }, body =
           "\nvar c = self.cnstr;"
         + "\nif (c['cons__V']) {"
-        + "\n  if ((c.cons__V.access & 0x1) != 0) {"
+        + "\n  if ((c['cons__V'].access & 0x1) != 0) {"
         + "\n    var inst = c();"
-        + "\n    c.cons__V.call(inst);"
+        + "\n    c['cons__V'].call(inst);"
         + "\n    return inst;"
         + "\n  }"
         + "\n  return illegal;"
@@ -1739,9 +1744,17 @@ public final
     native static Class getPrimitiveClass(String type);
 
     @JavaScriptBody(args = {}, body = 
-        "return this.desiredAssertionStatus ? this.desiredAssertionStatus : false;"
+        "return this['desiredAssertionStatus'] ? this['desiredAssertionStatus'] : false;"
     )
     public native boolean desiredAssertionStatus();
+
+    public boolean equals(Object obj) {
+        if (isPrimitive() && obj instanceof Class) {
+            Class c = ((Class)obj);
+            return c.isPrimitive() && getName().equals(c.getName());
+        }
+        return super.equals(obj);
+    }
     
     static void registerNatives() {
         boolean assertsOn = false;
@@ -1766,10 +1779,11 @@ public final
     )
     static native Class<?> classFor(Object self);
     
+    @Exported
     @JavaScriptBody(args = { "self" }, body
-            = "if (self.$hashCode) return self.$hashCode;\n"
-            + "var h = self.computeHashCode__I ? self.computeHashCode__I() : Math.random() * Math.pow(2, 31);\n"
-            + "return self.$hashCode = h & h;"
+            = "if (self['$hashCode']) return self['$hashCode'];\n"
+            + "var h = self['computeHashCode__I'] ? self['computeHashCode__I']() : Math.random() * Math.pow(2, 31);\n"
+            + "return self['$hashCode'] = h & h;"
     )
     static native int defaultHashCode(Object self);
 
@@ -1798,6 +1812,7 @@ public final
     )
     static native int toJS();
 
+    @Exported
     @JavaScriptOnly(name = "activate__Ljava_io_Closeable_2Lorg_apidesign_html_boot_spi_Fn$Presenter_2", value = "function() {\n"
         + "  return vm.org_apidesign_bck2brwsr_emul_lang_System(false).activate__Ljava_io_Closeable_2();"
         + "}\n"
@@ -1818,6 +1833,7 @@ public final
     @JavaScriptBody(args = {"o"}, body = "return o ? o.toString() : null;")
     private static native String msg(Object o);
 
+    @Exported
     @JavaScriptOnly(name = "bck2BrwsrThrwrbl", value = "c.bck2BrwsrCnvrt__Ljava_lang_Object_2Ljava_lang_Object_2")
     private static void bck2BrwsrCnvrtVM() {
     }

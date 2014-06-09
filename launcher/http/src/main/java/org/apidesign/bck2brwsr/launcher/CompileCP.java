@@ -17,25 +17,20 @@
  */
 package org.apidesign.bck2brwsr.launcher;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.net.JarURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
+import org.apidesign.bck2brwsr.aot.Bck2BrwsrJars;
 import org.apidesign.bck2brwsr.launcher.BaseHTTPLauncher.Res;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 
@@ -45,42 +40,12 @@ import org.apidesign.vm4brwsr.Bck2Brwsr;
  */
 class CompileCP {
     private static final Logger LOG = Logger.getLogger(CompileCP.class.getName());
-    static String compileJAR(final JarFile jar, Set<String> testClasses) 
+    static String compileJAR(final File jar, Set<String> testClasses) 
     throws IOException {
-        List<String> arr = new ArrayList<>();
-        List<String> classes = new ArrayList<>();
-        Set<String> exported = new HashSet<String>();
-        Set<String> keep = new HashSet<String>(testClasses);
-        listJAR(jar, classes, arr, exported, keep);
-        List<String> root = new ArrayList<>();
-        for (String c : classes) {
-            if (keep.contains(c)) {
-                root.add(c);
-                continue;
-            }
-            int slash = c.lastIndexOf('/');
-            String pkg = c.substring(0, slash + 1);
-            if (exported.contains(pkg)) {
-                root.add(c);
-            }
-        }
-        
         StringWriter w = new StringWriter();
         try {
-            class JarRes extends EmulationResources implements Bck2Brwsr.Resources {
-                @Override
-                public InputStream get(String resource) throws IOException {
-                    InputStream is = jar.getInputStream(new ZipEntry(resource));
-                    return is == null ? super.get(resource) : is;
-                }
-            }
-            
-            Bck2Brwsr.newCompiler()
-                .addClasses(classes.toArray(new String[0]))
-                .addRootClasses(root.toArray(new String[0]))
-                .addResources(arr.toArray(new String[0]))
-                .library(true)
-                .resources(new JarRes())
+            Bck2BrwsrJars.configureFrom(null, jar)
+                .addExported(testClasses.toArray(new String[0]))
                 .generate(w);
             w.flush();
             return w.toString();
@@ -100,10 +65,17 @@ class CompileCP {
         } catch (URISyntaxException ex) {
             throw new IOException(ex);
         }
-        for (String s : System.getProperty("java.class.path").split(File.pathSeparator)) {
-            if (!f.getPath().startsWith(s)) {
-                continue;
+        String s = f.isDirectory() ? f.getPath() : null;
+        
+        for (String candidate : System.getProperty("java.class.path").split(File.pathSeparator)) {
+            if (s != null) {
+                break;
             }
+            if (f.getPath().startsWith(candidate)) {
+                s = candidate;
+            }
+        }
+        if (s != null) {
             File root = new File(s);
             List<String> arr = new ArrayList<>();
             List<String> classes = new ArrayList<>();
@@ -113,7 +85,8 @@ class CompileCP {
                 Bck2Brwsr.newCompiler()
                     .addRootClasses(classes.toArray(new String[0]))
                     .addResources(arr.toArray(new String[0]))
-                    .library(true)
+                    .library()
+                    //.obfuscation(ObfuscationLevel.FULL)
                     .resources(new EmulationResources() {
                         @Override
                         public InputStream get(String resource) throws IOException {
@@ -136,56 +109,7 @@ class CompileCP {
         return null;
     }
     
-    private static void listJAR(
-        JarFile j, List<String> classes,
-        List<String> resources, Set<String> exported, Set<String> keep
-    ) throws IOException {
-        Enumeration<JarEntry> en = j.entries();
-        while (en.hasMoreElements()) {
-            JarEntry e = en.nextElement();
-            final String n = e.getName();
-            if (n.endsWith("/")) {
-                continue;
-            }
-            int last = n.lastIndexOf('/');
-            String pkg = n.substring(0, last + 1);
-            if (skipPkg(pkg)) {
-                continue;
-            }
-            if (n.endsWith(".class")) {
-                classes.add(n.substring(0, n.length() - 6));
-            } else {
-                resources.add(n);
-                if (n.startsWith("META-INF/services/") && keep != null) {
-                    BufferedReader r = new BufferedReader(new InputStreamReader(j.getInputStream(e)));
-                    for (;;) {
-                        String l = r.readLine();
-                        if (l == null) {
-                            break;
-                        }
-                        if (l.startsWith("#")) {
-                            continue;
-                        }
-                        keep.add(l.replace('.', '/'));
-                    }
-                }
-            }
-        }
-        String exp = j.getManifest().getMainAttributes().getValue("Export-Package");
-        if (exp != null && exported != null) {
-            for (String def : exp.split(",")) {
-                for (String sep : def.split(";")) {
-                    exported.add(sep.replace('.', '/') + "/");
-                    break;
-                }
-            }
-        }
-    }
 
-    private static boolean skipPkg(String pkg) {
-        return pkg.equals("org/apidesign/bck2brwsr/launcher/");
-    }
-    
     private static void listDir(File f, String pref, List<String> classes, List<String> resources) throws IOException {
         File[] arr = f.listFiles();
         if (arr == null) {
@@ -203,21 +127,26 @@ class CompileCP {
     }
 
     static void compileVM(StringBuilder sb, final Res r) throws IOException {
-        List<String> arr = new ArrayList<>();
-        List<String> classes = new ArrayList<>();
-
-        {
+        final Bck2Brwsr rt;
+        try {
             URL u = r.get(InterruptedException.class.getName().replace('.', '/') + ".class", 0);
             JarURLConnection juc = (JarURLConnection)u.openConnection();
-            listJAR(juc.getJarFile(), classes, arr, null, null);
+            rt = Bck2BrwsrJars.configureFrom(null, new File(juc.getJarFileURL().toURI()));
+        } catch (URISyntaxException ex) {
+            throw new IOException(ex);
         }
-        {
+        final Bck2Brwsr all;
+        try {
             URL u = r.get(Bck2Brwsr.class.getName().replace('.', '/') + ".class", 0);
             JarURLConnection juc = (JarURLConnection)u.openConnection();
-            listJAR(juc.getJarFile(), classes, arr, null, null);
+            all = Bck2BrwsrJars.configureFrom(rt, new File(juc.getJarFileURL().toURI()));
+        } catch (URISyntaxException ex) {
+            throw new IOException(ex);
         }
 
-        Bck2Brwsr.newCompiler().addRootClasses(classes.toArray(new String[0]))
+        all
+            .standalone(true)
+            //.obfuscation(ObfuscationLevel.FULL)
             .resources(new Bck2Brwsr.Resources() {
                 @Override
                 public InputStream get(String resource) throws IOException {
@@ -231,7 +160,7 @@ class CompileCP {
 
         @Override
         public InputStream get(String name) throws IOException {
-            Enumeration<URL> en = CompileCP.class.getClassLoader().getResources(name);
+            Enumeration<URL> en = Bck2BrwsrJars.class.getClassLoader().getResources(name);
             URL u = null;
             while (en.hasMoreElements()) {
                 u = en.nextElement();
@@ -241,10 +170,11 @@ class CompileCP {
                 return null;
             }
             if (u.toExternalForm().contains("/rt.jar!")) {
-                LOG.warning(name + "No bootdelegation for ");
+                LOG.log(Level.WARNING, "{0}No bootdelegation for ", name);
                 return null;
             }
             return u.openStream();
         }
     }
+    
 }

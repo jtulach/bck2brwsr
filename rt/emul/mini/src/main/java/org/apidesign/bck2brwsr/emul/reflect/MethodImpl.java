@@ -21,6 +21,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Enumeration;
+import org.apidesign.bck2brwsr.core.Exported;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /** Utilities to work on methods.
@@ -126,7 +127,7 @@ public abstract class MethodImpl {
         }
         return null;
     }
-
+    
     public static Method[] findMethods(Class<?> clazz, int mask) {
         Object[] namesAndData = findMethodData(clazz, "", false);
         int cnt = 0;
@@ -135,6 +136,11 @@ public abstract class MethodImpl {
             Object data = namesAndData[i + 1];
             int middle = sig.indexOf("__");
             if (middle == -1) {
+                continue;
+            }
+            if (sig.startsWith("$") && sig.endsWith("$")) {
+                // produced by Closure compiler in debug mode
+                // needs to be ignored
                 continue;
             }
             String name = sig.substring(0, middle);
@@ -152,7 +158,8 @@ public abstract class MethodImpl {
         }
         return arr;
     }
-    static String toSignature(Method m) {
+    
+    @Exported static String toSignature(Method m) {
         StringBuilder sb = new StringBuilder();
         sb.append(m.getName()).append("__");
         appendType(sb, m.getReturnType());
@@ -222,9 +229,17 @@ public abstract class MethodImpl {
     public static Enumeration<Class> signatureParser(final String sig) {
         class E implements Enumeration<Class> {
             int pos;
+            int len;
+            
+            E() {
+                len = sig.length();
+                while (sig.charAt(len - 1) == '$') {
+                    len--;
+                }
+            }
             
             public boolean hasMoreElements() {
-                return pos < sig.length();
+                return pos < len;
             }
 
             public Class nextElement() {

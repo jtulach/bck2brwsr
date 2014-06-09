@@ -12,7 +12,8 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <bck2brwsr.obfuscationlevel>MINIMAL</bck2brwsr.obfuscationlevel>
+    <bck2brwsr.obfuscationlevel>FULL</bck2brwsr.obfuscationlevel>
+    <netbeans.compile.on.save>NONE</netbeans.compile.on.save>
   </properties>
   <build>
       <plugins>
@@ -23,16 +24,19 @@
                 <executions>
                     <execution>
                         <goals>
-                            <goal>j2js</goal>
-                            <goal>brwsr</goal>
+                            <goal>aot</goal>
+                            <goal>show</goal>
                         </goals>
                     </execution>
                 </executions>
                 <configuration>
                     <directory>${project.build.directory}/${project.build.finalName}-bck2brwsr/public_html/</directory>
                     <startpage>index.xhtml</startpage>
-                    <javascript>${project.build.directory}/bck2brwsr.js</javascript>
+                    <mainJavaScript>${project.build.directory}/calculator.js</mainJavaScript>
                     <obfuscation>${bck2brwsr.obfuscationlevel}</obfuscation>
+                    <exports>
+                        <param>org/apidesign/bck2brwsr/demo/calc/staticcompilation/</param>
+                    </exports>
                 </configuration>
             </plugin>
          <plugin>

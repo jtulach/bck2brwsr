@@ -18,16 +18,14 @@
 package org.apidesign.bck2brwsr.launcher;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.jar.JarFile;
 import java.util.logging.Level;
 
 /**
@@ -48,8 +46,14 @@ final class Bck2BrwsrLauncher extends BaseHTTPLauncher {
     }
 
     @Override
-    String compileJar(JarFile jar) throws IOException {
-        return CompileCP.compileJAR(jar, testClasses);
+    String compileJar(URL jar) throws IOException {
+        File f;
+        try {
+            f = new File(jar.toURI());
+        } catch (URISyntaxException ex) {
+            throw new IOException(ex);
+        }
+        return CompileCP.compileJAR(f, testClasses);
     }
 
     @Override
@@ -122,7 +126,7 @@ final class Bck2BrwsrLauncher extends BaseHTTPLauncher {
             + "    args.unshift(ldCls);\n"
             + "    return prevvm.apply(null, args);\n"
             + "  };\n"
-            + "  global.bck2brwsr.registerExtension = prevvm.registerExtension;\n"
+            + "  global.bck2brwsr.register = prevvm.register;\n"
             + "})(this);\n"
         );
         LOG.log(Level.INFO, "Serving bck2brwsr.js", b2b);

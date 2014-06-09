@@ -27,26 +27,18 @@
       <format>dir</format>
   </formats>
   <baseDirectory>public_html</baseDirectory>
-  <dependencySets>
-    <dependencySet>
-        <useProjectArtifact>false</useProjectArtifact>
-        <scope>runtime</scope>
-        <outputDirectory>lib</outputDirectory>
-        <includes>
-            <include>*:jar</include>
-            <include>*:rt</include>
-        </includes>
-    </dependencySet>
-  </dependencySets> 
+  <fileSets>
+      <fileSet>
+          <directory>${project.build.directory}</directory>
+          <outputDirectory>/</outputDirectory>
+          <includes>
+              <include>bck2brwsr.js</include>
+              <include>calculator.js</include>
+              <include>lib/*.js</include>
+          </includes>
+      </fileSet>
+  </fileSets>
   <files>
-    <file>
-      <source>${project.build.directory}/${project.build.finalName}.jar</source>
-      <outputDirectory>/</outputDirectory>
-    </file>
-    <file>
-      <source>${project.build.directory}/bck2brwsr.js</source>
-      <outputDirectory>/</outputDirectory>
-    </file>
     <file>
       <source>${project.build.directory}/classes/org/apidesign/bck2brwsr/demo/calc/staticcompilation/Calculator.xhtml</source>
       <outputDirectory>/</outputDirectory>

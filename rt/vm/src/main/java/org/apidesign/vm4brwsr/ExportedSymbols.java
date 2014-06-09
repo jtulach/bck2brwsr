@@ -75,6 +75,9 @@ final class ExportedSymbols {
         if (pkgName == null) {
             return false;
         }
+        if (pkgName.startsWith("java/")) {
+            return true;
+        }
 
         final Boolean cachedValue = isMarkedAsExportedCache.get(pkgName);
         if (cachedValue != null) {
@@ -115,6 +118,9 @@ final class ExportedSymbols {
     }
 
     private boolean resolveIsMarkedAsExportedPackage(String pkgName) {
+        if (exported.contains(pkgName + '/')) {
+            return true;
+        }
         try {
             final InputStream is =
                     resources.get(pkgName + "/package-info.class");
@@ -135,7 +141,7 @@ final class ExportedSymbols {
         }
     }
 
-    private boolean isMarkedAsExported(byte[] arrData, ClassData cd)
+    static boolean isMarkedAsExported(byte[] arrData, ClassData cd)
             throws IOException {
         if (arrData == null) {
             return false;

@@ -96,10 +96,12 @@ abstract class ByteCodeToJavaScript implements Appendable {
     }
 
     protected String accessVirtualMethod(
-                             String object,
-                             String mangledName,
-                             String[] fieldInfoName) throws IOException {
-        return object + "." + mangledName;
+            String object, 
+            String mangledName, 
+            String[] fieldInfoName, 
+            int params
+    ) throws IOException {
+        return object + "." + mangledName + '(';
     }
 
     protected void declaredClass(ClassData classData, String mangledName)
@@ -229,17 +231,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
         }
         for (MethodData m : jc.getMethods()) {
             byte[] onlyArr = m.findAnnotationData(true);
-            String[] only = findAnnotation(onlyArr, jc, 
-                "org.apidesign.bck2brwsr.core.JavaScriptOnly", 
-                "name", "value"
-            );
-            if (only != null) {
-                if (only[0] != null && only[1] != null) {
-                    append("\n    p.").append(only[0]).append(" = ")
-                        .append(only[1]).append(";");
-                }
-                continue;
-            }
+            if (javaScriptOnly(onlyArr)) continue;
             String destObject;
             String mn;
             append("\n    ");
@@ -301,17 +293,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
         append("\n    }");
         for (FieldData v : jc.getFields()) {
             byte[] onlyArr = v.findAnnotationData(true);
-            String[] only = findAnnotation(onlyArr, jc, 
-                "org.apidesign.bck2brwsr.core.JavaScriptOnly", 
-                "name", "value"
-            );
-            if (only != null) {
-                if (only[0] != null && only[1] != null) {
-                    append("\n    p.").append(only[0]).append(" = ")
-                        .append(only[1]).append(";");
-                }
-                continue;
-            }
+            if (javaScriptOnly(onlyArr)) continue;
             if (!v.isStatic()) {
                 append("\n    this.fld_").
                     append(className).append('_').
@@ -330,6 +312,25 @@ abstract class ByteCodeToJavaScript implements Appendable {
 //            sb.append("\n").append(init).append("();");
 //        }
         return "";
+    }
+
+    private boolean javaScriptOnly(byte[] anno) throws IOException {
+        String[] only = findAnnotation(anno, jc,
+            "org.apidesign.bck2brwsr.core.JavaScriptOnly",
+            "name", "value"
+        );
+        if (only != null) {
+            if (only[0] != null && only[1] != null) {
+                append("\n    p.").append(only[0]).append(" = ")
+                    .append(only[1]).append(";");
+            }
+            if (ExportedSymbols.isMarkedAsExported(anno, jc)) {
+                append("\n    p['").append(only[0]).append("'] = p.")
+                    .append(only[0]).append(";");
+            }
+            return true;
+        }
+        return false;
     }
     private String generateStaticMethod(String destObject, MethodData m, StringArray toInitilize) throws IOException {
         String jsb = javaScriptBody(destObject, m, true);
@@ -1599,6 +1600,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
         }
 
         if (returnType[0] != 'V') {
+            mapper.flush(this);
             append("var ")
                .append(mapper.pushT(VarType.fromFieldType(returnType[0])))
                .append(" = ");
@@ -1654,8 +1656,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                .append(" = ");
         }
 
-        append(accessVirtualMethod(vars[0].toString(), mn, mi));
-        append('(');
+        append(accessVirtualMethod(vars[0].toString(), mn, mi, numArguments));
         String sep = "";
         for (int j = 1; j < numArguments; ++j) {
             append(sep);

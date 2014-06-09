@@ -20,6 +20,7 @@ package org.apidesign.vm4brwsr;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import org.apidesign.bck2brwsr.core.Exported;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
@@ -27,35 +28,31 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 final class VMLazy {
-    private final Object loader;
+    private final Object vm;
     private final Object[] args;
     
-    private VMLazy(Object loader, Object[] args) {
-        this.loader = loader;
+    private VMLazy(Object vm, Object[] args) {
+        this.vm = vm;
         this.args = args;
     }
     
     static void init() {
     }
     
-    static Object load(Object loader, String name, Object[] arguments) 
+    @Exported
+    static Object load(Object loader, String name, Object[] arguments, byte[] arr) 
     throws IOException, ClassNotFoundException {
-        return new VMLazy(loader, arguments).load(name, false);
-    }
-
-    static Object reload(Object loader, String name, Object[] arguments, byte[] arr) 
-    throws IOException, ClassNotFoundException {
+        if (arr == null) {
+            throw new ClassNotFoundException(name);
+        }
         return new VMLazy(loader, arguments).defineClass(arr, name, false);
     }
-    
-    static byte[] loadBytes(Object loader, String name, Object[] arguments, int skip) throws Exception {
-        return ClassPath.loadFromCp(arguments, name, skip);
-    }
-    
-    private Object load(String name, boolean instance)
+
+    @Exported
+    Object load(String name, boolean instance)
     throws IOException, ClassNotFoundException {
         String res = name.replace('.', '/') + ".class";
-        byte[] arr = ClassPath.loadFromCp(args, res, 0);
+        byte[] arr = ClassPath.loadBytes(res, args, 0);
         if (arr == null) {
             throw new ClassNotFoundException(name);
         }
@@ -65,33 +62,32 @@ final class VMLazy {
 
     private Object defineClass(byte[] arr, String name, boolean instance) throws IOException {
         StringBuilder out = new StringBuilder(65535);
-        out.append("var loader = arguments[0];\n");
-        out.append("var vm = loader.vm;\n");
+        out.append("var vm = arguments[0];\n");
         int prelude = out.length();
         String initCode = new Gen(this, out).compile(new ByteArrayInputStream(arr));
         String code = out.toString().toString();
         String under = name.replace('.', '_');
-        Object fn = applyCode(loader, under, code, instance);
+        Object fn = applyCode(vm, under, code, instance);
         
         if (!initCode.isEmpty()) {
             out.setLength(prelude);
             out.append(initCode);
             code = out.toString().toString();
-            applyCode(loader, null, code, false);
+            applyCode(vm, null, code, false);
         }            
         
         return fn;
     }
 
-    @JavaScriptBody(args = {"loader", "name", "script", "instance" }, body =
+    @JavaScriptBody(args = {"vm", "name", "script", "instance" }, body =
         "try {\n" +
-        "  new Function(script)(loader, name);\n" +
+        "  new Function(script)(vm, name);\n" +
         "} catch (ex) {\n" +
         "  throw 'Cannot compile ' + name + ' ' + ex + ' line: ' + ex.lineNumber + ' script:\\n' + script;\n" +
         "}\n" +
         "return name != null ? vm[name](instance) : null;\n"
     )
-    private static native Object applyCode(Object loader, String name, String script, boolean instance);
+    private static native Object applyCode(Object vm, String name, String script, boolean instance);
     
     
     private static final class Gen extends ByteCodeToJavaScript {
@@ -107,8 +103,7 @@ final class VMLazy {
         "var cls = n.replace__Ljava_lang_String_2CC('/','_').toString();"
         + "\nvar dot = n.replace__Ljava_lang_String_2CC('/','.').toString();"
         + "\nvar lazy = this._lazy();"
-        + "\nvar loader = lazy._loader();"
-        + "\nvar vm = loader.vm;"
+        + "\nvar vm = lazy._vm();"
         + "\nif (vm[cls]) return false;"
         + "\nvm[cls] = function() {"
         + "\n  var instance = arguments.length == 0 || arguments[0] === true;"
@@ -126,7 +121,7 @@ final class VMLazy {
                 resourcePath = "/" + resourcePath;
             }
             String code = readCode(resourcePath);
-            applyCode(lazy.loader, null, code, false);
+            applyCode(lazy.vm, null, code, false);
         }
 
         private String readCode(String resourcePath) throws IOException {
