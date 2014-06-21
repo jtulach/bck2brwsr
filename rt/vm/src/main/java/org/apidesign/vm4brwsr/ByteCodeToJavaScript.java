@@ -260,15 +260,18 @@ abstract class ByteCodeToJavaScript implements Appendable {
         append("\n    c.constructor = CLS;");
         append("\n    function fillInstOf(x) {");
         String instOfName = "$instOf_" + className;
-        append("\n        x['").append(instOfName).append("'] = true;");
+        append("\n        Object.defineProperty(x, '").append(instOfName).append("', { value : true });");
         for (String superInterface : jc.getSuperInterfaces()) {
             String intrfc = superInterface.replace('/', '_');
             append("\n      vm.").append(intrfc).append("(false)['fillInstOf'](x);");
             requireReference(superInterface);
         }
         append("\n    }");
-        append("\n    c['fillInstOf'] = fillInstOf;");
-        append("\n    fillInstOf(c);");
+        append("\n    try {");
+        append("\n      Object.defineProperty(c, 'fillInstOf', { value: fillInstOf });");
+        append("\n      fillInstOf(c);");
+        append("\n    } catch (ignore) {");
+        append("\n    }");
 //        obfuscationDelegate.exportJSProperty(this, "c", instOfName);
         append("\n    CLS.$class = 'temp';");
         append("\n    CLS.$class = ");

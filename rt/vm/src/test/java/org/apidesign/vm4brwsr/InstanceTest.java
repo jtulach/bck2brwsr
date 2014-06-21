@@ -47,6 +47,13 @@ public class InstanceTest {
             Double.valueOf(31)
         );
     }
+    @Test public void noInstOfExposed() throws Exception {
+        assertExec(
+            "No instOf properties found",
+            Instance.class, "noInstOfExposed__I",
+            Double.valueOf(0)
+        );
+    }
     @Test public void verifyMagicOne() throws Exception {
         assertExec(
             "Should be three and something",
