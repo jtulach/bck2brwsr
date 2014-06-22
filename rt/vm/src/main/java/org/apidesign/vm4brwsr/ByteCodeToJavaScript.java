@@ -365,7 +365,14 @@ abstract class ByteCodeToJavaScript implements Appendable {
         final LocalsMapper lmapper =
                 new LocalsMapper(stackMapIterator.getArguments());
 
-        append(destObject).append(".").append(name).append(" = function(");
+        boolean obj = "java/lang/Object".equals(jc.getClassName());
+        
+        if (obj) {
+            append("Object.defineProperty(").append(destObject).
+            append(", '").append(name).append("', { configurable: true, writable: true, value: function(");
+        } else {
+            append(destObject).append(".").append(name).append(" = function(");
+        }
         lmapper.outputArguments(this, m.isStatic());
         append(") {").append("\n");
 
@@ -374,6 +381,9 @@ abstract class ByteCodeToJavaScript implements Appendable {
             append("  throw 'no code found for ")
                .append(jc.getClassName()).append('.')
                .append(m.getName()).append("';\n");
+            if (obj) {
+                append("}");
+            }
             append("};");
             return;
         }
@@ -1393,7 +1403,11 @@ abstract class ByteCodeToJavaScript implements Appendable {
         while (openBraces-- > 0) {
             append('}');
         }
-        append("\n};");
+        if (obj) {
+            append("\n}});");
+        } else {
+            append("\n};");
+        }
     }
 
     private int generateIf(StackMapper mapper, byte[] byteCodes, 

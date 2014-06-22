@@ -139,6 +139,13 @@ public class Instance {
         return countInstOf(10);
     }
     
+    public static String props() {
+        return list(new Object());
+    }
+    
+    @JavaScriptBody(args = "o", body = "var s = ''; for (var p in {}) { s += p; }; return s;")
+    private static native String list(Object o);
+    
     @JavaScriptBody(args = "o", body = "var i = 0; for (p in o) { if (p.toString().indexOf('instOf') >= 0) i++; } return i;")
     private static native int countInstOf(Object o);
     

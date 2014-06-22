@@ -17,9 +17,12 @@
  */
 package org.apidesign.vm4brwsr;
 
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import static org.testng.Assert.fail;
 import org.testng.annotations.AfterClass;
-import org.testng.annotations.Test;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 /**
  *
@@ -54,6 +57,14 @@ public class InstanceTest {
             Double.valueOf(0)
         );
     }
+    @Test public void noIterablePropsOnObject() throws Exception {
+        assertExec(
+            "No instOf properties found",
+            Instance.class, "props__Ljava_lang_String_2",
+            ""
+        );
+    }
+    
     @Test public void verifyMagicOne() throws Exception {
         assertExec(
             "Should be three and something",
