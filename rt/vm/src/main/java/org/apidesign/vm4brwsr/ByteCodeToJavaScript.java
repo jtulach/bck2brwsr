@@ -1756,6 +1756,8 @@ abstract class ByteCodeToJavaScript implements Appendable {
                         args[cnt++] = value;
                     } else if ("javacall".equals(attr)) {
                         javacall = "1".equals(value);
+                    } else if ("wait4js".equals(attr)) {
+                        // ignore, we always invoke synchronously
                     } else {
                         throw new IllegalArgumentException(attr);
                     }
