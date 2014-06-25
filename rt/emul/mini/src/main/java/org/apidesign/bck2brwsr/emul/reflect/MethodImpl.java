@@ -49,17 +49,29 @@ public abstract class MethodImpl {
     @JavaScriptBody(args = {"clazz", "prefix", "cnstr"},
         body = ""
         + "var c = clazz.cnstr;\n"
-        + "if (!cnstr) c = c.prototype;"
+        + "if (!cnstr) c = c.prototype;\n"
         + "var arr = new Array();\n"
-        + "for (m in c) {\n"
+        + "function check(m) {\n"
         + "  if (m.indexOf(prefix) === 0) {\n"
-        + "     if (!c[m].cls) continue;\n"
+        + "     if (!c[m].cls) return;\n"
         + "     arr.push(m);\n"
         + "     arr.push(c[m]);\n"
         + "     arr.push(c[m].cls.$class);\n"
-        + "  }"
+        + "  }\n"
         + "}\n"
-        + "return arr;")
+        + "for (m in c) {\n"
+        + "  check(m)\n"
+        + "}\n"
+        + "check('wait__V');\n"
+        + "check('wait__VJ');\n"
+        + "check('wait__VJI');\n"
+        + "check('equals__ZLjava_lang_Object_2');\n"
+        + "check('toString__Ljava_lang_String_2');\n"
+        + "check('hashCode__I');\n"
+        + "check('getClass__Ljava_lang_Class_2');\n"
+        + "check('notify__V');\n"
+        + "check('notifyAll__V');\n"
+        + "return arr;\n")
     private static native Object[] findMethodData(
         Class<?> clazz, String prefix, boolean cnstr);
 

@@ -124,6 +124,15 @@ public class ClassTest {
             "java.lang.Object"
         );
     }
+
+    @Test public void jsListMethodsInObject() throws Exception {
+        String methods = Classes.listObject();
+        
+        assertExec("Methods defined in Object", Classes.class, 
+            "listObject__Ljava_lang_String_2", 
+            methods
+        );
+    }
     
     @Test public void jsInvokeParamMethod() throws Exception {
         assertExec("sums two numbers via reflection", Classes.class, 

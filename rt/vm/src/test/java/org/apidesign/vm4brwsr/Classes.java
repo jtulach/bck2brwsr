@@ -120,6 +120,14 @@ public class Classes {
         }
         return sb.toString().toString();
     }
+
+    static String listObject() {
+        StringBuilder sb = new StringBuilder();
+        for (Method m : Object.class.getMethods()) {
+            sb.append(m.getName()).append("\n");
+        }
+        return sb.toString().toString();
+    }
     @Retention(RetentionPolicy.CLASS)
     @interface Ann {
     }
