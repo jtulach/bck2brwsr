@@ -58,6 +58,9 @@ final class ByteCodeParser {
     public static final int CONSTANT_METHOD              = 10;
     public static final int CONSTANT_INTERFACEMETHOD     = 11;
     public static final int CONSTANT_NAMEANDTYPE         = 12;
+    public static final int CONSTANT_METHODHANDLE     = 15;
+    public static final int CONSTANT_METHODTYPE     = 16;
+    public static final int CONSTANT_INVOKEDYNAMIC     = 18;
 
     /* Access Flags */
     public static final int ACC_PUBLIC                   = 0x00000001;
@@ -668,7 +671,17 @@ final class ByteCodeParser {
                     case CONSTANT_NAMEANDTYPE:
                         cpool[i] = new CPX2(in.readUnsignedShort(), in.readUnsignedShort());
                         break;
-
+                    case CONSTANT_METHODHANDLE:
+                        in.readByte();
+                        in.readUnsignedShort();
+                        break;
+                    case CONSTANT_METHODTYPE:
+                        in.readUnsignedShort();
+                        break;
+                    case CONSTANT_INVOKEDYNAMIC:
+                        in.readUnsignedShort();
+                        in.readUnsignedShort();
+                        break;
                     case 0:
                     default:
                         throw new ClassFormatError("invalid constant type: " + (int) tags[i]);

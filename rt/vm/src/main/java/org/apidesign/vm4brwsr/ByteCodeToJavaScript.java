@@ -19,7 +19,6 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Locale;
 import static org.apidesign.vm4brwsr.ByteCodeParser.*;
 
 /** Translator of the code inside class files to JavaScript.
@@ -1558,7 +1557,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                         sb.append(ch);
                     } else {
                         sb.append("_0");
-                        String hex = Integer.toHexString(ch).toLowerCase(Locale.ENGLISH);
+                        String hex = Integer.toHexString(ch).toLowerCase();
                         for (int m = hex.length(); m < 4; m++) {
                             sb.append("0");
                         }
