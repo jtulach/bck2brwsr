@@ -120,6 +120,18 @@ public class Classes {
         }
         return sb.toString().toString();
     }
+
+    static String listObject(boolean string, String prefix) {
+        final Class<?> c = string ? String.class : Object.class;
+        StringBuilder sb = new StringBuilder();
+        for (Method m : c.getMethods()) {
+            final String n = m.getName();
+            if (n.startsWith(prefix)) {
+                sb.append(n).append("\n");
+            }
+        }
+        return sb.toString().toString();
+    }
     @Retention(RetentionPolicy.CLASS)
     @interface Ann {
     }

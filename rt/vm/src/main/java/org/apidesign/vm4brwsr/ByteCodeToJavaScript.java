@@ -260,15 +260,18 @@ abstract class ByteCodeToJavaScript implements Appendable {
         append("\n    c.constructor = CLS;");
         append("\n    function fillInstOf(x) {");
         String instOfName = "$instOf_" + className;
-        append("\n        x['").append(instOfName).append("'] = true;");
+        append("\n        Object.defineProperty(x, '").append(instOfName).append("', { value : true });");
         for (String superInterface : jc.getSuperInterfaces()) {
             String intrfc = superInterface.replace('/', '_');
             append("\n      vm.").append(intrfc).append("(false)['fillInstOf'](x);");
             requireReference(superInterface);
         }
         append("\n    }");
-        append("\n    c['fillInstOf'] = fillInstOf;");
-        append("\n    fillInstOf(c);");
+        append("\n    try {");
+        append("\n      Object.defineProperty(c, 'fillInstOf', { value: fillInstOf });");
+        append("\n      fillInstOf(c);");
+        append("\n    } catch (ignore) {");
+        append("\n    }");
 //        obfuscationDelegate.exportJSProperty(this, "c", instOfName);
         append("\n    CLS.$class = 'temp';");
         append("\n    CLS.$class = ");
@@ -362,7 +365,14 @@ abstract class ByteCodeToJavaScript implements Appendable {
         final LocalsMapper lmapper =
                 new LocalsMapper(stackMapIterator.getArguments());
 
-        append(destObject).append(".").append(name).append(" = function(");
+        boolean obj = "java/lang/Object".equals(jc.getClassName());
+        
+        if (obj) {
+            append("Object.defineProperty(").append(destObject).
+            append(", '").append(name).append("', { configurable: true, writable: true, value: function(");
+        } else {
+            append(destObject).append(".").append(name).append(" = function(");
+        }
         lmapper.outputArguments(this, m.isStatic());
         append(") {").append("\n");
 
@@ -371,6 +381,9 @@ abstract class ByteCodeToJavaScript implements Appendable {
             append("  throw 'no code found for ")
                .append(jc.getClassName()).append('.')
                .append(m.getName()).append("';\n");
+            if (obj) {
+                append("}");
+            }
             append("};");
             return;
         }
@@ -1390,7 +1403,11 @@ abstract class ByteCodeToJavaScript implements Appendable {
         while (openBraces-- > 0) {
             append('}');
         }
-        append("\n};");
+        if (obj) {
+            append("\n}});");
+        } else {
+            append("\n};");
+        }
     }
 
     private int generateIf(StackMapper mapper, byte[] byteCodes, 
@@ -1739,6 +1756,8 @@ abstract class ByteCodeToJavaScript implements Appendable {
                         args[cnt++] = value;
                     } else if ("javacall".equals(attr)) {
                         javacall = "1".equals(value);
+                    } else if ("wait4js".equals(attr)) {
+                        // ignore, we always invoke synchronously
                     } else {
                         throw new IllegalArgumentException(attr);
                     }

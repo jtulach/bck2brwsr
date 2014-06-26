@@ -406,6 +406,9 @@ public final
         if (this == cls) {
             return true;
         }
+        if (this == Object.class) {
+            return true;
+        }
         
         if (isArray()) {
             final Class<?> cmpType = cls.getComponentType();
@@ -418,6 +421,9 @@ public final
             return false;
         } else {
             if (cls.isPrimitive()) {
+                return false;
+            }
+            if (cls.isArray()) {
                 return false;
             }
             String prop = "$instOf_" + getName().replace('.', '_');

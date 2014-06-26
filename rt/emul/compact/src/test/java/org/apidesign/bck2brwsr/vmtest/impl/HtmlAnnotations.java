@@ -53,6 +53,9 @@ public class HtmlAnnotations {
 
     @JavaScriptBody(args = {  }, javacall = true, body = "return @org.apidesign.bck2brwsr.vmtest.impl.HtmlAnnotations::callback()();")
     public static native int staticCallback();
+
+    @JavaScriptBody(args = {  }, wait4js = false, body = "/* do nothing */")
+    public static native void empty();
     
     
     protected long chooseLong(boolean takeFirst, boolean takeSecond, long first, long second) {

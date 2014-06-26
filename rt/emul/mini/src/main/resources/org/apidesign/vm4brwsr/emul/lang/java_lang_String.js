@@ -2,7 +2,7 @@
 vm.java_lang_reflect_Array(false);
 vm.java_lang_String(false);
 
-Array.at = function(arr, indx, value) {
+Object.defineProperty(Array, "at", { configurable: true, writable: true, value : function(arr, indx, value) {
   var prev = arr[indx];
   if (typeof prev === 'undefined' && (indx < 0 || indx >= arr.length)) {
     var e = vm.java_lang_ArrayIndexOutOfBoundsException(true);
@@ -14,11 +14,11 @@ Array.at = function(arr, indx, value) {
   } else {
     return prev;
   }
-};
-Array.prototype.getClass__Ljava_lang_Class_2 = function() {
+}});
+Object.defineProperty(Array.prototype, "getClass__Ljava_lang_Class_2", { configurable: true, writable: true, value : function() {
   return vm.java_lang_Class(false).defineArray__Ljava_lang_Class_2Ljava_lang_String_2Ljava_lang_Object_2(this.jvmName, this.fnc);
-};
-Array.prototype.clone__Ljava_lang_Object_2 = function() {
+}});
+Object.defineProperty(Array.prototype, "clone__Ljava_lang_Object_2", { configurable: true, writable: true, value : function() {
   var s = this.length;
   var ret = new Array(s);
   for (var i = 0; i < s; i++) {
@@ -27,4 +27,4 @@ Array.prototype.clone__Ljava_lang_Object_2 = function() {
   ret.jvmName = this.jvmName;
   ret.fnc = this.fnc;
   return ret;
-};
+}});
