@@ -698,15 +698,13 @@ final class ByteCodeParser {
                         cpool[i] = new CPX2(in.readUnsignedShort(), in.readUnsignedShort());
                         break;
                     case CONSTANT_METHODHANDLE:
-                        in.readByte();
-                        in.readUnsignedShort();
+                        cpool[i] = new CPX2(in.readByte(), in.readUnsignedShort());
                         break;
                     case CONSTANT_METHODTYPE:
-                        in.readUnsignedShort();
+                        cpool[i] = new CPX(in.readUnsignedShort());
                         break;
                     case CONSTANT_INVOKEDYNAMIC:
-                        in.readUnsignedShort();
-                        in.readUnsignedShort();
+                        cpool[i] = new CPX2(in.readUnsignedShort(), in.readUnsignedShort());
                         break;
                     case 0:
                     default:
