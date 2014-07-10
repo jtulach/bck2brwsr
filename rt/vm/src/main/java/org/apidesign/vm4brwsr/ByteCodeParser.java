@@ -28,6 +28,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.core.JavaScriptPrototype;
 
@@ -290,7 +291,7 @@ final class ByteCodeParser {
     public static final int opc_invokespecial            = 183;
     public static final int opc_invokestatic             = 184;
     public static final int opc_invokeinterface          = 185;
-//    public static final int opc_xxxunusedxxx             = 186;
+    public static final int opc_invokedynamic            = 186;
     public static final int opc_new                      = 187;
     public static final int opc_newarray                 = 188;
     public static final int opc_anewarray                = 189;
@@ -624,6 +625,12 @@ final class ByteCodeParser {
                     AttrData attr = new AttrData(this);
                     attr.read(name_cpx);
                     attrs[k] = attr;
+                } else if (getTag(name_cpx) == CONSTANT_UTF8
+                    && getString(name_cpx).equals("BootstrapMethods")) {
+                    AttrData attr = new AttrData(this);
+                    readBootstrapMethods(in);
+                    attr.read(name_cpx);
+                    attrs[k] = attr;
                 } else {
                     AttrData attr = new AttrData(this);
                     attr.read(name_cpx, in);
@@ -633,6 +640,25 @@ final class ByteCodeParser {
             in.close();
         } // end ClassData.read()
 
+        void readBootstrapMethods(DataInputStream in) throws IOException {
+            int attr_len = in.readInt();  //attr_length
+            int number = in.readShort();
+            for (int i = 0; i < number; i++) {
+                int ref = in.readShort();
+                int len = in.readShort();
+                int[] args = new int[len];
+                for (int j = 0; j < len; j++) {
+                    args[j] = in.readShort();
+                }
+                
+                System.err.print("ref: " + ref + " len: " + len + ":");
+                for (int j = 0; j < len; j++) {
+                    System.err.print(" " + args[j]);
+                }
+                System.err.println();
+            }
+        }
+        
         /**
          * Reads and stores constant pool info.
          */
@@ -1813,7 +1839,7 @@ final class ByteCodeParser {
                 stackMap[i] = new StackMapData(in, this);
             }
         }
-
+        
         /**
          * Return access of the method.
          */
