@@ -1054,6 +1054,9 @@ abstract class ByteCodeToJavaScript implements Appendable {
                 case opc_invokedynamic: {
                     int indx = readUShortArg(byteCodes, i);
                     System.err.println("invoke dynamic: " + indx);
+                    ByteCodeParser.CPX2 c2 = jc.getCpoolEntry(indx);
+                    System.err.println("  bootmethod: " + jc.getBootMethod(c2.cpx1));
+                    System.err.println("  name and type: " + jc.stringValue(c2.cpx2, true));
                     emit(smapper, this, "throw 'Invoke dynamic: ' + @1;", "" + indx);
                     i += 4;
                     break;

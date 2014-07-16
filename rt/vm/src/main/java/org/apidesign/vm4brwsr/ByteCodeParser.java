@@ -499,7 +499,7 @@ final class ByteCodeParser {
      */
     private static class CPX {
 
-        int cpx;
+        final int cpx;
 
         CPX(int cpx) {
             this.cpx = cpx;
@@ -511,9 +511,9 @@ final class ByteCodeParser {
      *
      * @author Sucheta Dambalkar (Adopted code from jdis)
      */
-    private static class CPX2 {
+    static class CPX2 {
 
-        int cpx1, cpx2;
+        final int cpx1, cpx2;
 
         CPX2(int cpx1, int cpx2) {
             this.cpx1 = cpx1;
@@ -542,6 +542,7 @@ final class ByteCodeParser {
         private FieldData[] fields;
         private MethodData[] methods;
         private InnerClassData[] innerClasses;
+        private BootMethodData[] bootMethods;
         private int attributes_count;
         private AttrData[] attrs;
         private int source_cpx = 0;
@@ -628,7 +629,7 @@ final class ByteCodeParser {
                 } else if (getTag(name_cpx) == CONSTANT_UTF8
                     && getString(name_cpx).equals("BootstrapMethods")) {
                     AttrData attr = new AttrData(this);
-                    readBootstrapMethods(in);
+                    bootMethods = readBootstrapMethods(in);
                     attr.read(name_cpx);
                     attrs[k] = attr;
                 } else {
@@ -640,9 +641,10 @@ final class ByteCodeParser {
             in.close();
         } // end ClassData.read()
 
-        void readBootstrapMethods(DataInputStream in) throws IOException {
-            int attr_len = in.readInt();  //attr_length
+        BootMethodData[] readBootstrapMethods(DataInputStream in) throws IOException {
+            int attr_len = in.readInt();  //attr_lengt
             int number = in.readShort();
+            BootMethodData[] arr = new BootMethodData[number];
             for (int i = 0; i < number; i++) {
                 int ref = in.readShort();
                 int len = in.readShort();
@@ -650,13 +652,9 @@ final class ByteCodeParser {
                 for (int j = 0; j < len; j++) {
                     args[j] = in.readShort();
                 }
-                
-                System.err.print("ref: " + ref + " len: " + len + ":");
-                for (int j = 0; j < len; j++) {
-                    System.err.print(" " + args[j]);
-                }
-                System.err.println();
+                arr[i] = new BootMethodData(this, ref, args);
             }
+            return arr;
         }
         
         /**
@@ -1144,8 +1142,12 @@ final class ByteCodeParser {
 
                 case CONSTANT_NAMEANDTYPE:
                     return getName(((CPX2) x).cpx1) + ":" + StringValue(((CPX2) x).cpx2);
+                case CONSTANT_METHODHANDLE:
+                    return "K" + ((CPX2)x).cpx1 + "@" + stringValue(((CPX2)x).cpx2, textual);
+                case CONSTANT_METHODTYPE:
+                    return stringValue(((CPX)x).cpx, true);
                 default:
-                    return "UnknownTag"; //TBD
+                    return "UnknownTag" + tag; //TBD
             }
         }
 
@@ -1227,6 +1229,10 @@ final class ByteCodeParser {
             } else {
                 return null;
             }
+        }
+        
+        public String getBootMethod(int indx) {
+            return bootMethods != null ? bootMethods[indx].toString() : null;
         }
 
         /**
@@ -1586,6 +1592,31 @@ final class ByteCodeParser {
             return accflags;
         }
     } // end InnerClassData
+    
+    private static class BootMethodData {
+        private final ClassData clazz;
+        private final int method;
+        private final int[] args;
+
+        private BootMethodData(ClassData clazz, int method, int[] args) {
+            this.clazz = clazz;
+            this.method = method;
+            this.args = args;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append(clazz.stringValue(method, true));
+            sb.append('(');
+            for (int indx : args) {
+                sb.append("\n  ");
+                sb.append(clazz.stringValue(indx, true));
+            }
+            sb.append(')');
+            return sb.toString();
+        }
+    }
 
     /**
      * Strores LineNumberTable data information.
