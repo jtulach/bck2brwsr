@@ -76,51 +76,6 @@
                  <skip>false</skip>
              </configuration>
          </plugin>
-         <plugin>
-             <groupId>org.codehaus.mojo</groupId>
-             <artifactId>exec-maven-plugin</artifactId>
-             <version>1.2.1</version>
-             <executions>
-                 <execution>
-                     <id>generate-js</id>
-                     <phase>process-classes</phase>
-                     <configuration>
-                         <executable>java</executable>
-                        <arguments>
-                            <argument>-Dskip.if.exists=true</argument>
-                            <argument>-cp</argument>
-                            <classpath />
-                            <argument>org.apidesign.vm4brwsr.Main</argument>
-                            <argument>--obfuscatelevel</argument>
-                            <argument>${bck2brwsr.obfuscationlevel}</argument>
-                            <argument>${project.build.directory}/bck2brwsr.js</argument>
-                            <argument>org/apidesign/vm4brwsr/Bck2Brwsr</argument>
-                        </arguments>
-                     </configuration>
-                     <goals>
-                         <goal>exec</goal>
-                     </goals>
-                 </execution>
-             </executions>
-         </plugin>
-         <plugin>
-             <artifactId>maven-assembly-plugin</artifactId>
-             <version>2.4</version>
-             <executions>
-                 <execution>
-                     <id>js</id>
-                     <phase>package</phase>
-                     <goals>
-                         <goal>single</goal>
-                     </goals>
-                     <configuration>
-                         <descriptors>
-                             <descriptor>src/main/assembly/bck2brwsr.xml</descriptor>
-                         </descriptors>
-                     </configuration>
-                 </execution>
-             </executions>                
-         </plugin>      
       </plugins>
   </build>
   <dependencies>
