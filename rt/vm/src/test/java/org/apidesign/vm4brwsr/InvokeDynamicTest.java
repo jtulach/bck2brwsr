@@ -17,11 +17,15 @@
  */
 package org.apidesign.vm4brwsr;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.CallSite;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.Enumeration;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -31,6 +35,7 @@ import org.objectweb.asm.Opcodes;
 import static org.objectweb.asm.Opcodes.ASM4;
 import static org.objectweb.asm.Opcodes.INVOKESTATIC;
 import static org.testng.Assert.*;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -40,6 +45,8 @@ import org.testng.annotations.Test;
  */
 public class InvokeDynamicTest {
     private static Class<?> invokeDynamicClass;
+    private static byte[] invokeDynamicBytes;
+    private static TestVM code;
     
     @Test public void simpleDynamicInJava() throws Exception {
         Method m = invokeDynamicClass.getMethod("dynamicSay");
@@ -47,26 +54,19 @@ public class InvokeDynamicTest {
         assertEquals(ret, "Hello from Dynamic!");
     }
     
-    
-/*    
-    private static TestVM code;
-
-    @BeforeClass
-    public void compileTheCode() throws Exception {
-        code = TestVM.compileClass(InvokeDynamic.class.getName());
+    @Test public void simpleDynamicInJS() throws Exception {
+        code.assertExec(
+            "Invoke dynamic can return a value", InvokeDynamic.class,
+            "dynamic__Ljava_lang_String_2",
+            "Hello from Dynamic!"
+        );
     }
+    
 
     @AfterClass
     public static void releaseTheCode() {
         code = null;
     }
-
-    private void assertExec(
-            String msg, Class clazz, String method, Object expRes, Object... args
-    ) throws Exception {
-        code.assertExec(msg, clazz, method, expRes, args);
-    }
- */
 
     //
     // the following code is inspired by 
@@ -75,10 +75,10 @@ public class InvokeDynamicTest {
     //
     @BeforeClass 
     public static void prepareClass() throws Exception {
-        InputStream input = InvokeDynamic.class.getResourceAsStream("InvokeDynamic.class");
-        assertNotNull(input, "Class found");
+        InputStream is = InvokeDynamic.class.getResourceAsStream("InvokeDynamic.class");
+        assertNotNull(is, "Class found");
         
-        ClassReader reader = new ClassReader(input);
+        ClassReader reader = new ClassReader(is);
         ClassWriter writer = new ClassWriter(reader, 0);
 
         reader.accept(
@@ -91,8 +91,8 @@ public class InvokeDynamicTest {
                     }
                 },
                 0);
-        input.close();
-        final byte[] invokeDynamicBytes = writer.toByteArray();
+        is.close();
+        invokeDynamicBytes = writer.toByteArray();
         ClassLoader l = new ClassLoader() {
             @Override
             public Class<?> loadClass(String name) throws ClassNotFoundException {
@@ -103,6 +103,11 @@ public class InvokeDynamicTest {
             }
         };
         invokeDynamicClass = l.loadClass(InvokeDynamic.class.getName());
+        
+        code = TestVM.compileClass(
+            null, null, new EmulationResourcesWithException(),
+            InvokeDynamic.class.getName().replace('.', '/')
+        );
     }
     
     
@@ -133,5 +138,37 @@ public class InvokeDynamicTest {
         }
     }
     
+    private static class EmulationResourcesWithException implements Bck2Brwsr.Resources {
+        @Override
+        public InputStream get(String name) throws IOException {
+            if ("org/apidesign/vm4brwsr/InvokeDynamic.class".equals(name)) {
+                return new ByteArrayInputStream(invokeDynamicBytes);
+            }
+            if ("java/net/URI.class".equals(name)) {
+                // skip
+                return null;
+            }
+            if ("java/net/URLConnection.class".equals(name)) {
+                // skip
+                return null;
+            }
+            if ("java/lang/System.class".equals(name)) {
+                // skip
+                return null;
+            }
+            Enumeration<URL> en = InvokeDynamicTest.class.getClassLoader().getResources(name);
+            URL u = null;
+            while (en.hasMoreElements()) {
+                u = en.nextElement();
+            }
+            if (u == null) {
+                throw new IOException("Can't find " + name);
+            }
+            if (u.toExternalForm().contains("rt.jar!")) {
+                throw new IOException("No emulation for " + u);
+            }
+            return u.openStream();
+        }
+    }
     
 }
