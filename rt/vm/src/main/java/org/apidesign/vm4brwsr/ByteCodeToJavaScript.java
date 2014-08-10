@@ -1078,6 +1078,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     append('(');
                     String lookup = accessClass("java_lang_invoke_MethodHandles") + "(false).findFor__Ljava_lang_invoke_MethodHandles$Lookup_2Ljava_lang_Class_2(CLS.$class)";
                     append(lookup);
+                    append(", '").append(mi[1]).append("'");
 //                    if (numArguments > 0) {
 //                        append(vars[0]);
 //                        for (int j = 1; j < numArguments; ++j) {
