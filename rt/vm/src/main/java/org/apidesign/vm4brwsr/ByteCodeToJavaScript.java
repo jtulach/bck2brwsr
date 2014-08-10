@@ -19,6 +19,7 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import static org.apidesign.vm4brwsr.ByteCodeParser.*;
 
 /** Translator of the code inside class files to JavaScript.
@@ -1053,10 +1054,10 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     break;
                 case opc_invokedynamic: {
                     int indx = readUShortArg(byteCodes, i);
-                    System.err.println("invoke dynamic: " + indx);
+                    println("invoke dynamic: " + indx);
                     ByteCodeParser.CPX2 c2 = jc.getCpoolEntry(indx);
-                    System.err.println("  bootmethod: " + jc.getBootMethod(c2.cpx1));
-                    System.err.println("  name and type: " + jc.stringValue(c2.cpx2, true));
+                    println("  bootmethod: " + jc.getBootMethod(c2.cpx1));
+                    println("  name and type: " + jc.stringValue(c2.cpx2, true));
                     emit(smapper, this, "throw 'Invoke dynamic: ' + @1;", "" + indx);
                     i += 4;
                     break;
@@ -2316,5 +2317,10 @@ abstract class ByteCodeToJavaScript implements Appendable {
             final int cc = readUByte(byteCodes, j);
             append(Integer.toString(cc));
         }
+    }
+    
+    @JavaScriptBody(args = "msg", body = "")
+    private static void println(String msg) {
+        System.err.println(msg);
     }
 }
