@@ -1231,8 +1231,8 @@ final class ByteCodeParser {
             }
         }
         
-        public String getBootMethod(int indx) {
-            return bootMethods != null ? bootMethods[indx].toString() : null;
+        public BootMethodData getBootMethod(int indx) {
+            return bootMethods != null ? bootMethods[indx] : null;
         }
 
         /**
@@ -1593,9 +1593,9 @@ final class ByteCodeParser {
         }
     } // end InnerClassData
     
-    private static class BootMethodData {
+    static class BootMethodData {
         private final ClassData clazz;
-        private final int method;
+        final int method;
         private final int[] args;
 
         private BootMethodData(ClassData clazz, int method, int[] args) {
