@@ -58,7 +58,7 @@ public class InvokeDynamicTest {
     @Test public void simpleDynamicInJS() throws Exception {
         code.assertExec(
             "Invoke dynamic can return a value", InvokeDynamic.class,
-            "dynamic__Ljava_lang_String_2",
+            "dynamicSay__Ljava_lang_String_2",
             "Hello from Dynamic!"
         );
     }
@@ -102,21 +102,27 @@ public class InvokeDynamicTest {
                 0);
         is.close();
         invokeDynamicBytes = writer.toByteArray();
+        final boolean[] loaded = { false };
         ClassLoader l = new ClassLoader() {
             @Override
             public Class<?> loadClass(String name) throws ClassNotFoundException {
                 if (name.equals(InvokeDynamic.class.getName())) {
+                    loaded[0] = true;
                     return defineClass(name, invokeDynamicBytes, 0, invokeDynamicBytes.length);
                 }
                 return super.loadClass(name);
             }
         };
         invokeDynamicClass = l.loadClass(InvokeDynamic.class.getName());
-        
+        assertTrue(loaded[0], "InvokeDynamic class should be loaded!");
+
+        final EmulResWithInvDyn emul = new EmulResWithInvDyn();
         code = TestVM.compileClass(
-            null, null, new EmulationResourcesWithException(),
+            null, null, emul,
             InvokeDynamic.class.getName().replace('.', '/')
         );
+        
+        assertTrue(emul.loaded, "InvokeDynamic class should be processed!");
     }
     
     
@@ -147,10 +153,13 @@ public class InvokeDynamicTest {
         }
     }
     
-    private static class EmulationResourcesWithException implements Bck2Brwsr.Resources {
+    private static class EmulResWithInvDyn implements Bck2Brwsr.Resources {
+        boolean loaded;
+        
         @Override
         public InputStream get(String name) throws IOException {
-            if ("org/apidesign/vm4brwsr/InvokeDynamic.class".equals(name)) {
+            if ("org/apidesign/bck2brwsr/vm8/InvokeDynamic.class".equals(name)) {
+                loaded = true;
                 return new ByteArrayInputStream(invokeDynamicBytes);
             }
             if ("java/net/URI.class".equals(name)) {
