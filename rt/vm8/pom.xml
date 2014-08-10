@@ -35,5 +35,12 @@
             <scope>test</scope>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm-debug-all</artifactId>
+            <version>4.1</version>
+            <scope>test</scope>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 </project>

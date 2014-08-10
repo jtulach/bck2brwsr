@@ -15,7 +15,7 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.vm4brwsr.dynamic;
+package org.apidesign.bck2brwsr.vm8;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -79,7 +79,15 @@ public class InvokeDynamicTest {
         InputStream is = InvokeDynamic.class.getResourceAsStream("InvokeDynamic.class");
         assertNotNull(is, "Class found");
         
-        ClassReader reader = new ClassReader(is);
+        ClassReader reader = new ClassReader(is) {
+            @Override
+            public short readShort(int index) {
+                if (index == 6) {
+                    return Opcodes.V1_7;
+                }
+                return super.readShort(index);
+            }
+        };
         ClassWriter writer = new ClassWriter(reader, 0);
 
         reader.accept(
