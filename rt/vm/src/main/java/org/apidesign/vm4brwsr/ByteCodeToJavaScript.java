@@ -1057,7 +1057,10 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     println("invoke dynamic: " + indx);
                     ByteCodeParser.CPX2 c2 = jc.getCpoolEntry(indx);
                     BootMethodData bm = jc.getBootMethod(c2.cpx1);
-                    String[] mi = jc.getFieldInfoName(bm.method);
+                    CPX2 methodHandle = jc.getCpoolEntry(bm.method);
+                    println("  type: " + methodHandle.cpx1);
+                    String[] mi = jc.getFieldInfoName(methodHandle.cpx2);
+                    String mcn = mangleClassName(mi[0]);
                     char[] returnType = {'V'};
                     StringBuilder cnt = new StringBuilder();
                     String mn = findMethodName(mi, cnt, returnType);
@@ -1066,7 +1069,22 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     println("  mi[2]: " + mi[2]);
                     println("  mn   : " + mn);
                     println("  name and type: " + jc.stringValue(c2.cpx2, true));
-                    emit(smapper, this, "throw 'Invoke dynamic: ' + @1;", "" + indx);
+                    String object = accessClass(mcn) + "(false)";
+                    if (mn.startsWith("cons_")) {
+                        object += ".constructor";
+                    }
+                    append("var metHan = ");
+                    append(accessStaticMethod(object, mn, mi));
+                    append('(');
+//                    if (numArguments > 0) {
+//                        append(vars[0]);
+//                        for (int j = 1; j < numArguments; ++j) {
+//                            append(", ");
+//                            append(vars[j]);
+//                        }
+//                    }
+                    append(");");
+                    emit(smapper, this, "throw 'Invoke dynamic: ' + @1 + ': ' + metHan;", "" + indx);
                     i += 4;
                     break;
                 }

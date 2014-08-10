@@ -21,6 +21,7 @@ import java.lang.invoke.CallSite;
 import java.lang.invoke.ConstantCallSite;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 public class InvokeDynamic {
 
@@ -33,6 +34,9 @@ public class InvokeDynamic {
     }
 
     public static CallSite boot1(MethodHandles.Lookup lookup, String name, MethodType type) {
+        assertReal("1st parameter lookup", lookup);
+        assertReal("2nd parameter name", name);
+        assertReal("3rd parameter type", type);
         try {
             return new ConstantCallSite(lookup.findVirtual(InvokeDynamic.class, "instance_sayHello", MethodType.methodType(String.class)));
         } catch (NoSuchMethodException | IllegalAccessException e) {
@@ -40,6 +44,14 @@ public class InvokeDynamic {
         }
     }
 
+    @JavaScriptBody(args = { "msg", "value" }, body = 
+        "if (!value) throw msg + ' value: ' + value;"
+    )
+    private static void assertReal(String msg, Object value) {
+        assert value != null : msg;
+        System.err.println(msg + " value: " + value);
+    }
+    
     public String instance_sayHello() {
         return "Hello from Dynamic!";
     }
