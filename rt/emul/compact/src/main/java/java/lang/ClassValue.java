@@ -186,7 +186,7 @@ public abstract class ClassValue<T> {
     /** Return the cache, if it exists, else a dummy empty cache. */
     private static Entry<?>[] getCacheCarefully(Class<?> type) {
         // racing type.classValueMap{.cacheArray} : null => new Entry[X] <=> new Entry[Y]
-        ClassValueMap map = type.classValueMap;
+        ClassValueMap map = (ClassValueMap) type.classValueMap;
         if (map == null)  return EMPTY_CACHE;
         Entry<?>[] cache = map.getCache();
         return cache;
@@ -364,7 +364,7 @@ public abstract class ClassValue<T> {
         // racing type.classValueMap : null (blank) => unique ClassValueMap
         // if a null is observed, a map is created (lazily, synchronously, uniquely)
         // all further access to that map is synchronized
-        ClassValueMap map = type.classValueMap;
+        ClassValueMap map = (ClassValueMap)type.classValueMap;
         if (map != null)  return map;
         return initializeMap(type);
     }
@@ -374,7 +374,7 @@ public abstract class ClassValue<T> {
         ClassValueMap map;
         synchronized (CRITICAL_SECTION) {  // private object to avoid deadlocks
             // happens about once per type
-            if ((map = type.classValueMap) == null)
+            if ((map = (ClassValueMap)type.classValueMap) == null)
                 type.classValueMap = map = new ClassValueMap(type);
         }
             return map;

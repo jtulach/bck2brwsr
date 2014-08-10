@@ -296,12 +296,13 @@ public class LambdaMetafactory {
                                        MethodType instantiatedMethodType)
             throws LambdaConversionException {
         AbstractValidatingLambdaMetafactory mf;
-        mf = new InnerClassLambdaMetafactory(caller, invokedType,
-                                             invokedName, samMethodType,
-                                             implMethod, instantiatedMethodType,
-                                             false, EMPTY_CLASS_ARRAY, EMPTY_MT_ARRAY);
-        mf.validateMetafactoryArgs();
-        return mf.buildCallSite();
+//        mf = new InnerClassLambdaMetafactory(caller, invokedType,
+//                                             invokedName, samMethodType,
+//                                             implMethod, instantiatedMethodType,
+//                                             false, EMPTY_CLASS_ARRAY, EMPTY_MT_ARRAY);
+//        mf.validateMetafactoryArgs();
+//        return mf.buildCallSite();
+        throw new IllegalStateException();
     }
 
     /**
@@ -462,14 +463,15 @@ public class LambdaMetafactory {
             }
         }
 
-        AbstractValidatingLambdaMetafactory mf
-                = new InnerClassLambdaMetafactory(caller, invokedType,
-                                                  invokedName, samMethodType,
-                                                  implMethod,
-                                                  instantiatedMethodType,
-                                                  isSerializable,
-                                                  markerInterfaces, bridges);
-        mf.validateMetafactoryArgs();
-        return mf.buildCallSite();
+//        AbstractValidatingLambdaMetafactory mf
+//                = new InnerClassLambdaMetafactory(caller, invokedType,
+//                                                  invokedName, samMethodType,
+//                                                  implMethod,
+//                                                  instantiatedMethodType,
+//                                                  isSerializable,
+//                                                  markerInterfaces, bridges);
+//        mf.validateMetafactoryArgs();
+//        return mf.buildCallSite();
+        throw new IllegalStateException();
     }
 }

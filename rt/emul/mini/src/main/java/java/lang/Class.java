@@ -94,6 +94,11 @@ public final
     private static final int ENUM      = 0x00004000;
     private static final int SYNTHETIC = 0x00001000;
 
+    /* Backing store of user-defined values pertaining to this class.
+     * Maintained by the ClassValue class.
+     */
+    transient Object classValueMap;
+    
     /*
      * Constructor. Only the Java Virtual Machine creates Class
      * objects.

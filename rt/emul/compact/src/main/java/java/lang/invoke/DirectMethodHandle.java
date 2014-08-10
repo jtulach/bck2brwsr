@@ -25,7 +25,6 @@
 
 package java.lang.invoke;
 
-import sun.misc.Unsafe;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import sun.invoke.util.VerifyAccess;
@@ -326,19 +325,19 @@ class DirectMethodHandle extends MethodHandle {
             VerifyAccess.isSamePackage(ValueConversions.class, cls)) {
             // It is a system class.  It is probably in the process of
             // being initialized, but we will help it along just to be safe.
-            if (UNSAFE.shouldBeInitialized(cls)) {
-                UNSAFE.ensureClassInitialized(cls);
+            if (shouldBeInitialized(cls)) {
+                ensureClassInitialized(cls);
             }
             return false;
         }
-        return UNSAFE.shouldBeInitialized(cls);
+        return shouldBeInitialized(cls);
     }
 
     private static class EnsureInitialized extends ClassValue<WeakReference<Thread>> {
         @Override
         protected WeakReference<Thread> computeValue(Class<?> type) {
-            UNSAFE.ensureClassInitialized(type);
-            if (UNSAFE.shouldBeInitialized(type))
+            ensureClassInitialized(type);
+            if (shouldBeInitialized(type))
                 // If the previous call didn't block, this can happen.
                 // We are executing inside <clinit>.
                 return new WeakReference<>(Thread.currentThread());
@@ -366,14 +365,14 @@ class DirectMethodHandle extends MethodHandle {
         // Somebody may still be running defc.<clinit>.
         if (clinitThread == Thread.currentThread()) {
             // If anybody is running defc.<clinit>, it is this thread.
-            if (UNSAFE.shouldBeInitialized(defc))
+            if (shouldBeInitialized(defc))
                 // Yes, we are running it; keep the barrier for now.
                 return false;
         } else {
             // We are in a random thread.  Block.
-            UNSAFE.ensureClassInitialized(defc);
+            ensureClassInitialized(defc);
         }
-        assert(!UNSAFE.shouldBeInitialized(defc));
+        assert(!shouldBeInitialized(defc));
         // put it into the final state
         EnsureInitialized.INSTANCE.remove(defc);
         return true;
@@ -423,7 +422,12 @@ class DirectMethodHandle extends MethodHandle {
 
     /*non-public*/ static Object allocateInstance(Object mh) throws InstantiationException {
         Constructor dmh = (Constructor)mh;
-        return UNSAFE.allocateInstance(dmh.instanceClass);
+        try {
+            return dmh.instanceClass.newInstance();
+//        return UNSAFE.allocateInstance(dmh.instanceClass);
+        } catch (IllegalAccessException ex) {
+            throw (InstantiationException)new InstantiationException().initCause(ex);
+        }
     }
 
     /** This subclass handles non-static field references. */
@@ -603,7 +607,7 @@ class DirectMethodHandle extends MethodHandle {
             linkerType = MethodType.methodType(ft, Object.class, long.class);
         else
             linkerType = MethodType.methodType(void.class, Object.class, long.class, ft);
-        MemberName linker = new MemberName(Unsafe.class, linkerName, linkerType, REF_invokeVirtual);
+        MemberName linker = null;//new MemberName(Unsafe.class, linkerName, linkerType, REF_invokeVirtual);
         try {
             linker = IMPL_NAMES.resolveOrFail(REF_invokeVirtual, linker, null, NoSuchMethodException.class);
         } catch (ReflectiveOperationException ex) {
@@ -642,7 +646,7 @@ class DirectMethodHandle extends MethodHandle {
             names[PRE_CAST] = new Name(Lazy.NF_checkCast, names[DMH_THIS], names[SET_VALUE]);
         Object[] outArgs = new Object[1 + linkerType.parameterCount()];
         assert(outArgs.length == (isGetter ? 3 : 4));
-        outArgs[0] = UNSAFE;
+//        outArgs[0] = UNSAFE;
         if (isStatic) {
             outArgs[1] = names[F_HOLDER]  = new Name(Lazy.NF_staticBase, names[DMH_THIS]);
             outArgs[2] = names[F_OFFSET]  = new Name(Lazy.NF_staticOffset, names[DMH_THIS]);
@@ -707,12 +711,20 @@ class DirectMethodHandle extends MethodHandle {
                 };
                 for (NamedFunction nf : nfs) {
                     // Each nf must be statically invocable or we get tied up in our bootstraps.
-                    assert(InvokerBytecodeGenerator.isStaticallyInvocable(nf.member)) : nf;
+//                    assert(InvokerBytecodeGenerator.isStaticallyInvocable(nf.member)) : nf;
                     nf.resolve();
                 }
             } catch (ReflectiveOperationException ex) {
                 throw newInternalError(ex);
             }
         }
+    }
+    
+    private static boolean shouldBeInitialized(Class<?> c) {
+        return false;
+    }
+    
+    private static void ensureClassInitialized(Class<?> c) {
+        c.getName();
     }
 }

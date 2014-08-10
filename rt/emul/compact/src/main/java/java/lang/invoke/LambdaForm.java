@@ -450,15 +450,16 @@ class LambdaForm {
         if (vmentry != null && isCompiled) {
             return vmentry;  // already compiled somehow
         }
-        try {
-            vmentry = InvokerBytecodeGenerator.generateCustomizedCode(this, invokerType);
-            if (TRACE_INTERPRETER)
-                traceInterpreter("compileToBytecode", this);
-            isCompiled = true;
-            return vmentry;
-        } catch (Error | Exception ex) {
-            throw newInternalError("compileToBytecode", ex);
-        }
+        throw newInternalError("compileToBytecode", new Exception());
+//        try {
+//            vmentry = InvokerBytecodeGenerator.generateCustomizedCode(this, invokerType);
+//            if (TRACE_INTERPRETER)
+//                traceInterpreter("compileToBytecode", this);
+//            isCompiled = true;
+//            return vmentry;
+//        } catch (Error | Exception ex) {
+//            throw newInternalError("compileToBytecode", ex);
+//        }
     }
 
     private static final ConcurrentHashMap<String,LambdaForm> PREPARED_FORMS;
@@ -527,7 +528,9 @@ class LambdaForm {
         if (prep != null)  return prep;
         assert(isValidSignature(sig));
         prep = new LambdaForm(sig);
-        prep.vmentry = InvokerBytecodeGenerator.generateLambdaFormInterpreterEntryPoint(sig);
+//        prep.vmentry = InvokerBytecodeGenerator.generateLambdaFormInterpreterEntryPoint(sig);
+        if (true) throw new IllegalStateException();
+
         //LambdaForm prep2 = PREPARED_FORMS.putIfAbsent(sig.intern(), prep);
         return mtype.form().setCachedLambdaForm(MethodTypeForm.LF_INTERPRET, prep);
     }
@@ -1129,8 +1132,9 @@ class LambdaForm {
         private static MethodHandle computeInvoker(MethodTypeForm typeForm) {
             MethodHandle mh = typeForm.namedFunctionInvoker;
             if (mh != null)  return mh;
-            MemberName invoker = InvokerBytecodeGenerator.generateNamedFunctionInvoker(typeForm);  // this could take a while
-            mh = DirectMethodHandle.make(invoker);
+//            MemberName invoker = InvokerBytecodeGenerator.generateNamedFunctionInvoker(typeForm);  // this could take a while
+            if (true) throw new IllegalStateException();
+//            mh = DirectMethodHandle.make(invoker);
             MethodHandle mh2 = typeForm.namedFunctionInvoker;
             if (mh2 != null)  return mh2;  // benign race
             if (!mh.type().equals(INVOKER_METHOD_TYPE))
