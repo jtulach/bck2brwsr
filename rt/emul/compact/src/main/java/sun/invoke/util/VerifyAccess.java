@@ -27,7 +27,6 @@ package sun.invoke.util;
 
 import java.lang.reflect.Modifier;
 import static java.lang.reflect.Modifier.*;
-import sun.reflect.Reflection;
 
 /**
  * This class centralizes information about the JVM's linkage access control.
@@ -144,7 +143,8 @@ public class VerifyAccess {
         // ...But arrays and primitives are synthesized with their own odd flags:
         if (c.isArray() || c.isPrimitive())
             return c.getModifiers();
-        return Reflection.getClassAccessFlags(c);
+        return c.getModifiers();
+//        return Reflection.getClassAccessFlags(c);
     }
 
     /**
@@ -263,10 +263,11 @@ public class VerifyAccess {
     }
 
     private static Class<?> getOutermostEnclosingClass(Class<?> c) {
-        Class<?> pkgmem = c;
-        for (Class<?> enc = c; (enc = enc.getEnclosingClass()) != null; )
-            pkgmem = enc;
-        return pkgmem;
+        throw new IllegalStateException("Needed?");
+//        Class<?> pkgmem = c;
+//        for (Class<?> enc = c; (enc = enc.getEnclosingClass()) != null; )
+//            pkgmem = enc;
+//        return pkgmem;
     }
 
     private static boolean loadersAreRelated(ClassLoader loader1, ClassLoader loader2,

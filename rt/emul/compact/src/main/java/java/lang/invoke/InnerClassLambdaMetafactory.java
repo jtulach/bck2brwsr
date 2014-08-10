@@ -83,16 +83,6 @@ import static jdk.internal.org.objectweb.asm.Opcodes.*;
     // Used to ensure that each spun class name is unique
     private static final AtomicInteger counter = new AtomicInteger(0);
 
-    // For dumping generated classes to disk, for debugging purposes
-    private static final ProxyClassesDumper dumper;
-
-    static {
-        final String key = "jdk.internal.lambda.dumpProxyClasses";
-        String path = AccessController.doPrivileged(
-                new GetPropertyAction(key), null,
-                new PropertyPermission(key , "read"));
-        dumper = (null == path) ? null : ProxyClassesDumper.getInstance(path);
-    }
 
     // See context values in AbstractValidatingLambdaMetafactory
     private final String implMethodClassName;        // Name of type containing implementation "CC"

@@ -30,9 +30,9 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import sun.invoke.WrapperInstance;
 import java.util.ArrayList;
-import sun.reflect.CallerSensitive;
-import sun.reflect.Reflection;
-import sun.reflect.misc.ReflectUtil;
+//import sun.reflect.CallerSensitive;
+//import sun.reflect.Reflection;
+//import sun.reflect.misc.ReflectUtil;
 
 /**
  * This class consists exclusively of static methods that help adapt
@@ -144,17 +144,17 @@ public class MethodHandleProxies {
     // entry points, must be covered by hand-written or automatically
     // generated adapter classes.
     //
-    @CallerSensitive
+//    @CallerSensitive
     public static
     <T> T asInterfaceInstance(final Class<T> intfc, final MethodHandle target) {
         if (!intfc.isInterface() || !Modifier.isPublic(intfc.getModifiers()))
             throw new IllegalArgumentException("not a public interface: "+intfc.getName());
         final MethodHandle mh;
-        if (System.getSecurityManager() != null) {
-            final Class<?> caller = Reflection.getCallerClass();
-            final ClassLoader ccl = caller != null ? caller.getClassLoader() : null;
-            ReflectUtil.checkProxyPackageAccess(ccl, intfc);
-            mh = ccl != null ? bindCaller(target, caller) : target;
+        if (false) {//System.getSecurityManager() != null) {
+//            final Class<?> caller = Reflection.getCallerClass();
+//            final ClassLoader ccl = caller != null ? caller.getClassLoader() : null;
+//            ReflectUtil.checkProxyPackageAccess(ccl, intfc);
+//            mh = ccl != null ? bindCaller(target, caller) : target;
         } else {
             mh = target;
         }
@@ -194,7 +194,7 @@ public class MethodHandleProxies {
             };
 
         final Object proxy;
-        if (System.getSecurityManager() != null) {
+        if (false) { // System.getSecurityManager() != null) {
             // sun.invoke.WrapperInstance is a restricted interface not accessible
             // by any non-null class loader.
             final ClassLoader loader = proxyLoader;

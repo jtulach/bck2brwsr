@@ -948,60 +948,60 @@ class MethodType implements java.io.Serializable {
      */
     private static final java.io.ObjectStreamField[] serialPersistentFields = { };
 
-    /**
-     * Save the {@code MethodType} instance to a stream.
-     *
-     * @serialData
-     * For portability, the serialized format does not refer to named fields.
-     * Instead, the return type and parameter type arrays are written directly
-     * from the {@code writeObject} method, using two calls to {@code s.writeObject}
-     * as follows:
-     * <blockquote><pre>{@code
-s.writeObject(this.returnType());
-s.writeObject(this.parameterArray());
-     * }</pre></blockquote>
-     * <p>
-     * The deserialized field values are checked as if they were
-     * provided to the factory method {@link #methodType(Class,Class[]) methodType}.
-     * For example, null values, or {@code void} parameter types,
-     * will lead to exceptions during deserialization.
-     * @param s the stream to write the object to
-     * @throws java.io.IOException if there is a problem writing the object
-     */
-    private void writeObject(java.io.ObjectOutputStream s) throws java.io.IOException {
-        s.defaultWriteObject();  // requires serialPersistentFields to be an empty array
-        s.writeObject(returnType());
-        s.writeObject(parameterArray());
-    }
-
-    /**
-     * Reconstitute the {@code MethodType} instance from a stream (that is,
-     * deserialize it).
-     * This instance is a scratch object with bogus final fields.
-     * It provides the parameters to the factory method called by
-     * {@link #readResolve readResolve}.
-     * After that call it is discarded.
-     * @param s the stream to read the object from
-     * @throws java.io.IOException if there is a problem reading the object
-     * @throws ClassNotFoundException if one of the component classes cannot be resolved
-     * @see #MethodType()
-     * @see #readResolve
-     * @see #writeObject
-     */
-    private void readObject(java.io.ObjectInputStream s) throws java.io.IOException, ClassNotFoundException {
-        s.defaultReadObject();  // requires serialPersistentFields to be an empty array
-
-        Class<?>   returnType     = (Class<?>)   s.readObject();
-        Class<?>[] parameterArray = (Class<?>[]) s.readObject();
-
-        // Probably this object will never escape, but let's check
-        // the field values now, just to be sure.
-        checkRtype(returnType);
-        checkPtypes(parameterArray);
-
-        parameterArray = parameterArray.clone();  // make sure it is unshared
-        MethodType_init(returnType, parameterArray);
-    }
+//    /**
+//     * Save the {@code MethodType} instance to a stream.
+//     *
+//     * @serialData
+//     * For portability, the serialized format does not refer to named fields.
+//     * Instead, the return type and parameter type arrays are written directly
+//     * from the {@code writeObject} method, using two calls to {@code s.writeObject}
+//     * as follows:
+//     * <blockquote><pre>{@code
+//s.writeObject(this.returnType());
+//s.writeObject(this.parameterArray());
+//     * }</pre></blockquote>
+//     * <p>
+//     * The deserialized field values are checked as if they were
+//     * provided to the factory method {@link #methodType(Class,Class[]) methodType}.
+//     * For example, null values, or {@code void} parameter types,
+//     * will lead to exceptions during deserialization.
+//     * @param s the stream to write the object to
+//     * @throws java.io.IOException if there is a problem writing the object
+//     */
+//    private void writeObject(java.io.ObjectOutputStream s) throws java.io.IOException {
+//        s.defaultWriteObject();  // requires serialPersistentFields to be an empty array
+//        s.writeObject(returnType());
+//        s.writeObject(parameterArray());
+//    }
+//
+//    /**
+//     * Reconstitute the {@code MethodType} instance from a stream (that is,
+//     * deserialize it).
+//     * This instance is a scratch object with bogus final fields.
+//     * It provides the parameters to the factory method called by
+//     * {@link #readResolve readResolve}.
+//     * After that call it is discarded.
+//     * @param s the stream to read the object from
+//     * @throws java.io.IOException if there is a problem reading the object
+//     * @throws ClassNotFoundException if one of the component classes cannot be resolved
+//     * @see #MethodType()
+//     * @see #readResolve
+//     * @see #writeObject
+//     */
+//    private void readObject(java.io.ObjectInputStream s) throws java.io.IOException, ClassNotFoundException {
+//        s.defaultReadObject();  // requires serialPersistentFields to be an empty array
+//
+//        Class<?>   returnType     = (Class<?>)   s.readObject();
+//        Class<?>[] parameterArray = (Class<?>[]) s.readObject();
+//
+//        // Probably this object will never escape, but let's check
+//        // the field values now, just to be sure.
+//        checkRtype(returnType);
+//        checkPtypes(parameterArray);
+//
+//        parameterArray = parameterArray.clone();  // make sure it is unshared
+//        MethodType_init(returnType, parameterArray);
+//    }
 
     /**
      * For serialization only.
@@ -1011,27 +1011,27 @@ s.writeObject(this.parameterArray());
         this.rtype = null;
         this.ptypes = null;
     }
-    private void MethodType_init(Class<?> rtype, Class<?>[] ptypes) {
-        // In order to communicate these values to readResolve, we must
-        // store them into the implementation-specific final fields.
-        checkRtype(rtype);
-        checkPtypes(ptypes);
-        UNSAFE.putObject(this, rtypeOffset, rtype);
-        UNSAFE.putObject(this, ptypesOffset, ptypes);
-    }
+//    private void MethodType_init(Class<?> rtype, Class<?>[] ptypes) {
+//        // In order to communicate these values to readResolve, we must
+//        // store them into the implementation-specific final fields.
+//        checkRtype(rtype);
+//        checkPtypes(ptypes);
+//        UNSAFE.putObject(this, rtypeOffset, rtype);
+//        UNSAFE.putObject(this, ptypesOffset, ptypes);
+//    }
 
     // Support for resetting final fields while deserializing
-    private static final long rtypeOffset, ptypesOffset;
-    static {
-        try {
-            rtypeOffset = UNSAFE.objectFieldOffset
-                (MethodType.class.getDeclaredField("rtype"));
-            ptypesOffset = UNSAFE.objectFieldOffset
-                (MethodType.class.getDeclaredField("ptypes"));
-        } catch (Exception ex) {
-            throw new Error(ex);
-        }
-    }
+//    private static final long rtypeOffset, ptypesOffset;
+//    static {
+//        try {
+//            rtypeOffset = UNSAFE.objectFieldOffset
+//                (MethodType.class.getDeclaredField("rtype"));
+//            ptypesOffset = UNSAFE.objectFieldOffset
+//                (MethodType.class.getDeclaredField("ptypes"));
+//        } catch (Exception ex) {
+//            throw new Error(ex);
+//        }
+//    }
 
     /**
      * Resolves and initializes a {@code MethodType} object

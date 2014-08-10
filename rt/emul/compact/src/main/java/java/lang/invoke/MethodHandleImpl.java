@@ -34,8 +34,6 @@ import sun.invoke.empty.Empty;
 import sun.invoke.util.ValueConversions;
 import sun.invoke.util.VerifyType;
 import sun.invoke.util.Wrapper;
-import sun.reflect.CallerSensitive;
-import sun.reflect.Reflection;
 import static java.lang.invoke.LambdaForm.*;
 import static java.lang.invoke.MethodHandleStatics.*;
 import static java.lang.invoke.MethodHandles.Lookup.IMPL_LOOKUP;
@@ -842,6 +840,8 @@ import static java.lang.invoke.MethodHandles.Lookup.IMPL_LOOKUP;
         }
 
         private static MethodHandle makeInjectedInvoker(Class<?> hostClass) {
+            throw new IllegalStateException("Implement me too!");
+            /*
             Class<?> bcc = UNSAFE.defineAnonymousClass(hostClass, T_BYTES, null);
             if (hostClass.getClassLoader() != bcc.getClassLoader())
                 throw new InternalError(hostClass.getName()+" (CL)");
@@ -873,6 +873,7 @@ import static java.lang.invoke.MethodHandles.Lookup.IMPL_LOOKUP;
                 throw new InternalError(ex);
             }
             return bccInvoker;
+            */
         }
         private static ClassValue<MethodHandle> CV_makeInjectedInvoker = new ClassValue<MethodHandle>() {
             @Override protected MethodHandle computeValue(Class<?> hostClass) {
@@ -905,7 +906,7 @@ import static java.lang.invoke.MethodHandles.Lookup.IMPL_LOOKUP;
         private static final MethodHandle MH_checkCallerClass;
         static {
             final Class<?> THIS_CLASS = BindCaller.class;
-            assert(checkCallerClass(THIS_CLASS, THIS_CLASS));
+//            assert(checkCallerClass(THIS_CLASS, THIS_CLASS));
             try {
                 MH_checkCallerClass = IMPL_LOOKUP
                     .findStatic(THIS_CLASS, "checkCallerClass",
@@ -916,16 +917,16 @@ import static java.lang.invoke.MethodHandles.Lookup.IMPL_LOOKUP;
             }
         }
 
-        @CallerSensitive
-        private static boolean checkCallerClass(Class<?> expected, Class<?> expected2) {
-            // This method is called via MH_checkCallerClass and so it's
-            // correct to ask for the immediate caller here.
-            Class<?> actual = Reflection.getCallerClass();
-            if (actual != expected && actual != expected2)
-                throw new InternalError("found "+actual.getName()+", expected "+expected.getName()
-                                        +(expected == expected2 ? "" : ", or else "+expected2.getName()));
-            return true;
-        }
+//        @CallerSensitive
+//        private static boolean checkCallerClass(Class<?> expected, Class<?> expected2) {
+//            // This method is called via MH_checkCallerClass and so it's
+//            // correct to ask for the immediate caller here.
+//            Class<?> actual = Reflection.getCallerClass();
+//            if (actual != expected && actual != expected2)
+//                throw new InternalError("found "+actual.getName()+", expected "+expected.getName()
+//                                        +(expected == expected2 ? "" : ", or else "+expected2.getName()));
+//            return true;
+//        }
 
         private static final byte[] T_BYTES;
         static {

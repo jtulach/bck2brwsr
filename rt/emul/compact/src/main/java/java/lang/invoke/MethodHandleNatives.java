@@ -265,7 +265,7 @@ class MethodHandleNatives {
                     continue;
                 }
                 throw new InternalError(err);
-            } catch (NoSuchFieldException | IllegalAccessException ex) {
+            } catch (IllegalAccessException ex) {
                 String err = (name+": JVM has "+vmval+" which Java does not define");
                 // ignore exotic ops the JVM cares about; we just wont issue them
                 //System.err.println("warning: "+err);
@@ -488,7 +488,7 @@ class MethodHandleNatives {
         Class<?> defc = mem.getDeclaringClass();
         switch (mem.getName()) {
         case "checkMemberAccess":
-            return canBeCalledVirtual(mem, java.lang.SecurityManager.class);
+            return true; //canBeCalledVirtual(mem, java.lang.SecurityManager.class);
         case "getContextClassLoader":
             return canBeCalledVirtual(mem, java.lang.Thread.class);
         }

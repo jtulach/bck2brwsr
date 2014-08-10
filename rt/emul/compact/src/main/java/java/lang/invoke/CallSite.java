@@ -232,21 +232,13 @@ public class CallSite {
         throw new IllegalStateException("uninitialized call site");
     }
 
-    // unsafe stuff:
-    private static final long TARGET_OFFSET;
-    static {
-        try {
-            TARGET_OFFSET = UNSAFE.objectFieldOffset(CallSite.class.getDeclaredField("target"));
-        } catch (Exception ex) { throw new Error(ex); }
-    }
-
     /*package-private*/
     void setTargetNormal(MethodHandle newTarget) {
         MethodHandleNatives.setCallSiteTargetNormal(this, newTarget);
     }
     /*package-private*/
     MethodHandle getTargetVolatile() {
-        return (MethodHandle) UNSAFE.getObjectVolatile(this, TARGET_OFFSET);
+        return target;
     }
     /*package-private*/
     void setTargetVolatile(MethodHandle newTarget) {

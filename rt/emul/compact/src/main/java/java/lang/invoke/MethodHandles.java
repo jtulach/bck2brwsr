@@ -33,14 +33,9 @@ import java.util.Arrays;
 import sun.invoke.util.ValueConversions;
 import sun.invoke.util.VerifyAccess;
 import sun.invoke.util.Wrapper;
-import sun.reflect.CallerSensitive;
-import sun.reflect.Reflection;
-import sun.reflect.misc.ReflectUtil;
-import sun.security.util.SecurityConstants;
 import static java.lang.invoke.MethodHandleStatics.*;
 import static java.lang.invoke.MethodHandleNatives.Constants.*;
 import java.util.concurrent.ConcurrentHashMap;
-import sun.security.util.SecurityConstants;
 
 /**
  * This class consists exclusively of static methods that operate on or return
@@ -85,9 +80,10 @@ public class MethodHandles {
      * executing in the same caller class {@code C}.
      * @return a lookup object for the caller of this method, with private access
      */
-    @CallerSensitive
+//    @CallerSensitive
     public static Lookup lookup() {
-        return new Lookup(Reflection.getCallerClass());
+        throw new IllegalStateException("Implement me!");
+//        return new Lookup(Reflection.getCallerClass());
     }
 
     /**
@@ -138,14 +134,14 @@ public class MethodHandles {
      */
     public static <T extends Member> T
     reflectAs(Class<T> expected, MethodHandle target) {
-        SecurityManager smgr = System.getSecurityManager();
-        if (smgr != null)  smgr.checkPermission(ACCESS_PERMISSION);
+//        SecurityManager smgr = System.getSecurityManager();
+//        if (smgr != null)  smgr.checkPermission(ACCESS_PERMISSION);
         Lookup lookup = Lookup.IMPL_LOOKUP;  // use maximally privileged lookup
         return lookup.revealDirect(target).reflectAs(expected, lookup);
     }
     // Copied from AccessibleObject, as used by Method.setAccessible, etc.:
-    static final private java.security.Permission ACCESS_PERMISSION =
-        new ReflectPermission("suppressAccessChecks");
+//    static final private java.security.Permission ACCESS_PERMISSION =
+//        new ReflectPermission("suppressAccessChecks");
 
     /**
      * A <em>lookup object</em> is a factory for creating method handles,
@@ -1428,28 +1424,28 @@ return mh1;
          * If this lookup object has private access, then the caller class is the lookupClass.
          */
         void checkSecurityManager(Class<?> refc, MemberName m) {
-            SecurityManager smgr = System.getSecurityManager();
-            if (smgr == null)  return;
-            if (allowedModes == TRUSTED)  return;
-
-            // Step 1:
-            boolean fullPowerLookup = hasPrivateAccess();
-            if (!fullPowerLookup ||
-                !VerifyAccess.classLoaderIsAncestor(lookupClass, refc)) {
-                ReflectUtil.checkPackageAccess(refc);
-            }
-
-            // Step 2:
-            if (m.isPublic()) return;
-            if (!fullPowerLookup) {
-                smgr.checkPermission(SecurityConstants.CHECK_MEMBER_ACCESS_PERMISSION);
-            }
-
-            // Step 3:
-            Class<?> defc = m.getDeclaringClass();
-            if (!fullPowerLookup && defc != refc) {
-                ReflectUtil.checkPackageAccess(defc);
-            }
+//            SecurityManager smgr = System.getSecurityManager();
+//            if (smgr == null)  return;
+//            if (allowedModes == TRUSTED)  return;
+//
+//            // Step 1:
+//            boolean fullPowerLookup = hasPrivateAccess();
+//            if (!fullPowerLookup ||
+//                !VerifyAccess.classLoaderIsAncestor(lookupClass, refc)) {
+//                ReflectUtil.checkPackageAccess(refc);
+//            }
+//
+//            // Step 2:
+//            if (m.isPublic()) return;
+//            if (!fullPowerLookup) {
+//                smgr.checkPermission(SecurityConstants.CHECK_MEMBER_ACCESS_PERMISSION);
+//            }
+//
+//            // Step 3:
+//            Class<?> defc = m.getDeclaringClass();
+//            if (!fullPowerLookup && defc != refc) {
+//                ReflectUtil.checkPackageAccess(defc);
+//            }
         }
 
         void checkMethod(byte refKind, Class<?> refc, MemberName m) throws IllegalAccessException {
@@ -1749,17 +1745,17 @@ return mh1;
                 return false;
             }
             ClassLoader loader = defc.getClassLoader();
-            if (!sun.misc.VM.isSystemDomainLoader(loader)) {
-                ClassLoader sysl = ClassLoader.getSystemClassLoader();
-                boolean found = false;
-                while (sysl != null) {
-                    if (loader == sysl) { found = true; break; }
-                    sysl = sysl.getParent();
-                }
-                if (!found) {
-                    return false;
-                }
-            }
+//            if (!sun.misc.VM.isSystemDomainLoader(loader)) {
+//                ClassLoader sysl = ClassLoader.getSystemClassLoader();
+//                boolean found = false;
+//                while (sysl != null) {
+//                    if (loader == sysl) { found = true; break; }
+//                    sysl = sysl.getParent();
+//                }
+//                if (!found) {
+//                    return false;
+//                }
+//            }
             try {
                 MemberName resolved2 = publicLookup().resolveOrFail(refKind,
                     new MemberName(refKind, defc, member.getName(), member.getType()));

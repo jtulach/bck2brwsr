@@ -28,7 +28,6 @@ package java.lang.invoke;
 
 import java.util.*;
 import sun.invoke.util.*;
-import sun.misc.Unsafe;
 
 import static java.lang.invoke.MethodHandleStatics.*;
 import java.util.logging.Level;
@@ -434,7 +433,7 @@ public abstract class MethodHandle {
     @interface PolymorphicSignature { }
 
     private final MethodType type;
-    /*private*/ final LambdaForm form;
+    /*private*/ LambdaForm form;
     // form is not private so that invokers can easily fetch it
     /*private*/ MethodHandle asTypeCache;
     // asTypeCache is not private so that invokers can easily fetch it
@@ -1395,7 +1394,7 @@ assertEquals("[three, thee, tee]", asListFix.invoke((Object)argv).toString());
 
         // CURRENT RESTRICTIONS
         // * only for pos 0 and UNSAFE (position is adjusted in MHImpl to make API usable for others)
-        assert pos == 0 && basicType == 'L' && value instanceof Unsafe;
+//        assert pos == 0 && basicType == 'L' && value instanceof Unsafe;
         MethodType type2 = type.dropParameterTypes(pos, pos + 1); // adjustment: ignore receiver!
         LambdaForm form2 = form.bindImmediate(pos + 1, basicType, value); // adjust pos to form-relative pos
         return copyWith(type2, form2);
@@ -1489,17 +1488,7 @@ assertEquals("[three, thee, tee]", asListFix.invoke((Object)argv).toString());
     /*non-public*/
     void updateForm(LambdaForm newForm) {
         if (form == newForm)  return;
-        // ISSUE: Should we have a memory fence here?
-        UNSAFE.putObject(this, FORM_OFFSET, newForm);
+        this.form = newForm;
         this.form.prepare();  // as in MethodHandle.<init>
-    }
-
-    private static final long FORM_OFFSET;
-    static {
-        try {
-            FORM_OFFSET = UNSAFE.objectFieldOffset(MethodHandle.class.getDeclaredField("form"));
-        } catch (ReflectiveOperationException ex) {
-            throw newInternalError(ex);
-        }
     }
 }

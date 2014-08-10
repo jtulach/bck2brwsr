@@ -27,7 +27,7 @@ package java.lang.invoke;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import sun.misc.Unsafe;
+//import sun.misc.Unsafe;
 
 /**
  * This class consists exclusively of static names internal to the
@@ -39,7 +39,7 @@ import sun.misc.Unsafe;
 
     private MethodHandleStatics() { }  // do not instantiate
 
-    static final Unsafe UNSAFE = Unsafe.getUnsafe();
+//    static final Unsafe UNSAFE = Unsafe.getUnsafe();
 
     static final boolean DEBUG_METHOD_HANDLE_NAMES;
     static final boolean DUMP_CLASS_FILES;
