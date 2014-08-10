@@ -37,6 +37,7 @@ public class InvokeDynamic {
         assertReal("1st parameter lookup", lookup);
         assertReal("2nd parameter name", name);
         assertReal("3rd parameter type", type);
+        assert lookup.lookupClass() == InvokeDynamic.class : "We are making the lookup: " + lookup.lookupClass();
         try {
             return new ConstantCallSite(lookup.findVirtual(InvokeDynamic.class, "instance_sayHello", MethodType.methodType(String.class)));
         } catch (NoSuchMethodException | IllegalAccessException e) {

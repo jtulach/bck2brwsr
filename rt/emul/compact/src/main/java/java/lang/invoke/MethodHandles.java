@@ -142,6 +142,14 @@ public class MethodHandles {
     // Copied from AccessibleObject, as used by Method.setAccessible, etc.:
 //    static final private java.security.Permission ACCESS_PERMISSION =
 //        new ReflectPermission("suppressAccessChecks");
+    
+    static Lookup findFor(Class<?> clazz) {
+        Object o = clazz;
+        if (o instanceof Class) {
+            return new Lookup(clazz, Lookup.ALL_MODES);
+        }
+        throw new IllegalArgumentException("Expecting class: " + o);
+    }
 
     /**
      * A <em>lookup object</em> is a factory for creating method handles,
