@@ -833,7 +833,6 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     smapper.replace(this, VarType.INTEGER, "(@1).toInt8()", smapper.getI(0));
                     break;
                 case opc_i2c:
-                    break;
                 case opc_i2s:
                     smapper.replace(this, VarType.INTEGER, "(@1).toInt16()", smapper.getI(0));
                     break;
