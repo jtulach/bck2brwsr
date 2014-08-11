@@ -45,7 +45,9 @@ class MethodHandleNatives {
 
     static native void init(MemberName self, Object ref);
     static native void expand(MemberName self);
-    static native MemberName resolve(MemberName self, Class<?> caller) throws LinkageError;
+    static MemberName resolve(MemberName self, Class<?> caller) throws LinkageError {
+        return self;
+    }
     static native int getMembers(Class<?> defc, String matchName, String matchSig,
             int matchFlags, Class<?> caller, int skip, MemberName[] results);
 
@@ -57,25 +59,13 @@ class MethodHandleNatives {
 
     /// MethodHandle support
 
-    /** Fetch MH-related JVM parameter.
-     *  which=0 retrieves MethodHandlePushLimit
-     *  which=1 retrieves stack slot push size (in address units)
-     */
-    static native int getConstant(int which);
-
-    static final boolean COUNT_GWT;
-
     /// CallSite support
 
     /** Tell the JVM that we need to change the target of a CallSite. */
     static native void setCallSiteTargetNormal(CallSite site, MethodHandle target);
     static native void setCallSiteTargetVolatile(CallSite site, MethodHandle target);
 
-    private static native void registerNatives();
     static {
-        registerNatives();
-        COUNT_GWT                   = getConstant(Constants.GC_COUNT_GWT) != 0;
-
         // The JVM calls MethodHandleNatives.<clinit>.  Cascade the <clinit> calls as needed:
         MethodHandleImpl.initStatics();
 }

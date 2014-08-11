@@ -1069,6 +1069,8 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     println("  mi[2]: " + mi[2]);
                     println("  mn   : " + mn);
                     println("  name and type: " + jc.stringValue(c2.cpx2, true));
+                    CPX2 nameAndType = jc.getCpoolEntry(c2.cpx2);
+                    String type = jc.StringValue(nameAndType.cpx2);
                     String object = accessClass(mcn) + "(false)";
                     if (mn.startsWith("cons_")) {
                         object += ".constructor";
@@ -1078,7 +1080,9 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     append('(');
                     String lookup = accessClass("java_lang_invoke_MethodHandles") + "(false).findFor__Ljava_lang_invoke_MethodHandles$Lookup_2Ljava_lang_Class_2(CLS.$class)";
                     append(lookup);
-                    append(", '").append(mi[1]).append("'");
+                    append(", '").append(mi[1]).append("', ");
+                    String methodType = accessClass("java_lang_invoke_MethodType") + "(false).fromMethodDescriptorString__Ljava_lang_invoke_MethodType_2Ljava_lang_String_2Ljava_lang_ClassLoader_2(";
+                    append(methodType).append("'").append(type).append("', null)");
 //                    if (numArguments > 0) {
 //                        append(vars[0]);
 //                        for (int j = 1; j < numArguments; ++j) {

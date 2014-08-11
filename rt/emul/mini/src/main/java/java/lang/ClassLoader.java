@@ -499,12 +499,12 @@ public abstract class ClassLoader {
      * @since  1.1
      */
     protected final Class<?> findLoadedClass(String name) {
-        if (!checkName(name))
+        try {
+            return Class.forName(name);
+        } catch (ClassNotFoundException ex) {
             return null;
-        return findLoadedClass0(name);
+        }
     }
-
-    private native final Class findLoadedClass0(String name);
 
     /**
      * Sets the signers of a class.  This should be invoked after defining a
@@ -882,10 +882,6 @@ public abstract class ClassLoader {
             }
         } while (acl != null);
         return false;
-    }
-
-    private boolean checkName(String name) {
-        throw new UnsupportedOperationException(); 
     }
 
     private Class findBootstrapClassOrNull(String name) {
