@@ -114,7 +114,15 @@ public class LongArithmeticTest {
 
         return (trueCount == 1) ? result : -2;
     }
-
+    
+    @Compare public int parameterSlotCount() {
+        long argCounts = 281479271874563L;
+        return unpack(argCounts, 2);
+    }
+    private static char unpack(long packed, int word) { // word==0 => return a, ==3 => return d
+        assert(word <= 3);
+        return (char)(packed >> ((3-word) * 16));
+    }
     @Compare public long conversion() {
         return Long.MAX_VALUE;
     }
