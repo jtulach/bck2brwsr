@@ -25,11 +25,13 @@
 
 package java.lang.invoke;
 
-import java.lang.invoke.MethodHandles.Lookup;
-import java.lang.reflect.Field;
 import static java.lang.invoke.MethodHandleNatives.Constants.*;
 import static java.lang.invoke.MethodHandleStatics.*;
+import java.lang.invoke.MethodHandles.Lookup;
 import static java.lang.invoke.MethodHandles.Lookup.IMPL_LOOKUP;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 /**
  * The JVM interface for the method handles package is all here.
@@ -43,13 +45,41 @@ class MethodHandleNatives {
 
     /// MemberName support
 
-    static native void init(MemberName self, Object ref);
-    static native void expand(MemberName self);
+    static void init(MemberName self, Object ref) {
+    }
+    
+    static void expand(MemberName self) {
+    }
+    
     static MemberName resolve(MemberName self, Class<?> caller) throws LinkageError {
         return self;
     }
-    static native int getMembers(Class<?> defc, String matchName, String matchSig,
-            int matchFlags, Class<?> caller, int skip, MemberName[] results);
+    static int getMembers(Class<?> defc, String matchName, String matchSig,
+            int matchFlags, Class<?> caller, int skip, MemberName[] results) {
+        int orig = skip;
+        for (Method m : defc.getMethods()) {
+            if (skip == results.length) {
+                break;
+            }
+            MemberName mn = new MemberName(m);
+            results[skip++] = mn;
+        }
+        for (Constructor m : defc.getConstructors()) {
+            if (skip == results.length) {
+                break;
+            }
+            MemberName mn = new MemberName(m);
+            results[skip++] = mn;
+        }
+        for (Field m : defc.getFields()) {
+            if (skip == results.length) {
+                break;
+            }
+            MemberName mn = new MemberName(m);
+            results[skip++] = mn;
+        }
+        return skip - orig;
+    }
 
     /// Field layout queries parallel to sun.misc.Unsafe:
     static native long objectFieldOffset(MemberName self);  // e.g., returns vmindex
