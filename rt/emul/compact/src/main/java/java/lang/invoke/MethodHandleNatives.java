@@ -31,6 +31,7 @@ import java.lang.invoke.MethodHandles.Lookup;
 import static java.lang.invoke.MethodHandles.Lookup.IMPL_LOOKUP;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 
 /**
@@ -46,6 +47,7 @@ class MethodHandleNatives {
     /// MemberName support
 
     static void init(MemberName self, Object ref) {
+        self.clazz = ((Member)ref).getDeclaringClass();
     }
     
     static void expand(MemberName self) {

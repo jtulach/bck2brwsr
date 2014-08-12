@@ -70,7 +70,7 @@ import java.util.Objects;
  * @author jrose
  */
 /*non-public*/ final class MemberName implements Member, Cloneable {
-    private Class<?> clazz;       // class in which the method is defined
+    Class<?> clazz;       // class in which the method is defined
     private String   name;        // may be null if not yet materialized
     private Object   type;        // may be null if not yet materialized
     private int      flags;       // modifier bits; see reflect.Modifier
