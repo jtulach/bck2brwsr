@@ -162,18 +162,6 @@ public class InvokeDynamicTest {
                 loaded = true;
                 return new ByteArrayInputStream(invokeDynamicBytes);
             }
-            if ("java/net/URI.class".equals(name)) {
-                // skip
-                return null;
-            }
-            if ("java/net/URLConnection.class".equals(name)) {
-                // skip
-                return null;
-            }
-            if ("java/lang/System.class".equals(name)) {
-                // skip
-                return null;
-            }
             Enumeration<URL> en = InvokeDynamicTest.class.getClassLoader().getResources(name);
             URL u = null;
             while (en.hasMoreElements()) {

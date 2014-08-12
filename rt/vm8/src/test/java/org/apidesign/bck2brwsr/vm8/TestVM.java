@@ -279,26 +279,6 @@ public final class TestVM {
     private static class EmulationResources implements Bck2Brwsr.Resources {
         @Override
         public InputStream get(String name) throws IOException {
-            if ("java/net/URI.class".equals(name)) {
-                // skip
-                return null;
-            }
-            if ("java/net/URLConnection.class".equals(name)) {
-                // skip
-                return null;
-            }
-            if ("java/lang/System.class".equals(name)) {
-                // skip
-                return null;
-            }
-            if ("java/io/PrintStream.class".equals(name)) {
-                // skip
-                return null;
-            }
-            if ("java/io/PrintWriter.class".equals(name)) {
-                // skip
-                return null;
-            }
             Enumeration<URL> en = TestVM.class.getClassLoader().getResources(name);
             URL u = null;
             while (en.hasMoreElements()) {
