@@ -56,13 +56,25 @@ public class InvokeDynamicTest {
     }
     
     @Test public void simpleDynamicInJS() throws Exception {
-        code.assertExec(
+        code().assertExec(
             "Invoke dynamic can return a value", InvokeDynamic.class,
             "dynamicSay__Ljava_lang_String_2",
             "Hello from Dynamic!"
         );
     }
     
+    private TestVM code() throws Exception {
+        if (code == null) {
+            final EmulResWithInvDyn emul = new EmulResWithInvDyn();
+            code = TestVM.compileClass(
+                    null, null, emul,
+                    InvokeDynamic.class.getName().replace('.', '/')
+            );
+
+            assertTrue(emul.loaded, "InvokeDynamic class should be processed!");
+        }
+        return code;
+    }
 
     @AfterClass
     public static void releaseTheCode() {
@@ -115,14 +127,6 @@ public class InvokeDynamicTest {
         };
         invokeDynamicClass = l.loadClass(InvokeDynamic.class.getName());
         assertTrue(loaded[0], "InvokeDynamic class should be loaded!");
-
-        final EmulResWithInvDyn emul = new EmulResWithInvDyn();
-        code = TestVM.compileClass(
-            null, null, emul,
-            InvokeDynamic.class.getName().replace('.', '/')
-        );
-        
-        assertTrue(emul.loaded, "InvokeDynamic class should be processed!");
     }
     
     
