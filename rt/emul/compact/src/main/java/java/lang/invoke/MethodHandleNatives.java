@@ -47,7 +47,16 @@ class MethodHandleNatives {
     /// MemberName support
 
     static void init(MemberName self, Object ref) {
-        self.clazz = ((Member)ref).getDeclaringClass();
+        final Member mem = (Member)ref;
+        self.clazz = mem.getDeclaringClass();
+        int mod = mem.getModifiers();
+        if (ref instanceof Method) {
+            mod  |= MemberName.IS_METHOD;
+        }
+        if (ref instanceof Constructor) {
+            mod  |= MemberName.IS_CONSTRUCTOR;
+        }
+        self.flags = mod;
     }
     
     static void expand(MemberName self) {
@@ -73,13 +82,13 @@ class MethodHandleNatives {
             MemberName mn = new MemberName(m);
             results[skip++] = mn;
         }
-        for (Field m : defc.getFields()) {
-            if (skip == results.length) {
-                break;
-            }
-            MemberName mn = new MemberName(m);
-            results[skip++] = mn;
-        }
+//        for (Field m : defc.getFields()) {
+//            if (skip == results.length) {
+//                break;
+//            }
+//            MemberName mn = new MemberName(m);
+//            results[skip++] = mn;
+//        }
         return skip - orig;
     }
 
