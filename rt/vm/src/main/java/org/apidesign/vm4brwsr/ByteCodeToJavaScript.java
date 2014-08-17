@@ -261,6 +261,19 @@ abstract class ByteCodeToJavaScript implements Appendable {
         append("\n    function fillInstOf(x) {");
         String instOfName = "$instOf_" + className;
         append("\n        Object.defineProperty(x, '").append(instOfName).append("', { value : true });");
+        if (jc.isInterface()) {
+            for (MethodData m : jc.getMethods()) {
+                if ((m.getAccess() & ACC_ABSTRACT) == 0
+                        && (m.getAccess() & ACC_STATIC) == 0
+                        && (m.getAccess() & ACC_PRIVATE) == 0) {
+                    final String mn = findMethodName(m, new StringBuilder());
+                    append("\n        try {");
+                    append("\n          Object.defineProperty(x, '").append(mn).append("', { value : c['").append(mn).append("']});");
+                    append("\n        } catch (ignore) {");
+                    append("\n        }");
+                }
+            }
+        }
         for (String superInterface : jc.getSuperInterfaces()) {
             String intrfc = superInterface.replace('/', '_');
             append("\n      vm.").append(intrfc).append("(false)['fillInstOf'](x);");
