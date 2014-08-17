@@ -18,7 +18,6 @@
 package org.apidesign.bck2brwsr.vm8;
 
 import org.testng.annotations.BeforeClass;
-import static org.testng.Assert.*;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 

@@ -54,6 +54,10 @@ public class InvokeDynamicTest {
         Object ret = m.invoke(m);
         assertEquals(ret, "Hello from Dynamic!");
     }
+
+    /* Well, supporting general invokeDynamic is 
+    huge hassle, so giving up. More at
+    http://wiki.apidesign.org/wiki/InvokeDynamic
     
     @Test public void simpleDynamicInJS() throws Exception {
         code().assertExec(
@@ -62,6 +66,7 @@ public class InvokeDynamicTest {
             "Hello from Dynamic!"
         );
     }
+    */
     
     private TestVM code() throws Exception {
         if (code == null) {

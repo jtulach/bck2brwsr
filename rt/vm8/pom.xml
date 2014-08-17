@@ -20,6 +20,21 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>net.orfjackal.retrolambda</groupId>
+                <artifactId>retrolambda-maven-plugin</artifactId>
+                <version>1.5.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>process-test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <target>1.7</target>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     <dependencies>
