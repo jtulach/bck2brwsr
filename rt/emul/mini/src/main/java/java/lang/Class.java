@@ -1824,6 +1824,13 @@ public final
         + "}\n"
     )
     static native int activate();
+
+    @Exported
+    @JavaScriptOnly(name = "activate__Ljava_io_Closeable_2Lorg_netbeans_html_boot_spi_Fn$Presenter_2", value = "function() {\n"
+        + "  return vm.org_apidesign_bck2brwsr_emul_lang_System(false).activate__Ljava_io_Closeable_2();"
+        + "}\n"
+    )
+    static native int activateNew();
     
     private static Object bck2BrwsrCnvrt(Object o) {
         if (o instanceof Throwable) {

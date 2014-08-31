@@ -1624,7 +1624,10 @@ abstract class ByteCodeToJavaScript implements Appendable {
 
         final String in = mi[0];
         String mcn;
-        if (callbacks && in.equals("org/apidesign/html/boot/spi/Fn")) {
+        if (callbacks && (
+            in.equals("org/apidesign/html/boot/spi/Fn") ||
+            in.equals("org/netbeans/html/boot/spi/Fn")
+        )) {
             mcn = "java_lang_Class";
         } else {
             mcn = mangleClassName(in);
@@ -1660,7 +1663,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
         String mn = findMethodName(mi, cnt, returnType);
 
         final int numArguments = cnt.length() + 1;
-        final CharSequence[] vars = new CharSequence[numArguments];
+        final CharSequence[] vars =  new CharSequence[numArguments];
 
         for (int j = numArguments - 1; j >= 0; --j) {
             vars[j] = mapper.popValue();

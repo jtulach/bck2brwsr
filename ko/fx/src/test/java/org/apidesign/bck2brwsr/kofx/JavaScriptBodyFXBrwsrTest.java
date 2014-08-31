@@ -18,8 +18,8 @@
 package org.apidesign.bck2brwsr.kofx;
 
 import org.apidesign.bck2brwsr.vmtest.VMTest;
-import org.apidesign.html.json.tck.JavaScriptTCK;
-import org.apidesign.html.json.tck.KOTest;
+import org.netbeans.html.json.tck.JavaScriptTCK;
+import org.netbeans.html.json.tck.KOTest;
 import org.testng.annotations.Factory;
 
 /**

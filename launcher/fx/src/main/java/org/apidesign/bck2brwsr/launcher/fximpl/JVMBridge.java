@@ -21,20 +21,18 @@ import java.io.BufferedReader;
 import java.io.Reader;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.TooManyListenersException;
 import java.util.concurrent.Executor;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.web.WebEngine;
 import netscape.javascript.JSObject;
-import org.apidesign.html.boot.spi.Fn;
 import org.netbeans.html.boot.impl.FindResources;
 import org.netbeans.html.boot.impl.FnUtils;
+import org.netbeans.html.boot.spi.Fn;
 
 /**
  *
