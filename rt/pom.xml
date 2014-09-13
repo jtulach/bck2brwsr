@@ -19,4 +19,14 @@
     <module>vmtest</module>
     <module>aot</module>
   </modules>
+  <profiles>
+      <profile>
+          <activation>
+              <jdk>1.8</jdk>
+          </activation>
+          <modules>
+              <module>vm8</module>
+          </modules>
+      </profile>
+  </profiles>
 </project>

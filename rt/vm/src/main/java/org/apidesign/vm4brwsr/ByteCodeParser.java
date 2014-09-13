@@ -28,6 +28,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.core.JavaScriptPrototype;
 
@@ -58,6 +59,9 @@ final class ByteCodeParser {
     public static final int CONSTANT_METHOD              = 10;
     public static final int CONSTANT_INTERFACEMETHOD     = 11;
     public static final int CONSTANT_NAMEANDTYPE         = 12;
+    public static final int CONSTANT_METHODHANDLE     = 15;
+    public static final int CONSTANT_METHODTYPE     = 16;
+    public static final int CONSTANT_INVOKEDYNAMIC     = 18;
 
     /* Access Flags */
     public static final int ACC_PUBLIC                   = 0x00000001;
@@ -287,7 +291,7 @@ final class ByteCodeParser {
     public static final int opc_invokespecial            = 183;
     public static final int opc_invokestatic             = 184;
     public static final int opc_invokeinterface          = 185;
-//    public static final int opc_xxxunusedxxx             = 186;
+    public static final int opc_invokedynamic            = 186;
     public static final int opc_new                      = 187;
     public static final int opc_newarray                 = 188;
     public static final int opc_anewarray                = 189;
@@ -495,7 +499,7 @@ final class ByteCodeParser {
      */
     private static class CPX {
 
-        int cpx;
+        final int cpx;
 
         CPX(int cpx) {
             this.cpx = cpx;
@@ -507,9 +511,9 @@ final class ByteCodeParser {
      *
      * @author Sucheta Dambalkar (Adopted code from jdis)
      */
-    private static class CPX2 {
+    static class CPX2 {
 
-        int cpx1, cpx2;
+        final int cpx1, cpx2;
 
         CPX2(int cpx1, int cpx2) {
             this.cpx1 = cpx1;
@@ -538,6 +542,7 @@ final class ByteCodeParser {
         private FieldData[] fields;
         private MethodData[] methods;
         private InnerClassData[] innerClasses;
+        private BootMethodData[] bootMethods;
         private int attributes_count;
         private AttrData[] attrs;
         private int source_cpx = 0;
@@ -621,6 +626,12 @@ final class ByteCodeParser {
                     AttrData attr = new AttrData(this);
                     attr.read(name_cpx);
                     attrs[k] = attr;
+                } else if (getTag(name_cpx) == CONSTANT_UTF8
+                    && getString(name_cpx).equals("BootstrapMethods")) {
+                    AttrData attr = new AttrData(this);
+                    bootMethods = readBootstrapMethods(in);
+                    attr.read(name_cpx);
+                    attrs[k] = attr;
                 } else {
                     AttrData attr = new AttrData(this);
                     attr.read(name_cpx, in);
@@ -630,6 +641,22 @@ final class ByteCodeParser {
             in.close();
         } // end ClassData.read()
 
+        BootMethodData[] readBootstrapMethods(DataInputStream in) throws IOException {
+            int attr_len = in.readInt();  //attr_lengt
+            int number = in.readShort();
+            BootMethodData[] arr = new BootMethodData[number];
+            for (int i = 0; i < number; i++) {
+                int ref = in.readShort();
+                int len = in.readShort();
+                int[] args = new int[len];
+                for (int j = 0; j < len; j++) {
+                    args[j] = in.readShort();
+                }
+                arr[i] = new BootMethodData(this, ref, args);
+            }
+            return arr;
+        }
+        
         /**
          * Reads and stores constant pool info.
          */
@@ -668,7 +695,15 @@ final class ByteCodeParser {
                     case CONSTANT_NAMEANDTYPE:
                         cpool[i] = new CPX2(in.readUnsignedShort(), in.readUnsignedShort());
                         break;
-
+                    case CONSTANT_METHODHANDLE:
+                        cpool[i] = new CPX2(in.readByte(), in.readUnsignedShort());
+                        break;
+                    case CONSTANT_METHODTYPE:
+                        cpool[i] = new CPX(in.readUnsignedShort());
+                        break;
+                    case CONSTANT_INVOKEDYNAMIC:
+                        cpool[i] = new CPX2(in.readUnsignedShort(), in.readUnsignedShort());
+                        break;
                     case 0:
                     default:
                         throw new ClassFormatError("invalid constant type: " + (int) tags[i]);
@@ -1107,8 +1142,12 @@ final class ByteCodeParser {
 
                 case CONSTANT_NAMEANDTYPE:
                     return getName(((CPX2) x).cpx1) + ":" + StringValue(((CPX2) x).cpx2);
+                case CONSTANT_METHODHANDLE:
+                    return "K" + ((CPX2)x).cpx1 + "@" + stringValue(((CPX2)x).cpx2, textual);
+                case CONSTANT_METHODTYPE:
+                    return stringValue(((CPX)x).cpx, true);
                 default:
-                    return "UnknownTag"; //TBD
+                    return "UnknownTag" + tag; //TBD
             }
         }
 
@@ -1190,6 +1229,10 @@ final class ByteCodeParser {
             } else {
                 return null;
             }
+        }
+        
+        public BootMethodData getBootMethod(int indx) {
+            return bootMethods != null ? bootMethods[indx] : null;
         }
 
         /**
@@ -1549,6 +1592,31 @@ final class ByteCodeParser {
             return accflags;
         }
     } // end InnerClassData
+    
+    static class BootMethodData {
+        private final ClassData clazz;
+        final int method;
+        private final int[] args;
+
+        private BootMethodData(ClassData clazz, int method, int[] args) {
+            this.clazz = clazz;
+            this.method = method;
+            this.args = args;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append(clazz.stringValue(method, true));
+            sb.append('(');
+            for (int indx : args) {
+                sb.append("\n  ");
+                sb.append(clazz.stringValue(indx, true));
+            }
+            sb.append(')');
+            return sb.toString();
+        }
+    }
 
     /**
      * Strores LineNumberTable data information.
@@ -1800,7 +1868,7 @@ final class ByteCodeParser {
                 stackMap[i] = new StackMapData(in, this);
             }
         }
-
+        
         /**
          * Return access of the method.
          */

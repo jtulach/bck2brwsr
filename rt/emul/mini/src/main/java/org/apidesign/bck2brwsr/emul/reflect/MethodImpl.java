@@ -53,7 +53,7 @@ public abstract class MethodImpl {
         + "var arr = new Array();\n"
         + "function check(m, verify) {\n"
         + "  if (m.indexOf(prefix) === 0) {\n"
-        + "     if (!c[m].cls) return;\n"
+        + "     if (!c[m] || !c[m].cls) return;\n"
         + "     if (verify) {\n"
         + "       for (var i = 0; i < arr.length; i += 3) {\n"
         + "         if (arr[i] === m) return;\n"

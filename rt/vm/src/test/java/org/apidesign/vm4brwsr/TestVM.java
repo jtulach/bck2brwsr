@@ -123,10 +123,18 @@ public final class TestVM {
     }
 
     static TestVM compileClass(StringBuilder sb, ScriptEngine[] eng, String... names) throws ScriptException, IOException {
+        return compileClass(sb, eng, new EmulationResources(), names);
+    }
+    static TestVM compileClass(
+        StringBuilder sb, 
+        ScriptEngine[] eng, 
+        Bck2Brwsr.Resources resources, 
+        String... names
+    ) throws ScriptException, IOException {
         if (sb == null) {
             sb = new StringBuilder();
         }
-        Bck2Brwsr.generate(sb, new EmulationResources(), names);
+        Bck2Brwsr.generate(sb, resources, names);
         ScriptEngineManager sem = new ScriptEngineManager();
         ScriptEngine js = sem.getEngineByExtension("js");
         if (eng != null) {

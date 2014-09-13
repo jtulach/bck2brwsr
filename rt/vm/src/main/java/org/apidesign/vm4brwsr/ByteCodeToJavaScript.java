@@ -19,7 +19,7 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Locale;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import static org.apidesign.vm4brwsr.ByteCodeParser.*;
 
 /** Translator of the code inside class files to JavaScript.
@@ -258,9 +258,22 @@ abstract class ByteCodeToJavaScript implements Appendable {
             append("\n    ").append(destObject).append(".").append(mn).append(".cls = CLS;");
         }
         append("\n    c.constructor = CLS;");
-        append("\n    function fillInstOf(x) {");
+        append("\n    function ").append(className).append("fillInstOf(x) {");
         String instOfName = "$instOf_" + className;
         append("\n        Object.defineProperty(x, '").append(instOfName).append("', { value : true });");
+        if (jc.isInterface()) {
+            for (MethodData m : jc.getMethods()) {
+                if ((m.getAccess() & ACC_ABSTRACT) == 0
+                        && (m.getAccess() & ACC_STATIC) == 0
+                        && (m.getAccess() & ACC_PRIVATE) == 0) {
+                    final String mn = findMethodName(m, new StringBuilder());
+                    append("\n        try {");
+                    append("\n          if (!x['").append(mn).append("']) Object.defineProperty(x, '").append(mn).append("', { value : c['").append(mn).append("']});");
+                    append("\n        } catch (ignore) {");
+                    append("\n        }");
+                }
+            }
+        }
         for (String superInterface : jc.getSuperInterfaces()) {
             String intrfc = superInterface.replace('/', '_');
             append("\n      vm.").append(intrfc).append("(false)['fillInstOf'](x);");
@@ -268,8 +281,8 @@ abstract class ByteCodeToJavaScript implements Appendable {
         }
         append("\n    }");
         append("\n    try {");
-        append("\n      Object.defineProperty(c, 'fillInstOf', { value: fillInstOf });");
-        append("\n      fillInstOf(c);");
+        append("\n      Object.defineProperty(c, 'fillInstOf', { value: ").append(className).append("fillInstOf });");
+        append("\n      ").append(className).append("fillInstOf(c);");
         append("\n    } catch (ignore) {");
         append("\n    }");
 //        obfuscationDelegate.exportJSProperty(this, "c", instOfName);
@@ -1051,6 +1064,49 @@ abstract class ByteCodeToJavaScript implements Appendable {
                 case opc_invokestatic:
                     i = invokeStaticMethod(byteCodes, i, smapper, true);
                     break;
+                case opc_invokedynamic: {
+                    int indx = readUShortArg(byteCodes, i);
+                    println("invoke dynamic: " + indx);
+                    ByteCodeParser.CPX2 c2 = jc.getCpoolEntry(indx);
+                    BootMethodData bm = jc.getBootMethod(c2.cpx1);
+                    CPX2 methodHandle = jc.getCpoolEntry(bm.method);
+                    println("  type: " + methodHandle.cpx1);
+                    String[] mi = jc.getFieldInfoName(methodHandle.cpx2);
+                    String mcn = mangleClassName(mi[0]);
+                    char[] returnType = {'V'};
+                    StringBuilder cnt = new StringBuilder();
+                    String mn = findMethodName(mi, cnt, returnType);
+                    println("  mi[0]: " + mi[0]);
+                    println("  mi[1]: " + mi[1]);
+                    println("  mi[2]: " + mi[2]);
+                    println("  mn   : " + mn);
+                    println("  name and type: " + jc.stringValue(c2.cpx2, true));
+                    CPX2 nameAndType = jc.getCpoolEntry(c2.cpx2);
+                    String type = jc.StringValue(nameAndType.cpx2);
+                    String object = accessClass(mcn) + "(false)";
+                    if (mn.startsWith("cons_")) {
+                        object += ".constructor";
+                    }
+                    append("var metHan = ");
+                    append(accessStaticMethod(object, mn, mi));
+                    append('(');
+                    String lookup = accessClass("java_lang_invoke_MethodHandles") + "(false).findFor__Ljava_lang_invoke_MethodHandles$Lookup_2Ljava_lang_Class_2(CLS.$class)";
+                    append(lookup);
+                    append(", '").append(mi[1]).append("', ");
+                    String methodType = accessClass("java_lang_invoke_MethodType") + "(false).fromMethodDescriptorString__Ljava_lang_invoke_MethodType_2Ljava_lang_String_2Ljava_lang_ClassLoader_2(";
+                    append(methodType).append("'").append(type).append("', null)");
+//                    if (numArguments > 0) {
+//                        append(vars[0]);
+//                        for (int j = 1; j < numArguments; ++j) {
+//                            append(", ");
+//                            append(vars[j]);
+//                        }
+//                    }
+                    append(");");
+                    emit(smapper, this, "throw 'Invoke dynamic: ' + @1 + ': ' + metHan;", "" + indx);
+                    i += 4;
+                    break;
+                }
                 case opc_new: {
                     int indx = readUShortArg(byteCodes, i);
                     String ci = jc.getClassName(indx);
@@ -1557,7 +1613,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                         sb.append(ch);
                     } else {
                         sb.append("_0");
-                        String hex = Integer.toHexString(ch).toLowerCase(Locale.ENGLISH);
+                        String hex = Integer.toHexString(ch).toLowerCase();
                         for (int m = hex.length(); m < 4; m++) {
                             sb.append("0");
                         }
@@ -2309,5 +2365,10 @@ abstract class ByteCodeToJavaScript implements Appendable {
             final int cc = readUByte(byteCodes, j);
             append(Integer.toString(cc));
         }
+    }
+    
+    @JavaScriptBody(args = "msg", body = "")
+    private static void println(String msg) {
+        System.err.println(msg);
     }
 }
