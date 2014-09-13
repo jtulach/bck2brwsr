@@ -25,8 +25,10 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -65,23 +67,26 @@ public final class Bck2BrwsrJars {
      */
     public static Bck2Brwsr configureFrom(Bck2Brwsr c, File jar) throws IOException {
         final JarFile jf = new JarFile(jar);
-        List<String> classes = new ArrayList<>();
+        final List<String> classes = new ArrayList<>();
         List<String> resources = new ArrayList<>();
         Set<String> exported = new HashSet<>();
-
-        listJAR(jf, classes, resources, exported);
-        
-        String cp = jf.getManifest().getMainAttributes().getValue("Class-Path"); // NOI18N
-        String[] classpath = cp == null ? new String[0] : cp.split(" ");
-
         class JarRes extends EmulationResources implements Bck2Brwsr.Resources {
-
+            JarRes() {
+                super(classes);
+            }
             @Override
             public InputStream get(String resource) throws IOException {
                 InputStream is = jf.getInputStream(new ZipEntry(resource));
                 return is == null ? super.get(resource) : is;
             }
         }
+        JarRes jarRes = new JarRes();
+
+        listJAR(jf, jarRes, resources, exported);
+        
+        String cp = jf.getManifest().getMainAttributes().getValue("Class-Path"); // NOI18N
+        String[] classpath = cp == null ? new String[0] : cp.split(" ");
+
         if (c == null) {
             c = Bck2Brwsr.newCompiler();
         }
@@ -91,11 +96,11 @@ public final class Bck2BrwsrJars {
             .addClasses(classes.toArray(new String[classes.size()]))
             .addExported(exported.toArray(new String[exported.size()]))
             .addResources(resources.toArray(new String[resources.size()]))
-            .resources(new JarRes());
+            .resources(jarRes);
     }
     
     private static void listJAR(
-        JarFile j, List<String> classes,
+        JarFile j, EmulationResources classes,
         List<String> resources, Set<String> keep
     ) throws IOException {
         Enumeration<JarEntry> en = j.entries();
@@ -114,7 +119,7 @@ public final class Bck2BrwsrJars {
                 keep.add(pkg);
             }
             if (n.endsWith(".class")) {
-                classes.add(n.substring(0, n.length() - 6));
+                classes.addClassResource(n);
             } else {
                 resources.add(n);
                 if (n.startsWith("META-INF/services/") && keep != null) {
@@ -142,8 +147,51 @@ public final class Bck2BrwsrJars {
             }
         }
     }
+    
+    static byte[] readFrom(InputStream is) throws IOException {
+        int expLen = is.available();
+        if (expLen < 1) {
+            expLen = 1;
+        }
+        byte[] arr = new byte[expLen];
+        int pos = 0;
+        for (;;) {
+            int read = is.read(arr, pos, arr.length - pos);
+            if (read == -1) {
+                break;
+            }
+            pos += read;
+            if (pos == arr.length) {
+                byte[] tmp = new byte[arr.length * 2];
+                System.arraycopy(arr, 0, tmp, 0, arr.length);
+                arr = tmp;
+            }
+        }
+        if (pos != arr.length) {
+            byte[] tmp = new byte[pos];
+            System.arraycopy(arr, 0, tmp, 0, pos);
+            arr = tmp;
+        }
+        return arr;
+    }
+    
 
     static class EmulationResources implements Bck2Brwsr.Resources {
+        private final List<String> classes;
+        private final Map<String,byte[]> converted = new HashMap<>();
+        private final BytecodeProcessor proc;
+
+        protected EmulationResources(List<String> classes) {
+            this.classes = classes;
+            BytecodeProcessor p;
+            try {
+                Class<?> bpClass = Class.forName("org.apidesign.bck2brwsr.aot.RetroLambda");
+                p = (BytecodeProcessor) bpClass.newInstance();
+            } catch (Throwable t) {
+                p = null;
+            }
+            this.proc = p;
+        }
 
         @Override
         public InputStream get(String name) throws IOException {
@@ -162,6 +210,23 @@ public final class Bck2BrwsrJars {
             }
             return u.openStream();
         }
+
+        private void addClassResource(String n) throws IOException {
+            if (proc != null) {
+                try (InputStream is = this.get(n)) {
+                    Map<String, byte[]> conv = proc.process(n, readFrom(is), this);
+                    if (conv != null) {
+                        if (!conv.containsKey(n)) {
+                            throw new IOException("Cannot find " + n + " among " + conv);
+                        }
+                        converted.putAll(conv);
+                        return;
+                    }
+                }
+            }
+            classes.add(n.substring(0, n.length() - 6));
+        }
     }
+    
     
 }
