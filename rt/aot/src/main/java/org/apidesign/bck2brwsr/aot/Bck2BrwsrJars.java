@@ -19,6 +19,7 @@ package org.apidesign.bck2brwsr.aot;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -45,7 +46,7 @@ import org.apidesign.vm4brwsr.Bck2Brwsr;
  */
 public final class Bck2BrwsrJars {
     private static final Logger LOG = Logger.getLogger(Bck2BrwsrJars.class.getName());
-    
+
     private Bck2BrwsrJars() {
     }
     
@@ -66,6 +67,9 @@ public final class Bck2BrwsrJars {
      * @throws IOException if something goes wrong
      */
     public static Bck2Brwsr configureFrom(Bck2Brwsr c, File jar) throws IOException {
+        if (jar.isDirectory()) {
+            return configureDir(c, jar);
+        }
         final JarFile jf = new JarFile(jar);
         final List<String> classes = new ArrayList<>();
         List<String> resources = new ArrayList<>();
@@ -228,5 +232,55 @@ public final class Bck2BrwsrJars {
         }
     }
     
+    private static Bck2Brwsr configureDir(Bck2Brwsr c, final File dir) throws IOException {
+        List<String> arr = new ArrayList<>();
+        List<String> classes = new ArrayList<>();
+        class DirRes extends EmulationResources {
+            public DirRes(List<String> classes) {
+                super(classes);
+            }
+
+            @Override
+            public InputStream get(String name) throws IOException {
+                InputStream is = super.get(name);
+                if (is != null) {
+                    return is;
+                }
+                File r = new File(dir, name.replace('/', File.separatorChar));
+                if (r.exists()) {
+                    return new FileInputStream(r);
+                }
+                return null;
+            }
+        }
+        DirRes dirRes = new DirRes(classes);
+        listDir(dir, null, dirRes, arr);
+        if (c == null) {
+            c = Bck2Brwsr.newCompiler();
+        }
+        return c
+        .addRootClasses(classes.toArray(new String[0]))
+        .addResources(arr.toArray(new String[0]))
+        .library()
+        //.obfuscation(ObfuscationLevel.FULL)
+        .resources(dirRes);
+    }
+
+    private static void listDir(
+        File f, String pref, EmulationResources res, List<String> resources
+    ) throws IOException {
+        File[] arr = f.listFiles();
+        if (arr == null) {
+            if (f.getName().endsWith(".class")) {
+                res.addClassResource(pref + f.getName());
+            } else {
+                resources.add(pref + f.getName());
+            }
+        } else {
+            for (File ch : arr) {
+                listDir(ch, pref == null ? "" : pref + f.getName() + "/", res, resources);
+            }
+        }
+    }
     
 }

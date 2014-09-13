@@ -77,26 +77,9 @@ class CompileCP {
         }
         if (s != null) {
             File root = new File(s);
-            List<String> arr = new ArrayList<>();
-            List<String> classes = new ArrayList<>();
-            listDir(root, null, classes, arr);
             StringWriter w = new StringWriter();
             try {
-                Bck2Brwsr.newCompiler()
-                    .addRootClasses(classes.toArray(new String[0]))
-                    .addResources(arr.toArray(new String[0]))
-                    .library()
-                    //.obfuscation(ObfuscationLevel.FULL)
-                    .resources(new EmulationResources() {
-                        @Override
-                        public InputStream get(String resource) throws IOException {
-                            if (r != null) {
-                                final URL url = r.get(resource, 0);
-                                return url == null ? null : url.openStream();
-                            }
-                            return super.get(resource);
-                        }
-                    })
+                Bck2BrwsrJars.configureFrom(null, root)
                     .generate(w);
                 w.flush();
                 return w.toString();
@@ -109,23 +92,6 @@ class CompileCP {
         return null;
     }
     
-
-    private static void listDir(File f, String pref, List<String> classes, List<String> resources) throws IOException {
-        File[] arr = f.listFiles();
-        if (arr == null) {
-            if (f.getName().endsWith(".class")) {
-                classes.add(pref + f.getName().substring(0, f.getName().length() - 6));
-            } else {
-                resources.add(pref + f.getName());
-            }
-        } else {
-            for (File ch : arr) {
-                
-                listDir(ch, pref == null ? "" : pref + f.getName() + "/", classes, resources);
-            }
-        }
-    }
-
     static void compileVM(StringBuilder sb, final Res r) throws IOException {
         final Bck2Brwsr rt;
         try {
@@ -155,26 +121,4 @@ class CompileCP {
                 }
             }).generate(sb);
     }
-
-    static class EmulationResources implements Bck2Brwsr.Resources {
-
-        @Override
-        public InputStream get(String name) throws IOException {
-            Enumeration<URL> en = Bck2BrwsrJars.class.getClassLoader().getResources(name);
-            URL u = null;
-            while (en.hasMoreElements()) {
-                u = en.nextElement();
-            }
-            if (u == null) {
-                LOG.log(Level.WARNING, "Cannot find {0}", name);
-                return null;
-            }
-            if (u.toExternalForm().contains("/rt.jar!")) {
-                LOG.log(Level.WARNING, "{0}No bootdelegation for ", name);
-                return null;
-            }
-            return u.openStream();
-        }
-    }
-    
 }
