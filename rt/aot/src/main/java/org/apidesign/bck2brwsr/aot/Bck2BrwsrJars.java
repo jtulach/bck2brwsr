@@ -18,6 +18,7 @@
 package org.apidesign.bck2brwsr.aot;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -199,6 +200,11 @@ public final class Bck2BrwsrJars {
 
         @Override
         public InputStream get(String name) throws IOException {
+            byte[] arr = converted.get(name);
+            if (arr != null) {
+                return new ByteArrayInputStream(arr);
+            }
+            
             Enumeration<URL> en = Bck2BrwsrJars.class.getClassLoader().getResources(name);
             URL u = null;
             while (en.hasMoreElements()) {
@@ -227,7 +233,7 @@ public final class Bck2BrwsrJars {
                             if (res.equals(n)) {
                                 found = true;
                             }
-                            assert res.endsWith(".class");
+                            assert res.endsWith(".class") : "Wrong resource: " + res;
                             converted.put(res, bytes);
                             classes.add(res.substring(0, res.length() - 6));
                         }

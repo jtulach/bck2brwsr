@@ -47,9 +47,8 @@ final class RetroLambda extends LambdaClassSaver implements BytecodeProcessor {
     public void saveIfLambda(String className, byte[] bytecode) {
         if (LambdaReifier.isLambdaClassToReify(className)) {
             try {
-                System.out.println("Saving lambda class: " + className);
                 byte[] backportedBytecode = LambdaClassBackporter.transform(bytecode, Opcodes.V1_7);
-                putBytecode(className, backportedBytecode);
+                putBytecode(className + ".class", backportedBytecode);
             } catch (Throwable t) {
                 // print to stdout to keep in sync with other log output
                 throw new IllegalStateException("ERROR: Failed to backport lambda class: " + className);
@@ -58,6 +57,7 @@ final class RetroLambda extends LambdaClassSaver implements BytecodeProcessor {
     }
 
     private void putBytecode(String className, byte[] backportedBytecode) {
+        assert className.endsWith(".class") : "Full resource: " + className;
         if (converted == null) {
             converted = new HashMap<>();
         }
@@ -84,6 +84,8 @@ final class RetroLambda extends LambdaClassSaver implements BytecodeProcessor {
             if (!Arrays.equals(newB, byteCode)) {
                 putBytecode(className, newB);
             }
+        } catch (Throwable t) {
+            t.printStackTrace();
         } finally {
             Thread.currentThread().setContextClassLoader(prev);
         }
@@ -105,6 +107,9 @@ final class RetroLambda extends LambdaClassSaver implements BytecodeProcessor {
             Class<?> c = findLoadedClass(name);
             if (c != null) {
                 return c;
+            }
+            if (name.startsWith("java.")) {
+                return super.loadClass(name);
             }
             String r = name.replace('.', '/') + ".class";
             try (InputStream is = res.get(r)) {
