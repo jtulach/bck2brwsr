@@ -220,10 +220,20 @@ public final class Bck2BrwsrJars {
                 try (InputStream is = this.get(n)) {
                     Map<String, byte[]> conv = proc.process(n, readFrom(is), this);
                     if (conv != null) {
-                        if (!conv.containsKey(n)) {
+                        boolean found = false;
+                        for (Map.Entry<String, byte[]> entrySet : conv.entrySet()) {
+                            String res = entrySet.getKey();
+                            byte[] bytes = entrySet.getValue();
+                            if (res.equals(n)) {
+                                found = true;
+                            }
+                            assert res.endsWith(".class");
+                            converted.put(res, bytes);
+                            classes.add(res.substring(0, res.length() - 6));
+                        }
+                        if (!found) {
                             throw new IOException("Cannot find " + n + " among " + conv);
                         }
-                        converted.putAll(conv);
                         return;
                     }
                 }
