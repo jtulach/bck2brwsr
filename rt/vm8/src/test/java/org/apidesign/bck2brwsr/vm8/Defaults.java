@@ -26,7 +26,7 @@ public interface Defaults {
         return 42;
     }
     
-    public static Defaults create(boolean overriden) {
+    public static Defaults create(int type) {
         class X implements Defaults {
         }
         class Y implements Defaults {
@@ -35,14 +35,31 @@ public interface Defaults {
                 return 7;
             }
         }
-        return overriden ? new Y() : new X();
+        class Z implements DoubleDefaults {
+        }
+        switch (type) {
+            case 0: return new X();
+            case 1: return new Y();
+            default: return new Z();
+        }
     }
     
     public static int defaultValue() {
-        return create(false).value();
+        return create(0).value();
     }
     
     public static int myValue() {
-        return create(true).value();
+        return create(1).value();
+    }
+
+    public static int sndValue() {
+        return create(2).value();
+    }
+    
+    public interface DoubleDefaults extends Defaults {
+        @Override
+        public default int value() {
+            return 84;
+        }
     }
 }

@@ -19,10 +19,7 @@ package org.apidesign.bck2brwsr.vm8;
 
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Factory;
-import org.testng.annotations.Test;
 
 public class DefaultsTest {
     @Compare public int callStatic() throws Exception {
@@ -31,6 +28,10 @@ public class DefaultsTest {
 
     @Compare public int overridenValue() throws Exception {
         return Defaults.myValue();
+    }
+    
+    @Compare public int doubleDefault() throws Exception {
+        return Defaults.sndValue();
     }
 
     @Factory public static Object[] create() {
