@@ -17,36 +17,21 @@
  */
 package org.apidesign.bck2brwsr.vm8;
 
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.Test;
+import org.apidesign.bck2brwsr.vmtest.Compare;
+import org.apidesign.bck2brwsr.vmtest.VMTest;
+import org.testng.annotations.Factory;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class LambdasTest {
-    private static TestVM code;
-    
-    @Test public void verifyJSTime() throws Exception {
-        String exp = Lambdas.compound();
-        
-        Object js = code.execCode("Get js time", 
-            Lambdas.class, "compound__Ljava_lang_String_2",
-            exp
-        );
+    @Compare public String StringverifyJSTime() throws Exception {
+        return Lambdas.compound();
     }
     
-    
-    @BeforeClass 
-    public static void compileTheCode() throws Exception {
-        code = TestVM.compileClass(
-            "org/apidesign/bck2brwsr/vm8/Lambdas");
+    @Factory public static Object[] create() {
+        return VMTest.create(LambdasTest.class);
     }
-    @AfterClass
-    public static void releaseTheCode() {
-        code = null;
-    }
-    
 }
 

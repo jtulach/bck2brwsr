@@ -17,40 +17,24 @@
  */
 package org.apidesign.bck2brwsr.vm8;
 
+import org.apidesign.bck2brwsr.vmtest.Compare;
+import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 
 public class DefaultsTest {
-    private static TestVM code;
-    
-    @Test public void callStatic() throws Exception {
-        Object js = code.execCode("Value from static method",
-            Defaults.class, "staticValue__I", 42
-        );
+    @Compare public int callStatic() throws Exception {
+        return Defaults.defaultValue();
     }
 
-    @Test public void defaultValue() throws Exception {
-        Object js = code.execCode("Value from interface",
-            Defaults.class, "defaultValue__I", 42
-        );
+    @Compare public int overridenValue() throws Exception {
+        return Defaults.myValue();
     }
 
-    @Test public void overridenValue() throws Exception {
-        Object js = code.execCode("Value from class",
-            Defaults.class, "myValue__I", 7
-        );
-    }
-
-    @BeforeClass
-    public static void compileTheCode() throws Exception {
-        code = TestVM.compileClass(
-                "org/apidesign/bck2brwsr/vm8/Defaults");
-    }
-
-    @AfterClass
-    public static void releaseTheCode() {
-        code = null;
+    @Factory public static Object[] create() {
+        return VMTest.create(DefaultsTest.class);
     }
     
 }
