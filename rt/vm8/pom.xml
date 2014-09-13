@@ -21,6 +21,15 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemProperties>
+                        <vmtest.js>brwsr</vmtest.js>
+                    </systemProperties>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>net.orfjackal.retrolambda</groupId>
                 <artifactId>retrolambda-maven-plugin</artifactId>
                 <version>1.5.0</version>
