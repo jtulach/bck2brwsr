@@ -70,7 +70,6 @@ final class RetroLambda extends LambdaClassSaver implements BytecodeProcessor {
     ) throws IOException {
         int minor = byteCode[4] << 8 | byteCode[5];
         int major = byteCode[6] << 8 | byteCode[7];
-        System.err.println("processing: " + className + " major: "+ major + " minor: " + minor);
         if (major <= 51) {
             return null;
         }
