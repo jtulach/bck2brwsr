@@ -130,7 +130,6 @@ public class AheadOfTime extends AbstractMojo {
                 FileWriter w = new FileWriter(mainJavaScript);
                 c.
                         obfuscation(obfuscation).
-                        resources(loader).
                         generate(w);
                 w.close();
             }
