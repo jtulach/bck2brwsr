@@ -81,7 +81,11 @@ public final class Bck2BrwsrJars {
             }
             @Override
             public InputStream get(String resource) throws IOException {
-                InputStream is = jf.getInputStream(new ZipEntry(resource));
+                InputStream is = getConverted(resource);
+                if (is != null) {
+                    return is;
+                }
+                is = jf.getInputStream(new ZipEntry(resource));
                 return is == null ? super.get(resource) : is;
             }
         }
@@ -198,13 +202,20 @@ public final class Bck2BrwsrJars {
             this.proc = p;
         }
 
-        @Override
-        public InputStream get(String name) throws IOException {
+        protected final InputStream getConverted(String name) throws IOException {
             byte[] arr = converted.get(name);
             if (arr != null) {
                 return new ByteArrayInputStream(arr);
             }
-            
+            return null;
+        }
+        
+        @Override
+        public InputStream get(String name) throws IOException {
+            InputStream is = getConverted(name);
+            if (is != null) {
+                return is;
+            }
             Enumeration<URL> en = Bck2BrwsrJars.class.getClassLoader().getResources(name);
             URL u = null;
             while (en.hasMoreElements()) {

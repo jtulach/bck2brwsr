@@ -1076,11 +1076,15 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     char[] returnType = {'V'};
                     StringBuilder cnt = new StringBuilder();
                     String mn = findMethodName(mi, cnt, returnType);
-                    println("  mi[0]: " + mi[0]);
-                    println("  mi[1]: " + mi[1]);
-                    println("  mi[2]: " + mi[2]);
-                    println("  mn   : " + mn);
-                    println("  name and type: " + jc.stringValue(c2.cpx2, true));
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("We don't handle invokedynamic, need to preprocess ahead-of-time:\n");
+                    sb.append("  mi[0]: ").append(mi[0]).append("\n");
+                    sb.append("  mi[1]: ").append(mi[1]).append("\n");
+                    sb.append("  mi[2]: ").append(mi[2]).append("\n");
+                    sb.append("  mn   : ").append(mn).append("\n");
+                    sb.append("  name and type: ").append(jc.stringValue(c2.cpx2, true)).append("\n");
+                    throw new IOException(sb.toString());
+                    /*
                     CPX2 nameAndType = jc.getCpoolEntry(c2.cpx2);
                     String type = jc.StringValue(nameAndType.cpx2);
                     String object = accessClass(mcn) + "(false)";
@@ -1106,6 +1110,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     emit(smapper, this, "throw 'Invoke dynamic: ' + @1 + ': ' + metHan;", "" + indx);
                     i += 4;
                     break;
+                    */
                 }
                 case opc_new: {
                     int indx = readUShortArg(byteCodes, i);
