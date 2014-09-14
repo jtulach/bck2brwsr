@@ -149,6 +149,8 @@ abstract class VM extends ByteCodeToJavaScript {
 
     protected abstract boolean isExternalClass(String className);
 
+    protected abstract void lazyReference(Appendable out, String n) throws IOException;
+    
     @Override
     protected final void declaredClass(ClassData classData, String mangledName)
             throws IOException {
@@ -681,6 +683,19 @@ abstract class VM extends ByteCodeToJavaScript {
         protected boolean isExternalClass(String className) {
             return false;
         }
+        
+        @Override
+        protected void lazyReference(Appendable out, String n) throws IOException {
+            String cls = n.replace('/', '_');
+            String dot = n.replace('/', '.');
+
+            out.append("\nvm.").append(cls).append(" = function() {");
+            out.append("\n  var instance = arguments.length == 0 || arguments[0] === true;");
+            out.append("\n  delete vm.").append(cls).append(";");
+            out.append("\n  var c = vm.loadClass('").append(dot).append("');");
+            out.append("\n  return vm.").append(cls).append("(instance);");
+            out.append("\n}");
+        }
     }
 
     private static final class Extension extends VM {
@@ -761,17 +776,16 @@ abstract class VM extends ByteCodeToJavaScript {
         protected boolean isExternalClass(String className) {
             return !extensionClasses.contains(className);
         }
-    }
-    
-    private static void lazyReference(Appendable out, String n) throws IOException {
-        String cls = n.replace('/', '_');
-        String dot = n.replace('/', '.');
         
-        out.append("\nvm.").append(cls).append(" = function() {");
-        out.append("\n  var instance = arguments.length == 0 || arguments[0] === true;");
-        out.append("\n  delete vm.").append(cls).append(";");
-        out.append("\n  var c = vm.loadClass('").append(dot).append("');");
-        out.append("\n  return vm.").append(cls).append("(instance);");
-        out.append("\n}");
+        @Override
+        protected void lazyReference(Appendable out, String n) throws IOException {
+            String cls = n.replace('/', '_');
+
+            out.append("\nvm.").append(cls).append(" = function() {");
+            out.append("\n  var instance = arguments.length == 0 || arguments[0] === true;");
+            out.append("\n  delete vm.").append(cls).append(";");
+            out.append("\n  return link('").append(n).append("')(instance);");
+            out.append("\n}");
+        }
     }
 }
