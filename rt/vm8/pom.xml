@@ -18,6 +18,9 @@
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
+                    <compilerArguments>
+                        <bootclasspath>netbeans.ignore.jdk.bootclasspath</bootclasspath>
+                    </compilerArguments>
                 </configuration>
             </plugin>
             <plugin>
