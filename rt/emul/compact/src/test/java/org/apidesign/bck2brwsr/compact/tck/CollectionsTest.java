@@ -101,6 +101,18 @@ public class CollectionsTest {
         return arr.toString();
     }
     
+    @Compare public String jirkaToArray() {
+        List<String> appfiles = new ArrayList<>();
+        appfiles.add("onefile");
+        appfiles.add("2ndfile");
+        appfiles.add("3rdfile");
+        String[] ret = appfiles.toArray(new String[appfiles.size()]);
+        return 
+            ret.getClass().getName() + ":" +
+            ret.length + ":" +
+            Arrays.toString(ret);
+    }
+    
     @Factory
     public static Object[] create() {
         return VMTest.create(CollectionsTest.class);
