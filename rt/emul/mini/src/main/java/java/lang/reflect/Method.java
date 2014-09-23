@@ -744,4 +744,31 @@ public final
             }
         };
     }
+    
+    //
+    // helper methods for Array
+    //
+    
+    @JavaScriptBody(args = { "primitive", "sig", "fn", "length" }, body =
+          "var arr = new Array(length);\n"
+        + "var value = primitive ? 0 : null;\n"
+        + "for(var i = 0; i < length; i++) arr[i] = value;\n"
+        + "Object.defineProperty(arr, 'jvmName', { 'configurable': true, 'writable': true, 'value': sig });\n"
+        + "Object.defineProperty(arr, 'fnc', { 'configurable': true, 'writable': true, 'value' : fn });\n"
+//        + "java.lang.System.out.println('Assigned ' + arr.jvmName + ' fn: ' + (!!arr.fnc));\n"
+        + "return arr;"
+    )
+    static native Object newArray(boolean primitive, String sig, Object fn, int length);
+    
+    @JavaScriptBody(args = { "arr" }, body = "return arr.length;")
+    static native int arrayLength(Object arr);
+    
+    @JavaScriptBody(args = { "cntstr" }, body = "return cntstr(false).constructor.$class;")
+    static native Class<?> classFromFn(Object cntstr);
+    @JavaScriptBody(args = { "array", "index" }, body = "return array[index];")
+    static native Object atArray(Object array, int index);
+
+    @JavaScriptBody(args = { "array", "index", "v" }, body = "array[index] = v;")
+    static native Object setArray(Object array, int index, Object v);
+    
 }

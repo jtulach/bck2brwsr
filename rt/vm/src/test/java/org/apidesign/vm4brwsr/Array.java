@@ -207,4 +207,16 @@ public class Array {
     public static int multiLen() {
         return new int[1][0].length;
     }
+    
+    @JavaScriptBody(args = { "arr" }, body = 
+        "var cnt = '';\n" +
+        "if (arr === null) arr = [];\n" +
+        "for (var i in arr) { cnt += i; }\n" +
+        "return cnt;\n"
+    )
+    private static native String iterateArray(Object[] arr);
+    
+    public static String iterateArray(boolean javaArray) {
+        return iterateArray(javaArray ? new String[0] : null);
+    }
 }

@@ -71,6 +71,18 @@ public class ArrayTest {
             Double.valueOf(0)
         );
     }
+
+    @Test public void iterateEmptyArray() throws Exception {
+        assertExec("No elements in empty array", Array.class, "iterateArray__Ljava_lang_String_2Z", 
+            "", false
+        );
+    }
+
+    @Test public void iterateEmptyJavaArray() throws Exception {
+        assertExec("No elements in empty array", Array.class, "iterateArray__Ljava_lang_String_2Z", 
+            "", true
+        );
+    }
     
     @Test public void doesCopyArrayWork() throws Exception {
         assertExec("Returns 'a'", Array.class, "copyArray__C", Double.valueOf('a'));

@@ -26,7 +26,6 @@
 package java.lang.reflect;
 
 import org.apidesign.bck2brwsr.core.Exported;
-import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.core.JavaScriptPrototype;
 
 /**
@@ -135,12 +134,9 @@ class Array {
         if (!array.getClass().isArray()) {
             throw new IllegalArgumentException("Argument is not an array");
         }
-        return length(array);
+        return Method.arrayLength(array);
     }
     
-    @JavaScriptBody(args = { "arr" }, body = "return arr.length;")
-    private static native int length(Object arr);
-
     /**
      * Returns the value of the indexed component in the specified
      * array object.  The value is automatically wrapped in an object
@@ -600,17 +596,10 @@ class Array {
      * Private
      */
 
-    @JavaScriptBody(args = { "primitive", "sig", "fn", "length" }, body =
-          "var arr = new Array(length);\n"
-        + "var value = primitive ? 0 : null;\n"
-        + "for(var i = 0; i < length; i++) arr[i] = value;\n"
-        + "arr.jvmName = sig;\n"
-        + "arr.fnc = fn;\n"
-//        + "java.lang.System.out.println('Assigned ' + arr.jvmName + ' fn: ' + (!!arr.fnc));\n"
-        + "return arr;"
-    )
     @Exported
-    private static native Object newArray(boolean primitive, String sig, Object fn, int length);
+    private static Object newArray(boolean primitive, String sig, Object fn, int length) {
+        return Method.newArray(primitive, sig, fn, length);
+    }
 
     @Exported
     private static boolean isInstance(Object arr, String sig)  {
@@ -635,14 +624,11 @@ class Array {
                 return false;
             }
         }
-        Class<?> t = classFromFn(fn);
+        Class<?> t = Method.classFromFn(fn);
 //        log(" to check: " + t);
         return t.isAssignableFrom(c);
     }
     
-    @JavaScriptBody(args = { "cntstr" }, body = "return cntstr(false).constructor.$class;")
-    private static native Class<?> classFromFn(Object cntstr);
-
 //    @JavaScriptBody(args = { "m" }, body = "java.lang.System.out.println(m.toString().toString());")
 //    private static native void log(Object m);
     
@@ -660,17 +646,11 @@ class Array {
         String compsig = sig.substring(1);
         int len = getLength(arr);
         for (int i = 0; i < len; i++) {
-            setArray(arr, i, multiNewArray(compsig, dims, index + 1, fn));
+            Method.setArray(arr, i, multiNewArray(compsig, dims, index + 1, fn));
         }
         return arr;
     }
     private static Object fromPrimitive(Class<?> t, Object array, int index) {
-        return Method.fromPrimitive(t, atArray(array, index));
+        return Method.fromPrimitive(t, Method.atArray(array, index));
     }
-    
-    @JavaScriptBody(args = { "array", "index" }, body = "return array[index];")
-    private static native Object atArray(Object array, int index);
-
-    @JavaScriptBody(args = { "array", "index", "v" }, body = "array[index] = v;")
-    private static native Object setArray(Object array, int index, Object v);
 }

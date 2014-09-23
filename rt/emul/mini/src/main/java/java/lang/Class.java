@@ -1615,12 +1615,12 @@ public final
         "var c = Array[sig];\n" +
         "if (!c) {\n" +
         "  c = vm.java_lang_Class(true);\n" +
-        "  c.jvmName = sig;\n" +
-        "  c.superclass = vm.java_lang_Object(false).$class;\n" +
-        "  c.array = true;\n" +
+        "  Object.defineProperty(c, 'jvmName', { 'configurable': true, 'writable': true, 'value': sig });\n" +
+        "  Object.defineProperty(c, 'superclass', { 'configurable': true, 'writable': true, 'value' : vm.java_lang_Object(false).$class });\n" +
+        "  Object.defineProperty(c, 'array', { 'configurable': true, 'writable': true, 'value': true });\n" +
         "  Array[sig] = c;\n" +
         "}\n" +
-        "if (!c.fnc) c.fnc = fnc;\n" +
+        "if (!c.fnc) Object.defineProperty(c, 'fnc', { 'configurable': true, 'writable': true, 'value' : fnc });\n" +
         "return c;"
     )
     private static native Class<?> defineArray(String sig, Object fnc);
