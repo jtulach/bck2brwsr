@@ -189,6 +189,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
         final String className = className(jc);
         append("\n\n").append(assignClass(className));
         append("function ").append(className).append("() {");
+        append("\n  var m;");
         append("\n  var CLS = ").append(className).append(';');
         append("\n  if (!CLS.$class) {");
         if (proto == null) {
@@ -214,12 +215,12 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     }
                 }
                 append("\n  CLS.fld_").append(v.getName()).append(initField(v));
-                append("\n  c._").append(v.getName()).append(" = function (v) {")
+                append("\n  m = c._").append(v.getName()).append(" = function (v) {")
                    .append("  if (arguments.length == 1) CLS.fld_").append(v.getName())
                    .append(" = v; return CLS.fld_").
                     append(v.getName()).append("; };");
             } else {
-                append("\n  c._").append(v.getName()).append(" = function (v) {")
+                append("\n  m = c._").append(v.getName()).append(" = function (v) {")
                    .append("  if (arguments.length == 1) this.fld_").
                     append(className).append('_').append(v.getName())
                    .append(" = v; return this.fld_").
@@ -250,12 +251,12 @@ abstract class ByteCodeToJavaScript implements Appendable {
             declaredMethod(m, destObject, mn);
             byte[] runAnno = m.findAnnotationData(false);
             if (runAnno != null) {
-                append("\n    ").append(destObject).append(".").append(mn).append(".anno = {");
+                append("\n    m.anno = {");
                 generateAnno(jc, runAnno);
                 append("\n    };");
             }
-            append("\n    ").append(destObject).append(".").append(mn).append(".access = " + m.getAccess()).append(";");
-            append("\n    ").append(destObject).append(".").append(mn).append(".cls = CLS;");
+            append("\n    m.access = " + m.getAccess()).append(";");
+            append("\n    m.cls = CLS;");
         }
         append("\n    c.constructor = CLS;");
         append("\n    function ").append(className).append("fillInstOf(x) {");
@@ -384,9 +385,9 @@ abstract class ByteCodeToJavaScript implements Appendable {
         
         if (defineProp) {
             append("Object.defineProperty(").append(destObject).
-            append(", '").append(name).append("', { configurable: true, writable: true, value: function(");
+            append(", '").append(name).append("', { configurable: true, writable: true, value: m = function(");
         } else {
-            append(destObject).append(".").append(name).append(" = function(");
+            append("m = ").append(destObject).append(".").append(name).append(" = function(");
         }
         lmapper.outputArguments(this, m.isStatic());
         append(") {").append("\n");
@@ -1837,7 +1838,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
         }
         StringBuilder cnt = new StringBuilder();
         final String mn = findMethodName(m, cnt);
-        append(destObject).append(".").append(mn);
+        append("m = ").append(destObject).append(".").append(mn);
         append(" = function(");
         String space = "";
         int index = 0;

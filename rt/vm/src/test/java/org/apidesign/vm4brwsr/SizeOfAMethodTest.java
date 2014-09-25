@@ -40,7 +40,7 @@ public class SizeOfAMethodTest {
     @Test public void sumXYShouldBeSmall() {
         String s = code;
         int beg = s.indexOf("c.sum__III");
-        int end = s.indexOf("c.sum__III.access");
+        int end = s.indexOf(".access", beg);
         
         assertTrue(beg > 0, "Found sum method in " + code);
         assertTrue(beg < end, "Found end of sum method in " + code);
@@ -54,7 +54,7 @@ public class SizeOfAMethodTest {
     @Test public void betterConstructor() {
         String s = code;
         int beg = s.indexOf("c.initInflater__IIZ");
-        int end = s.indexOf("c.initInflater__IIZ.access");
+        int end = s.indexOf(".access", beg);
         
         assertTrue(beg > 0, "Found initInflater method in " + code);
         assertTrue(beg < end, "Found end of initInflater method in " + code);
@@ -67,7 +67,7 @@ public class SizeOfAMethodTest {
     @Test public void deepConstructor() {
         String s = code;
         int beg = s.indexOf("c.intHolder__I");
-        int end = s.indexOf("c.intHolder__I.access");
+        int end = s.indexOf(".access", beg);
         
         assertTrue(beg > 0, "Found intHolder method in " + code);
         assertTrue(beg < end, "Found end of intHolder method in " + code);
@@ -80,7 +80,7 @@ public class SizeOfAMethodTest {
     @Test public void emptyConstructorRequiresNoStack() {
         String s = code;
         int beg = s.indexOf("CLS.cons__V");
-        int end = s.indexOf("CLS.cons__V.access");
+        int end = s.indexOf(".access", beg);
         
         assertTrue(beg > 0, "Found constructor in " + code);
         assertTrue(beg < end, "Found end of constructor in " + code);

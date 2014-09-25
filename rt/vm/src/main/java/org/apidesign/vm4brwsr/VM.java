@@ -192,10 +192,8 @@ abstract class VM extends ByteCodeToJavaScript {
     private void exportMember(String destObject, String memberName)
             throws IOException {
         append("\n").append(destObject).append("['")
-                                           .append(memberName)
-                                           .append("'] = ")
-                        .append(destObject).append(".").append(memberName)
-           .append(";\n");
+        .append(memberName)
+        .append("'] = m;\n");
     }
 
     private void generateBody(StringArray names) throws IOException {
