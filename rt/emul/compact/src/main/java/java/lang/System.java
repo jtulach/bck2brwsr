@@ -42,6 +42,11 @@ public class System {
         return org.apidesign.bck2brwsr.emul.lang.System.currentTimeMillis();
     }
     
+    public static long nanoTime() {
+        return org.apidesign.bck2brwsr.emul.lang.System.nanoTime();
+        
+    }
+    
     public static int identityHashCode(Object obj) {
         return Class.defaultHashCode(obj);
     }
