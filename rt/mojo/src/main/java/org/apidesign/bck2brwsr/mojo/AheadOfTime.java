@@ -121,7 +121,7 @@ public class AheadOfTime extends AbstractMojo {
                 getLog().info("Skipping " + mainJavaScript + " as it already exists.");
             } else {
                 getLog().info("Generating " + mainJavaScript);
-                Bck2Brwsr c = Bck2BrwsrJars.configureFrom(null, mainJar);
+                Bck2Brwsr c = Bck2BrwsrJars.configureFrom(null, mainJar, loader);
                 if (exports != null) {
                     for (String e : exports) {
                         c = c.addExported(e.replace('.', '/'));
@@ -159,10 +159,9 @@ public class AheadOfTime extends AbstractMojo {
 
     private void aotLibrary(Artifact a, File js, URLClassLoader loader) throws IOException {
         FileWriter w = new FileWriter(js);
-        Bck2Brwsr c = Bck2BrwsrJars.configureFrom(null, a.getFile());
+        Bck2Brwsr c = Bck2BrwsrJars.configureFrom(null, a.getFile(), loader);
         c.
             obfuscation(obfuscation).
-            resources(loader).
             generate(w);
         w.close();
     }

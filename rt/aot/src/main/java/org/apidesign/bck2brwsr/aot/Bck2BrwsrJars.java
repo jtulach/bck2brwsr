@@ -68,8 +68,33 @@ public final class Bck2BrwsrJars {
      * @throws IOException if something goes wrong
      */
     public static Bck2Brwsr configureFrom(Bck2Brwsr c, File jar) throws IOException {
+        return configureFrom(c, jar, null);
+    }
+    
+    /** Creates new compiler pre-configured from the content of 
+     * provided JAR file. The compiler will compile all classes.
+     * The system understands OSGi manifest entries and will export
+     * all packages that are exported in the JAR file. The system
+     * also recognizes META-INF/services and makes sure the class names
+     * are not mangled.
+     * 
+     * @param c the compiler to {@link Bck2Brwsr#addClasses(java.lang.String...) add classes},
+     *    {@link Bck2Brwsr#addResources(java.lang.String...) add resources} and
+     *    {@link Bck2Brwsr#addExported(java.lang.String...) exported objects} to.
+     *    Can be <code>null</code> - in such case an 
+     *    {@link Bck2Brwsr#newCompiler() empty compiler} is constructed.
+     * @param jar the file to process
+     * @param classpath additional resources to make available during
+     *   compilation, but not include them in the generated JavaScript
+     * @return newly configured compiler
+     * @throws IOException if something goes wrong
+     * @since 0.11
+     */
+    public static Bck2Brwsr configureFrom(
+        Bck2Brwsr c, File jar, final ClassLoader classpath
+    ) throws IOException {
         if (jar.isDirectory()) {
-            return configureDir(c, jar);
+            return configureDir(c, jar, classpath);
         }
         final JarFile jf = new JarFile(jar);
         final List<String> classes = new ArrayList<>();
@@ -77,7 +102,7 @@ public final class Bck2BrwsrJars {
         Set<String> exported = new HashSet<>();
         class JarRes extends EmulationResources implements Bck2Brwsr.Resources {
             JarRes() {
-                super(classes);
+                super(classpath, classes);
             }
             @Override
             public InputStream get(String resource) throws IOException {
@@ -94,14 +119,14 @@ public final class Bck2BrwsrJars {
         listJAR(jf, jarRes, resources, exported);
         
         String cp = jf.getManifest().getMainAttributes().getValue("Class-Path"); // NOI18N
-        String[] classpath = cp == null ? new String[0] : cp.split(" ");
+        String[] parts = cp == null ? new String[0] : cp.split(" ");
 
         if (c == null) {
             c = Bck2Brwsr.newCompiler();
         }
         
         return c
-            .library(classpath)
+            .library(parts)
             .addClasses(classes.toArray(new String[classes.size()]))
             .addExported(exported.toArray(new String[exported.size()]))
             .addResources(resources.toArray(new String[resources.size()]))
@@ -189,9 +214,11 @@ public final class Bck2BrwsrJars {
         private final List<String> classes;
         private final Map<String,byte[]> converted = new HashMap<>();
         private final BytecodeProcessor proc;
+        private final ClassLoader cp;
 
-        protected EmulationResources(List<String> classes) {
+        protected EmulationResources(ClassLoader cp, List<String> classes) {
             this.classes = classes;
+            this.cp = cp != null ? cp : Bck2BrwsrJars.class.getClassLoader();
             BytecodeProcessor p;
             try {
                 Class<?> bpClass = Class.forName("org.apidesign.bck2brwsr.aot.RetroLambda");
@@ -216,7 +243,7 @@ public final class Bck2BrwsrJars {
             if (is != null) {
                 return is;
             }
-            Enumeration<URL> en = Bck2BrwsrJars.class.getClassLoader().getResources(name);
+            Enumeration<URL> en = cp.getResources(name);
             URL u = null;
             while (en.hasMoreElements()) {
                 u = en.nextElement();
@@ -259,12 +286,12 @@ public final class Bck2BrwsrJars {
         }
     }
     
-    private static Bck2Brwsr configureDir(Bck2Brwsr c, final File dir) throws IOException {
+    private static Bck2Brwsr configureDir(Bck2Brwsr c, final File dir, ClassLoader cp) throws IOException {
         List<String> arr = new ArrayList<>();
         List<String> classes = new ArrayList<>();
         class DirRes extends EmulationResources {
-            public DirRes(List<String> classes) {
-                super(classes);
+            public DirRes(ClassLoader cp, List<String> classes) {
+                super(cp, classes);
             }
 
             @Override
@@ -280,7 +307,7 @@ public final class Bck2BrwsrJars {
                 return null;
             }
         }
-        DirRes dirRes = new DirRes(classes);
+        DirRes dirRes = new DirRes(cp, classes);
         listDir(dir, null, dirRes, arr);
         if (c == null) {
             c = Bck2Brwsr.newCompiler();
