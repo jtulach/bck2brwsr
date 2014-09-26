@@ -170,7 +170,8 @@ public final class TestVM {
             ScriptEngineManager sem = new ScriptEngineManager();
             ScriptEngine js = sem.getEngineByExtension("js");
             eng[0] = js;
-            Bck2Brwsr.generate(sb, new EmulationResources());
+            Bck2Brwsr.newCompiler().resources(new EmulationResources())
+                .obfuscation(ObfuscationLevel.FULL).generate(sb);
         }
         Set<String> exp = new HashSet<String>();
         for (String n : names) {

@@ -48,7 +48,8 @@ public class Resources {
     }
     
     static String loadClazz() throws IOException {
-        InputStream is = Resources.class.getResourceAsStream("Bck2BrwsrToolkit.class");
+        Object o = new Resources();
+        InputStream is = o.getClass().getResourceAsStream("Bck2BrwsrToolkit.class");
         return readIS(is, false);
     }
 
