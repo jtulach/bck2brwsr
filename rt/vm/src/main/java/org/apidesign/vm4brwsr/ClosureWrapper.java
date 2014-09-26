@@ -201,6 +201,7 @@ final class ClosureWrapper extends CommandLineRunner {
         "div64",
         "mod64",
         "at",
+        "cons__V",
         "getClass__Ljava_lang_Class_2",
         "clone__Ljava_lang_Object_2"
     };
