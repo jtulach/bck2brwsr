@@ -3,12 +3,12 @@
   <parent>
     <groupId>org.apidesign.bck2brwsr</groupId>
     <artifactId>rt</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.11</version>
   </parent>
 
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>vm4brwsr</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>0.11</version>
   <packaging>jar</packaging>
 
   <name>Virtual Machine for Browser</name>
@@ -44,7 +44,7 @@
   <scm>
       <connection>scm:hg:http://source.apidesign.org/hg/bck2brwsr</connection>
       <url>http://source.apidesign.org/hg/bck2brwsr</url>
-    <tag>HEAD</tag>
+    <tag>release-0.11</tag>
   </scm>
   <build>
       <plugins>
