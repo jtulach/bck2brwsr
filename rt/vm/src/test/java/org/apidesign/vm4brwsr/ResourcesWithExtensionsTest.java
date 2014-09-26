@@ -39,6 +39,7 @@ public class ResourcesWithExtensionsTest {
 
     @Test public void checkHelloWorld() throws Exception {
         String exp = "Hello World!";
+        exp = exp + exp.hashCode();
         
         assertExec("Loading precompiled resources:",
             Resources.class, "loadHello__Ljava_lang_String_2", 

@@ -92,7 +92,9 @@ public class Resources {
             URL url = en.nextElement();
             sb.append(readIS(url.openStream(), true));
         }
-        return sb.toString().toString();
+        String s = sb.toString();
+        s = s + s.hashCode();
+        return s.toString();
     }
     public static String loadJustHello() throws IOException {
         URL url = Resources.class.getResource("/META-INF/ahoj");

@@ -421,10 +421,18 @@ abstract class VM extends ByteCodeToJavaScript {
     private String accessNonVirtualMember(String object,
                                           String mangledName,
                                           ClassData declaringClass) {
-        return ((declaringClass != null)
-                    && !isExternalClass(declaringClass.getClassName()))
-                            ? object + "." + mangledName
-                            : object + "['" + mangledName + "']";
+        if (declaringClass == null) {
+            return object + "['" + mangledName + "']";
+        }
+        final String className = declaringClass.getClassName();
+        if (
+            "java/lang/Object".equals(className) ||
+            "java/lang/reflect/Array".equals(className) ||
+            isExternalClass(className)
+        ) {
+            return object + "['" + mangledName + "']";
+        }
+        return object + "." + mangledName;
     }
 
     private final class ExportedMethodFinder
