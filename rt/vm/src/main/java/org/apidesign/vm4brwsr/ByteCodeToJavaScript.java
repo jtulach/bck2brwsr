@@ -355,10 +355,14 @@ abstract class ByteCodeToJavaScript implements Appendable {
             return jsb;
         }
         final String mn = findMethodName(m, new StringBuilder());
+        boolean defineProp = generateMethod(destObject, mn, m);
         if (mn.equals("class__V")) {
-            toInitilize.add(accessClass(className(jc)) + "(false)." + mn);
+            if (defineProp) {
+                toInitilize.add(accessClass(className(jc)) + "(false)['" + mn + "']");
+            } else {
+                toInitilize.add(accessClass(className(jc)) + "(false)." + mn);
+            }
         }
-        generateMethod(destObject, mn, m);
         return mn;
     }
 
@@ -372,7 +376,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
         return mn;
     }
 
-    private void generateMethod(String destObject, String name, MethodData m)
+    private boolean generateMethod(String destObject, String name, MethodData m)
             throws IOException {
         final StackMapIterator stackMapIterator = m.createStackMapIterator();
         TrapDataIterator trap = m.getTrapDataIterator();
@@ -402,7 +406,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
             } else {
                 append("};");
             }
-            return;
+            return defineProp;
         }
 
         final StackMapper smapper = new StackMapper();
@@ -1472,6 +1476,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
         } else {
             append("\n};");
         }
+        return defineProp;
     }
 
     private int generateIf(StackMapper mapper, byte[] byteCodes, 
