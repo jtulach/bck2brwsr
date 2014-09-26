@@ -204,5 +204,13 @@ final class ClosureWrapper extends CommandLineRunner {
         "cons__V",
         "getClass__Ljava_lang_Class_2",
         "clone__Ljava_lang_Object_2"
+            
+        //
+        // workarounding export errors in ko4j @ 1.0
+        //
+            
+        , "observable"
+        , "notify"
+        , "valueHasMutated"
     };
 }
