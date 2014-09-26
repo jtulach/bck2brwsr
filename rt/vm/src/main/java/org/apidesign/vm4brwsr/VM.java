@@ -731,15 +731,15 @@ abstract class VM extends ByteCodeToJavaScript {
             append(
                   "\n}, function(exports) {\n"
                 + "  var vm = {};\n");
-            append("  function link(n) {\n"
+            append("  function link(n, assign) {\n"
                 + "    return function() {\n"
                 + "      var cls = n['replace__Ljava_lang_String_2CC']"
                                        + "('/', '_').toString();\n"
                 + "      var dot = n['replace__Ljava_lang_String_2CC']"
                                        + "('/', '.').toString();\n"
                 + "      exports.loadClass(dot);\n"
-                + "      vm[cls] = exports[cls];\n"
-                + "      return vm[cls](arguments);\n"
+                + "      assign(exports[cls]);\n"
+                + "      return exports[cls](arguments);\n"
                 + "    };\n"
                 + "  };\n"
             );
@@ -753,11 +753,11 @@ abstract class VM extends ByteCodeToJavaScript {
         @Override
         protected String generateClass(String className) throws IOException {
             if (isExternalClass(className)) {
-                append("\n").append(assignClass(
-                                            className.replace('/', '_')))
+                final String cls = className.replace('/', '_');
+                append("\n").append(assignClass(cls))
                    .append("link('")
                    .append(className)
-                   .append("');");
+                   .append("', function(f) { ").append(assignClass(cls)).append(" f; });");
 
                 return null;
             }
@@ -782,7 +782,8 @@ abstract class VM extends ByteCodeToJavaScript {
             out.append("\nvm.").append(cls).append(" = function() {");
             out.append("\n  var instance = arguments.length == 0 || arguments[0] === true;");
             out.append("\n  delete vm.").append(cls).append(";");
-            out.append("\n  return link('").append(n).append("')(instance);");
+            out.append("\n  return link('").append(n).append("', function(f) { vm.");
+            out.append(cls).append(" = f;})(instance);");
             out.append("\n}");
         }
     }
