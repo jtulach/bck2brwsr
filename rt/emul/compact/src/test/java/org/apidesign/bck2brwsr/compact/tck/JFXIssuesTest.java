@@ -62,11 +62,17 @@ public class JFXIssuesTest {
         return l1 == l2;
     }
 
-    private static long val = 1238078409318L;
+    private static final long val = 1238078409318L;
     
     @Compare public int valueConvertedToString() {
-        return (int) val++;
+        long[] arr = { val };
+        return dumpValue(arr);
     }
+    
+    int dumpValue(long[] val) {
+        return (int) val[0]++;
+    }
+    
     
     @Compare public boolean roundOnFloat() {
         final float f = System.currentTimeMillis() / 1.1f;
