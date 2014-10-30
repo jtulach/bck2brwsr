@@ -126,7 +126,9 @@ public class ResourcesTest {
         "xhr.send();\n" +
         "var ret = []\n" +
         "for (var i = 0; i < xhr.responseText.length; i++) {\n" +
-        "  ret.push(xhr.responseText.charCodeAt(i) & 0xff);\n" +
+        "  var b = xhr.responseText.charCodeAt(i) & 0xff;\n" +
+        "  if (b > 127) b -= 256;\n" +
+        "  ret.push(b);\n" +
         "}\n" +
         "return ret;\n"
     )
