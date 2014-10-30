@@ -916,7 +916,7 @@ public abstract class ClassLoader {
             if (next == null && skip >= 0) {
                 byte[] arr = getResourceAsStream0(name, skip++);
                 if (arr != null) {
-                    next = Class.newResourceURL(name, new ByteArrayInputStream(arr));
+                    next = Class.newResourceURL(name, arr);
                 } else {
                     skip = -1;
                 }

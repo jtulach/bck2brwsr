@@ -1436,19 +1436,21 @@ public final
      * @since  JDK1.1
      */
     public java.net.URL getResource(String name) {
-        return newResourceURL(name, getResourceAsStream(name));
+        name = resolveName(name);
+        byte[] arr = ClassLoader.getResourceAsStream0(name, 0);
+        return arr == null ? null : newResourceURL(name, arr);
     }
 
-    static URL newResourceURL(String name, InputStream is) {
-        return is == null ? null : newResourceURL0(URL.class, "res:/" + name, is);
+    static URL newResourceURL(String name, byte[] arr) {
+        return newResourceURL0(URL.class, "res:/" + name, arr);
     }
     
-    @JavaScriptBody(args = { "url", "spec", "is" }, body = 
+    @JavaScriptBody(args = { "url", "spec", "arr" }, body = 
         "var u = url.cnstr(true);\n"
-      + "u.constructor.cons__VLjava_lang_String_2Ljava_io_InputStream_2.call(u, spec, is);\n"
+      + "u.constructor.cons__VLjava_lang_String_2_3B.call(u, spec, arr);\n"
       + "return u;"
     )
-    private static native URL newResourceURL0(Class<URL> url, String spec, InputStream is);
+    private static native URL newResourceURL0(Class<URL> url, String spec, byte[] arr);
 
    /**
      * Add a package name prefix if the name is not absolute Remove leading "/"

@@ -26,6 +26,7 @@
 package java.net;
 
 import java.io.ByteArrayInputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
@@ -216,7 +217,9 @@ public final class URL implements java.io.Serializable {
     private int hashCode = -1;
     
     /** input stream associated with the URL */
-    private InputStream is;
+    private byte[] arr;
+    /** blob URL, if any */
+    private URL blob;
 
     /**
      * Creates a <code>URL</code> object from the specified
@@ -427,9 +430,9 @@ public final class URL implements java.io.Serializable {
         this(null, spec);
     }
     
-    private URL(String spec, InputStream is) throws MalformedURLException {
+    private URL(String spec, byte[] arr) throws MalformedURLException {
         this(null, spec);
-        this.is = is;
+        this.arr = arr;
     }
 
     /**
@@ -984,8 +987,8 @@ public final class URL implements java.io.Serializable {
      * @see        java.net.URLConnection#getInputStream()
      */
     public final InputStream openStream() throws java.io.IOException {
-        if (is != null) {
-            return is;
+        if (arr != null) {
+            return new ByteArrayInputStream(arr);
         }
         byte[] arr = (byte[]) getContent(new Class[] { byte[].class });
         if (arr == null) {
@@ -1057,13 +1060,49 @@ public final class URL implements java.io.Serializable {
         }
         return null;
     }
+    
+    @JavaScriptBody(args = "data", body = 
+        "if (typeof Blob !== 'undefined' && typeof Uint8Array !== 'undefined' && typeof URL !== 'undefined' && typeof URL.createObjectURL != 'undefined') {\n" +
+        "  var s = new Uint8Array(data);\n" +
+        "  var b = new Blob([ s ]);\n" +
+        "  return URL.createObjectURL(b);\n" +
+        "} else {\n" +
+        "  return null;\n" +
+        "}"
+    )
+    static native String toBlobURL(byte[] data);
+    
+    @JavaScriptBody(args = "url", body = "URL.revokeObjectURL(url);")
+    static native void closeBlob(String url);
 
     static URLStreamHandler getURLStreamHandler(final String protocol) {
         URLStreamHandler universal = new URLStreamHandler() {
             @Override
             protected URLConnection openConnection(URL u) throws IOException {
-                return new URLConnection(u) {
-                    Object stream = url.is;
+                final ByteArrayInputStream is;
+                if (u.arr != null) {
+                    is = new ByteArrayInputStream(u.arr);
+                    if (u.blob != null) {
+                        u = u.blob;
+                    } else {
+                        String blob = toBlobURL(u.arr);
+                        if (blob != null) {
+                            URL blobURL = new URL(null, blob, false);
+                            blobURL.blob = blobURL;
+                            blobURL.arr = u.arr;
+                            u = blobURL;
+                        }
+                    }
+                } else {
+                    is = null;
+                }
+                
+                class ResourceConnection extends URLConnection implements Closeable {
+                    public ResourceConnection(URL url) {
+                        super(url);
+                    }
+                    
+                    Object stream = is;
                     
                     @Override
                     public void connect() throws IOException {
@@ -1086,9 +1125,15 @@ public final class URL implements java.io.Serializable {
                         }
                         return (InputStream)stream;
                     }
-                    
-                    
-                };
+
+                    @Override
+                    public void close() throws IOException {
+                        if (url.blob != null) {
+                            closeBlob(url.blob.toExternalForm());
+                        }
+                    }
+                }
+                return new ResourceConnection(u);
             }
         };
         return universal;

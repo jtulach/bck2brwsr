@@ -17,10 +17,15 @@
  */
 package org.apidesign.bck2brwsr.tck;
 
+import java.io.ByteArrayInputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.Enumeration;
+import net.java.html.js.JavaScriptBody;
+import org.apidesign.bck2brwsr.vmtest.BrwsrTest;
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
@@ -63,8 +68,78 @@ public class ResourcesTest {
         return readString(is);
     }
     
+    @Compare public String readResourceViaXMLHttpRequest() throws Exception {
+        return readResourceViaXHR("Resources.txt", null);
+    }
+    
+    @BrwsrTest public void xhrTestedInBrowser() throws Exception {
+        boolean[] run = { false };
+        readResourceViaXHR("Resources.txt", run);
+        assert run[0] : "XHR really used in browser";
+    }
+
+    @Compare public String readBinaryResourceViaXMLHttpRequest() throws Exception {
+        return readResourceViaXHR("0xfe", null);
+    }
+
+    private String readResourceViaXHR(final String res, boolean[] exec) throws IOException {
+        URL url = getClass().getResource(res);
+        URLConnection conn = url.openConnection();
+        String java = readBytes(url.openStream());
+        String java2 = readBytes(conn.getInputStream());
+        assert java.equals(java2) : "Java:\n" + java + "\nConn:\n" + java2;
+        
+        URL url2 = conn.getURL();
+        String java3 = readBytes(url.openStream());
+        assert java.equals(java3) : "Java:\n" + java + "\nConnURL:\n" + java3;
+        
+        
+        byte[] xhr = readXHR(url2.toExternalForm());
+        if (xhr != null) {
+            if (exec != null) {
+                exec[0] = true;
+            }
+            String s = readBytes(new ByteArrayInputStream(xhr));
+            assert java.equals(s) : "Java:\n" + java + "\nXHR:\n" + s;
+            
+            assert conn instanceof Closeable : "Can be closed";
+            
+            Closeable c = (Closeable) conn;
+            c.close();
+            
+            byte[] xhr2 = null;
+            try {
+                xhr2 = readXHR(url2.toExternalForm());
+            } catch (Throwable t) {
+                // OK, expecting error
+            }
+            assert xhr2 == null : "Cannot read the URL anymore";
+        }
+        return java;
+    }
+
+    @JavaScriptBody(args = { "url" }, body =
+        "if (typeof XMLHttpRequest === 'undefined') return null;\n" +
+        "var xhr = new XMLHttpRequest();\n" +
+        "xhr.overrideMimeType('text\\/plain; charset=x-user-defined');\n" +
+        "xhr.open('GET', url, false);\n" +
+        "xhr.send();\n" +
+        "var ret = []\n" +
+        "for (var i = 0; i < xhr.responseText.length; i++) {\n" +
+        "  ret.push(xhr.responseText.charCodeAt(i) & 0xff);\n" +
+        "}\n" +
+        "return ret;\n"
+    )
+    private static byte[] readXHR(String url) {
+        return null;
+    }
+    
     @Compare public String readResourceViaConnection() throws Exception {
-        InputStream is = getClass().getResource("Resources.txt").openConnection().getInputStream();
+        final URL url = getClass().getResource("Resources.txt");
+        String str = url.toExternalForm();
+        int idx = str.indexOf("org/apidesign/bck2brwsr/tck");
+        assert idx >= 0 : "Package name found in the URL name: " + str;
+        InputStream is = url.openConnection().getInputStream();
         return readString(is);
     }
 
@@ -78,6 +153,20 @@ public class ResourcesTest {
             }
             for (int i = 0; i < len; i++) {
                 sb.append((char)b[i]);
+            }
+        }
+    }
+
+    private String readBytes(InputStream is) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        byte[] b = new byte[512];
+        for (;;) { 
+            int len = is.read(b);
+            if (len == -1) {
+                return sb.toString();
+            }
+            for (int i = 0; i < len; i++) {
+                sb.append((int)b[i]).append(" ");
             }
         }
     }
