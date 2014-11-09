@@ -124,7 +124,7 @@ public class ResourcesTest {
         "xhr.overrideMimeType('text\\/plain; charset=x-user-defined');\n" +
         "xhr.open('GET', url, false);\n" +
         "xhr.send();\n" +
-        "if (xhr.status !== 200) throw 'Status: ' + xhr.status + ' ' + xhr.statusText;\n" +
+        "if (xhr.status >= 300) throw 'Status: ' + xhr.status + ' ' + xhr.statusText;\n" +
         "var ret = []\n" +
         "for (var i = 0; i < xhr.responseText.length; i++) {\n" +
         "  var b = xhr.responseText.charCodeAt(i) & 0xff;\n" +
