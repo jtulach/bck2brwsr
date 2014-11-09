@@ -235,11 +235,7 @@ abstract class VM extends ByteCodeToJavaScript {
                 while (resource.startsWith("/")) {
                     resource = resource.substring(1);
                 }
-                InputStream emul = resources.get(resource);
-                if (emul == null) {
-                    throw new IOException("Can't find " + resource);
-                }
-                readResource(emul, this);
+                requireResourceImpl(resource);
                 asBinary.remove(resource);
             }
             scripts = new StringArray();
@@ -258,6 +254,14 @@ abstract class VM extends ByteCodeToJavaScript {
                 }
             }
         }
+    }
+
+    final void requireResourceImpl(String resource) throws IOException {
+        InputStream emul = resources.get(resource);
+        if (emul == null) {
+            throw new IOException("Can't find " + resource);
+        }
+        readResource(emul, this);
     }
 
     private static void readResource(InputStream emul, Appendable out) throws IOException {
@@ -703,6 +707,11 @@ abstract class VM extends ByteCodeToJavaScript {
             out.append("\n  return vm.").append(cls).append("(instance);");
             out.append("\n}");
         }
+
+        @Override
+        protected void requireResource(String resourcePath) throws IOException {
+            requireResourceImpl(resourcePath);
+        }
     }
 
     private static final class Extension extends VM {
@@ -794,6 +803,11 @@ abstract class VM extends ByteCodeToJavaScript {
             out.append("\n  return link('").append(n).append("', function(f) { vm.");
             out.append(cls).append(" = f;})(instance);");
             out.append("\n}");
+        }
+
+        @Override
+        protected void requireResource(String resourcePath) throws IOException {
+            requireResourceImpl(resourcePath);
         }
     }
 }

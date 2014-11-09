@@ -54,7 +54,13 @@ public class ResourcesWithExtensionsTest {
     }
     @Test public void objJSIsFound() throws Exception {
         assertExec("The resources used as @JavaScriptResource aren't available",
-            Resources.class, "isResource__Z", 0.0
+            Resources.class, "isResource__ZLjava_lang_String_2", 0.0, "obj"
+        );
+    }
+
+    @Test public void thisObjJSIsFound() throws Exception {
+        assertExec("The resources used as @JavaScriptResource aren't available",
+            Resources.class, "isResource__ZLjava_lang_String_2", 0.0, "thisObj"
         );
     }
 

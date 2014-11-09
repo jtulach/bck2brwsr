@@ -70,6 +70,8 @@ abstract class ByteCodeToJavaScript implements Appendable {
      */
     protected abstract void requireScript(String resourcePath) throws IOException;
     
+    protected abstract void requireResource(String resourcePath) throws IOException;
+    
     /** Allows subclasses to redefine what field a function representing a
      * class gets assigned. By default it returns the suggested name followed
      * by <code>" = "</code>;
@@ -165,6 +167,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                 }
             }
         }
+        final String jsResource;
         {
             String[] arr = findAnnotation(arrData, jc, 
                 "net.java.html.js.JavaScriptResource", 
@@ -172,13 +175,13 @@ abstract class ByteCodeToJavaScript implements Appendable {
             );
             if (arr != null) {
                 if (arr[0].startsWith("/")) {
-                    requireScript(arr[0]);
+                    jsResource = arr[0];
                 } else {
                     int last = jc.getClassName().lastIndexOf('/');
-                    requireScript(
-                        jc.getClassName().substring(0, last + 1).replace('.', '/') + arr[0]
-                    );
+                    jsResource = jc.getClassName().substring(0, last + 1).replace('.', '/') + arr[0];
                 }
+            } else {
+                jsResource = null;
             }
         }
         String[] proto = findAnnotation(arrData, jc, 
@@ -303,6 +306,11 @@ abstract class ByteCodeToJavaScript implements Appendable {
         for (String init : toInitilize.toArray()) {
             append("\n    ").append(init).append("();");
         }
+        
+        if (jsResource != null) {
+            requireResource(jsResource);
+        }
+        
         append("\n  }");
         append("\n  if (arguments.length === 0) {");
         append("\n    if (!(this instanceof CLS)) {");

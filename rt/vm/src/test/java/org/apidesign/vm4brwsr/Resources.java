@@ -23,11 +23,13 @@ import java.net.URL;
 import java.util.Enumeration;
 import net.java.html.js.JavaScriptBody;
 import net.java.html.js.JavaScriptResource;
+import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
+@ExtraJavaScript(resource = "org/apidesign/vm4brwsr/var.js", processByteCode = true)
 @JavaScriptResource("obj.js")
 public class Resources {
     @JavaScriptBody(args = {}, body = "return obj;")
@@ -38,8 +40,8 @@ public class Resources {
     public static boolean isObj() {
         return retObj() != null;
     }
-    public static boolean isResource() {
-        return Resources.class.getResource("obj.js") != null;
+    public static boolean isResource(String name) {
+        return Resources.class.getResource(name) != null;
     }
     
     public static String loadKO() throws IOException {

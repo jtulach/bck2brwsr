@@ -43,4 +43,8 @@ class VMinVM extends ByteCodeToJavaScript {
     @Override
     protected void requireScript(String resourcePath) {
     }
+
+    @Override
+    protected void requireResource(String resourcePath) throws IOException {
+    }
 }

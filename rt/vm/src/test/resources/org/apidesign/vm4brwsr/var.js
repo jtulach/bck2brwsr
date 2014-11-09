@@ -15,6 +15,6 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-this.thisObj = {};
+var obj = {};
 
 

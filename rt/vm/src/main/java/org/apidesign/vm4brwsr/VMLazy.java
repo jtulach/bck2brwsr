@@ -146,5 +146,10 @@ final class VMLazy {
         String accessClass(String classOperation) {
             return "vm." + classOperation;
         }
+
+        @Override
+        protected void requireResource(String resourcePath) throws IOException {
+            requireReference(resourcePath);
+        }
     }
 }
