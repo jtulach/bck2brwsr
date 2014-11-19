@@ -45,6 +45,12 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>launcher.fx</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.oracle</groupId>
+          <artifactId>javafx</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.glassfish.grizzly</groupId>
@@ -63,9 +69,9 @@
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>emul.mini</artifactId>
+      <artifactId>emul</artifactId>
       <version>${project.version}</version>
-      <scope>test</scope>
+      <classifier>rt</classifier>
     </dependency>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>

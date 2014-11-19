@@ -14,6 +14,7 @@
   <modules>
     <module>mini</module>
     <module>compact</module>
+    <module>compacttest</module>
     <module>brwsrtest</module>
     <module>fake</module>
     <module>zip</module>

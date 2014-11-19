@@ -63,12 +63,6 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>vm4brwsr</artifactId>
       <version>${project.version}</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>emul.mini</artifactId>
-          <groupId>org.apidesign.bck2brwsr</groupId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
         <groupId>org.apache.maven</groupId>
@@ -84,7 +78,14 @@
     <dependency>
         <groupId>${project.groupId}</groupId>
         <artifactId>launcher.http</artifactId>
-      <version>${project.version}</version>
+        <version>${project.version}</version>
+        <scope>runtime</scope>
+        <exclusions>
+            <exclusion>
+                <groupId>org.apidesign.bck2brwsr</groupId>
+                <artifactId>emul</artifactId>
+            </exclusion>
+        </exclusions>
     </dependency>
     <dependency>
         <groupId>${project.groupId}</groupId>

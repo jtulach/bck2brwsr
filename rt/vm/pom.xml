@@ -100,7 +100,7 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>emul.mini</artifactId>
       <version>${project.version}</version>
-      <scope>compile</scope>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.google.javascript</groupId>
