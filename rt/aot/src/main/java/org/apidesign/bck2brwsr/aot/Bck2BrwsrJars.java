@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -171,8 +172,15 @@ public final class Bck2BrwsrJars {
                 }
             }
         }
-        String exp = j.getManifest().getMainAttributes().getValue("Export-Package");
-        if (exp != null && keep != null) {
+        if (keep != null) {
+            final Attributes mainAttr = j.getManifest().getMainAttributes();
+            exportPublicPackages(mainAttr, keep);
+        }
+    }
+
+    static void exportPublicPackages(final Attributes mainAttr, Set<String> keep) {
+        String exp = mainAttr.getValue("Export-Package"); // NOI18N
+        if (exp != null) {
             for (String def : exp.split(",")) {
                 for (String sep : def.split(";")) {
                     keep.add(sep.replace('.', '/') + "/");
