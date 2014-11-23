@@ -146,9 +146,10 @@ abstract class ByteCodeToJavaScript implements Appendable {
 
     protected String compile(ClassData classData) throws IOException {
         this.jc = classData;
-        this.callbacks = this.jc.getClassName().endsWith("/$JsCallbacks$");
-        if (jc.getMajor_version() < 50) {
-            throw new IOException("Can't compile " + jc.getClassName() + ". Class file version " + jc.getMajor_version() + "."
+        final String cn = this.jc.getClassName();
+        this.callbacks = cn.endsWith("/$JsCallbacks$");
+        if (jc.getMajor_version() < 50 && !cn.endsWith("/package-info")) {
+            throw new IOException("Can't compile " + cn + ". Class file version " + jc.getMajor_version() + "."
                 + jc.getMinor_version() + " - recompile with -target 1.6 (at least)."
             );
         }
@@ -177,8 +178,8 @@ abstract class ByteCodeToJavaScript implements Appendable {
                 if (arr[0].startsWith("/")) {
                     jsResource = arr[0];
                 } else {
-                    int last = jc.getClassName().lastIndexOf('/');
-                    jsResource = jc.getClassName().substring(0, last + 1).replace('.', '/') + arr[0];
+                    int last = cn.lastIndexOf('/');
+                    jsResource = cn.substring(0, last + 1).replace('.', '/') + arr[0];
                 }
             } else {
                 jsResource = null;
@@ -293,7 +294,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
         append("\n    CLS.$class = 'temp';");
         append("\n    CLS.$class = ");
         append(accessClass("java_lang_Class(true);"));
-        append("\n    CLS.$class.jvmName = '").append(jc.getClassName()).append("';");
+        append("\n    CLS.$class.jvmName = '").append(cn).append("';");
         append("\n    CLS.$class.superclass = sprcls;");
         append("\n    CLS.$class.access = ").append(jc.getAccessFlags()+";");
         append("\n    CLS.$class.cnstr = CLS;");
