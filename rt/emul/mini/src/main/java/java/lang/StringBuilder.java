@@ -401,7 +401,7 @@ public final class StringBuilder
 
     public String toString() {
         // Create a copy, don't share the array
-        return new String(value, 0, count);
+        return new String(value, 0, count).toString();
     }
 
     /**

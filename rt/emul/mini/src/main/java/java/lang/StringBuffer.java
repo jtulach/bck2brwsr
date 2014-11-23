@@ -557,7 +557,7 @@ package java.lang;
     }
 
     public synchronized String toString() {
-        return new String(value, 0, count);
+        return new String(value, 0, count).toString();
     }
 
 //    /**
