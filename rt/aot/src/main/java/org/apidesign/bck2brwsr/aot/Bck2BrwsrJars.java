@@ -187,6 +187,16 @@ public final class Bck2BrwsrJars {
                     break;
                 }
             }
+            return;
+        }
+        exp = mainAttr.getValue("OpenIDE-Module-Public-Packages");
+        if (exp != null) {
+            for (String def : exp.split(",")) {
+                def = def.trim();
+                if (def.endsWith(".*")) {
+                    keep.add(def.substring(0, def.length() - 1).replace('.', '/'));
+                }
+            }
         }
     }
     

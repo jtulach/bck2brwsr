@@ -66,8 +66,22 @@ public class ExportPublicPackagesTest {
         Set<String> keep = new TreeSet<>();
         Bck2BrwsrJars.exportPublicPackages(attr, keep);
         
-        assertEquals(keep.size(), 7, "Two: " + keep);
+        assertEquals(keep.size(), 7, "Seven: " + keep);
         assertEquals(keep.toString(), "[org/eclipse/mylyn/commons/core/, org/eclipse/mylyn/commons/core/io/, org/eclipse/mylyn/commons/core/net/, org/eclipse/mylyn/commons/core/operations/, org/eclipse/mylyn/commons/core/storage/, org/eclipse/mylyn/internal/commons/core/, org/eclipse/mylyn/internal/commons/core/operations/]");
+    }
+    
+    @Test public void lookupHeaders() throws Exception {
+        Attributes attr = new Attributes();
+        attr.putValue("OpenIDE-Module-Public-Packages",
+            "org.openide.util.*, org.openide.util.lookup.*, org.openide.util.lookup.implspi.*"
+        );
+        Set<String> keep = new TreeSet<>();
+        Bck2BrwsrJars.exportPublicPackages(attr, keep);
+        
+        assertEquals(keep.size(), 3, "Three: " + keep);
+        assertTrue(keep.contains("org/openide/util/"), "main pkg: " + keep);
+        assertTrue(keep.contains("org/openide/util/lookup/"), "util pkg: " + keep);
+        assertTrue(keep.contains("org/openide/util/lookup/implspi/"), "spiimpl pkg: " + keep);
     }
 
 }

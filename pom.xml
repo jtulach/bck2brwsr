@@ -177,6 +177,11 @@
             <version>${netbeans.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>org-netbeans-libs-javacimpl</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-spi-java-hints</artifactId>
             <version>${netbeans.version}</version>
