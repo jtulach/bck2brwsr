@@ -260,6 +260,23 @@ public class Classes {
         return obj instanceof Serializable;
     }
     
+    public static String superInterface() {
+        return dumpInterfaces(SuperSerial.class);
+    }
+
+    private static String dumpInterfaces(final Class<?> aClass) {
+        final Class<?>[] arr = aClass.getInterfaces();
+        StringBuilder sb = new StringBuilder();
+        for (Class<?> c : arr) {
+            sb.append(c.getName()).append("\n");
+        }
+        return sb.toString();
+    }
+
+    public static String superInterfaceInst() {
+        return dumpInterfaces(new SuperSerial() {}.getClass());
+    }
+    
     private static interface SuperSerial extends Serializable {
     }
 }

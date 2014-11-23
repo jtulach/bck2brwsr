@@ -246,4 +246,12 @@ public class ClassTest {
             1.0
         );
     }
+
+    @Test public void nameOfSuperInterface() throws Exception {
+        String exp = Classes.superInterface();
+        assertExec("Can get name of superinterface?", Classes.class,
+            "superInterface__Ljava_lang_String_2",
+            exp
+        );
+    }
 }

@@ -1547,6 +1547,7 @@ public final
      *
      * @return an array of interfaces implemented by this class.
      */
+    @JavaScriptBody(args = {  }, body = "return this.interfaces();")
     public native Class<?>[] getInterfaces();
     
     /**

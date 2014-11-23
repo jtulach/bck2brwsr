@@ -296,6 +296,21 @@ abstract class ByteCodeToJavaScript implements Appendable {
         append(accessClass("java_lang_Class(true);"));
         append("\n    CLS.$class.jvmName = '").append(cn).append("';");
         append("\n    CLS.$class.superclass = sprcls;");
+        append("\n    CLS.$class.interfaces = function() { return [");
+        {
+            boolean first = true;
+            for (String intrfc : jc.getSuperInterfaces()) {
+                if (!first) {
+                    append(",");
+                }
+                requireReference(intrfc);
+                String mangledIface = mangleClassName(intrfc);
+                append("\n        ");
+                append(accessClass(mangledIface)).append("(false).constructor.$class");
+                first = false;
+            }
+        }
+        append("\n    ]; };");
         append("\n    CLS.$class.access = ").append(jc.getAccessFlags()+";");
         append("\n    CLS.$class.cnstr = CLS;");
         byte[] classAnno = jc.findAnnotationData(false);
