@@ -20,6 +20,7 @@ package org.apidesign.bck2brwsr.aot.nb.test;
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
 import org.testng.annotations.Factory;
 
 /**
@@ -32,7 +33,19 @@ public class LookupGetTest {
         return Lookup.getDefault() != null;
     }
 
+    @Compare public String findImpl() {
+        Iface a = Lookup.getDefault().lookup(Iface.class);
+        return a.getClass().getName();
+    }
+
     @Factory public static Object[] create() {
         return VMTest.create(LookupGetTest.class);
+    }
+    
+    public static interface Iface {
+    }
+
+    @ServiceProvider(service = Iface.class)
+    public static final class Impl implements Iface {
     }
 }
