@@ -35,6 +35,7 @@ abstract class VM extends ByteCodeToJavaScript {
     private final ExportedSymbols exportedSymbols;
     private final StringArray invokerMethods;
     private final StringArray asBinary;
+    int exportedCount;
 
     private VM(
         Appendable out, Bck2Brwsr.Resources resources, 
@@ -160,6 +161,7 @@ abstract class VM extends ByteCodeToJavaScript {
                                                .append("'] = ")
                             .append(accessClass(mangledName))
                .append(";\n");
+            exportedCount++;
         }
     }
 
@@ -721,7 +723,7 @@ abstract class VM extends ByteCodeToJavaScript {
         private Extension(Appendable out, Bck2Brwsr.Resources resources,
             String[] extClassesArray, StringArray explicitlyExported,
             StringArray asBinary, StringArray classpath
-        ) {
+        ) throws IOException {
             super(out, resources, explicitlyExported, asBinary);
             this.extensionClasses = StringArray.asList(extClassesArray);
             this.classpath = classpath;
@@ -766,6 +768,9 @@ abstract class VM extends ByteCodeToJavaScript {
         @Override
         protected void generateEpilogue() throws IOException {
             append("});");
+            if (exportedCount == 0) {
+                throw new IOException("Creating library without any exported symbols is useless!");
+            }
         }
 
         @Override
