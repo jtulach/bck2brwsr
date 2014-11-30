@@ -31,7 +31,7 @@ public class HtmlAnnotationsTest {
     
     private void assertMulNotDefinedForTheFirstTime() {
         if (firstCheck++ == 0) {
-            Object mul = windowMul();
+            Object mul = window("mul");
             assert mul == null : "htmlannotations.js should not be processed before first call to HtmlAnnotations class";
         }
     }
@@ -70,6 +70,14 @@ public class HtmlAnnotationsTest {
         assertEquals(HtmlAnnotations.onError(instance, 42.0), 42.0);
     }
     
+    @BrwsrTest public void quotedStar() throws Exception {
+        assertMulNotDefinedForTheFirstTime();
+        HtmlAnnotations.empty();
+        Object fn = window("all");
+        String msg = invoke(fn);
+        assert "*/*".equals(msg) : "String '*/*' as expected: " + msg;
+    }
+    
     private static void assertEquals(double real, double exp) {
         if (real - exp < 0.01) {
             return;
@@ -81,8 +89,10 @@ public class HtmlAnnotationsTest {
         assert obj != null : msg;
     }
     
-    @JavaScriptBody(args = {}, body = "return window.mul ? window.mul : null;")
-    private static native Object windowMul();
+    @JavaScriptBody(args = { "n" }, body = "return window[n] ? window[n] : null;")
+    private static native Object window(String name);
+    @JavaScriptBody(args = { "fn" }, body = "return fn();")
+    private static native String invoke(Object fn);
     
     @Factory public static Object[] create() {
         return VMTest.create(HtmlAnnotationsTest.class);
