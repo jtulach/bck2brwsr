@@ -17,10 +17,13 @@
  */
 package org.apidesign.bck2brwsr.vm8;
 
+import org.apidesign.bck2brwsr.core.Exported;
+
 /**
  *
  * @author Jaroslav Tulach
  */
+@Exported
 public class Lambdas {
     private static void fewTimes(Runnable r, int cnt) {
         while (cnt-- > 0) {

@@ -17,6 +17,9 @@
  */
 package org.apidesign.bck2brwsr.vm8;
 
+import org.apidesign.bck2brwsr.core.Exported;
+
+@Exported
 public interface Defaults {
     public static int staticValue() {
         return 42;

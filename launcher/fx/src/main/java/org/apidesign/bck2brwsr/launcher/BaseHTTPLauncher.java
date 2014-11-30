@@ -750,7 +750,12 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                 response.setCharacterEncoding("UTF-8");
                 if (url.getProtocol().equals("jar")) {
                     JarURLConnection juc = (JarURLConnection) url.openConnection();
-                    String s = loader.compileJar(juc.getJarFileURL());
+                    String s = null;
+                    try {
+                        s = loader.compileJar(juc.getJarFileURL());
+                    } catch (IOException iOException) {
+                        throw new IOException("Can't compile " + url.toExternalForm(), iOException);
+                    }
                     if (s != null) {
                         Writer w = response.getWriter();
                         w.append(s);

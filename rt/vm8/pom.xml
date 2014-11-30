@@ -100,5 +100,12 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.apidesign.bck2brwsr</groupId>
+            <artifactId>core</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>

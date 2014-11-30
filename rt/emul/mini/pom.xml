@@ -20,11 +20,12 @@
       <artifactId>core</artifactId>
       <version>1.0-SNAPSHOT</version>
       <type>jar</type>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>fake</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>${project.version}</version>
       <scope>provided</scope>
       <type>jar</type>
     </dependency>
