@@ -73,6 +73,7 @@
             <artifactId>vm4brwsr</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>
