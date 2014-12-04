@@ -1008,27 +1008,33 @@ public final class URL implements java.io.Serializable {
      * @see        java.net.URLConnection#getContent()
      */
     public final Object getContent() throws java.io.IOException {
-        return loadText(toExternalForm());
+        try {
+            return loadText(toExternalForm());
+        } catch (Throwable ex) {
+            throw new IOException(ex.getMessage());
+        }
     }
     
     @JavaScriptBody(args = "url", body = ""
         + "var request = new XMLHttpRequest();\n"
         + "request.open('GET', url, false);\n"
         + "request.send();\n"
+        + "if (request.status === 0) throw 'Network error';\n"
         + "return request.responseText;\n"
     )
-    private static native String loadText(String url) throws IOException;
+    private static native String loadText(String url) throws Throwable;
 
     @JavaScriptBody(args = { "url", "arr" }, body = ""
         + "var request = new XMLHttpRequest();\n"
         + "request.open('GET', url, false);\n"
         + "request.overrideMimeType('text\\/plain; charset=x-user-defined');\n"
         + "request.send();\n"
+        + "if (request.status === 0) throw 'Network error';\n"
         + "var t = request.responseText;\n"
         + "for (var i = 0; i < t.length; i++) arr.push(t.charCodeAt(i) & 0xff);\n"
         + "return arr;\n"
     )
-    private static native Object loadBytes(String url, byte[] arr) throws IOException;
+    private static native Object loadBytes(String url, byte[] arr) throws Throwable;
 
     /**
      * Gets the contents of this URL. This method is a shorthand for:
@@ -1055,7 +1061,7 @@ public final class URL implements java.io.Serializable {
                     return loadBytes(toExternalForm(), new byte[0]);
                 }
             } catch (Throwable t) {
-                throw new IOException(t);
+                throw new IOException(t.getMessage());
             }
         }
         return null;
