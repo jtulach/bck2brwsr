@@ -41,6 +41,11 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <aotDeps>
+                        <aotDep>org.apidesign.bck2brwsr:core</aotDep>
+                    </aotDeps>
+                </configuration>
             </plugin>
         </plugins>
     </build>

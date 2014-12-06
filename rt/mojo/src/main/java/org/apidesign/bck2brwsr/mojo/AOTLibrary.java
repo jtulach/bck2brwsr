@@ -76,6 +76,9 @@ public class AOTLibrary extends AbstractMojo {
     @Parameter
     private String[] exports;
     
+    @Parameter
+    private String[] aotDeps;
+    
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         URLClassLoader loader;
@@ -102,6 +105,31 @@ public class AOTLibrary extends AbstractMojo {
                 attr.putValue("Bck2BrwsrVersion", prj.getVersion());
                 attr.putValue("Bck2BrwsrDebug", "true");
                 m.getEntries().put(debug, attr);
+            }
+            
+            if (aotDeps != null) {
+                for (Artifact a : prj.getArtifacts()) {
+                    if (!matches(aotDeps, a)) {
+                        continue;
+                    }
+                    
+                    {
+                        Attributes attr = new Attributes();
+                        attr.putValue("Bck2BrwsrArtifactId", a.getArtifactId());
+                        attr.putValue("Bck2BrwsrGroupId", a.getGroupId());
+                        attr.putValue("Bck2BrwsrVersion", a.getVersion());
+                        attr.putValue("Bck2BrwsrMinified", "true");
+                        m.getEntries().put(artifactName(a, true), attr);
+                    }
+                    {
+                        Attributes attr = new Attributes();
+                        attr.putValue("Bck2BrwsrArtifactId", prj.getArtifactId());
+                        attr.putValue("Bck2BrwsrGroupId", prj.getGroupId());
+                        attr.putValue("Bck2BrwsrVersion", prj.getVersion());
+                        attr.putValue("Bck2BrwsrDebug", "true");
+                        m.getEntries().put(artifactName(a, false), attr);
+                    }
+                        }
             }
             
             FileOutputStream fos = new FileOutputStream(this.aotJar);
@@ -132,12 +160,43 @@ public class AOTLibrary extends AbstractMojo {
                 w.flush();
                 os.closeEntry();
             }
+            
+            if (aotDeps != null) {
+                for (Artifact a : prj.getArtifacts()) {
+                    if (!matches(aotDeps, a)) {
+                        continue;
+                    }
+                    {
+                        os.putNextEntry(new JarEntry(artifactName(a, true)));
+                        Writer w = new OutputStreamWriter(os);
+                        c.
+                            obfuscation(ObfuscationLevel.NONE).
+                            generate(w);
+                        w.flush();
+                        os.closeEntry();
+                    }
+                    {
+                        os.putNextEntry(new JarEntry(artifactName(a, false)));
+
+                        Writer w = new OutputStreamWriter(os);
+                        c.
+                            obfuscation(ObfuscationLevel.FULL).
+                            generate(w);
+                        w.flush();
+                        os.closeEntry();
+                    }                    
+                }
+            }
             os.close();
             
             projectHelper.attachArtifact(prj, "jar", "bck2brwsr", aotJar);
         } catch (IOException ex) {
             throw new MojoFailureException("Cannot generate script for " + mainJar, ex);
         }
+    }
+
+    private static String artifactName(Artifact a, boolean debug) {
+        return a.getGroupId() + "-" + a.getArtifactId() + (debug ? "-debug.js" : "-min.js");
     }
 
     private static URLClassLoader buildClassLoader(File root, Collection<Artifact> deps) throws MalformedURLException {
@@ -151,5 +210,28 @@ public class AOTLibrary extends AbstractMojo {
             }
         }
         return new URLClassLoader(arr.toArray(new URL[0]), Java2JavaScript.class.getClassLoader());
+    }
+
+    private static boolean matches(String[] aotDeps, Artifact a) {
+        for (String d : aotDeps) {
+            String[] parts = d.split(":");
+            for (int i = 0; i < parts.length; i++) {
+                if ("*".equals(parts[i])) {
+                    parts[i] = null;
+                }
+            }
+            
+            if (parts[0] != null && !parts[0].equals(a.getGroupId())) {
+                continue;
+            }
+            if (parts[1] != null && !parts[1].equals(a.getArtifactId())) {
+                continue;
+            }
+            if (parts.length > 2 && parts[2] != null && !parts[2].equals(a.getClassifier())) {
+                continue;
+            }
+            return true;
+        }
+        return false;
     }
 }
