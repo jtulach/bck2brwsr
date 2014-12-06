@@ -120,16 +120,6 @@
       <groupId>org.netbeans.html</groupId>
       <artifactId>ko4j</artifactId>
       <version>${net.java.html.version}</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>json</artifactId>
-          <groupId>org.json</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>org.json-osgi</artifactId>
-          <groupId>de.twentyeleven.skysail</groupId>
-        </exclusion>
-      </exclusions>
     </dependency>
   </dependencies>
 </project>
