@@ -45,6 +45,9 @@
                     <aotDeps>
                         <aotDep>org.apidesign.bck2brwsr:core</aotDep>
                     </aotDeps>
+                    <exports>
+                        <export>org/apidesign/bck2brwsr/core/</export>
+                    </exports>
                 </configuration>
             </plugin>
         </plugins>
