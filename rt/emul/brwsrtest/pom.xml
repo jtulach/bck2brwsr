@@ -51,6 +51,7 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>emul</artifactId>
+      <classifier>rt</classifier>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
