@@ -90,7 +90,7 @@ public class AOTLibrary extends AbstractMojo {
 
         try {
             Manifest m = new Manifest();
-            {
+            if (!"false".equals(minified)) {
                 Attributes attr = new Attributes();
                 attr.putValue("Bck2BrwsrArtifactId", prj.getArtifactId());
                 attr.putValue("Bck2BrwsrGroupId", prj.getGroupId());
@@ -98,7 +98,7 @@ public class AOTLibrary extends AbstractMojo {
                 attr.putValue("Bck2BrwsrMinified", "true");
                 m.getEntries().put(minified, attr);
             }
-            {
+            if (!"false".equals(debug)) {
                 Attributes attr = new Attributes();
                 attr.putValue("Bck2BrwsrArtifactId", prj.getArtifactId());
                 attr.putValue("Bck2BrwsrGroupId", prj.getGroupId());
@@ -123,38 +123,32 @@ public class AOTLibrary extends AbstractMojo {
                     }
                     {
                         Attributes attr = new Attributes();
-                        attr.putValue("Bck2BrwsrArtifactId", prj.getArtifactId());
-                        attr.putValue("Bck2BrwsrGroupId", prj.getGroupId());
-                        attr.putValue("Bck2BrwsrVersion", prj.getVersion());
+                        attr.putValue("Bck2BrwsrArtifactId", a.getArtifactId());
+                        attr.putValue("Bck2BrwsrGroupId", a.getGroupId());
+                        attr.putValue("Bck2BrwsrVersion", a.getVersion());
                         attr.putValue("Bck2BrwsrDebug", "true");
                         m.getEntries().put(artifactName(a, false), attr);
                     }
-                        }
+                }
             }
             
             FileOutputStream fos = new FileOutputStream(this.aotJar);
             JarOutputStream os = new JarOutputStream(fos, m);
 
-            Bck2Brwsr c = Bck2BrwsrJars.configureFrom(null, mainJar, loader);
-            if (exports != null) {
-                for (String e : exports) {
-                    c = c.addExported(e.replace('.', '/'));
-                }
-            }
-            {
+            if (!"false".equals(debug)) {
                 os.putNextEntry(new JarEntry(debug));
                 Writer w = new OutputStreamWriter(os);
-                c.
+                configureMain(loader).
                     obfuscation(ObfuscationLevel.NONE).
                     generate(w);
                 w.flush();
                 os.closeEntry();
             }
-            {
+            if (!"false".equals(minified)) {
                 os.putNextEntry(new JarEntry(minified));
             
                 Writer w = new OutputStreamWriter(os);
-                c.
+                configureMain(loader).
                     obfuscation(ObfuscationLevel.FULL).
                     generate(w);
                 w.flush();
@@ -165,6 +159,13 @@ public class AOTLibrary extends AbstractMojo {
                 for (Artifact a : prj.getArtifacts()) {
                     if (!matches(aotDeps, a)) {
                         continue;
+                    }
+                    getLog().info("Generating bck2brwsr for " + a.getFile());
+                    Bck2Brwsr c = Bck2BrwsrJars.configureFrom(null, a.getFile(), loader);
+                    if (exports != null) {
+                        for (String e : exports) {
+                            c = c.addExported(e.replace('.', '/'));
+                        }
                     }
                     {
                         os.putNextEntry(new JarEntry(artifactName(a, true)));
@@ -193,6 +194,16 @@ public class AOTLibrary extends AbstractMojo {
         } catch (IOException ex) {
             throw new MojoFailureException("Cannot generate script for " + mainJar, ex);
         }
+    }
+
+    private Bck2Brwsr configureMain(URLClassLoader loader) throws IOException {
+        Bck2Brwsr c = Bck2BrwsrJars.configureFrom(null, mainJar, loader);
+        if (exports != null) {
+            for (String e : exports) {
+                c = c.addExported(e.replace('.', '/'));
+            }
+        }
+        return c;
     }
 
     private static String artifactName(Artifact a, boolean debug) {

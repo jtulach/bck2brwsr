@@ -32,7 +32,19 @@
                  <skip>false</skip>
                  <subpackages>java.util.zip</subpackages>
                </configuration>
-             </plugin>
+            </plugin>
+            <plugin>
+                <groupId>org.apidesign.bck2brwsr</groupId>
+                <artifactId>bck2brwsr-maven-plugin</artifactId>
+                <version>${project.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>library</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <dependencies>
@@ -51,7 +63,7 @@
             <groupId>org.apidesign.bck2brwsr</groupId>
             <artifactId>emul.mini</artifactId>
             <version>${project.version}</version>
-            <scope>compile</scope>
+            <scope>provided</scope>
             <type>jar</type>
         </dependency>
         <dependency>

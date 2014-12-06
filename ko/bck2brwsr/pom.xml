@@ -29,6 +29,25 @@
                   <skip>false</skip>
               </configuration>
           </plugin>
+          <plugin>
+              <groupId>org.apidesign.bck2brwsr</groupId>
+              <artifactId>bck2brwsr-maven-plugin</artifactId>
+              <version>${project.version}</version>
+              <executions>
+                  <execution>
+                      <goals>
+                          <goal>library</goal>
+                      </goals>
+                  </execution>
+              </executions>
+              <configuration>
+                  <aotDeps>
+                      <aotDep>org.netbeans.html:*</aotDep>
+                  </aotDeps>
+                  <minified>false</minified>
+                  <debug>false</debug>
+              </configuration>
+          </plugin>
       </plugins>
   </build>
   <dependencies>
@@ -119,6 +138,16 @@
     <dependency>
       <groupId>org.netbeans.html</groupId>
       <artifactId>ko4j</artifactId>
+      <version>${net.java.html.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.html</groupId>
+      <artifactId>net.java.html.geo</artifactId>
+      <version>${net.java.html.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.netbeans.html</groupId>
+      <artifactId>net.java.html.sound</artifactId>
       <version>${net.java.html.version}</version>
     </dependency>
   </dependencies>
