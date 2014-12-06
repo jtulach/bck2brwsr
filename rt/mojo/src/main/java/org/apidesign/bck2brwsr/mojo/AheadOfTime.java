@@ -25,9 +25,15 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
+import java.util.zip.ZipEntry;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -74,6 +80,9 @@ public class AheadOfTime extends AbstractMojo {
     @Parameter(defaultValue="${project.build.directory}/bck2brwsr.js")
     private File vm;
     
+    @Parameter(defaultValue = "true")
+    private boolean generateAotLibraries;
+    
     /**
      * The obfuscation level for the generated JavaScript file.
      *
@@ -109,10 +118,9 @@ public class AheadOfTime extends AbstractMojo {
                 continue;
             }
             try {
-                getLog().info("Generating " + js);
                 aotLibrary(a, js , loader);
             } catch (IOException ex) {
-                throw new MojoFailureException("Can't compile" + a.getFile(), ex);
+                throw new MojoFailureException("Can't compile " + a.getFile(), ex);
             }
         }
         
@@ -157,7 +165,39 @@ public class AheadOfTime extends AbstractMojo {
         }
     }
 
-    private void aotLibrary(Artifact a, File js, URLClassLoader loader) throws IOException {
+    private void aotLibrary(Artifact a, File js, URLClassLoader loader) throws IOException, MojoExecutionException {
+        for (Artifact b : prj.getArtifacts()) {
+            if ("bck2brwsr".equals(b.getClassifier())) { // NOI18N
+                getLog().debug("Inspecting " + b.getFile());
+                JarFile jf = new JarFile(b.getFile());
+                Manifest man = jf.getManifest();
+                for (Map.Entry<String, Attributes> entrySet : man.getEntries().entrySet()) {
+                    String entryName = entrySet.getKey();
+                    Attributes attr = entrySet.getValue();
+                    
+                    if (
+                        a.getArtifactId().equals(attr.getValue("Bck2BrwsrArtifactId")) &&
+                        a.getGroupId().equals(attr.getValue("Bck2BrwsrGroupId")) &&
+                        a.getVersion().equals(attr.getValue("Bck2BrwsrVersion")) &&
+                        (
+                            obfuscation == ObfuscationLevel.FULL && "true".equals(attr.getValue("Bck2BrwsrMinified"))
+                            ||
+                            obfuscation != ObfuscationLevel.FULL && "true".equals(attr.getValue("Bck2BrwsrDebug"))
+                        )
+                    ) {
+                        getLog().info("Extracting " + js + " from " + b.getFile());
+                        InputStream is = jf.getInputStream(new ZipEntry(entryName));
+                        Files.copy(is, js.toPath());
+                        is.close();
+                        return;
+                    }
+                }
+            }
+        }
+        if (!generateAotLibraries) {
+            throw new MojoExecutionException("Not generating " + js + " and no precompiled version found!");
+        }
+        getLog().info("Generating " + js);
         FileWriter w = new FileWriter(js);
         Bck2Brwsr c = Bck2BrwsrJars.configureFrom(null, a.getFile(), loader);
         c.
