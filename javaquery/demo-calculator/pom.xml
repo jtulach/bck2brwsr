@@ -108,8 +108,22 @@
     </dependency>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
+      <artifactId>emul</artifactId>
+      <version>${project.version}</version>
+      <classifier>bck2brwsr</classifier>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>javaquery.api</artifactId>
       <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apidesign.bck2brwsr</groupId>
+      <artifactId>javaquery.api</artifactId>
+      <version>${project.version}</version>
+      <classifier>bck2brwsr</classifier>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 </project>
