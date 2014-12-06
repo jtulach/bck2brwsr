@@ -118,12 +118,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apidesign.bck2brwsr</groupId>
-      <artifactId>core</artifactId>
-      <version>${project.version}</version>
-      <type>jar</type>
-    </dependency>
-    <dependency>
       <groupId>org.netbeans.html</groupId>
       <artifactId>net.java.html.boot</artifactId>
       <version>${net.java.html.version}</version>
