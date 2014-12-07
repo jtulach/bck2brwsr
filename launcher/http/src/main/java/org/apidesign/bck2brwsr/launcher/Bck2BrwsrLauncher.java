@@ -24,7 +24,9 @@ import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -46,13 +48,18 @@ final class Bck2BrwsrLauncher extends BaseHTTPLauncher {
     }
 
     @Override
-    String compileJar(URL jar) throws IOException {
+    Object compileJar(URL jar, URL precompiled) throws IOException {
+        if (precompiled != null) {
+            LOG.log(Level.INFO, "Found precompiled JAR version of {0} at {1}. Using.", new Object[]{jar, precompiled});
+            return precompiled.openStream();
+        }
         File f;
         try {
             f = new File(jar.toURI());
         } catch (URISyntaxException ex) {
             throw new IOException(ex);
         }
+        LOG.log(Level.INFO, "No precompiled version for {0} found. Compiling.", jar);
         return CompileCP.compileJAR(f, testClasses);
     }
 

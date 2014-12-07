@@ -32,19 +32,24 @@ import java.net.JarURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.jar.Attributes;
 import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apidesign.bck2brwsr.launcher.InvocationContext.Resource;
@@ -567,7 +572,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
 
     abstract void generateBck2BrwsrJS(StringBuilder sb, Res loader) throws IOException;
     abstract String harnessResource();
-    String compileJar(URL jar) throws IOException {
+    Object compileJar(URL jar, URL precompiled) throws IOException {
         return null;
     }
     String compileFromClassPath(URL f, Res loader) throws IOException {
@@ -587,8 +592,53 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
     final class Res {
         private final Set<URL> ignore = new HashSet<URL>();
         
-        String compileJar(URL jarURL) throws IOException {
-            String ret = BaseHTTPLauncher.this.compileJar(jarURL);
+        Object compileJar(URL jarURL) throws IOException {
+            List<String[]> libraries = new ArrayList<String[]>();
+            for (ClassLoader loader : loaders) {
+                Enumeration<URL> en = loader.getResources("META-INF/MANIFEST.MF");
+                while (en.hasMoreElements()) {
+                    URL e = en.nextElement();
+                    Manifest mf = new Manifest(e.openStream());
+                    for (Map.Entry<String, Attributes> entrySet : mf.getEntries().entrySet()) {
+                        String key = entrySet.getKey();
+                        Attributes attr = entrySet.getValue();
+                        
+                        final String a = attr.getValue("Bck2BrwsrArtifactId");
+                        final String g = attr.getValue("Bck2BrwsrGroupId");
+                        final String v = attr.getValue("Bck2BrwsrVersion");
+                        final String d = attr.getValue("Bck2BrwsrDebug");
+                        
+                        if (g != null && a != null && v != null && "true".equals(d)) {
+                            libraries.add(new String[] {
+                                a, g, v, key
+                            });
+                        }
+                    }
+                }
+            }
+            URL precompiled = null;
+            for (ClassLoader loader : loaders) {
+                for (String[] lib : libraries) {
+                    final String res = "META-INF/maven/" + lib[1] + "/" + lib[0] + "/pom.properties";
+                    URL props = loader.getResource(res);
+                    if (props != null) {
+                        URLConnection c = props.openConnection();
+                        Properties load = new Properties();
+                        final InputStream is = c.getInputStream();
+                        load.load(is);
+                        is.close();
+                        if (lib[2].equals(load.getProperty("version"))) {
+                            if (c instanceof JarURLConnection) {
+                                final URL definedInURL = ((JarURLConnection)c).getJarFileURL();
+                                if (definedInURL.equals(jarURL)) {
+                                    precompiled = loader.getResource(lib[3]);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            Object ret = BaseHTTPLauncher.this.compileJar(jarURL, precompiled);
             ignore.add(jarURL);
             return ret;
         }
@@ -750,16 +800,20 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                 response.setCharacterEncoding("UTF-8");
                 if (url.getProtocol().equals("jar")) {
                     JarURLConnection juc = (JarURLConnection) url.openConnection();
-                    String s = null;
+                    Object s = null;
                     try {
                         s = loader.compileJar(juc.getJarFileURL());
                     } catch (IOException iOException) {
                         throw new IOException("Can't compile " + url.toExternalForm(), iOException);
                     }
-                    if (s != null) {
+                    if (s instanceof String) {
                         Writer w = response.getWriter();
-                        w.append(s);
+                        w.append((String)s);
                         w.close();
+                        return;
+                    }
+                    if (s instanceof InputStream) {
+                        copyStream((InputStream) s, response.getOutputStream(), null);
                         return;
                     }
                 }
