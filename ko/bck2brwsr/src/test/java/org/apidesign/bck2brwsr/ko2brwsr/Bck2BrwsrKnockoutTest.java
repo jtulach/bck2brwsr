@@ -42,8 +42,14 @@ import org.testng.annotations.Factory;
 @ServiceProvider(service = KnockoutTCK.class)
 public final class Bck2BrwsrKnockoutTest extends KnockoutTCK {
     @Factory public static Object[] create() {
+        final Class<?>[] arr = testClasses();
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i].getSimpleName().startsWith("GC")) {
+                arr[i] = Object.class;
+            }
+        }
         return VMTest.newTests().
-            withClasses(testClasses()).
+            withClasses(arr).
             withLaunchers("bck2brwsr").
             withTestAnnotation(KOTest.class).
             build();
