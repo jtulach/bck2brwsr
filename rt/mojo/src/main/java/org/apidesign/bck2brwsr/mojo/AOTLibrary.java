@@ -118,7 +118,7 @@ public class AOTLibrary extends AbstractMojo {
                         attr.putValue("Bck2BrwsrArtifactId", a.getArtifactId());
                         attr.putValue("Bck2BrwsrGroupId", a.getGroupId());
                         attr.putValue("Bck2BrwsrVersion", a.getVersion());
-                        attr.putValue("Bck2BrwsrMinified", "true");
+                        attr.putValue("Bck2BrwsrDebug", "true");
                         m.getEntries().put(artifactName(a, true), attr);
                     }
                     {
@@ -126,7 +126,7 @@ public class AOTLibrary extends AbstractMojo {
                         attr.putValue("Bck2BrwsrArtifactId", a.getArtifactId());
                         attr.putValue("Bck2BrwsrGroupId", a.getGroupId());
                         attr.putValue("Bck2BrwsrVersion", a.getVersion());
-                        attr.putValue("Bck2BrwsrDebug", "true");
+                        attr.putValue("Bck2BrwsrMinified", "true");
                         m.getEntries().put(artifactName(a, false), attr);
                     }
                 }
