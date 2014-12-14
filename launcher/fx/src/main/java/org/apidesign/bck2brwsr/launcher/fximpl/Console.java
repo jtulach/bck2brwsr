@@ -174,7 +174,7 @@ public final class Console {
                 } else {
                     log("Processing \"" + arr[0] + "\" for " + retries + " time");
                 }
-                Object result = retries++ >= 10 ? "java.lang.InterruptedException:timeout" : c.runTest();
+                Object result = retries++ >= 100 ? "java.lang.InterruptedException:timeout(" + retries + ")" : c.runTest();
                 finishTest(c, result);
                 
                 String u = url + "?request=" + c.getRequestId() + "&result=" + result;
