@@ -61,6 +61,7 @@ import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.grizzly.http.server.ServerConfiguration;
 import org.glassfish.grizzly.http.server.StaticHttpHandler;
+import org.glassfish.grizzly.http.util.Header;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 import org.glassfish.grizzly.websockets.WebSocket;
@@ -205,6 +206,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         return s;
     }
     
+    private static int resourcesCount;
     private void executeInBrowser() throws InterruptedException, URISyntaxException, IOException {
         wait = new CountDownLatch(1);
         server = initServer(".", true, "");
@@ -212,7 +214,6 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         
         class DynamicResourceHandler extends HttpHandler {
             private final InvocationContext ic;
-            private int resourcesCount;
             DynamicResourceHandler delegate;
             public DynamicResourceHandler(InvocationContext ic) {
                 this.ic = ic;
@@ -257,6 +258,8 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                     } else {
                         url = registerResource(res);
                     }
+                    response.setHeader(Header.CacheControl, "no-cache");
+                    response.setHeader(Header.Pragma, "no-cache");
                     response.getWriter().write(url.toString());
                     response.getWriter().write("\n");
                     return;
@@ -266,6 +269,8 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                     if (r.httpPath.equals(request.getRequestURI())) {
                         LOG.log(Level.INFO, "Serving HttpResource for {0}", request.getRequestURI());
                         response.setContentType(r.httpType);
+                        response.setHeader(Header.CacheControl, "no-cache");
+                        response.setHeader(Header.Pragma, "no-cache");
                         r.httpContent.reset();
                         String[] params = null;
                         if (r.parameters.length != 0) {
