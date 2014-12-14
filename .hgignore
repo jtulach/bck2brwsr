@@ -2,3 +2,8 @@
 .*/target/.*
 .*orig$
 .*~
+\.orig\..*$
+\.orig$
+\.chg\..*$
+\.rej$
+\.conflict\~$

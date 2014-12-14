@@ -17,7 +17,6 @@
  */
 package org.apidesign.bck2brwsr.htmlpage;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.htmlpage.api.OnReceive;
@@ -173,15 +172,17 @@ public class JSONTest {
     
     @Http(@Http.Resource(
         content = "{'firstName': 'Sitar', 'sex': 'MALE'}", 
-        path="/person.json", 
+        path="/person33.json", 
         mimeType = "application/json"
     ))
     @BrwsrTest public void loadAndParseJSON() throws InterruptedException {
+        try { throw new Exception(); } catch (Exception ex) {
+        }
         if (js == null) {
             js = new JSONik();
             js.applyBindings();
 
-            js.fetch("person.json");
+            js.fetch("person33.json");
         }
     
         Person p = js.getFetched();
@@ -200,7 +201,7 @@ public class JSONTest {
     
     @Http(@Http.Resource(
         content = "$0({'firstName': 'Mitar', 'sex': 'MALE'})", 
-        path="/person.json", 
+        path="/person22.json", 
         mimeType = "application/javascript",
         parameters = { "callme" }
     ))
@@ -213,7 +214,7 @@ public class JSONTest {
             js = new JSONik();
             js.applyBindings();
 
-            js.fetchViaJSONP("person.json");
+            js.fetchViaJSONP("person22.json");
         }
     
         Person p = js.getFetched();
@@ -237,7 +238,7 @@ public class JSONTest {
     
     @Http(@Http.Resource(
         content = "{'firstName': 'Sitar', 'sex': 'MALE'}", 
-        path="/person.json", 
+        path="/person15.json", 
         mimeType = "application/json"
     ))
     @BrwsrTest public void loadAndParseJSONSentToArray() throws InterruptedException {
@@ -245,7 +246,7 @@ public class JSONTest {
             js = new JSONik();
             js.applyBindings();
 
-            js.fetchArray("person.json");
+            js.fetchArray("person15.json");
         }
         
         Person p = js.getFetched();
@@ -260,7 +261,7 @@ public class JSONTest {
     
     @Http(@Http.Resource(
         content = "[{'firstName': 'Gitar', 'sex': 'FEMALE'}]", 
-        path="/person.json", 
+        path="/person5.json", 
         mimeType = "application/json"
     ))
     @BrwsrTest public void loadAndParseJSONArraySingle() throws InterruptedException {
@@ -268,7 +269,7 @@ public class JSONTest {
             js = new JSONik();
             js.applyBindings();
         
-            js.fetch("person.json");
+            js.fetch("person5.json");
         }
         
         Person p = js.getFetched();
@@ -309,7 +310,7 @@ public class JSONTest {
     
     @Http(@Http.Resource(
         content = "{'age':[1, 2, 3]}", 
-        path="/people.json", 
+        path="/people8.json", 
         mimeType = "application/json"
     ))
     @BrwsrTest public void loadAndParseArrayOfIntegers() throws InterruptedException {
@@ -317,7 +318,7 @@ public class JSONTest {
             js = new JSONik();
             js.applyBindings();
         
-            js.fetchPeopleAge("people.json");
+            js.fetchPeopleAge("people8.json");
         }
         
         if (0 == js.getFetchedCount()) {
@@ -336,7 +337,7 @@ public class JSONTest {
     
     @Http(@Http.Resource(
         content = "{'sex':['FEMALE', 'MALE', 'MALE']}", 
-        path="/people.json", 
+        path="/people11.json", 
         mimeType = "application/json"
     ))
     @BrwsrTest public void loadAndParseArrayOfEnums() throws InterruptedException {
@@ -344,7 +345,7 @@ public class JSONTest {
             js = new JSONik();
             js.applyBindings();
         
-            js.fetchPeopleSex("people.json");
+            js.fetchPeopleSex("people11.json");
         }
         
         if (0 == js.getFetchedCount()) {
@@ -363,14 +364,14 @@ public class JSONTest {
         content = "[{'firstName': 'Gitar', 'sex': 'FEMALE'},"
         + "{'firstName': 'Peter', 'sex': 'MALE'}"
         + "]", 
-        path="/person.json", 
+        path="/person13.json", 
         mimeType = "application/json"
     ))
     @BrwsrTest public void loadAndParseJSONArray() throws InterruptedException {
         if (js == null) {
             js = new JSONik();
             js.applyBindings();
-            js.fetchArray("person.json");
+            js.fetchArray("person13.json");
         }
         
         

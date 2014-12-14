@@ -15,7 +15,7 @@
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <netbeans.version>RELEASE80</netbeans.version>
       <license>COPYING</license>
-      <net.java.html.version>1.0</net.java.html.version>
+      <net.java.html.version>2.0-SNAPSHOT</net.java.html.version>
       <netbeans.compile.on.save>none</netbeans.compile.on.save>
   </properties>
   <modules>
