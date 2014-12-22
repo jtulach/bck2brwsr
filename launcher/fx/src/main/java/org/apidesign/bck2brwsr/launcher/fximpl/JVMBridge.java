@@ -19,12 +19,15 @@ package org.apidesign.bck2brwsr.launcher.fximpl;
 
 import java.io.BufferedReader;
 import java.io.Reader;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.TooManyListenersException;
 import java.util.concurrent.Executor;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -78,8 +81,8 @@ public final class JVMBridge {
         return Class.forName(name, true, cl);
     }
     
-    private final class WebPresenter 
-    implements FindResources, Fn.Presenter, Fn.ToJavaScript, Fn.FromJavaScript, Executor {
+    private final class WebPresenter implements Fn.Presenter,
+    FindResources, Fn.ToJavaScript, Fn.FromJavaScript, Executor, Fn.KeepAlive {
         @Override
         public void findResources(String name, Collection<? super URL> results, boolean oneIsEnough) {
             if (ldrs != null) for (ClassLoader l : ldrs) {
@@ -92,14 +95,20 @@ public final class JVMBridge {
 
         @Override
         public Fn defineFn(String code, String... names) {
-            return defineJSFn(code, names);
+            return defineJSFn(code, names, null);
         }
-        private JSFn defineJSFn(String code, String... names) {
+        
+        @Override
+        public Fn defineFn(String code, String[] names, boolean[] keepAlive) {
+            return defineJSFn(code, names, keepAlive);
+        }
+        
+        private JSFn defineJSFn(String code, String[] names, boolean[] keepAlive) {
             StringBuilder sb = new StringBuilder();
             sb.append("(function() {");
             sb.append("  return function(");
             String sep = "";
-            for (String n : names) {
+            if (names != null) for (String n : names) {
                 sb.append(sep).append(n);
                 sep = ",";
             }
@@ -109,7 +118,7 @@ public final class JVMBridge {
             sb.append("})()");
             
             JSObject x = (JSObject) engine.executeScript(sb.toString());
-            return new JSFn(this, x);
+            return new JSFn(this, x, keepAlive);
         }
 
         @Override
@@ -133,6 +142,9 @@ public final class JVMBridge {
 
         @Override
         public Object toJava(Object js) {
+            if (js instanceof Weak) {
+                js = ((Weak)js).get();
+            }
             return checkArray(js);
         }
 
@@ -172,7 +184,7 @@ public final class JVMBridge {
                         + "  k.array= function() {"
                         + "    return Array.prototype.slice.call(arguments);"
                         + "  };"
-                        + "  return k;"
+                        + "  return k;", null, null
                     ).invokeImpl(null, false);
                 } catch (Exception ex) {
                     throw new IllegalStateException(ex);
@@ -206,7 +218,7 @@ public final class JVMBridge {
                         + "      return l;"
                         + "    }"
                         + "  };"
-                        + "  return k;"
+                        + "  return k;", null, null
                     ).invokeImpl(null, false);
                 } catch (Exception ex) {
                     throw new IllegalStateException(ex);
@@ -214,15 +226,17 @@ public final class JVMBridge {
             }
             return arraySize;
         }
-        
+
     }
     
     private static final class JSFn extends Fn {
         private final JSObject fn;
+        private final boolean[] keepAlive;
 
-        private JSFn(WebPresenter cl, JSObject fn) {
+        private JSFn(WebPresenter cl, JSObject fn, boolean[] keepAlive) {
             super(cl);
             this.fn = fn;
+            this.keepAlive = keepAlive;
         }
 
         @Override
@@ -235,14 +249,25 @@ public final class JVMBridge {
                 List<Object> all = new ArrayList<Object>(args.length + 1);
                 all.add(thiz == null ? fn : thiz);
                 for (int i = 0; i < args.length; i++) {
-                    if (arrayChecks && args[i] instanceof Object[]) {
-                        Object[] arr = (Object[]) args[i];
-                        Object conv = ((WebPresenter) presenter()).convertArrays(arr);
-                        args[i] = conv;
+                    Object conv = args[i];
+                    if (arrayChecks) {
+                        if (args[i] instanceof Object[]) {
+                            Object[] arr = (Object[]) args[i];
+                            conv = ((WebPresenter) presenter()).convertArrays(arr);
+                        }
+                        if (conv != null && keepAlive != null
+                            && !keepAlive[i] && !isJSReady(conv)
+                            && !conv.getClass().getSimpleName().equals("$JsCallbacks$") // NOI18N
+                            ) {
+                            conv = new Weak(conv);
+                        }
                     }
-                    all.add(args[i]);
+                    all.add(conv);
                 }
                 Object ret = fn.call("call", all.toArray()); // NOI18N
+                if (ret instanceof Weak) {
+                    ret = ((Weak) ret).get();
+                }
                 if (ret == fn) {
                     return null;
                 }
@@ -259,4 +284,30 @@ public final class JVMBridge {
             }
         }
     }
+
+    private static boolean isJSReady(Object obj) {
+        if (obj == null) {
+            return true;
+        }
+        if (obj instanceof String) {
+            return true;
+        }
+        if (obj instanceof Number) {
+            return true;
+        }
+        if (obj instanceof JSObject) {
+            return true;
+        }
+        if (obj instanceof Character) {
+            return true;
+        }
+        return false;
+    }
+
+    private static final class Weak extends WeakReference<Object> {
+        public Weak(Object referent) {
+            super(referent);
+            assert !(referent instanceof Weak);
+        }
+    } // end of Weak
 }
