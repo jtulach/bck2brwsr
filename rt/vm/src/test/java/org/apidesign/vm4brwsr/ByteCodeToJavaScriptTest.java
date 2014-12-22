@@ -59,7 +59,21 @@ public class ByteCodeToJavaScriptTest {
             "onError", "Ljava/lang/Object;", false
         );
         assertEquals(res, 
-            "org_1apidesign_1bck2brwsr_1vmtest_1impl_1HtmlAnnotations$onError$Ljava_1lang_1Object_12__Ljava_lang_Object_2Lorg_apidesign_bck2brwsr_vmtest_impl_HtmlAnnotations_2Ljava_lang_Object_2",
+            "org_1apidesign_1bck2brwsr_1vmtest_1impl_1HtmlAnnotations$onError$"
+                + "Ljava_1lang_1Object_12__"
+                + "Ljava_lang_Object_2Lorg_apidesign_bck2brwsr_vmtest_impl_HtmlAnnotations_2Ljava_lang_Object_2",
+            "Pretty long method name"
+        );
+    }
+    @Test public void mangleJsCallbackToATypeWithString() throws Exception {
+        String res = ByteCodeToJavaScript.mangleJsCallbacks(
+            "org.apidesign.bck2brwsr.vmtest.impl.HtmlAnnotations",
+            "onMessage", "Ljava/lang/String;", false
+        );
+        assertEquals(res, 
+            "org_1apidesign_1bck2brwsr_1vmtest_1impl_1HtmlAnnotations$onMessage$"
+                + "Ljava_1lang_1String_12__"
+                + "Ljava_lang_Object_2Lorg_apidesign_bck2brwsr_vmtest_impl_HtmlAnnotations_2Ljava_lang_String_2",
             "Pretty long method name"
         );
     }

@@ -1992,8 +1992,17 @@ abstract class ByteCodeToJavaScript implements Appendable {
             while (indx < len) {
                 char ch = params.charAt(indx);
                 if (ch == '[' || ch == 'L') {
+                    int column = params.indexOf(';', indx) + 1;
+                    if (column > indx) {
+                        String real = params.substring(indx, column);
+                        if ("Ljava/lang/String;".equals(real)) {
+                            pb.append("Ljava/lang/String;");
+                            indx = column;
+                            continue;
+                        }
+                    }
                     pb.append("Ljava/lang/Object;");
-                    indx = params.indexOf(';', indx) + 1;
+                    indx = column;
                 } else {
                     pb.append(ch);
                     indx++;
