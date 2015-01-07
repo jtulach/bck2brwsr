@@ -199,7 +199,7 @@
             low += (low < 0) ? (__m32 + 1) : 0;
             return low;
         } else {
-            var low = this >> x;
+            var low = this >>> x;
             var hi_reminder = this.high32() << (32 - x);
             low |= hi_reminder;
             low += (low < 0) ? (__m32 + 1) : 0;

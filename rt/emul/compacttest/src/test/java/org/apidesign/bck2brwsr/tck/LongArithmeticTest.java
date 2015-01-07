@@ -38,7 +38,7 @@ public class LongArithmeticTest {
     private static long mul(long x, long y) {
         return (x * y);
     }
-
+    
     private static long div(long x, long y) {
         return (x / y);
     }
@@ -81,6 +81,14 @@ public class LongArithmeticTest {
 
     private static double dadd(double x, double y) {
         return x + y;
+    }
+    
+    private static long mul64shr64(long base, int mul, int shr) {
+        long tmp = base * mul;
+        if (shr == -1) {
+            return tmp;
+        }
+        return tmp >> shr;
     }
 
     public static int compare(long x, long y, int zero) {
@@ -409,6 +417,21 @@ public class LongArithmeticTest {
 
     @Compare public int compareMixedNumbers() {
         return compare(0x8000000000000000l, 0x7fffffffffffffffl, 0);
+    }
+    
+    @Compare public int intConversionProblemInRandom() {
+        long res = mul64shr64(16, 1561751147, 31);
+        return (int) res;
+    }
+
+    @Compare public long shiftProblemInRandom() {
+        long res = mul64shr64(16, 1561751147, 31);
+        return res;
+    }
+
+    @Compare public long multiplyProblemInRandom() {
+        long res = mul64shr64(16, 1561751147, -1);
+        return res;
     }
     
     @Factory

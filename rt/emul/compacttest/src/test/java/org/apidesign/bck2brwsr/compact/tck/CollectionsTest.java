@@ -113,6 +113,20 @@ public class CollectionsTest {
             Arrays.toString(ret);
     }
     
+    @Compare public int collectionsShuffle() {
+        ArrayList<Integer> positions = new ArrayList<>();
+        for (int i = 0; i < 16; i++) {
+            positions.add(i);
+        }
+        Collections.shuffle(positions);
+        
+        int sum = 0;
+        for (Integer p : positions) {
+            sum += p;
+        }
+        return sum;
+    }
+    
     @Factory
     public static Object[] create() {
         return VMTest.create(CollectionsTest.class);
