@@ -19,9 +19,11 @@
 package org.apidesign.bck2brwsr.mojo;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -135,7 +137,7 @@ public class AheadOfTime extends AbstractMojo {
                         c = c.addExported(e.replace('.', '/'));
                     }
                 }
-                FileWriter w = new FileWriter(mainJavaScript);
+                Writer w = new OutputStreamWriter(new FileOutputStream(mainJavaScript), "UTF-8");
                 c.
                         obfuscation(obfuscation).
                         generate(w);
@@ -146,7 +148,7 @@ public class AheadOfTime extends AbstractMojo {
         }
             
         try {
-            FileWriter w = new FileWriter(vm);
+            Writer w = new OutputStreamWriter(new FileOutputStream(vm), "UTF-8");
             Bck2Brwsr.newCompiler().
                     obfuscation(obfuscation).
                     standalone(false).
@@ -198,7 +200,7 @@ public class AheadOfTime extends AbstractMojo {
             throw new MojoExecutionException("Not generating " + js + " and no precompiled version found!");
         }
         getLog().info("Generating " + js);
-        FileWriter w = new FileWriter(js);
+        Writer w = new OutputStreamWriter(new FileOutputStream(js), "UTF-8");
         Bck2Brwsr c = Bck2BrwsrJars.configureFrom(null, a.getFile(), loader);
         c.
             obfuscation(obfuscation).

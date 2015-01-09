@@ -19,9 +19,11 @@ package org.apidesign.bck2brwsr.vmtest.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -130,7 +132,7 @@ public final class Bck2BrwsrCase implements ITest {
     }
     static void dumpJS(StringBuilder sb, Bck2BrwsrCase c) throws IOException {
         File f = File.createTempFile(c.m.getName(), ".js");
-        try (final FileWriter w = new FileWriter(f)) {
+        try (final Writer w = new OutputStreamWriter(new FileOutputStream(f), "UTF-8")) {
             w.append(c.l.toString());
         }
         sb.append("Path: ").append(f.getPath());

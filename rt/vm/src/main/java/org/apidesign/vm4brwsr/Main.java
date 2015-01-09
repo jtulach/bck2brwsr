@@ -19,8 +19,9 @@ package org.apidesign.vm4brwsr;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -104,7 +105,7 @@ final class Main {
             System.exit(0);
         }
         
-        try (Writer w = new BufferedWriter(new FileWriter(gt))) {
+        try (Writer w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(gt), "UTF-8"))) {
             Bck2Brwsr c = Bck2Brwsr.newCompiler().
                 obfuscation(obfLevel).
                 addRootClasses(classes.toArray()).

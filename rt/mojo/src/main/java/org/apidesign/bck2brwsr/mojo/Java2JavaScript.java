@@ -20,8 +20,10 @@ package org.apidesign.bck2brwsr.mojo;
 import org.apache.maven.plugin.AbstractMojo;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -107,7 +109,7 @@ public class Java2JavaScript extends AbstractMojo {
 
         try {
             URLClassLoader url = buildClassLoader(classes, prj.getArtifacts());
-            FileWriter w = new FileWriter(javascript);
+            Writer w = new OutputStreamWriter(new FileOutputStream(javascript), "UTF-8");
             Bck2Brwsr c = Bck2Brwsr.newCompiler().
                 obfuscation(obfuscation).
                 resources(url, ignoreBootClassPath).

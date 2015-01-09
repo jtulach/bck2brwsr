@@ -19,9 +19,11 @@ package org.apidesign.vm4brwsr;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -258,7 +260,7 @@ public final class TestVM {
 
     static StringBuilder dumpJS(CharSequence sb) throws IOException {
         File f = File.createTempFile("execution", ".js");
-        FileWriter w = new FileWriter(f);
+        Writer w = new OutputStreamWriter(new FileOutputStream(f), "UTF-8");
         w.append(sb);
         w.close();
         return new StringBuilder(f.getPath());
