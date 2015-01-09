@@ -213,8 +213,6 @@ final class Main {
                                             final String relativePath) {
         final String className =
                 relativePath.substring(0, relativePath.length() - 6);
-        if (!className.endsWith("package-info")) {
-            dest.add(className);
-        }
+        dest.add(className);
     }
 }

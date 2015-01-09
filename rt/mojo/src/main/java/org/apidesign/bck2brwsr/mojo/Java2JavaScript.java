@@ -137,9 +137,7 @@ public class Java2JavaScript extends AbstractMojo {
             return newest;
         } else if (toCheck.getName().endsWith(".class")) {
             final String cls = prefix.substring(0, prefix.length() - 7);
-            if (!cls.endsWith("package-info")) {
-                arr.add(cls);
-            }
+            arr.add(cls);
             return toCheck.lastModified();
         } else {
             return 0L;

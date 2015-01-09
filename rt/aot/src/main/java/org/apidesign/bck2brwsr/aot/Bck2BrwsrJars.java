@@ -269,11 +269,11 @@ public final class Bck2BrwsrJars {
                 u = en.nextElement();
             }
             if (u == null) {
-                LOG.log(Level.WARNING, "Cannot find {0}", name);
+                LOG.log(Level.FINE, "Cannot find {0}", name);
                 return null;
             }
             if (u.toExternalForm().contains("/rt.jar!")) {
-                LOG.log(Level.WARNING, "{0}No bootdelegation for ", name);
+                LOG.log(Level.WARNING, "No bootdelegation for {0}", name);
                 return null;
             }
             return u.openStream();
