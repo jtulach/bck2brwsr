@@ -171,6 +171,7 @@ public final class Bck2BrwsrJars {
                         }
                         keep.add(l.replace('.', '/'));
                     }
+                    r.close();
                 }
             }
         }
