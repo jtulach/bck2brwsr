@@ -137,7 +137,7 @@ public class AOTLibrary extends AbstractMojo {
 
             if (!"false".equals(debug)) {
                 os.putNextEntry(new JarEntry(debug));
-                Writer w = new OutputStreamWriter(os);
+                Writer w = new OutputStreamWriter(os, "UTF-8");
                 configureMain(loader).
                     obfuscation(ObfuscationLevel.NONE).
                     generate(w);
@@ -147,7 +147,7 @@ public class AOTLibrary extends AbstractMojo {
             if (!"false".equals(minified)) {
                 os.putNextEntry(new JarEntry(minified));
             
-                Writer w = new OutputStreamWriter(os);
+                Writer w = new OutputStreamWriter(os, "UTF-8");
                 configureMain(loader).
                     obfuscation(ObfuscationLevel.FULL).
                     generate(w);
@@ -169,7 +169,7 @@ public class AOTLibrary extends AbstractMojo {
                     }
                     {
                         os.putNextEntry(new JarEntry(artifactName(a, true)));
-                        Writer w = new OutputStreamWriter(os);
+                        Writer w = new OutputStreamWriter(os, "UTF-8");
                         c.
                             obfuscation(ObfuscationLevel.NONE).
                             generate(w);
@@ -179,7 +179,7 @@ public class AOTLibrary extends AbstractMojo {
                     {
                         os.putNextEntry(new JarEntry(artifactName(a, false)));
 
-                        Writer w = new OutputStreamWriter(os);
+                        Writer w = new OutputStreamWriter(os, "UTF-8");
                         c.
                             obfuscation(ObfuscationLevel.FULL).
                             generate(w);
