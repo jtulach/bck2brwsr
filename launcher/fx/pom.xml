@@ -4,11 +4,11 @@
   <parent>
     <groupId>org.apidesign.bck2brwsr</groupId>
     <artifactId>launcher-pom</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.13</version>
   </parent>
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>launcher.fx</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>0.13</version>
   <name>FXBrwsr Launcher</name>
   <url>http://maven.apache.org</url>
     <build>
