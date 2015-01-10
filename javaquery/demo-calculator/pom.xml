@@ -4,7 +4,7 @@
 
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>demo.static.calculator</artifactId>
-  <version>0.13</version>
+  <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>JavaQuery Demo - Calculator - Static Compilation</name>

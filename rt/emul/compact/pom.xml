@@ -4,11 +4,11 @@
   <parent>
     <groupId>org.apidesign.bck2brwsr</groupId>
     <artifactId>emul.pom</artifactId>
-    <version>0.13</version>
+    <version>1.0-SNAPSHOT</version>
   </parent>
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>emul</artifactId>
-  <version>0.13</version>
+  <version>1.0-SNAPSHOT</version>
   <name>Bck2Brwsr API Profile</name>
   <url>http://maven.apache.org</url>
   <properties>
