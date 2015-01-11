@@ -96,8 +96,35 @@ public final class Bck2BrwsrJars {
     public static Bck2Brwsr configureFrom(
         Bck2Brwsr c, File jar, final ClassLoader classpath
     ) throws IOException {
+        return configureFrom(c, jar, classpath, true);
+    }
+    
+    /** Creates new compiler pre-configured from the content of 
+     * provided JAR file. The compiler will compile all classes.
+     * The system understands OSGi manifest entries and NetBeans
+     * module system manifest entries and will export
+     * all packages that are exported in the JAR file. The system
+     * also recognizes META-INF/services and makes sure the class names
+     * are not mangled.
+     * 
+     * @param c the compiler to {@link Bck2Brwsr#addClasses(java.lang.String...) add classes},
+     *    {@link Bck2Brwsr#addResources(java.lang.String...) add resources} and
+     *    {@link Bck2Brwsr#addExported(java.lang.String...) exported objects} to.
+     *    Can be <code>null</code> - in such case an 
+     *    {@link Bck2Brwsr#newCompiler() empty compiler} is constructed.
+     * @param jar the file to process
+     * @param classpath additional resources to make available during
+     *   compilation, but not include them in the generated JavaScript
+     * @param ignoreBootClassPath should we ignore classes on bootclasspath?
+     * @return newly configured compiler
+     * @throws IOException if something goes wrong
+     * @since 0.14
+     */
+    public static Bck2Brwsr configureFrom(
+        Bck2Brwsr c, File jar, final ClassLoader classpath, final boolean ignoreBootClassPath
+    ) throws IOException {
         if (jar.isDirectory()) {
-            return configureDir(c, jar, classpath);
+            return configureDir(ignoreBootClassPath, c, jar, classpath);
         }
         final JarFile jf = new JarFile(jar);
         final List<String> classes = new ArrayList<>();
@@ -105,7 +132,7 @@ public final class Bck2BrwsrJars {
         Set<String> exported = new HashSet<>();
         class JarRes extends EmulationResources implements Bck2Brwsr.Resources {
             JarRes() {
-                super(classpath, classes);
+                super(ignoreBootClassPath, classpath, classes);
             }
             @Override
             public InputStream get(String resource) throws IOException {
@@ -236,8 +263,10 @@ public final class Bck2BrwsrJars {
         private final Map<String,byte[]> converted = new HashMap<>();
         private final BytecodeProcessor proc;
         private final ClassLoader cp;
+        private final boolean ignoreBootClassPath;
 
-        protected EmulationResources(ClassLoader cp, List<String> classes) {
+        protected EmulationResources(boolean ignoreBootClassPath, ClassLoader cp, List<String> classes) {
+            this.ignoreBootClassPath = ignoreBootClassPath;
             this.classes = classes;
             this.cp = cp != null ? cp : Bck2BrwsrJars.class.getClassLoader();
             BytecodeProcessor p;
@@ -273,7 +302,7 @@ public final class Bck2BrwsrJars {
                 LOG.log(Level.FINE, "Cannot find {0}", name);
                 return null;
             }
-            if (u.toExternalForm().contains("/rt.jar!")) {
+            if (ignoreBootClassPath && u.toExternalForm().contains("/rt.jar!")) {
                 LOG.log(Level.WARNING, "No bootdelegation for {0}", name);
                 return null;
             }
@@ -307,12 +336,12 @@ public final class Bck2BrwsrJars {
         }
     }
     
-    private static Bck2Brwsr configureDir(Bck2Brwsr c, final File dir, ClassLoader cp) throws IOException {
+    private static Bck2Brwsr configureDir(final boolean ignoreBootClassPath, Bck2Brwsr c, final File dir, ClassLoader cp) throws IOException {
         List<String> arr = new ArrayList<>();
         List<String> classes = new ArrayList<>();
         class DirRes extends EmulationResources {
             public DirRes(ClassLoader cp, List<String> classes) {
-                super(cp, classes);
+                super(ignoreBootClassPath, cp, classes);
             }
 
             @Override

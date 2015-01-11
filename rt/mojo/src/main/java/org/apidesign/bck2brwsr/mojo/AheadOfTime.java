@@ -85,6 +85,9 @@ public class AheadOfTime extends AbstractMojo {
     @Parameter(defaultValue = "true")
     private boolean generateAotLibraries;
     
+    @Parameter(defaultValue = "true")
+    private boolean ignoreBootClassPath;
+    
     /**
      * The obfuscation level for the generated JavaScript file.
      *
@@ -131,7 +134,7 @@ public class AheadOfTime extends AbstractMojo {
                 getLog().info("Skipping " + mainJavaScript + " as it already exists.");
             } else {
                 getLog().info("Generating " + mainJavaScript);
-                Bck2Brwsr c = Bck2BrwsrJars.configureFrom(null, mainJar, loader);
+                Bck2Brwsr c = Bck2BrwsrJars.configureFrom(null, mainJar, loader, ignoreBootClassPath);
                 if (exports != null) {
                     for (String e : exports) {
                         c = c.addExported(e.replace('.', '/'));
@@ -201,7 +204,7 @@ public class AheadOfTime extends AbstractMojo {
         }
         getLog().info("Generating " + js);
         Writer w = new OutputStreamWriter(new FileOutputStream(js), "UTF-8");
-        Bck2Brwsr c = Bck2BrwsrJars.configureFrom(null, a.getFile(), loader);
+        Bck2Brwsr c = Bck2BrwsrJars.configureFrom(null, a.getFile(), loader, ignoreBootClassPath);
         c.
             obfuscation(obfuscation).
             generate(w);

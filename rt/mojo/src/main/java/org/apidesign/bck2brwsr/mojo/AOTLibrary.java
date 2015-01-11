@@ -78,7 +78,10 @@ public class AOTLibrary extends AbstractMojo {
     
     @Parameter
     private String[] aotDeps;
-    
+
+    @Parameter(defaultValue = "true")
+    private boolean ignoreBootClassPath;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         URLClassLoader loader;
@@ -161,7 +164,7 @@ public class AOTLibrary extends AbstractMojo {
                         continue;
                     }
                     getLog().info("Generating bck2brwsr for " + a.getFile());
-                    Bck2Brwsr c = Bck2BrwsrJars.configureFrom(null, a.getFile(), loader);
+                    Bck2Brwsr c = Bck2BrwsrJars.configureFrom(null, a.getFile(), loader, ignoreBootClassPath);
                     if (exports != null) {
                         for (String e : exports) {
                             c = c.addExported(e.replace('.', '/'));
@@ -197,7 +200,7 @@ public class AOTLibrary extends AbstractMojo {
     }
 
     private Bck2Brwsr configureMain(URLClassLoader loader) throws IOException {
-        Bck2Brwsr c = Bck2BrwsrJars.configureFrom(null, mainJar, loader);
+        Bck2Brwsr c = Bck2BrwsrJars.configureFrom(null, mainJar, loader, ignoreBootClassPath);
         if (exports != null) {
             for (String e : exports) {
                 c = c.addExported(e.replace('.', '/'));
