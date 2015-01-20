@@ -25,6 +25,7 @@
 
 package java.lang;
 
+import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 
@@ -85,6 +86,10 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  * @since   JDK1.0
  */
 
+@ExtraJavaScript(
+    resource="/org/apidesign/vm4brwsr/emul/lang/java_lang_Math.js",
+    processByteCode=true
+)
 public final class Math {
 
     /**
