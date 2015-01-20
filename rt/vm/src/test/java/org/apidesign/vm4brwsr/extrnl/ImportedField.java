@@ -15,40 +15,18 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.vm4brwsr;
+package org.apidesign.vm4brwsr.extrnl;
 
-import org.apidesign.vm4brwsr.extrnl.ImplementInterface;
-import org.apidesign.vm4brwsr.extrnl.ImportedField;
+public final class ImportedField {
+    public final int x;
 
-/**
- *
- * @author Jaroslav Tulach
- */
-public class ImplementFactory {
-    private ImplementFactory() {
+    ImportedField(int x) {
+        this.x = x;
     }
     
-    private static ImplementInterface create() {
-        return new Impl();
-    }
-    
-    public static String hello() {
-        ImplementInterface i = create();
-        return i.sayHello();
-    }
-    
-    public static int meaning() {
-        return ImportedField.Factory.create(42).x;
-    }
-
-    private static class Impl implements ImplementInterface {
-
-        public Impl() {
-        }
-
-        @Override
-        public String sayHello() {
-            return "Hello!";
+    public static final class Factory {
+        public static ImportedField create(int v) {
+            return new ImportedField(v);
         }
     }
 }

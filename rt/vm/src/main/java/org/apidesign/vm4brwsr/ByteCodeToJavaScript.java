@@ -1398,6 +1398,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                                      "_" + fi[1], fi)
                     );
                     i += 2;
+                    addReference(fi[0]);
                     break;
                 }
                 case opc_putfield: {
@@ -1412,6 +1413,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                          accessField(mangleClassAccess + "(false)",
                                      "_" + fi[1], fi));
                     i += 2;
+                    addReference(fi[0]);
                     break;
                 }
                 case opc_getstatic: {
