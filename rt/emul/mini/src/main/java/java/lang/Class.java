@@ -1858,5 +1858,10 @@ public final
     @JavaScriptOnly(name = "bck2BrwsrThrwrbl", value = "c.bck2BrwsrCnvrt__Ljava_lang_Object_2Ljava_lang_Object_2")
     private static void bck2BrwsrCnvrtVM() {
     }
+
+    @Exported
+    @JavaScriptOnly(name = "castEx", value = "function() { throw vm.java_lang_ClassCastException(true); }")
+    private static void castEx() {
+    }
     
 }

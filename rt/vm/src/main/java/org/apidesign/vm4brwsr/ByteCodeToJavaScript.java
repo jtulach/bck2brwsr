@@ -2386,7 +2386,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
         String type = jc.getClassName(indx);
         if (!type.startsWith("[")) {
             emitNoFlush(smapper, 
-                 "if (@1 !== null && !@1['$instOf_@2']) throw vm.java_lang_ClassCastException(true);",
+                 "if (@1 !== null && !@1['$instOf_@2']) vm.java_lang_Class(false).castEx();",
                  smapper.getT(0, VarType.REFERENCE, false), type.replace('/', '_'));
         } else {
             int cnt = 0;
@@ -2396,12 +2396,12 @@ abstract class ByteCodeToJavaScript implements Appendable {
             if (type.charAt(cnt) == 'L') {
                 type = "vm." + mangleClassName(type.substring(cnt + 1, type.length() - 1));
                 emitNoFlush(smapper, 
-                    "if (@1 !== null && !Array.prototype['isInstance__ZLjava_lang_Object_2ILjava_lang_Object_2'](@1, @3, @2)) throw vm.java_lang_ClassCastException(true);",
+                    "if (@1 !== null && !Array.prototype['isInstance__ZLjava_lang_Object_2ILjava_lang_Object_2'](@1, @3, @2)) vm.java_lang_Class(false).castEx();",
                      smapper.getT(0, VarType.REFERENCE, false), type, "" + cnt
                 );
             } else {
                 emitNoFlush(smapper, 
-                    "if (@1 !== null && !Array.prototype['isInstance__ZLjava_lang_Object_2Ljava_lang_String_2'](@1, '@2')) throw vm.java_lang_ClassCastException(true);",
+                    "if (@1 !== null && !Array.prototype['isInstance__ZLjava_lang_Object_2Ljava_lang_String_2'](@1, '@2')) vm.java_lang_Class(false).castEx();",
                      smapper.getT(0, VarType.REFERENCE, false), type
                 );
             }
