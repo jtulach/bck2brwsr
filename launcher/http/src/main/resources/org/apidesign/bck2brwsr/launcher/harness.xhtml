@@ -37,7 +37,8 @@
         <div id="bck2brwsr.fragment"/>
         
         <script type="text/javascript">
-            vm.loadClass('org.apidesign.bck2brwsr.launcher.impl.Console').harness__VLjava_lang_String_2('$U/../data');
+            var cnsl = vm.loadClass('org.apidesign.bck2brwsr.launcher.impl.Console');
+            var res = cnsl.invoke('harness', '$U/../data');
         </script>
     </body>
 </html>
