@@ -685,7 +685,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                     }
                     if (now.getProtocol().equals("jar")) {
                         JarURLConnection juc = (JarURLConnection) now.openConnection();
-                        if (ignore.contains(juc.getJarFileURL())) {
+                        if (now.getFile().endsWith(".class") && ignore.contains(juc.getJarFileURL())) {
                             continue;
                         }
                     }
