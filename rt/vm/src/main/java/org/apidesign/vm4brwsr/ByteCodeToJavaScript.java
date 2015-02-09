@@ -85,6 +85,13 @@ abstract class ByteCodeToJavaScript implements Appendable {
     /* protected */ String accessClass(String classOperation) {
         return classOperation;
     }
+    
+    String accessClassFalse(String classOperation) {
+        if (jc.getClassName().replace('/', '_').equals(classOperation)) {
+            return "c";
+        }
+        return accessClass(classOperation) + "(false)";
+    }
 
     protected String accessField(String object, String mangledName,
                                  String[] fieldInfoName) throws IOException {
@@ -383,9 +390,9 @@ abstract class ByteCodeToJavaScript implements Appendable {
         boolean defineProp = generateMethod(destObject, mn, m);
         if (mn.equals("class__V")) {
             if (defineProp) {
-                toInitilize.add(accessClass(className(jc)) + "(false)['" + mn + "']");
+                toInitilize.add(accessClassFalse(className(jc)) + "['" + mn + "']");
             } else {
-                toInitilize.add(accessClass(className(jc)) + "(false)." + mn);
+                toInitilize.add(accessClassFalse(className(jc)) + "." + mn);
             }
         }
         return mn;
@@ -1392,10 +1399,10 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
                     final String mangleClass = mangleClassName(fi[0]);
-                    final String mangleClassAccess = accessClass(mangleClass);
+                    final String mangleClassAccess = accessClassFalse(mangleClass);
                     smapper.replace(this, type, "@2.call(@1)",
                          smapper.getA(0),
-                         accessField(mangleClassAccess + "(false)",
+                         accessField(mangleClassAccess,
                                      "_" + fi[1], fi)
                     );
                     i += 2;
@@ -1407,11 +1414,11 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
                     final String mangleClass = mangleClassName(fi[0]);
-                    final String mangleClassAccess = accessClass(mangleClass);
+                    final String mangleClassAccess = accessClassFalse(mangleClass);
                     emit(smapper, this, "@3.call(@2, @1);",
                          smapper.popT(type),
                          smapper.popA(),
-                         accessField(mangleClassAccess + "(false)",
+                         accessField(mangleClassAccess,
                                      "_" + fi[1], fi));
                     i += 2;
                     addReference(fi[0]);
@@ -1421,8 +1428,8 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     int indx = readUShortArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
-                    String ac = accessClass(mangleClassName(fi[0]));
-                    String af = accessField(ac + "(false)", "_" + fi[1], fi);
+                    String ac = accessClassFalse(mangleClassName(fi[0]));
+                    String af = accessField(ac, "_" + fi[1], fi);
                     smapper.assign(this, type, af + "()");
                     i += 2;
                     addReference(fi[0]);
@@ -1432,8 +1439,8 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     int indx = readUShortArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
-                    emit(smapper, this, "@1(false)._@2(@3);",
-                         accessClass(mangleClassName(fi[0])), fi[1],
+                    emit(smapper, this, "@1._@2(@3);",
+                         accessClassFalse(mangleClassName(fi[0])), fi[1],
                          smapper.popT(type));
                     i += 2;
                     addReference(fi[0]);
@@ -1755,7 +1762,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
         } else {
             mcn = mangleClassName(in);
         }
-        String object = accessClass(mcn) + "(false)";
+        String object = accessClassFalse(mcn);
         if (mn.startsWith("cons_")) {
             object += ".constructor";
         }
@@ -1838,7 +1845,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                 s = accessClass("java_lang_Class") + "(false)['forName__Ljava_lang_Class_2Ljava_lang_String_2']('" + classRef[0] + "')";
             } else {
                 addReference(classRef[0]);
-                s = accessClass(mangleClassName(s)) + "(false).constructor.$class";
+                s = accessClassFalse(mangleClassName(s)) + ".constructor.$class";
             }
         }
         return s;
@@ -2166,8 +2173,8 @@ abstract class ByteCodeToJavaScript implements Appendable {
                 requireReference(slashType);
                 
                 final String cn = mangleClassName(slashType);
-                append(accessClass(cn))
-                   .append("(false)['valueOf__L").
+                append(accessClassFalse(cn))
+                   .append("['valueOf__L").
                     append(cn).
                     append("_2Ljava_lang_String_2']('").
                     append(value).
