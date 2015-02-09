@@ -19,6 +19,7 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import static org.apidesign.vm4brwsr.ByteCodeParser.*;
 
@@ -1703,12 +1704,38 @@ abstract class ByteCodeToJavaScript implements Appendable {
         char[] returnType = { 'V' };
         StringBuilder cnt = new StringBuilder();
         String mn = findMethodName(mi, cnt, returnType);
-
+        
         final int numArguments = isStatic ? cnt.length() : cnt.length() + 1;
         final CharSequence[] vars = new CharSequence[numArguments];
 
         for (int j = numArguments - 1; j >= 0; --j) {
             vars[j] = mapper.popValue();
+        }
+
+        if ((
+            "newUpdater__Ljava_util_concurrent_atomic_AtomicIntegerFieldUpdater_2Ljava_lang_Class_2Ljava_lang_String_2".equals(mn)
+            && "java/util/concurrent/atomic/AtomicIntegerFieldUpdater".equals(mi[0])
+        ) || (
+            "newUpdater__Ljava_util_concurrent_atomic_AtomicLongFieldUpdater_2Ljava_lang_Class_2Ljava_lang_String_2".equals(mn)
+            && "java/util/concurrent/atomic/AtomicLongFieldUpdater".equals(mi[0])
+        )) {
+            if (vars[1] instanceof String) {
+                String field = vars[1].toString();
+                if (field.length() > 2 && field.charAt(0) == '"' && field.charAt(field.length() - 1) == '"') {
+                    vars[1] = "c._" + field.substring(1, field.length() - 1);
+                }
+            }
+        }
+        if (
+            "newUpdater__Ljava_util_concurrent_atomic_AtomicReferenceFieldUpdater_2Ljava_lang_Class_2Ljava_lang_Class_2Ljava_lang_String_2".equals(mn)
+            && "java/util/concurrent/atomic/AtomicReferenceFieldUpdater".equals(mi[0])
+        ) {
+            if (vars[1] instanceof String) {
+                String field = vars[2].toString();
+                if (field.length() > 2 && field.charAt(0) == '"' && field.charAt(field.length() - 1) == '"') {
+                    vars[2] = "c._" + field.substring(1, field.length() - 1);
+                }
+            }
         }
 
         if (returnType[0] != 'V') {

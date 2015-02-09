@@ -34,8 +34,8 @@
  */
 
 package java.util.concurrent.atomic;
-import sun.misc.Unsafe;
 import java.lang.reflect.*;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
  * A reflection-based utility that enables atomic updates to
@@ -258,89 +258,65 @@ public abstract class  AtomicIntegerFieldUpdater<T> {
                 return next;
         }
     }
-
+    
     /**
      * Standard hotspot implementation using intrinsics
      */
     private static class AtomicIntegerFieldUpdaterImpl<T> extends AtomicIntegerFieldUpdater<T> {
-        private static final Unsafe unsafe = Unsafe.getUnsafe();
-        private final long offset;
-        private final Class<T> tclass;
-        private final Class cclass;
+        private final Object fn;
+        private Class<T> tclass;
+        private Object cclass;
 
-        AtomicIntegerFieldUpdaterImpl(Class<T> tclass, String fieldName) {
-            Field field = null;
-            Class caller = null;
-            int modifiers = 0;
-            try {
-                field = tclass.getDeclaredField(fieldName);
-                caller = sun.reflect.Reflection.getCallerClass(3);
-                modifiers = field.getModifiers();
-                sun.reflect.misc.ReflectUtil.ensureMemberAccess(
-                    caller, tclass, null, modifiers);
-                sun.reflect.misc.ReflectUtil.checkPackageAccess(tclass);
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
+
+        AtomicIntegerFieldUpdaterImpl(Class<T> tclass, Object fieldName) {
+            if (!isFunction(fieldName)) {
+                throw new SecurityException("Updater can be used only from own class!");
             }
-
-            Class fieldt = field.getType();
-            if (fieldt != int.class)
-                throw new IllegalArgumentException("Must be integer type");
-
-            if (!Modifier.isVolatile(modifiers))
-                throw new IllegalArgumentException("Must be volatile type");
-
-            this.cclass = (Modifier.isProtected(modifiers) &&
-                           caller != tclass) ? caller : null;
             this.tclass = tclass;
-            offset = unsafe.objectFieldOffset(field);
+            this.fn = fieldName;
         }
+        
+        @JavaScriptBody(args = { "obj", "fn" }, body = "return fn.call(obj);")
+        private static native int get(Object obj, Object fn);
+
+        @JavaScriptBody(args = { "obj", "fn", "v" }, body = "fn.call(obj, v);")
+        private static native void set(Object obj, Object fn, int v);
+        
+        @JavaScriptBody(args = { "f" }, body = "return typeof f === 'function';")
+        private static native boolean isFunction(Object f);
 
         private void fullCheck(T obj) {
             if (!tclass.isInstance(obj))
                 throw new ClassCastException();
-            if (cclass != null)
-                ensureProtectedAccess(obj);
         }
 
         public boolean compareAndSet(T obj, int expect, int update) {
             if (obj == null || obj.getClass() != tclass || cclass != null) fullCheck(obj);
-            return unsafe.compareAndSwapInt(obj, offset, expect, update);
+            int prev = get(obj, fn);
+            if (prev == expect) {
+                set(obj, fn, update);
+                return true;
+            }
+            return false;
         }
 
         public boolean weakCompareAndSet(T obj, int expect, int update) {
-            if (obj == null || obj.getClass() != tclass || cclass != null) fullCheck(obj);
-            return unsafe.compareAndSwapInt(obj, offset, expect, update);
+            return compareAndSet(obj, expect, update);
         }
 
         public void set(T obj, int newValue) {
             if (obj == null || obj.getClass() != tclass || cclass != null) fullCheck(obj);
-            unsafe.putIntVolatile(obj, offset, newValue);
+            set(obj, fn, newValue);
         }
 
         public void lazySet(T obj, int newValue) {
             if (obj == null || obj.getClass() != tclass || cclass != null) fullCheck(obj);
-            unsafe.putOrderedInt(obj, offset, newValue);
+            set(obj, fn, newValue);
         }
 
         public final int get(T obj) {
             if (obj == null || obj.getClass() != tclass || cclass != null) fullCheck(obj);
-            return unsafe.getIntVolatile(obj, offset);
-        }
-
-        private void ensureProtectedAccess(T obj) {
-            if (cclass.isInstance(obj)) {
-                return;
-            }
-            throw new RuntimeException(
-                new IllegalAccessException("Class " +
-                    cclass.getName() +
-                    " can not access a protected member of class " +
-                    tclass.getName() +
-                    " using an instance of " +
-                    obj.getClass().getName()
-                )
-            );
+            return get(obj, fn);
         }
     }
 }

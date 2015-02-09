@@ -34,8 +34,8 @@
  */
 
 package java.util.concurrent.atomic;
-import sun.misc.Unsafe;
 import java.lang.reflect.*;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
  * A reflection-based utility that enables atomic updates to
@@ -70,10 +70,7 @@ public abstract class  AtomicLongFieldUpdater<T> {
      * exception if the class does not hold field or is the wrong type.
      */
     public static <U> AtomicLongFieldUpdater<U> newUpdater(Class<U> tclass, String fieldName) {
-        if (AtomicLong.VM_SUPPORTS_LONG_CAS)
-            return new CASUpdater<U>(tclass, fieldName);
-        else
-            return new LockedUpdater<U>(tclass, fieldName);
+        return new Impl<U>(tclass, fieldName);
     }
 
     /**
@@ -260,177 +257,68 @@ public abstract class  AtomicLongFieldUpdater<T> {
                 return next;
         }
     }
+    /**
+     * Standard hotspot implementation using intrinsics
+     */
+    private static class Impl<T> extends AtomicLongFieldUpdater<T> {
+        private final Object fn;
+        private Class<T> tclass;
+        private Object cclass;
 
-    private static class CASUpdater<T> extends AtomicLongFieldUpdater<T> {
-        private static final Unsafe unsafe = Unsafe.getUnsafe();
-        private final long offset;
-        private final Class<T> tclass;
-        private final Class cclass;
 
-        CASUpdater(Class<T> tclass, String fieldName) {
-            Field field = null;
-            Class caller = null;
-            int modifiers = 0;
-            try {
-                field = tclass.getDeclaredField(fieldName);
-                caller = sun.reflect.Reflection.getCallerClass(3);
-                modifiers = field.getModifiers();
-                sun.reflect.misc.ReflectUtil.ensureMemberAccess(
-                    caller, tclass, null, modifiers);
-                sun.reflect.misc.ReflectUtil.checkPackageAccess(tclass);
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
+        Impl(Class<T> tclass, Object fieldName) {
+            if (!isFunction(fieldName)) {
+                throw new SecurityException("Updater can be used only from own class!");
             }
-
-            Class fieldt = field.getType();
-            if (fieldt != long.class)
-                throw new IllegalArgumentException("Must be long type");
-
-            if (!Modifier.isVolatile(modifiers))
-                throw new IllegalArgumentException("Must be volatile type");
-
-            this.cclass = (Modifier.isProtected(modifiers) &&
-                           caller != tclass) ? caller : null;
             this.tclass = tclass;
-            offset = unsafe.objectFieldOffset(field);
+            this.fn = fieldName;
         }
+        
+        @JavaScriptBody(args = { "obj", "fn" }, body = "return fn.call(obj);")
+        private static native long get(Object obj, Object fn);
+
+        @JavaScriptBody(args = { "obj", "fn", "v" }, body = "fn.call(obj, v);")
+        private static native void set(Object obj, Object fn, long v);
+        
+        @JavaScriptBody(args = { "f" }, body = "return typeof f === 'function';")
+        private static native boolean isFunction(Object f);
 
         private void fullCheck(T obj) {
             if (!tclass.isInstance(obj))
                 throw new ClassCastException();
-            if (cclass != null)
-                ensureProtectedAccess(obj);
         }
 
+        @Override
         public boolean compareAndSet(T obj, long expect, long update) {
             if (obj == null || obj.getClass() != tclass || cclass != null) fullCheck(obj);
-            return unsafe.compareAndSwapLong(obj, offset, expect, update);
-        }
-
-        public boolean weakCompareAndSet(T obj, long expect, long update) {
-            if (obj == null || obj.getClass() != tclass || cclass != null) fullCheck(obj);
-            return unsafe.compareAndSwapLong(obj, offset, expect, update);
-        }
-
-        public void set(T obj, long newValue) {
-            if (obj == null || obj.getClass() != tclass || cclass != null) fullCheck(obj);
-            unsafe.putLongVolatile(obj, offset, newValue);
-        }
-
-        public void lazySet(T obj, long newValue) {
-            if (obj == null || obj.getClass() != tclass || cclass != null) fullCheck(obj);
-            unsafe.putOrderedLong(obj, offset, newValue);
-        }
-
-        public long get(T obj) {
-            if (obj == null || obj.getClass() != tclass || cclass != null) fullCheck(obj);
-            return unsafe.getLongVolatile(obj, offset);
-        }
-
-        private void ensureProtectedAccess(T obj) {
-            if (cclass.isInstance(obj)) {
-                return;
-            }
-            throw new RuntimeException(
-                new IllegalAccessException("Class " +
-                    cclass.getName() +
-                    " can not access a protected member of class " +
-                    tclass.getName() +
-                    " using an instance of " +
-                    obj.getClass().getName()
-                )
-            );
-        }
-    }
-
-
-    private static class LockedUpdater<T> extends AtomicLongFieldUpdater<T> {
-        private static final Unsafe unsafe = Unsafe.getUnsafe();
-        private final long offset;
-        private final Class<T> tclass;
-        private final Class cclass;
-
-        LockedUpdater(Class<T> tclass, String fieldName) {
-            Field field = null;
-            Class caller = null;
-            int modifiers = 0;
-            try {
-                field = tclass.getDeclaredField(fieldName);
-                caller = sun.reflect.Reflection.getCallerClass(3);
-                modifiers = field.getModifiers();
-                sun.reflect.misc.ReflectUtil.ensureMemberAccess(
-                    caller, tclass, null, modifiers);
-                sun.reflect.misc.ReflectUtil.checkPackageAccess(tclass);
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
-            }
-
-            Class fieldt = field.getType();
-            if (fieldt != long.class)
-                throw new IllegalArgumentException("Must be long type");
-
-            if (!Modifier.isVolatile(modifiers))
-                throw new IllegalArgumentException("Must be volatile type");
-
-            this.cclass = (Modifier.isProtected(modifiers) &&
-                           caller != tclass) ? caller : null;
-            this.tclass = tclass;
-            offset = unsafe.objectFieldOffset(field);
-        }
-
-        private void fullCheck(T obj) {
-            if (!tclass.isInstance(obj))
-                throw new ClassCastException();
-            if (cclass != null)
-                ensureProtectedAccess(obj);
-        }
-
-        public boolean compareAndSet(T obj, long expect, long update) {
-            if (obj == null || obj.getClass() != tclass || cclass != null) fullCheck(obj);
-            synchronized (this) {
-                long v = unsafe.getLong(obj, offset);
-                if (v != expect)
-                    return false;
-                unsafe.putLong(obj, offset, update);
+            long prev = get(obj, fn);
+            if (prev == expect) {
+                set(obj, fn, update);
                 return true;
             }
+            return false;
         }
 
+        @Override
         public boolean weakCompareAndSet(T obj, long expect, long update) {
             return compareAndSet(obj, expect, update);
         }
 
+        @Override
         public void set(T obj, long newValue) {
             if (obj == null || obj.getClass() != tclass || cclass != null) fullCheck(obj);
-            synchronized (this) {
-                unsafe.putLong(obj, offset, newValue);
-            }
+            set(obj, fn, newValue);
         }
 
+        @Override
         public void lazySet(T obj, long newValue) {
-            set(obj, newValue);
-        }
-
-        public long get(T obj) {
             if (obj == null || obj.getClass() != tclass || cclass != null) fullCheck(obj);
-            synchronized (this) {
-                return unsafe.getLong(obj, offset);
-            }
+            set(obj, fn, newValue);
         }
 
-        private void ensureProtectedAccess(T obj) {
-            if (cclass.isInstance(obj)) {
-                return;
-            }
-            throw new RuntimeException(
-                new IllegalAccessException("Class " +
-                    cclass.getName() +
-                    " can not access a protected member of class " +
-                    tclass.getName() +
-                    " using an instance of " +
-                    obj.getClass().getName()
-                )
-            );
+        public final long get(T obj) {
+            if (obj == null || obj.getClass() != tclass || cclass != null) fullCheck(obj);
+            return get(obj, fn);
         }
     }
 }

@@ -34,8 +34,8 @@
  */
 
 package java.util.concurrent.atomic;
-import sun.misc.Unsafe;
 import java.lang.reflect.*;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
  * A reflection-based utility that enables atomic updates to
@@ -89,7 +89,7 @@ public abstract class AtomicReferenceFieldUpdater<T, V> {
      * exception if the class does not hold field or is the wrong type.
      */
     public static <U, W> AtomicReferenceFieldUpdater<U,W> newUpdater(Class<U> tclass, Class<W> vclass, String fieldName) {
-        return new AtomicReferenceFieldUpdaterImpl<U,W>(tclass,
+        return new Impl<U,W>(tclass,
                                                         vclass,
                                                         fieldName);
     }
@@ -176,129 +176,70 @@ public abstract class AtomicReferenceFieldUpdater<T, V> {
                 return current;
         }
     }
+    /**
+     * Standard hotspot implementation using intrinsics
+     */
+    private static class Impl<T,U> extends AtomicReferenceFieldUpdater<T,U> {
+        private final Object fn;
+        private Class<T> tclass;
+        private Object cclass;
 
-    private static final class AtomicReferenceFieldUpdaterImpl<T,V>
-        extends AtomicReferenceFieldUpdater<T,V> {
-        private static final Unsafe unsafe = Unsafe.getUnsafe();
-        private final long offset;
-        private final Class<T> tclass;
-        private final Class<V> vclass;
-        private final Class cclass;
 
-        /*
-         * Internal type checks within all update methods contain
-         * internal inlined optimizations checking for the common
-         * cases where the class is final (in which case a simple
-         * getClass comparison suffices) or is of type Object (in
-         * which case no check is needed because all objects are
-         * instances of Object). The Object case is handled simply by
-         * setting vclass to null in constructor.  The targetCheck and
-         * updateCheck methods are invoked when these faster
-         * screenings fail.
-         */
-
-        AtomicReferenceFieldUpdaterImpl(Class<T> tclass,
-                                        Class<V> vclass,
-                                        String fieldName) {
-            Field field = null;
-            Class fieldClass = null;
-            Class caller = null;
-            int modifiers = 0;
-            try {
-                field = tclass.getDeclaredField(fieldName);
-                caller = sun.reflect.Reflection.getCallerClass(3);
-                modifiers = field.getModifiers();
-                sun.reflect.misc.ReflectUtil.ensureMemberAccess(
-                    caller, tclass, null, modifiers);
-                sun.reflect.misc.ReflectUtil.checkPackageAccess(tclass);
-                fieldClass = field.getType();
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
+        Impl(Class<T> tclass, Class<U> vclass, Object fieldName) {
+            if (!isFunction(fieldName)) {
+                throw new SecurityException("Updater can be used only from own class!");
             }
-
-            if (vclass != fieldClass)
-                throw new ClassCastException();
-
-            if (!Modifier.isVolatile(modifiers))
-                throw new IllegalArgumentException("Must be volatile type");
-
-            this.cclass = (Modifier.isProtected(modifiers) &&
-                           caller != tclass) ? caller : null;
             this.tclass = tclass;
-            if (vclass == Object.class)
-                this.vclass = null;
-            else
-                this.vclass = vclass;
-            offset = unsafe.objectFieldOffset(field);
+            this.fn = fieldName;
         }
+        
+        @JavaScriptBody(args = { "obj", "fn" }, body = "return fn.call(obj);")
+        private static native Object get(Object obj, Object fn);
 
-        void targetCheck(T obj) {
+        @JavaScriptBody(args = { "obj", "fn", "v" }, body = "fn.call(obj, v);")
+        private static native void set(Object obj, Object fn, Object v);
+        
+        @JavaScriptBody(args = { "f" }, body = "return typeof f === 'function';")
+        private static native boolean isFunction(Object f);
+
+        private void fullCheck(T obj) {
             if (!tclass.isInstance(obj))
                 throw new ClassCastException();
-            if (cclass != null)
-                ensureProtectedAccess(obj);
         }
 
-        void updateCheck(T obj, V update) {
-            if (!tclass.isInstance(obj) ||
-                (update != null && vclass != null && !vclass.isInstance(update)))
-                throw new ClassCastException();
-            if (cclass != null)
-                ensureProtectedAccess(obj);
-        }
-
-        public boolean compareAndSet(T obj, V expect, V update) {
-            if (obj == null || obj.getClass() != tclass || cclass != null ||
-                (update != null && vclass != null &&
-                 vclass != update.getClass()))
-                updateCheck(obj, update);
-            return unsafe.compareAndSwapObject(obj, offset, expect, update);
-        }
-
-        public boolean weakCompareAndSet(T obj, V expect, V update) {
-            // same implementation as strong form for now
-            if (obj == null || obj.getClass() != tclass || cclass != null ||
-                (update != null && vclass != null &&
-                 vclass != update.getClass()))
-                updateCheck(obj, update);
-            return unsafe.compareAndSwapObject(obj, offset, expect, update);
-        }
-
-        public void set(T obj, V newValue) {
-            if (obj == null || obj.getClass() != tclass || cclass != null ||
-                (newValue != null && vclass != null &&
-                 vclass != newValue.getClass()))
-                updateCheck(obj, newValue);
-            unsafe.putObjectVolatile(obj, offset, newValue);
-        }
-
-        public void lazySet(T obj, V newValue) {
-            if (obj == null || obj.getClass() != tclass || cclass != null ||
-                (newValue != null && vclass != null &&
-                 vclass != newValue.getClass()))
-                updateCheck(obj, newValue);
-            unsafe.putOrderedObject(obj, offset, newValue);
-        }
-
-        public V get(T obj) {
-            if (obj == null || obj.getClass() != tclass || cclass != null)
-                targetCheck(obj);
-            return (V)unsafe.getObjectVolatile(obj, offset);
-        }
-
-        private void ensureProtectedAccess(T obj) {
-            if (cclass.isInstance(obj)) {
-                return;
+        @Override
+        public boolean compareAndSet(T obj, U expect, U update) {
+            if (obj == null || obj.getClass() != tclass || cclass != null) fullCheck(obj);
+            Object prev = get(obj, fn);
+            if (prev == expect) {
+                set(obj, fn, update);
+                return true;
             }
-            throw new RuntimeException(
-                new IllegalAccessException("Class " +
-                    cclass.getName() +
-                    " can not access a protected member of class " +
-                    tclass.getName() +
-                    " using an instance of " +
-                    obj.getClass().getName()
-                )
-            );
+            return false;
+        }
+
+        @Override
+        public boolean weakCompareAndSet(T obj, U expect, U update) {
+            return compareAndSet(obj, expect, update);
+        }
+
+        @Override
+        public void set(T obj, U newValue) {
+            if (obj == null || obj.getClass() != tclass || cclass != null) fullCheck(obj);
+            set(obj, fn, newValue);
+        }
+
+        @Override
+        public void lazySet(T obj, U newValue) {
+            if (obj == null || obj.getClass() != tclass || cclass != null) fullCheck(obj);
+            set(obj, fn, newValue);
+        }
+
+        @Override
+        public final U get(T obj) {
+            if (obj == null || obj.getClass() != tclass || cclass != null) fullCheck(obj);
+            return (U) get(obj, fn);
         }
     }
+
 }

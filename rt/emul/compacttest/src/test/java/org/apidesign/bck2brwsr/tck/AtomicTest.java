@@ -19,7 +19,10 @@ package org.apidesign.bck2brwsr.tck;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
+import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
@@ -29,6 +32,31 @@ import org.testng.annotations.Factory;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class AtomicTest {
+    private volatile int intValue;
+    private static AtomicIntegerFieldUpdater<AtomicTest> intUpdater;
+    static AtomicIntegerFieldUpdater<AtomicTest> getIntUpdater() {
+        if (intUpdater == null) {
+            intUpdater = AtomicIntegerFieldUpdater.newUpdater(AtomicTest.class, "intValue");
+        }
+        return intUpdater;
+    }
+    private volatile long longValue;
+    private static AtomicLongFieldUpdater<AtomicTest> longUpdater;
+    static AtomicLongFieldUpdater<AtomicTest> getLongUpdater() {
+        if (longUpdater == null) {
+            longUpdater = AtomicLongFieldUpdater.newUpdater(AtomicTest.class, "longValue");
+        }
+        return longUpdater;
+    }
+    private volatile Number refValue;
+    private static AtomicReferenceFieldUpdater<AtomicTest,Number> refUpdater;
+    static AtomicReferenceFieldUpdater<AtomicTest,Number> getRefUpdater() {
+        if (refUpdater == null) {
+            refUpdater = AtomicReferenceFieldUpdater.newUpdater(AtomicTest.class, Number.class, "refValue");
+        }
+        return refUpdater;
+    }
+    
     @Compare public boolean atomicBoolean() {
         AtomicBoolean ab = new AtomicBoolean();
         ab.set(true);
@@ -46,6 +74,32 @@ public class AtomicTest {
         AtomicReference<String> ar = new AtomicReference<String>("Ahoj");
         assert ar.compareAndSet("Ahoj", "Hello");
         return ar.getAndSet("Other");
+    }
+    
+    @Compare public int intUpdater() {
+        intValue = Integer.MAX_VALUE / 2;
+        final AtomicIntegerFieldUpdater<AtomicTest> u = getIntUpdater();
+        u.compareAndSet(this, 0, 10);
+        u.addAndGet(this, 3);
+        int thirteen = u.getAndAdd(this, 7);
+        return thirteen + u.get(this);
+    }
+
+    @Compare public long longUpdater() {
+        longValue = Long.MAX_VALUE / 2;
+        final AtomicLongFieldUpdater<AtomicTest> u = getLongUpdater();
+        u.compareAndSet(this, 0, 10);
+        u.addAndGet(this, 3);
+        long thirteen = u.getAndAdd(this, 7);
+        return thirteen + u.get(this);
+    }
+
+    @Compare public int refUpdater() {
+        final AtomicReferenceFieldUpdater<AtomicTest,Number> u = getRefUpdater();
+        u.set(this, 0);
+        u.compareAndSet(this, 0, 10);
+        Number ten = u.getAndSet(this, 3);
+        return u.get(this).intValue() + ten.intValue();
     }
     
     @Factory public static Object[] create() {

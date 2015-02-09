@@ -136,6 +136,10 @@ public class LongArithmeticTest {
     @Compare public long conversion() {
         return Long.MAX_VALUE;
     }
+    
+    @Compare public long thirteen() {
+        return add(10, 3);
+    }
 
     @Compare public long negate1() {
         return neg(0x00fa37d7763e0ca1l);
