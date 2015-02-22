@@ -45,6 +45,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamField;
 import java.io.Serializable;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
  * A <code>Locale</code> object represents a specific geographical, political,
@@ -634,8 +635,20 @@ public final class Locale implements Cloneable, Serializable {
      * @return the default locale for this instance of the Java Virtual Machine
      */
     public static Locale getDefault() {
+        String lang = language();
+        if (lang != null) {
+            String[] arr = lang.split("-");
+            return new Locale(arr[0], arr[1]);
+        }
         return Locale.US;
     }
+    
+    @JavaScriptBody(args = {}, body = ""
+        + "if (navigator.language) return navigator.language;\n"
+        + "if (navigator.userLangage) return navigator.userLangage;\n"
+        + "return null;\n"
+    )
+    private static native String language();
 
     /**
      * Gets the current value of the default locale for the specified Category
@@ -654,7 +667,7 @@ public final class Locale implements Cloneable, Serializable {
      * @since 1.7
      */
     public static Locale getDefault(Locale.Category category) {
-        return Locale.US;
+        return getDefault();
     }
     
     /**
