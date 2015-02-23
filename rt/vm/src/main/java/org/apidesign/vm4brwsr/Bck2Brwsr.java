@@ -22,7 +22,18 @@ import java.io.InputStream;
 
 /** Build your own virtual machine! Use methods in this class to generate
  * a skeleton JVM in JavaScript that contains pre-compiled classes of your
- * choice. The generated script defines one JavaScript method that can
+ * choice:
+ * <pre>
+ * Writer w = new {@link java.io.StringWriter}();
+ * {@link #newCompiler() Bck2Brwsr.newCompiler}()
+ *   .{@link #resources(org.apidesign.vm4brwsr.Bck2Brwsr.Resources)}
+ *   .{@link #addRootClasses(java.lang.String...)}
+ *   .{@link #addClasses(java.lang.String...)}
+ *   .{@link #addExported(java.lang.String...)}
+ *   .{@link #generate(java.lang.Appendable) generate(w)};
+ * System.out.{@link java.io.PrintStream#print(java.lang.String) print(w.toString())};
+ * </pre>
+ * The generated script defines one JavaScript method that can
  * be used to bootstrap and load the virtual machine: <pre>
  * var vm = bck2brwsr();
  * var main = vm.loadClass('org.your.pkg.Main');
@@ -61,7 +72,7 @@ import java.io.InputStream;
  * returns immediately and the call to the static main method will happen
  * once the virtual machine is initialized and the class available.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public final class Bck2Brwsr {
     private final ObfuscationLevel level;
@@ -114,7 +125,7 @@ public final class Bck2Brwsr {
      * empty Bck2Brwsr virtual machine. The instance can be further
      * configured by calling chain of methods. For example: 
      * <pre>
-     * {@link #createCompiler()}.{@link #resources(org.apidesign.vm4brwsr.Bck2Brwsr.Resources) resources(loader)}.{@link #addRootClasses(java.lang.String[]) addRootClasses("your/Clazz")}.{@link #generate(java.lang.Appendable) generate(out)};
+     * {@link #newCompiler()}.{@link #resources(org.apidesign.vm4brwsr.Bck2Brwsr.Resources) resources(loader)}.{@link #addRootClasses(java.lang.String[]) addRootClasses("your/Clazz")}.{@link #generate(java.lang.Appendable) generate(out)};
      * </pre>
      * 
      * @return new instance of the Bck2Brwsr compiler
@@ -265,7 +276,8 @@ public final class Bck2Brwsr {
         );
     }
     
-    /** Turns on the standalone mode. E.g. acts like {@link #library(boolean) library(false)},
+    /** Turns on the standalone mode. E.g. does the opposite of
+     * calling {@link #library(java.lang.String...)},
      * but also allows to specify whether the <em>Bck2Brwsr VM</em> should
      * be included at all. If not, only the skeleton of the launcher is
      * generated without any additional VM classes referenced.
@@ -311,6 +323,7 @@ public final class Bck2Brwsr {
      * compiler.
      * 
      * @param out the output to write the generated JavaScript to
+     * @throws IOException I/O exception can be thrown when something goes wrong
      * @since 0.5
      */
     public void generate(Appendable out) throws IOException {
