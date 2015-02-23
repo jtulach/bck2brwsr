@@ -644,6 +644,7 @@ public final class Locale implements Cloneable, Serializable {
     }
     
     @JavaScriptBody(args = {}, body = ""
+        + "if (typeof navigator === 'undefined') return null;\n"
         + "if (navigator.language) return navigator.language;\n"
         + "if (navigator.userLangage) return navigator.userLangage;\n"
         + "return null;\n"
