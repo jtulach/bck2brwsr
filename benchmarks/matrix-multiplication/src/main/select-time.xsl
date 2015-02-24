@@ -2,7 +2,7 @@
 <!--
 
     Back 2 Browser Bytecode Translator
-    Copyright (C) 2012 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+    Copyright (C) 2012-2015 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@
     If not, see http://opensource.org/licenses/GPL-2.0.
 
 -->
-
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
     <xsl:output method="text"/>
 
