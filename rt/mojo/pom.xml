@@ -52,6 +52,12 @@
       <artifactId>maven-plugin-api</artifactId>
       <version>3.0.4</version>
       <type>jar</type>
+      <exclusions>
+        <exclusion>
+          <groupId>org.sonatype.sisu</groupId>
+          <artifactId>sisu-guava</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.plugin-tools</groupId>
