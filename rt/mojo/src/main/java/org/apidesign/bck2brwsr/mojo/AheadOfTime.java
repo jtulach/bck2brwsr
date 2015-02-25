@@ -204,6 +204,9 @@ public class AheadOfTime extends AbstractMojo {
         getLog().info("Generating " + js);
         Writer w = new OutputStreamWriter(new FileOutputStream(js), "UTF-8");
         Bck2Brwsr c = Bck2BrwsrJars.configureFrom(null, a.getFile(), loader, ignoreBootClassPath);
+        if (exports != null) {
+            c = c.addExported(exports);
+        }
         c.
             obfuscation(obfuscation).
             generate(w);
