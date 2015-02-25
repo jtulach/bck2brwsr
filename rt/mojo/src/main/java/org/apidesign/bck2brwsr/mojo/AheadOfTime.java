@@ -114,7 +114,7 @@ public class AheadOfTime extends AbstractMojo {
             if ("provided".equals(a.getScope())) {
                 continue;
             }
-            File aot = new File(prj.getBuild().getDirectory(), classPathPrefix);
+            File aot = new File(mainJavaScript.getParent(), classPathPrefix);
             aot.mkdirs();
             File js = new File(aot, n.substring(0, n.length() - 4) + ".js");
             if (js.exists()) {
