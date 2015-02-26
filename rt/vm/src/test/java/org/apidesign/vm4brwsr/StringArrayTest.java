@@ -21,30 +21,9 @@ import org.testng.annotations.Test;
 import static org.testng.Assert.*;
 
 public class StringArrayTest {
-    @Test public void deleteMinusIndex() throws Exception {
-        String[] arr = { "Ahoj", "Kluci" };
-        StringArray list = StringArray.asList(arr);
-        list.delete(-1);
-        assertEquals(list.toArray().length, 2, "No element removed");
-    }
-    @Test public void deleteTooHighIndex() throws Exception {
-        String[] arr = { "Ahoj", "Kluci" };
-        StringArray list = StringArray.asList(arr);
-        list.delete(5);
-        assertEquals(list.toArray().length, 2, "No element removed");
-    }
-    @Test public void deleteFirst() throws Exception {
-        String[] arr = { "Ahoj", "Kluci" };
-        StringArray list = StringArray.asList(arr);
-        list.delete(0);
-        assertEquals(list.toArray().length, 1, "First element removed");
-        assertEquals(list.toArray()[0], "Kluci");
-    }
-    @Test public void deleteSecond() throws Exception {
-        String[] arr = { "Ahoj", "Kluci" };
-        StringArray list = StringArray.asList(arr);
-        list.delete(1);
-        assertEquals(list.toArray().length, 1, "Second element removed");
-        assertEquals(list.toArray()[0], "Ahoj");
+    @Test public void doubleAdd() {
+        StringArray empty = StringArray.asList();
+        StringArray three = empty.addAndNew("One").addAndNew("Two").addAndNew("Three");
+        assertEquals(three.toArray().length, 3);
     }
 }
