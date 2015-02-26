@@ -638,7 +638,7 @@ public final class Locale implements Cloneable, Serializable {
         String lang = language();
         if (lang != null) {
             String[] arr = lang.split("-");
-            return new Locale(arr[0], arr[1]);
+            return new Locale(arr[0], arr.length == 1 ? "" : arr[1]);
         }
         return Locale.US;
     }
