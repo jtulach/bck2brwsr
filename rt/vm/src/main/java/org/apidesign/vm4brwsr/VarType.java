@@ -105,4 +105,16 @@ final class VarType {
                 throw new IllegalStateException("Unhandled field type");
         }
     }
+    
+    public static String toString(final int varType) {
+        switch (varType) {
+            case VarType.INTEGER: return "int";
+            case VarType.LONG: return "long";
+            case VarType.FLOAT: return "float";
+            case VarType.DOUBLE: return "double";
+            case VarType.REFERENCE: return "ref";
+            default:
+                throw new IllegalStateException("Unhandled field type");
+        }
+    }
 }

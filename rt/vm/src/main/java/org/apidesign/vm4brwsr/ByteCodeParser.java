@@ -2651,14 +2651,11 @@ final class ByteCodeParser {
         @Override
         public String toString() {
             final StringBuilder sb = new StringBuilder("[");
-            if (size > 0) {
-                sb.append(typeString(types[0]));
-                for (int i = 1; i < size; ++i) {
-                    sb.append(", ");
-                    sb.append(typeString(types[i]));
-                }
+            String sep = "";
+            for (int i = 0; i < size; ++i) {
+                sb.append(sep).append(VarType.toString(types[i] & 0xff));
+                sep = ", ";
             }
-
             return sb.append(']').toString();
         }
 
