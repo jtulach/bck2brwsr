@@ -33,7 +33,7 @@ abstract class VM extends ByteCodeToJavaScript {
 
     private final Bck2Brwsr.Resources resources;
     private final ExportedSymbols exportedSymbols;
-    private final StringArray invokerMethods;
+    private final StringBuilder invokerMethods;
     private final StringArray asBinary;
     int exportedCount;
 
@@ -45,7 +45,7 @@ abstract class VM extends ByteCodeToJavaScript {
         this.resources = resources;
         this.classDataCache = new ClassDataCache(resources);
         this.exportedSymbols = new ExportedSymbols(resources, explicitlyExported);
-        this.invokerMethods = new StringArray();
+        this.invokerMethods = new StringBuilder();
         this.asBinary = asBinary;
     }
 
@@ -98,13 +98,7 @@ abstract class VM extends ByteCodeToJavaScript {
         append(
                 "\n  var invoker = {};");
         generateBody(names);
-        for (String invokerMethod: invokerMethods.toArray()) {
-            append("\n  invoker." + invokerMethod + " = function() {"
-                + "\n    var target = arguments[0];"
-                + "\n    return target['" + invokerMethod + "'].apply(target, Array.prototype.slice.call(arguments, 1));"
-                + "\n  };"
-            );
-        }
+        append(invokerMethods);
         
         for (String r : asBinary.toArray()) {
             append("\n  ").append(getExportsObject()).append("['registerResource']('");
@@ -366,14 +360,28 @@ abstract class VM extends ByteCodeToJavaScript {
             return object + "." + mangledName + '(';
         }
 
-        return accessThroughInvoker(object, mangledName, params > 1 ? "," : "");
+        return accessThroughInvoker(object, mangledName, params);
     }
 
-    private String accessThroughInvoker(String object, String mangledName, String sep) {
-        if (!invokerMethods.contains(mangledName)) {
-            invokerMethods.add(mangledName);
+    private String accessThroughInvoker(String object, String mangledName, int params) 
+    throws IOException {
+        String def = "\n  invoker." + mangledName + " = function(target";
+        if (invokerMethods.indexOf(def) == -1) {
+            invokerMethods.append(def);
+            for (int j = 0; j < params; j++) {
+                invokerMethods.append(", p").append(j);
+            }
+            invokerMethods.append(") {\n    return target['").
+                append(mangledName).append("'](");
+            for (int j = 0; j < params; j++) {
+                if (j > 0) {
+                    invokerMethods.append(",");
+                }
+                invokerMethods.append("p").append(j);
+            }
+            invokerMethods.append(");\n  };");
         }
-        return "invoker." + mangledName + '(' + object + sep;
+        return "invoker." + mangledName + '(' + object + (params > 1 ? "," : "");
     }
 
     private boolean isHierarchyExported(final MethodData methodData)
