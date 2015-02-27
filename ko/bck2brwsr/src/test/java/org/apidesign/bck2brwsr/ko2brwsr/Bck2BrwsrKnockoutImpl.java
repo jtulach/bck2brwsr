@@ -24,35 +24,28 @@ import java.net.URL;
 import java.util.Map;
 import net.java.html.BrwsrCtx;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
-import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.netbeans.html.context.spi.Contexts;
 import org.netbeans.html.json.spi.Technology;
 import org.netbeans.html.json.spi.Transfer;
 import org.netbeans.html.json.spi.WSTransfer;
-import org.netbeans.html.json.tck.KOTest;
 import org.netbeans.html.json.tck.KnockoutTCK;
 import org.netbeans.html.ko4j.KO4J;
 import org.openide.util.lookup.ServiceProvider;
-import org.testng.annotations.Factory;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 @ServiceProvider(service = KnockoutTCK.class)
-public final class Bck2BrwsrKnockoutTest extends KnockoutTCK {
-    @Factory public static Object[] create() {
+public final class Bck2BrwsrKnockoutImpl extends KnockoutTCK {
+    static Class[] createClasses() {
         final Class<?>[] arr = testClasses();
         for (int i = 0; i < arr.length; i++) {
             if (arr[i].getSimpleName().startsWith("GC")) {
                 arr[i] = Object.class;
             }
         }
-        return VMTest.newTests().
-            withClasses(arr).
-            withLaunchers("bck2brwsr").
-            withTestAnnotation(KOTest.class).
-            build();
+        return arr;
     }
     
     @Override

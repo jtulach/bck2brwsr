@@ -27,14 +27,22 @@ import org.testng.annotations.Factory;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class Bck2BrwsrJavaScriptBodyTest extends JavaScriptTCK {
-    @Factory public static Object[] tests() {
+    @Factory public static Object[] create() {
+        return VMTest.newTests().
+            withClasses(tests()).
+            withClasses(Bck2BrwsrKnockoutImpl.createClasses()).
+            withLaunchers("bck2brwsr").
+            withTestAnnotation(KOTest.class).
+            build();
+    }
+    
+    static Class[] tests() {
         final Class<?>[] arr = testClasses();
         for (int i = 0; i < arr.length; i++) {
             if (arr[i].getSimpleName().startsWith("GC")) {
                 arr[i] = Object.class;
             }
         }
-        return VMTest.newTests().withClasses(arr)
-            .withTestAnnotation(KOTest.class).build();
+        return arr;
     }
 }
