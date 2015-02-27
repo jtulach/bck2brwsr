@@ -19,7 +19,6 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import static org.apidesign.vm4brwsr.ByteCodeParser.*;
 
@@ -1800,6 +1799,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
         }
 
         if (returnType[0] != 'V') {
+            mapper.flush(this);
             append("var ")
                .append(mapper.pushT(VarType.fromFieldType(returnType[0])))
                .append(" = ");

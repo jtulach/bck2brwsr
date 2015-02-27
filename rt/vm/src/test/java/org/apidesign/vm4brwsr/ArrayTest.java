@@ -116,6 +116,14 @@ public class ArrayTest {
     @Test public void upCastOK2() throws Exception {
         assertExec("Can cast string to char sequence array", Array.class, "castArray__ZI", Double.valueOf(1), Double.valueOf(3));
     }
+    @Test public void twoDimensionalArrayAccess() throws Exception {
+        int exp = Array.sumTable();
+        assertExec("Is 2d access working OK?", Array.class, "sumTable__I", exp);
+    }
+    @Test public void ordAccess() throws Exception {
+        int exp = Array.plusOrd();
+        assertExec("Is int allocated OK?", Array.class, "plusOrd__I", exp);
+    }
     
     private static TestVM code;
     

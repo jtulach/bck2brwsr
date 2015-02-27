@@ -219,4 +219,36 @@ public class Array {
     public static String iterateArray(boolean javaArray) {
         return iterateArray(javaArray ? new String[0] : null);
     }
+    
+    enum ShapeType {
+        ZERO, ONE;
+    }
+    
+    private static void addType(int[][] table, ShapeType type1, ShapeType type2, int value) {
+        table[type1.ordinal()][type2.ordinal()] = value;
+    }
+    
+    public static int sumTable() {
+        int[][] arr = { { 99, 99 }, { 999, 999 }};
+        addType(arr, ShapeType.ZERO, ShapeType.ZERO, 0);
+        addType(arr, ShapeType.ZERO, ShapeType.ONE, 1);
+        addType(arr, ShapeType.ONE, ShapeType.ZERO, 1);
+        addType(arr, ShapeType.ONE, ShapeType.ONE, 2);
+        
+        int sum = 0;
+        for (int[] row : arr) {
+            for (int i : row) {
+                sum += i;
+            }
+        }
+        return sum;
+    }
+    
+    private static int inc(int v) {
+        return v + 1;
+    }
+    
+    public static int plusOrd() {
+        return inc(ShapeType.ZERO.ordinal()) + inc(ShapeType.ONE.ordinal());
+    }
 }
