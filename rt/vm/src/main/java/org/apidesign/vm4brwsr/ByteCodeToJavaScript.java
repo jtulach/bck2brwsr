@@ -29,6 +29,7 @@ import static org.apidesign.vm4brwsr.ByteCodeParser.*;
 abstract class ByteCodeToJavaScript implements Appendable {
     private ClassData jc;
     private final Appendable out;
+    private final StringArray classRefs = new StringArray();
     private boolean outChanged;
     private boolean callbacks;
 
@@ -85,11 +86,12 @@ abstract class ByteCodeToJavaScript implements Appendable {
         return classOperation;
     }
     
-    String accessClassFalse(String classOperation) {
+    final String accessClassFalse(String classOperation) {
         if (jc.getClassName().replace('/', '_').equals(classOperation)) {
             return "c";
         }
-        return accessClass(classOperation) + "(false)";
+        classRefs.addIfMissing(classOperation);
+        return "(refs_" + classOperation + " || (refs_" + classOperation + " = " + accessClass(classOperation) + "(false)))";
     }
 
     protected String accessField(String object, String mangledName,
@@ -323,6 +325,10 @@ abstract class ByteCodeToJavaScript implements Appendable {
         for (String init : toInitilize.toArray()) {
             append("\n    ").append(init).append("();");
         }
+        for (String ref : classRefs.toArray()) {
+            append("\n    var refs_").append(ref).append(";");
+        }
+        classRefs.clear();
         
         if (jsResource != null) {
             requireResource(jsResource);
