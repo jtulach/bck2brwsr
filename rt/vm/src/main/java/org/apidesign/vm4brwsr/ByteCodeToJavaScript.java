@@ -279,10 +279,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                         && (m.getAccess() & ACC_STATIC) == 0
                         && (m.getAccess() & ACC_PRIVATE) == 0) {
                     final String mn = findMethodName(m, new StringBuilder());
-                    append("\n        try {");
-                    append("\n          if (!x['").append(mn).append("']) Object.defineProperty(x, '").append(mn).append("', { value : c['").append(mn).append("']});");
-                    append("\n        } catch (ignore) {");
-                    append("\n        }");
+                    append("\n        if (!x['").append(mn).append("']) Object.defineProperty(x, '").append(mn).append("', { value : c['").append(mn).append("']});");
                 }
             }
         }
@@ -292,11 +289,8 @@ abstract class ByteCodeToJavaScript implements Appendable {
             requireReference(superInterface);
         }
         append("\n    }");
-        append("\n    try {");
-        append("\n      Object.defineProperty(c, 'fillInstOf', { value: ").append(className).append("fillInstOf });");
-        append("\n      ").append(className).append("fillInstOf(c);");
-        append("\n    } catch (ignore) {");
-        append("\n    }");
+        append("\n    if (!c.hasOwnProperty('fillInstOf')) Object.defineProperty(c, 'fillInstOf', { value: ").append(className).append("fillInstOf });");
+        append("\n    ").append(className).append("fillInstOf(c);");
 //        obfuscationDelegate.exportJSProperty(this, "c", instOfName);
         append("\n    CLS.$class = 'temp';");
         append("\n    CLS.$class = ");
