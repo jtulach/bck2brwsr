@@ -291,11 +291,7 @@ abstract class VM extends ByteCodeToJavaScript {
     
     @Override
     protected boolean requireReference(String cn) {
-        if (references.contains(cn)) {
-            return false;
-        }
-        references.add(cn);
-        return true;
+        return references.addIfMissing(cn);
     }
 
     @Override

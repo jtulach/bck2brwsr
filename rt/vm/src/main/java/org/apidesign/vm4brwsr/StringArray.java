@@ -32,16 +32,23 @@ class StringArray {
     }
     
     public void add(String s) {
+        add(s, false);
+    }
+    private boolean add(String s, boolean check) {
         if (arr == null) {
             arr = new String[1];
         } else {
             String[] tmp = new String[arr.length + 1];
             for (int i = 0; i < arr.length; i++) {
+                if (check && s.equals(arr[i])) {
+                    return false;
+                }
                 tmp[i] = arr[i];
             }
             arr = tmp;
         }
         arr[arr.length - 1] = s;
+        return true;
     }
 
     StringArray addAndNew(String... values) {
@@ -129,5 +136,9 @@ class StringArray {
 
     void clear() {
         arr = null;
+    }
+
+    boolean addIfMissing(String s) {
+        return add(s, true);
     }
 }
