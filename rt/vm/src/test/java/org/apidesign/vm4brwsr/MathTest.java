@@ -92,6 +92,26 @@ public class MathTest {
             Math.IEEEremainder(Integer.MAX_VALUE, -4.5), Integer.MAX_VALUE, -4.5
         );
     }
+    
+    @Test public void isNaN() throws Exception {
+        boolean nan = Double.isNaN(Double.NaN); 
+        assertExec("Same result 1", Double.class, "isNaN__ZD", 
+            1.0, Double.NaN
+        );
+    }
+
+    @Test public void isInfinite() throws Exception {
+        assertExec("Same result 1", Double.class, "isInfinite__ZD", 
+            1.0, Double.POSITIVE_INFINITY
+        );
+    }
+
+    @Test public void isNegInfinite() throws Exception {
+        assertExec("Same result 1", Double.class, "isInfinite__ZD", 
+            1.0, Double.NEGATIVE_INFINITY
+        );
+    }
+
 
     private static TestVM code;
     

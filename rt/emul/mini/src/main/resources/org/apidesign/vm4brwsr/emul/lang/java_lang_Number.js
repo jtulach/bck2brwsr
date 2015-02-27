@@ -224,7 +224,9 @@
             return hi.next32(low);
         }
     };
-    
+
+    // keeping for compatibility with generated bck2brwsr.js library files
+    // not used since 0.14
     numberPrototype.compare = function(x) {
         if (this == x) {
             return 0;

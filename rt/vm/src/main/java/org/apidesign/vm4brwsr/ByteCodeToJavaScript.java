@@ -975,11 +975,13 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     break;
                 case opc_fcmpl:
                 case opc_fcmpg:
-                    smapper.replace(this, VarType.INTEGER, "(@2).compare(@1)", smapper.popF(), smapper.getF(0));
+                    emit(smapper, this, "var @3 = (@2 == @1) ? 0 : ((@2 < @1) ? -1 : 1);",
+                         smapper.popF(), smapper.popF(), smapper.pushI());
                     break;
                 case opc_dcmpl:
                 case opc_dcmpg:
-                    smapper.replace(this, VarType.INTEGER, "(@2).compare(@1)", smapper.popD(), smapper.getD(0));
+                    emit(smapper, this, "var @3 = (@2 == @1) ? 0 : ((@2 < @1) ? -1 : 1);",
+                         smapper.popD(), smapper.popD(), smapper.pushI());
                     break;
                 case opc_if_acmpeq:
                     i = generateIf(smapper, byteCodes, i, smapper.popA(), smapper.popA(),
