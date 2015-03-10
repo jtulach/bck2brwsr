@@ -105,6 +105,12 @@
       <artifactId>launcher.http</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
-    </dependency>    
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>emul.mini</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>
