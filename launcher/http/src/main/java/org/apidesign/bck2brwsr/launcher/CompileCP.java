@@ -18,12 +18,14 @@
 package org.apidesign.bck2brwsr.launcher;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.JarURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.apidesign.bck2brwsr.aot.Bck2BrwsrJars;
@@ -95,8 +97,13 @@ class CompileCP {
             if (u == null) {
                 throw new IOException("Cannot find InterruptedException class on classpath: " + System.getProperty("java.class.path"));
             }
-            JarURLConnection juc = (JarURLConnection)u.openConnection();
-            rt = Bck2BrwsrJars.configureFrom(null, new File(juc.getJarFileURL().toURI()));
+            final URLConnection conn = u.openConnection();
+            if (conn instanceof JarURLConnection) {
+                JarURLConnection juc = (JarURLConnection)conn;
+                rt = Bck2BrwsrJars.configureFrom(null, new File(juc.getJarFileURL().toURI()));
+            } else {
+                throw new FileNotFoundException("Not a JAR URL: " + u);
+            }
         } catch (URISyntaxException ex) {
             throw new IOException(ex);
         }
