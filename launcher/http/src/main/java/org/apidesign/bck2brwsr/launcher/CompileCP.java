@@ -92,6 +92,9 @@ class CompileCP {
         final Bck2Brwsr rt;
         try {
             URL u = r.get(InterruptedException.class.getName().replace('.', '/') + ".class", 0);
+            if (u == null) {
+                throw new IOException("Cannot find InterruptedException class on classpath: " + System.getProperty("java.class.path"));
+            }
             JarURLConnection juc = (JarURLConnection)u.openConnection();
             rt = Bck2BrwsrJars.configureFrom(null, new File(juc.getJarFileURL().toURI()));
         } catch (URISyntaxException ex) {
