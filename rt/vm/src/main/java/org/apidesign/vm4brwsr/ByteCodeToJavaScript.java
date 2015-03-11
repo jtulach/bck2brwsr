@@ -437,9 +437,11 @@ abstract class ByteCodeToJavaScript implements Appendable {
 
         final byte[] byteCodes = m.getCode();
         if (byteCodes == null) {
-            append("  throw 'no code found for ")
+            if (debug("  throw 'no code found for ")) {
+               this
                .append(jc.getClassName()).append('.')
                .append(m.getName()).append("';\n");
+            }
             if (defineProp) {
                 append("}});");
             } else {
