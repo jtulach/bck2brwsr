@@ -18,6 +18,7 @@
 package org.apidesign.bck2brwsr.demo.calc.staticcompilation;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Enumeration;
@@ -26,6 +27,7 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import org.testng.annotations.Test;
 import static org.testng.Assert.*;
+import org.testng.SkipException;
 
 public class MinifiedTest {
     @Test public void minifiedVersionDoesNotContainFQN() throws Exception {
@@ -57,7 +59,11 @@ public class MinifiedTest {
                 return;
             }
         }
-        fail("No minified javaquery found: " + System.getProperty("java.class.path"));
+        final String cp = System.getProperty("java.class.path");
+        if (cp.contains("javaquery" + File.separatorChar + "api" + File.separatorChar + "target" + File.separatorChar + "classes")) {
+            throw new SkipException("Classpath seems to contain classes directories, not JARs. Cannot test.\nCP: " + cp);
+        }
+        fail("No minified javaquery found: " + cp);
     }
 
     @Test public void debugVersionContainsFQN() throws Exception {
@@ -89,7 +95,11 @@ public class MinifiedTest {
                 fail("Found no FQN of non-public Knockout class. Is it debug version?:" + key);
             }
         }
-        fail("No debug javaquery found: " + System.getProperty("java.class.path"));
+        final String cp = System.getProperty("java.class.path");
+        if (cp.contains("javaquery" + File.separatorChar + "api" + File.separatorChar + "target" + File.separatorChar + "classes")) {
+            throw new SkipException("Classpath seems to contain classes directories, not JARs. Cannot test.\nCP: " + cp);
+        }
+        fail("No debug javaquery found: " + cp);
     }
     
 }

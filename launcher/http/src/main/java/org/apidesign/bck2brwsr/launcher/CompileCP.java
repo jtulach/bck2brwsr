@@ -97,21 +97,14 @@ class CompileCP {
             if (u == null) {
                 throw new IOException("Cannot find InterruptedException class on classpath: " + System.getProperty("java.class.path"));
             }
-            final URLConnection conn = u.openConnection();
-            if (conn instanceof JarURLConnection) {
-                JarURLConnection juc = (JarURLConnection)conn;
-                rt = Bck2BrwsrJars.configureFrom(null, new File(juc.getJarFileURL().toURI()));
-            } else {
-                throw new FileNotFoundException("Not a JAR URL: " + u);
-            }
+            rt = configureFrom(u, null, 3);
         } catch (URISyntaxException ex) {
             throw new IOException(ex);
         }
         final Bck2Brwsr all;
         try {
             URL u = r.get(Bck2Brwsr.class.getName().replace('.', '/') + ".class", 0);
-            JarURLConnection juc = (JarURLConnection)u.openConnection();
-            all = Bck2BrwsrJars.configureFrom(rt, new File(juc.getJarFileURL().toURI()));
+            all = configureFrom(u, rt, 4);
         } catch (URISyntaxException ex) {
             throw new IOException(ex);
         }
@@ -126,5 +119,22 @@ class CompileCP {
                     return url == null ? null : url.openStream();
                 }
             }).generate(sb);
+    }
+
+    static Bck2Brwsr configureFrom(URL u, Bck2Brwsr rt, int parents) throws IOException, URISyntaxException {
+        final URLConnection conn = u.openConnection();
+        if (conn instanceof JarURLConnection) {
+            JarURLConnection juc = (JarURLConnection)conn;
+            rt = Bck2BrwsrJars.configureFrom(null, new File(juc.getJarFileURL().toURI()));
+        } else if (u.getProtocol().equals("file")) {
+            File dir = new File(u.toURI());
+            while (parents-- > 0) {
+                dir = dir.getParentFile();
+            }
+            rt = Bck2BrwsrJars.configureFrom(null, dir);
+        } else {
+            throw new FileNotFoundException("Not a JAR or file URL: " + u);
+        }
+        return rt;
     }
 }

@@ -144,5 +144,11 @@
       <artifactId>net.java.html.sound</artifactId>
       <version>${net.java.html.version}</version>
     </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>emul.mini</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>
