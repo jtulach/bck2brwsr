@@ -156,6 +156,14 @@ abstract class ByteCodeToJavaScript implements Appendable {
     protected String compile(ClassData classData) throws IOException {
         this.jc = classData;
         final String cn = this.jc.getClassName();
+        try {
+            return compileImpl(cn);
+        } catch (IOException ex) {
+            throw new IOException("Cannot compile " + cn + ":", ex);
+        }
+    }
+
+    private String compileImpl(final String cn) throws IOException {
         this.callbacks = cn.endsWith("/$JsCallbacks$");
         if (jc.getMajor_version() < 50 && !cn.endsWith("/package-info")) {
             throw new IOException("Can't compile " + cn + ". Class file version " + jc.getMajor_version() + "."
@@ -164,7 +172,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
         }
         byte[] arrData = jc.findAnnotationData(true);
         {
-            String[] arr = findAnnotation(arrData, jc, 
+            String[] arr = findAnnotation(arrData, jc,
                 "org.apidesign.bck2brwsr.core.ExtraJavaScript", 
                 "resource", "processByteCode"
             );
@@ -179,7 +187,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
         }
         final String jsResource;
         {
-            String[] arr = findAnnotation(arrData, jc, 
+            String[] arr = findAnnotation(arrData, jc,
                 "net.java.html.js.JavaScriptResource", 
                 "value"
             );
@@ -194,7 +202,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                 jsResource = null;
             }
         }
-        String[] proto = findAnnotation(arrData, jc, 
+        String[] proto = findAnnotation(arrData, jc,
             "org.apidesign.bck2brwsr.core.JavaScriptPrototype", 
             "container", "prototype"
         );
@@ -229,16 +237,16 @@ abstract class ByteCodeToJavaScript implements Appendable {
                 }
                 append("\n  CLS.fld_").append(v.getName()).append(initField(v));
                 append("\n  m = c._").append(v.getName()).append(" = function (v) {")
-                   .append("  if (arguments.length == 1) CLS.fld_").append(v.getName())
-                   .append(" = v; return CLS.fld_").
+                    .append("  if (arguments.length == 1) CLS.fld_").append(v.getName())
+                    .append(" = v; return CLS.fld_").
                     append(v.getName()).append("; };");
             } else {
                 append("\n  m = c._").append(v.getName()).append(" = function (v) {")
-                   .append("  if (arguments.length == 1) this.fld_").
+                    .append("  if (arguments.length == 1) this.fld_").
                     append(className).append('_').append(v.getName())
-                   .append(" = v; return this.fld_").
+                    .append(" = v; return this.fld_").
                     append(className).append('_').append(v.getName())
-                   .append("; };");
+                    .append("; };");
             }
 
             declaredField(v, "c", "_" + v.getName());
@@ -278,8 +286,8 @@ abstract class ByteCodeToJavaScript implements Appendable {
         if (jc.isInterface()) {
             for (MethodData m : jc.getMethods()) {
                 if ((m.getAccess() & ACC_ABSTRACT) == 0
-                        && (m.getAccess() & ACC_STATIC) == 0
-                        && (m.getAccess() & ACC_PRIVATE) == 0) {
+                    && (m.getAccess() & ACC_STATIC) == 0
+                    && (m.getAccess() & ACC_PRIVATE) == 0) {
                     final String mn = findMethodName(m, new StringBuilder());
                     append("\n        if (!x['").append(mn).append("']) Object.defineProperty(x, '").append(mn).append("', { value : c['").append(mn).append("']});");
                 }
