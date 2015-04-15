@@ -140,6 +140,9 @@ public final class Bck2BrwsrJars {
                 if (is != null) {
                     return is;
                 }
+                if (resource.startsWith("/")) {
+                    resource = resource.substring(1);
+                }
                 is = jf.getInputStream(new ZipEntry(resource));
                 return is == null ? super.get(resource) : is;
             }
