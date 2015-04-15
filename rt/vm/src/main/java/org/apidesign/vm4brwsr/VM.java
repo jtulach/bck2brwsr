@@ -691,6 +691,7 @@ abstract class VM extends ByteCodeToJavaScript {
         @Override
         protected void requireResource(String resourcePath) throws IOException {
             requireResourceImpl(resourcePath);
+            super.asBinary.remove(resourcePath);
         }
     }
 
@@ -791,6 +792,7 @@ abstract class VM extends ByteCodeToJavaScript {
         @Override
         protected void requireResource(String resourcePath) throws IOException {
             requireResourceImpl(resourcePath);
+            super.asBinary.remove(resourcePath);
         }
     }
 }
