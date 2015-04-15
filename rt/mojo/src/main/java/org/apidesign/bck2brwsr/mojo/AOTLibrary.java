@@ -80,7 +80,14 @@ public class AOTLibrary extends AbstractMojo {
 
     @Parameter(defaultValue = "true")
     private boolean ignoreBootClassPath;
-
+    
+    /**
+     * The obfuscation level for the generated minified JavaScript file.
+     * @since 0.5
+     */
+    @Parameter(defaultValue = "FULL")
+    private ObfuscationLevel obfuscation;
+    
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         URLClassLoader loader;
@@ -151,7 +158,7 @@ public class AOTLibrary extends AbstractMojo {
             
                 Writer w = new OutputStreamWriter(os, "UTF-8");
                 configureMain(loader).
-                    obfuscation(ObfuscationLevel.FULL).
+                    obfuscation(obfuscation).
                     generate(w);
                 w.flush();
                 os.closeEntry();
