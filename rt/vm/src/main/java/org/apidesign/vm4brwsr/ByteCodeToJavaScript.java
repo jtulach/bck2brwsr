@@ -2413,7 +2413,9 @@ abstract class ByteCodeToJavaScript implements Appendable {
                 cnt++;
             }
             if (type.charAt(cnt) == 'L') {
-                type = "vm." + mangleClassName(type.substring(cnt + 1, type.length() - 1));
+                String component = type.substring(cnt + 1, type.length() - 1);
+                requireReference(component);
+                type = "vm." + mangleClassName(component);
                 emit(smapper, this, 
                     "var @2 = Array.prototype['isInstance__ZLjava_lang_Object_2ILjava_lang_Object_2'](@1, @4, @3);",
                     smapper.popA(), smapper.pushI(),
@@ -2440,7 +2442,9 @@ abstract class ByteCodeToJavaScript implements Appendable {
                 cnt++;
             }
             if (type.charAt(cnt) == 'L') {
-                type = "vm." + mangleClassName(type.substring(cnt + 1, type.length() - 1));
+                String component = type.substring(cnt + 1, type.length() - 1);
+                requireReference(component);
+                type = "vm." + mangleClassName(component);
                 emitNoFlush(smapper, 
                     "if (@1 !== null && !Array.prototype['isInstance__ZLjava_lang_Object_2ILjava_lang_Object_2'](@1, @3, @2)) vm.java_lang_Class(false).castEx();",
                      smapper.getT(0, VarType.REFERENCE, false), type, "" + cnt
