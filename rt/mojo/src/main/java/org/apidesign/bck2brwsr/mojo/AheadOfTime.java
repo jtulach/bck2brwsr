@@ -117,7 +117,7 @@ public class AheadOfTime extends AbstractMojo {
             File aot = new File(mainJavaScript.getParent(), classPathPrefix);
             aot.mkdirs();
             File js = new File(aot, n.substring(0, n.length() - 4) + ".js");
-            if (js.exists()) {
+            if (js.lastModified() > a.getFile().lastModified()) {
                 getLog().info("Skipping " + js + " as it already exists.");
                 continue;
             }
@@ -129,7 +129,7 @@ public class AheadOfTime extends AbstractMojo {
         }
         
         try {
-            if (mainJavaScript.exists()) {
+            if (mainJavaScript.lastModified() > mainJar.lastModified()) {
                 getLog().info("Skipping " + mainJavaScript + " as it already exists.");
             } else {
                 getLog().info("Generating " + mainJavaScript);
