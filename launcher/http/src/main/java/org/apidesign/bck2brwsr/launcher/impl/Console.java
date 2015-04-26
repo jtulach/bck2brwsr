@@ -53,8 +53,16 @@ public class Console {
         "elem[attr] = value;")
     private static native void setAttr(Object id, String attr, Object value);
     
-    @JavaScriptBody(args = {}, body = "return; window.close();")
-    private static native void closeWindow();
+    @net.java.html.js.JavaScriptBody(args = {  }, body = 
+        "var a = document.createElement('a');"
+      + "a.innerHTML = 'Cancel: closing in 10s...';\n"
+      + "a.href = '#';\n"
+      + "var closing = window.setTimeout(function() { window.close(); }, 10000);\n"
+      + "a.onclick = function() { clearTimeout(closing); document.body.removeChild(a); };\n"
+      + "document.body.appendChild(a);\n" +
+        "return;\n"
+    )
+    static native void closeWindow();
 
     private static Object textArea;
     private static Object statusArea;
