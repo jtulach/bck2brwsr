@@ -140,7 +140,10 @@ public final class Bck2BrwsrJars {
                 if (is != null) {
                     return is;
                 }
-                is = jf.getInputStream(new ZipEntry(resource));
+                ZipEntry ze = jf.getEntry(resource);
+                if (ze != null) {
+                    is = jf.getInputStream(ze);
+                }
                 return is == null ? super.get(resource) : is;
             }
         }
