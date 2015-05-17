@@ -551,9 +551,8 @@ public final class Double extends Number implements Comparable<Double> {
      * @return  {@code true} if the value of the argument is NaN;
      *          {@code false} otherwise.
      */
-    static public boolean isNaN(double v) {
-        return (v != v);
-    }
+    @JavaScriptBody(args = { "v" }, body = "return isNaN(v);")
+    static native public boolean isNaN(double v);
 
     /**
      * Returns {@code true} if the specified number is infinitely
