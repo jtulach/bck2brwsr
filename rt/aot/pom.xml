@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.apidesign.bck2brwsr</groupId>
         <artifactId>rt</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>0.15</version>
     </parent>
     <name>Ahead of Time Compilation</name>
     <artifactId>aot</artifactId>
