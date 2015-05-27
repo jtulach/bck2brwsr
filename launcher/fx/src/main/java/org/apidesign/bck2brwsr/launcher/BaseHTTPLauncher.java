@@ -70,7 +70,7 @@ import org.glassfish.grizzly.websockets.WebSocketEngine;
 
 /**
  * Lightweight server to launch Bck2Brwsr applications and tests.
- * Supports execution in native browser as well as Java's internal 
+ * Supports execution in native browser as well as Java's internal
  * execution engine.
  */
 abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<HttpServer> {
@@ -84,13 +84,13 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
     private Object[] brwsr;
     private HttpServer server;
     private CountDownLatch wait;
-    
+
     public BaseHTTPLauncher(String cmd) {
         this.cmd = cmd;
         addClassLoader(BaseHTTPLauncher.class.getClassLoader());
         setTimeout(180000);
     }
-    
+
     @Override
     InvocationContext runMethod(InvocationContext c) throws IOException {
         loaders.add(c.clazz.getClassLoader());
@@ -102,15 +102,15 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         }
         return c;
     }
-    
+
     public void setTimeout(long ms) {
         timeOut = ms;
     }
-    
+
     public void addClassLoader(ClassLoader url) {
         this.loaders.add(url);
     }
-    
+
     ClassLoader[] loaders() {
         return loaders.toArray(new ClassLoader[loaders.size()]);
     }
@@ -169,7 +169,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
             throw new IOException(ex);
         }
     }
-    
+
     private HttpServer initServer(String path, boolean addClasses, String vmPrefix) throws IOException {
         HttpServer s = HttpServer.createSimpleServer(null, new PortRange(8080, 65535));
         /*
@@ -185,7 +185,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
             nl.getTransport().setWorkerThreadPoolConfig(fewThreads);
             nl.getTransport().setKernelThreadPoolConfig(oneKernel);
         }
-*/        
+*/
         final ServerConfiguration conf = s.getServerConfiguration();
         VMAndPages vm = new VMAndPages();
         conf.addHttpHandler(vm, "/");
@@ -210,13 +210,13 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         l.addHandler(ch);
         return s;
     }
-    
+
     private static int resourcesCount;
     private void executeInBrowser() throws InterruptedException, URISyntaxException, IOException {
         wait = new CountDownLatch(1);
         server = initServer(".", true, "");
         final ServerConfiguration conf = server.getServerConfiguration();
-        
+
         class DynamicResourceHandler extends HttpHandler {
             private final InvocationContext ic;
             DynamicResourceHandler delegate;
@@ -231,14 +231,14 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                 conf.removeHttpHandler(this);
                 delegate = del;
             }
-            
+
             @Override
             public void service(Request request, Response response) throws Exception {
                 if (delegate != null) {
                     delegate.service(request, response);
                     return;
                 }
-                
+
                 if ("/dynamic".equals(request.getRequestURI())) {
                     boolean webSocket = false;
                     String mimeType = request.getParameter("mimeType");
@@ -269,7 +269,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                     response.getWriter().write("\n");
                     return;
                 }
-                
+
                 for (Resource r : ic.resources) {
                     if (r.httpPath.equals(request.getRequestURI())) {
                         LOG.log(Level.INFO, "Serving HttpResource for {0}", request.getRequestURI());
@@ -296,6 +296,8 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                                             sb.append((char)ch);
                                         }
                                         params[i] = sb.toString();
+                                    } else if (r.parameters[i].startsWith("http.header.")) {
+                                        params[i] = request.getHeader(r.parameters[i].substring(12));
                                     }
                                 }
                                 if (params[i] == null) {
@@ -303,12 +305,12 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                                 }
                             }
                         }
-                        
+
                         copyStream(r.httpContent, response.getOutputStream(), null, params);
                     }
                 }
             }
-            
+
             private URI registerWebSocket(Resource r) {
                 WebSocketEngine.getEngine().register("", r.httpPath, new WS(r));
                 return pageURL("ws", server, r.httpPath);
@@ -322,9 +324,9 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                 return pageURL("http", server, r.httpPath);
             }
         }
-        
+
         conf.addHttpHandler(new Page(resources, harnessResource()), "/execute");
-        
+
         conf.addHttpHandler(new HttpHandler() {
             int cnt;
             List<InvocationContext> cases = new ArrayList<InvocationContext>();
@@ -336,11 +338,11 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                 if (value != null && value.indexOf((char)0xC5) != -1) {
                     value = toUTF8(value);
                 }
-                
-                
+
+
                 InvocationContext mi = null;
                 int caseNmbr = -1;
-                
+
                 if (id != null && value != null) {
                     LOG.log(Level.INFO, "Received result for case {0} = {1}", new Object[]{id, value});
                     value = decodeURL(value);
@@ -358,7 +360,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                         caseNmbr = 0;
                     }
                 }
-                
+
                 if (mi == null) {
                     mi = methods.take();
                     caseNmbr = cnt++;
@@ -376,7 +378,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                 }
                 prev = newRH;
                 conf.addHttpHandler(prev, "/dynamic");
-                
+
                 cases.add(mi);
                 final String cn = mi.clazz.getName();
                 final String mn = mi.methodName;
@@ -397,7 +399,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
 
         this.brwsr = launchServerAndBrwsr(server, "/execute");
     }
-    
+
     private static String encodeJSON(String in) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < in.length(); i++) {
@@ -413,7 +415,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         }
         return sb.toString();
     }
-    
+
     @Override
     public void shutdown() throws IOException {
         methods.offer(END);
@@ -428,20 +430,20 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
             }
             if (prev == methods.size()) {
                 LOG.log(
-                    Level.WARNING, 
-                    "Timeout and no test has been executed meanwhile (at {0}). Giving up.", 
+                    Level.WARNING,
+                    "Timeout and no test has been executed meanwhile (at {0}). Giving up.",
                     methods.size()
                 );
                 break;
             }
-            LOG.log(Level.INFO, 
-                "Timeout, but tests got from {0} to {1}. Trying again.", 
+            LOG.log(Level.INFO,
+                "Timeout, but tests got from {0} to {1}. Trying again.",
                 new Object[]{prev, methods.size()}
             );
         }
         stopServerAndBrwsr(server, brwsr);
     }
-    
+
     static void copyStream(InputStream is, OutputStream os, String baseURL, String... params) throws IOException {
         for (;;) {
             int ch = is.read();
@@ -478,7 +480,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         }
         return new String(arr, "UTF-8");
     }
-    
+
     private static String decodeURL(String s) {
         for (;;) {
             int pos = s.indexOf('%');
@@ -489,13 +491,13 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
             s = s.substring(0, pos) + (char)i + s.substring(pos + 2);
         }
     }
-    
+
     private void stopServerAndBrwsr(HttpServer server, Object[] brwsr) throws IOException {
         if (brwsr == null) {
             return;
         }
         Process process = (Process)brwsr[0];
-        
+
         server.stop();
         InputStream stdout = process.getInputStream();
         InputStream stderr = process.getErrorStream();
@@ -512,7 +514,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
 
         deleteTree((File)brwsr[1]);
     }
-    
+
     private static void drain(String name, InputStream is) throws IOException {
         int av = is.available();
         if (av > 0) {
@@ -543,7 +545,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
     public HttpServer call() throws Exception {
         return server;
     }
-    
+
     @Override
     public void close() throws IOException {
         shutdown();
@@ -571,7 +573,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         }
         {
             String cmdName = cmd == null ? "xdg-open" : cmd;
-            String[] cmdArr = { 
+            String[] cmdArr = {
                 cmdName, uri.toString()
             };
             LOG.log(Level.INFO, "Launching {0}", Arrays.toString(cmdArr));
@@ -601,7 +603,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
 
     final class Res {
         private final Set<URL> ignore = new HashSet<URL>();
-        
+
         Object compileJar(URL jarURL) throws IOException {
             List<String[]> libraries = new ArrayList<String[]>();
             for (ClassLoader loader : loaders) {
@@ -612,12 +614,12 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                     for (Map.Entry<String, Attributes> entrySet : mf.getEntries().entrySet()) {
                         String key = entrySet.getKey();
                         Attributes attr = entrySet.getValue();
-                        
+
                         final String a = attr.getValue("Bck2BrwsrArtifactId");
                         final String g = attr.getValue("Bck2BrwsrGroupId");
                         final String v = attr.getValue("Bck2BrwsrVersion");
                         final String d = attr.getValue("Bck2BrwsrDebug");
-                        
+
                         if (g != null && a != null && v != null && "true".equals(d)) {
                             libraries.add(new String[] {
                                 a, g, v, key
@@ -707,7 +709,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         final String resource;
         private final String[] args;
         private final Res res;
-        
+
         public Page(Res res, String resource, String... args) {
             this.res = res;
             this.resource = resource;
@@ -732,7 +734,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                 replace = args;
             }
             OutputStream os = response.getOutputStream();
-            try { 
+            try {
                 InputStream is = res.get(r, 0).openStream();
                 copyStream(is, os, request.getRequestURL().toString(), replace);
             } catch (IOException ex) {
@@ -750,7 +752,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
             return r;
         }
     }
-    
+
     private static class SubTree extends Page {
 
         public SubTree(Res res, String resource, String... args) {
@@ -761,17 +763,17 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
         protected String computePage(Request request) {
             return resource + request.getHttpHandlerPath();
         }
-        
-        
+
+
     }
 
     private class VMAndPages extends StaticHttpHandler {
         private String vmResource;
-        
+
         public VMAndPages() {
             super((String[]) null);
         }
-        
+
         @Override
         public void service(Request request, Response response) throws Exception {
             if (request.getRequestURI().equals(vmResource)) {
@@ -831,9 +833,9 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
                     final String filePart = url.getFile();
                     if (filePart.endsWith(res)) {
                         url = new URL(
-                            url.getProtocol(), 
-                            url.getHost(), 
-                            url.getPort(), 
+                            url.getProtocol(),
+                            url.getHost(),
+                            url.getPort(),
                             filePart.substring(0, filePart.length() - res.length())
                         );
                     }
