@@ -20,6 +20,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <bck2brwsr.obfuscationlevel>FULL</bck2brwsr.obfuscationlevel>
     <netbeans.compile.on.save>NONE</netbeans.compile.on.save>
+    <javaquery.calculator.generate>false</javaquery.calculator.generate>
   </properties>
   <build>
       <plugins>
@@ -43,7 +44,7 @@
                     <exports>
                         <param>org/apidesign/bck2brwsr/demo/calc/staticcompilation/</param>
                     </exports>
-                    <generateAotLibraries>false</generateAotLibraries>
+                    <generateAotLibraries>${javaquery.calculator.generate}</generateAotLibraries>
                 </configuration>
             </plugin>
          <plugin>
