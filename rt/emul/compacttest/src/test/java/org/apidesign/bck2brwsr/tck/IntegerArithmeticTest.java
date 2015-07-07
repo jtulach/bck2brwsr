@@ -148,6 +148,18 @@ public class IntegerArithmeticTest {
     @Compare public int negateMinInt() {
         return neg(Integer.MIN_VALUE);
     }
+
+    @Compare public int parseNaN() {
+        return Integer.parseInt("nothing");
+    }
+
+    @Compare public int parseAsIntNaN() {
+        return Integer.parseInt("0.33");
+    }
+
+    @Compare public double parseDoubleNaN() {
+        return Double.parseDouble("nothing");
+    }
     
     @Compare public int sumTwoDimensions() {
         int[][] matrix = createMatrix(4, 3);

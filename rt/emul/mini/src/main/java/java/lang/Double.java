@@ -538,10 +538,15 @@ public final class Double extends Number implements Comparable<Double> {
      * @see    java.lang.Double#valueOf(String)
      * @since 1.2
      */
-    @JavaScriptBody(args="s", body="return parseFloat(s);")
     public static double parseDouble(String s) throws NumberFormatException {
-        return 0;
+        double ret = parseDouble0(s);
+        if (isNaN(ret)) {
+            throw new NumberFormatException("For input string: \"" + s + '\"');
+        }
+        return ret;
     }
+    @JavaScriptBody(args="s", body="return parseFloat(s);")
+    private static native double parseDouble0(String s) throws NumberFormatException;
 
     /**
      * Returns {@code true} if the specified number is a
