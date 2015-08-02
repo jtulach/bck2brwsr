@@ -291,6 +291,32 @@ public class ReflectionTest {
     @Compare public boolean isArray() {
         return new Object[0].getClass().isArray();
     }
+
+    @Compare public String copyDataViaReflection() throws Exception {
+        Data d = new Data();
+        d.setName("Hello world!");
+
+        Method getter = d.getClass().getMethod("getName");
+        Object val = getter.invoke(d);
+
+        Data clone = new Data();
+        Method setter = d.getClass().getMethod("setName", String.class);
+        setter.invoke(clone, val);
+
+        return clone.getName();
+    }
+
+    @Compare public String copyStaticDataViaReflection() throws Exception {
+        Data.setStatic("Hello world!");
+
+        Method getter = Data.class.getMethod("getStatic");
+        Object val = getter.invoke(null);
+
+        Method setter = Data.class.getMethod("setStatic", String.class);
+        setter.invoke(null, val);
+
+        return Data.getStatic();
+    }
     
     @JavaScriptBody(args = { "arr", "len" }, body="var a = arr.slice(0, len); a.sort(); return a;")
     private static String[] sort(String[] arr, int len) {
@@ -311,5 +337,26 @@ public class ReflectionTest {
     
     public static abstract class Abst {
         public abstract int abst();
+    }
+
+    public static final class Data {
+        private String name;
+        private static String nameStatic;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public static String getStatic() {
+            return nameStatic;
+        }
+
+        public static void setStatic(String n) {
+            nameStatic = n;
+        }
     }
 }
