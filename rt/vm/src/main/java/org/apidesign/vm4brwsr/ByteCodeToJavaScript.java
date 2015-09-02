@@ -21,6 +21,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import static org.apidesign.vm4brwsr.ByteCodeParser.*;
+import org.apidesign.vm4brwsr.ByteCodeParser.AnnotationParser;
+import org.apidesign.vm4brwsr.ByteCodeParser.BootMethodData;
+import org.apidesign.vm4brwsr.ByteCodeParser.CPX2;
+import org.apidesign.vm4brwsr.ByteCodeParser.ClassData;
+import org.apidesign.vm4brwsr.ByteCodeParser.FieldData;
+import org.apidesign.vm4brwsr.ByteCodeParser.MethodData;
+import org.apidesign.vm4brwsr.ByteCodeParser.StackMapIterator;
+import org.apidesign.vm4brwsr.ByteCodeParser.TrapData;
+import org.apidesign.vm4brwsr.ByteCodeParser.TrapDataIterator;
 
 /** Translator of the code inside class files to JavaScript.
  *
@@ -87,7 +96,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
     }
     
     final String accessClassFalse(String classOperation) {
-        if (jc.getClassName().replace('/', '_').equals(classOperation)) {
+        if (mangleClassName(jc.getClassName()).equals(classOperation)) {
             return "c";
         }
         classRefs.addIfMissing(classOperation);
@@ -294,7 +303,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
             }
         }
         for (String superInterface : jc.getSuperInterfaces()) {
-            String intrfc = superInterface.replace('/', '_');
+            String intrfc = mangleClassName(superInterface);
             append("\n      vm.").append(intrfc).append("(false)['fillInstOf'](x);");
             requireReference(superInterface);
         }
@@ -1843,7 +1852,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
         }
         if (d.charAt(0) == 'L') {
             assert d.charAt(d.length() - 1) == ';';
-            out.append(d.replace('/', '_').substring(0, d.length() - 1));
+            out.append(mangleClassName(d).substring(0, d.length() - 1));
         } else {
             out.append(d);
         }
@@ -1977,7 +1986,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
 
             int paramBeg = body.indexOf('(', sigEnd + 1);
             
-            sb.append("vm.").append(pkgName.replace('/', '_')).append("_$JsCallbacks$(false)._VM().");
+            sb.append("vm.").append(mangleClassName(pkgName)).append("_$JsCallbacks$(false)._VM().");
             sb.append(mangleJsCallbacks(fqn, method, params, false));
             sb.append("(").append(refId);
             if (body.charAt(paramBeg + 1) != ')') {
@@ -2014,7 +2023,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
 
             int paramBeg = body.indexOf('(', sigEnd + 1);
             
-            sb.append("vm.").append(pkgName.replace('/', '_')).append("_$JsCallbacks$(false)._VM().");
+            sb.append("vm.").append(mangleClassName(pkgName)).append("_$JsCallbacks$(false)._VM().");
             sb.append(mangleJsCallbacks(fqn, method, params, true));
             sb.append("(");
             pos = paramBeg + 1;
@@ -2258,7 +2267,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                 final String classInternalName = jc.getClassName(e.catch_cpx);
                 addReference(classInternalName);
                 append("e = vm.java_lang_Class(false).bck2BrwsrThrwrbl(e);");
-                append("if (e['$instOf_" + classInternalName.replace('/', '_') + "']) {");
+                append("if (e['$instOf_" + mangleClassName(classInternalName) + "']) {");
                 append("var stA0 = e;");
                 goTo(this, current, e.handler_pc, topMostLabel);
                 append("}\n");
@@ -2406,7 +2415,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
             emit(smapper, this, 
                     "var @2 = @1 != null && @1['$instOf_@3'] ? 1 : 0;",
                  smapper.popA(), smapper.pushI(),
-                 type.replace('/', '_'));
+                 mangleClassName(type));
         } else {
             int cnt = 0;
             while (type.charAt(cnt) == '[') {
@@ -2435,7 +2444,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
         if (!type.startsWith("[")) {
             emitNoFlush(smapper, 
                  "if (@1 !== null && !@1['$instOf_@2']) vm.java_lang_Class(false).castEx();",
-                 smapper.getT(0, VarType.REFERENCE, false), type.replace('/', '_'));
+                 smapper.getT(0, VarType.REFERENCE, false), mangleClassName(type));
         } else {
             int cnt = 0;
             while (type.charAt(cnt) == '[') {

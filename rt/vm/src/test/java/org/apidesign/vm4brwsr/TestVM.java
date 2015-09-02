@@ -193,7 +193,7 @@ public final class TestVM {
             addClasses(names).
             addResources("org/apidesign/vm4brwsr/obj.js").
             addExported(exp.toArray(new String[0])).
-            obfuscation(ObfuscationLevel.FULL).
+       //     obfuscation(ObfuscationLevel.FULL).
             library();
         if (resourceName != null) {
             b2b = b2b.addResources(resourceName);

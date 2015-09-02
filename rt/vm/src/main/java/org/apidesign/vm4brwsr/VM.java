@@ -732,7 +732,9 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "  var vm = {};\n");
             append("  function link(n, assign) {\n"
                 + "    return function() {\n"
-                + "      var cls = n['replace__Ljava_lang_String_2CC']"
+                + "      var no_ = n['replace__Ljava_lang_String_2Ljava_lang_CharSequence_2Ljava_lang_CharSequence_2']"
+                                       + "('_', '_1').toString();\n"
+                + "      var cls = no_['replace__Ljava_lang_String_2CC']"
                                        + "('/', '_').toString();\n"
                 + "      var dot = n['replace__Ljava_lang_String_2CC']"
                                        + "('/', '.').toString();\n"
@@ -755,7 +757,7 @@ abstract class VM extends ByteCodeToJavaScript {
         @Override
         protected String generateClass(String className) throws IOException {
             if (isExternalClass(className)) {
-                final String cls = className.replace('/', '_');
+                final String cls = className.replace("_", "_1").replace('/', '_');
                 append("\n").append(assignClass(cls))
                    .append("link('")
                    .append(className)
