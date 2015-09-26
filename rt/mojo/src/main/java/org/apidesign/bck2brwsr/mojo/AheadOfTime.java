@@ -27,6 +27,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -191,7 +192,7 @@ public class AheadOfTime extends AbstractMojo {
                     ) {
                         getLog().info("Extracting " + js + " from " + b.getFile());
                         InputStream is = jf.getInputStream(new ZipEntry(entryName));
-                        Files.copy(is, js.toPath());
+                        Files.copy(is, js.toPath(), StandardCopyOption.REPLACE_EXISTING);
                         is.close();
                         return;
                     }
