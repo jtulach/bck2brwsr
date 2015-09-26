@@ -4,12 +4,12 @@
 
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>matrix.multiplication</artifactId>
-  <version>0.16</version>
+  <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <parent>
     <artifactId>benchmarks</artifactId>
     <groupId>org.apidesign.bck2brwsr</groupId>
-    <version>0.16</version>
+    <version>1.0-SNAPSHOT</version>
   </parent>
 
   <name>Matrix multiplication</name>
