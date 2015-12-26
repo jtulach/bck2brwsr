@@ -30,4 +30,16 @@
                 <bck2brwsr.obfuscationlevel>NONE</bck2brwsr.obfuscationlevel>
             </properties>
         </action>
+        <action>
+            <actionName>debug</actionName>
+            <goals>
+                <goal>package</goal>
+                <goal>bck2brwsr:show</goal>
+            </goals>
+            <properties>
+                <jpda.listen>maven</jpda.listen>
+                <skipTests>true</skipTests>
+                <bck2brwsr.obfuscationlevel>NONE</bck2brwsr.obfuscationlevel>
+            </properties>
+        </action>
 </actions>
