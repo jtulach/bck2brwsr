@@ -18,6 +18,7 @@
 package org.apidesign.bck2brwsr.demo.calc.staticcompilation;
 
 import java.util.List;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.htmlpage.api.ComputedProperty;
 import org.apidesign.bck2brwsr.htmlpage.api.On;
 import static org.apidesign.bck2brwsr.htmlpage.api.OnEvent.*;
@@ -41,6 +42,7 @@ import org.apidesign.bck2brwsr.htmlpage.api.Property;
 public class Calc {
     public static void main(String... args) throws Exception {
         new Calculator().applyBindings().setOperation("plus");
+        notifyFinish();
     }
     
     @On(event = CLICK, id="clear")
@@ -131,4 +133,11 @@ public class Calc {
     static boolean emptyHistory(List<?> history) {
         return history.isEmpty();
     }
+
+    @JavaScriptBody(args = {  }, body =
+        "var xhttp = new XMLHttpRequest();\n" +
+        "xhttp.open('GET', '/?exit=true', true);\n" +
+        "xhttp.send();\n"
+    )
+    private static native void notifyFinish();
 }

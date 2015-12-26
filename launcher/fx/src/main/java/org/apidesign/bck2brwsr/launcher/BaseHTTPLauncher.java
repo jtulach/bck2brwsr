@@ -21,6 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
+import java.io.Flushable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -73,7 +74,7 @@ import org.glassfish.grizzly.websockets.WebSocketEngine;
  * Supports execution in native browser as well as Java's internal
  * execution engine.
  */
-abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<HttpServer> {
+abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable, Callable<HttpServer> {
     static final Logger LOG = Logger.getLogger(BaseHTTPLauncher.class.getName());
     private static final InvocationContext END = new InvocationContext(null, null, null);
     private final Set<ClassLoader> loaders = new LinkedHashSet<ClassLoader>();
@@ -84,6 +85,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
     private Object[] brwsr;
     private HttpServer server;
     private CountDownLatch wait;
+    private Thread flushing;
 
     public BaseHTTPLauncher(String cmd) {
         this.cmd = cmd;
@@ -418,6 +420,12 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
 
     @Override
     public void shutdown() throws IOException {
+        synchronized (this) {
+            if (flushing != null) {
+                flushing.interrupt();
+                flushing = null;
+            }
+        }
         methods.offer(END);
         for (;;) {
             int prev = methods.size();
@@ -544,6 +552,18 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
     @Override
     public HttpServer call() throws Exception {
         return server;
+    }
+
+    @Override
+    public synchronized void flush() throws IOException {
+        flushing = Thread.currentThread();
+        while (flushing == Thread.currentThread()) {
+            try {
+                wait();
+            } catch (InterruptedException ex) {
+                LOG.log(Level.FINE, null, ex);
+            }
+        }
     }
 
     @Override
@@ -776,6 +796,10 @@ abstract class BaseHTTPLauncher extends Launcher implements Closeable, Callable<
 
         @Override
         public void service(Request request, Response response) throws Exception {
+            if ("true".equals(request.getParameter("exit"))) {
+                LOG.info("Exit request received. Shutting down!");
+                shutdown();
+            }
             if (request.getRequestURI().equals(vmResource)) {
                 response.setCharacterEncoding("UTF-8");
                 response.setContentType("text/javascript");

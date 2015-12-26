@@ -21,6 +21,7 @@ import java.io.Closeable;
 import org.apache.maven.plugin.AbstractMojo;
 
 import java.io.File;
+import java.io.Flushable;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -75,7 +76,11 @@ public class ShowMojo extends AbstractMojo {
         try {
             Closeable httpServer;
             httpServer = Launcher.showDir(launcher, directory, null, startpage);
-            System.in.read();
+            if (httpServer instanceof Flushable) {
+                ((Flushable)httpServer).flush();
+            } else {
+                System.in.read();
+            }
             httpServer.close();
         } catch (IOException ex) {
             throw new MojoExecutionException("Can't show the browser", ex);
