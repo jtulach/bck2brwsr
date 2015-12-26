@@ -32,8 +32,14 @@
                     <execution>
                         <goals>
                             <goal>aot</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>show</id>
+                        <goals>
                             <goal>show</goal>
                         </goals>
+                        <phase>integration-test</phase>
                     </execution>
                 </executions>
                 <configuration>

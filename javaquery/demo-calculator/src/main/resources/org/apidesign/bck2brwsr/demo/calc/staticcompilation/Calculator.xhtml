@@ -89,9 +89,9 @@
         </ul>
         
         <div data-bind="text: displayPreview"></div>
-        <script src="bck2brwsr.js"></script>
+        <script src="vm/bck2brwsr.js"></script>
         <script>
-            var vm = bck2brwsr('calculator.js');
+            var vm = bck2brwsr('app/calculator.js');
             var c = vm.loadClass('org.apidesign.bck2brwsr.demo.calc.staticcompilation.Calc');
             c.invoke('main');
         </script>

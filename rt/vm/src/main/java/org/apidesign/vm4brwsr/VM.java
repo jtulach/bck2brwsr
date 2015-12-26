@@ -655,10 +655,12 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "      console.log('Will not register: ' + extension);\n"
                 + "      return false;\n"
                 + "    }\n"
+                + "    var cs = document['currentScript'];\n"
+                + "    var prefix = cs ? cs['src']['replace'](/\\/[^\\/]*$/,'/') : '';\n"
                 + "    extensions.push(extension);\n"
                 + "    var cp = config['classpath'];\n"
                 + "    if (cp) for (var i = 0; i < cp.length; i++) {\n"
-                + "      loadExtension(cp[i]);\n"
+                + "      loadExtension(prefix + cp[i]);\n"
                 + "    }\n"
                 + "    return null;\n"
                 + "  };\n");
