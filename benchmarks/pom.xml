@@ -12,6 +12,6 @@
   <packaging>pom</packaging>
   <name>Performance benchmarks</name>
   <modules>
-    <module>matrix-multiplication</module>
+    <module>sieve</module>
   </modules>
 </project>

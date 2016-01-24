@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.apidesign.bck2brwsr</groupId>
-  <artifactId>matrix.multiplication</artifactId>
+  <artifactId>sieve</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <parent>
@@ -12,7 +12,7 @@
     <version>1.0-SNAPSHOT</version>
   </parent>
 
-  <name>Matrix multiplication</name>
+  <name>Sieve of Eratosthenes</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
