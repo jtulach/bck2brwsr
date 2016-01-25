@@ -310,15 +310,22 @@ abstract class VM extends ByteCodeToJavaScript {
     }
 
     @Override
-    protected String accessField(String object, String[] fieldInfoName)
+    protected FieldData findField(String[] fieldInfoName) throws IOException {
+        FieldData field = classDataCache.findField(
+            fieldInfoName[0], fieldInfoName[1], fieldInfoName[2]
+        );
+        return field != null && canAccessDirectly(field.cls) ? field : null;
+    }
+
+    @Override
+    protected String accessField(String object, FieldData field, String[] fieldInfoName)
     throws IOException {
-        final FieldData field =
-                classDataCache.findField(fieldInfoName[0],
-                                         fieldInfoName[1],
-                                         fieldInfoName[2]);
-        String mangledName = "_" + fieldInfoName[1];
-        return accessNonVirtualMember(object, mangledName,
-                                      (field != null) ? field.cls : null);
+        if (field != null) {
+            return "fld_" + object + "_" + field.getName();
+        } else {
+            String mangledName = "_" + fieldInfoName[1];
+            return accessNonVirtualMember(object, mangledName, null);
+        }
     }
 
     @Override
@@ -403,11 +410,9 @@ abstract class VM extends ByteCodeToJavaScript {
         return (exportedMethodFinder.getFound() != null);
     }
 
-    private String accessNonVirtualMember(String object,
-                                          String mangledName,
-                                          ClassData declaringClass) {
+    private boolean canAccessDirectly(ClassData declaringClass) {
         if (declaringClass == null) {
-            return object + "['" + mangledName + "']";
+            return false;
         }
         final String className = declaringClass.getClassName();
         if (
@@ -415,9 +420,17 @@ abstract class VM extends ByteCodeToJavaScript {
             "java/lang/reflect/Array".equals(className) ||
             isExternalClass(className)
         ) {
-            return object + "['" + mangledName + "']";
+            return false;
         }
-        return object + "." + mangledName;
+        return true;
+    }
+
+    private String accessNonVirtualMember(
+        String object, String mangledName, ClassData declaringClass
+    ) {
+        return canAccessDirectly(declaringClass) ?
+            object + "." + mangledName :
+            object + "['" + mangledName + "']";
     }
 
     private final class ExportedMethodFinder

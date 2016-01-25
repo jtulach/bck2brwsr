@@ -103,7 +103,11 @@ abstract class ByteCodeToJavaScript implements Appendable {
         return "(refs_" + classOperation + " || (refs_" + classOperation + " = " + accessClass(classOperation) + "(false)))";
     }
 
-    protected String accessField(String object, String[] fieldInfoName)
+    protected FieldData findField(String[] fieldInfoName) throws IOException {
+        return null;
+    }
+
+    protected String accessField(String object, FieldData data, String[] fieldInfoName)
     throws IOException {
         String mangledName = "_" + fieldInfoName[1];
         return object + "." + mangledName;
@@ -1419,12 +1423,21 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     int indx = readUShortArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
-                    final String mangleClass = mangleClassName(fi[0]);
-                    final String mangleClassAccess = accessClassFalse(mangleClass);
-                    smapper.replace(this, type, "@2.call(@1)",
-                         smapper.getA(0),
-                         accessField(mangleClassAccess, fi)
-                    );
+                    FieldData field = findField(fi);
+                    if (field == null) {
+                        final String mangleClass = mangleClassName(fi[0]);
+                        final String mangleClassAccess = accessClassFalse(mangleClass);
+                        smapper.replace(this, type, "@2.call(@1)",
+                             smapper.getA(0),
+                             accessField(mangleClassAccess, null, fi)
+                        );
+                    } else {
+                        final String fieldOwner = mangleClassName(field.cls.getClassName());
+                        smapper.replace(this, type, "@1.@2",
+                             smapper.getA(0),
+                             accessField(fieldOwner, field, fi)
+                        );
+                    }
                     i += 2;
                     addReference(fi[0]);
                     break;
@@ -1433,12 +1446,23 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     int indx = readUShortArg(byteCodes, i);
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
-                    final String mangleClass = mangleClassName(fi[0]);
-                    final String mangleClassAccess = accessClassFalse(mangleClass);
-                    emit(smapper, this, "@3.call(@2, @1);",
-                         smapper.popT(type),
-                         smapper.popA(),
-                         accessField(mangleClassAccess, fi));
+                    FieldData field = findField(fi);
+                    if (field == null) {
+                        final String mangleClass = mangleClassName(fi[0]);
+                        final String mangleClassAccess = accessClassFalse(mangleClass);
+                        emit(smapper, this, "@3.call(@2, @1);",
+                             smapper.popT(type),
+                             smapper.popA(),
+                             accessField(mangleClassAccess, null, fi)
+                        );
+                    } else {
+                        final String fieldOwner = mangleClassName(field.cls.getClassName());
+                        emit(smapper, this, "@2.@3 = @1;",
+                             smapper.popT(type),
+                             smapper.popA(),
+                             accessField(fieldOwner, field, fi)
+                        );
+                    }
                     i += 2;
                     addReference(fi[0]);
                     break;
@@ -1448,7 +1472,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
                     String ac = accessClassFalse(mangleClassName(fi[0]));
-                    String af = accessField(ac, fi);
+                    String af = accessField(ac, null, fi);
                     smapper.assign(this, type, af + "()");
                     i += 2;
                     addReference(fi[0]);
