@@ -103,8 +103,9 @@ abstract class ByteCodeToJavaScript implements Appendable {
         return "(refs_" + classOperation + " || (refs_" + classOperation + " = " + accessClass(classOperation) + "(false)))";
     }
 
-    protected String accessField(String object, String mangledName,
-                                 String[] fieldInfoName) throws IOException {
+    protected String accessField(String object, String[] fieldInfoName)
+    throws IOException {
+        String mangledName = "_" + fieldInfoName[1];
         return object + "." + mangledName;
     }
 
@@ -1422,8 +1423,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     final String mangleClassAccess = accessClassFalse(mangleClass);
                     smapper.replace(this, type, "@2.call(@1)",
                          smapper.getA(0),
-                         accessField(mangleClassAccess,
-                                     "_" + fi[1], fi)
+                         accessField(mangleClassAccess, fi)
                     );
                     i += 2;
                     addReference(fi[0]);
@@ -1438,8 +1438,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     emit(smapper, this, "@3.call(@2, @1);",
                          smapper.popT(type),
                          smapper.popA(),
-                         accessField(mangleClassAccess,
-                                     "_" + fi[1], fi));
+                         accessField(mangleClassAccess, fi));
                     i += 2;
                     addReference(fi[0]);
                     break;
@@ -1449,7 +1448,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
                     String ac = accessClassFalse(mangleClassName(fi[0]));
-                    String af = accessField(ac, "_" + fi[1], fi);
+                    String af = accessField(ac, fi);
                     smapper.assign(this, type, af + "()");
                     i += 2;
                     addReference(fi[0]);
