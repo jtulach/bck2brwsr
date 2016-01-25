@@ -4,25 +4,9 @@
     function add32(x, y) {
         return (x + y) | 0;
     };
-    numberPrototype.mul32 = function(x) {
-        return (((this * (x >> 16)) << 16) + this * (x & 0xFFFF)) | 0;
+    function mul32(x, y) {
+        return (((x * (y >> 16)) << 16) + x * (y & 0xFFFF)) | 0;
     };
-    numberPrototype.div32 = function(x) {
-        if (x === 0) {
-            __handleDivByZero();
-        }
-
-        return (this / x) | 0;
-    }
-
-    numberPrototype.mod32 = function(x) {
-        if (x === 0) {
-            __handleDivByZero();
-        }
-
-        return (this % x);
-    }
-
     var __m32 = 0xFFFFFFFF;
 
     numberPrototype.next32 = function(low) {
@@ -116,7 +100,7 @@
     };
 
     numberPrototype.mul64 = function(x) {
-        var low = this.mul32(x);
+        var low = mul32(this, x);
         low += (low < 0) ? (__m32 + 1) : 0;
         // first count upper 32 bits of (this.low * x.low)
         var hi_hi = 0;
@@ -134,8 +118,8 @@
         }
         var hi = (hi_hi << 16) + hi_low;
 
-        var m1 = this.high32().mul32(x);
-        var m2 = this.mul32(x.high32());
+        var m1 = mul32(this.high32(), x);
+        var m2 = mul32(this, x.high32());
         hi = add32(add32(hi, m1), m2);
 
         return hi.next32(low);

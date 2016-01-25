@@ -41,6 +41,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
     private final StringArray classRefs = new StringArray();
     private boolean outChanged;
     private boolean callbacks;
+    private final NumberOperations numbers = new NumberOperations();
 
     protected ByteCodeToJavaScript(Appendable out) {
         this.out = out;
@@ -293,6 +294,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
             append("\n    m.access = " + m.getAccess()).append(";");
             append("\n    m.cls = CLS;");
         }
+        append(numbers.generate());
         append("\n    c.constructor = CLS;");
         append("\n    function ").append(className).append("fillInstOf(x) {");
         String instOfName = "$instOf_" + className;
@@ -754,7 +756,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     smapper.replace(this, VarType.DOUBLE, "(@1 - @2)", smapper.getD(1), smapper.popD());
                     break;
                 case opc_imul:
-                    smapper.replace(this, VarType.INTEGER, "(@1).mul32(@2)", smapper.getI(1), smapper.popI());
+                    smapper.replace(this, VarType.INTEGER, numbers.mul32(), smapper.getI(1), smapper.popI());
                     break;
                 case opc_lmul:
                     smapper.replace(this, VarType.LONG, "(@1).mul64(@2)", smapper.getL(1), smapper.popL());
@@ -766,7 +768,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     smapper.replace(this, VarType.DOUBLE, "(@1 * @2)", smapper.getD(1), smapper.popD());
                     break;
                 case opc_idiv:
-                    smapper.replace(this, VarType.INTEGER, "(@1).div32(@2)",
+                    smapper.replace(this, VarType.INTEGER, numbers.div32(),
                          smapper.getI(1), smapper.popI());
                     break;
                 case opc_ldiv:
@@ -780,7 +782,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     smapper.replace(this, VarType.DOUBLE, "(@1 / @2)", smapper.getD(1), smapper.popD());
                     break;
                 case opc_irem:
-                    smapper.replace(this, VarType.INTEGER, "(@1).mod32(@2)",
+                    smapper.replace(this, VarType.INTEGER, numbers.mod32(),
                          smapper.getI(1), smapper.popI());
                     break;
                 case opc_lrem:
