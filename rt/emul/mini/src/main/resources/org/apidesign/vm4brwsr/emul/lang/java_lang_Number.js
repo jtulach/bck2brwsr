@@ -1,25 +1,27 @@
 // empty line needed here
 
 (function(numberPrototype) {
-    numberPrototype.add32 = function(x) {
-        return (this + x) | 0;
-    };
-    numberPrototype.sub32 = function(x) {
-        return (this - x) | 0;
+    function add32(x, y) {
+        return (x + y) | 0;
     };
     numberPrototype.mul32 = function(x) {
         return (((this * (x >> 16)) << 16) + this * (x & 0xFFFF)) | 0;
     };
-    numberPrototype.neg32 = function() {
-        return (-this) | 0;
-    };
+    numberPrototype.div32 = function(x) {
+        if (x === 0) {
+            __handleDivByZero();
+        }
 
-    numberPrototype.toInt8 = function() {
-        return (this << 24) >> 24;
-    };
-    numberPrototype.toInt16 = function() {
-        return (this << 16) >> 16;
-    };
+        return (this / x) | 0;
+    }
+
+    numberPrototype.mod32 = function(x) {
+        if (x === 0) {
+            __handleDivByZero();
+        }
+
+        return (this % x);
+    }
 
     var __m32 = 0xFFFFFFFF;
 
@@ -34,9 +36,6 @@
 
     numberPrototype.high32 = function() {
         return this.hi ? this.hi : (Math.floor(this / (__m32 + 1))) | 0;
-    };
-    numberPrototype.toInt32 = function() {
-        return this | 0;
     };
     numberPrototype.toFP = function() {
         return this.hi ? this.hi * (__m32 + 1) + this : this;
@@ -137,7 +136,7 @@
 
         var m1 = this.high32().mul32(x);
         var m2 = this.mul32(x.high32());
-        hi = hi.add32(m1).add32(m2);
+        hi = add32(add32(hi, m1), m2);
 
         return hi.next32(low);
     };
@@ -222,16 +221,6 @@
             low += (low < 0) ? (__m32 + 1) : 0;
             var hi = this.high32() >>> x;
             return hi.next32(low);
-        }
-    };
-
-    // keeping for compatibility with generated bck2brwsr.js library files
-    // not used since 0.14
-    numberPrototype.compare = function(x) {
-        if (this == x) {
-            return 0;
-        } else {
-            return (this < x) ? -1 : 1;
         }
     };
 
@@ -488,22 +477,6 @@
             q.setDigit(j, 0, qest);
             r.setDigit(j + n, nrm, uj);
         }
-    }
-
-    numberPrototype.div32 = function(x) {
-        if (x === 0) {
-            __handleDivByZero();
-        }
-
-        return (this / x) | 0;
-    }
-
-    numberPrototype.mod32 = function(x) {
-        if (x === 0) {
-            __handleDivByZero();
-        }
-
-        return (this % x);
     }
 
     numberPrototype.div64 = function(x) {

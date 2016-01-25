@@ -730,7 +730,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     emit(smapper, this, "var @1 = @2;", lmapper.setD(3), smapper.popD());
                     break;
                 case opc_iadd:
-                    smapper.replace(this, VarType.INTEGER, "(@1).add32(@2)", smapper.getI(1), smapper.popI());
+                    smapper.replace(this, VarType.INTEGER, "(((@1) + (@2)) | 0)", smapper.getI(1), smapper.popI());
                     break;
                 case opc_ladd:
                     smapper.replace(this, VarType.LONG, "(@1).add64(@2)", smapper.getL(1), smapper.popL());
@@ -742,7 +742,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     smapper.replace(this, VarType.DOUBLE, "(@1 + @2)", smapper.getD(1), smapper.popD());
                     break;
                 case opc_isub:
-                    smapper.replace(this, VarType.INTEGER, "(@1).sub32(@2)", smapper.getI(1), smapper.popI());
+                    smapper.replace(this, VarType.INTEGER, "(((@1) - (@2)) | 0)", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lsub:
                     smapper.replace(this, VarType.LONG, "(@1).sub64(@2)", smapper.getL(1), smapper.popL());
@@ -812,7 +812,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     smapper.replace(this, VarType.LONG, "(@1).xor64(@2)", smapper.getL(1), smapper.popL());
                     break;
                 case opc_ineg:
-                    smapper.replace(this, VarType.INTEGER, "(@1).neg32()", smapper.getI(0));
+                    smapper.replace(this, VarType.INTEGER, "(-(@1))", smapper.getI(0));
                     break;
                 case opc_lneg:
                     smapper.replace(this, VarType.LONG, "(@1).neg64()", smapper.getL(0));
@@ -886,7 +886,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     smapper.replace(this, VarType.DOUBLE, "@1", smapper.getI(0));
                     break;
                 case opc_l2i:
-                    smapper.replace(this, VarType.INTEGER, "(@1).toInt32()", smapper.getL(0));
+                    smapper.replace(this, VarType.INTEGER, "((@1) | 0)", smapper.getL(0));
                     break;
                     // max int check?
                 case opc_l2f:
@@ -904,7 +904,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                          smapper.getD(0));
                     break;
                 case opc_f2i:
-                    smapper.replace(this, VarType.INTEGER, "(@1).toInt32()",
+                    smapper.replace(this, VarType.INTEGER, "((@1) | 0)",
                          smapper.getF(0));
                     break;
                 case opc_f2l:
@@ -912,18 +912,18 @@ abstract class ByteCodeToJavaScript implements Appendable {
                          smapper.getF(0));
                     break;
                 case opc_d2i:
-                    smapper.replace(this, VarType.INTEGER, "(@1).toInt32()",
+                    smapper.replace(this, VarType.INTEGER, "((@1)| 0)",
                          smapper.getD(0));
                     break;
                 case opc_d2l:
                     smapper.replace(this, VarType.LONG, "(@1).toLong()", smapper.getD(0));
                     break;
                 case opc_i2b:
-                    smapper.replace(this, VarType.INTEGER, "(@1).toInt8()", smapper.getI(0));
+                    smapper.replace(this, VarType.INTEGER, "(((@1) << 24) >> 24)", smapper.getI(0));
                     break;
                 case opc_i2c:
                 case opc_i2s:
-                    smapper.replace(this, VarType.INTEGER, "(@1).toInt16()", smapper.getI(0));
+                    smapper.replace(this, VarType.INTEGER, "(((@1) << 16) >> 16)", smapper.getI(0));
                     break;
                 case opc_aconst_null:
                     smapper.assign(this, VarType.REFERENCE, "null");

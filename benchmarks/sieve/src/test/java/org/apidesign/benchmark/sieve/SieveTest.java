@@ -45,6 +45,16 @@ public class SieveTest extends Primes {
         log("oneThousand in " + took + " ms");
         return res;
     }
+
+    @Compare(scripting = false)
+    public int fiveThousand() throws IOException {
+        SieveTest sieve = new SieveTest();
+        int now = time();
+        int res = sieve.compute(5000);
+        int took = time() - now;
+        log("oneThousand in " + took + " ms");
+        return res;
+    }
     
     @Factory
     public static Object[] create() {
@@ -54,5 +64,6 @@ public class SieveTest extends Primes {
     @JavaScriptBody(args = { "msg" }, body = "if (typeof console !== 'undefined') console.log(msg);")
     @Override
     protected void log(String msg) {
+        System.err.println(msg);
     }
 }
