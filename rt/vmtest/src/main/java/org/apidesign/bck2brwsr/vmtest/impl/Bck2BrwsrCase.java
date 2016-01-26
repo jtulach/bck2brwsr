@@ -47,6 +47,7 @@ public final class Bck2BrwsrCase implements ITest {
     private final Http.Resource[] http;
     private final InvocationContext c;
     Object value;
+    int time;
 
     Bck2BrwsrCase(Method m, String type, Launcher l, boolean fail, HtmlFragment html, Http.Resource[] http) {
         this.l = l;
@@ -75,8 +76,10 @@ public final class Bck2BrwsrCase implements ITest {
                     }
                 }
             }
-            String res = c.invoke();
-            value = res;
+            int[] time = { 0 };
+            String res = c.invoke(time);
+            this.value = res;
+            this.time = time[0];
             if (fail) {
                 int idx = res == null ? -1 : res.indexOf(':');
                 if (idx >= 0) {
@@ -111,7 +114,9 @@ public final class Bck2BrwsrCase implements ITest {
             }
         } else {
             try {
+                long now = System.currentTimeMillis();
                 value = m.invoke(m.getDeclaringClass().newInstance());
+                time = (int) (System.currentTimeMillis() - now);
             } catch (InvocationTargetException ex) {
                 Throwable t = ex.getTargetException();
                 value = t.getClass().getName() + ":" + t.getMessage();

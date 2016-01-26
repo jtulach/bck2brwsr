@@ -40,11 +40,13 @@ import org.testng.annotations.Test;
 public final class CompareCase implements ITest {
     private final Bck2BrwsrCase first, second;
     private final Method m;
+    private final double slowdown;
     
-    private CompareCase(Method m, Bck2BrwsrCase first, Bck2BrwsrCase second) {
+    private CompareCase(Method m, Bck2BrwsrCase first, Bck2BrwsrCase second, double slowdown) {
         this.first = first;
         this.second = second;
         this.m = m;
+        this.slowdown = slowdown;
     }
 
     /** Inspects <code>clazz</code> and for each {@lik Compare} method creates
@@ -120,6 +122,20 @@ public final class CompareCase implements ITest {
             Bck2BrwsrCase.dumpJS(sb, second);
             throw new AssertionError(sb.toString());
         }
+        if (slowdown > 0.0) {
+            Bck2BrwsrCase slow;
+            Bck2BrwsrCase fast;
+            if (first.time >= second.time) {
+                slow = second;
+                fast = first;
+            } else {
+                fast = second;
+                slow = first;
+            }
+            if (slow.time * slowdown < fast.time) {
+                Assert.fail("Too slow " + slow.getTestName() + " took " + slow.time + " ms vs. " + fast.time + " ms of " + fast.getTestName());
+            }
+        }
     }
     
     /** Test name.
@@ -135,19 +151,24 @@ public final class CompareCase implements ITest {
         if (c == null) {
             return;
         }
+        String slowdownOverride = System.getProperty("vmtest.slowdown");
         final Bck2BrwsrCase real = new Bck2BrwsrCase(m, "Java", null, false, null, null);
         ret.add(real);
+        double slowdown = c.slowdown();
+        if (slowdown > 0.0 && slowdownOverride != null) {
+            slowdown = Double.parseDouble(slowdownOverride);
+        }
         if (c.scripting()) {
             final Bck2BrwsrCase js = new Bck2BrwsrCase(m, "JavaScript", l.javaScript(), false, null, null);
             ret.add(js);
-            ret.add(new CompareCase(m, real, js));
+            ret.add(new CompareCase(m, real, js, slowdown));
         }
         for (String b : brwsr) {
             final Launcher s = l.brwsr(b);
             ret.add(s);
             final Bck2BrwsrCase cse = new Bck2BrwsrCase(m, b, s, false, null, null);
             ret.add(cse);
-            ret.add(new CompareCase(m, real, cse));
+            ret.add(new CompareCase(m, real, cse, slowdown));
         }
     }
     private static void registerBrwsrCases(Class<? extends Annotation> brwsrTest, Method m, final LaunchSetup l, List<Object> ret, String[] brwsr) {

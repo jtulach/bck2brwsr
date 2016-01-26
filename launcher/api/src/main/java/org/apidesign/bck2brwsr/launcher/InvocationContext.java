@@ -19,7 +19,6 @@ package org.apidesign.bck2brwsr.launcher;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -38,6 +37,7 @@ public final class InvocationContext {
     private Throwable exception;
     String html;
     final List<Resource> resources = new ArrayList<>();
+    private int time;
 
     InvocationContext(Launcher launcher, Class<?> clazz, String methodName) {
         this.launcher = launcher;
@@ -65,9 +65,25 @@ public final class InvocationContext {
     
     /** Invokes the associated method. 
      * @return the textual result of the invocation
+     * @throws java.io.IOException if execution fails
      */
     public String invoke() throws IOException {
         launcher.runMethod(this);
+        return toString();
+    }
+
+    /** Invokes the associated method.
+     * @param time one element array to store the length of the invocation
+     *    - can be <code>null</code>
+     * @return the textual result of the invocation
+     * @throws java.io.IOException if execution fails
+     * @since 0.20
+     */
+    public String invoke(int[] time) throws IOException {
+        launcher.runMethod(this);
+        if (time != null) {
+            time[0] = this.time;
+        }
         return toString();
     }
     
@@ -90,7 +106,8 @@ public final class InvocationContext {
         wait.await(timeOut, TimeUnit.MILLISECONDS);
     }
     
-    void result(String r, Throwable e) {
+    void result(String r, int time, Throwable e) {
+        this.time = time;
         this.result = r;
         this.exception = e;
         wait.countDown();

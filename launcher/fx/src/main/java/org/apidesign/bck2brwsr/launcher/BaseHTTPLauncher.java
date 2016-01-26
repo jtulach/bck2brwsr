@@ -337,10 +337,20 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
             public void service(Request request, Response response) throws Exception {
                 String id = request.getParameter("request");
                 String value = request.getParameter("result");
+                String timeText = request.getParameter("time");
                 if (value != null && value.indexOf((char)0xC5) != -1) {
                     value = toUTF8(value);
                 }
-
+                int time;
+                if (timeText != null) {
+                    try {
+                        time = (int) Double.parseDouble(timeText);
+                    } catch (NumberFormatException numberFormatException) {
+                        time = 0;
+                    }
+                } else {
+                    time = 0;
+                }
 
                 InvocationContext mi = null;
                 int caseNmbr = -1;
@@ -349,7 +359,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
                     LOG.log(Level.INFO, "Received result for case {0} = {1}", new Object[]{id, value});
                     value = decodeURL(value);
                     int indx = Integer.parseInt(id);
-                    cases.get(indx).result(value, null);
+                    cases.get(indx).result(value, time, null);
                     if (++indx < cases.size()) {
                         mi = cases.get(indx);
                         LOG.log(Level.INFO, "Re-executing case {0}", indx);

@@ -36,7 +36,7 @@ public class SieveTest extends Primes {
         return (int) System.currentTimeMillis();
     }
 
-    @Compare(scripting = false) 
+    @Compare
     public int oneThousand() throws IOException {
         SieveTest sieve = new SieveTest();
         int now = time();
@@ -46,11 +46,21 @@ public class SieveTest extends Primes {
         return res;
     }
 
-    @Compare(scripting = false)
+    @Compare(slowdown = 3.0)
     public int fiveThousand() throws IOException {
         SieveTest sieve = new SieveTest();
         int now = time();
         int res = sieve.compute(5000);
+        int took = time() - now;
+        log("oneThousand in " + took + " ms");
+        return res;
+    }
+
+    @Compare(slowdown = 3.0)
+    public int tenThousand() throws IOException {
+        SieveTest sieve = new SieveTest();
+        int now = time();
+        int res = sieve.compute(10000);
         int took = time() - now;
         log("oneThousand in " + took + " ms");
         return res;

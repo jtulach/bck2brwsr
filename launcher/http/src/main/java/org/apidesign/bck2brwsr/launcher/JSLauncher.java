@@ -58,9 +58,9 @@ final class JSLauncher extends Launcher {
                 mi.clazz.getName(), mi.methodName).toString();
             time = System.currentTimeMillis() - time;
             LOG.log(Level.FINE, "Resut of {0}.{1} = {2} in {3} ms", new Object[]{mi.clazz.getName(), mi.methodName, res, time});
-            mi.result(res, null);
+            mi.result(res, (int)time, null);
         } catch (ScriptException | NoSuchMethodException ex) {
-            mi.result(null, ex);
+            mi.result(null, -1, ex);
         }
         return mi;
     }

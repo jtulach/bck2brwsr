@@ -53,6 +53,9 @@ public class Console {
         "elem[attr] = value;")
     private static native void setAttr(Object id, String attr, Object value);
     
+    @net.java.html.js.JavaScriptBody(args = {}, body = "return new Date().getTime()")
+    private static native double getTime();
+
     @net.java.html.js.JavaScriptBody(args = {  }, body = 
         "var a = document.createElement('a');"
       + "a.innerHTML = 'Cancel: closing in 10s...';\n"
@@ -180,9 +183,11 @@ public class Console {
                     log("Processing \"" + arr[0] + "\" for " + retries + " time");
                 }
                 Object result = retries++ >= 100 ? "java.lang.InterruptedException:timeout(" + retries + ")" : c.runTest();
+                String reply = "?request=" + c.getRequestId() + "&time=" + c.time + "&result=" + result;
+                log("Sending back: ..." + reply);
                 finishTest(c, result);
                 
-                String u = url + "?request=" + c.getRequestId() + "&result=" + result;
+                String u = url + reply;
                 new Request(url, u);
             } catch (Exception ex) {
                 if (ex instanceof InterruptedException) {
@@ -285,6 +290,7 @@ public class Console {
     private static final class Case {
         private final Object data;
         private Object inst;
+        private double time;
 
         private Case(Object data) {
             this.data = data;
@@ -332,7 +338,6 @@ public class Console {
             setAttr("bck2brwsr.fragment", "innerHTML", "");
             log("Result: " + result);
             result = encodeURL("" + result);
-            log("Sending back: ...?request=" + this.getRequestId() + "&result=" + result);
             return result;
         }
 
@@ -350,14 +355,19 @@ public class Console {
             Object res;
             if (found != null) {
                 try {
+                    double now;
                     if ((found.getModifiers() & Modifier.STATIC) != 0) {
+                        now = getTime();
                         res = found.invoke(null);
                     } else {
                         if (inst == null) {
                             inst = c.newInstance();
                         }
+                        now = getTime();
                         res = found.invoke(inst);
                     }
+                    double took = Math.round((float)(getTime() - now));
+                    time += took;
                 } catch (Throwable ex) {
                     if (ex instanceof InvocationTargetException) {
                         ex = ((InvocationTargetException) ex).getTargetException();

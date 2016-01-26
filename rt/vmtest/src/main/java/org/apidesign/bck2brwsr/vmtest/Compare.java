@@ -42,4 +42,11 @@ public @interface Compare {
      * @return 
      */
     boolean scripting() default true;
+
+    /** Compare (or not) execution times. If the value is specified and
+     * bigger than zero, then the fastest and slowest execution time is
+     * compared and if the ratio between them is higher, the compare fails.
+     * @return ratio (e.g. 2x, 3x, 3.5x) between execution times
+     */
+    double slowdown() default -1;
 }

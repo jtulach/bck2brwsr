@@ -38,6 +38,15 @@
               </configuration>
           </plugin>      
           <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-surefire-plugin</artifactId>
+              <configuration>
+                  <systemPropertyVariables>
+                      <vmtest.js>brwsr</vmtest.js>
+                  </systemPropertyVariables>
+              </configuration>
+          </plugin>
+          <plugin>
               <groupId>org.codehaus.mojo</groupId>
               <artifactId>xml-maven-plugin</artifactId>
               <version>1.0</version>
