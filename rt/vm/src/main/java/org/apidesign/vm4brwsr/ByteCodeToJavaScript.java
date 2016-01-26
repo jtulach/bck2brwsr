@@ -1474,7 +1474,8 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
                     String ac = accessClassFalse(mangleClassName(fi[0]));
-                    String af = accessField(ac, null, fi);
+                    FieldData field = findField(fi);
+                    String af = accessField(ac, field, fi);
                     smapper.assign(this, type, af + "()");
                     i += 2;
                     addReference(fi[0]);

@@ -320,12 +320,14 @@ abstract class VM extends ByteCodeToJavaScript {
     @Override
     protected String accessField(String object, FieldData field, String[] fieldInfoName)
     throws IOException {
-        if (field != null) {
+        if (field != null && !field.isStatic()) {
             return "fld_" + object + "_" + field.getName();
         } else {
             String mangledName = "_" + fieldInfoName[1];
-            return accessNonVirtualMember(object, mangledName, null);
-        }
+           return accessNonVirtualMember(
+               object, mangledName, field != null ? field.cls : null
+           );
+         }
     }
 
     @Override
