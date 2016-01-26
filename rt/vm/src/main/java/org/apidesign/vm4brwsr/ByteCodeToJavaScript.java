@@ -735,7 +735,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     smapper.replace(this, VarType.INTEGER, "(((@1) + (@2)) | 0)", smapper.getI(1), smapper.popI());
                     break;
                 case opc_ladd:
-                    smapper.replace(this, VarType.LONG, "(@1).add64(@2)", smapper.getL(1), smapper.popL());
+                    smapper.replace(this, VarType.LONG, numbers.add64(), smapper.getL(1), smapper.popL());
                     break;
                 case opc_fadd:
                     smapper.replace(this, VarType.FLOAT, "(@1 + @2)", smapper.getF(1), smapper.popF());
@@ -747,7 +747,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     smapper.replace(this, VarType.INTEGER, "(((@1) - (@2)) | 0)", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lsub:
-                    smapper.replace(this, VarType.LONG, "(@1).sub64(@2)", smapper.getL(1), smapper.popL());
+                    smapper.replace(this, VarType.LONG, numbers.sub64(), smapper.getL(1), smapper.popL());
                     break;
                 case opc_fsub:
                     smapper.replace(this, VarType.FLOAT, "(@1 - @2)", smapper.getF(1), smapper.popF());
@@ -759,7 +759,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     smapper.replace(this, VarType.INTEGER, numbers.mul32(), smapper.getI(1), smapper.popI());
                     break;
                 case opc_lmul:
-                    smapper.replace(this, VarType.LONG, "(@1).mul64(@2)", smapper.getL(1), smapper.popL());
+                    smapper.replace(this, VarType.LONG, numbers.mul64(), smapper.getL(1), smapper.popL());
                     break;
                 case opc_fmul:
                     smapper.replace(this, VarType.FLOAT, "(@1 * @2)", smapper.getF(1), smapper.popF());
@@ -772,7 +772,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                          smapper.getI(1), smapper.popI());
                     break;
                 case opc_ldiv:
-                    smapper.replace(this, VarType.LONG, "(@1).div64(@2)",
+                    smapper.replace(this, VarType.LONG, numbers.div64(),
                          smapper.getL(1), smapper.popL());
                     break;
                 case opc_fdiv:
@@ -786,7 +786,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                          smapper.getI(1), smapper.popI());
                     break;
                 case opc_lrem:
-                    smapper.replace(this, VarType.LONG, "(@1).mod64(@2)",
+                    smapper.replace(this, VarType.LONG, numbers.mod64(),
                          smapper.getL(1), smapper.popL());
                     break;
                 case opc_frem:
@@ -799,25 +799,25 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     smapper.replace(this, VarType.INTEGER, "(@1 & @2)", smapper.getI(1), smapper.popI());
                     break;
                 case opc_land:
-                    smapper.replace(this, VarType.LONG, "(@1).and64(@2)", smapper.getL(1), smapper.popL());
+                    smapper.replace(this, VarType.LONG, numbers.and64(), smapper.getL(1), smapper.popL());
                     break;
                 case opc_ior:
                     smapper.replace(this, VarType.INTEGER, "(@1 | @2)", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lor:
-                    smapper.replace(this, VarType.LONG, "(@1).or64(@2)", smapper.getL(1), smapper.popL());
+                    smapper.replace(this, VarType.LONG, numbers.or64(), smapper.getL(1), smapper.popL());
                     break;
                 case opc_ixor:
                     smapper.replace(this, VarType.INTEGER, "(@1 ^ @2)", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lxor:
-                    smapper.replace(this, VarType.LONG, "(@1).xor64(@2)", smapper.getL(1), smapper.popL());
+                    smapper.replace(this, VarType.LONG, numbers.xor64(), smapper.getL(1), smapper.popL());
                     break;
                 case opc_ineg:
                     smapper.replace(this, VarType.INTEGER, "(-(@1))", smapper.getI(0));
                     break;
                 case opc_lneg:
-                    smapper.replace(this, VarType.LONG, "(@1).neg64()", smapper.getL(0));
+                    smapper.replace(this, VarType.LONG, numbers.neg64(), smapper.getL(0));
                     break;
                 case opc_fneg:
                     smapper.replace(this, VarType.FLOAT, "(-@1)", smapper.getF(0));
@@ -829,19 +829,19 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     smapper.replace(this, VarType.INTEGER, "(@1 << @2)", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lshl:
-                    smapper.replace(this, VarType.LONG, "(@1).shl64(@2)", smapper.getL(1), smapper.popI());
+                    smapper.replace(this, VarType.LONG, numbers.shl64(), smapper.getL(1), smapper.popI());
                     break;
                 case opc_ishr:
                     smapper.replace(this, VarType.INTEGER, "(@1 >> @2)", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lshr:
-                    smapper.replace(this, VarType.LONG, "(@1).shr64(@2)", smapper.getL(1), smapper.popI());
+                    smapper.replace(this, VarType.LONG, numbers.shr64(), smapper.getL(1), smapper.popI());
                     break;
                 case opc_iushr:
                     smapper.replace(this, VarType.INTEGER, "(@1 >>> @2)", smapper.getI(1), smapper.popI());
                     break;
                 case opc_lushr:
-                    smapper.replace(this, VarType.LONG, "(@1).ushr64(@2)", smapper.getL(1), smapper.popI());
+                    smapper.replace(this, VarType.LONG, numbers.ushr64(), smapper.getL(1), smapper.popI());
                     break;
                 case opc_iinc: {
                     ++i;
@@ -1003,7 +1003,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     break;
                 }
                 case opc_lcmp:
-                    smapper.replace(this, VarType.INTEGER, "(@2).compare64(@1)", smapper.popL(), smapper.getL(0));
+                    smapper.replace(this, VarType.INTEGER, numbers.compare64(), smapper.popL(), smapper.getL(0));
                     break;
                 case opc_fcmpl:
                 case opc_fcmpg:

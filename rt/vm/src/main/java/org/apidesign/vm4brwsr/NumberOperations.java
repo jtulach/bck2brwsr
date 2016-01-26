@@ -38,6 +38,58 @@ final class NumberOperations {
         return "__mod32(@1,@2)";
     }
 
+    public String add64() {
+        return "(@1).add64(@2)";
+    }
+
+    public String sub64() {
+        return "(@1).sub64(@2)";
+    }
+
+    public String mul64() {
+        return "(@1).mul64(@2)";
+    }
+
+    public String div64() {
+        return "(@1).div64(@2)";
+    }
+
+    public String mod64() {
+        return "(@1).mod64(@2)";
+    }
+
+    public String and64() {
+        return "(@1).and64(@2)";
+    }
+
+    public String or64() {
+        return "(@1).or64(@2)";
+    }
+
+    public String xor64() {
+        return "(@1).xor64(@2)";
+    }
+
+    public String neg64() {
+        return "(@1).neg64()";
+    }
+
+    public String shl64() {
+        return "(@1).shl64(@2)";
+    }
+
+    public String shr64() {
+        return "(@1).shr64(@2)";
+    }
+
+    public String ushr64() {
+        return "(@1).ushr64(@2)";
+    }
+
+    public String compare64() {
+        return "(@2).compare64(@1)";
+    }
+
     public String generate() {
         if (used == 0) {
             return "";
