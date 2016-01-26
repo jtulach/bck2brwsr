@@ -21,7 +21,9 @@ import java.lang.annotation.Annotation;
 import org.apidesign.bck2brwsr.vmtest.*;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.apidesign.bck2brwsr.launcher.Launcher;
 import org.testng.Assert;
 import org.testng.ITest;
@@ -158,17 +160,22 @@ public final class CompareCase implements ITest {
         if (slowdown > 0.0 && slowdownOverride != null) {
             slowdown = Double.parseDouble(slowdownOverride);
         }
-        if (c.scripting()) {
-            final Bck2BrwsrCase js = new Bck2BrwsrCase(m, "JavaScript", l.javaScript(), false, null, null);
-            ret.add(js);
-            ret.add(new CompareCase(m, real, js, slowdown));
-        }
+        Set<Launcher> unique = new HashSet<>();
         for (String b : brwsr) {
             final Launcher s = l.brwsr(b);
             ret.add(s);
+            unique.add(s);
             final Bck2BrwsrCase cse = new Bck2BrwsrCase(m, b, s, false, null, null);
             ret.add(cse);
             ret.add(new CompareCase(m, real, cse, slowdown));
+        }
+        if (c.scripting()) {
+            final Launcher jsLauncher = l.javaScript();
+            if (unique.add(jsLauncher)) {
+                final Bck2BrwsrCase js = new Bck2BrwsrCase(m, "JavaScript", jsLauncher, false, null, null);
+                ret.add(js);
+                ret.add(new CompareCase(m, real, js, slowdown));
+            }
         }
     }
     private static void registerBrwsrCases(Class<? extends Annotation> brwsrTest, Method m, final LaunchSetup l, List<Object> ret, String[] brwsr) {
