@@ -21,6 +21,7 @@ final class NumberOperations {
     private static final int DIV32 = 1;
     private static final int MOD32 = 2;
     private static final int MUL32 = 4;
+    private static final int BIT64 = 8;
 
     private int used;
 
@@ -39,55 +40,68 @@ final class NumberOperations {
     }
 
     public String add64() {
-        return "(@1).add64(@2)";
+        used |= BIT64;
+        return "__add64(@1,@2)";
     }
 
     public String sub64() {
-        return "(@1).sub64(@2)";
+        used |= BIT64;
+        return "__sub64(@1,@2)";
     }
 
     public String mul64() {
-        return "(@1).mul64(@2)";
+        used |= BIT64;
+        return "__mul64(@1,@2)";
     }
 
     public String div64() {
-        return "(@1).div64(@2)";
+        used |= BIT64;
+        return "__div64(@1,@2)";
     }
 
     public String mod64() {
-        return "(@1).mod64(@2)";
+        used |= BIT64;
+        return "__mod64(@1,@2)";
     }
 
     public String and64() {
-        return "(@1).and64(@2)";
+        used |= BIT64;
+        return "__and64(@1,@2)";
     }
 
     public String or64() {
-        return "(@1).or64(@2)";
+        used |= BIT64;
+        return "__or64(@1,@2)";
     }
 
     public String xor64() {
-        return "(@1).xor64(@2)";
+        used |= BIT64;
+        return "__xor64(@1,@2)";
     }
 
     public String neg64() {
-        return "(@1).neg64()";
+        used |= BIT64;
+        return "__neg64(@1)";
     }
 
     public String shl64() {
-        return "(@1).shl64(@2)";
+        used |= BIT64;
+        return "__shl64(@1,@2)";
     }
 
     public String shr64() {
-        return "(@1).shr64(@2)";
+        used |= BIT64;
+        return "__shr64(@1,@2)";
     }
 
     public String ushr64() {
-        return "(@1).ushr64(@2)";
+        used |= BIT64;
+        return "__ushr64(@1,@2)";
     }
 
     public String compare64() {
-        return "(@2).compare64(@1)";
+        used |= BIT64;
+        return "__compare64(@1,@2)";
     }
 
     public String generate() {
@@ -130,6 +144,24 @@ final class NumberOperations {
                 "        if (y === 0) __handleDivByZero();\n" +
                 "        return (x / y) | 0;\n" +
                 "    }\n" +
+                ""
+            );
+        }
+        if ((used & BIT64) != 0) {
+            sb.append(
+                "    var __add64 = function(x,y) { return x.add64(y); };\n" +
+                "    var __sub64 = function(x,y) { return x.sub64(y); };\n" +
+                "    var __mul64 = function(x,y) { return x.mul64(y); };\n" +
+                "    var __div64 = function(x,y) { return x.div64(y); };\n" +
+                "    var __mod64 = function(x,y) { return x.mod64(y); };\n" +
+                "    var __and64 = function(x,y) { return x.and64(y); };\n" +
+                "    var __or64 = function(x,y) { return x.or64(y); };\n" +
+                "    var __xor64 = function(x,y) { return x.xor64(y); };\n" +
+                "    var __neg64 = function(x) { return x.neg64(); };\n" +
+                "    var __shl64 = function(x,y) { return x.shl64(y); };\n" +
+                "    var __shr64 = function(x,y) { return x.shr64(y); };\n" +
+                "    var __ushr64 = function(x,y) { return x.ushr64(y); };\n" +
+                "    var __compare64 = function(x,y) { return y.compare64(x); };\n" +
                 ""
             );
         }
