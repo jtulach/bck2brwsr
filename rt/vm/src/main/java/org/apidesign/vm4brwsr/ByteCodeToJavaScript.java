@@ -814,7 +814,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     smapper.replace(this, VarType.LONG, numbers.xor64(), smapper.getL(1), smapper.popL());
                     break;
                 case opc_ineg:
-                    smapper.replace(this, VarType.INTEGER, "(-(@1))", smapper.getI(0));
+                    smapper.replace(this, VarType.INTEGER, "(-(@1) | 0)", smapper.getI(0));
                     break;
                 case opc_lneg:
                     smapper.replace(this, VarType.LONG, numbers.neg64(), smapper.getL(0));
