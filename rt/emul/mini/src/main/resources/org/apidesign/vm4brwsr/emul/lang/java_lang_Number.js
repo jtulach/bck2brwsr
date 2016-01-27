@@ -77,39 +77,39 @@
         return String(this);
     };
 
-    numberPrototype.add64 = function(x) {
-        var low = this + x;
+    function add64(x, y) {
+        var low = x + y;
         carry = 0;
         if (low > __m32) {
             carry = 1;
             low -= (__m32 + 1);
         }
-        var hi = (this.high32() + x.high32() + carry) | 0;
+        var hi = (x.high32() + y.high32() + carry) | 0;
         return hi.next32(low);
     };
 
-    numberPrototype.sub64 = function(x) {
-        var low = this - x;
+    function sub64(x, y) {
+        var low = x - y;
         carry = 0;
         if (low < 0) {
             carry = 1;
             low += (__m32 + 1);
         }
-        var hi = (this.high32() - x.high32() - carry) | 0;
+        var hi = (x.high32() - y.high32() - carry) | 0;
         return hi.next32(low);
     };
 
-    numberPrototype.mul64 = function(x) {
-        var low = mul32(this, x);
+    function mul64(x, y) {
+        var low = mul32(x, y);
         low += (low < 0) ? (__m32 + 1) : 0;
-        // first count upper 32 bits of (this.low * x.low)
+        // first count upper 32 bits of (x.low * x.low)
         var hi_hi = 0;
         var hi_low = 0;
         var m = 1;
         for (var i = 0; i < 32; i++) {
-            if (x & m) {
-                hi_hi += this >>> 16;
-                hi_low += this & 0xFFFF
+            if (y & m) {
+                hi_hi += x >>> 16;
+                hi_low += x & 0xFFFF
             }
             hi_low >>= 1;
             hi_low += (hi_hi & 1) ? 0x8000 : 0;
@@ -118,8 +118,8 @@
         }
         var hi = (hi_hi << 16) + hi_low;
 
-        var m1 = mul32(this.high32(), x);
-        var m2 = mul32(this, x.high32());
+        var m1 = mul32(x.high32(), y);
+        var m2 = mul32(x, y.high32());
         hi = add32(add32(hi, m1), m2);
 
         return hi.next32(low);
@@ -225,7 +225,7 @@
         low = ~low;
         low += (low < 0) ? (__m32 + 1) : 0;
         var ret = hi.next32(low);
-        return ret.add64(1);
+        return add64(ret, 1);
     };
     
     function __handleDivByZero() {
@@ -463,25 +463,25 @@
         }
     }
 
-    numberPrototype.div64 = function(x) {
+    function div64(x, y) {
         var negateResult = false;
         var u, v;
 
-        if ((this.high32() & 0x80000000) != 0) {
-            u = this.neg64();
+        if ((x.high32() & 0x80000000) !== 0) {
+            u = x.neg64();
             negateResult = !negateResult;
         } else {
-            u = this;        
+            u = x;
         }
 
-        if ((x.high32() & 0x80000000) != 0) {
-            v = x.neg64();
+        if ((y.high32() & 0x80000000) !== 0) {
+            v = y.neg64();
             negateResult = !negateResult;
         } else {
-            v = x;
+            v = y;
         }
 
-        if ((v == 0) && (v.high32() === 0)) {
+        if ((v === 0) && (v.high32() === 0)) {
             __handleDivByZero();
         }
 
@@ -543,10 +543,10 @@
     }
 
     var b = numberPrototype['__bit64'] = {};
-    b.add64 = function(x,y) { return x.add64(y); };
-    b.sub64 = function(x,y) { return x.sub64(y); };
-    b.mul64 = function(x,y) { return x.mul64(y); };
-    b.div64 = function(x,y) { return x.div64(y); };
+    b.add64 = add64;
+    b.sub64 = sub64;
+    b.mul64 = mul64;
+    b.div64 = div64;
     b.mod64 = function(x,y) { return x.mod64(y); };
     b.and64 = function(x,y) { return x.and64(y); };
     b.or64 = function(x,y) { return x.or64(y); };
