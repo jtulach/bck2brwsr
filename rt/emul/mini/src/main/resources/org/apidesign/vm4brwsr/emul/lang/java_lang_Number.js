@@ -50,7 +50,7 @@
             var digit;
             var neg = this.hi < 0;
             if (neg) {
-                var x = this.neg64();
+                var x = neg64(this);
                 var hi = x.hi;
                 var low = x;
             } else {
@@ -214,9 +214,9 @@
         return (this.high32() < x.high32()) ? -1 : 1;
     };
 
-    numberPrototype.neg64 = function() {
-        var hi = this.high32();
-        var low = this;
+    function neg64(x) {
+        var hi = x.high32();
+        var low = x;
         if ((hi === 0) && (low < 0)) {
             return -low;
         }
@@ -467,14 +467,14 @@
         var u, v;
 
         if ((x.high32() & 0x80000000) !== 0) {
-            u = x.neg64();
+            u = neg64(x);
             negateResult = !negateResult;
         } else {
             u = x;
         }
 
         if ((y.high32() & 0x80000000) !== 0) {
-            v = y.neg64();
+            v = neg64(y);
             negateResult = !negateResult;
         } else {
             v = y;
@@ -487,7 +487,7 @@
         if (u.high32() === 0) {
             if (v.high32() === 0) {
                 var result = (u / v) | 0;
-                return negateResult ? result.neg64() : result; 
+                return negateResult ? neg64(result) : result;
             }
 
             return 0;
@@ -501,33 +501,33 @@
         __div64(q64, r64, u64, v64);
 
         var result = q64.toNumber();
-        return negateResult ? result.neg64() : result; 
+        return negateResult ? neg64(result) : result;
     }
 
     function mod64(x, y) {
         var negateResult = false;
         var u, v;
         
-        if ((x.high32() & 0x80000000) != 0) {
-            u = x.neg64();
+        if ((x.high32() & 0x80000000) !== 0) {
+            u = neg64(x);
             negateResult = !negateResult;
         } else {
             u = x;
         }
 
-        if ((y.high32() & 0x80000000) != 0) {
-            v = y.neg64();
+        if ((y.high32() & 0x80000000) !== 0) {
+            v = neg64(y);
         } else {
             v = y;
         }
 
-        if ((v == 0) && (v.high32() === 0)) {
+        if ((v === 0) && (v.high32() === 0)) {
             __handleDivByZero();
         }
 
         if (u.high32() === 0) {
             var result = (v.high32() === 0) ? (u % v) : u;
-            return negateResult ? result.neg64() : result; 
+            return negateResult ? neg64(result) : result;
         }
 
         var u64 = new __Int64(u.high32(), u);
@@ -538,7 +538,7 @@
         __div64(q64, r64, u64, v64);
 
         var result = r64.toNumber();
-        return negateResult ? result.neg64() : result; 
+        return negateResult ? neg64(result) : result;
     }
 
     var b = numberPrototype['__bit64'] = {};
@@ -550,7 +550,7 @@
     b.and64 = and64;
     b.or64 = or64;
     b.xor64 = xor64;
-    b.neg64 = function(x) { return x.neg64(); };
+    b.neg64 = neg64;
     b.shl64 = shl64;
     b.shr64 = shr64;
     b.ushr64 = ushr64;

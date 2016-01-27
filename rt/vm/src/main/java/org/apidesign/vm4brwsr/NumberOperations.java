@@ -157,7 +157,7 @@ final class NumberOperations {
                 "    var __and64 = Number.prototype['__bit64']['and64'];\n" +
                 "    var __or64 = Number.prototype['__bit64']['or64'];\n" +
                 "    var __xor64 = Number.prototype['__bit64']['xor64'];\n" +
-                "    var __neg64 = function(x) { return x.neg64(); };\n" +
+                "    var __neg64 = Number.prototype['__bit64']['neg64'];\n" +
                 "    var __shl64 = Number.prototype['__bit64']['shl64'];\n" +
                 "    var __shr64 = Number.prototype['__bit64']['shr64'];\n" +
                 "    var __ushr64 = Number.prototype['__bit64']['ushr64'];\n" +
