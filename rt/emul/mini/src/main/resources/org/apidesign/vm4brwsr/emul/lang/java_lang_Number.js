@@ -21,20 +21,23 @@
     numberPrototype.high32 = function() {
         return high32(this);
     };
+    function low32(x) {
+        return x.lo ? x.lo : x;
+    };
     function high32(x) {
-        return x.hi ? x.hi : (Math.floor(x / (__m32 + 1))) | 0;
+        return x.hi ? x.hi : (Math.floor(low32(x) / (__m32 + 1))) | 0;
     };
     numberPrototype.toFP = function() {
-        return this.hi ? this.hi * (__m32 + 1) + this : this;
+        return this.hi ? this.hi * (__m32 + 1) + low32(this) : low32(this);
     };
     numberPrototype.toLong = function() {
-        var hi = (this / (__m32 + 1)) | 0;
-        var low = (this % (__m32 + 1)) | 0;
+        var hi = (low32(this) / (__m32 + 1)) | 0;
+        var low = (low32(this) % (__m32 + 1)) | 0;
         if (low < 0) {
             low += __m32 + 1;
         }
 
-        if (this < 0) {
+        if (low32(this) < 0) {
             hi -= 1;
         }
 
@@ -44,7 +47,7 @@
     numberPrototype.toExactString = function() {
         if (this.hi) {
             // check for Long.MIN_VALUE
-            if ((this.hi == (0x80000000 | 0)) && (this == 0)) {
+            if ((this.hi == (0x80000000 | 0)) && (low32(this) == 0)) {
                 return '-9223372036854775808';
             }
             var res = 0;
@@ -55,10 +58,10 @@
             if (neg) {
                 var x = neg64(this);
                 var hi = x.hi;
-                var low = x;
+                var low = low32(x);
             } else {
                 var hi = this.hi;
-                var low = this;
+                var low = low32(this);
             }
             for (var i = 0; i < a.length; i++) {
                 res += hi * a[i];
@@ -77,11 +80,11 @@
             s = String(res).concat(s).replace(/^0+/, '');
             return (neg ? '-' : '').concat(s);
         }
-        return String(this);
+        return String(low32(this));
     };
 
     function add64(x, y) {
-        var low = x + y;
+        var low = low32(x) + low32(y);
         carry = 0;
         if (low > __m32) {
             carry = 1;
@@ -92,7 +95,7 @@
     };
 
     function sub64(x, y) {
-        var low = x - y;
+        var low = low32(x) - low32(y);
         carry = 0;
         if (low < 0) {
             carry = 1;
@@ -103,14 +106,14 @@
     };
 
     function mul64(x, y) {
-        var low = mul32(x, y);
+        var low = mul32(low32(x), low32(y));
         low += (low < 0) ? (__m32 + 1) : 0;
         // first count upper 32 bits of (x.low * x.low)
         var hi_hi = 0;
         var hi_low = 0;
         var m = 1;
         for (var i = 0; i < 32; i++) {
-            if (y & m) {
+            if (low32(y) & m) {
                 hi_hi += x >>> 16;
                 hi_low += x & 0xFFFF
             }
@@ -121,15 +124,15 @@
         }
         var hi = (hi_hi << 16) + hi_low;
 
-        var m1 = mul32(high32(x), y);
-        var m2 = mul32(x, high32(y));
+        var m1 = mul32(high32(x), low32(y));
+        var m2 = mul32(low32(x), high32(y));
         hi = add32(add32(hi, m1), m2);
 
         return hi.next32(low);
     };
 
     function and64(x, y) {
-        var low = x & y;
+        var low = low32(x) & low32(y);
         low += (low < 0) ? (__m32 + 1) : 0;
         if (x.hi && y.hi) {
             var hi = x.hi & y.hi;
@@ -140,7 +143,7 @@
     };
 
     function or64(x, y) {
-        var low = x | y;
+        var low = low32(x) | low32(y);
         low += (low < 0) ? (__m32 + 1) : 0;
         if (x.hi || y.hi) {
             var hi = x.hi | y.hi;
@@ -150,7 +153,7 @@
     };
 
     function xor64(x, y) {
-        var low = x ^ y;
+        var low = low32(x) ^ low32(y);
         low += (low < 0) ? (__m32 + 1) : 0;
         if (x.hi || y.hi) {
             var hi = x.hi ^ y.hi;
@@ -164,13 +167,13 @@
         x &= 0x3f;
         if (x === 0) return thiz;
         if (x >= 32) {
-            var hi = thiz << (x - 32);
+            var hi = low32(thiz) << (x - 32);
             return hi.next32(0);
         } else {
             var hi = high32(thiz) << x;
-            var low_reminder = thiz >> (32 - x);
+            var low_reminder = low32(thiz) >> (32 - x);
             hi |= low_reminder;
-            var low = thiz << x;
+            var low = low32(thiz) << x;
             low += (low < 0) ? (__m32 + 1) : 0;
             return hi.next32(low);
         }
@@ -184,7 +187,7 @@
             low += (low < 0) ? (__m32 + 1) : 0;
             return low;
         } else {
-            var low = thiz >>> x;
+            var low = low32(thiz) >>> x;
             var hi_reminder = high32(thiz) << (32 - x);
             low |= hi_reminder;
             low += (low < 0) ? (__m32 + 1) : 0;
@@ -201,7 +204,7 @@
             low += (low < 0) ? (__m32 + 1) : 0;
             return low;
         } else {
-            var low = thiz >>> x;
+            var low = low32(thiz) >>> x;
             var hi_reminder = high32(thiz) << (32 - x);
             low |= hi_reminder;
             low += (low < 0) ? (__m32 + 1) : 0;
@@ -212,14 +215,16 @@
 
     function compare64(x, y) {
         if (high32(x) === high32(y)) {
-            return (x < y) ? -1 : ((x > y) ? 1 : 0);
+            var lox = low32(x);
+            var loy = low32(y);
+            return (lox < loy) ? -1 : ((lox > loy) ? 1 : 0);
         }
         return (high32(x) < high32(y)) ? -1 : 1;
     };
 
     function neg64(x) {
         var hi = high32(x);
-        var low = x;
+        var low = low32(x);
         if ((hi === 0) && (low < 0)) {
             return -low;
         }
@@ -483,21 +488,21 @@
             v = y;
         }
 
-        if ((v === 0) && (high32(v) === 0)) {
+        if ((low32(v) === 0) && (high32(v) === 0)) {
             __handleDivByZero();
         }
 
         if (high32(u) === 0) {
             if (high32(v) === 0) {
-                var result = (u / v) | 0;
+                var result = (low32(u) / low32(v)) | 0;
                 return negateResult ? neg64(result) : result;
             }
 
             return 0;
         }
 
-        var u64 = new __Int64(high32(u), u);
-        var v64 = new __Int64(high32(v), v);
+        var u64 = new __Int64(high32(u), low32(u));
+        var v64 = new __Int64(high32(v), low32(v));
         var q64 = new __Int64(0, 0);
         var r64 = new __Int64(0, 0);
 
@@ -524,17 +529,17 @@
             v = y;
         }
 
-        if ((v === 0) && (high32(v) === 0)) {
+        if ((low32(v) === 0) && (high32(v) === 0)) {
             __handleDivByZero();
         }
 
         if (high32(u) === 0) {
-            var result = (high32(v) === 0) ? (u % v) : u;
+            var result = (high32(v) === 0) ? (low32(u) % low32(v)) : low32(u);
             return negateResult ? neg64(result) : result;
         }
 
-        var u64 = new __Int64(high32(u), u);
-        var v64 = new __Int64(high32(v), v);
+        var u64 = new __Int64(high32(u), low32(u));
+        var v64 = new __Int64(high32(v), low32(v));
         var q64 = new __Int64(0, 0);
         var r64 = new __Int64(0, 0);
 
