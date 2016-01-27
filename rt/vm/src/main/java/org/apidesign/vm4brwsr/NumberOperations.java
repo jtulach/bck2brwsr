@@ -101,7 +101,7 @@ final class NumberOperations {
 
     public String compare64() {
         used |= BIT64;
-        return "__compare64(@1,@2)";
+        return "__compare64(@2,@1)";
     }
 
     public String generate() {

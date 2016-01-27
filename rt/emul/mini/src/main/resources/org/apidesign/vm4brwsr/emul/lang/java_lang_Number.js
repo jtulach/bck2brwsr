@@ -207,11 +207,11 @@
         }
     };
 
-    numberPrototype.compare64 = function(x) {
-        if (this.high32() === x.high32()) {
-            return (this < x) ? -1 : ((this > x) ? 1 : 0);
+    function compare64(x, y) {
+        if (x.high32() === y.high32()) {
+            return (x < y) ? -1 : ((x > y) ? 1 : 0);
         }
-        return (this.high32() < x.high32()) ? -1 : 1;
+        return (x.high32() < y.high32()) ? -1 : 1;
     };
 
     function neg64(x) {
@@ -554,7 +554,7 @@
     b.shl64 = shl64;
     b.shr64 = shr64;
     b.ushr64 = ushr64;
-    b.compare64 = function(x,y) { return y.compare64(x); };
+    b.compare64 = compare64;
 })(Number.prototype);
 
 vm.java_lang_Number(false);
