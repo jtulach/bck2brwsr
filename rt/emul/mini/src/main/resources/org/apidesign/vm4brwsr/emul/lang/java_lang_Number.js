@@ -541,6 +541,21 @@
         var result = r64.toNumber();
         return negateResult ? result.neg64() : result; 
     }
+
+    var b = numberPrototype['__bit64'] = {};
+    b.add64 = function(x,y) { return x.add64(y); };
+    b.sub64 = function(x,y) { return x.sub64(y); };
+    b.mul64 = function(x,y) { return x.mul64(y); };
+    b.div64 = function(x,y) { return x.div64(y); };
+    b.mod64 = function(x,y) { return x.mod64(y); };
+    b.and64 = function(x,y) { return x.and64(y); };
+    b.or64 = function(x,y) { return x.or64(y); };
+    b.xor64 = function(x,y) { return x.xor64(y); };
+    b.neg64 = function(x) { return x.neg64(); };
+    b.shl64 = function(x,y) { return x.shl64(y); };
+    b.shr64 = function(x,y) { return x.shr64(y); };
+    b.ushr64 = function(x,y) { return x.ushr64(y); };
+    b.compare64 = function(x,y) { return y.compare64(x); };
 })(Number.prototype);
 
 vm.java_lang_Number(false);

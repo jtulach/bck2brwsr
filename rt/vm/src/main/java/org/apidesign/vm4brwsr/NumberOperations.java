@@ -149,19 +149,19 @@ final class NumberOperations {
         }
         if ((used & BIT64) != 0) {
             sb.append(
-                "    var __add64 = function(x,y) { return x.add64(y); };\n" +
-                "    var __sub64 = function(x,y) { return x.sub64(y); };\n" +
-                "    var __mul64 = function(x,y) { return x.mul64(y); };\n" +
-                "    var __div64 = function(x,y) { return x.div64(y); };\n" +
-                "    var __mod64 = function(x,y) { return x.mod64(y); };\n" +
-                "    var __and64 = function(x,y) { return x.and64(y); };\n" +
-                "    var __or64 = function(x,y) { return x.or64(y); };\n" +
-                "    var __xor64 = function(x,y) { return x.xor64(y); };\n" +
+                "    var __add64 = Number.prototype['__bit64']['add64'];\n" +
+                "    var __sub64 = Number.prototype['__bit64']['sub64'];\n" +
+                "    var __mul64 = Number.prototype['__bit64']['mul64'];\n" +
+                "    var __div64 = Number.prototype['__bit64']['div64'];\n" +
+                "    var __mod64 = Number.prototype['__bit64']['mod64'];\n" +
+                "    var __and64 = Number.prototype['__bit64']['and64'];\n" +
+                "    var __or64 = Number.prototype['__bit64']['or64'];\n" +
+                "    var __xor64 = Number.prototype['__bit64']['xor64'];\n" +
                 "    var __neg64 = function(x) { return x.neg64(); };\n" +
-                "    var __shl64 = function(x,y) { return x.shl64(y); };\n" +
-                "    var __shr64 = function(x,y) { return x.shr64(y); };\n" +
-                "    var __ushr64 = function(x,y) { return x.ushr64(y); };\n" +
-                "    var __compare64 = function(x,y) { return y.compare64(x); };\n" +
+                "    var __shl64 = Number.prototype['__bit64']['shl64'];\n" +
+                "    var __shr64 = Number.prototype['__bit64']['shr64'];\n" +
+                "    var __ushr64 = Number.prototype['__bit64']['ushr64'];\n" +
+                "    var __compare64 = Number.prototype['__bit64']['compare64'];\n" +
                 ""
             );
         }
