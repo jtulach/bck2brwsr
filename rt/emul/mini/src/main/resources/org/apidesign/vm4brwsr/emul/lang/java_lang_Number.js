@@ -125,33 +125,32 @@
         return hi.next32(low);
     };
 
-    numberPrototype.and64 = function(x) {
-        var low = this & x;
+    function and64(x, y) {
+        var low = x & y;
         low += (low < 0) ? (__m32 + 1) : 0;
-        if (this.hi && x.hi) {
-            var hi = this.hi & x.hi;
+        if (x.hi && y.hi) {
+            var hi = x.hi & y.hi;
             return hi.next32(low);
         }
         ;
         return low;
     };
 
-    numberPrototype.or64 = function(x) {
-        var low = this | x;
+    function or64(x, y) {
+        var low = x | y;
         low += (low < 0) ? (__m32 + 1) : 0;
-        if (this.hi || x.hi) {
-            var hi = this.hi | x.hi;
+        if (x.hi || y.hi) {
+            var hi = x.hi | y.hi;
             return hi.next32(low);
         }
-        ;
         return low;
     };
 
-    numberPrototype.xor64 = function(x) {
-        var low = this ^ x;
+    function xor64(x, y) {
+        var low = x ^ y;
         low += (low < 0) ? (__m32 + 1) : 0;
-        if (this.hi || x.hi) {
-            var hi = this.hi ^ x.hi;
+        if (x.hi || y.hi) {
+            var hi = x.hi ^ y.hi;
             return hi.next32(low);
         }
         ;
@@ -505,21 +504,21 @@
         return negateResult ? result.neg64() : result; 
     }
 
-    numberPrototype.mod64 = function(x) {
+    function mod64(x, y) {
         var negateResult = false;
         var u, v;
         
-        if ((this.high32() & 0x80000000) != 0) {
-            u = this.neg64();
+        if ((x.high32() & 0x80000000) != 0) {
+            u = x.neg64();
             negateResult = !negateResult;
         } else {
-            u = this;        
+            u = x;
         }
 
-        if ((x.high32() & 0x80000000) != 0) {
-            v = x.neg64();
+        if ((y.high32() & 0x80000000) != 0) {
+            v = y.neg64();
         } else {
-            v = x;
+            v = y;
         }
 
         if ((v == 0) && (v.high32() === 0)) {
@@ -547,10 +546,10 @@
     b.sub64 = sub64;
     b.mul64 = mul64;
     b.div64 = div64;
-    b.mod64 = function(x,y) { return x.mod64(y); };
-    b.and64 = function(x,y) { return x.and64(y); };
-    b.or64 = function(x,y) { return x.or64(y); };
-    b.xor64 = function(x,y) { return x.xor64(y); };
+    b.mod64 = mod64;
+    b.and64 = and64;
+    b.or64 = or64;
+    b.xor64 = xor64;
     b.neg64 = function(x) { return x.neg64(); };
     b.shl64 = function(x,y) { return x.shl64(y); };
     b.shr64 = function(x,y) { return x.shr64(y); };
