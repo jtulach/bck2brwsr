@@ -157,52 +157,52 @@
         return low;
     };
 
-    numberPrototype.shl64 = function(x) {
+    function shl64(thiz, x) {
         x &= 0x3f;
-        if (x == 0) return this;
+        if (x == 0) return thiz;
         if (x >= 32) {
-            var hi = this << (x - 32);
+            var hi = thiz << (x - 32);
             return hi.next32(0);
         } else {
-            var hi = this.high32() << x;
-            var low_reminder = this >> (32 - x);
+            var hi = thiz.high32() << x;
+            var low_reminder = thiz >> (32 - x);
             hi |= low_reminder;
-            var low = this << x;
+            var low = thiz << x;
             low += (low < 0) ? (__m32 + 1) : 0;
             return hi.next32(low);
         }
     };
 
-    numberPrototype.shr64 = function(x) {
+    function shr64(thiz, x) {
         x &= 0x3f;
-        if (x == 0) return this;
+        if (x == 0) return thiz;
         if (x >= 32) {
-            var low = this.high32() >> (x - 32);
+            var low = thiz.high32() >> (x - 32);
             low += (low < 0) ? (__m32 + 1) : 0;
             return low;
         } else {
-            var low = this >>> x;
-            var hi_reminder = this.high32() << (32 - x);
+            var low = thiz >>> x;
+            var hi_reminder = thiz.high32() << (32 - x);
             low |= hi_reminder;
             low += (low < 0) ? (__m32 + 1) : 0;
-            var hi = this.high32() >> x;
+            var hi = thiz.high32() >> x;
             return hi.next32(low);
         }
     };
 
-    numberPrototype.ushr64 = function(x) {
+    function ushr64(thiz, x) {
         x &= 0x3f;
-        if (x == 0) return this;
+        if (x == 0) return thiz;
         if (x >= 32) {
-            var low = this.high32() >>> (x - 32);
+            var low = thiz.high32() >>> (x - 32);
             low += (low < 0) ? (__m32 + 1) : 0;
             return low;
         } else {
-            var low = this >>> x;
-            var hi_reminder = this.high32() << (32 - x);
+            var low = thiz >>> x;
+            var hi_reminder = thiz.high32() << (32 - x);
             low |= hi_reminder;
             low += (low < 0) ? (__m32 + 1) : 0;
-            var hi = this.high32() >>> x;
+            var hi = thiz.high32() >>> x;
             return hi.next32(low);
         }
     };
@@ -551,9 +551,9 @@
     b.or64 = or64;
     b.xor64 = xor64;
     b.neg64 = function(x) { return x.neg64(); };
-    b.shl64 = function(x,y) { return x.shl64(y); };
-    b.shr64 = function(x,y) { return x.shr64(y); };
-    b.ushr64 = function(x,y) { return x.ushr64(y); };
+    b.shl64 = shl64;
+    b.shr64 = shr64;
+    b.ushr64 = ushr64;
     b.compare64 = function(x,y) { return y.compare64(x); };
 })(Number.prototype);
 
