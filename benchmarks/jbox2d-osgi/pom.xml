@@ -51,6 +51,9 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <ignoreBootClassPath>false</ignoreBootClassPath>
+                </configuration>
             </plugin>
         </plugins>
     </build>
