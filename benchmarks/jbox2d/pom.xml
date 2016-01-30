@@ -106,7 +106,7 @@
     </dependency>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
-      <artifactId>jbox2d-2.1.1.1-osgi</artifactId>
+      <artifactId>jbox2d-osgi</artifactId>
       <version>${project.version}</version>
       <exclusions>
         <exclusion>
