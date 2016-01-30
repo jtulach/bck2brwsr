@@ -1231,26 +1231,26 @@ abstract class ByteCodeToJavaScript implements Appendable {
                          smapper.popI(), smapper.popI(), smapper.popA());
                     break;
                 case opc_laload:
-                    smapper.replace(this, VarType.LONG, "Array.at(@2, @1)",
+                    smapper.replace(this, VarType.LONG, "(@2[@1] || Array.at(@2, @1))",
                          smapper.popI(), smapper.getA(0));
                     break;
                 case opc_faload:
-                    smapper.replace(this, VarType.FLOAT, "Array.at(@2, @1)",
+                    smapper.replace(this, VarType.FLOAT, "(@2[@1] || Array.at(@2, @1))",
                          smapper.popI(), smapper.getA(0));
                     break;
                 case opc_daload:
-                    smapper.replace(this, VarType.DOUBLE, "Array.at(@2, @1)",
+                    smapper.replace(this, VarType.DOUBLE, "(@2[@1] || Array.at(@2, @1))",
                          smapper.popI(), smapper.getA(0));
                     break;
                 case opc_aaload:
-                    smapper.replace(this, VarType.REFERENCE, "Array.at(@2, @1)",
+                    smapper.replace(this, VarType.REFERENCE, "(@2[@1] || Array.at(@2, @1))",
                          smapper.popI(), smapper.getA(0));
                     break;
                 case opc_iaload:
                 case opc_baload:
                 case opc_caload:
                 case opc_saload:
-                    smapper.replace(this, VarType.INTEGER, "Array.at(@2, @1)",
+                    smapper.replace(this, VarType.INTEGER, "(@2[@1] || Array.at(@2, @1))",
                          smapper.popI(), smapper.getA(0));
                     break;
                 case opc_pop:

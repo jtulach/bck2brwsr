@@ -26,7 +26,7 @@ public class JBox2dSimulationTest {
     public JBox2dSimulationTest() {
     }
 
-    @Compare(slowdown = 40.0)
+    @Compare(slowdown = 30.0)
     public int tenThousand() throws IOException {
         Scene s = new Scene();
         for (int i = 0; i < 10000; i++) {
