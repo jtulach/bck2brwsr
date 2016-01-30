@@ -13,5 +13,7 @@
   <name>Performance benchmarks</name>
   <modules>
     <module>sieve</module>
+    <module>jbox2d</module>
+    <module>jbox2d-osgi</module>
   </modules>
 </project>
