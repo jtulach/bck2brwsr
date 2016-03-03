@@ -19,15 +19,17 @@ package org.apidesign.bck2brwsr.aot;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import net.orfjackal.retrolambda.LambdaClassBackporter;
-import net.orfjackal.retrolambda.LambdaClassDumper;
-import net.orfjackal.retrolambda.LambdaClassSaver;
-import net.orfjackal.retrolambda.LambdaReifier;
-import net.orfjackal.retrolambda.LambdaUsageBackporter;
+import net.orfjackal.retrolambda.Transformers;
+import net.orfjackal.retrolambda.asm.ClassReader;
 import net.orfjackal.retrolambda.asm.Opcodes;
+import net.orfjackal.retrolambda.files.OutputDirectory;
+import net.orfjackal.retrolambda.interfaces.ClassHierarchyAnalyzer;
+import net.orfjackal.retrolambda.lambdas.LambdaClassDumper;
+import net.orfjackal.retrolambda.lambdas.LambdaClassSaver;
 import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 
@@ -36,24 +38,30 @@ import org.apidesign.vm4brwsr.Bck2Brwsr;
  * @author Jaroslav Tulach
  */
 @ExtraJavaScript(processByteCode = false, resource="")
-final class RetroLambda extends LambdaClassSaver implements BytecodeProcessor {
+final class RetroLambda extends OutputDirectory implements BytecodeProcessor {
     private Map<String,byte[]> converted;
+    private final Transformers transformers;
+    private final LambdaClassSaver saver;
     
     public RetroLambda() {
-        super(null, Opcodes.V1_7);
+        super(null);
+        transformers = new Transformers(Opcodes.V1_7, false, new ClassHierarchyAnalyzer());
+        saver = new LambdaClassSaver(this, transformers);
     }
 
     @Override
-    public void saveIfLambda(String className, byte[] bytecode) {
-        if (LambdaReifier.isLambdaClassToReify(className)) {
-            try {
-                byte[] backportedBytecode = LambdaClassBackporter.transform(bytecode, Opcodes.V1_7);
-                putBytecode(className + ".class", backportedBytecode);
-            } catch (Throwable t) {
-                // print to stdout to keep in sync with other log output
-                throw new IllegalStateException("ERROR: Failed to backport lambda class: " + className);
-            }
+    public void writeFile(Path relativePath, byte[] content) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeClass(byte[] bytecode) throws IOException {
+        if (bytecode == null) {
+            return;
         }
+        ClassReader cr = new ClassReader(bytecode);
+        String className = cr.getClassName();
+        putBytecode(className + ".class", bytecode);
     }
 
     private void putBytecode(String className, byte[] backportedBytecode) {
@@ -75,11 +83,11 @@ final class RetroLambda extends LambdaClassSaver implements BytecodeProcessor {
         }
         
         ClassLoader prev = Thread.currentThread().getContextClassLoader();
-        try (LambdaClassDumper dumper = new LambdaClassDumper(this)) {
+        try (LambdaClassDumper dumper = new LambdaClassDumper(saver)) {
             Thread.currentThread().setContextClassLoader(new ResLdr(resources));
             dumper.install();
             
-            byte[] newB = LambdaUsageBackporter.transform(byteCode, Opcodes.V1_7);
+            byte[] newB = transformers.backportClass(new ClassReader(byteCode));
             if (!Arrays.equals(newB, byteCode)) {
                 putBytecode(className, newB);
             }
