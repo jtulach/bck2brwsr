@@ -95,18 +95,18 @@ public final class CompareCase implements ITest {
             }
             try {
                 v2 = Long.parseLong(v2.toString());
-            } catch (NumberFormatException nfe) {
+            } catch (NullPointerException | NumberFormatException nfe) {
                 v2 = "Can't parse " + v2.toString();
             }
         } else if (v1 instanceof Number) {
             try {
                 v1 = Double.parseDouble(v1.toString());
-            } catch (NumberFormatException nfe) {
+            } catch (NullPointerException | NumberFormatException nfe) {
                 v1 = "Can't parse " + v1.toString();
             }
             try {
                 v2 = Double.parseDouble(v2.toString());
-            } catch (NumberFormatException nfe) {
+            } catch (NullPointerException | NumberFormatException nfe) {
                 v2 = "Can't parse " + v2.toString();
             }
         } else {
