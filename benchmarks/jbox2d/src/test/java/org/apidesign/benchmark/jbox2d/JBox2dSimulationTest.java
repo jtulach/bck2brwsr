@@ -27,9 +27,9 @@ public class JBox2dSimulationTest {
     }
 
     @Compare(slowdown = 30.0)
-    public int tenThousand() throws IOException {
+    public int fewIter() throws IOException {
         Scene s = new Scene();
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 100; i++) {
             s.calculate();
         }
         return s.getWorld().getBodyCount();
