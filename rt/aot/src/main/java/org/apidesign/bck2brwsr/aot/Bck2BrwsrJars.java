@@ -299,6 +299,10 @@ public final class Bck2BrwsrJars {
             if (is != null) {
                 return is;
             }
+            return getFromCp(name);
+        }
+
+        private InputStream getFromCp(String name) throws IOException {
             Enumeration<URL> en = cp.getResources(name);
             URL u = null;
             while (en.hasMoreElements()) {
@@ -315,10 +319,17 @@ public final class Bck2BrwsrJars {
             return u.openStream();
         }
 
+        private final class NoConvRes implements Bck2Brwsr.Resources {
+            @Override
+            public InputStream get(String resource) throws IOException {
+                return getFromCp(resource);
+            }
+        }
+
         private void addClassResource(String n) throws IOException {
             if (proc != null) {
                 try (InputStream is = this.get(n)) {
-                    Map<String, byte[]> conv = proc.process(n, readFrom(is), this);
+                    Map<String, byte[]> conv = proc.process(n, readFrom(is), new NoConvRes());
                     if (conv != null) {
                         boolean found = false;
                         for (Map.Entry<String, byte[]> entrySet : conv.entrySet()) {

@@ -57,6 +57,6 @@ public class Functions {
     }
 
     private static SimpleOne<Void, Void, Void, Void, Integer> function4impl() {
-        return null;
+        return (Void p1, Void p2, Void p3, Void p4) -> 42;
     }
 }
