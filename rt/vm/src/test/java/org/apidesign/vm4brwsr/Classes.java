@@ -67,6 +67,33 @@ public class Classes {
     public static String name() {
         return IOException.class.getName().toString();
     }
+
+    @ClassesMarker(self = Self.class, number = 42, nicknames = {})
+    public static class Self {
+    }
+
+    @ClassesMarker(number = 42, nicknames = {})
+    public static class DefaultSelf {
+    }
+
+    public static int self() {
+        ClassesMarker cm = Self.class.getAnnotation(ClassesMarker.class);
+        if (cm.self() == Self.class) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
+    public static int defaultSelf() {
+        ClassesMarker cm = DefaultSelf.class.getAnnotation(ClassesMarker.class);
+        if (cm.self() == Object.class) {
+            return 1;
+        } else {
+            throw new IllegalStateException("" + cm.self());
+        }
+    }
+
     public static String simpleName() {
         return IOException.class.getSimpleName();
     }
@@ -101,6 +128,11 @@ public class Classes {
         assert cm instanceof Object : "Is object " + cm;
         assert cm instanceof Annotation : "Is annotation " + cm;
         assert !((Object)cm instanceof Class) : "Is not Class " + cm;
+        return cm == null ? -1 : cm.number();
+    }
+    public static int getMarkerDefault() {
+        try { throw new IllegalStateException(); } catch (Exception e) {}
+        ClassesMarker cm = CD.class.getAnnotation(ClassesMarker.class);
         return cm == null ? -1 : cm.number();
     }
     public static String getMarkerNicknames() {
@@ -144,6 +176,17 @@ public class Classes {
     }
     public static String getMarkerE() {
         ClassesMarker cm = Classes.class.getAnnotation(ClassesMarker.class);
+        if (cm == null) {
+            return null;
+        }
+        return cm.count().name();
+    }
+
+    @ClassesMarker(nicknames = {})
+    class CD {
+    }
+    public static String getMarkerED() {
+        ClassesMarker cm = CD.class.getAnnotation(ClassesMarker.class);
         if (cm == null) {
             return null;
         }

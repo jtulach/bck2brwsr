@@ -288,7 +288,8 @@ abstract class ByteCodeToJavaScript implements Appendable {
             byte[] runAnno = m.findAnnotationData(false);
             if (runAnno != null) {
                 append("\n    m.anno = {");
-                generateAnno(jc, runAnno);
+                AnnotationParser ap = new GenerateAnno(true, false);
+                ap.parse(runAnno, jc);
                 append("\n    };");
             }
             append("\n    m.access = " + m.getAccess()).append(";");
@@ -343,7 +344,8 @@ abstract class ByteCodeToJavaScript implements Appendable {
         byte[] classAnno = jc.findAnnotationData(false);
         if (classAnno != null) {
             append("\n    CLS.$class.anno = {");
-            generateAnno(jc, classAnno);
+            AnnotationParser ap = new GenerateAnno(true, false);
+            ap.parse(classAnno, jc);
             append("\n    };");
         }
         for (String init : toInitilize.toArray()) {
@@ -453,10 +455,18 @@ abstract class ByteCodeToJavaScript implements Appendable {
 
         final byte[] byteCodes = m.getCode();
         if (byteCodes == null) {
-            if (debug("  throw 'no code found for ")) {
-               this
-               .append(jc.getClassName()).append('.')
-               .append(m.getName()).append("';\n");
+            byte[] defaultAttr = m.getDefaultAttribute();
+            if (defaultAttr != null) {
+                append("  return ");
+                AnnotationParser ap = new GenerateAnno(true, false);
+                ap.parseDefault(defaultAttr, jc);
+                append(";\n");
+            } else {
+                if (debug("  throw 'no code found for ")) {
+                   this
+                   .append(jc.getClassName()).append('.')
+                   .append(m.getName()).append("';\n");
+                }
             }
             if (defineProp) {
                 append("}});");
@@ -2156,81 +2166,6 @@ abstract class ByteCodeToJavaScript implements Appendable {
         return " = null;";
     }
 
-    private void generateAnno(ClassData cd, byte[] data) throws IOException {
-        AnnotationParser ap = new AnnotationParser(true, false) {
-            int[] cnt = new int[32];
-            int depth;
-            
-            @Override
-            protected void visitAnnotationStart(String attrType, boolean top) throws IOException {
-                final String slashType = attrType.substring(1, attrType.length() - 1);
-                requireReference(slashType);
-                
-                if (cnt[depth]++ > 0) {
-                    append(",");
-                }
-                if (top) {
-                    append('"').append(attrType).append("\" : ");
-                }
-                append("{\n");
-                cnt[++depth] = 0;
-            }
-
-            @Override
-            protected void visitAnnotationEnd(String type, boolean top) throws IOException {
-                append("\n}\n");
-                depth--;
-            }
-
-            @Override
-            protected void visitValueStart(String attrName, char type) throws IOException {
-                if (cnt[depth]++ > 0) {
-                    append(",\n");
-                }
-                cnt[++depth] = 0;
-                if (attrName != null) {
-                    append('"').append(attrName).append("\" : ");
-                }
-                if (type == '[') {
-                    append("[");
-                }
-            }
-
-            @Override
-            protected void visitValueEnd(String attrName, char type) throws IOException {
-                if (type == '[') {
-                    append("]");
-                }
-                depth--;
-            }
-            
-            @Override
-            protected void visitAttr(String type, String attr, String attrType, String value) 
-            throws IOException {
-                if (attr == null && value == null) {
-                    return;
-                }
-                append(value);
-            }
-
-            @Override
-            protected void visitEnumAttr(String type, String attr, String attrType, String value) 
-            throws IOException {
-                final String slashType = attrType.substring(1, attrType.length() - 1);
-                requireReference(slashType);
-                
-                final String cn = mangleClassName(slashType);
-                append(accessClassFalse(cn))
-                   .append("['valueOf__L").
-                    append(cn).
-                    append("_2Ljava_lang_String_2']('").
-                    append(value).
-                    append("')");
-            }
-        };
-        ap.parse(data, cd);
-    }
-
     private static String outputArg(Appendable out, String[] args, int indx) throws IOException {
         final String name = args[indx];
         if (name == null) {
@@ -2504,5 +2439,89 @@ abstract class ByteCodeToJavaScript implements Appendable {
     @JavaScriptBody(args = "msg", body = "")
     private static void println(String msg) {
         System.err.println(msg);
+    }
+
+    private class GenerateAnno extends AnnotationParser {
+        public GenerateAnno(boolean textual, boolean iterateArray) {
+            super(textual, iterateArray);
+        }
+        int[] cnt = new int[32];
+        int depth;
+
+        @Override
+        protected void visitAnnotationStart(String attrType, boolean top) throws IOException {
+            final String slashType = attrType.substring(1, attrType.length() - 1);
+            requireReference(slashType);
+
+            if (cnt[depth]++ > 0) {
+                append(",");
+            }
+            if (top) {
+                append('"').append(attrType).append("\" : ");
+            }
+            append("{\n");
+            cnt[++depth] = 0;
+        }
+
+        @Override
+        protected void visitAnnotationEnd(String type, boolean top) throws IOException {
+            append("\n}\n");
+            depth--;
+        }
+
+        @Override
+        protected void visitValueStart(String attrName, char type) throws IOException {
+            if (cnt[depth]++ > 0) {
+                append(",\n");
+            }
+            cnt[++depth] = 0;
+            if (attrName != null) {
+                append('"').append(attrName).append("\" : ");
+            }
+            if (type == '[') {
+                append("[");
+            }
+        }
+
+        @Override
+        protected void visitValueEnd(String attrName, char type) throws IOException {
+            if (type == '[') {
+                append("]");
+            }
+            depth--;
+        }
+
+        @Override
+        protected void visitAttr(String type, String attr, String attrType, String value)
+            throws IOException {
+            if (attr == null && value == null) {
+                return;
+            }
+            append(value);
+        }
+
+        @Override
+        protected void visitEnumAttr(String type, String attr, String attrType, String value)
+            throws IOException {
+            final String slashType = attrType.substring(1, attrType.length() - 1);
+            requireReference(slashType);
+
+            final String cn = mangleClassName(slashType);
+            append(accessClassFalse(cn))
+                .append("['valueOf__L").
+                append(cn).
+                append("_2Ljava_lang_String_2']('").
+                append(value).
+                append("')");
+        }
+
+        @Override
+        protected void visitClassAttr(String annoType, String attr, String className) throws IOException {
+            final String slashType = className.substring(1, className.length() - 1);
+            requireReference(slashType);
+
+            final String cn = mangleClassName(slashType);
+            append(accessClassFalse(cn)).append(".constructor.$class");
+        }
     }
 }

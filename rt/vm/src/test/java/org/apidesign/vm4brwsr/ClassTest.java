@@ -87,11 +87,17 @@ public class ClassTest {
     @Test public void jsAnnotation() throws Exception {
         assertExec("Check class annotation", Classes.class, "getMarker__I", Double.valueOf(10));
     }
+    @Test public void jsAnnotationDefaultValue() throws Exception {
+        assertExec("Check class annotation", Classes.class, "getMarkerDefault__I", Double.valueOf(42));
+    }
     @Test public void jsArrayAnnotation() throws Exception {
         assertExec("Check array annotation", Classes.class, "getMarkerNicknames__Ljava_lang_String_2", Classes.getMarkerNicknames());
     }
     @Test public void jsEnumAnnotation() throws Exception {
         assertExec("Check enum annotation", Classes.class, "getMarkerE__Ljava_lang_String_2", Classes.getMarkerE());
+    }
+    @Test public void jsEnumAnnotationDefault() throws Exception {
+        assertExec("Check enum annotation", Classes.class, "getMarkerED__Ljava_lang_String_2", Classes.getMarkerED());
     }
     @Test public void jsRetentionAnnotation() throws Exception {
         assertExec("Check enum annotation", Classes.class, "getRetention__Ljava_lang_String_2", Classes.getRetention());
@@ -107,6 +113,12 @@ public class ClassTest {
     }
     @Test public void jsInnerAnnotationFromArray() throws Exception {
         assertExec("Check inner annotation", Classes.class, "getInnerNamers__I", Double.valueOf(Classes.getInnerNamers()));
+    }
+    @Test public void jsAnnotationClassAttr() throws Exception {
+        assertExec("Check annotation with class attribute", Classes.class, "self__I", 1);
+    }
+    @Test public void jsAnnotationDefaultClassAttr() throws Exception {
+        assertExec("Check annotation with class attribute", Classes.class, "defaultSelf__I", 1);
     }
     @Test public void javaInvokeMethod() throws Exception {
         assertEquals(Classes.reflectiveMethodCall(true, "name"), "java.io.IOException", "Calls the name() method via reflection");

@@ -78,6 +78,7 @@ final class ByteCodeParser {
     public static final int ACC_STRICT                   = 0x00000800;
     public static final int ACC_EXPLICIT                 = 0x00001000;
     public static final int ACC_SYNTHETIC                = 0x00010000; // actually, this is an attribute
+    private static final int ACC_ANNOTATION              = 0x00020000;
 
     /* Type codes for StackMap attribute */
     public static final int ITEM_Bogus      =0; // an unknown or uninitialized value
@@ -356,12 +357,20 @@ final class ByteCodeParser {
         }
 
         protected void visitAttr(
-            String annoType, String attr, String attrType, String value) throws IOException {
+            String annoType, String attr, String attrType, String value
+        ) throws IOException {
         }
 
         protected void visitEnumAttr(
-            String annoType, String attr, String attrType, String value) throws IOException {
+            String annoType, String attr, String attrType, String value
+        ) throws IOException {
             visitAttr(annoType, attr, attrType, value);
+        }
+
+        protected void visitClassAttr(
+            String annoType, String attr, String className
+        ) throws IOException {
+            visitAttr(annoType, attr, className, className);
         }
 
         /**
@@ -404,6 +413,16 @@ final class ByteCodeParser {
             }
         }
 
+        public void parseDefault(byte[] defaultAttribute, ClassData cd) throws IOException {
+            ByteArrayInputStream is = new ByteArrayInputStream(defaultAttribute);
+            DataInputStream dis = new DataInputStream(is);
+            try {
+                readValue(dis, cd, null, null);
+            } finally {
+                is.close();
+            }
+        }
+
         private void readValue(
             DataInputStream dis, ClassData cd, String typeName, String attrName) throws IOException {
             char type = (char) dis.readByte();
@@ -425,6 +444,8 @@ final class ByteCodeParser {
                 visitAttr(typeName, attrName, attrType, val);
             } else if (type == 'c') {
                 int cls = dis.readUnsignedShort();
+                String attrType = cd.stringValue(cls, textual);
+                visitClassAttr(typeName, attrName, attrType);
             } else if (type == '[') {
                 int cnt = dis.readUnsignedShort();
                 for (int i = 0; i < cnt; i++) {
@@ -873,6 +894,10 @@ final class ByteCodeParser {
                 return true;
             }
             return false;
+        }
+
+        public boolean isAnnotation() {
+            return (access & ACC_ANNOTATION) != 0;
         }
 
         /**
@@ -1687,6 +1712,7 @@ final class ByteCodeParser {
         int max_stack, max_locals;
         boolean isSynthetic = false;
         boolean isDeprecated = false;
+        private AttrData annotationDefault;
 
         public MethodData(ClassData cls) {
             this.cls = cls;
@@ -1736,6 +1762,12 @@ final class ByteCodeParser {
                             AttrData attr = new AttrData(cls);
                             attr.read(attr_name_index);
                             attrs.addElement(attr);
+                            break readAttr;
+                        } else if (attr_name.equals("AnnotationDefault")) {
+                            AttrData attr = new AttrData(cls);
+                            attr.read(attr_name_index, in);
+                            attrs.addElement(attr);
+                            annotationDefault = attr;
                             break readAttr;
                         }
                     }
@@ -1992,6 +2024,10 @@ final class ByteCodeParser {
          */
         public Vector getCodeAttributes() {
             return code_attrs;
+        }
+
+        byte[] getDefaultAttribute() {
+            return annotationDefault == null ? null : annotationDefault.getData();
         }
 
         /**
