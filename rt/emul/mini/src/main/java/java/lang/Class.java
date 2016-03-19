@@ -165,7 +165,11 @@ public final
             return arrType;
         }
         try {
-            Class<?> c = loadCls(className, className.replace('.', '_'));
+            final String inJsName = className.replace('.', '_');
+            Class<?> c = loadCls(className, inJsName);
+            if (c == null) {
+                c = loadCls(className, inJsName);
+            }
             if (c == null) {
                 throw new ClassNotFoundException(className);
             }
@@ -255,7 +259,7 @@ public final
       + "}\n"
       + "if (!m) return null;"
       + "m(false);"
-      + "return m.$class;"
+      + "return m.$class ? m.$class : null;"
     )
     private static native Class<?> loadCls(String n, String c);
 
