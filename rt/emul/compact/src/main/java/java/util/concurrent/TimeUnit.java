@@ -357,11 +357,11 @@ public enum TimeUnit {
         if (timeout > 0) {
             long ms = toMillis(timeout);
             int ns = excessNanos(timeout, ms);
-            Object o = new Object();
-            synchronized (o) {
-                o.wait(ms, ns);
-            }
+            Thread.sleep(ms, ns);
         }
+    }
+
+}
     }
 
 }
