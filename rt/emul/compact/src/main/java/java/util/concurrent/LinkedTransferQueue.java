@@ -408,8 +408,7 @@ public class LinkedTransferQueue<E> extends AbstractQueue<E>
      */
 
     /** True if on multiprocessor */
-    private static final boolean MP =
-        Runtime.getRuntime().availableProcessors() > 1;
+    private static final boolean MP = false;
 
     /**
      * The number of times to spin (with randomly interspersed calls
@@ -453,12 +452,19 @@ public class LinkedTransferQueue<E> extends AbstractQueue<E>
 
         // CAS methods for fields
         final boolean casNext(Node cmp, Node val) {
-            return UNSAFE.compareAndSwapObject(this, nextOffset, cmp, val);
+            if (next == cmp) {
+                next = val;
+                return true;
+            }
+            return false;
         }
 
         final boolean casItem(Object cmp, Object val) {
-            // assert cmp == null || cmp.getClass() != Node.class;
-            return UNSAFE.compareAndSwapObject(this, itemOffset, cmp, val);
+            if (item == cmp) {
+                item = val;
+                return true;
+            }
+            return false;
         }
 
         /**
@@ -466,7 +472,7 @@ public class LinkedTransferQueue<E> extends AbstractQueue<E>
          * only be seen after publication via casNext.
          */
         Node(Object item, boolean isData) {
-            UNSAFE.putObject(this, itemOffset, item); // relaxed write
+            this.item = item;
             this.isData = isData;
         }
 
@@ -475,7 +481,7 @@ public class LinkedTransferQueue<E> extends AbstractQueue<E>
          * only after CASing head field, so uses relaxed write.
          */
         final void forgetNext() {
-            UNSAFE.putObject(this, nextOffset, this);
+            this.next = this;
         }
 
         /**
@@ -488,8 +494,8 @@ public class LinkedTransferQueue<E> extends AbstractQueue<E>
          * else we don't care).
          */
         final void forgetContents() {
-            UNSAFE.putObject(this, itemOffset, this);
-            UNSAFE.putObject(this, waiterOffset, null);
+            this.item = this;
+            this.waiter = null;
         }
 
         /**
@@ -533,26 +539,6 @@ public class LinkedTransferQueue<E> extends AbstractQueue<E>
         }
 
         private static final long serialVersionUID = -3375979862319811754L;
-
-        // Unsafe mechanics
-        private static final sun.misc.Unsafe UNSAFE;
-        private static final long itemOffset;
-        private static final long nextOffset;
-        private static final long waiterOffset;
-        static {
-            try {
-                UNSAFE = sun.misc.Unsafe.getUnsafe();
-                Class k = Node.class;
-                itemOffset = UNSAFE.objectFieldOffset
-                    (k.getDeclaredField("item"));
-                nextOffset = UNSAFE.objectFieldOffset
-                    (k.getDeclaredField("next"));
-                waiterOffset = UNSAFE.objectFieldOffset
-                    (k.getDeclaredField("waiter"));
-            } catch (Exception e) {
-                throw new Error(e);
-            }
-        }
     }
 
     /** head of the queue; null until first enqueue */
@@ -566,15 +552,27 @@ public class LinkedTransferQueue<E> extends AbstractQueue<E>
 
     // CAS methods for fields
     private boolean casTail(Node cmp, Node val) {
-        return UNSAFE.compareAndSwapObject(this, tailOffset, cmp, val);
+        if (tail == cmp) {
+            tail = val;
+            return true;
+        }
+        return false;
     }
 
     private boolean casHead(Node cmp, Node val) {
-        return UNSAFE.compareAndSwapObject(this, headOffset, cmp, val);
+        if (head == cmp) {
+            head = val;
+            return true;
+        }
+        return false;
     }
 
     private boolean casSweepVotes(int cmp, int val) {
-        return UNSAFE.compareAndSwapInt(this, sweepVotesOffset, cmp, val);
+        if (sweepVotes == cmp) {
+            sweepVotes = val;
+            return true;
+        }
+        return false;
     }
 
     /*
@@ -1325,27 +1323,6 @@ public class LinkedTransferQueue<E> extends AbstractQueue<E>
                 break;
             else
                 offer(item);
-        }
-    }
-
-    // Unsafe mechanics
-
-    private static final sun.misc.Unsafe UNSAFE;
-    private static final long headOffset;
-    private static final long tailOffset;
-    private static final long sweepVotesOffset;
-    static {
-        try {
-            UNSAFE = sun.misc.Unsafe.getUnsafe();
-            Class k = LinkedTransferQueue.class;
-            headOffset = UNSAFE.objectFieldOffset
-                (k.getDeclaredField("head"));
-            tailOffset = UNSAFE.objectFieldOffset
-                (k.getDeclaredField("tail"));
-            sweepVotesOffset = UNSAFE.objectFieldOffset
-                (k.getDeclaredField("sweepVotes"));
-        } catch (Exception e) {
-            throw new Error(e);
         }
     }
 }

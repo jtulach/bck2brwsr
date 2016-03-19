@@ -210,7 +210,7 @@ public class Exchanger<V> {
      */
 
     /** The number of CPUs, for sizing and spin control */
-    private static final int NCPU = Runtime.getRuntime().availableProcessors();
+    private static final int NCPU = 1;
 
     /**
      * The capacity of the arena.  Set to a value that provides more

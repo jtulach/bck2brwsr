@@ -362,6 +362,3 @@ public enum TimeUnit {
     }
 
 }
-    }
-
-}

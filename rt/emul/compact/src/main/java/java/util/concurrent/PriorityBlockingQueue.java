@@ -276,9 +276,8 @@ public class PriorityBlockingQueue<E> extends AbstractQueue<E>
     private void tryGrow(Object[] array, int oldCap) {
         lock.unlock(); // must release and then re-acquire main lock
         Object[] newArray = null;
-        if (allocationSpinLock == 0 &&
-            UNSAFE.compareAndSwapInt(this, allocationSpinLockOffset,
-                                     0, 1)) {
+        if (allocationSpinLock == 0) {
+            allocationSpinLock = 1;
             try {
                 int newCap = oldCap + ((oldCap < 64) ?
                                        (oldCap + 2) : // grow faster if small
@@ -959,20 +958,6 @@ public class PriorityBlockingQueue<E> extends AbstractQueue<E>
             addAll(q);
         } finally {
             q = null;
-        }
-    }
-
-    // Unsafe mechanics
-    private static final sun.misc.Unsafe UNSAFE;
-    private static final long allocationSpinLockOffset;
-    static {
-        try {
-            UNSAFE = sun.misc.Unsafe.getUnsafe();
-            Class k = PriorityBlockingQueue.class;
-            allocationSpinLockOffset = UNSAFE.objectFieldOffset
-                (k.getDeclaredField("allocationSpinLock"));
-        } catch (Exception e) {
-            throw new Error(e);
         }
     }
 }

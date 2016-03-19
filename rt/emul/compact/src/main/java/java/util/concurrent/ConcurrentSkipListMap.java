@@ -35,7 +35,6 @@
 
 package java.util.concurrent;
 import java.util.*;
-import java.util.concurrent.atomic.*;
 
 /**
  * A scalable concurrent {@link ConcurrentNavigableMap} implementation.
@@ -379,7 +378,11 @@ public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V>
      * compareAndSet head node
      */
     private boolean casHead(HeadIndex<K,V> cmp, HeadIndex<K,V> val) {
-        return UNSAFE.compareAndSwapObject(this, headOffset, cmp, val);
+        if (head == cmp) {
+            head = val;
+            return true;
+        }
+        return false;
     }
 
     /* ---------------- Nodes -------------- */
@@ -422,14 +425,22 @@ public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V>
          * compareAndSet value field
          */
         boolean casValue(Object cmp, Object val) {
-            return UNSAFE.compareAndSwapObject(this, valueOffset, cmp, val);
+            if (value == cmp) {
+                value = val;
+                return true;
+            }
+            return false;
         }
 
         /**
          * compareAndSet next field
          */
         boolean casNext(Node<K,V> cmp, Node<K,V> val) {
-            return UNSAFE.compareAndSwapObject(this, nextOffset, cmp, val);
+            if (next == cmp) {
+                next = val;
+                return true;
+            }
+            return false;
         }
 
         /**
@@ -507,25 +518,6 @@ public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V>
                 return null;
             return new AbstractMap.SimpleImmutableEntry<K,V>(key, v);
         }
-
-        // UNSAFE mechanics
-
-        private static final sun.misc.Unsafe UNSAFE;
-        private static final long valueOffset;
-        private static final long nextOffset;
-
-        static {
-            try {
-                UNSAFE = sun.misc.Unsafe.getUnsafe();
-                Class k = Node.class;
-                valueOffset = UNSAFE.objectFieldOffset
-                    (k.getDeclaredField("value"));
-                nextOffset = UNSAFE.objectFieldOffset
-                    (k.getDeclaredField("next"));
-            } catch (Exception e) {
-                throw new Error(e);
-            }
-        }
     }
 
     /* ---------------- Indexing -------------- */
@@ -555,7 +547,11 @@ public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V>
          * compareAndSet right field
          */
         final boolean casRight(Index<K,V> cmp, Index<K,V> val) {
-            return UNSAFE.compareAndSwapObject(this, rightOffset, cmp, val);
+            if (right == cmp) {
+                right = val;
+                return true;
+            }
+            return false;
         }
 
         /**
@@ -589,20 +585,6 @@ public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V>
          */
         final boolean unlink(Index<K,V> succ) {
             return !indexesDeletedNode() && casRight(succ, succ.right);
-        }
-
-        // Unsafe mechanics
-        private static final sun.misc.Unsafe UNSAFE;
-        private static final long rightOffset;
-        static {
-            try {
-                UNSAFE = sun.misc.Unsafe.getUnsafe();
-                Class k = Index.class;
-                rightOffset = UNSAFE.objectFieldOffset
-                    (k.getDeclaredField("right"));
-            } catch (Exception e) {
-                throw new Error(e);
-            }
         }
     }
 
@@ -3100,20 +3082,6 @@ public class ConcurrentSkipListMap<K,V> extends AbstractMap<K,V>
                 advance();
                 return new AbstractMap.SimpleImmutableEntry<K,V>(n.key, v);
             }
-        }
-    }
-
-    // Unsafe mechanics
-    private static final sun.misc.Unsafe UNSAFE;
-    private static final long headOffset;
-    static {
-        try {
-            UNSAFE = sun.misc.Unsafe.getUnsafe();
-            Class k = ConcurrentSkipListMap.class;
-            headOffset = UNSAFE.objectFieldOffset
-                (k.getDeclaredField("head"));
-        } catch (Exception e) {
-            throw new Error(e);
         }
     }
 }

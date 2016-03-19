@@ -184,38 +184,27 @@ public class ConcurrentLinkedQueue<E> extends AbstractQueue<E>
          * only be seen after publication via casNext.
          */
         Node(E item) {
-            UNSAFE.putObject(this, itemOffset, item);
+            this.item = item;
         }
 
         boolean casItem(E cmp, E val) {
-            return UNSAFE.compareAndSwapObject(this, itemOffset, cmp, val);
+            if (item == cmp) {
+                item = val;
+                return true;
+            }
+            return false;
         }
 
         void lazySetNext(Node<E> val) {
-            UNSAFE.putOrderedObject(this, nextOffset, val);
+            this.next = val;
         }
 
         boolean casNext(Node<E> cmp, Node<E> val) {
-            return UNSAFE.compareAndSwapObject(this, nextOffset, cmp, val);
-        }
-
-        // Unsafe mechanics
-
-        private static final sun.misc.Unsafe UNSAFE;
-        private static final long itemOffset;
-        private static final long nextOffset;
-
-        static {
-            try {
-                UNSAFE = sun.misc.Unsafe.getUnsafe();
-                Class k = Node.class;
-                itemOffset = UNSAFE.objectFieldOffset
-                    (k.getDeclaredField("item"));
-                nextOffset = UNSAFE.objectFieldOffset
-                    (k.getDeclaredField("next"));
-            } catch (Exception e) {
-                throw new Error(e);
+            if (next == cmp) {
+                next = val;
+                return true;
             }
+            return false;
         }
     }
 
@@ -808,28 +797,19 @@ public class ConcurrentLinkedQueue<E> extends AbstractQueue<E>
     }
 
     private boolean casTail(Node<E> cmp, Node<E> val) {
-        return UNSAFE.compareAndSwapObject(this, tailOffset, cmp, val);
+        if (tail == cmp) {
+            tail = val;
+            return true;
+        }
+        return false;
     }
 
     private boolean casHead(Node<E> cmp, Node<E> val) {
-        return UNSAFE.compareAndSwapObject(this, headOffset, cmp, val);
-    }
-
-    // Unsafe mechanics
-
-    private static final sun.misc.Unsafe UNSAFE;
-    private static final long headOffset;
-    private static final long tailOffset;
-    static {
-        try {
-            UNSAFE = sun.misc.Unsafe.getUnsafe();
-            Class k = ConcurrentLinkedQueue.class;
-            headOffset = UNSAFE.objectFieldOffset
-                (k.getDeclaredField("head"));
-            tailOffset = UNSAFE.objectFieldOffset
-                (k.getDeclaredField("tail"));
-        } catch (Exception e) {
-            throw new Error(e);
+        if (head == cmp) {
+            head = val;
+            return true;
         }
+        return false;
     }
+
 }

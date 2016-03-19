@@ -35,7 +35,6 @@
 
 package java.util.concurrent;
 import java.util.*;
-import sun.misc.Unsafe;
 
 /**
  * A scalable concurrent {@link NavigableSet} implementation based on
@@ -93,7 +92,7 @@ public class ConcurrentSkipListSet<E>
      * element.  This field is declared final for the sake of thread
      * safety, which entails some ugliness in clone()
      */
-    private final ConcurrentNavigableMap<E,Object> m;
+    private ConcurrentNavigableMap<E,Object> m;
 
     /**
      * Constructs a new, empty set that orders its elements according to
@@ -473,19 +472,6 @@ public class ConcurrentSkipListSet<E>
 
     // Support for resetting map in clone
     private void setMap(ConcurrentNavigableMap<E,Object> map) {
-        UNSAFE.putObjectVolatile(this, mapOffset, map);
-    }
-
-    private static final sun.misc.Unsafe UNSAFE;
-    private static final long mapOffset;
-    static {
-        try {
-            UNSAFE = sun.misc.Unsafe.getUnsafe();
-            Class k = ConcurrentSkipListSet.class;
-            mapOffset = UNSAFE.objectFieldOffset
-                (k.getDeclaredField("m"));
-        } catch (Exception e) {
-            throw new Error(e);
-        }
+        this.m = map;
     }
 }

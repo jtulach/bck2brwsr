@@ -557,8 +557,8 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * and failure to actually interrupt will merely delay response to
      * configuration changes so is not handled exceptionally.
      */
-    private static final RuntimePermission shutdownPerm =
-        new RuntimePermission("modifyThread");
+//    private static final RuntimePermission shutdownPerm =
+//        new RuntimePermission("modifyThread");
 
     /**
      * Class Worker mainly maintains interrupt control state for
@@ -706,18 +706,18 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * specially.
      */
     private void checkShutdownAccess() {
-        SecurityManager security = System.getSecurityManager();
-        if (security != null) {
-            security.checkPermission(shutdownPerm);
-            final ReentrantLock mainLock = this.mainLock;
-            mainLock.lock();
-            try {
-                for (Worker w : workers)
-                    security.checkAccess(w.thread);
-            } finally {
-                mainLock.unlock();
-            }
-        }
+//        SecurityManager security = System.getSecurityManager();
+//        if (security != null) {
+//            security.checkPermission(shutdownPerm);
+//            final ReentrantLock mainLock = this.mainLock;
+//            mainLock.lock();
+//            try {
+//                for (Worker w : workers)
+//                    security.checkAccess(w.thread);
+//            } finally {
+//                mainLock.unlock();
+//            }
+//        }
     }
 
     /**

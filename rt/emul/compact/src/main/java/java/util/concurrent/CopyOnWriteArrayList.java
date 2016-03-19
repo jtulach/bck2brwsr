@@ -36,7 +36,6 @@
 package java.util.concurrent;
 import java.util.*;
 import java.util.concurrent.locks.*;
-import sun.misc.Unsafe;
 
 /**
  * A thread-safe variant of {@link java.util.ArrayList} in which all mutative
@@ -80,7 +79,7 @@ public class CopyOnWriteArrayList<E>
     private static final long serialVersionUID = 8673264195747942595L;
 
     /** The lock protecting all mutators */
-    transient final ReentrantLock lock = new ReentrantLock();
+    transient ReentrantLock lock = new ReentrantLock();
 
     /** The array, accessed only via getArray/setArray. */
     private volatile transient Object[] array;
@@ -1323,18 +1322,6 @@ public class CopyOnWriteArrayList<E>
 
     // Support for resetting lock while deserializing
     private void resetLock() {
-        UNSAFE.putObjectVolatile(this, lockOffset, new ReentrantLock());
-    }
-    private static final sun.misc.Unsafe UNSAFE;
-    private static final long lockOffset;
-    static {
-        try {
-            UNSAFE = sun.misc.Unsafe.getUnsafe();
-            Class k = CopyOnWriteArrayList.class;
-            lockOffset = UNSAFE.objectFieldOffset
-                (k.getDeclaredField("lock"));
-        } catch (Exception e) {
-            throw new Error(e);
-        }
+        this.lock = new ReentrantLock();
     }
 }

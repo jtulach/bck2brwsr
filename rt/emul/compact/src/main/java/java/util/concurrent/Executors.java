@@ -36,13 +36,9 @@
 package java.util.concurrent;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
-import java.security.PrivilegedActionException;
-import java.security.AccessControlException;
-import sun.security.util.SecurityConstants;
 
 /**
  * Factory and utility methods for {@link Executor}, {@link
@@ -350,7 +346,7 @@ public class Executors {
      * class loader.
      */
     public static ThreadFactory privilegedThreadFactory() {
-        return new PrivilegedThreadFactory();
+        throw new SecurityException();
     }
 
     /**
@@ -450,9 +446,7 @@ public class Executors {
      * class loader.
      */
     public static <T> Callable<T> privilegedCallableUsingCurrentClassLoader(Callable<T> callable) {
-        if (callable == null)
-            throw new NullPointerException();
-        return new PrivilegedCallableUsingCurrentClassLoader<T>(callable);
+        throw new SecurityException();
     }
 
     // Non-public classes supporting the public methods
@@ -478,76 +472,13 @@ public class Executors {
      */
     static final class PrivilegedCallable<T> implements Callable<T> {
         private final Callable<T> task;
-        private final AccessControlContext acc;
 
         PrivilegedCallable(Callable<T> task) {
             this.task = task;
-            this.acc = AccessController.getContext();
         }
 
         public T call() throws Exception {
-            try {
-                return AccessController.doPrivileged(
-                    new PrivilegedExceptionAction<T>() {
-                        public T run() throws Exception {
-                            return task.call();
-                        }
-                    }, acc);
-            } catch (PrivilegedActionException e) {
-                throw e.getException();
-            }
-        }
-    }
-
-    /**
-     * A callable that runs under established access control settings and
-     * current ClassLoader
-     */
-    static final class PrivilegedCallableUsingCurrentClassLoader<T> implements Callable<T> {
-        private final Callable<T> task;
-        private final AccessControlContext acc;
-        private final ClassLoader ccl;
-
-        PrivilegedCallableUsingCurrentClassLoader(Callable<T> task) {
-            SecurityManager sm = System.getSecurityManager();
-            if (sm != null) {
-                // Calls to getContextClassLoader from this class
-                // never trigger a security check, but we check
-                // whether our callers have this permission anyways.
-                sm.checkPermission(SecurityConstants.GET_CLASSLOADER_PERMISSION);
-
-                // Whether setContextClassLoader turns out to be necessary
-                // or not, we fail fast if permission is not available.
-                sm.checkPermission(new RuntimePermission("setContextClassLoader"));
-            }
-            this.task = task;
-            this.acc = AccessController.getContext();
-            this.ccl = Thread.currentThread().getContextClassLoader();
-        }
-
-        public T call() throws Exception {
-            try {
-                return AccessController.doPrivileged(
-                    new PrivilegedExceptionAction<T>() {
-                        public T run() throws Exception {
-                            ClassLoader savedcl = null;
-                            Thread t = Thread.currentThread();
-                            try {
-                                ClassLoader cl = t.getContextClassLoader();
-                                if (ccl != cl) {
-                                    t.setContextClassLoader(ccl);
-                                    savedcl = cl;
-                                }
-                                return task.call();
-                            } finally {
-                                if (savedcl != null)
-                                    t.setContextClassLoader(savedcl);
-                            }
-                        }
-                    }, acc);
-            } catch (PrivilegedActionException e) {
-                throw e.getException();
-            }
+            return task.call();
         }
     }
 
@@ -556,66 +487,24 @@ public class Executors {
      */
     static class DefaultThreadFactory implements ThreadFactory {
         private static final AtomicInteger poolNumber = new AtomicInteger(1);
-        private final ThreadGroup group;
         private final AtomicInteger threadNumber = new AtomicInteger(1);
         private final String namePrefix;
 
         DefaultThreadFactory() {
-            SecurityManager s = System.getSecurityManager();
-            group = (s != null) ? s.getThreadGroup() :
-                                  Thread.currentThread().getThreadGroup();
             namePrefix = "pool-" +
                           poolNumber.getAndIncrement() +
                          "-thread-";
         }
 
         public Thread newThread(Runnable r) {
-            Thread t = new Thread(group, r,
-                                  namePrefix + threadNumber.getAndIncrement(),
-                                  0);
+            Thread t = new Thread(r,
+                                  namePrefix + threadNumber.getAndIncrement()
+                                  );
             if (t.isDaemon())
                 t.setDaemon(false);
             if (t.getPriority() != Thread.NORM_PRIORITY)
                 t.setPriority(Thread.NORM_PRIORITY);
             return t;
-        }
-    }
-
-    /**
-     * Thread factory capturing access control context and class loader
-     */
-    static class PrivilegedThreadFactory extends DefaultThreadFactory {
-        private final AccessControlContext acc;
-        private final ClassLoader ccl;
-
-        PrivilegedThreadFactory() {
-            super();
-            SecurityManager sm = System.getSecurityManager();
-            if (sm != null) {
-                // Calls to getContextClassLoader from this class
-                // never trigger a security check, but we check
-                // whether our callers have this permission anyways.
-                sm.checkPermission(SecurityConstants.GET_CLASSLOADER_PERMISSION);
-
-                // Fail fast
-                sm.checkPermission(new RuntimePermission("setContextClassLoader"));
-            }
-            this.acc = AccessController.getContext();
-            this.ccl = Thread.currentThread().getContextClassLoader();
-        }
-
-        public Thread newThread(final Runnable r) {
-            return super.newThread(new Runnable() {
-                public void run() {
-                    AccessController.doPrivileged(new PrivilegedAction<Void>() {
-                        public Void run() {
-                            Thread.currentThread().setContextClassLoader(ccl);
-                            r.run();
-                            return null;
-                        }
-                    }, acc);
-                }
-            });
         }
     }
 

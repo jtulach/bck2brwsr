@@ -48,7 +48,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.LockSupport;
 import java.util.concurrent.locks.ReentrantLock;
@@ -399,19 +398,11 @@ public class ForkJoinPool extends AbstractExecutorService {
         defaultForkJoinWorkerThreadFactory;
 
     /**
-     * Permission required for callers of methods that may start or
-     * kill threads.
-     */
-    private static final RuntimePermission modifyThreadPermission;
-
-    /**
      * If there is a security manager, makes sure caller has
      * permission to modify threads.
      */
     private static void checkPermission() {
-        SecurityManager security = System.getSecurityManager();
-        if (security != null)
-            security.checkPermission(modifyThreadPermission);
+        throw new SecurityException();
     }
 
     /**
@@ -1411,7 +1402,7 @@ public class ForkJoinPool extends AbstractExecutorService {
      *         java.lang.RuntimePermission}{@code ("modifyThread")}
      */
     public ForkJoinPool() {
-        this(Runtime.getRuntime().availableProcessors(),
+        this(1,
              defaultForkJoinWorkerThreadFactory, null, false);
     }
 
@@ -2131,7 +2122,6 @@ public class ForkJoinPool extends AbstractExecutorService {
     }
 
     // Unsafe mechanics
-    private static final sun.misc.Unsafe UNSAFE;
     private static final long ctlOffset;
     private static final long stealCountOffset;
     private static final long blockedCountOffset;

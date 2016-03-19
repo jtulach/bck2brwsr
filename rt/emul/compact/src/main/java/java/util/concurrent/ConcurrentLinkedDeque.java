@@ -302,49 +302,39 @@ public class ConcurrentLinkedDeque<E>
          * only be seen after publication via casNext or casPrev.
          */
         Node(E item) {
-            UNSAFE.putObject(this, itemOffset, item);
+            this.item = item;
         }
 
         boolean casItem(E cmp, E val) {
-            return UNSAFE.compareAndSwapObject(this, itemOffset, cmp, val);
+            if (item == cmp) {
+                item = val;
+                return true;
+            }
+            return false;
         }
 
         void lazySetNext(Node<E> val) {
-            UNSAFE.putOrderedObject(this, nextOffset, val);
+            this.next = val;
         }
 
         boolean casNext(Node<E> cmp, Node<E> val) {
-            return UNSAFE.compareAndSwapObject(this, nextOffset, cmp, val);
+            if (next == cmp) {
+                next = val;
+                return true;
+            }
+            return false;
         }
 
         void lazySetPrev(Node<E> val) {
-            UNSAFE.putOrderedObject(this, prevOffset, val);
+            this.prev = val;
         }
 
         boolean casPrev(Node<E> cmp, Node<E> val) {
-            return UNSAFE.compareAndSwapObject(this, prevOffset, cmp, val);
-        }
-
-        // Unsafe mechanics
-
-        private static final sun.misc.Unsafe UNSAFE;
-        private static final long prevOffset;
-        private static final long itemOffset;
-        private static final long nextOffset;
-
-        static {
-            try {
-                UNSAFE = sun.misc.Unsafe.getUnsafe();
-                Class k = Node.class;
-                prevOffset = UNSAFE.objectFieldOffset
-                    (k.getDeclaredField("prev"));
-                itemOffset = UNSAFE.objectFieldOffset
-                    (k.getDeclaredField("item"));
-                nextOffset = UNSAFE.objectFieldOffset
-                    (k.getDeclaredField("next"));
-            } catch (Exception e) {
-                throw new Error(e);
+            if (prev == cmp) {
+                prev = val;
+                return true;
             }
+            return false;
         }
     }
 
@@ -1438,32 +1428,25 @@ public class ConcurrentLinkedDeque<E>
 
 
     private boolean casHead(Node<E> cmp, Node<E> val) {
-        return UNSAFE.compareAndSwapObject(this, headOffset, cmp, val);
+        if (head == cmp) {
+            head = val;
+            return true;
+        }
+        return false;
     }
 
     private boolean casTail(Node<E> cmp, Node<E> val) {
-        return UNSAFE.compareAndSwapObject(this, tailOffset, cmp, val);
+        if (tail == cmp) {
+            tail = val;
+            return true;
+        }
+        return false;
     }
 
-    // Unsafe mechanics
-
-    private static final sun.misc.Unsafe UNSAFE;
-    private static final long headOffset;
-    private static final long tailOffset;
     static {
         PREV_TERMINATOR = new Node<Object>();
         PREV_TERMINATOR.next = PREV_TERMINATOR;
         NEXT_TERMINATOR = new Node<Object>();
         NEXT_TERMINATOR.prev = NEXT_TERMINATOR;
-        try {
-            UNSAFE = sun.misc.Unsafe.getUnsafe();
-            Class k = ConcurrentLinkedDeque.class;
-            headOffset = UNSAFE.objectFieldOffset
-                (k.getDeclaredField("head"));
-            tailOffset = UNSAFE.objectFieldOffset
-                (k.getDeclaredField("tail"));
-        } catch (Exception e) {
-            throw new Error(e);
-        }
     }
 }

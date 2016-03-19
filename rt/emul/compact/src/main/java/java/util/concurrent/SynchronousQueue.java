@@ -36,7 +36,6 @@
 
 package java.util.concurrent;
 import java.util.concurrent.locks.*;
-import java.util.concurrent.atomic.*;
 import java.util.*;
 
 /**
@@ -181,7 +180,7 @@ public class SynchronousQueue<E> extends AbstractQueue<E>
     }
 
     /** The number of CPUs, for spin control */
-    static final int NCPUS = Runtime.getRuntime().availableProcessors();
+    static final int NCPUS = 1;
 
     /**
      * The number of times to spin before blocking in timed waits.
@@ -242,8 +241,11 @@ public class SynchronousQueue<E> extends AbstractQueue<E>
             }
 
             boolean casNext(SNode cmp, SNode val) {
-                return cmp == next &&
-                    UNSAFE.compareAndSwapObject(this, nextOffset, cmp, val);
+                if (next == cmp) {
+                    next = val;
+                    return true;
+                }
+                return false;
             }
 
             /**
@@ -255,8 +257,8 @@ public class SynchronousQueue<E> extends AbstractQueue<E>
              * @return true if successfully matched to s
              */
             boolean tryMatch(SNode s) {
-                if (match == null &&
-                    UNSAFE.compareAndSwapObject(this, matchOffset, null, s)) {
+                if (match == null) {
+                    match = s;
                     Thread w = waiter;
                     if (w != null) {    // waiters need at most one unpark
                         waiter = null;
@@ -271,29 +273,13 @@ public class SynchronousQueue<E> extends AbstractQueue<E>
              * Tries to cancel a wait by matching node to itself.
              */
             void tryCancel() {
-                UNSAFE.compareAndSwapObject(this, matchOffset, null, this);
+                if (match == null) {
+                    match = this;
+                }
             }
 
             boolean isCancelled() {
                 return match == this;
-            }
-
-            // Unsafe mechanics
-            private static final sun.misc.Unsafe UNSAFE;
-            private static final long matchOffset;
-            private static final long nextOffset;
-
-            static {
-                try {
-                    UNSAFE = sun.misc.Unsafe.getUnsafe();
-                    Class k = SNode.class;
-                    matchOffset = UNSAFE.objectFieldOffset
-                        (k.getDeclaredField("match"));
-                    nextOffset = UNSAFE.objectFieldOffset
-                        (k.getDeclaredField("next"));
-                } catch (Exception e) {
-                    throw new Error(e);
-                }
             }
         }
 
@@ -301,8 +287,11 @@ public class SynchronousQueue<E> extends AbstractQueue<E>
         volatile SNode head;
 
         boolean casHead(SNode h, SNode nh) {
-            return h == head &&
-                UNSAFE.compareAndSwapObject(this, headOffset, h, nh);
+            if (head == h) {
+                head = nh;
+                return true;
+            }
+            return false;
         }
 
         /**
@@ -506,20 +495,6 @@ public class SynchronousQueue<E> extends AbstractQueue<E>
                     p = n;
             }
         }
-
-        // Unsafe mechanics
-        private static final sun.misc.Unsafe UNSAFE;
-        private static final long headOffset;
-        static {
-            try {
-                UNSAFE = sun.misc.Unsafe.getUnsafe();
-                Class k = TransferStack.class;
-                headOffset = UNSAFE.objectFieldOffset
-                    (k.getDeclaredField("head"));
-            } catch (Exception e) {
-                throw new Error(e);
-            }
-        }
     }
 
     /** Dual Queue */
@@ -546,20 +521,28 @@ public class SynchronousQueue<E> extends AbstractQueue<E>
             }
 
             boolean casNext(QNode cmp, QNode val) {
-                return next == cmp &&
-                    UNSAFE.compareAndSwapObject(this, nextOffset, cmp, val);
+                if (next == cmp) {
+                    next = val;
+                    return true;
+                }
+                return false;
             }
 
             boolean casItem(Object cmp, Object val) {
-                return item == cmp &&
-                    UNSAFE.compareAndSwapObject(this, itemOffset, cmp, val);
+                if (item == cmp) {
+                    item = val;
+                    return true;
+                }
+                return false;
             }
 
             /**
              * Tries to cancel by CAS'ing ref to this as item.
              */
             void tryCancel(Object cmp) {
-                UNSAFE.compareAndSwapObject(this, itemOffset, cmp, this);
+                if (item == cmp) {
+                    item = this;
+                }
             }
 
             boolean isCancelled() {
@@ -573,24 +556,6 @@ public class SynchronousQueue<E> extends AbstractQueue<E>
              */
             boolean isOffList() {
                 return next == this;
-            }
-
-            // Unsafe mechanics
-            private static final sun.misc.Unsafe UNSAFE;
-            private static final long itemOffset;
-            private static final long nextOffset;
-
-            static {
-                try {
-                    UNSAFE = sun.misc.Unsafe.getUnsafe();
-                    Class k = QNode.class;
-                    itemOffset = UNSAFE.objectFieldOffset
-                        (k.getDeclaredField("item"));
-                    nextOffset = UNSAFE.objectFieldOffset
-                        (k.getDeclaredField("next"));
-                } catch (Exception e) {
-                    throw new Error(e);
-                }
             }
         }
 
@@ -616,25 +581,30 @@ public class SynchronousQueue<E> extends AbstractQueue<E>
          * old head's next node to avoid garbage retention.
          */
         void advanceHead(QNode h, QNode nh) {
-            if (h == head &&
-                UNSAFE.compareAndSwapObject(this, headOffset, h, nh))
+            if (head == h) {
+                head = nh;
                 h.next = h; // forget old next
+            }
         }
 
         /**
          * Tries to cas nt as new tail.
          */
         void advanceTail(QNode t, QNode nt) {
-            if (tail == t)
-                UNSAFE.compareAndSwapObject(this, tailOffset, t, nt);
+            if (tail == t) {
+                tail = nt;
+            }
         }
 
         /**
          * Tries to CAS cleanMe slot.
          */
         boolean casCleanMe(QNode cmp, QNode val) {
-            return cleanMe == cmp &&
-                UNSAFE.compareAndSwapObject(this, cleanMeOffset, cmp, val);
+            if (cleanMe == cmp) {
+                cleanMe = val;
+                return true;
+            }
+            return false;
         }
 
         /**
@@ -817,25 +787,6 @@ public class SynchronousQueue<E> extends AbstractQueue<E>
                         return;      // s is already saved node
                 } else if (casCleanMe(null, pred))
                     return;          // Postpone cleaning s
-            }
-        }
-
-        private static final sun.misc.Unsafe UNSAFE;
-        private static final long headOffset;
-        private static final long tailOffset;
-        private static final long cleanMeOffset;
-        static {
-            try {
-                UNSAFE = sun.misc.Unsafe.getUnsafe();
-                Class k = TransferQueue.class;
-                headOffset = UNSAFE.objectFieldOffset
-                    (k.getDeclaredField("head"));
-                tailOffset = UNSAFE.objectFieldOffset
-                    (k.getDeclaredField("tail"));
-                cleanMeOffset = UNSAFE.objectFieldOffset
-                    (k.getDeclaredField("cleanMe"));
-            } catch (Exception e) {
-                throw new Error(e);
             }
         }
     }
@@ -1180,17 +1131,5 @@ public class SynchronousQueue<E> extends AbstractQueue<E>
             transferer = new TransferStack();
     }
 
-    // Unsafe mechanics
-    static long objectFieldOffset(sun.misc.Unsafe UNSAFE,
-                                  String field, Class<?> klazz) {
-        try {
-            return UNSAFE.objectFieldOffset(klazz.getDeclaredField(field));
-        } catch (NoSuchFieldException e) {
-            // Convert Exception to corresponding Error
-            NoSuchFieldError error = new NoSuchFieldError(field);
-            error.initCause(e);
-            throw error;
-        }
-    }
 
 }
