@@ -2122,6 +2122,7 @@ public class ForkJoinPool extends AbstractExecutorService {
     }
 
     // Unsafe mechanics
+    private static final Unsafe UNSAFE;
     private static final long ctlOffset;
     private static final long stealCountOffset;
     private static final long blockedCountOffset;
@@ -2134,12 +2135,11 @@ public class ForkJoinPool extends AbstractExecutorService {
     static {
         poolNumberGenerator = new AtomicInteger();
         workerSeedGenerator = new Random();
-        modifyThreadPermission = new RuntimePermission("modifyThread");
         defaultForkJoinWorkerThreadFactory =
             new DefaultForkJoinWorkerThreadFactory();
         int s;
         try {
-            UNSAFE = sun.misc.Unsafe.getUnsafe();
+            UNSAFE = Unsafe.getUnsafe();
             Class k = ForkJoinPool.class;
             ctlOffset = UNSAFE.objectFieldOffset
                 (k.getDeclaredField("ctl"));

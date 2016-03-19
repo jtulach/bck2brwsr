@@ -37,17 +37,13 @@ package java.util.concurrent;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.RandomAccess;
-import java.util.Map;
 import java.lang.ref.WeakReference;
 import java.lang.ref.ReferenceQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RunnableFuture;
@@ -1368,14 +1364,14 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
     }
 
     // Unsafe mechanics
-    private static final sun.misc.Unsafe UNSAFE;
+    private static final Unsafe UNSAFE;
     private static final long statusOffset;
     static {
         exceptionTableLock = new ReentrantLock();
         exceptionTableRefQueue = new ReferenceQueue<Object>();
         exceptionTable = new ExceptionNode[EXCEPTION_MAP_CAPACITY];
         try {
-            UNSAFE = sun.misc.Unsafe.getUnsafe();
+            UNSAFE = Unsafe.getUnsafe();
             statusOffset = UNSAFE.objectFieldOffset
                 (ForkJoinTask.class.getDeclaredField("status"));
         } catch (Exception e) {

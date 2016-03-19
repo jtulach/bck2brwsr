@@ -976,14 +976,14 @@ public class ForkJoinWorkerThread extends Thread {
     }
 
     // Unsafe mechanics
-    private static final sun.misc.Unsafe UNSAFE;
+    private static final Unsafe UNSAFE;
     private static final long ABASE;
     private static final int ASHIFT;
 
     static {
         int s;
         try {
-            UNSAFE = sun.misc.Unsafe.getUnsafe();
+            UNSAFE = Unsafe.getUnsafe();
             Class a = ForkJoinTask[].class;
             ABASE = UNSAFE.arrayBaseOffset(a);
             s = UNSAFE.arrayIndexScale(a);
