@@ -48,10 +48,10 @@
             <artifactId>org-openide-util-lookup</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>emul.mini</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
+            <groupId>org.apidesign.junit</groupId>
+            <artifactId>junit-osgi</artifactId>
+            <version>4.12</version>
+            <type>jar</type>
         </dependency>
     </dependencies>
     <build>

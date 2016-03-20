@@ -18,6 +18,7 @@
     <module>vm</module>
     <module>vmtest</module>
     <module>aot</module>
+    <module>aot-junit</module>
     <module>aot-nb-test</module>
   </modules>
   <profiles>
