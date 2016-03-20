@@ -1785,10 +1785,8 @@ public final
         return getAnnotation(annotationClass) != null;
     }
 
-    @JavaScriptBody(args = {}, body = "return this.anno;")
-    private Object getAnnotationData() {
-        throw new UnsupportedOperationException();
-    }
+    @JavaScriptBody(args = {}, body = "return this.anno ? this.anno : null;")
+    private native Object getAnnotationData();
 
     /**
      * @since 1.5

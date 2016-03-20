@@ -158,6 +158,24 @@ public class ReflectionAnnotationTest {
     }
 
     @Compare
+    public String noAnnotation() {
+        Annotation[] arr = ReflectionAnnotationTest.class.getAnnotations();
+        if (arr == null) {
+            return "Null array";
+        }
+        return toClassNames(arr);
+    }
+
+    @Compare
+    public String noDeclaredAnnotation() {
+        Annotation[] arr = ReflectionAnnotationTest.class.getDeclaredAnnotations();
+        if (arr == null) {
+            return "Null array";
+        }
+        return toClassNames(arr);
+    }
+
+    @Compare
     public String twoDeclaredAnnotationsOnMethod() throws Exception {
         Annotation[] arr = D.class.getMethod("method").getAnnotations();
         if (arr == null) {
