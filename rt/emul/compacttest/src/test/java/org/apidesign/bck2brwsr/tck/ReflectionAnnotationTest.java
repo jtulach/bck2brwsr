@@ -17,6 +17,7 @@
  */
 package org.apidesign.bck2brwsr.tck;
 
+import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import org.apidesign.bck2brwsr.vmtest.Compare;
@@ -49,6 +50,10 @@ public class ReflectionAnnotationTest {
     @Ann
     @AnnAnn
     class D {
+        @Ann
+        @AnnAnn
+        public void method() {
+        }
     }
 
     @Ann(type = String.class)
@@ -108,6 +113,58 @@ public class ReflectionAnnotationTest {
 //        final Ann ann = E.class.getAnnotation(AnnAnn.class).ann();
 //        return ann.string();
 //    }
+
+    private static String toClassNames(Object[] arr) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n");
+        for (Object o : arr) {
+            if (o == null) {
+                sb.append("null");
+            } else if (o instanceof Ann) {
+                sb.append("Ann");
+            } else if (o instanceof AnnAnn) {
+                sb.append("AnnAnn");
+            }
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
+
+    @Compare
+    public String twoAnnotations() {
+        Annotation[] arr = D.class.getAnnotations();
+        if (arr == null) {
+            return "Null array";
+        }
+        return toClassNames(arr);
+    }
+
+    @Compare
+    public String twoDeclaredAnnotations() {
+        Annotation[] arr = D.class.getDeclaredAnnotations();
+        if (arr == null) {
+            return "Null array";
+        }
+        return toClassNames(arr);
+    }
+
+    @Compare
+    public String twoAnnotationsOnMethod() throws Exception {
+        Annotation[] arr = D.class.getMethod("method").getAnnotations();
+        if (arr == null) {
+            return "Null array";
+        }
+        return toClassNames(arr);
+    }
+
+    @Compare
+    public String twoDeclaredAnnotationsOnMethod() throws Exception {
+        Annotation[] arr = D.class.getMethod("method").getAnnotations();
+        if (arr == null) {
+            return "Null array";
+        }
+        return toClassNames(arr);
+    }
 
     @Factory
     public static Object[] create() {

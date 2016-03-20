@@ -1788,7 +1788,7 @@ public final
      * @since 1.5
      */
     public Annotation[] getDeclaredAnnotations()  {
-        throw new UnsupportedOperationException();
+        return getAnnotations();
     }
 
     @JavaScriptBody(args = "type", body = ""

@@ -672,9 +672,20 @@ public final
         + "  return a['L' + ac.jvmName + ';'];"
         + "} else return null;"
     )
-    private Object getAnnotationData(Class<?> annotationClass) {
-        throw new UnsupportedOperationException();
-    }
+    private native Object getAnnotationData(Class<?> annotationClass);
+
+    @JavaScriptBody(args = {},
+        body =
+          "var a = this._data().anno;\n"
+        + "if (a) {\n"
+        + "  var arr = [];\n"
+        + "  for (p in a) {\n"
+        + "    arr.push(p);\n"
+        + "  }\n"
+        + "  return arr;\n"
+        + "} else return [];\n"
+    )
+    private native String[] getAnnotationNames();
     
     /**
      * @throws NullPointerException {@inheritDoc}
@@ -689,7 +700,19 @@ public final
      * @since 1.5
      */
     public Annotation[] getDeclaredAnnotations()  {
-        throw new UnsupportedOperationException();
+        String[] arr = getAnnotationNames();
+        Annotation[] res = new Annotation[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+            String forName = arr[i].substring(1, arr[i].length() - 1).replace('/', '.');
+            final Class<? extends Annotation> annoType;
+            try {
+                annoType = Class.forName(forName).asSubclass(Annotation.class);
+            } catch (ClassNotFoundException ex) {
+                throw new IllegalStateException(forName);
+            }
+            res[i] = getAnnotation(annoType);
+        }
+        return res;
     }
 
     /**
