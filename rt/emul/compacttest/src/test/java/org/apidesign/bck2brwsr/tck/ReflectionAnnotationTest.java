@@ -167,6 +167,18 @@ public class ReflectionAnnotationTest {
     }
 
     @Compare
+    public boolean noAnnotationSingle() {
+        Annotation arr = ReflectionAnnotationTest.class.getAnnotation(Ann.class);
+        return arr == null;
+    }
+
+    @Compare
+    public boolean noAnnotationOnMethodSingle() throws Exception {
+        Annotation arr = ReflectionAnnotationTest.class.getMethod("noAnnotationOnMethodSingle").getAnnotation(Ann.class);
+        return arr == null;
+    }
+
+    @Compare
     public String noDeclaredAnnotation() {
         Annotation[] arr = ReflectionAnnotationTest.class.getDeclaredAnnotations();
         if (arr == null) {

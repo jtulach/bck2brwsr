@@ -667,10 +667,11 @@ public final
 
     @JavaScriptBody(args = { "ac" }, 
         body = 
-          "var a = this._data().anno;"
-        + "if (a) {"
-        + "  return a['L' + ac.jvmName + ';'];"
-        + "} else return null;"
+          "var a = this._data().anno;\n"
+        + "if (a) {\n"
+        + "  a = a['L' + ac.jvmName + ';'];\n"
+        + "}\n"
+        + "return a ? a : null;"
     )
     private native Object getAnnotationData(Class<?> annotationClass);
 
