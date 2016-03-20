@@ -48,9 +48,9 @@ import java.util.Set;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.WeakHashMap;
+import org.apidesign.bck2brwsr.core.Exported;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.emul.reflect.MethodImpl;
-import org.apidesign.vm4brwsr.api.VM;
 
 /**
  * {@code Proxy} provides static methods for creating dynamic proxy
@@ -234,6 +234,7 @@ import org.apidesign.vm4brwsr.api.VM;
  * @see         InvocationHandler
  * @since       1.3
  */
+@Exported
 public final class ProxyImpl implements java.io.Serializable {
 
     private static final long serialVersionUID = -2222568056686623797L;

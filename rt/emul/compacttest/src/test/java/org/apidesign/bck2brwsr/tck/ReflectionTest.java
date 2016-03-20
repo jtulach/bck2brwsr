@@ -75,6 +75,10 @@ public class ReflectionTest {
         return Runnable.class.getMethod("run").getName();
     }
 
+    @Compare public boolean RunnableRunReturnsVoid() throws NoSuchMethodException {
+        return Runnable.class.getMethod("run").getReturnType() == Void.TYPE;
+    }
+
     @Compare public String isRunnableDeclaresRunMethod() throws NoSuchMethodException {
         return Runnable.class.getDeclaredMethod("run").getName();
     }

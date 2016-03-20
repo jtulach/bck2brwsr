@@ -95,8 +95,11 @@ abstract class VM extends ByteCodeToJavaScript {
 
     private void doCompile(StringArray names) throws IOException {
         generatePrologue();
-        append(
-                "\n  var invoker = {};");
+        append("\n  var invoker = {};");
+        append("\n  function registerClass(vm, name, fn) {");
+        append("\n    if (!vm[name]) vm[name] = fn;");
+        append("\n    return vm[name];");
+        append("\n  }");
         generateBody(names);
         append(invokerMethods);
         
@@ -147,15 +150,17 @@ abstract class VM extends ByteCodeToJavaScript {
     protected abstract void lazyReference(Appendable out, String n) throws IOException;
     
     @Override
-    protected final void declaredClass(ClassData classData, String mangledName)
+    protected final void declareClass(ClassData classData, String mangledName)
             throws IOException {
         if (exportedSymbols.isExported(classData)) {
-            append("\n").append(getExportsObject()).append("['")
+            append("registerClass(").append(getExportsObject()).append(",'")
                                                .append(mangledName)
-                                               .append("'] = ")
-                            .append(accessClass(mangledName))
-               .append(";\n");
+                                               .append("',")
+                            .append(mangledName)
+               .append(")");
             exportedCount++;
+        } else {
+            append(mangledName);
         }
     }
 

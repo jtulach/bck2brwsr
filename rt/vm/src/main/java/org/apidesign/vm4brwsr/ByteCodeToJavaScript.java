@@ -130,8 +130,9 @@ abstract class ByteCodeToJavaScript implements Appendable {
         return object + "." + mangledName + '(';
     }
 
-    protected void declaredClass(ClassData classData, String mangledName)
-            throws IOException {
+    protected void declareClass(ClassData classData, String mangledName)
+    throws IOException {
+        append(mangledName);
     }
 
     protected void declaredField(FieldData fieldData,
@@ -223,7 +224,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
         );
         StringArray toInitilize = new StringArray();
         final String className = className(jc);
-        append("\n\n").append(assignClass(className));
+        append("\n\n");
         append("function ").append(className).append("() {");
         append("\n  var m;");
         append("\n  var CLS = ").append(className).append(';');
@@ -383,7 +384,9 @@ abstract class ByteCodeToJavaScript implements Appendable {
         append("\n  return arguments[0] ? new CLS() : CLS.prototype;");
         append("\n};");
 
-        declaredClass(jc, className);
+        append("\n").append(assignClass(className));
+        declareClass(jc, className);
+        append(";\n");
 
 //        StringBuilder sb = new StringBuilder();
 //        for (String init : toInitilize.toArray()) {
