@@ -1005,7 +1005,21 @@ public final
      * @since JDK1.1
      */
     public Method[] getDeclaredMethods() throws SecurityException {
-        throw new SecurityException();
+        Method[] arr = getMethods();
+        int cnt = 0;
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i].getDeclaringClass() == this) {
+                cnt++;
+            }
+        }
+        Method[] ret = new Method[cnt];
+        cnt = 0;
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i].getDeclaringClass() == this) {
+                ret[cnt++] = arr[i];
+            }
+        }
+        return ret;
     }
     
     /**

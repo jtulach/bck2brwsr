@@ -100,6 +100,24 @@ public class ReflectionTest {
         return sb.toString();
     }
 
+    @Compare
+    public String namesOfDeclaredMethods() {
+        StringBuilder sb = new StringBuilder();
+        String[] arr = new String[20];
+        Method[] methods = StaticUse.class.getDeclaredMethods();
+        if (methods.length != 2) {
+            throw new IllegalStateException("Expecting just two methods, was: " + methods.length);
+        }
+        int i = 0;
+        for (Method m : methods) {
+            arr[i++] = m.getName();
+        }
+        for (String s : sort(arr, i)) {
+            sb.append(s).append("\n");
+        }
+        return sb.toString();
+    }
+
     @Compare public String paramsOfConstructors() {
         StringBuilder sb = new StringBuilder();
         String[] arr = new String[20];
