@@ -39,6 +39,45 @@ public class ClassTest {
         Class<?> dblCls = dbl.getClass();
         return String.class.isAssignableFrom(dblCls);
     }
+
+    private String toClassInfo(Class<?> c) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n");
+        sb.append("name: ").append(c.getName()).append("\n");
+        sb.append("local: ").append(c.isLocalClass()).append("\n");
+        sb.append("member: ").append(c.isMemberClass()).append("\n");
+        sb.append("annonymous: ").append(c.isAnonymousClass()).append("\n");
+        return sb.toString();
+    }
+
+
+    @Compare
+    public String globalClass() throws Exception {
+        return toClassInfo(ClassTest.class);
+    }
+
+    @Compare
+    public String localClass() throws Exception {
+        class Local {
+        }
+        return toClassInfo(Local.class);
+    }
+
+    class Member {
+    }
+
+    @Compare
+    public String memberClass() throws Exception {
+        return toClassInfo(Member.class);
+    }
+
+    static class NonMember {
+    }
+
+    @Compare
+    public String nonMemberClass() throws Exception {
+        return toClassInfo(NonMember.class);
+    }
     
     @Factory
     public static Object[] create() {

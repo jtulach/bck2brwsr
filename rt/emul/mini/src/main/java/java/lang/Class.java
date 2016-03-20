@@ -721,15 +721,12 @@ public final
      * class.
      */
     private String getSimpleBinaryName() {
-        Class<?> enclosingClass = null; // XXX getEnclosingClass();
-        if (enclosingClass == null) // top level class
+        final String name = getName();
+        int dolar = name.lastIndexOf('$');
+        if (dolar == -1) {
             return null;
-        // Otherwise, strip the enclosing class' name
-        try {
-            return getName().substring(enclosingClass.getName().length());
-        } catch (IndexOutOfBoundsException ex) {
-            throw new IllegalStateException("Malformed class name");
         }
+        return name.substring(dolar);
     }
 
     /**
@@ -1350,8 +1347,8 @@ public final
             else
                 return null;
         }
-//        if (isLocalOrAnonymousClass())
-//            return null;
+        if (isLocalOrAnonymousClass())
+            return null;
 //        Class<?> enclosingClass = getEnclosingClass();
         Class<?> enclosingClass = null;
         if (enclosingClass == null) { // top level class
@@ -1362,6 +1359,47 @@ public final
                 return null;
             return enclosingName + "." + getSimpleName();
         }
+    }
+
+    /**
+     * Returns {@code true} if and only if the underlying class is an anonymous
+     * class.
+     *
+     * @return {@code true} if and only if this class is an anonymous class.
+     * @since 1.5
+     */
+    public boolean isAnonymousClass() {
+        return "".equals(getSimpleName());
+    }
+
+    /**
+     * Returns {@code true} if and only if the underlying class is a local
+     * class.
+     *
+     * @return {@code true} if and only if this class is a local class.
+     * @since 1.5
+     */
+    public boolean isLocalClass() {
+        return isLocalOrAnonymousClass() && !isAnonymousClass();
+    }
+
+    /**
+     * Returns {@code true} if and only if the underlying class is a member
+     * class.
+     *
+     * @return {@code true} if and only if this class is a member class.
+     * @since 1.5
+     */
+    public boolean isMemberClass() {
+        return getSimpleBinaryName() != null && !isLocalOrAnonymousClass();
+    }
+
+    /**
+     * Returns {@code true} if this is a local class or an anonymous class.
+     * Returns {@code false} otherwise.
+     */
+    private boolean isLocalOrAnonymousClass() {
+        return (getAccess() & 0x10000) != 0;
     }
 
     /**

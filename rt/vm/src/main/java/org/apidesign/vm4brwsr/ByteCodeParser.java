@@ -570,6 +570,7 @@ final class ByteCodeParser {
         private Hashtable indexHashAscii = new Hashtable();
         private String pkgPrefix = "";
         private int pkgPrefixLen = 0;
+        private boolean hasEnclosingMethod;
 
         /**
          * Read classfile to disassemble.
@@ -620,42 +621,45 @@ final class ByteCodeParser {
             attrs = new AttrData[attributes_count];
             for (int k = 0; k < attributes_count; k++) {
                 int name_cpx = in.readUnsignedShort();
-                if (getTag(name_cpx) == CONSTANT_UTF8
-                    && getString(name_cpx).equals("SourceFile")) {
-                    if (in.readInt() != 2) {
-                        throw new ClassFormatError("invalid attr length");
-                    }
-                    source_cpx = in.readUnsignedShort();
-                    AttrData attr = new AttrData(this);
-                    attr.read(name_cpx);
-                    attrs[k] = attr;
+                if (getTag(name_cpx) == CONSTANT_UTF8) {
+                    final String attrName = getString(name_cpx);
+                    if (attrName.equals("SourceFile")) {
+                        if (in.readInt() != 2) {
+                            throw new ClassFormatError("invalid attr length");
+                        }
+                        source_cpx = in.readUnsignedShort();
+                        AttrData attr = new AttrData(this);
+                        attr.read(name_cpx);
+                        attrs[k] = attr;
 
-                } else if (getTag(name_cpx) == CONSTANT_UTF8
-                    && getString(name_cpx).equals("InnerClasses")) {
-                    int length = in.readInt();
-                    int num = in.readUnsignedShort();
-                    if (2 + num * 8 != length) {
-                        throw new ClassFormatError("invalid attr length");
+                    } else if (attrName.equals("InnerClasses")) {
+                        int length = in.readInt();
+                        int num = in.readUnsignedShort();
+                        if (2 + num * 8 != length) {
+                            throw new ClassFormatError("invalid attr length");
+                        }
+                        innerClasses = new InnerClassData[num];
+                        for (int j = 0; j < num; j++) {
+                            InnerClassData innerClass = new InnerClassData(this);
+                            innerClass.read(in);
+                            innerClasses[j] = innerClass;
+                        }
+                        AttrData attr = new AttrData(this);
+                        attr.read(name_cpx);
+                        attrs[k] = attr;
+                    } else if (attrName.equals("BootstrapMethods")) {
+                        AttrData attr = new AttrData(this);
+                        bootMethods = readBootstrapMethods(in);
+                        attr.read(name_cpx);
+                        attrs[k] = attr;
+                    } else {
+                        if (attrName.equals("EnclosingMethod")) {
+                            hasEnclosingMethod = true;
+                        }
+                        AttrData attr = new AttrData(this);
+                        attr.read(name_cpx, in);
+                        attrs[k] = attr;
                     }
-                    innerClasses = new InnerClassData[num];
-                    for (int j = 0; j < num; j++) {
-                        InnerClassData innerClass = new InnerClassData(this);
-                        innerClass.read(in);
-                        innerClasses[j] = innerClass;
-                    }
-                    AttrData attr = new AttrData(this);
-                    attr.read(name_cpx);
-                    attrs[k] = attr;
-                } else if (getTag(name_cpx) == CONSTANT_UTF8
-                    && getString(name_cpx).equals("BootstrapMethods")) {
-                    AttrData attr = new AttrData(this);
-                    bootMethods = readBootstrapMethods(in);
-                    attr.read(name_cpx);
-                    attrs[k] = attr;
-                } else {
-                    AttrData attr = new AttrData(this);
-                    attr.read(name_cpx, in);
-                    attrs[k] = attr;
                 }
             }
             in.close();
@@ -874,6 +878,10 @@ final class ByteCodeParser {
 
         public int getAccessFlags() {
             return access;
+        }
+
+        public boolean hasEnclosingMethod() {
+            return hasEnclosingMethod;
         }
 
         /**

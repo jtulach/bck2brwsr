@@ -339,7 +339,11 @@ abstract class ByteCodeToJavaScript implements Appendable {
             }
         }
         append("\n    ]; };");
-        append("\n    CLS.$class.access = ").append(jc.getAccessFlags()+";");
+        int flags = jc.getAccessFlags();
+        if (jc.hasEnclosingMethod()) {
+            flags |= 0x10000;
+        }
+        append("\n    CLS.$class.access = ").append(flags+";");
         append("\n    CLS.$class.cnstr = CLS;");
         byte[] classAnno = jc.findAnnotationData(false);
         if (classAnno != null) {
