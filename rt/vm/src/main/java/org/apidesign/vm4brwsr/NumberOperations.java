@@ -25,6 +25,10 @@ final class NumberOperations {
 
     private int used;
 
+    public void reset() {
+        used = 0;
+    }
+
     public String mul32() {
         used |= MUL32;
         return "__mul32(@1,@2)";

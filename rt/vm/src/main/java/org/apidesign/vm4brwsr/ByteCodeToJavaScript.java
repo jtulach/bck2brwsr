@@ -180,6 +180,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
     }
 
     private String compileImpl(final String cn) throws IOException {
+        this.numbers.reset();
         this.callbacks = cn.endsWith("/$JsCallbacks$");
         if (jc.getMajor_version() < 50 && !cn.endsWith("/package-info")) {
             throw new IOException("Can't compile " + cn + ". Class file version " + jc.getMajor_version() + "."
