@@ -42,7 +42,6 @@ public final class AnnotationImpl implements Annotation {
         + "  var v = val[prop];\n"
         + "  if (typeof v === 'undefined') {\n"
         + "    var cls = anno.fld_org_apidesign_bck2brwsr_emul_reflect_AnnotationImpl_type.cnstr;\n"
-        + "    try { throw 'x'; } catch (errr) {};\n"
         + "    v = cls.prototype[m]();\n"
         + "  }\n"
         + "  return v;\n"
