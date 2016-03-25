@@ -36,6 +36,7 @@ public final class InvocationContext {
     private String result;
     private Throwable exception;
     String html;
+    String[] args;
     final List<Resource> resources = new ArrayList<>();
     private int time;
 
@@ -51,6 +52,14 @@ public final class InvocationContext {
      */
     public void setHtmlFragment(String html) {
         this.html = html;
+    }
+
+    /** Arguments to pass to the invoked method.
+     * @param args textual arguments to pass to the method
+     * @since 0.18
+     */
+    public void setArguments(String... args) {
+        this.args = args;
     }
     
     /** HTTP resource to be available during execution. An invocation may

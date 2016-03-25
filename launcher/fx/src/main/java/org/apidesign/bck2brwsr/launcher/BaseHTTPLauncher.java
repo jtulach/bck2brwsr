@@ -377,8 +377,9 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
                     mi = methods.take();
                     caseNmbr = cnt++;
                 }
+                final Writer w = response.getWriter();
                 if (mi == END) {
-                    response.getWriter().write("");
+                    w.write("");
                     wait.countDown();
                     cnt = 0;
                     LOG.log(Level.INFO, "End of data reached. Exiting.");
@@ -395,17 +396,29 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
                 final String cn = mi.clazz.getName();
                 final String mn = mi.methodName;
                 LOG.log(Level.INFO, "Request for {0} case. Sending {1}.{2}", new Object[]{caseNmbr, cn, mn});
-                response.getWriter().write("{"
+                w.write("{"
                     + "className: '" + cn + "', "
                     + "methodName: '" + mn + "', "
                     + "request: " + caseNmbr
                 );
-                if (mi.html != null) {
-                    response.getWriter().write(", html: '");
-                    response.getWriter().write(encodeJSON(mi.html));
-                    response.getWriter().write("'");
+                if (mi.args != null) {
+                    w.write(", args: [");
+                    String sep = "";
+                    for (String a : mi.args) {
+                        w.write(sep);
+                        w.write("'");
+                        w.write(a);
+                        w.write("'");
+                        sep = ", ";
+                    }
+                    w.write("]");
                 }
-                response.getWriter().write("}");
+                if (mi.html != null) {
+                    w.write(", html: '");
+                    w.write(encodeJSON(mi.html));
+                    w.write("'");
+                }
+                w.write("}");
             }
         }, "/data");
 

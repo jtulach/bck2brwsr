@@ -223,7 +223,7 @@ public class Console {
     static String invoke(String clazz, String method) throws 
     ClassNotFoundException, InvocationTargetException, IllegalAccessException, 
     InstantiationException, InterruptedException {
-        final Object r = new Case(null).invokeMethod(clazz, method);
+        final Object r = new Case(null).invokeMethod(clazz, method, null);
         return r == null ? "null" : r.toString().toString();
     }
 
@@ -315,6 +315,10 @@ public class Console {
         public String getHtmlFragment() {
             return value("html", data);
         }
+
+        public String[] getArgs() {
+            return values("args", data);
+        }
         
         void again(Object[] arr) {
             try {
@@ -334,21 +338,24 @@ public class Console {
                 setAttr("bck2brwsr.fragment", "innerHTML", this.getHtmlFragment());
             }
             log("Invoking " + this.getClassName() + '.' + this.getMethodName() + " as request: " + this.getRequestId());
-            Object result = invokeMethod(this.getClassName(), this.getMethodName());
+            Object result = invokeMethod(this.getClassName(), this.getMethodName(), this.getArgs());
             setAttr("bck2brwsr.fragment", "innerHTML", "");
             log("Result: " + result);
             result = encodeURL("" + result);
             return result;
         }
 
-        private Object invokeMethod(String clazz, String method)
+        private Object invokeMethod(String clazz, String method, String[] args)
         throws ClassNotFoundException, InvocationTargetException,
         InterruptedException, IllegalAccessException, IllegalArgumentException,
         InstantiationException {
             Method found = null;
+            if (args == null) {
+                args = new String[0];
+            }
             Class<?> c = Class.forName(clazz);
             for (Method m : c.getMethods()) {
-                if (m.getName().equals(method)) {
+                if (m.getName().equals(method) && m.getParameterTypes().length == args.length) {
                     found = m;
                 }
             }
@@ -358,13 +365,13 @@ public class Console {
                     double now;
                     if ((found.getModifiers() & Modifier.STATIC) != 0) {
                         now = getTime();
-                        res = found.invoke(null);
+                        res = found.invoke(null, (Object[]) args);
                     } else {
                         if (inst == null) {
                             inst = c.newInstance();
                         }
                         now = getTime();
-                        res = found.invoke(inst);
+                        res = found.invoke(inst, (Object[]) args);
                     }
                     double took = Math.round((float)(getTime() - now));
                     time += took;
@@ -392,5 +399,12 @@ public class Console {
             + "return v.toString();"
         )
         private static native String value(String p, Object d);
+
+        @JavaScriptBody(args = {"p", "d"}, body =
+              "var v = d[p];\n"
+            + "if (typeof v === 'undefined') return null;\n"
+            + "return v;"
+        )
+        private static native String[] values(String p, Object d);
     }
 }
