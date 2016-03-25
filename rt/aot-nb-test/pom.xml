@@ -48,7 +48,7 @@
             <artifactId>org-openide-util-lookup</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apidesign.junit</groupId>
+            <groupId>com.dukescript.api</groupId>
             <artifactId>junit-osgi</artifactId>
             <version>4.12</version>
             <type>jar</type>
