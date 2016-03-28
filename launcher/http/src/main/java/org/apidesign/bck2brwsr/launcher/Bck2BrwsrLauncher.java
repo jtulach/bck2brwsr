@@ -24,11 +24,10 @@ import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 
 /**
  * Lightweight server to launch Bck2Brwsr applications and tests.
@@ -58,6 +57,10 @@ final class Bck2BrwsrLauncher extends BaseHTTPLauncher {
             f = new File(jar.toURI());
         } catch (URISyntaxException ex) {
             throw new IOException(ex);
+        }
+        final String precompile = System.getProperty("vmtest.precompiled");
+        if (precompile != null && Pattern.compile(precompile).matcher(jar.toString()).find()) {
+            throw new IOException("Compilation of " + jar + " forbidden");
         }
         LOG.log(Level.INFO, "No precompiled version for {0} found. Compiling.", jar);
         return CompileCP.compileJAR(f, testClasses);

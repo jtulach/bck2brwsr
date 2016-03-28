@@ -18,6 +18,7 @@
 package org.apidesign.bck2brwsr.mojo;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -141,10 +142,12 @@ public class AOTLibrary extends AbstractMojo {
                 }
             }
             
-            FileOutputStream fos = new FileOutputStream(this.aotJar);
-            JarOutputStream os = new JarOutputStream(fos, m);
 
+            JarOutputStream os = null;
             if (!"false".equals(debug)) {
+                if (os == null) {
+                    os = aotJar(m);
+                }
                 os.putNextEntry(new JarEntry(debug));
                 Writer w = new OutputStreamWriter(os, "UTF-8");
                 configureMain(loader).
@@ -154,6 +157,9 @@ public class AOTLibrary extends AbstractMojo {
                 os.closeEntry();
             }
             if (!"false".equals(minified)) {
+                if (os == null) {
+                    os = aotJar(m);
+                }
                 os.putNextEntry(new JarEntry(minified));
             
                 Writer w = new OutputStreamWriter(os, "UTF-8");
@@ -177,6 +183,9 @@ public class AOTLibrary extends AbstractMojo {
                         }
                     }
                     {
+                        if (os == null) {
+                            os = aotJar(m);
+                        }
                         os.putNextEntry(new JarEntry(artifactName(a, true)));
                         Writer w = new OutputStreamWriter(os, "UTF-8");
                         c.
@@ -197,12 +206,21 @@ public class AOTLibrary extends AbstractMojo {
                     }                    
                 }
             }
-            os.close();
+            if (os != null) {
+                os.close();
+            }
             
             projectHelper.attachArtifact(prj, "jar", "bck2brwsr", aotJar);
         } catch (IOException ex) {
             throw new MojoFailureException("Cannot generate script for " + mainJar, ex);
         }
+    }
+
+    private JarOutputStream aotJar(Manifest m) throws IOException, FileNotFoundException {
+        this.aotJar.getParentFile().mkdirs();
+        FileOutputStream fos = new FileOutputStream(this.aotJar);
+        JarOutputStream os = new JarOutputStream(fos, m);
+        return os;
     }
 
     private Bck2Brwsr configureMain(URLClassLoader loader) throws IOException {

@@ -12,7 +12,7 @@
       <scope>provided</scope>
       <unpackOptions>
         <excludes>
-          <exclude>META-INF/maven/**</exclude>
+          <exclude>META-INF/maven/**/*mini*/**</exclude>
         </excludes>
       </unpackOptions>
       <excludes>
