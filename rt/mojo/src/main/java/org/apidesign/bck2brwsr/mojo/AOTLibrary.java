@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import org.apache.maven.artifact.Artifact;
@@ -106,6 +107,7 @@ public class AOTLibrary extends AbstractMojo {
                 attr.putValue("Bck2BrwsrGroupId", prj.getGroupId());
                 attr.putValue("Bck2BrwsrVersion", prj.getVersion());
                 attr.putValue("Bck2BrwsrMinified", "true");
+                bundleName(attr, mainJar);
                 m.getEntries().put(minified, attr);
             }
             if (!"false".equals(debug)) {
@@ -114,6 +116,7 @@ public class AOTLibrary extends AbstractMojo {
                 attr.putValue("Bck2BrwsrGroupId", prj.getGroupId());
                 attr.putValue("Bck2BrwsrVersion", prj.getVersion());
                 attr.putValue("Bck2BrwsrDebug", "true");
+                bundleName(attr, mainJar);
                 m.getEntries().put(debug, attr);
             }
             
@@ -129,6 +132,8 @@ public class AOTLibrary extends AbstractMojo {
                         attr.putValue("Bck2BrwsrGroupId", a.getGroupId());
                         attr.putValue("Bck2BrwsrVersion", a.getVersion());
                         attr.putValue("Bck2BrwsrDebug", "true");
+                        bundleName(attr, a.getFile());
+
                         m.getEntries().put(artifactName(a, true), attr);
                     }
                     {
@@ -137,6 +142,7 @@ public class AOTLibrary extends AbstractMojo {
                         attr.putValue("Bck2BrwsrGroupId", a.getGroupId());
                         attr.putValue("Bck2BrwsrVersion", a.getVersion());
                         attr.putValue("Bck2BrwsrMinified", "true");
+                        bundleName(attr, a.getFile());
                         m.getEntries().put(artifactName(a, false), attr);
                     }
                 }
@@ -235,6 +241,19 @@ public class AOTLibrary extends AbstractMojo {
 
     private static String artifactName(Artifact a, boolean debug) {
         return a.getGroupId() + "-" + a.getArtifactId() + (debug ? "-debug.js" : "-min.js");
+    }
+
+    private static void bundleName(Attributes attr, File file) throws IOException {
+        try (JarFile jf = new JarFile(file)) {
+            Attributes main = jf.getManifest().getMainAttributes();
+            String version = main.getValue("Bundle-SymbolicName");
+            if (version == null) {
+                version = main.getValue("OpenIDE-Module-Name");
+            }
+            if (version != null) {
+                attr.putValue("Bck2BrwsrName", version);
+            }
+        }
     }
 
     private static URLClassLoader buildClassLoader(File root, Collection<Artifact> deps) throws MalformedURLException {

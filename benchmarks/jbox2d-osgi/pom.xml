@@ -6,6 +6,7 @@
         <artifactId>benchmarks</artifactId>
         <version>0.18</version>
     </parent>
+    <name>JBox2d OSGI Wrapper</name>
     <packaging>bundle</packaging>
     <artifactId>jbox2d-osgi</artifactId>
     <properties>
@@ -39,6 +40,15 @@
                     </instructions>
                 </configuration>
                 <extensions>true</extensions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.6</version>
+                <configuration>
+                    <archive>
+                        <addMavenDescriptor>false</addMavenDescriptor>
+                    </archive>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apidesign.bck2brwsr</groupId>

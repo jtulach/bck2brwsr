@@ -37,6 +37,7 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -649,6 +650,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
 
         Object compileJar(URL jarURL) throws IOException {
             List<String[]> libraries = new ArrayList<String[]>();
+            Map<String,Object[]> osgiJars = new HashMap<String, Object[]>();
             for (ClassLoader loader : loaders) {
                 Enumeration<URL> en = loader.getResources("META-INF/MANIFEST.MF");
                 while (en.hasMoreElements()) {
@@ -662,12 +664,25 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
                         final String g = attr.getValue("Bck2BrwsrGroupId");
                         final String v = attr.getValue("Bck2BrwsrVersion");
                         final String d = attr.getValue("Bck2BrwsrDebug");
+                        final String n = attr.getValue("Bck2BrwsrName");
 
                         if (g != null && a != null && v != null && "true".equals(d)) {
                             libraries.add(new String[] {
-                                a, g, v, key
+                                a, g, v, key, n
                             });
                         }
+                    }
+                    final Attributes main = mf.getMainAttributes();
+                    String symbol = main.getValue("Bundle-SymbolicName");
+                    String version;
+                    if (symbol == null) {
+                        symbol = main.getValue("OpenIDE-Module-Name");
+                        version = main.getValue("OpenIDE-Module-SpecificationVersion");
+                    } else {
+                        version = main.getValue("Bundle-Version");
+                    }
+                    if (symbol != null) {
+                        osgiJars.put(symbol, new Object[] { e, version });
                     }
                 }
             }
@@ -689,6 +704,16 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
                                     precompiled = loader.getResource(lib[3]);
                                 }
                             }
+                        }
+                    }
+                }
+            }
+            if (precompiled == null) {
+                for (ClassLoader loader : loaders) {
+                    for (String[] lib : libraries) {
+                        Object[] urlVersion = osgiJars.get(lib[4]);
+                        if (urlVersion != null && urlVersion[1].toString().startsWith(lib[2])) {
+                            precompiled = loader.getResource(lib[3]);
                         }
                     }
                 }
