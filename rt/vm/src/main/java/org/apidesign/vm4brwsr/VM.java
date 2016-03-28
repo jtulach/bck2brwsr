@@ -107,7 +107,11 @@ abstract class VM extends ByteCodeToJavaScript {
             append("\n  ").append(getExportsObject()).append("['registerResource']('");
             append(r).append("', '");
             InputStream is = this.resources.get(r);
-            byte[] arr = new byte[is.available()];
+            int avail = is.available();
+            if (avail <= 0) {
+                avail = 4096;
+            }
+            byte[] arr = new byte[avail];
             int offset = 0;
             for (;;) {
                 if (offset == arr.length) {
