@@ -18,6 +18,7 @@
 package org.apidesign.bck2brwsr.mojo;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -30,6 +31,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import org.apache.maven.artifact.Artifact;
@@ -105,6 +107,7 @@ public class AOTLibrary extends AbstractMojo {
                 attr.putValue("Bck2BrwsrGroupId", prj.getGroupId());
                 attr.putValue("Bck2BrwsrVersion", prj.getVersion());
                 attr.putValue("Bck2BrwsrMinified", "true");
+                bundleName(attr, mainJar);
                 m.getEntries().put(minified, attr);
             }
             if (!"false".equals(debug)) {
@@ -113,6 +116,7 @@ public class AOTLibrary extends AbstractMojo {
                 attr.putValue("Bck2BrwsrGroupId", prj.getGroupId());
                 attr.putValue("Bck2BrwsrVersion", prj.getVersion());
                 attr.putValue("Bck2BrwsrDebug", "true");
+                bundleName(attr, mainJar);
                 m.getEntries().put(debug, attr);
             }
             
@@ -128,6 +132,8 @@ public class AOTLibrary extends AbstractMojo {
                         attr.putValue("Bck2BrwsrGroupId", a.getGroupId());
                         attr.putValue("Bck2BrwsrVersion", a.getVersion());
                         attr.putValue("Bck2BrwsrDebug", "true");
+                        bundleName(attr, a.getFile());
+
                         m.getEntries().put(artifactName(a, true), attr);
                     }
                     {
@@ -136,15 +142,18 @@ public class AOTLibrary extends AbstractMojo {
                         attr.putValue("Bck2BrwsrGroupId", a.getGroupId());
                         attr.putValue("Bck2BrwsrVersion", a.getVersion());
                         attr.putValue("Bck2BrwsrMinified", "true");
+                        bundleName(attr, a.getFile());
                         m.getEntries().put(artifactName(a, false), attr);
                     }
                 }
             }
             
-            FileOutputStream fos = new FileOutputStream(this.aotJar);
-            JarOutputStream os = new JarOutputStream(fos, m);
 
+            JarOutputStream os = null;
             if (!"false".equals(debug)) {
+                if (os == null) {
+                    os = aotJar(m);
+                }
                 os.putNextEntry(new JarEntry(debug));
                 Writer w = new OutputStreamWriter(os, "UTF-8");
                 configureMain(loader).
@@ -154,6 +163,9 @@ public class AOTLibrary extends AbstractMojo {
                 os.closeEntry();
             }
             if (!"false".equals(minified)) {
+                if (os == null) {
+                    os = aotJar(m);
+                }
                 os.putNextEntry(new JarEntry(minified));
             
                 Writer w = new OutputStreamWriter(os, "UTF-8");
@@ -177,6 +189,9 @@ public class AOTLibrary extends AbstractMojo {
                         }
                     }
                     {
+                        if (os == null) {
+                            os = aotJar(m);
+                        }
                         os.putNextEntry(new JarEntry(artifactName(a, true)));
                         Writer w = new OutputStreamWriter(os, "UTF-8");
                         c.
@@ -197,12 +212,21 @@ public class AOTLibrary extends AbstractMojo {
                     }                    
                 }
             }
-            os.close();
+            if (os != null) {
+                os.close();
+            }
             
             projectHelper.attachArtifact(prj, "jar", "bck2brwsr", aotJar);
         } catch (IOException ex) {
             throw new MojoFailureException("Cannot generate script for " + mainJar, ex);
         }
+    }
+
+    private JarOutputStream aotJar(Manifest m) throws IOException, FileNotFoundException {
+        this.aotJar.getParentFile().mkdirs();
+        FileOutputStream fos = new FileOutputStream(this.aotJar);
+        JarOutputStream os = new JarOutputStream(fos, m);
+        return os;
     }
 
     private Bck2Brwsr configureMain(URLClassLoader loader) throws IOException {
@@ -217,6 +241,19 @@ public class AOTLibrary extends AbstractMojo {
 
     private static String artifactName(Artifact a, boolean debug) {
         return a.getGroupId() + "-" + a.getArtifactId() + (debug ? "-debug.js" : "-min.js");
+    }
+
+    private static void bundleName(Attributes attr, File file) throws IOException {
+        try (JarFile jf = new JarFile(file)) {
+            Attributes main = jf.getManifest().getMainAttributes();
+            String version = main.getValue("Bundle-SymbolicName");
+            if (version == null) {
+                version = main.getValue("OpenIDE-Module-Name");
+            }
+            if (version != null) {
+                attr.putValue("Bck2BrwsrName", version);
+            }
+        }
     }
 
     private static URLClassLoader buildClassLoader(File root, Collection<Artifact> deps) throws MalformedURLException {

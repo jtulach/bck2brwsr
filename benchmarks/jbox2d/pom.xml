@@ -43,26 +43,8 @@
               <configuration>
                   <systemPropertyVariables>
                       <vmtest.js>brwsr</vmtest.js>
+                      <vmtest.precompiled>.*</vmtest.precompiled>
                   </systemPropertyVariables>
-              </configuration>
-          </plugin>
-          <plugin>
-              <groupId>org.apidesign.bck2brwsr</groupId>
-              <artifactId>bck2brwsr-maven-plugin</artifactId>
-              <version>${project.version}</version>
-              <executions>
-                  <execution>
-                      <goals>
-                          <goal>library</goal>
-                      </goals>
-                  </execution>
-              </executions>
-              <configuration>
-                  <aotDeps>
-                      <aotDep>org.jbox2d:*</aotDep>
-                  </aotDeps>
-                  <minified>false</minified>
-                  <debug>false</debug>
               </configuration>
           </plugin>
       </plugins>
@@ -106,6 +88,13 @@
     </dependency>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
+      <artifactId>launcher.http</artifactId>
+      <version>${project.version}</version>
+      <classifier>bck2brwsr</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>jbox2d-osgi</artifactId>
       <version>${project.version}</version>
       <exclusions>
@@ -114,6 +103,12 @@
           <artifactId>jbox2d-library</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apidesign.bck2brwsr</groupId>
+      <artifactId>jbox2d-osgi</artifactId>
+      <version>${project.version}</version>
+      <classifier>bck2brwsr</classifier>
     </dependency>
   </dependencies>
 </project>

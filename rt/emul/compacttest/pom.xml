@@ -29,8 +29,22 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>launcher.http</artifactId>
+            <version>${project.version}</version>
+            <classifier>bck2brwsr</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>emul</artifactId>
             <classifier>rt</classifier>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>emul</artifactId>
+            <classifier>bck2brwsr</classifier>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
@@ -76,7 +90,12 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>     
+                <configuration>
+                    <systemProperties>
+                        <vmtest.precompiled>.*</vmtest.precompiled>
+                    </systemProperties>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>

@@ -30,6 +30,29 @@
                     <skip>false</skip>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apidesign.bck2brwsr</groupId>
+                <artifactId>bck2brwsr-maven-plugin</artifactId>
+                <version>0.17</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>library</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <ignoreBootClassPath>false</ignoreBootClassPath>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apidesign.bck2brwsr</groupId>
+                        <artifactId>aot</artifactId>
+                        <version>${project.version}</version>
+                        <type>jar</type>
+                    </dependency>
+                </dependencies>
+            </plugin>
         </plugins>
     </build>
     <properties>
@@ -70,7 +93,7 @@
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>aot</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>${project.version}</version>
       <type>jar</type>
     </dependency>
   </dependencies>
