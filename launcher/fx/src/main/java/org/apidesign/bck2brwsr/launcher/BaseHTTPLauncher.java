@@ -712,7 +712,11 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
                 for (ClassLoader loader : loaders) {
                     for (String[] lib : libraries) {
                         Object[] urlVersion = osgiJars.get(lib[4]);
-                        if (urlVersion != null && urlVersion[1].toString().startsWith(lib[2])) {
+                        String expectVersion = lib[2];
+                        if (expectVersion.endsWith("-SNAPSHOT")) {
+                            expectVersion = expectVersion.substring(0, expectVersion.length() - 9);
+                        }
+                        if (urlVersion != null && urlVersion[1].toString().startsWith(expectVersion)) {
                             precompiled = loader.getResource(lib[3]);
                         }
                     }
