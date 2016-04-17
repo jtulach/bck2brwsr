@@ -213,12 +213,9 @@ public final class Boolean implements java.io.Serializable,
      * @return  {@code true} if the Boolean objects represent the
      *          same value; {@code false} otherwise.
      */
-    public boolean equals(Object obj) {
-        if (obj instanceof Boolean) {
-            return value == ((Boolean)obj).booleanValue();
-        }
-        return false;
-    }
+    @JavaScriptBody(args = { "obj" }, body = "return obj && this.valueOf() === obj.valueOf();")
+    @Override
+    public native boolean equals(Object obj);
 
     /**
      * Returns {@code true} if and only if the system property
