@@ -17,6 +17,7 @@
  */
 package org.apidesign.bck2brwsr.vmtest.impl;
 
+import java.util.concurrent.Callable;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.vmtest.BrwsrTest;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
@@ -82,12 +83,42 @@ public class HtmlAnnotationsTest {
         Object april = HtmlAnnotations.april2016();
         assertEquals(HtmlAnnotations.year(april), 2016);
     }
+
+    @BrwsrTest public void yes() throws Exception {
+        String yes = HtmlAnnotations.yesNo(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return Boolean.TRUE;
+            }
+        });
+        assertEquals(yes, "yes", "TRUE is true");
+    }
+
+    @BrwsrTest public void no() throws Exception {
+        String no = HtmlAnnotations.yesNo(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return Boolean.FALSE;
+            }
+        });
+        assertEquals(no, "no", "FALSE is false");
+    }
     
     private static void assertEquals(double real, double exp) {
         if (real - exp < 0.01) {
             return;
         }
         assert false : "Expecting " + exp + " but was " + real;
+    }
+
+    private static void assertEquals(Object real, Object exp, String msg) {
+        if (real == exp) {
+            return;
+        }
+        if (real != null && real.equals(exp)) {
+            return;
+        }
+        throw new AssertionError(msg + " expected: " + exp + " real: " + real);
     }
 
     private static void assertNotNull(Object obj, String msg) {

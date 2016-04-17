@@ -1997,7 +1997,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
         return mn;
     }
     
-    private static CharSequence mangleCallbacks(String pkgName, String body) {
+    private CharSequence mangleCallbacks(String pkgName, String body) {
         StringBuilder sb = new StringBuilder();
         int pos = 0;
         for (;;) {
@@ -2029,14 +2029,18 @@ abstract class ByteCodeToJavaScript implements Appendable {
             String params = body.substring(sigBeg, sigEnd + 1);
 
             int paramBeg = body.indexOf('(', sigEnd + 1);
-            
+            int paramEnd = closingParenthesis(body, paramBeg);
+
+            sb.append(accessClass("java_lang_Class")).append("(false).toJS(");
             sb.append("vm.").append(mangleClassName(pkgName)).append("_$JsCallbacks$(false)._VM().");
             sb.append(mangleJsCallbacks(fqn, method, params, false));
             sb.append("(").append(refId);
             if (body.charAt(paramBeg + 1) != ')') {
                 sb.append(",");
             }
-            pos = paramBeg + 1;
+            sb.append(body.substring(paramBeg + 1, paramEnd));
+            sb.append(")");
+            pos = paramEnd;
         }
         sb = null;
         pos = 0;
@@ -2066,11 +2070,15 @@ abstract class ByteCodeToJavaScript implements Appendable {
             String params = body.substring(sigBeg, sigEnd + 1);
 
             int paramBeg = body.indexOf('(', sigEnd + 1);
-            
+            int paramEnd = closingParenthesis(body, paramBeg);
+
+            sb.append(accessClass("java_lang_Class")).append("(false).toJS(");
             sb.append("vm.").append(mangleClassName(pkgName)).append("_$JsCallbacks$(false)._VM().");
             sb.append(mangleJsCallbacks(fqn, method, params, true));
             sb.append("(");
-            pos = paramBeg + 1;
+            sb.append(body.substring(paramBeg + 1, paramEnd));
+            sb.append(")");
+            pos = paramEnd;
         }
     }
 
@@ -2447,6 +2455,19 @@ abstract class ByteCodeToJavaScript implements Appendable {
     @JavaScriptBody(args = "msg", body = "")
     private static void println(String msg) {
         System.err.println(msg);
+    }
+
+    private static int closingParenthesis(String body, int at) {
+        int cnt = 0;
+        for (;;) {
+            switch (body.charAt(at++)) {
+                case '(': cnt++; break;
+                case ')': cnt--; break;
+            }
+            if (cnt == 0) {
+                return at;
+            }
+        }
     }
 
     private class GenerateAnno extends AnnotationParser {

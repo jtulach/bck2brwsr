@@ -17,6 +17,7 @@
  */
 package org.apidesign.bck2brwsr.vmtest.impl;
 
+import java.util.concurrent.Callable;
 import net.java.html.js.JavaScriptBody;
 import net.java.html.js.JavaScriptResource;
 
@@ -92,4 +93,10 @@ public class HtmlAnnotations {
 
     @JavaScriptBody(args = { "date" }, body = "return date.getFullYear()")
     public static native int year(Object date);
+
+    @JavaScriptBody(args = { "call" }, javacall = true, body = ""
+        + "var b = call.@java.util.concurrent.Callable::call()();\n"
+        + "return b ? 'yes' : 'no';\n"
+    )
+    public static native String yesNo(Callable<Boolean> call);
 }
