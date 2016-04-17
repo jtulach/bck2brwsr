@@ -77,6 +77,11 @@ public class HtmlAnnotationsTest {
         String msg = invoke(fn);
         assert "*/*".equals(msg) : "String '*/*' as expected: " + msg;
     }
+
+    @BrwsrTest public void date() throws Exception {
+        Object april = HtmlAnnotations.april2016();
+        assertEquals(HtmlAnnotations.year(april), 2016);
+    }
     
     private static void assertEquals(double real, double exp) {
         if (real - exp < 0.01) {

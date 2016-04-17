@@ -1875,6 +1875,7 @@ public final
         + "  if (Object.prototype.toString.call(v) === '[object Array]') {\n"
         + "    return vm.org_apidesign_bck2brwsr_emul_lang_System(false).convArray__Ljava_lang_Object_2Ljava_lang_Object_2(v);\n"
         + "  }\n"
+        + "  if (v instanceof Date) return v;\n"
         + "  return v.valueOf();\n"
         + "}\n"
     )

@@ -86,4 +86,10 @@ public class HtmlAnnotations {
         "return impl.@org.apidesign.bck2brwsr.vmtest.impl.HtmlAnnotations::getError()();"
     )
     public static native Double onError(Object impl, Double d);
+
+    @JavaScriptBody(args = {  }, body = "return new Date(2016, 4, 1);")
+    public static native Object april2016();
+
+    @JavaScriptBody(args = { "date" }, body = "return date.getFullYear()")
+    public static native int year(Object date);
 }
