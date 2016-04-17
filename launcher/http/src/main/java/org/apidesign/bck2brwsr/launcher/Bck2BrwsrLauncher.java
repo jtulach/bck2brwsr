@@ -43,7 +43,7 @@ final class Bck2BrwsrLauncher extends BaseHTTPLauncher {
     
     @Override
     String harnessResource() {
-        return "org/apidesign/bck2brwsr/launcher/harness.xhtml";
+        return "org/apidesign/bck2brwsr/launcher/harness.html";
     }
 
     @Override
