@@ -23,21 +23,12 @@
         <title>Bck2Brwsr Harness</title>
     </head>
     <body>
-        <script src="/bck2brwsr.js"></script>
-        <script>
-            var vm = bck2brwsr();
-        </script>
-        
         <h1>Bck2Brwsr Execution Harness</h1>
-        
+
         <ul id="bck2brwsr.result" style="width: 100%;" >
         </ul>
 
-        <div id="bck2brwsr.fragment"/>
-        
-        <script type="text/javascript">
-            var cnsl = vm.loadClass('org.apidesign.bck2brwsr.launcher.impl.Console');
-            var res = cnsl.invoke('harness', '$U/../data');
-        </script>
+        <div id="bck2brwsr.fragment"></div>
+        <script src="/bck2brwsr.js"></script>
     </body>
 </html>

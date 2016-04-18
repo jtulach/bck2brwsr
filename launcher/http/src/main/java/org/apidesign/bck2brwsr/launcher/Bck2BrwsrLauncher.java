@@ -77,7 +77,7 @@ final class Bck2BrwsrLauncher extends BaseHTTPLauncher {
     }
     
     @Override
-    void generateBck2BrwsrJS(StringBuilder sb, final Res loader) throws IOException {
+    void generateBck2BrwsrJS(StringBuilder sb, final Res loader, String url, boolean unitTestMode) throws IOException {
         String b2b = System.getProperty("bck2brwsr.js");
         if (b2b != null) {
             LOG.log(Level.INFO, "Serving bck2brwsr.js from {0}", b2b);
@@ -139,6 +139,15 @@ final class Bck2BrwsrLauncher extends BaseHTTPLauncher {
             + "  global.bck2brwsr.register = prevvm.register;\n"
             + "})(this);\n"
         );
+
+        if (unitTestMode) {
+            sb.append("var vm = bck2brwsr();\n");
+            sb.append("var cnsl = vm.loadClass('org.apidesign.bck2brwsr.launcher.impl.Console');\n");
+            int last = url.lastIndexOf('/');
+            url = url.substring(0, last + 1);
+            sb.append("var res = cnsl.invoke('harness', '").append(url).append("/data');");
+        }
+
         LOG.log(Level.INFO, "Serving bck2brwsr.js", b2b);
     }
 

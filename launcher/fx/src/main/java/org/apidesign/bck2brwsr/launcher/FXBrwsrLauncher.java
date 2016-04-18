@@ -97,12 +97,27 @@ final class FXBrwsrLauncher extends BaseHTTPLauncher {
     }
     
     @Override
-    void generateBck2BrwsrJS(StringBuilder sb, Res loader) throws IOException {
+    void generateBck2BrwsrJS(StringBuilder sb, Res loader, String url, boolean unitTestMode) throws IOException {
         sb.append("(function() {\n"
             + "  var impl = this.bck2brwsr;\n"
             + "  this.bck2brwsr = function() { return impl; };\n");
         sb.append("})(window);\n");
         JVMBridge.onBck2BrwsrLoad();
+        if (unitTestMode) {
+            sb.append("var vm = bck2brwsr();\n");
+            sb.append("try {\n");
+            sb.append("    (function() {\n");
+            sb.append("        var cls = vm.loadClass('org.apidesign.bck2brwsr.launcher.fximpl.Console');\n");
+            sb.append("        // fxbrwsr mangling\n");
+            sb.append("        var inst = cls.newInstance();\n");
+            int last = url.lastIndexOf('/');
+            url = url.substring(0, last + 1);
+            sb.append("        inst.harness('").append(url).append("/data');\n");
+            sb.append("    })();\n");
+            sb.append("} catch (err) {\n");
+            sb.append("    alert('Error executing harness: ' + err);\n");
+            sb.append("}\n");
+        }
     }
 
     @Override
@@ -112,7 +127,7 @@ final class FXBrwsrLauncher extends BaseHTTPLauncher {
     }
 
     String harnessResource() {
-        return "org/apidesign/bck2brwsr/launcher/fximpl/harness.xhtml";
+        return "org/apidesign/bck2brwsr/launcher/fximpl/harness.html";
     }
 
     public static void main(String... args) throws IOException {

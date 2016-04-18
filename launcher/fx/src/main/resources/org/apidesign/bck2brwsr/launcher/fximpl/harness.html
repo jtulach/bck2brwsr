@@ -18,35 +18,18 @@
     If not, see http://opensource.org/licenses/GPL-2.0.
 
 -->
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
     <head>
         <title>Bck2Brwsr Harness</title>
     </head>
     <body>
-        <script src="/bck2brwsr.js"></script>
-        <script>
-            var vm = bck2brwsr();
-        </script>
         
         <h1>Bck2Brwsr Execution Harness</h1>
         
         <ul id="bck2brwsr.result" style="width: 100%;" >
         </ul>
 
-        <div id="bck2brwsr.fragment"/>
-        
-        <script type="text/javascript">
-            try {
-                (function() {
-                    var cls = vm.loadClass('org.apidesign.bck2brwsr.launcher.fximpl.Console');
-                    // fxbrwsr mangling
-                    var inst = cls.newInstance();
-                    inst.harness('$U/../data');
-                })();
-            } catch (err) { 
-                alert('Error executing harness: ' + err); 
-            }
-        </script>
+        <div id="bck2brwsr.fragment"></div>
+        <script src="/bck2brwsr.js"></script>
     </body>
 </html>

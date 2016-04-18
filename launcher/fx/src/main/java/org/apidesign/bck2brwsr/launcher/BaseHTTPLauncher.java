@@ -122,7 +122,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
         if (!startpage.startsWith("/")) {
             startpage = "/" + startpage;
         }
-        HttpServer s = initServer(".", true, "");
+        HttpServer s = initServer(".", true, "", false);
         int last = startpage.lastIndexOf('/');
         String prefix = startpage.substring(0, last);
         String simpleName = startpage.substring(last);
@@ -146,7 +146,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
                 prefix = startpage.substring(0, last);
             }
         }
-        HttpServer s = initServer(dir.getPath(), addClasses, prefix);
+        HttpServer s = initServer(dir.getPath(), addClasses, prefix, false);
         try {
             launchServerAndBrwsr(s, startpage);
         } catch (Exception ex) {
@@ -173,7 +173,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
         }
     }
 
-    private HttpServer initServer(String path, boolean addClasses, String vmPrefix) throws IOException {
+    private HttpServer initServer(String path, boolean addClasses, String vmPrefix, boolean unitTests) throws IOException {
         HttpServer s = HttpServer.createSimpleServer(null, new PortRange(8080, 65535));
         /*
         ThreadPoolConfig fewThreads = ThreadPoolConfig.defaultConfig().copy().
@@ -190,7 +190,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
         }
 */
         final ServerConfiguration conf = s.getServerConfiguration();
-        VMAndPages vm = new VMAndPages();
+        VMAndPages vm = new VMAndPages(unitTests);
         conf.addHttpHandler(vm, "/");
         if (vmPrefix != null) {
             vm.registerVM(vmPrefix + "/bck2brwsr.js");
@@ -217,7 +217,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
     private static int resourcesCount;
     private void executeInBrowser() throws InterruptedException, URISyntaxException, IOException {
         wait = new CountDownLatch(1);
-        server = initServer(".", true, "");
+        server = initServer(".", true, "", true);
         final ServerConfiguration conf = server.getServerConfiguration();
 
         class DynamicResourceHandler extends HttpHandler {
@@ -626,7 +626,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
         }
     }
 
-    abstract void generateBck2BrwsrJS(StringBuilder sb, Res loader) throws IOException;
+    abstract void generateBck2BrwsrJS(StringBuilder sb, Res loader, String url, boolean unitTestMode) throws IOException;
     abstract String harnessResource();
     Object compileJar(URL jar, URL precompiled) throws IOException {
         return null;
@@ -840,10 +840,12 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
     }
 
     private class VMAndPages extends StaticHttpHandler {
+        private final boolean unitTestMode;
         private String vmResource;
 
-        public VMAndPages() {
+        public VMAndPages(boolean unitTestMode) {
             super((String[]) null);
+            this.unitTestMode = unitTestMode;
         }
 
         @Override
@@ -856,7 +858,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
                 response.setCharacterEncoding("UTF-8");
                 response.setContentType("text/javascript");
                 StringBuilder sb = new StringBuilder();
-                generateBck2BrwsrJS(sb, BaseHTTPLauncher.this.resources);
+                generateBck2BrwsrJS(sb, BaseHTTPLauncher.this.resources, request.getRequestURL().toString(), unitTestMode);
                 response.getWriter().write(sb.toString());
             } else {
                 super.service(request, response);
