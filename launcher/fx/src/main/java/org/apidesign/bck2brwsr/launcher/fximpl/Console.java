@@ -39,7 +39,10 @@ public final class Console {
     @JavaScriptBody(args = { "elem", "attr" }, body = "return elem[attr].toString();")
     private static native Object getAttr(Object elem, String attr);
 
-    @JavaScriptBody(args = { "id", "attr", "value" }, body = "window.document.getElementById(id)[attr] = value;")
+    @JavaScriptBody(args = { "id", "attr", "value" }, body = "\n"
+        + "var e = window.document.getElementById(id);\n"
+        + "if (e) e[attr] = value;\n"
+    )
     private static native void setAttr(String id, String attr, Object value);
 
     @JavaScriptBody(args = { "elem", "attr", "value" }, body = "elem[attr] = value;")

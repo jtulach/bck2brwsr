@@ -40,24 +40,29 @@ public class Console {
     }
     
     @JavaScriptBody(args = {"id", "attr"}, body = 
-        "return window.document.getElementById(id)[attr].toString();")
+        "var e = window.document.getElementById(id);" +
+        "return e ? e[attr].toString() : null;"
+    )
     private static native Object getAttr(String id, String attr);
     @JavaScriptBody(args = {"elem", "attr"}, body = 
-        "return elem[attr].toString();")
+        "return elem ? elem[attr].toString() : null;")
     private static native Object getAttr(Object elem, String attr);
 
     @JavaScriptBody(args = {"id", "attr", "value"}, body = 
-        "window.document.getElementById(id)[attr] = value;")
+        "var e = window.document.getElementById(id);\n"
+      + "if (e) e[attr] = value;"
+    )
     private static native void setAttr(String id, String attr, Object value);
     @JavaScriptBody(args = {"elem", "attr", "value"}, body = 
-        "elem[attr] = value;")
+        "if (elem) elem[attr] = value;")
     private static native void setAttr(Object id, String attr, Object value);
     
     @net.java.html.js.JavaScriptBody(args = {}, body = "return new Date().getTime()")
     private static native double getTime();
 
     @net.java.html.js.JavaScriptBody(args = {  }, body = 
-        "var a = document.createElement('a');"
+        "if (!document.getElementById('bck2brwsr.fragment')) return;\b"
+      + "var a = document.createElement('a');\n"
       + "a.innerHTML = 'Cancel: closing in 10s...';\n"
       + "a.href = '#';\n"
       + "var closing = window.setTimeout(function() { window.close(); }, 10000);\n"
@@ -119,7 +124,7 @@ public class Console {
         + "li.appendChild(span);\n"
         + "li.appendChild(details);\n"
         + "p.appendChild(pre);\n"
-        + "ul.appendChild(li);\n"
+        + "if (ul) ul.appendChild(li);\n"
         + "arr[0] = pre;\n"
         + "arr[1] = status;\n"
     )

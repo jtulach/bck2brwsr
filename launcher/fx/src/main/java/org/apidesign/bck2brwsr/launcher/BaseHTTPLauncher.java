@@ -87,6 +87,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
     private HttpServer server;
     private CountDownLatch wait;
     private Thread flushing;
+    private String rootPage;
 
     public BaseHTTPLauncher(String cmd) {
         this.cmd = cmd;
@@ -118,6 +119,12 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
         return loaders.toArray(new ClassLoader[loaders.size()]);
     }
 
+    @Override
+    void rootPage(String startpage) {
+        this.rootPage = startpage;
+    }
+
+    @Override
     public void showURL(String startpage) throws IOException {
         if (!startpage.startsWith("/")) {
             startpage = "/" + startpage;
@@ -200,6 +207,12 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
         }
         if (addClasses) {
             conf.addHttpHandler(new Classes(resources), "/classes/");
+        }
+        if (rootPage != null) {
+            int last = rootPage.lastIndexOf('/');
+            String prefix = rootPage.substring(0, last);
+            String page = rootPage.substring(last);
+            s.getServerConfiguration().addHttpHandler(new SubTree("/pages" + page, resources, prefix), "/pages/");
         }
         final WebSocketAddOn addon = new WebSocketAddOn();
         for (NetworkListener listener : s.getListeners()) {
@@ -423,7 +436,13 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
             }
         }, "/data");
 
-        this.brwsr = launchServerAndBrwsr(server, "/execute");
+        String page = "/execute";
+        if (rootPage != null) {
+            int last = rootPage.lastIndexOf('/');
+            page = "/pages" + rootPage.substring(last);
+        }
+
+        this.brwsr = launchServerAndBrwsr(server, page);
     }
 
     private static String encodeJSON(String in) {
@@ -781,8 +800,14 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
         final String resource;
         private final String[] args;
         private final Res res;
+        private final String ensureBck2Brwsr;
 
         public Page(Res res, String resource, String... args) {
+            this(null, res, resource, args);
+        }
+
+        Page(String ensureBck2Brwsr, Res res, String resource, String... args) {
+            this.ensureBck2Brwsr = ensureBck2Brwsr;
             this.res = res;
             this.resource = resource;
             this.args = args.length == 0 ? new String[] { "$0" } : args;
@@ -805,10 +830,26 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
                 LOG.info("Content type application/xhtml+xml");
                 replace = args;
             }
-            OutputStream os = response.getOutputStream();
             try {
                 InputStream is = res.get(r, 0).openStream();
-                copyStream(is, os, request.getRequestURL().toString(), replace);
+                if (ensureBck2Brwsr != null && ensureBck2Brwsr.equals(request.getRequestURI())) {
+                    ByteArrayOutputStream tmp = new ByteArrayOutputStream();
+                    copyStream(is, tmp, request.getRequestURL().toString(), replace);
+                    String pageText = tmp.toString("UTF-8");
+                    if (!pageText.contains("bck2brwsr.js")) {
+                        int last = pageText.toLowerCase().indexOf("</body>");
+                        if (last == -1) {
+                            last = pageText.length();
+                        }
+                        pageText = pageText.substring(0, last) +
+                            "\n<script src='/bck2brwsr.js'></script>\n\n" +
+                            pageText.substring(last);
+                    }
+                    response.getWriter().write(pageText);
+                } else {
+                    OutputStream os = response.getOutputStream();
+                    copyStream(is, os, request.getRequestURL().toString(), replace);
+                }
             } catch (IOException ex) {
                 response.setDetailMessage(ex.getLocalizedMessage());
                 response.setError();
@@ -829,6 +870,9 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
 
         public SubTree(Res res, String resource, String... args) {
             super(res, resource, args);
+        }
+        public SubTree(String ensureBck2Brwsr, Res res, String resource, String... args) {
+            super(ensureBck2Brwsr, res, resource, args);
         }
 
         @Override

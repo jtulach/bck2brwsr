@@ -79,6 +79,18 @@ public abstract class Launcher {
      * @return launcher executing in external browser.
      */
     public static Launcher createBrowser(String cmd) {
+        return createBrowser(cmd, null, null);
+    }
+
+    /** Creates launcher that is using external browser.
+     *
+     * @param classes classloader offering access to classes and resources
+     * @param startpage page to show in the browser
+     * @param cmd <code>null</code> to use <code>java.awt.Desktop</code> to show the launcher
+     *    or a string to execute in an external process (with a parameter to the URL)
+     * @return launcher executing in external browser.
+     */
+    public static Launcher createBrowser(String cmd, ClassLoader classes, String startpage) {
         String msg = "Trying to create browser '" + cmd + "'";
         try {
             Class<?> c;
@@ -94,7 +106,12 @@ public abstract class Launcher {
                 }
             }
             Constructor<?> cnstr = c.getConstructor(String.class);
-            return (Launcher) cnstr.newInstance(cmd);
+            final Launcher launcher = (Launcher) cnstr.newInstance(cmd);
+            if (classes != null) {
+                launcher.addClassLoader(classes);
+            }
+            launcher.rootPage(startpage);
+            return launcher;
         } catch (Exception ex) {
             throw new IllegalStateException(msg, ex);
         }
@@ -181,6 +198,10 @@ public abstract class Launcher {
     }
 
     void addClassLoader(ClassLoader classes) {
+        throw new UnsupportedOperationException();
+    }
+
+    void rootPage(String startpage) {
         throw new UnsupportedOperationException();
     }
 }
