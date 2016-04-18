@@ -80,11 +80,13 @@ public class HtmlAnnotationsTest {
     }
 
     @BrwsrTest public void date() throws Exception {
+        assertMulNotDefinedForTheFirstTime();
         Object april = HtmlAnnotations.april2016();
         assertEquals(HtmlAnnotations.year(april), 2016);
     }
 
     @BrwsrTest public void yes() throws Exception {
+        assertMulNotDefinedForTheFirstTime();
         String yes = HtmlAnnotations.yesNo(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
@@ -95,6 +97,7 @@ public class HtmlAnnotationsTest {
     }
 
     @BrwsrTest public void no() throws Exception {
+        assertMulNotDefinedForTheFirstTime();
         String no = HtmlAnnotations.yesNo(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
