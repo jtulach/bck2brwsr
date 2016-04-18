@@ -34,13 +34,6 @@
                             <goal>aot</goal>
                         </goals>
                     </execution>
-                    <execution>
-                        <id>show</id>
-                        <goals>
-                            <goal>show</goal>
-                        </goals>
-                        <phase>integration-test</phase>
-                    </execution>
                 </executions>
                 <configuration>
                     <directory>${project.build.directory}/${project.build.finalName}-bck2brwsr/public_html/</directory>
@@ -144,4 +137,32 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+  <profiles>
+      <profile>
+          <id>test-run</id>
+          <activation>
+              <property>
+                  <name>!skipTests</name>
+              </property>
+          </activation>
+          <build>
+              <plugins>
+                  <plugin>
+                      <groupId>org.apidesign.bck2brwsr</groupId>
+                      <artifactId>bck2brwsr-maven-plugin</artifactId>
+                      <version>${project.version}</version>
+                      <executions>
+                          <execution>
+                              <id>show</id>
+                              <goals>
+                                  <goal>show</goal>
+                              </goals>
+                              <phase>integration-test</phase>
+                          </execution>
+                      </executions>
+                  </plugin>
+              </plugins>
+          </build>
+      </profile>
+  </profiles>
 </project>
