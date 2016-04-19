@@ -2420,8 +2420,8 @@ abstract class ByteCodeToJavaScript implements Appendable {
         String type = jc.getClassName(indx);
         if (!type.startsWith("[")) {
             emitNoFlush(smapper, 
-                 "if (@1 !== null && !@1['$instOf_@2']) vm.java_lang_Class(false).castEx();",
-                 smapper.getT(0, VarType.REFERENCE, false), mangleClassName(type));
+                 "if (@1 !== null && !@1['$instOf_@2']) vm.java_lang_Class(false).castEx(@1, '@3');",
+                 smapper.getT(0, VarType.REFERENCE, false), mangleClassName(type), type.replace('/', '.'));
         } else {
             int cnt = 0;
             while (type.charAt(cnt) == '[') {

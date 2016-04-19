@@ -762,19 +762,8 @@ public class Throwable implements Serializable {
         return getOurStackTrace().clone();
     }
 
-    private synchronized StackTraceElement[] getOurStackTrace() {
-        // Initialize stack trace field with information from
-        // backtrace if this is the first call to this method
-        if (stackTrace == UNASSIGNED_STACK ||
-            (stackTrace == null && backtrace != null) /* Out of protocol state */) {
-            int depth = getStackTraceDepth();
-            stackTrace = new StackTraceElement[depth];
-            for (int i=0; i < depth; i++)
-                stackTrace[i] = getStackTraceElement(i);
-        } else if (stackTrace == null) {
-            return UNASSIGNED_STACK;
-        }
-        return stackTrace;
+    private StackTraceElement[] getOurStackTrace() {
+        return new StackTraceElement[0];
     }
 
     /**

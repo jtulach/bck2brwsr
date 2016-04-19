@@ -1915,7 +1915,16 @@ public final
     }
 
     @Exported
-    @JavaScriptOnly(name = "castEx", value = "function() { throw vm.java_lang_ClassCastException(true); }")
+    @JavaScriptOnly(name = "castEx", value = ""
+        + "function(obj, type) {\n"
+        + "  var realType = obj.getClass__Ljava_lang_Class_2().getName__Ljava_lang_String_2();\n"
+        + "  var msg = realType + ' cannot be cast to ' + type;\n"
+        + "  var ex = vm.java_lang_ClassCastException(true);\n"
+        + "  ex.constructor.cons__VLjava_lang_String_2.call(ex, msg);;\n"
+        + "  throw ex;\n"
+        + "}\n"
+        + ""
+    )
     private static void castEx() {
     }
     

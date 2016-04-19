@@ -54,6 +54,17 @@ public class ExceptionsTest {
         int newLine = s.indexOf('\n');
         return s.substring(0, newLine);
     }
+
+    @Compare
+    public String classCastMessage() throws Exception {
+        Object obj = 10;
+        try {
+            return (String) obj;
+        } catch (ClassCastException ex) {
+            assert ex.getMessage().contains("cannot be cast to") : "Contains the right text: " + ex.getMessage();
+            throw ex;
+        }
+    }
     
     static class MyException extends Exception {
         public MyException(String message) {
