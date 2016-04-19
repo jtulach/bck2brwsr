@@ -104,7 +104,7 @@ public final class Console {
         + "li.appendChild(span);\n"
         + "li.appendChild(details);\n"
         + "p.appendChild(pre);\n"
-        + "ul.appendChild(li);\n"
+        + "if (ul) ul.appendChild(li);\n"
         + "arr[0] = pre;\n"
         + "arr[1] = status;\n"
         + "return arr;"
