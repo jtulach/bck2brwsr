@@ -61,7 +61,7 @@ public class Console {
     private static native double getTime();
 
     @net.java.html.js.JavaScriptBody(args = {  }, body = 
-        "if (!document.getElementById('bck2brwsr.fragment')) return;\b"
+        "if (!document.getElementById('bck2brwsr.fragment')) return;\n"
       + "var a = document.createElement('a');\n"
       + "a.innerHTML = 'Cancel: closing in 10s...';\n"
       + "a.href = '#';\n"
