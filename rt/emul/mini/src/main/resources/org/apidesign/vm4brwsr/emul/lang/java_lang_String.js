@@ -4,10 +4,13 @@ vm.java_lang_String(false);
 
 Object.defineProperty(Array, "at", { configurable: true, writable: true, value : function(arr, indx, value) {
   var prev = arr[indx];
-  if (typeof prev === 'undefined' && (indx < 0 || indx >= arr.length)) {
-    var e = vm.java_lang_ArrayIndexOutOfBoundsException(true);
-    e.constructor.cons__VLjava_lang_String_2.call(e, indx.toString());
-    throw e;
+  if (typeof prev === 'undefined') {
+    if (indx < 0 || indx >= arr.length) {
+      var e = vm.java_lang_ArrayIndexOutOfBoundsException(true);
+      e.constructor.cons__VLjava_lang_String_2.call(e, indx.toString());
+      throw e;
+    }
+    prev = null;
   }
   if (arguments.length === 3) {
     arr[indx] = value;
