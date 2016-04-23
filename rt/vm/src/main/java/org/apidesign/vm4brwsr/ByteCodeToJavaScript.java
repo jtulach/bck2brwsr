@@ -2432,12 +2432,12 @@ abstract class ByteCodeToJavaScript implements Appendable {
                 requireReference(component);
                 type = "vm." + mangleClassName(component);
                 emitNoFlush(smapper, 
-                    "if (@1 !== null && !Array.prototype['isInstance__ZLjava_lang_Object_2ILjava_lang_Object_2'](@1, @3, @2)) vm.java_lang_Class(false).castEx();",
+                    "if (@1 !== null && !Array.prototype['isInstance__ZLjava_lang_Object_2ILjava_lang_Object_2'](@1, @3, @2)) vm.java_lang_Class(false).castEx(@1, '');",
                      smapper.getT(0, VarType.REFERENCE, false), type, "" + cnt
                 );
             } else {
                 emitNoFlush(smapper, 
-                    "if (@1 !== null && !Array.prototype['isInstance__ZLjava_lang_Object_2Ljava_lang_String_2'](@1, '@2')) vm.java_lang_Class(false).castEx();",
+                    "if (@1 !== null && !Array.prototype['isInstance__ZLjava_lang_Object_2Ljava_lang_String_2'](@1, '@2')) vm.java_lang_Class(false).castEx(@1, '');",
                      smapper.getT(0, VarType.REFERENCE, false), type
                 );
             }
