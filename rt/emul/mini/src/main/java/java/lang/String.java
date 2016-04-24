@@ -33,7 +33,6 @@ import java.util.Locale;
 import org.apidesign.bck2brwsr.core.Exported;
 import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
-import org.apidesign.bck2brwsr.core.JavaScriptOnly;
 import org.apidesign.bck2brwsr.core.JavaScriptPrototype;
 import org.apidesign.bck2brwsr.emul.lang.System;
 
@@ -124,7 +123,7 @@ public final class String
         registerToString();
     }
     @JavaScriptBody(args = {}, body = 
-          "var p = vm.java_lang_String(false);\n"
+          "var p = java_lang_String(false);\n"
         + "p.toString = function() {\nreturn this._r().toString();\n};\n"
         + "p.valueOf = function() {\nreturn this._r().valueOf();\n}\n"
     )

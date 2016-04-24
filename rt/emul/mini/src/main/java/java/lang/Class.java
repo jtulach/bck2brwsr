@@ -1836,7 +1836,7 @@ public final
         }
     }
 
-    @JavaScriptBody(args = {}, body = "var p = vm.java_lang_Object(false);"
+    @JavaScriptBody(args = {}, body = "var p = java_lang_Object(false);"
             + "p.toString = function() { return this.toString__Ljava_lang_String_2(); };"
     )
     static native void registerToString();

@@ -128,7 +128,7 @@ public abstract class Number implements java.io.Serializable {
         initValueOf();
     }
     @JavaScriptBody(args = {  }, body = 
-        "var p = vm.java_lang_Number(false);\n" +
+        "var p = java_lang_Number(false);\n" +
         "p.valueOf = function() { return this.doubleValue__D(); };\n" +
         "p.toString = function() { return this.toString__Ljava_lang_String_2(); };"
     )
