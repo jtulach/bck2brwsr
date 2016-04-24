@@ -52,11 +52,21 @@ public final class KnockoutFXTest extends KnockoutTCK {
 
     @Factory public static Object[] compatibilityTests() {
         return VMTest.newTests().
-            withClasses(testClasses()).
+            withClasses(filterTestClasses()).
             withTestAnnotation(KOTest.class).
             withLaunchers("fxbrwsr").build();
     }
-
+    
+    private static Class[] filterTestClasses() {
+        Class[] arr = testClasses();
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i].getName().contains("GCBodyTest")) {
+                arr[i] = Object.class;
+            }
+        }
+        return arr;
+    }
+    
     @Override
     public BrwsrCtx createContext() {
         final Fn.Presenter p = Fn.activePresenter();

@@ -30,7 +30,17 @@ public class JavaScriptBodyFXBrwsrTest extends JavaScriptTCK {
     @Factory public static Object[] create() {
         return VMTest.newTests().
             withLaunchers("fxbrwsr").
-            withClasses(testClasses()).
+            withClasses(filterTestClasses()).
             withTestAnnotation(KOTest.class).build();
+    }
+    
+    private static Class[] filterTestClasses() {
+        Class[] arr = testClasses();
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i].getName().contains("GCBodyTest")) {
+                arr[i] = Object.class;
+            }
+        }
+        return arr;
     }
 }
