@@ -323,7 +323,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
 //        obfuscationDelegate.exportJSProperty(this, "c", instOfName);
         append("\n    CLS.$class = 'temp';");
         append("\n    CLS.$class = ");
-        append(accessClass("java_lang_Class(true);"));
+        append(accessClass("java_lang_Class")).append("(true);");
         append("\n    CLS.$class.jvmName = '").append(cn).append("';");
         append("\n    CLS.$class.superclass = sprcls;");
         append("\n    CLS.$class.interfaces = function() { return [");
