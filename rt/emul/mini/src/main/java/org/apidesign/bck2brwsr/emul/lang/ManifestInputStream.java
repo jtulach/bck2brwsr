@@ -27,6 +27,7 @@ package org.apidesign.bck2brwsr.emul.lang;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import org.apidesign.bck2brwsr.core.Exported;
 
 /*
  * A fast buffered input stream for parsing manifest files.
@@ -34,6 +35,7 @@ import java.io.InputStream;
  * Taken from java.util.jar.Manifest.FastInputStream and modified to be
  * independent of other Manifest functionality.
  */
+@Exported
 public abstract class ManifestInputStream extends FilterInputStream {
     private byte[] buf;
     private int count = 0;
