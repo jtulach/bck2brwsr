@@ -20,12 +20,14 @@ package org.apidesign.bck2brwsr.emul.lang;
 import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import org.apidesign.bck2brwsr.core.Exported;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
+@Exported
 public class System {
     private System() {
     }
@@ -83,7 +85,7 @@ public class System {
         }
     };
     
-    
+    @Exported
     private static Object convArray(Object o) {
         if (o instanceof Object[]) {
             Object[] arr = (Object[]) o;
