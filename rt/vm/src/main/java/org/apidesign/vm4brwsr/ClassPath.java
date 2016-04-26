@@ -28,6 +28,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
+@Exported
 final class ClassPath {
     private ClassPath() {
     }

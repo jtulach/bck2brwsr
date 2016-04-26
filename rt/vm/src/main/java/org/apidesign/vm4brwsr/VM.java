@@ -70,9 +70,7 @@ abstract class VM extends ByteCodeToJavaScript {
         String[] both = config.classes().toArray();
         
         final StringArray fixedNames = new StringArray();
-        fixedNames.add(Object.class.getName().replace('.', '/'));
-        fixedNames.add(Class.class.getName().replace('.', '/'));
-        fixedNames.add(ArithmeticException.class.getName().replace('.', '/'));
+        boolean addThree = false;
         
         VM vm;
         if (config.isExtension()) {
@@ -81,15 +79,22 @@ abstract class VM extends ByteCodeToJavaScript {
                 config.getResources(), both, config.exported(),
                 config.allResources(), config.classpath()
             );
+            addThree = true;
         } else {
             if (config.includeVM()) {
                 fixedNames.add(VM.class.getName().replace('.', '/'));
+                addThree = true;
             }
             vm = new Standalone(out, 
                 config.getResources(), config.exported(),
                 config.allResources()
             );
         }            
+        if (addThree) {
+            fixedNames.add(Object.class.getName().replace('.', '/'));
+            fixedNames.add(Class.class.getName().replace('.', '/'));
+            fixedNames.add(ArithmeticException.class.getName().replace('.', '/'));
+        }
         vm.doCompile(fixedNames.addAndNew(both));
     }
 
@@ -615,14 +620,20 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "    }\n"
                 + "    var reload = function(name, arr, keep) {\n"
                 + "      if (!arr) throw 'Cannot find ' + name;\n"
-                + "      var lazy = vm['org_apidesign_vm4brwsr_VMLazy'];\n"
-                + "      if (!lazy) throw 'No bck2brwsr VM module to compile ' + name;\n"
+                + "      var err = null;\n"
+                + "      try {\n"
+                + "        var lazy = loadClass('org.apidesign.vm4brwsr.VMLazy');\n"
+                + "      } catch (e) {\n"
+                + "        err = e;\n"
+                + "      }\n"
+                + "      if (!lazy) {\n"
+                + "         throw 'No bck2brwsr VM module to compile ' + name + ':\\n' + err;\n"
+                + "      }\n"
                 + "      if (!keep) {\n"
                 + "        var attr = mangleClass(name);\n"
                 + "        delete vm[attr];\n"
                 + "      }\n"
-                + "      return lazy(false)\n"
-                + "        ['load__Ljava_lang_Object_2Ljava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2_3B']\n"
+                + "      return lazy['load__Ljava_lang_Object_2Ljava_lang_Object_2Ljava_lang_String_2_3Ljava_lang_Object_2_3B']\n"
                 + "        (vm, name, args, arr);\n"
                 + "    };\n"
                 + "    var loadClass = function(name) {\n"
@@ -788,6 +799,14 @@ abstract class VM extends ByteCodeToJavaScript {
             if (exportedCount == 0) {
                 throw new IOException("Creating library without any exported symbols is useless!");
             }
+        }
+
+        @Override
+        String accessClass(String className) {
+            if (this.extensionClasses.contains(className.replace('_', '/'))) {
+                return className;
+            }
+            return super.accessClass(className);
         }
 
         @Override

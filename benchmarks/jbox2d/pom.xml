@@ -88,13 +88,6 @@
     </dependency>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
-      <artifactId>launcher.http</artifactId>
-      <version>${project.version}</version>
-      <classifier>bck2brwsr</classifier>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>jbox2d-osgi</artifactId>
       <version>${project.version}</version>
       <exclusions>

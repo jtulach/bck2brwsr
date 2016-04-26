@@ -29,9 +29,8 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>launcher.http</artifactId>
+            <artifactId>vm4brwsr</artifactId>
             <version>${project.version}</version>
-            <classifier>bck2brwsr</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>

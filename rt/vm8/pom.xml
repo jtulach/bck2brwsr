@@ -74,12 +74,14 @@
             <artifactId>emul</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
+            <classifier>rt</classifier>
         </dependency>
         <dependency>
-            <groupId>org.apidesign.bck2brwsr</groupId>
-            <artifactId>emul.mini</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>emul</artifactId>
             <version>${project.version}</version>
-            <scope>compile</scope>
+            <scope>provided</scope>
+            <classifier>bck2brwsr</classifier>
         </dependency>
         <dependency>
             <groupId>org.apidesign.bck2brwsr</groupId>

@@ -27,6 +27,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
+@Exported
 final class VMLazy {
     private final Object vm;
     private final Object[] args;

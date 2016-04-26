@@ -22,6 +22,18 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>launcher.http</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>vm4brwsr</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>core</artifactId>
       <version>${project.version}</version>
@@ -84,6 +96,11 @@
                 </executions>
                 <configuration>
                     <mainJar>${project.build.directory}/${project.build.finalName}-rt.jar</mainJar>
+                    <aotDeps>
+                        <aotDep>org.apidesign.bck2brwsr:emul.mini</aotDep>
+                        <aotDep>org.apidesign.bck2brwsr:launcher.http</aotDep>
+                        <aotDep>org.apidesign.bck2brwsr:vm4brwsr</aotDep>
+                    </aotDeps>
                 </configuration>
             </plugin>
       </plugins>

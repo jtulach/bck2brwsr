@@ -101,24 +101,16 @@ class CompileCP {
         } catch (URISyntaxException ex) {
             throw new IOException(ex);
         }
-        final Bck2Brwsr all;
-        try {
-            URL u = r.get(Bck2Brwsr.class.getName().replace('.', '/') + ".class", 0);
-            all = configureFrom(u, rt, 4);
-        } catch (URISyntaxException ex) {
-            throw new IOException(ex);
-        }
-
-        all
-            .standalone(true)
+        final Bck2Brwsr all = Bck2Brwsr.newCompiler()
+            .standalone(false)
             //.obfuscation(ObfuscationLevel.FULL)
             .resources(new Bck2Brwsr.Resources() {
                 @Override
                 public InputStream get(String resource) throws IOException {
-                    final URL url = r.get(resource, 0);
-                    return url == null ? null : url.openStream();
+                    return null;
                 }
-            }).generate(sb);
+            });
+        all.generate(sb);
     }
 
     static Bck2Brwsr configureFrom(URL u, Bck2Brwsr rt, int parents) throws IOException, URISyntaxException {
