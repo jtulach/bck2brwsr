@@ -14,5 +14,6 @@
   <modules>
     <module>bck2brwsr</module>
     <module>fx</module>
+    <module>kosample</module>
   </modules>
 </project>
