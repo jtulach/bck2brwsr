@@ -736,7 +736,13 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
                             expectVersion = expectVersion.substring(0, expectVersion.length() - 9);
                         }
                         if (urlVersion != null && urlVersion[1].toString().startsWith(expectVersion)) {
-                            precompiled = loader.getResource(lib[3]);
+                            URL manifest = (URL) urlVersion[0];
+                            if (manifest.openConnection() instanceof JarURLConnection) {
+                                JarURLConnection jarConn = (JarURLConnection) manifest.openConnection();
+                                if (jarConn.getJarFileURL().equals(jarURL)) {
+                                    precompiled = loader.getResource(lib[3]);
+                                }
+                            }
                         }
                     }
                 }
