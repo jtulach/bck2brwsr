@@ -88,6 +88,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
     private CountDownLatch wait;
     private Thread flushing;
     private String rootPage;
+    private int exitCode;
 
     public BaseHTTPLauncher(String cmd) {
         this.cmd = cmd;
@@ -463,7 +464,11 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
 
     @Override
     public void shutdown() throws IOException {
+        shutdown(0);
+    }
+    private void shutdown(int exitCode) throws IOException {
         synchronized (this) {
+            this.exitCode = exitCode;
             if (flushing != null) {
                 flushing.interrupt();
                 flushing = null;
@@ -606,6 +611,9 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
             } catch (InterruptedException ex) {
                 LOG.log(Level.FINE, null, ex);
             }
+        }
+        if (exitCode != 0) {
+            throw new IOException("Browser closed with exit code " + exitCode);
         }
     }
 
@@ -902,7 +910,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
         public void service(Request request, Response response) throws Exception {
             final String exit = request.getParameter("exit");
             if (exit != null) {
-                int exitCode = -1;
+                int exitCode;
                 try {
                     exitCode = Integer.parseInt(exit);
                 } catch (NumberFormatException ex) {
@@ -910,8 +918,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
                 }
                 if (exitCode != -1) {
                     LOG.info("Exit request received. Shutting down!");
-                    shutdown();
-                    System.exit(exitCode);
+                    shutdown(exitCode);
                 }
             }
             if (request.getRequestURI().equals(vmResource)) {
