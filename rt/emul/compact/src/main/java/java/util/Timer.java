@@ -490,7 +490,8 @@ class TimerThread implements Runnable {
      * Otherwise, the Timer would never be garbage-collected and this
      * thread would never go away.
      */
-    private TaskQueue queue;
+    private final TaskQueue queue;
+    private Object prevTimeout;
 
     TimerThread(TaskQueue queue) {
         this.queue = queue;
@@ -500,14 +501,41 @@ class TimerThread implements Runnable {
         if (delay < 1) {
             delay = 1;
         }
-        setTimeout(delay, this);
+        prevTimeout = setTimeout(delay, this, prevTimeout);
     }
     
-    @JavaScriptBody(args = { "delay", "r" }, body = "window.setTimeout(function() { r.run__V(); }, delay);")
-    private static native void setTimeout(int delay, Runnable r);
+    @JavaScriptBody(args = { "delay", "r", "prev" }, body = ""
+//        + "console.log('clear prev ' + prev);\n"
+        + "if (prev) {\n"
+        + "  window.clearTimeout(prev);\n"
+        + "}\n"
+//        + "console.log('schedule in ' + delay);\n"
+        + "return window.setTimeout(function() {\n"
+//        + "  console.log('running time');\n"
+        + "  r.run__V();\n"
+//        + "  console.log('done running time');\n"
+        + "}, delay);\n"
+    )
+    private static native Object setTimeout(int delay, Runnable r, Object prev);
+
+//    @JavaScriptBody(args = { "msg" }, body = "console.log(msg);")
+    private static void log(String msg) {
+    }
     
+    @Override
     public void run() {
-        mainLoop(1);
+        try {
+            mainLoop(1);
+        } finally {
+            synchronized (queue) {
+                if (!queue.isEmpty()) {
+                    long next = queue.getMin().nextExecutionTime;
+                    long now = System.currentTimeMillis();
+                    int delta = (int) (next - now);
+                    notifyQueue(delta);
+                }
+            }
+        }
 //        try {
 //            mainLoop(0);
 //        } finally {
@@ -561,8 +589,12 @@ class TimerThread implements Runnable {
                         return;
                     }
                 }
-                if (taskFired)  // Task fired; run it, holding no locks
+                if (taskFired)  {
+                    // Task fired; run it, holding no locks
+                    log("Running " + task);
                     task.run();
+                    log("Done running " + task);
+                }
             } catch(Exception e) {
                 e.printStackTrace();
             }

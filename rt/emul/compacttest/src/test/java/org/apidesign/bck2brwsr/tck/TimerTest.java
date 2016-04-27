@@ -28,6 +28,7 @@ import org.testng.annotations.Factory;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class TimerTest {
+    boolean started;
     int miss;
     int exec;
     
@@ -35,15 +36,18 @@ public class TimerTest {
     }
     
     @BrwsrTest public void scheduleTick() throws Exception {
-        Timer t = new Timer("MyTest");
-        class TT extends TimerTask {
-            @Override
-            public void run() {
-                exec++;
+        if (!started) {
+            started = true;
+            Timer t = new Timer("MyTest");
+            class TT extends TimerTask {
+                @Override
+                public void run() {
+                    exec++;
+                }
             }
+            TT task = new TT();
+            t.schedule(task, 15);
         }
-        TT task = new TT();
-        t.schedule(task, 15);
         
         if (exec == 0) {
             miss++;
@@ -55,15 +59,20 @@ public class TimerTest {
     }
     
     @BrwsrTest public void repeatedTicks() throws Exception {
-        Timer t = new Timer("MyTest");
-        class TT extends TimerTask {
-            @Override
-            public void run() {
-                exec++;
+        if (!started) {
+            started = true;
+            Timer t = new Timer("MyTest");
+            class TT extends TimerTask {
+                @Override
+                public void run() {
+                    if (++exec == 2) {
+                        cancel();
+                    }
+                }
             }
+            TT task = new TT();
+            t.scheduleAtFixedRate(task, 50, 70);
         }
-        TT task = new TT();
-        t.scheduleAtFixedRate(task, 15, 10);
         
         if (exec != 2) {
             miss++;
