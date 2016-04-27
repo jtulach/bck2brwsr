@@ -85,7 +85,12 @@ public class System {
         return "\n";
     }
 
-    @JavaScriptBody(args = { "exitCode" }, body = "window.close();")
+    @JavaScriptBody(args = { "exitCode" }, body = ""
+        + "var xhttp = new XMLHttpRequest();\n"
+        + "xhttp.open('GET', '/?exit=' + exitCode, true);\n"
+        + "xhttp.send();\n"
+        + "window.close();\n"
+    )
     public static void exit(int exitCode) {
     }
     

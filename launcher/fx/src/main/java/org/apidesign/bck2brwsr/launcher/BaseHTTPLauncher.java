@@ -900,9 +900,19 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
 
         @Override
         public void service(Request request, Response response) throws Exception {
-            if ("true".equals(request.getParameter("exit"))) {
-                LOG.info("Exit request received. Shutting down!");
-                shutdown();
+            final String exit = request.getParameter("exit");
+            if (exit != null) {
+                int exitCode = -1;
+                try {
+                    exitCode = Integer.parseInt(exit);
+                } catch (NumberFormatException ex) {
+                    exitCode = "true".equals(exit) ? 0 : -1;
+                }
+                if (exitCode != -1) {
+                    LOG.info("Exit request received. Shutting down!");
+                    shutdown();
+                    System.exit(exitCode);
+                }
             }
             if (request.getRequestURI().equals(vmResource)) {
                 response.setCharacterEncoding("UTF-8");
