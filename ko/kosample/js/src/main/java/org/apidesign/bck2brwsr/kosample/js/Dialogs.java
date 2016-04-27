@@ -54,4 +54,12 @@ public final class Dialogs {
         "return 'Screen size is ' + x + ' times ' + y;\n"
     )
     public static native String screenSize();
+
+    @JavaScriptBody(args = { "id" }, body =
+          "var e = window.document.getElementById(id);\n "
+        + "var ev = window.document.createEvent('MouseEvents');\n "
+        + "ev.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);\n "
+        + "e.dispatchEvent(ev);\n "
+    )
+    public static native void triggerClick(String id);
 }

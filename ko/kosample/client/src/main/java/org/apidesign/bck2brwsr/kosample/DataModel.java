@@ -17,17 +17,19 @@
  */
 package org.apidesign.bck2brwsr.kosample;
 
+import java.util.Timer;
 import java.util.TimerTask;
 import net.java.html.json.ComputedProperty;
 import net.java.html.json.Function;
 import net.java.html.json.Model;
+import net.java.html.json.ModelOperation;
 import net.java.html.json.Property;
 import org.apidesign.bck2brwsr.kosample.js.Dialogs;
 
 /** Model annotation generates class Data with
  * one message property, boolean property and read only words property
  */
-@Model(className = "Data", targetId="", properties = {
+@Model(className = "Data", targetId="", instance = true, properties = {
     @Property(name = "message", type = String.class),
     @Property(name = "rotating", type = boolean.class)
 })
@@ -54,7 +56,7 @@ final class DataModel {
         });
     }
 
-    private static java.util.Timer TIMER = new java.util.Timer("Pending tasks");
+    private static final Timer TIMER = new Timer("Pending tasks");
     private static void schedule(Runnable run, long delay) {
         TIMER.schedule(new TimerTask() {
             @Override
@@ -80,5 +82,54 @@ final class DataModel {
         ui = new Data();
         ui.setMessage("Hello World from HTML and Java!");
         ui.applyBindings();
+
+        schedule(() -> ui.startTest(), 1000);
+    }
+
+    //
+    // testing
+    //
+
+    @ModelOperation
+    static void startTest(Data model) {
+        Dialogs.triggerClick("beginTest");
+    }
+
+    private boolean inTesting;
+
+    @Function
+    void beginTest(Data model) {
+        if (inTesting) {
+            model.setRotating(false);
+            model.setMessage("Hello World from HTML and Java!");
+            inTesting = false;
+            return;
+        }
+
+        inTesting = true;
+        model.setMessage("In testing mode stop Automatic testing?");
+        model.setRotating(true);
+        schedule(() -> {
+            if (inTesting) {
+                model.setMessage("In testing mode count down 3s");
+            }
+        }, 3000);
+        schedule(() -> {
+            if (inTesting) {
+                model.setMessage("In testing mode count down 2s");
+            }
+        }, 4000);
+        schedule(() -> {
+            if (inTesting) {
+                model.setMessage("In testing mode count down 1s");
+            }
+        }, 5000);
+        schedule(() -> {
+            if (inTesting) {
+                model.setMessage("Finished testing mode close the browser");
+                model.setRotating(false);
+                System.exit(0);
+            }
+        }, 6000);
     }
 }

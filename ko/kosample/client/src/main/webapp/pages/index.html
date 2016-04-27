@@ -80,6 +80,7 @@
         <button data-bind="enable: rotating, click: $root.turnAnimationOff">Stop</button>
         <button data-bind="enable: !rotating(), click: $root.rotate5s">Rotate Few Seconds</button>
         <button data-bind="click: $root.showScreenSize">Screen Size!</button>
+        <button id='beginTest' data-bind="click: $root.beginTest">Automatic Test</button>
 
         <div id="scene">
             <span id="words" data-bind="foreach: words">
