@@ -17,6 +17,7 @@
  */
 package org.apidesign.bck2brwsr.kosample;
 
+import java.util.TimerTask;
 import net.java.html.json.ComputedProperty;
 import net.java.html.json.Function;
 import net.java.html.json.Model;
@@ -53,15 +54,19 @@ final class DataModel {
         });
     }
 
-    @Function static void rotate5s(final Data model) {
-        model.setRotating(true);
-        java.util.Timer timer = new java.util.Timer("Rotates a while");
-        timer.schedule(new java.util.TimerTask() {
+    private static java.util.Timer TIMER = new java.util.Timer("Pending tasks");
+    private static void schedule(Runnable run, long delay) {
+        TIMER.schedule(new TimerTask() {
             @Override
             public void run() {
-                model.setRotating(false);
+                run.run();
             }
-        }, 5000);
+        }, delay);
+    }
+
+    @Function static void rotate5s(final Data model) {
+        model.setRotating(true);
+        schedule(() -> model.setRotating(false), 5000);
     }
 
     @Function static void showScreenSize(Data model) {
