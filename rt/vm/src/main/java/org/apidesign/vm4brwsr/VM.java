@@ -272,13 +272,13 @@ abstract class VM extends ByteCodeToJavaScript {
             throw new IOException("Can't find " + resource);
         }
         append("\n// resource from ").append(resource).append("\n");
+        append("\neval(\"");
         readResource(emul, this);
-        append("\n");
+        append("\");\n");
     }
 
     private static void readResource(InputStream emul, Appendable out) throws IOException {
         try {
-            int state = 0;
             for (;;) {
                 int ch = emul.read();
                 if (ch == -1) {
@@ -287,7 +287,25 @@ abstract class VM extends ByteCodeToJavaScript {
                 if (ch < 0 || ch > 255) {
                     throw new IOException("Invalid char in emulation " + ch);
                 }
-                out.append((char)ch);
+                switch (ch) {
+                    case '"':
+                        out.append("\\\"");
+                        break;
+                    case '\\':
+                        out.append("\\\\");
+                        break;
+                    case '\n':
+                        out.append("\\n\"\n + \"");
+                        break;
+                    case '\t':
+                        out.append("\\t");
+                        break;
+                    case '\r':
+                        out.append("\\r");
+                        break;
+                    default:
+                        out.append((char)ch);
+                }
             }
         } finally {
             emul.close();
