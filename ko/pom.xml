@@ -14,6 +14,15 @@
   <modules>
     <module>bck2brwsr</module>
     <module>fx</module>
-    <module>kosample</module>
   </modules>
+  <profiles>
+      <profile>
+          <activation>
+              <jdk>1.8</jdk>
+          </activation>
+          <modules>
+              <module>kosample</module>
+          </modules>
+      </profile>
+  </profiles>
 </project>
