@@ -245,7 +245,7 @@ abstract class VM extends ByteCodeToJavaScript {
                 while (resource.startsWith("/")) {
                     resource = resource.substring(1);
                 }
-                requireResourceImpl(resource);
+                requireResourceImpl(false, resource);
                 asBinary.remove(resource);
             }
             scripts = new StringArray();
@@ -266,18 +266,24 @@ abstract class VM extends ByteCodeToJavaScript {
         }
     }
 
-    final void requireResourceImpl(String resource) throws IOException {
+    final void requireResourceImpl(boolean useEval, String resource) throws IOException {
         InputStream emul = resources.get(resource);
         if (emul == null) {
             throw new IOException("Can't find " + resource);
         }
         append("\n// resource from ").append(resource).append("\n");
-        append("\neval(\"");
-        readResource(emul, this);
-        append("\");\n");
+        append("\n");
+        if (useEval) {
+            append("eval(\"");
+        }
+        readResource(useEval, emul, this);
+        if (useEval) {
+            append("\");");
+        }
+        append("\n");
     }
 
-    private static void readResource(InputStream emul, Appendable out) throws IOException {
+    private static void readResource(boolean escape, InputStream emul, Appendable out) throws IOException {
         try {
             for (;;) {
                 int ch = emul.read();
@@ -287,24 +293,28 @@ abstract class VM extends ByteCodeToJavaScript {
                 if (ch < 0 || ch > 255) {
                     throw new IOException("Invalid char in emulation " + ch);
                 }
-                switch (ch) {
-                    case '"':
-                        out.append("\\\"");
-                        break;
-                    case '\\':
-                        out.append("\\\\");
-                        break;
-                    case '\n':
-                        out.append("\\n\"\n + \"");
-                        break;
-                    case '\t':
-                        out.append("\\t");
-                        break;
-                    case '\r':
-                        out.append("\\r");
-                        break;
-                    default:
-                        out.append((char)ch);
+                if (escape) {
+                    switch (ch) {
+                        case '"':
+                            out.append("\\\"");
+                            break;
+                        case '\\':
+                            out.append("\\\\");
+                            break;
+                        case '\n':
+                            out.append("\\n\"\n + \"");
+                            break;
+                        case '\t':
+                            out.append("\\t");
+                            break;
+                        case '\r':
+                            out.append("\\r");
+                            break;
+                        default:
+                            out.append((char)ch);
+                    }
+                } else {
+                    out.append((char)ch);
                 }
             }
         } finally {
@@ -759,7 +769,7 @@ abstract class VM extends ByteCodeToJavaScript {
 
         @Override
         protected void requireResource(String resourcePath) throws IOException {
-            requireResourceImpl(resourcePath);
+            requireResourceImpl(true, resourcePath);
             super.asBinary.remove(resourcePath);
         }
     }
@@ -878,7 +888,7 @@ abstract class VM extends ByteCodeToJavaScript {
 
         @Override
         protected void requireResource(String resourcePath) throws IOException {
-            requireResourceImpl(resourcePath);
+            requireResourceImpl(true, resourcePath);
             super.asBinary.remove(resourcePath);
         }
     }
