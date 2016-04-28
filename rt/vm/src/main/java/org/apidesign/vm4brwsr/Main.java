@@ -29,12 +29,14 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 
 /** Generator of JavaScript from bytecode of classes on classpath of the VM
  * with a Main method.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
+@ExtraJavaScript(processByteCode = false, resource="")
 final class Main {
     private Main() {}
     

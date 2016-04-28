@@ -29,6 +29,7 @@ import java.net.URLConnection;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.apidesign.bck2brwsr.aot.Bck2BrwsrJars;
+import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import org.apidesign.bck2brwsr.launcher.BaseHTTPLauncher.Res;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 
@@ -36,6 +37,7 @@ import org.apidesign.vm4brwsr.Bck2Brwsr;
  *
  * @author Jaroslav Tulach
  */
+@ExtraJavaScript(processByteCode = false, resource="")
 class CompileCP {
     private static final Logger LOG = Logger.getLogger(CompileCP.class.getName());
     static String compileJAR(final File jar, Set<String> testClasses) 

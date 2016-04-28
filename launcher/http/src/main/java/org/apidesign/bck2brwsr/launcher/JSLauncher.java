@@ -30,11 +30,13 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 
 /**
  * Tests execution in Java's internal scripting engine.
  */
+@ExtraJavaScript(processByteCode = false, resource="")
 final class JSLauncher extends Launcher {
     private static final Logger LOG = Logger.getLogger(JSLauncher.class.getName());
     private Set<ClassLoader> loaders = new LinkedHashSet<>();
