@@ -99,4 +99,9 @@ public class HtmlAnnotations {
         + "return b ? 'yes' : 'no';\n"
     )
     public static native String yesNo(Callable<Boolean> call);
+
+    @JavaScriptBody(args = { "arr", "val" }, body =
+        "return arr[0] === val;"
+    )
+    public static native boolean compareArr(Object[] arr, Object val);
 }

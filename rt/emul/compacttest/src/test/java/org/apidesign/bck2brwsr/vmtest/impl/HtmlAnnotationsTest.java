@@ -106,6 +106,13 @@ public class HtmlAnnotationsTest {
         });
         assertEquals(no, "no", "FALSE is false");
     }
+
+    @BrwsrTest
+    public void compareArrayOfDoubles() throws Exception {
+        Double val = 2.2;
+        boolean res = HtmlAnnotations.compareArr(new Object[] { val }, val);
+        assertEquals(res, true, "Should be in the array");
+    }
     
     private static void assertEquals(double real, double exp) {
         if (real - exp < 0.01) {

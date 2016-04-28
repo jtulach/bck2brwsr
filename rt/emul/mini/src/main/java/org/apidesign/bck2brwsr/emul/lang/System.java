@@ -84,15 +84,17 @@ public class System {
         public void close() throws IOException {
         }
     };
+    @JavaScriptBody(args = { "fn", "p" }, body = "return fn(p);")
+    private static native Object invoke(Object fn, Object p);
     
     @Exported
-    private static Object convArray(Object o) {
+    private static Object convArray(Object o, Object convToJS) {
         if (o instanceof Object[]) {
             Object[] arr = (Object[]) o;
             final int l = arr.length;
             Object[] ret = new Object[l];
             for (int i = 0; i < l; i++) {
-                ret[i] = convArray(arr[i]);
+                ret[i] = invoke(convToJS, arr[i]);
             }
             return ret;
         }
