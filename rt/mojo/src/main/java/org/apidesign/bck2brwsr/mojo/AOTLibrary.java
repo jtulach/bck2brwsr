@@ -147,7 +147,8 @@ public class AOTLibrary extends AbstractMojo {
                     }
                 }
             }
-            
+
+            boolean notified = false;
 
             JarOutputStream os = null;
             if (!"false".equals(debug)) {
@@ -155,6 +156,8 @@ public class AOTLibrary extends AbstractMojo {
                     os = aotJar(m);
                 }
                 os.putNextEntry(new JarEntry(debug));
+                getLog().info("Generating bck2brwsr for " + mainJar);
+                notified = true;
                 Writer w = new OutputStreamWriter(os, "UTF-8");
                 configureMain(loader).
                     obfuscation(ObfuscationLevel.NONE).
@@ -167,7 +170,10 @@ public class AOTLibrary extends AbstractMojo {
                     os = aotJar(m);
                 }
                 os.putNextEntry(new JarEntry(minified));
-            
+
+                if (!notified) {
+                    getLog().info("Generating bck2brwsr for " + mainJar);
+                }
                 Writer w = new OutputStreamWriter(os, "UTF-8");
                 configureMain(loader).
                     obfuscation(obfuscation).

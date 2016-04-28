@@ -19,6 +19,7 @@ package org.apidesign.vm4brwsr;
 
 import com.google.javascript.jscomp.CommandLineRunner;
 import com.google.javascript.jscomp.SourceFile;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -48,10 +49,10 @@ final class ClosureWrapper extends CommandLineRunner {
     private String externsCode;
 
     private ClosureWrapper(Appendable out,
-                           String compilationLevel, Bck2Brwsr config) {
+                           String compilationLevel, Bck2Brwsr config, PrintStream err) {
         super(
             generateArguments(compilationLevel),
-            new PrintStream(new APS(out)), System.err
+            new PrintStream(new APS(out)), err
         );
         this.config = config;
     }
@@ -142,16 +143,16 @@ final class ClosureWrapper extends CommandLineRunner {
         ObfuscationLevel obfuscationLevel,
         Bck2Brwsr config
     ) throws IOException {
-        final ClosureWrapper cw =
-                new ClosureWrapper(output,
-                                   (obfuscationLevel == ObfuscationLevel.FULL)
-                                           ? "ADVANCED_OPTIMIZATIONS"
-                                           : "SIMPLE_OPTIMIZATIONS",
-                                   config);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        PrintStream err = new PrintStream(out);
+        final ClosureWrapper cw = new ClosureWrapper(output,
+            (obfuscationLevel == ObfuscationLevel.FULL) ? "ADVANCED_OPTIMIZATIONS" : "SIMPLE_OPTIMIZATIONS",
+            config, err
+        );
         try {
             return cw.doRun();
         } catch (FlagUsageException ex) {
-            throw new IOException(ex);
+            throw new IOException(out.toString(), ex);
         }
     }
 
