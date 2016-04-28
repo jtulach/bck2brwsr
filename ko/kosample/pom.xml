@@ -20,7 +20,7 @@
     </modules>
     <properties>
         <bck2brwsr.version>${project.version}</bck2brwsr.version>
-        <bck2brwsr.obfuscationlevel>MINIMAL</bck2brwsr.obfuscationlevel>
+        <bck2brwsr.obfuscationlevel>FULL</bck2brwsr.obfuscationlevel>
         <jersey.version>2.13</jersey.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
