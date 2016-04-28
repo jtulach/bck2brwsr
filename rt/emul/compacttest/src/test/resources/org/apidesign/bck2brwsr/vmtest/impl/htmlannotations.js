@@ -18,5 +18,3 @@
 
 function mul(x, y) { return x * y; }
 function all() { return '*/*'; }
-window.mul = mul;
-window.all = all;

@@ -274,7 +274,7 @@ abstract class VM extends ByteCodeToJavaScript {
         append("\n// resource from ").append(resource).append("\n");
         append("\n");
         if (useEval) {
-            append("eval(\"");
+            append("(0 || eval)(\"");
         }
         readResource(useEval, emul, this);
         if (useEval) {
