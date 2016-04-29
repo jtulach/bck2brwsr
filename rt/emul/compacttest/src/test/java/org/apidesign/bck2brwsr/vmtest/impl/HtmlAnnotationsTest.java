@@ -109,6 +109,7 @@ public class HtmlAnnotationsTest {
 
     @BrwsrTest
     public void compareArrayOfDoubles() throws Exception {
+        assertMulNotDefinedForTheFirstTime();
         Double val = 2.2;
         boolean res = HtmlAnnotations.compareArr(new Object[] { val }, val);
         assertEquals(res, true, "Should be in the array");
