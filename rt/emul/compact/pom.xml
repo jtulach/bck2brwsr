@@ -26,12 +26,32 @@
       <artifactId>launcher.http</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apidesign.bck2brwsr</groupId>
+          <artifactId>launcher.fx</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.glassfish.grizzly</groupId>
+          <artifactId>grizzly-http-server</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apidesign.bck2brwsr</groupId>
+          <artifactId>aot</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>vm4brwsr</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.javascript</groupId>
+          <artifactId>closure-compiler</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
