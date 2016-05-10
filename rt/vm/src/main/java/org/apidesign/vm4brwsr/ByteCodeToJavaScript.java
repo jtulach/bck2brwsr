@@ -252,18 +252,18 @@ abstract class ByteCodeToJavaScript implements Appendable {
                         continue;
                     }
                 }
-                append("\n  CLS.fld_").append(v.getName()).append(initField(v));
+                append("\n  CLS['fld_").append(v.getName()).append("']").append(initField(v));
                 append("\n  m = c._").append(v.getName()).append(" = function (v) {")
-                    .append("  if (arguments.length == 1) CLS.fld_").append(v.getName())
-                    .append(" = v; return CLS.fld_").
-                    append(v.getName()).append("; };");
+                    .append("  if (arguments.length == 1) CLS['fld_").append(v.getName())
+                    .append("'] = v; return CLS['fld_").
+                    append(v.getName()).append("']; };");
             } else {
                 append("\n  m = c._").append(v.getName()).append(" = function (v) {")
-                    .append("  if (arguments.length == 1) this.fld_").
+                    .append("  if (arguments.length == 1) this['fld_").
                     append(className).append('_').append(v.getName())
-                    .append(" = v; return this.fld_").
+                    .append("'] = v; return this['fld_").
                     append(className).append('_').append(v.getName())
-                    .append("; };");
+                    .append("']; };");
             }
 
             declaredField(v, "c", "_" + v.getName());
@@ -375,9 +375,9 @@ abstract class ByteCodeToJavaScript implements Appendable {
             byte[] onlyArr = v.findAnnotationData(true);
             if (javaScriptOnly(onlyArr)) continue;
             if (!v.isStatic()) {
-                append("\n    this.fld_").
+                append("\n    this['fld_").
                     append(className).append('_').
-                    append(v.getName()).append(initField(v));
+                    append(v.getName()).append("']").append(initField(v));
             }
         }
         append("\n    return this;");
@@ -1453,7 +1453,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                         );
                     } else {
                         final String fieldOwner = mangleClassName(field.cls.getClassName());
-                        smapper.replace(this, type, "@1.@2",
+                        smapper.replace(this, type, "@1@2",
                              smapper.getA(0),
                              accessField(fieldOwner, field, fi)
                         );
@@ -1477,7 +1477,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                         );
                     } else {
                         final String fieldOwner = mangleClassName(field.cls.getClassName());
-                        emit(smapper, this, "@2.@3 = @1;",
+                        emit(smapper, this, "@2@3 = @1;",
                              smapper.popT(type),
                              smapper.popA(),
                              accessField(fieldOwner, field, fi)
