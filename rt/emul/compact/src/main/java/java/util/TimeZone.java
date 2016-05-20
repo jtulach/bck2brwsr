@@ -40,9 +40,8 @@ package java.util;
 
 import java.io.Serializable;
 import java.lang.ref.SoftReference;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
  * <code>TimeZone</code> represents a time zone offset, and also figures out daylight
@@ -617,8 +616,35 @@ abstract public class TimeZone implements Serializable, Cloneable {
             defaultZone = defaultTimeZone;
             if (defaultZone == null) {
                 // Need to initialize the default time zone.
-                defaultZone = TimeZone.NO_TIMEZONE;
-                assert defaultZone != null;
+                defaultZone = new TimeZone() {
+                    @Override
+                    public int getOffset(int era, int year, int month, int day, int dayOfWeek, int milliseconds) {
+                        return getRawOffset();
+                    }
+
+                    @Override
+                    public void setRawOffset(int offsetMillis) {
+                    }
+
+                    @Override
+                    public int getRawOffset() {
+                        int minutesOff = dateTimezoneOffset();
+                        return -60 * 1000 * minutesOff;
+                    }
+
+                    @JavaScriptBody(args = {  }, body = "return new Date().getTimezoneOffset();")
+                    private native int dateTimezoneOffset();
+
+                    @Override
+                    public boolean useDaylightTime() {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean inDaylightTime(Date date) {
+                        return false;
+                    }
+                };
             }
         }
         // Don't clone here.
