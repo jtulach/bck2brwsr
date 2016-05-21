@@ -86,7 +86,17 @@ public class Console {
     
     private static void beginTest(Case c) {
         Object[] arr = new Object[2];
-        beginTest(c.getClassName() + "." + c.getMethodName(), c, arr);
+        String testName;
+        String[] args = c.getArgs();
+        if (args == null || args.length == 0) {
+            testName = c.getClassName() + "." + c.getMethodName();
+        } else {
+            testName = args[0];
+            for (int i = 1; i < args.length; i++) {
+                testName = testName + ',' + args[i];
+            }
+        }
+        beginTest(testName, c, arr);
         textArea = arr[0];
         statusArea = arr[1];
     }
