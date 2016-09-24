@@ -39,7 +39,6 @@
           <directory>${project.build.directory}</directory>
           <outputDirectory>/app/</outputDirectory>
           <includes>
-              <include>bck2brwsr.js</include>
               <include>calculator.js</include>
               <include>lib/*.js</include>
           </includes>
