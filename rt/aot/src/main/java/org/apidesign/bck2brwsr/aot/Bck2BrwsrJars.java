@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -209,8 +210,13 @@ public final class Bck2BrwsrJars {
             }
         }
         if (keep != null) {
-            final Attributes mainAttr = j.getManifest().getMainAttributes();
-            exportPublicPackages(mainAttr, keep);
+            final Manifest manifest = j.getManifest();
+            if (manifest != null) {
+                final Attributes mainAttr = manifest.getMainAttributes();
+                if (mainAttr != null) {
+                    exportPublicPackages(mainAttr, keep);
+                }
+            }
         }
     }
 
