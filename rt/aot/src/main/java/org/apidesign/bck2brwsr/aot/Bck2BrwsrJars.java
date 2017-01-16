@@ -154,8 +154,9 @@ public final class Bck2BrwsrJars {
         JarRes jarRes = new JarRes();
 
         listJAR(jf, jarRes, resources, exported);
-        
-        String cp = jf.getManifest().getMainAttributes().getValue("Class-Path"); // NOI18N
+        final Manifest manifest = jf.getManifest();
+        final Attributes mainAttributes = manifest == null ? null : manifest.getMainAttributes();
+        String cp = mainAttributes == null ? null : mainAttributes.getValue("Class-Path"); // NOI18N
         String[] parts = cp == null ? new String[0] : cp.split(" ");
 
         if (c == null) {
