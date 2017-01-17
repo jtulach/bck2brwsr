@@ -17,6 +17,8 @@
  */
 package org.apidesign.bck2brwsr.tck;
 
+import java.io.Serializable;
+import java.lang.ClassValue;
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
@@ -56,13 +58,6 @@ public class ReflectionClassValueTest {
         return one == two;
     }
 
-    @Compare public boolean valueCanBeCleared() {
-        String one = LOWER.get(Runnable.class);
-        LOWER.remove(Runnable.class);
-        String two = LOWER.get(Runnable.class);
-        return one != two;
-    }
-
     @Compare public String upperObject() {
         return UPPER.get(Object.class);
     }
@@ -77,6 +72,47 @@ public class ReflectionClassValueTest {
 
     @Compare public String lowerUpperSeq() {
         return LOWER.get(CharSequence.class) + UPPER.get(CharSequence.class);
+    }
+
+    private static final class CountingNull extends ClassValue<Object> {
+        int cnt;
+
+        @Override
+        protected Object computeValue(Class<?> type) {
+            cnt++;
+            return null;
+        }
+    }
+
+    @Compare public int getNullThreeTimes() {
+        CountingNull counter = new CountingNull();
+        Object o1 = counter.get(Serializable.class);
+        Object o2 = counter.get(Serializable.class);
+        Object o3 = counter.get(Serializable.class);
+        assert o1 == null;
+        assert o2 == null;
+        assert o3 == null;
+        return counter.cnt;
+    }
+
+    private static final class NewObj extends ClassValue<Integer> {
+        int cnt;
+
+        @Override
+        protected Integer computeValue(Class<?> type) {
+            cnt++;
+            return new Integer(cnt);
+        }
+    }
+
+    @Compare public boolean valueCanBeCleared() {
+        NewObj cache = new NewObj();
+        Integer one = cache.get(Runnable.class);
+        Integer two = cache.get(Runnable.class);
+        assert one == two;
+        cache.remove(Runnable.class);
+        Integer three = cache.get(Runnable.class);
+        return one != three;
     }
 
     @Factory

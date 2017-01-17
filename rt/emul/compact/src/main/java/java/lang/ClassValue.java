@@ -25,8 +25,8 @@
 
 package java.lang;
 
-import java.util.WeakHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.lang.Class;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
  * Lazily associate a computed value with (potentially) every type.
@@ -92,14 +92,11 @@ public abstract class ClassValue<T> {
      * @see #computeValue
      */
     public T get(Class<?> type) {
-        ClassValueMap map = getMap(type);
-        if (map != null) {
-            Object x = map.get(this);
-            if (x != null) {
-                return (T) map.unmaskNull(x);
-            }
+        T value = access(type, id, false, null);
+        if (value == undefined()) {
+            value = access(type, id, true, computeValue(type));
         }
-        return setComputedValue(type);
+        return value;
     }
 
     /**
@@ -156,84 +153,27 @@ public abstract class ClassValue<T> {
      * @throws NullPointerException if the argument is null
      */
     public void remove(Class<?> type) {
-        ClassValueMap map = getMap(type);
-        if (map != null) {
-            synchronized (map) {
-                map.remove(this);
-            }
-        }
+        access(type, id, true, undefined());
     }
 
     /// Implementation...
-    // FIXME: Use a data structure here similar that of ThreadLocal (7030453).
 
-    private static final AtomicInteger STORE_BARRIER = new AtomicInteger();
+    private static int COUNTER = 0;
+    private final int id = COUNTER++;
 
-    /** Slow path for {@link #get}. */
-    private T setComputedValue(Class<?> type) {
-        ClassValueMap map = getMap(type);
-        if (map == null) {
-            map = initializeMap(type);
-        }
-        T value = computeValue(type);
-        STORE_BARRIER.lazySet(0);
-        // All stores pending from computeValue are completed.
-        synchronized (map) {
-            // Warm up the table with a null entry.
-            map.preInitializeEntry(this);
-        }
-        STORE_BARRIER.lazySet(0);
-        // All stores pending from table expansion are completed.
-        synchronized (map) {
-            value = (T) map.initializeEntry(this, value);
-            // One might fear a possible race condition here
-            // if the code for map.put has flushed the write
-            // to map.table[*] before the writes to the Map.Entry
-            // are done.  This is not possible, since we have
-            // warmed up the table with an empty entry.
-        }
-        return value;
-    }
+    @JavaScriptBody(args = {}, body = "return undefined;")
+    private static native Object undefined();
 
-    // Replace this map by a per-class slot.
-    private static final WeakHashMap<Class<?>, ClassValueMap> ROOT
-        = new WeakHashMap<Class<?>, ClassValueMap>();
-
-    private static ClassValueMap getMap(Class<?> type) {
-        type.getClass();  // test for null
-        return ROOT.get(type);
-    }
-
-    private static ClassValueMap initializeMap(Class<?> type) {
-        synchronized (ClassValue.class) {
-            ClassValueMap map = ROOT.get(type);
-            if (map == null)
-                ROOT.put(type, map = new ClassValueMap());
-            return map;
-        }
-    }
-
-    static class ClassValueMap extends WeakHashMap<ClassValue, Object> {
-        /** Make sure this table contains an Entry for the given key, even if it is empty. */
-        void preInitializeEntry(ClassValue key) {
-            if (!this.containsKey(key))
-                this.put(key, null);
-        }
-        /** Make sure this table contains a non-empty Entry for the given key. */
-        Object initializeEntry(ClassValue key, Object value) {
-            Object prior = this.get(key);
-            if (prior != null) {
-                return unmaskNull(prior);
-            }
-            this.put(key, maskNull(value));
-            return value;
-        }
-
-        Object maskNull(Object x) {
-            return x == null ? this : x;
-        }
-        Object unmaskNull(Object x) {
-            return x == this ? null : x;
-        }
-    }
+    @JavaScriptBody(args = { "where", "index", "set", "newValue" }, body =
+        "var data = where['values'];\n" +
+        "if (!data) {\n" +
+        "  data = where['values'] = [];\n" +
+        "}\n" +
+        "if (set) {\n" +
+        "  data[index] = newValue;\n" +
+        "}\n" +
+        "return data[index];\n" +
+        ""
+    )
+    private static native <T> T access(Class<?> where, int index, boolean set, T newValue);
 }
