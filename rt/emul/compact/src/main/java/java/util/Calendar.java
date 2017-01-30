@@ -41,11 +41,7 @@ package java.util;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OptionalDataException;
 import java.io.Serializable;
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.text.DateFormat;
 import java.text.DateFormatSymbols;
 import java.util.concurrent.ConcurrentHashMap;
@@ -1031,6 +1027,9 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
             // Unsupported calendar type.
             // Use Gregorian calendar as a fallback.
 //            cal = new GregorianCalendar(zone, aLocale);
+        }
+        if (cal == null) {
+            cal = new BrowserCalendar();
         }
 
         return cal;
@@ -2803,4 +2802,5 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
             }
         }
     }
+
 }
