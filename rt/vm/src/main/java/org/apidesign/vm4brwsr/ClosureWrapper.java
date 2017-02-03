@@ -150,7 +150,11 @@ final class ClosureWrapper extends CommandLineRunner {
             config, err
         );
         try {
-            return cw.doRun();
+            int result = cw.doRun();
+            if (result != 0) {
+                throw new IOException(out.toString());
+            }
+            return result;
         } catch (FlagUsageException ex) {
             throw new IOException(out.toString(), ex);
         }

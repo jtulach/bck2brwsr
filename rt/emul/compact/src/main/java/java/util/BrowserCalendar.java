@@ -124,7 +124,7 @@ final class BrowserCalendar extends Calendar {
             + "  d.getSeconds(),\n" // SECOND
             + "  d.getMilliseconds(),\n" // MILLISECOND
             + "  d.getTimezoneOffset() * 60 * 1000,\n" // ZONE_OFFSET
-            + "  null,\n" // DST_OFFSET
+            + "  null\n" // DST_OFFSET
             + "];\n"
     )
     private static native Object[] computeFromDate(double time);
