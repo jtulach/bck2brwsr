@@ -18,7 +18,6 @@
 package org.apidesign.vm4brwsr;
 
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import static org.testng.Assert.*;
 import org.testng.annotations.Test;
 
@@ -61,8 +60,7 @@ public class StackMapperTest {
         
         smapper.flush(sb);
         
-        ScriptEngineManager sem = new ScriptEngineManager();
-        ScriptEngine em = sem.getEngineByMimeType("text/javascript");
+        ScriptEngine em = TestVM.createEngine();
         Object ret = em.eval("var arr= []; arr[33] = 40; arr[22] = 2; " + sb + "; stI0;");
         
         assertTrue(ret instanceof Number, "Result is number: " + ret);

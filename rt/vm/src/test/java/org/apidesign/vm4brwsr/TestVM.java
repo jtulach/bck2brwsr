@@ -137,8 +137,7 @@ public final class TestVM {
             sb = new StringBuilder();
         }
         Bck2Brwsr.generate(sb, resources, names);
-        ScriptEngineManager sem = new ScriptEngineManager();
-        ScriptEngine js = sem.getEngineByExtension("js");
+        ScriptEngine js = createEngine();
         if (eng != null) {
             eng[0] = js;
         }
@@ -153,6 +152,12 @@ public final class TestVM {
             fail("Could not evaluate:" + ex.getClass() + ":" + ex.getMessage() + "\n" + sb, ex);
             return null;
         }
+    }
+
+    static ScriptEngine createEngine() {
+        ScriptEngineManager sem = new ScriptEngineManager();
+        ScriptEngine js = sem.getEngineByExtension("js");
+        return js;
     }
     
     static TestVM compileClassAsExtension(
@@ -169,8 +174,7 @@ public final class TestVM {
             sb = new StringBuilder();
         }
         if (eng[0] == null) {
-            ScriptEngineManager sem = new ScriptEngineManager();
-            ScriptEngine js = sem.getEngineByExtension("js");
+            ScriptEngine js = createEngine();
             eng[0] = js;
             Bck2Brwsr.newCompiler().resources(new EmulationResources())
                 .obfuscation(ObfuscationLevel.NONE).generate(sb);
@@ -222,8 +226,7 @@ public final class TestVM {
             addRootClasses(name).
             addResources(resources);
         b2b.generate(sb);
-        ScriptEngineManager sem = new ScriptEngineManager();
-        ScriptEngine js = sem.getEngineByExtension("js");
+        ScriptEngine js = createEngine();
         if (eng != null) {
             eng[0] = js;
         }

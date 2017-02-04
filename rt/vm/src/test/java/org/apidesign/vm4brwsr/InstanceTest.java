@@ -17,9 +17,6 @@
  */
 package org.apidesign.vm4brwsr;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import static org.testng.Assert.fail;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
