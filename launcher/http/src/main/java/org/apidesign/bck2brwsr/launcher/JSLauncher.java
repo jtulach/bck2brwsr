@@ -85,13 +85,22 @@ final class JSLauncher extends Launcher {
             throw new IOException(ex);
         }
     }
+
+    private static ScriptEngine createEngine() {
+        ScriptEngineManager sem = new ScriptEngineManager();
+        ScriptEngine truffleJS = sem.getEngineByName("Graal.js");
+        if (truffleJS != null) {
+            return truffleJS;
+        }
+        ScriptEngine js = sem.getEngineByExtension("js");
+        return js;
+    }
     
     private void initRhino() throws IOException, ScriptException, NoSuchMethodException {
         StringBuilder sb = new StringBuilder();
         Bck2Brwsr.generate(sb, new Res());
 
-        ScriptEngineManager sem = new ScriptEngineManager();
-        ScriptEngine mach = sem.getEngineByExtension("js");
+        ScriptEngine mach = createEngine();
 
         sb.append(
               "\nvar vm = new bck2brwsr(org.apidesign.bck2brwsr.launcher.impl.Console.read);"

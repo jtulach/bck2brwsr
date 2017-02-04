@@ -74,4 +74,23 @@
       <type>jar</type>
     </dependency>
   </dependencies>
+  <profiles>
+      <profile>
+          <id>graalvm</id>
+          <activation>
+              <file>
+                  <exists>${java.home}/language/js/trufflejs.jar</exists>
+              </file>
+          </activation>
+          <dependencies>
+              <dependency>
+                  <groupId>com.oracle.graal-js</groupId>
+                  <artifactId>trufflejs</artifactId>
+                  <version>0.1</version>
+                  <scope>system</scope>
+                  <systemPath>${java.home}/language/js/trufflejs.jar</systemPath>
+              </dependency>
+          </dependencies>
+      </profile>
+  </profiles>
 </project>
