@@ -107,14 +107,20 @@ public final class TestVM {
         if (ret == null) {
             return;
         }
-        if (expRes instanceof Integer && ret instanceof Double) {
-            expRes = ((Integer)expRes).doubleValue();
+        if (expRes instanceof Number && ret instanceof Number) {
+            assertNumber((Number)ret, (Number)expRes, msg);
+        } else {
+            if (expRes != null && expRes.equals(ret)) {
+                return;
+            }
+            assertEquals(ret, expRes, msg + "was: " + ret + "\n" + dumpJS(codeSeq));
         }
-        if (expRes != null && expRes.equals(ret)) {
-            return;
-        }
-        assertEquals(ret, expRes, msg + "was: " + ret + "\n" + dumpJS(codeSeq));
     }    
+
+
+    private void assertNumber(Number actual, Number expected, String msg) throws IOException {
+        assertEquals(actual.doubleValue(), expected.doubleValue(), 0.1, msg + "was: " + actual + "\n" + dumpJS(codeSeq));
+    }
 
     static TestVM compileClass(String... names) throws ScriptException, IOException {
         return compileClass(null, names);
@@ -156,6 +162,10 @@ public final class TestVM {
 
     static ScriptEngine createEngine() {
         ScriptEngineManager sem = new ScriptEngineManager();
+        ScriptEngine truffleJS = sem.getEngineByName("Graal.js");
+        if (truffleJS != null) {
+            return truffleJS;
+        }
         ScriptEngine js = sem.getEngineByExtension("js");
         return js;
     }

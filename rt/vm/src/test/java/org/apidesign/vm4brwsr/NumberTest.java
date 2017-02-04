@@ -239,18 +239,7 @@ public class NumberTest {
     private static void assertExec(
         String msg, Class<?> clazz, String method, Object expRes, Object... args) throws Exception
     {
-        Object ret = code.execCode(msg, clazz, method, expRes, args);
-        if (ret == null) {
-            return;
-        }
-        if (expRes instanceof Double && ret instanceof Double) {
-            double expD = ((Double)expRes).doubleValue();
-            double retD = ((Double)ret).doubleValue();
-            assertEquals(retD, expD, 0.000004, msg + " "
-                    + code.toString());
-            return;
-        }
-        assertEquals(ret, expRes, msg + " " + code.toString());
+        code.assertExec(msg, clazz, method, expRes, args);
     }
     
 }

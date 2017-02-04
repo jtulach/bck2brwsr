@@ -19,6 +19,7 @@
     <author.name>Jaroslav Tulach</author.name>
     <author.email>jaroslav.tulach@apidesign.org</author.email>
     <bck2brwsr.obfuscationlevel>MINIMAL</bck2brwsr.obfuscationlevel>
+    <trufflejs.jar>${project.build.directory}/test-classes</trufflejs.jar>
   </properties>
   
   <repositories>
@@ -89,6 +90,15 @@
                  <skip>false</skip>
              </configuration>
          </plugin>
+         <plugin>
+             <groupId>org.apache.maven.plugins</groupId>
+             <artifactId>maven-surefire-plugin</artifactId>
+             <configuration>
+                 <additionalClasspathElements>
+                     <element>${trufflejs.jar}</element>
+                 </additionalClasspathElements>
+             </configuration>
+         </plugin>
       </plugins>
   </build>
   <dependencies>
@@ -134,4 +144,17 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+  <profiles>
+      <profile>
+          <id>graalvm</id>
+          <activation>
+              <file>
+                  <exists>${java.home}/language/js/trufflejs.jar</exists>
+              </file>
+          </activation>
+          <properties>
+              <trufflejs.jar>${java.home}/language/js/trufflejs.jar</trufflejs.jar>
+          </properties>
+      </profile>
+  </profiles>
 </project>
