@@ -79,7 +79,7 @@
           <id>graalvm</id>
           <activation>
               <file>
-                  <exists>${java.home}/language/js/trufflejs.jar</exists>
+                  <exists>${test.java.home}/language/js/trufflejs.jar</exists>
               </file>
           </activation>
           <dependencies>
@@ -88,7 +88,7 @@
                   <artifactId>trufflejs</artifactId>
                   <version>0.1</version>
                   <scope>system</scope>
-                  <systemPath>${java.home}/language/js/trufflejs.jar</systemPath>
+                  <systemPath>${test.java.home}/language/js/trufflejs.jar</systemPath>
               </dependency>
           </dependencies>
       </profile>

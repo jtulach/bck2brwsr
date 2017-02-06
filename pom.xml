@@ -17,6 +17,8 @@
       <license>COPYING</license>
       <net.java.html.version>1.3</net.java.html.version>
       <netbeans.compile.on.save>none</netbeans.compile.on.save>
+      <trufflejs.jar>${project.build.directory}/test-classes</trufflejs.jar>
+      <test.java.home>${java.home}</test.java.home>
   </properties>
   <modules>
     <module>javaquery</module>
@@ -114,6 +116,12 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.13</version>
+                <configuration>
+                    <additionalClasspathElements>
+                        <element>${trufflejs.jar}</element>
+                    </additionalClasspathElements>
+                    <jvm>${test.java.home}/bin/java</jvm>
+                </configuration>
               </plugin>
               <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -287,6 +295,29 @@
           </activation>
           <properties>
             <jfxrt.jar>${java.home}/lib/jfxrt.jar</jfxrt.jar>
+          </properties>
+      </profile>
+      <profile>
+          <id>graalvm-old</id>
+          <activation>
+              <file>
+                  <exists>${java.home}/language/js/trufflejs.jar</exists>
+              </file>
+          </activation>
+          <properties>
+              <trufflejs.jar>${java.home}/language/js/trufflejs.jar</trufflejs.jar>
+          </properties>
+      </profile>
+      <profile>
+          <id>graalvm-0.20</id>
+          <activation>
+              <file>
+                  <exists>${java.home}/../../language/js/trufflejs.jar</exists>
+              </file>
+          </activation>
+          <properties>
+              <trufflejs.jar>${java.home}/../../language/js/trufflejs.jar</trufflejs.jar>
+              <test.java.home>${java.home}/../../</test.java.home>
           </properties>
       </profile>
   </profiles>
