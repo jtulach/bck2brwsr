@@ -255,6 +255,9 @@ public final class JVMBridge {
                             Object[] arr = (Object[]) args[i];
                             conv = ((WebPresenter) presenter()).convertArrays(arr);
                         }
+                        if (args[i] instanceof Character) {
+                            conv = (int)(Character)args[i];
+                        }
                         if (conv != null && keepAlive != null
                             && !keepAlive[i] && !isJSReady(conv)
                             && !conv.getClass().getSimpleName().equals("$JsCallbacks$") // NOI18N
