@@ -88,8 +88,10 @@ public class System {
     @JavaScriptBody(args = { "exitCode" }, body = ""
         + "var xhttp = new XMLHttpRequest();\n"
         + "xhttp.open('GET', '/?exit=' + exitCode, true);\n"
+        + "xhttp.onreadystatechange = function () {\n"
+        + "  window.close();\n"
+        + "};\n"
         + "xhttp.send();\n"
-        + "window.close();\n"
     )
     public static void exit(int exitCode) {
     }
