@@ -22,12 +22,12 @@ import java.io.Reader;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.TooManyListenersException;
 import java.util.concurrent.Executor;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -43,25 +43,25 @@ import org.netbeans.html.boot.spi.Fn;
  */
 public final class JVMBridge {
     static final Logger LOG = Logger.getLogger(JVMBridge.class.getName());
-    
+
     private final WebEngine engine;
     private final ClassLoader cl;
     private final WebPresenter presenter;
-    
+
     private static ClassLoader[] ldrs;
     private static ChangeListener<Void> onBck2BrwsrLoad;
-    
+
     JVMBridge(WebEngine eng) {
         this.engine = eng;
         final ClassLoader p = JVMBridge.class.getClassLoader().getParent();
         this.presenter = new WebPresenter();
         this.cl = FnUtils.newLoader(presenter, presenter, p);
     }
-        
+
     public static void registerClassLoaders(ClassLoader[] loaders) {
         ldrs = loaders.clone();
     }
-    
+
     public static void addBck2BrwsrLoad(ChangeListener<Void> l) throws TooManyListenersException {
         if (onBck2BrwsrLoad != null) {
             throw new TooManyListenersException();
@@ -75,14 +75,19 @@ public final class JVMBridge {
             l.changed(null, null, null);
         }
     }
-    
+
     public Class<?> loadClass(String name) throws ClassNotFoundException {
         Fn.activate(presenter);
         return Class.forName(name, true, cl);
     }
-    
+
     private final class WebPresenter implements Fn.Presenter,
     FindResources, Fn.ToJavaScript, Fn.FromJavaScript, Executor, Fn.KeepAlive {
+        private final Set<Object> keep = new HashSet<Object>();
+        final void keep(Object obj) {
+            keep.add(obj);
+        }
+
         @Override
         public void findResources(String name, Collection<? super URL> results, boolean oneIsEnough) {
             if (ldrs != null) for (ClassLoader l : ldrs) {
@@ -97,12 +102,12 @@ public final class JVMBridge {
         public Fn defineFn(String code, String... names) {
             return defineJSFn(code, names, null);
         }
-        
+
         @Override
         public Fn defineFn(String code, String[] names, boolean[] keepAlive) {
             return defineJSFn(code, names, keepAlive);
         }
-        
+
         private JSFn defineJSFn(String code, String[] names, boolean[] keepAlive) {
             StringBuilder sb = new StringBuilder();
             sb.append("(function() {");
@@ -116,7 +121,7 @@ public final class JVMBridge {
             sb.append(code);
             sb.append("};");
             sb.append("})()");
-            
+
             JSObject x = (JSObject) engine.executeScript(sb.toString());
             return new JSFn(this, x, keepAlive);
         }
@@ -164,7 +169,7 @@ public final class JVMBridge {
                 Platform.runLater(command);
             }
         }
-        
+
         final JSObject convertArrays(Object[] arr) {
             for (int i = 0; i < arr.length; i++) {
                 if (arr[i] instanceof Object[]) {
@@ -228,7 +233,7 @@ public final class JVMBridge {
         }
 
     }
-    
+
     private static final class JSFn extends Fn {
         private final JSObject fn;
         private final boolean[] keepAlive;
@@ -263,6 +268,10 @@ public final class JVMBridge {
                             && !conv.getClass().getSimpleName().equals("$JsCallbacks$") // NOI18N
                             ) {
                             conv = new Weak(conv);
+                        } else {
+                            if (!isJSReady(conv)) {
+                                ((WebPresenter) presenter()).keep(conv);
+                            }
                         }
                     }
                     all.add(conv);
