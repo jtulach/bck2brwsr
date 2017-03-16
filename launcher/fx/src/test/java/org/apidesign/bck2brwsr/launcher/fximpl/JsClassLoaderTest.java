@@ -170,12 +170,14 @@ public class JsClassLoaderTest {
     }
 
     @Test public void getThis() throws Throwable {
-        Object th = methodClass.newInstance();
-        Method st = methodClass.getMethod("getThis");
         try {
+            Object th = methodClass.newInstance();
+            Method st = methodClass.getMethod("getThis");
             assertEquals(st.invoke(th), th);
         } catch (InvocationTargetException ex) {
             throw ex.getTargetException();
+        } catch (LinkageError err) {
+            throw new IllegalStateException("Cannot use " + methodClass + " loaded by " + methodClass.getClassLoader(), err);
         }
     }
     
