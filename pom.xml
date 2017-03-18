@@ -22,7 +22,6 @@
   </properties>
   <modules>
     <module>javaquery</module>
-    <module>benchmarks</module>
     <module>ko</module>
     <module>launcher</module>
     <module>rt</module>
@@ -319,6 +318,17 @@
               <trufflejs.jar>${java.home}/../../language/js/trufflejs.jar</trufflejs.jar>
               <test.java.home>${java.home}/../../</test.java.home>
           </properties>
+      </profile>
+      <profile>
+          <id>run-benchmarks</id>
+          <activation>
+              <property>
+                  <name>!skip.benchmarks</name>
+              </property>
+          </activation>
+          <modules>
+              <module>benchmarks</module>
+          </modules>
       </profile>
   </profiles>
 </project>
