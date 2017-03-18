@@ -51,6 +51,7 @@ public final class KnockoutFXTest extends KnockoutTCK {
     }
 
     @Factory public static Object[] compatibilityTests() {
+        System.getProperties().remove("vmtest.brwsrs");
         return VMTest.newTests().
             withClasses(filterTestClasses()).
             withTestAnnotation(KOTest.class).

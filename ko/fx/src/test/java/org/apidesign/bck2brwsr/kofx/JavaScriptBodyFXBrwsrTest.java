@@ -28,6 +28,7 @@ import org.testng.annotations.Factory;
  */
 public class JavaScriptBodyFXBrwsrTest extends JavaScriptTCK {
     @Factory public static Object[] create() {
+        System.getProperties().remove("vmtest.brwsrs");
         return VMTest.newTests().
             withLaunchers("fxbrwsr").
             withClasses(filterTestClasses()).
