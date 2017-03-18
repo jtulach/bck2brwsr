@@ -164,5 +164,24 @@
               </plugins>
           </build>
       </profile>
+      <profile>
+          <id>test-run-with-brwsrs</id>
+          <activation>
+              <property>
+                  <name>vmtest.brwsrs</name>
+              </property>
+          </activation>
+          <build>
+              <plugins>
+                  <plugin>
+                      <groupId>org.apidesign.bck2brwsr</groupId>
+                      <artifactId>bck2brwsr-maven-plugin</artifactId>
+                      <configuration>
+                          <launcher>${vmtest.brwsrs}</launcher>
+                      </configuration>
+                  </plugin>
+              </plugins>
+          </build>
+      </profile>
   </profiles>
 </project>
