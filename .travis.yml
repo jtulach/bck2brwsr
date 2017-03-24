@@ -8,9 +8,10 @@ script:
   - if type firefox; then RUN_PARAMS="-Dvmtest.brwsrs=firefox -Dskip.benchmarks=true"; fi
   - mvn clean install -DskipTests $RUN_PARAMS
   - mvn -f rt/vm test $RUN_PARAMS
+  - mvn -f rt/emul/brwsrtest test $RUN_PARAMS
+  - mvn -f rt/emul/mini test $RUN_PARAMS
   - mvn -f rt/emul/zip test $RUN_PARAMS
   - mvn -f javaquery install $RUN_PARAMS
-  - mvn -f ko install $RUN_PARAMS
 os:
   - linux
   - osx
