@@ -1875,8 +1875,16 @@ public final
         + "  if (Object.prototype.toString.call(v) === '[object Array]') {\n"
         + "    return vm.org_apidesign_bck2brwsr_emul_lang_System(false).convArray__Ljava_lang_Object_2Ljava_lang_Object_2Ljava_lang_Object_2(v, convToJS);\n"
         + "  }\n"
-        + "  if (v instanceof Date) return v;\n"
-        + "  return v.valueOf();\n"
+        + "  var t = typeof v;\n"
+        + "  if (\n"
+        + "     t === 'boolean' || t === 'number' ||\n"
+        + "     v['$instOf_java_lang_Character'] ||\n"
+        + "     v['$instOf_java_lang_Number'] ||\n"
+        + "     v['$instOf_java_lang_Boolean']\n"
+        + "  ) {\n"
+        + "    return v.valueOf();\n"
+        + "  }\n"
+        + "  return v;\n"
         + "}\n"
     )
     static native int toJS();
