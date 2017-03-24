@@ -3,12 +3,14 @@ before_script:
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start || echo Without Xvfb
   - sleep 3
-script: 
-  - mvn clean install -DskipTests -Dvmtest.brwsrs=firefox -Dskip.benchmarks=true
-  - mvn -f rt/vm test -Dvmtest.brwsrs=firefox -Dskip.benchmarks=true
-  - mvn -f rt/emul/zip test -Dvmtest.brwsrs=firefox -Dskip.benchmarks=true
-  - mvn -f javaquery install -Dvmtest.brwsrs=firefox -Dskip.benchmarks=true
-  - mvn -f ko install -Dvmtest.brwsrs=firefox -Dskip.benchmarks=true
+script:
+  - RUN_PARAMS="-Dvmtest.brwsrs=open -Dskip.benchmarks=true"
+  - if type firefox; then RUN_PARAMS="-Dvmtest.brwsrs=firefox -Dskip.benchmarks=true"; fi
+  - mvn clean install -DskipTests $RUN_PARAMS
+  - mvn -f rt/vm test $RUN_PARAMS
+  - mvn -f rt/emul/zip test $RUN_PARAMS
+  - mvn -f javaquery install $RUN_PARAMS
+  - mvn -f ko install $RUN_PARAMS
 os:
   - linux
   - osx
