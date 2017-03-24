@@ -46,6 +46,7 @@
                   </aotDeps>
                   <minified>false</minified>
                   <debug>false</debug>
+                  <ignoreBootClassPath>false</ignoreBootClassPath>
               </configuration>
           </plugin>
           <plugin>
