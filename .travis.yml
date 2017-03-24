@@ -6,8 +6,9 @@ before_script:
 script: 
   - mvn clean install -DskipTests -Dvmtest.brwsrs=firefox -Dskip.benchmarks=true
   - mvn -f rt/vm test -Dvmtest.brwsrs=firefox -Dskip.benchmarks=true
-  - mvn -f rt/emul test -Dvmtest.brwsrs=firefox -Dskip.benchmarks=true
+  - mvn -f rt/emul/zip test -Dvmtest.brwsrs=firefox -Dskip.benchmarks=true
   - mvn -f javaquery install -Dvmtest.brwsrs=firefox -Dskip.benchmarks=true
   - mvn -f ko install -Dvmtest.brwsrs=firefox -Dskip.benchmarks=true
 os:
   - linux
+  - osx
