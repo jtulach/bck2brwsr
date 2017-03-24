@@ -1,4 +1,9 @@
 [![Build Status](https://travis-ci.org/jtulach/bck2brwsr.svg?branch=master)](https://travis-ci.org/jtulach/bck2brwsr)
+[![Build Status](http://hudson.apidesign.org/hudson/job/bck2brwsr/badge/icon)](http://hudson.apidesign.org/hudson/job/bck2brwsr/)
+[![Build Status](http://hudson.apidesign.org/hudson/job/bck2brwsr.jdk8/badge/icon)](http://hudson.apidesign.org/hudson/job/bck2brwsr.jdk8/)
+[![Build Status](http://hudson.apidesign.org/hudson/view/bck2brwsr/job/bck2brwsr.javadoc/badge/icon)](http://hudson.apidesign.org/hudson/view/bck2brwsr/job/bck2brwsr.javadoc/)
+[![Build Status](http://hudson.apidesign.org/hudson/view/bck2brwsr/job/bck2brwsr.deploy/badge/icon)](http://hudson.apidesign.org/hudson/view/bck2brwsr/job/bck2brwsr.deploy/)
+
 
 # Bring Java Back to Browser!
 
