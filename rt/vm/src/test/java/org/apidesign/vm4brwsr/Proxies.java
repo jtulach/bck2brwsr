@@ -29,6 +29,8 @@ public class Proxies implements InvocationHandler {
         Proxies p = new Proxies();
         Runnable r = createProxy(Runnable.class, p, direct);
         r.run();
+        assertNoInstance(PlusInts.class, r);
+        assertNoInstance(SumNums.class, r);
         return p.name;
     }
 
@@ -64,6 +66,8 @@ public class Proxies implements InvocationHandler {
         };
         PlusInts r = createProxy(PlusInts.class, h, direct);
         int res = r.plus((byte)30, (short)8, 4);
+        assertNoInstance(Runnable.class, r);
+        assertNoInstance(SumNums.class, r);
         return res;
     }
 
@@ -80,7 +84,7 @@ public class Proxies implements InvocationHandler {
         Object r = Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), new Class[] { SumNums.class, PlusInts.class }, h);
         int res1 = ((PlusInts)r).plus((byte)15, (short)4, 2);
         int res2 = ((SumNums)r).sum((byte)5, (short)6, 10).intValue();
-
+        assertNoInstance(Runnable.class, r);
         return res1 + res2;
     }
 
@@ -90,4 +94,9 @@ public class Proxies implements InvocationHandler {
         return null;
     }
 
+    private static void assertNoInstance(Class<?> type, Object obj) {
+        if (type.isInstance(obj)) {
+            throw new IllegalStateException(obj + " is instance of " + type.getName());
+        }
+    }
 }
