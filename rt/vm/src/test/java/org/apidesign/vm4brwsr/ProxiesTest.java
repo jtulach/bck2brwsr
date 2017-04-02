@@ -27,14 +27,14 @@ import org.testng.annotations.Test;
  */
 public class ProxiesTest {
     @Test public void runViaProxy() throws Exception {
-        assertExec("Runnable proxy", Proxies.class, "runViaProxy__Ljava_lang_String_2",
-            "run"
+        assertExec("Runnable proxy", Proxies.class, "runViaProxy__Ljava_lang_String_2Z",
+            "run", true
         );
     }
 
     @Test public void countViaProxy() throws Exception {
-        assertExec("Primitive type proxy", Proxies.class, "countViaProxy__I",
-            42
+        assertExec("Primitive type proxy", Proxies.class, "countViaProxy__IZ",
+            42, true
         );
     }
 

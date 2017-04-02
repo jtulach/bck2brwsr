@@ -17,6 +17,7 @@
  */
 package org.apidesign.vm4brwsr;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -24,15 +25,22 @@ import java.lang.reflect.Proxy;
 public class Proxies implements InvocationHandler {
     private String name;
 
-    public static String runViaProxy() {
+    public static String runViaProxy(boolean direct) throws Exception {
         Proxies p = new Proxies();
-        Runnable r = createProxy(Runnable.class, p);
+        Runnable r = createProxy(Runnable.class, p, direct);
         r.run();
         return p.name;
     }
 
-    private static <T> T createProxy(Class<T> type, InvocationHandler p) throws IllegalArgumentException {
-        return type.cast(Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), new Class[] { type }, p));
+    private static <T> T createProxy(Class<T> type, InvocationHandler p, boolean direct) throws Exception {
+        final ClassLoader l = ClassLoader.getSystemClassLoader();
+        if (direct) {
+            return type.cast(Proxy.newProxyInstance(l, new Class[] { type }, p));
+        } else {
+            Class<?> proxyClazz = Proxy.getProxyClass(l, new Class[] { type });
+            Constructor<?> cnstr = proxyClazz.getConstructor(InvocationHandler.class);
+            return (T) cnstr.newInstance(p);
+        }
     }
 
     public interface PlusInts {
@@ -43,7 +51,7 @@ public class Proxies implements InvocationHandler {
         public Number sum(byte b, short s, int i);
     }
 
-    public static int countViaProxy() {
+    public static int countViaProxy(boolean direct) throws Exception {
         InvocationHandler h = new InvocationHandler() {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -53,7 +61,7 @@ public class Proxies implements InvocationHandler {
                 return i1 + i2 + i3;
             }
         };
-        PlusInts r = createProxy(PlusInts.class, h);
+        PlusInts r = createProxy(PlusInts.class, h, direct);
         int res = r.plus((byte)30, (short)8, 4);
         return res;
     }
