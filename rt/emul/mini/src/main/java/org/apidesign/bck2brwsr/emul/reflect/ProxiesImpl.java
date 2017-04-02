@@ -35,6 +35,12 @@ public final class ProxiesImpl extends Proxy {
 
     @Exported
     final Object proxyTo(Method m, Object[] args) throws Throwable {
+        Class<?>[] types = m.getParameterTypes();
+        for (int i = 0; i < types.length; i++) {
+            if (types[i].isPrimitive()) {
+                args[i] = MethodImpl.fromPrimitive(types[i], args[i]);
+            }
+        }
         return h.invoke(this, m, args);
     }
 

@@ -39,9 +39,9 @@ public class Proxies implements InvocationHandler {
         InvocationHandler h = new InvocationHandler() {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                int i1 = ((Number)args[0]).intValue();
-                int i2 = ((Number)args[1]).intValue();
-                int i3 = ((Number)args[2]).intValue();
+                int i1 = ((Byte)args[0]).intValue();
+                int i2 = ((Short)args[1]).intValue();
+                int i3 = ((Integer)args[2]).intValue();
                 return i1 + i2 + i3;
             }
         };
