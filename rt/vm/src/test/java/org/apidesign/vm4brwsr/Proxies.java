@@ -26,9 +26,13 @@ public class Proxies implements InvocationHandler {
 
     public static String runViaProxy() {
         Proxies p = new Proxies();
-        Runnable r = (Runnable) Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), new Class[] { Runnable.class }, p);
+        Runnable r = createProxy(Runnable.class, p);
         r.run();
         return p.name;
+    }
+
+    private static <T> T createProxy(Class<T> type, InvocationHandler p) throws IllegalArgumentException {
+        return type.cast(Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), new Class[] { type }, p));
     }
 
     public interface PlusInts {
@@ -49,7 +53,7 @@ public class Proxies implements InvocationHandler {
                 return i1 + i2 + i3;
             }
         };
-        PlusInts r = (PlusInts) Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), new Class[] { PlusInts.class }, h);
+        PlusInts r = createProxy(PlusInts.class, h);
         int res = r.plus((byte)30, (short)8, 4);
         return res;
     }
