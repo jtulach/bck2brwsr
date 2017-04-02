@@ -34,16 +34,15 @@ public final class ProxiesImpl extends Proxy {
     }
 
     @Exported
-    final Object h() {
-        return h;
+    final Object proxyTo(Method m, Object[] args) throws Throwable {
+        return h.invoke(this, m, args);
     }
 
 
     @JavaScriptBody(args = { "a", "n", "arr" }, body = ""
         + "function f(proxy, method) {\n"
         + "  return function() {\n"
-        + "    var h = proxy['h__Ljava_lang_Object_2']();\n"
-        + "    return h.invoke__Ljava_lang_Object_2Ljava_lang_Object_2Ljava_lang_reflect_Method_2_3Ljava_lang_Object_2(proxy, method, arguments);\n"
+        + "    return proxy['proxyTo__Ljava_lang_Object_2Ljava_lang_reflect_Method_2_3Ljava_lang_Object_2'](method, arguments);\n"
         + "  };\n"
         + "}\n"
         + "for (var i = 0; i < arr.length; i += 3) {\n"
