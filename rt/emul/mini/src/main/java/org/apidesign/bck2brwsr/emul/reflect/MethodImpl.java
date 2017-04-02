@@ -146,6 +146,10 @@ public abstract class MethodImpl {
     }
     
     public static Method[] findMethods(Class<?> clazz, int mask) {
+        return findMethods(clazz, mask, 0);
+    }
+
+    static Method[] findMethods(Class<?> clazz, int mask, int noMask) {
         Object[] namesAndData = findMethodData(clazz, "", false);
         int cnt = 0;
         for (int i = 0; i < namesAndData.length; i += 3) {
@@ -165,6 +169,9 @@ public abstract class MethodImpl {
             Class<?> cls = (Class<?>) namesAndData[i + 2];
             final Method m = INSTANCE.create(cls, name, data, sig);
             if ((m.getModifiers() & mask) == 0) {
+                continue;
+            }
+            if ((m.getModifiers() & noMask) != 0) {
                 continue;
             }
             namesAndData[cnt++] = m;
