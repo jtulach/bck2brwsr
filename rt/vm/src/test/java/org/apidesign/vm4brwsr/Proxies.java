@@ -35,6 +35,10 @@ public class Proxies implements InvocationHandler {
         public int plus(byte b, short s, int i);
     }
 
+    public interface SumNums {
+        public Number sum(byte b, short s, int i);
+    }
+
     public static int countViaProxy() {
         InvocationHandler h = new InvocationHandler() {
             @Override
@@ -48,6 +52,23 @@ public class Proxies implements InvocationHandler {
         PlusInts r = (PlusInts) Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), new Class[] { PlusInts.class }, h);
         int res = r.plus((byte)30, (short)8, 4);
         return res;
+    }
+
+    public static int countViaProxies() {
+        InvocationHandler h = new InvocationHandler() {
+            @Override
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                int i1 = ((Byte)args[0]).intValue();
+                int i2 = ((Short)args[1]).intValue();
+                int i3 = ((Integer)args[2]).intValue();
+                return i1 + i2 + i3;
+            }
+        };
+        Object r = Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), new Class[] { SumNums.class, PlusInts.class }, h);
+        int res1 = ((PlusInts)r).plus((byte)15, (short)4, 2);
+        int res2 = ((SumNums)r).sum((byte)5, (short)6, 10).intValue();
+
+        return res1 + res2;
     }
 
     @Override

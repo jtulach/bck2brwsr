@@ -38,6 +38,12 @@ public class ProxiesTest {
         );
     }
 
+    @Test public void countViaProxies() throws Exception {
+        assertExec("Two proxy interfaces", Proxies.class, "countViaProxies__I",
+            42
+        );
+    }
+
     private static TestVM code;
 
     @BeforeClass
