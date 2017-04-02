@@ -26,10 +26,9 @@
 package java.lang.reflect;
 
 import java.lang.annotation.Annotation;
-import static java.lang.reflect.Method.fromPrimitive;
 import static java.lang.reflect.Method.getAccess;
-import static java.lang.reflect.Method.getParameterTypes;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
+import org.apidesign.bck2brwsr.emul.reflect.MethodImpl;
 import org.apidesign.bck2brwsr.emul.reflect.TypeProvider;
 
 /**
@@ -431,7 +430,7 @@ public final
             for (int i = 0; i < types.length; i++) {
                 Class c = types[i];
                 if (c.isPrimitive() && initargs[i] != null) {
-                    initargs[i] = Method.toPrimitive(initargs[i]);
+                    initargs[i] = MethodImpl.toPrimitive(initargs[i]);
                 }
             }
         }
