@@ -32,6 +32,12 @@ public class ProxiesTest {
         );
     }
 
+    @Test public void countViaProxy() throws Exception {
+        assertExec("Primitive type proxy", Proxies.class, "countViaProxy__I",
+            42
+        );
+    }
+
     private static TestVM code;
 
     @BeforeClass
