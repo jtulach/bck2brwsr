@@ -38,6 +38,18 @@ public class ProxiesTest {
         );
     }
 
+    @Test public void runViaProxyWithClass() throws Exception {
+        assertExec("Runnable proxy", Proxies.class, "runViaProxy__Ljava_lang_String_2Z",
+            "run", false
+        );
+    }
+
+    @Test public void countViaProxyWithClass() throws Exception {
+        assertExec("Primitive type proxy", Proxies.class, "countViaProxy__IZ",
+            42, false
+        );
+    }
+
     @Test public void countViaProxies() throws Exception {
         assertExec("Two proxy interfaces", Proxies.class, "countViaProxies__I",
             42

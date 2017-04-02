@@ -32,14 +32,15 @@ public class Proxies implements InvocationHandler {
         return p.name;
     }
 
-    private static <T> T createProxy(Class<T> type, InvocationHandler p, boolean direct) throws Exception {
+    private static <T> T createProxy(Class<T> type, InvocationHandler handler, boolean direct) throws Exception {
         final ClassLoader l = ClassLoader.getSystemClassLoader();
         if (direct) {
-            return type.cast(Proxy.newProxyInstance(l, new Class[] { type }, p));
+            return type.cast(Proxy.newProxyInstance(l, new Class[] { type }, handler));
         } else {
             Class<?> proxyClazz = Proxy.getProxyClass(l, new Class[] { type });
             Constructor<?> cnstr = proxyClazz.getConstructor(InvocationHandler.class);
-            return (T) cnstr.newInstance(p);
+            Object proxy = cnstr.newInstance(handler);
+            return type.cast(proxy);
         }
     }
 

@@ -315,7 +315,7 @@ public class Proxy implements java.io.Serializable {
                                          Class<?>... interfaces)
         throws IllegalArgumentException
     {
-        return newProxyInstance(loader, interfaces, null).getClass();
+        return ProxiesImpl.create(interfaces, null).getClass();
     }
 
     /**

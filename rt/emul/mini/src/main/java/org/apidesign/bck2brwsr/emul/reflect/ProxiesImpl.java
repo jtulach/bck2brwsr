@@ -29,7 +29,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public final class ProxiesImpl extends Proxy {
-    private ProxiesImpl(InvocationHandler h) {
+    public ProxiesImpl(InvocationHandler h) {
         super(h);
     }
 
@@ -46,23 +46,30 @@ public final class ProxiesImpl extends Proxy {
 
 
     @JavaScriptBody(args = { "a", "n", "arr" }, body = ""
-        + "function f(proxy, method) {\n"
+        + "var pa = a.constructor.prototype;\n"
+        + "function f(method) {\n"
         + "  return function() {\n"
-        + "    return proxy['proxyTo__Ljava_lang_Object_2Ljava_lang_reflect_Method_2_3Ljava_lang_Object_2'](method, arguments);\n"
+        + "    return this['proxyTo__Ljava_lang_Object_2Ljava_lang_reflect_Method_2_3Ljava_lang_Object_2'](method, arguments);\n"
         + "  };\n"
         + "}\n"
         + "for (var i = 0; i < arr.length; i += 3) {\n"
         + "  var m = arr[i];\n"
-        + "  var p = arr[i + 1];\n"
-        + "  a[m] = f(a, p);\n"
+        + "  var method = arr[i + 1];\n"
+        + "  pa[m] = f(method);\n"
         + "}\n"
-        + "a['$instOf_' + n.replace__Ljava_lang_String_2CC('.', '_')] = true;\n"
+        + "pa['$instOf_' + n.replace__Ljava_lang_String_2CC('.', '_')] = true;\n"
     )
     private static native void implement(
         ProxiesImpl a, String n, Object[] methodsAndProps
     );
 
+    @JavaScriptBody(args = {}, body = ""
+        + "CLS.$class = null;\n"
+    )
+    private static native void resetClass();
+
     public static Proxy create(Class[] classes, InvocationHandler h) {
+        resetClass();
         ProxiesImpl impl = new ProxiesImpl(h);
         for (Class c: classes) {
             Object[] info = findProps(c);
