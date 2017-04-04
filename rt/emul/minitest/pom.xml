@@ -13,6 +13,7 @@
     <url>http://maven.apache.org</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <net.java.html.lib.version>0.4</net.java.html.lib.version>
     </properties>
     <dependencies>
         <dependency>
@@ -36,12 +37,26 @@
         <dependency>
             <groupId>com.dukescript.libraries</groupId>
             <artifactId>net.java.html.lib</artifactId>
-            <version>0.4</version>
+            <version>${net.java.html.lib.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apidesign.bck2brwsr</groupId>
+            <artifactId>emul</artifactId>
+            <version>${project.version}</version>
+            <classifier>bck2brwsr</classifier>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.dukescript.libraries</groupId>
+            <artifactId>net.java.html.lib.jquery</artifactId>
+            <version>${net.java.html.lib.version}</version>
+            <classifier>bck2brwsr</classifier>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.netbeans.html</groupId>
             <artifactId>net.java.html.boot.script</artifactId>
-            <version>1.2.3</version>
+            <version>${net.java.html.version}</version>
             <scope>test</scope>
             <type>jar</type>
         </dependency>
@@ -86,11 +101,9 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <!--
                     <systemProperties>
                         <vmtest.precompiled>.*</vmtest.precompiled>
                     </systemProperties>
-                    -->
                 </configuration>
             </plugin>
         </plugins>
