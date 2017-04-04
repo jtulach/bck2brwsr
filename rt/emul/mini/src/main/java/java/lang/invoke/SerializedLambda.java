@@ -25,11 +25,6 @@
 package java.lang.invoke;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.security.AccessController;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
-import java.util.Objects;
 
 /**
  * Serialized form of a lambda expression.  The properties of this class
@@ -113,7 +108,7 @@ public final class SerializedLambda implements Serializable {
         this.implMethodName = implMethodName;
         this.implMethodSignature = implMethodSignature;
         this.instantiatedMethodType = instantiatedMethodType;
-        this.capturedArgs = Objects.requireNonNull(capturedArgs).clone();
+        this.capturedArgs = capturedArgs.clone();
     }
 
     /**
@@ -214,44 +209,5 @@ public final class SerializedLambda implements Serializable {
      */
     public Object getCapturedArg(int i) {
         return capturedArgs[i];
-    }
-
-    private Object readResolve() throws ReflectiveOperationException {
-        try {
-            Method deserialize = AccessController.doPrivileged(new PrivilegedExceptionAction<Method>() {
-                @Override
-                public Method run() throws Exception {
-                    Method m = capturingClass.getDeclaredMethod("$deserializeLambda$", SerializedLambda.class);
-                    m.setAccessible(true);
-                    return m;
-                }
-            });
-
-            return deserialize.invoke(null, this);
-        }
-        catch (PrivilegedActionException e) {
-            Exception cause = e.getException();
-            if (cause instanceof ReflectiveOperationException)
-                throw (ReflectiveOperationException) cause;
-            else if (cause instanceof RuntimeException)
-                throw (RuntimeException) cause;
-            else
-                throw new RuntimeException("Exception in SerializedLambda.readResolve", e);
-        }
-    }
-
-    @Override
-    public String toString() {
-        return String.format("SerializedLambda[%s=%s, %s=%s.%s:%s, " +
-                             "%s=%s %s.%s:%s, %s=%s, %s=%d]",
-                             "capturingClass", capturingClass,
-                             "functionalInterfaceMethod", functionalInterfaceClass,
-                               functionalInterfaceMethodName,
-                               functionalInterfaceMethodSignature,
-                             "implementation",
-                               null,
-                               implClass, implMethodName, implMethodSignature,
-                             "instantiatedMethodType", instantiatedMethodType,
-                             "numCaptured", capturedArgs.length);
     }
 }

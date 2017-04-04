@@ -25,9 +25,6 @@
 
 package java.lang.invoke;
 
-import java.io.Serializable;
-import java.util.Arrays;
-
 /**
  * <p>Methods to facilitate the creation of simple "function objects" that
  * implement one or more interfaces by delegation to a provided {@link MethodHandle},
@@ -230,9 +227,6 @@ public class LambdaMetafactory {
      * additional bridge methods
      */
     public static final int FLAG_BRIDGES = 1 << 2;
-
-    private static final Class<?>[] EMPTY_CLASS_ARRAY = new Class<?>[0];
-    private static final MethodType[] EMPTY_MT_ARRAY = new MethodType[0];
 
     /**
      * Facilitates the creation of simple "function objects" that implement one

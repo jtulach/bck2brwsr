@@ -55,27 +55,7 @@ public class JsArrayTest {
         list.push(1);
         list.push(2.5);
         list.push(3);
-        Number all = list.reduce(new Function.A2<Number, Number, Double>() {
-            @Override
-            public Double call(Number n1, Number n2) {
-                return n1.doubleValue() + n2.doubleValue();
-            }
-
-            @Override
-            public Double call(Number p1, Number p2, Object ignore) {
-                return call(p1, p2);
-            }
-
-            @Override
-            public Double call(Number p1, Number p2, Object p3, Object ignore) {
-                return call(p1, p2);
-            }
-
-            @Override
-            public Double call(Number p1, Number p2, Object p3, Object p4, Object ignore) {
-                return call(p1, p2);
-            }
-        }, 0.0);
+        Number all = list.reduce((Function.A2<Number, Number, Double>) (Number n1, Number n2) -> n1.doubleValue() + n2.doubleValue(), 0.0);
         return all.doubleValue();
     }
 

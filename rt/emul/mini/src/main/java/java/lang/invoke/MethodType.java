@@ -25,15 +25,7 @@
 
 package java.lang.invoke;
 
-import java.lang.ref.WeakReference;
-import java.lang.ref.Reference;
-import java.lang.ref.ReferenceQueue;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A method type represents the arguments and return type accepted and
@@ -87,17 +79,10 @@ public final
 class MethodType implements java.io.Serializable {
     private static final long serialVersionUID = 292L;  // {rtype, {ptype...}}
 
-    // The rtype and ptypes fields define the structural identity of the method type:
-    private final Class<?>   rtype;
-    private final Class<?>[] ptypes;
-
     /**
      * Check the given parameters for validity and store them into the final fields.
      */
     private MethodType(Class<?> rtype, Class<?>[] ptypes, boolean trusted) {
-        this.rtype = rtype;
-        // defensively copy the array passed in by the user
-        this.ptypes = trusted ? ptypes : Arrays.copyOf(ptypes, ptypes.length);
     }
 
     /**
@@ -106,47 +91,7 @@ class MethodType implements java.io.Serializable {
      * The parameters are reversed for this constructor, so that is is not accidentally used.
      */
     private MethodType(Class<?>[] ptypes, Class<?> rtype) {
-        this.rtype = rtype;
-        this.ptypes = ptypes;
     }
-
-    /** This number, mandated by the JVM spec as 255,
-     *  is the maximum number of <em>slots</em>
-     *  that any Java method can receive in its argument list.
-     *  It limits both JVM signatures and method type objects.
-     *  The longest possible invocation will look like
-     *  {@code staticMethod(arg1, arg2, ..., arg255)} or
-     *  {@code x.virtualMethod(arg1, arg2, ..., arg254)}.
-     */
-    /*non-public*/ static final int MAX_JVM_ARITY = 255;  // this is mandated by the JVM spec.
-
-    /** This number is the maximum arity of a method handle, 254.
-     *  It is derived from the absolute JVM-imposed arity by subtracting one,
-     *  which is the slot occupied by the method handle itself at the
-     *  beginning of the argument list used to invoke the method handle.
-     *  The longest possible invocation will look like
-     *  {@code mh.invoke(arg1, arg2, ..., arg254)}.
-     */
-    // Issue:  Should we allow MH.invokeWithArguments to go to the full 255?
-    /*non-public*/ static final int MAX_MH_ARITY = MAX_JVM_ARITY-1;  // deduct one for mh receiver
-
-    /** This number is the maximum arity of a method handle invoker, 253.
-     *  It is derived from the absolute JVM-imposed arity by subtracting two,
-     *  which are the slots occupied by invoke method handle, and the
-     *  target method handle, which are both at the beginning of the argument
-     *  list used to invoke the target method handle.
-     *  The longest possible invocation will look like
-     *  {@code invokermh.invoke(targetmh, arg1, arg2, ..., arg253)}.
-     */
-    /*non-public*/ static final int MAX_MH_INVOKER_ARITY = MAX_MH_ARITY-1;  // deduct one more for invoker
-
-    private static void checkRtype(Class<?> rtype) {
-        Objects.requireNonNull(rtype);
-    }
-
-    static final ConcurrentWeakInternSet<MethodType> internTable = new ConcurrentWeakInternSet<>();
-
-    static final Class<?>[] NO_PTYPES = {};
 
     /**
      * Finds or creates an instance of the given method type.
@@ -158,7 +103,7 @@ class MethodType implements java.io.Serializable {
      */
     public static
     MethodType methodType(Class<?> rtype, Class<?>[] ptypes) {
-        return makeImpl(rtype, ptypes, false);
+        throw new IllegalStateException();
     }
 
     /**
@@ -172,12 +117,7 @@ class MethodType implements java.io.Serializable {
      */
     public static
     MethodType methodType(Class<?> rtype, List<Class<?>> ptypes) {
-        boolean notrust = false;  // random List impl. could return evil ptypes array
-        return makeImpl(rtype, listToArray(ptypes), notrust);
-    }
-
-    private static Class<?>[] listToArray(List<Class<?>> ptypes) {
-        return ptypes.toArray(NO_PTYPES);
+        throw new IllegalStateException();
     }
 
     /**
@@ -193,10 +133,7 @@ class MethodType implements java.io.Serializable {
      */
     public static
     MethodType methodType(Class<?> rtype, Class<?> ptype0, Class<?>... ptypes) {
-        Class<?>[] ptypes1 = new Class<?>[1+ptypes.length];
-        ptypes1[0] = ptype0;
-        System.arraycopy(ptypes, 0, ptypes1, 1, ptypes.length);
-        return makeImpl(rtype, ptypes1, true);
+        throw new IllegalStateException();
     }
 
     /**
@@ -209,7 +146,7 @@ class MethodType implements java.io.Serializable {
      */
     public static
     MethodType methodType(Class<?> rtype) {
-        return makeImpl(rtype, NO_PTYPES, true);
+        throw new IllegalStateException();
     }
 
     /**
@@ -224,7 +161,7 @@ class MethodType implements java.io.Serializable {
      */
     public static
     MethodType methodType(Class<?> rtype, Class<?> ptype0) {
-        return makeImpl(rtype, new Class<?>[]{ ptype0 }, true);
+        throw new IllegalStateException();
     }
 
     /**
@@ -239,21 +176,8 @@ class MethodType implements java.io.Serializable {
      */
     public static
     MethodType methodType(Class<?> rtype, MethodType ptypes) {
-        return makeImpl(rtype, ptypes.ptypes, true);
-    }
-
-    /**
-     * Sole factory method to find or create an interned method type.
-     * @param rtype desired return type
-     * @param ptypes desired parameter types
-     * @param trusted whether the ptypes can be used without cloning
-     * @return the unique method type of the desired structure
-     */
-    /*trusted*/ static
-    MethodType makeImpl(Class<?> rtype, Class<?>[] ptypes, boolean trusted) {
         throw new IllegalStateException();
     }
-    private static final MethodType[] objectOnlyTypes = new MethodType[20];
 
     /**
      * Finds or creates a method type whose components are {@code Object} with an optional trailing {@code Object[]} array.
@@ -324,7 +248,7 @@ class MethodType implements java.io.Serializable {
      * @throws NullPointerException if {@code ptypesToInsert} or any of its elements is null
      */
     public MethodType appendParameterTypes(Class<?>... ptypesToInsert) {
-        return insertParameterTypes(parameterCount(), ptypesToInsert);
+        throw new IllegalStateException();
     }
 
     /**
@@ -339,7 +263,7 @@ class MethodType implements java.io.Serializable {
      * @throws NullPointerException if {@code ptypesToInsert} or any of its elements is null
      */
     public MethodType insertParameterTypes(int num, List<Class<?>> ptypesToInsert) {
-        return insertParameterTypes(num, listToArray(ptypesToInsert));
+        throw new IllegalStateException();
     }
 
     /**
@@ -352,7 +276,7 @@ class MethodType implements java.io.Serializable {
      * @throws NullPointerException if {@code ptypesToInsert} or any of its elements is null
      */
     public MethodType appendParameterTypes(List<Class<?>> ptypesToInsert) {
-        return insertParameterTypes(parameterCount(), ptypesToInsert);
+        throw new IllegalStateException();
     }
 
      /**
@@ -466,7 +390,7 @@ class MethodType implements java.io.Serializable {
      * @return a version of the original type with all primitive types replaced
      */
     public MethodType wrap() {
-        return hasPrimitives() ? wrapWithPrims(this) : this;
+        throw new IllegalStateException();
     }
 
     /**
@@ -477,15 +401,6 @@ class MethodType implements java.io.Serializable {
      * @return a version of the original type with all wrapper types replaced
      */
     public MethodType unwrap() {
-        MethodType noprims = !hasPrimitives() ? this : wrapWithPrims(this);
-        return unwrapWithNoPrims(noprims);
-    }
-
-    private static MethodType wrapWithPrims(MethodType pt) {
-        throw new IllegalStateException();
-    }
-
-    private static MethodType unwrapWithNoPrims(MethodType wt) {
         throw new IllegalStateException();
     }
 
@@ -496,21 +411,21 @@ class MethodType implements java.io.Serializable {
      * @throws IndexOutOfBoundsException if {@code num} is not a valid index into {@code parameterArray()}
      */
     public Class<?> parameterType(int num) {
-        return ptypes[num];
+        throw new IllegalStateException();
     }
     /**
      * Returns the number of parameter types in this method type.
      * @return the number of parameter types
      */
     public int parameterCount() {
-        return ptypes.length;
+        throw new IllegalStateException();
     }
     /**
      * Returns the return type of this method type.
      * @return the return type
      */
     public Class<?> returnType() {
-        return rtype;
+        throw new IllegalStateException();
     }
 
     /**
@@ -519,12 +434,7 @@ class MethodType implements java.io.Serializable {
      * @return the parameter types (as an immutable list)
      */
     public List<Class<?>> parameterList() {
-        return Collections.unmodifiableList(Arrays.asList(ptypes));
-    }
-
-    /*non-public*/ Class<?> lastParameterType() {
-        int len = ptypes.length;
-        return len == 0 ? void.class : ptypes[len-1];
+        throw new IllegalStateException();
     }
 
     /**
@@ -533,7 +443,7 @@ class MethodType implements java.io.Serializable {
      * @return the parameter types (as a fresh copy if necessary)
      */
     public Class<?>[] parameterArray() {
-        return ptypes.clone();
+        throw new IllegalStateException();
     }
 
     /**
@@ -545,12 +455,7 @@ class MethodType implements java.io.Serializable {
      */
     @Override
     public boolean equals(Object x) {
-        return this == x || x instanceof MethodType && equals((MethodType)x);
-    }
-
-    private boolean equals(MethodType that) {
-        return this.rtype == that.rtype
-            && Arrays.equals(this.ptypes, that.ptypes);
+        throw new IllegalStateException();
     }
 
     /**
@@ -565,10 +470,7 @@ class MethodType implements java.io.Serializable {
      */
     @Override
     public int hashCode() {
-      int hashCode = 31 + rtype.hashCode();
-      for (Class<?> ptype : ptypes)
-          hashCode = 31*hashCode + ptype.hashCode();
-      return hashCode;
+        throw new IllegalStateException();
     }
 
     /**
@@ -583,15 +485,7 @@ class MethodType implements java.io.Serializable {
      */
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("(");
-        for (int i = 0; i < ptypes.length; i++) {
-            if (i > 0)  sb.append(",");
-            sb.append(ptypes[i].getSimpleName());
-        }
-        sb.append(")");
-        sb.append(rtype.getSimpleName());
-        return sb.toString();
+        throw new IllegalStateException();
     }
 
 
@@ -638,75 +532,12 @@ class MethodType implements java.io.Serializable {
         throw new IllegalStateException();
     }
 
-    /// Serialization.
-
-    /**
-     * There are no serializable fields for {@code MethodType}.
-     */
-    private static final java.io.ObjectStreamField[] serialPersistentFields = { };
-
-//    /**
-//     * Save the {@code MethodType} instance to a stream.
-//     *
-//     * @serialData
-//     * For portability, the serialized format does not refer to named fields.
-//     * Instead, the return type and parameter type arrays are written directly
-//     * from the {@code writeObject} method, using two calls to {@code s.writeObject}
-//     * as follows:
-//     * <blockquote><pre>{@code
-//s.writeObject(this.returnType());
-//s.writeObject(this.parameterArray());
-//     * }</pre></blockquote>
-//     * <p>
-//     * The deserialized field values are checked as if they were
-//     * provided to the factory method {@link #methodType(Class,Class[]) methodType}.
-//     * For example, null values, or {@code void} parameter types,
-//     * will lead to exceptions during deserialization.
-//     * @param s the stream to write the object to
-//     * @throws java.io.IOException if there is a problem writing the object
-//     */
-//    private void writeObject(java.io.ObjectOutputStream s) throws java.io.IOException {
-//        s.defaultWriteObject();  // requires serialPersistentFields to be an empty array
-//        s.writeObject(returnType());
-//        s.writeObject(parameterArray());
-//    }
-//
-//    /**
-//     * Reconstitute the {@code MethodType} instance from a stream (that is,
-//     * deserialize it).
-//     * This instance is a scratch object with bogus final fields.
-//     * It provides the parameters to the factory method called by
-//     * {@link #readResolve readResolve}.
-//     * After that call it is discarded.
-//     * @param s the stream to read the object from
-//     * @throws java.io.IOException if there is a problem reading the object
-//     * @throws ClassNotFoundException if one of the component classes cannot be resolved
-//     * @see #MethodType()
-//     * @see #readResolve
-//     * @see #writeObject
-//     */
-//    private void readObject(java.io.ObjectInputStream s) throws java.io.IOException, ClassNotFoundException {
-//        s.defaultReadObject();  // requires serialPersistentFields to be an empty array
-//
-//        Class<?>   returnType     = (Class<?>)   s.readObject();
-//        Class<?>[] parameterArray = (Class<?>[]) s.readObject();
-//
-//        // Probably this object will never escape, but let's check
-//        // the field values now, just to be sure.
-//        checkRtype(returnType);
-//        checkPtypes(parameterArray);
-//
-//        parameterArray = parameterArray.clone();  // make sure it is unshared
-//        MethodType_init(returnType, parameterArray);
-//    }
 
     /**
      * For serialization only.
      * Sets the final fields to null, pending {@code Unsafe.putObject}.
      */
     private MethodType() {
-        this.rtype = null;
-        this.ptypes = null;
     }
 //    private void MethodType_init(Class<?> rtype, Class<?>[] ptypes) {
 //        // In order to communicate these values to readResolve, we must
@@ -729,118 +560,5 @@ class MethodType implements java.io.Serializable {
 //            throw new Error(ex);
 //        }
 //    }
-
-    /**
-     * Resolves and initializes a {@code MethodType} object
-     * after serialization.
-     * @return the fully initialized {@code MethodType} object
-     */
-    private Object readResolve() {
-        // Do not use a trusted path for deserialization:
-        //return makeImpl(rtype, ptypes, true);
-        // Verify all operands, and make sure ptypes is unshared:
-        return methodType(rtype, ptypes);
-    }
-
-    /**
-     * Simple implementation of weak concurrent intern set.
-     *
-     * @param <T> interned type
-     */
-    private static class ConcurrentWeakInternSet<T> {
-
-        private final ConcurrentMap<WeakEntry<T>, WeakEntry<T>> map;
-        private final ReferenceQueue<T> stale;
-
-        public ConcurrentWeakInternSet() {
-            this.map = new ConcurrentHashMap<>();
-            this.stale = new ReferenceQueue<>();
-        }
-
-        /**
-         * Get the existing interned element.
-         * This method returns null if no element is interned.
-         *
-         * @param elem element to look up
-         * @return the interned element
-         */
-        public T get(T elem) {
-            if (elem == null) throw new NullPointerException();
-            expungeStaleElements();
-
-            WeakEntry<T> value = map.get(new WeakEntry<>(elem));
-            if (value != null) {
-                T res = value.get();
-                if (res != null) {
-                    return res;
-                }
-            }
-            return null;
-        }
-
-        /**
-         * Interns the element.
-         * Always returns non-null element, matching the one in the intern set.
-         * Under the race against another add(), it can return <i>different</i>
-         * element, if another thread beats us to interning it.
-         *
-         * @param elem element to add
-         * @return element that was actually added
-         */
-        public T add(T elem) {
-            if (elem == null) throw new NullPointerException();
-
-            // Playing double race here, and so spinloop is required.
-            // First race is with two concurrent updaters.
-            // Second race is with GC purging weak ref under our feet.
-            // Hopefully, we almost always end up with a single pass.
-            T interned;
-            WeakEntry<T> e = new WeakEntry<>(elem, stale);
-            do {
-                expungeStaleElements();
-                WeakEntry<T> exist = map.putIfAbsent(e, e);
-                interned = (exist == null) ? elem : exist.get();
-            } while (interned == null);
-            return interned;
-        }
-
-        private void expungeStaleElements() {
-            Reference<? extends T> reference;
-            while ((reference = stale.poll()) != null) {
-                map.remove(reference);
-            }
-        }
-
-        private static class WeakEntry<T> extends WeakReference<T> {
-
-            public final int hashcode;
-
-            public WeakEntry(T key, ReferenceQueue<T> queue) {
-                super(key, queue);
-                hashcode = key.hashCode();
-            }
-
-            public WeakEntry(T key) {
-                super(key);
-                hashcode = key.hashCode();
-            }
-
-            @Override
-            public boolean equals(Object obj) {
-                if (obj instanceof WeakEntry) {
-                    Object that = ((WeakEntry) obj).get();
-                    Object mine = get();
-                    return (that == null || mine == null) ? (this == obj) : mine.equals(that);
-                }
-                return false;
-            }
-
-            @Override
-            public int hashCode() {
-                return hashcode;
-            }
-
-        }
-    }
 
 }
