@@ -13,6 +13,7 @@
   <name>Emulation of Core Libraries</name>
   <modules>
     <module>mini</module>
+    <module>minitest</module>
     <module>compact</module>
     <module>compacttest</module>
     <module>brwsrtest</module>
