@@ -18,13 +18,10 @@
 package org.apidesign.bck2brwsr.launcher.impl;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.net.URL;
-import java.util.Enumeration;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
@@ -157,7 +154,7 @@ public class Console {
         log("Connecting to " + url);
         Request r = new Request(url);
     }
-    
+
     private static class Request implements Runnable {
         private final String[] arr = { null };
         private final String url;
@@ -242,58 +239,6 @@ public class Console {
         return r == null ? "null" : r.toString().toString();
     }
 
-    /** Helper method that inspects the classpath and loads given resource
-     * (usually a class file). Used while running tests in Rhino.
-     * 
-     * @param name resource name to find
-     * @return the array of bytes in the given resource
-     * @throws IOException I/O in case something goes wrong
-     */
-    public static byte[] read(String name, int skip) throws IOException {
-        URL u = null;
-        if (!name.endsWith(".class")) {
-            u = getResource(name, skip);
-        } else {
-            Enumeration<URL> en = Console.class.getClassLoader().getResources(name);
-            while (en.hasMoreElements()) {
-                u = en.nextElement();
-            }
-        }
-        if (u == null) {
-            if (name.endsWith(".class")) {
-                throw new IOException("Can't find " + name);
-            } else {
-                return null;
-            }
-        }
-        try (InputStream is = u.openStream()) {
-            byte[] arr;
-            arr = new byte[is.available()];
-            int offset = 0;
-            while (offset < arr.length) {
-                int len = is.read(arr, offset, arr.length - offset);
-                if (len == -1) {
-                    throw new IOException("Can't read " + name);
-                }
-                offset += len;
-            }
-            return arr;
-        }
-    }
-   
-    private static URL getResource(String resource, int skip) throws IOException {
-        URL u = null;
-        Enumeration<URL> en = Console.class.getClassLoader().getResources(resource);
-        while (en.hasMoreElements()) {
-            final URL now = en.nextElement();
-            if (--skip < 0) {
-                u = now;
-                break;
-            }
-        }
-        return u;
-    }
-    
     @JavaScriptBody(args = {}, body = "vm['java_lang_Class'](false)['desiredAssertionStatus'] = true;")
     private static void turnAssetionStatusOn() {
     }
@@ -301,7 +246,17 @@ public class Console {
     @JavaScriptBody(args = {"r", "time"}, body =
         "return window.setTimeout(function() { r.run__V(); }, time);")
     private static native Object schedule(Runnable r, int time);
-    
+
+    public static String parseBase64Binary(String s) throws UnsupportedEncodingException {
+        final byte[] arr = javax.xml.bind.DatatypeConverter.parseBase64Binary(s);
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < arr.length; i++) {
+            int ch = arr[i];
+            sb.append((char) ch);
+        }
+        return sb.toString();
+    }
+
     private static final class Case {
         private final Object data;
         private Object inst;
