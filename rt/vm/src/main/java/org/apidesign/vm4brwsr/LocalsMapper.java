@@ -32,6 +32,15 @@ final class LocalsMapper {
         localTypeRecords = new TypeArray(initTypeRecords);
     }
 
+    void outputUndefinedCheck(Appendable out) throws IOException {
+        final int argRecordCount = argTypeRecords.getSize();
+        for (int i = 0; i < argRecordCount;) {
+            Variable varI = getVariable(argTypeRecords, i);
+            out.append("  if (").append(varI).append(" === undefined) ").append(varI).append(" = null;\n");
+            i += varI.isCategory2() ? 2 : 1;
+        }
+    }
+
     public void outputArguments(final Appendable out, boolean isStatic) throws IOException {
         final int argRecordCount = argTypeRecords.getSize();
         int first = isStatic ? 0 : 1;
@@ -138,4 +147,5 @@ final class LocalsMapper {
                                         final int index) {
         return Variable.getLocalVariable(typeRecords.get(index) & 0xff, index);
     }
+
 }

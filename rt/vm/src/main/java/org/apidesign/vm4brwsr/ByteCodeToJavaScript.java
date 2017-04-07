@@ -490,6 +490,10 @@ abstract class ByteCodeToJavaScript implements Appendable {
             append("  var ").append(" lcA0 = this;\n");
         }
 
+        if (this.callbacks) {
+            lmapper.outputUndefinedCheck(this);
+        }
+
         int lastStackFrame;
         TrapData[] previousTrap = null;
         boolean wide = false;
