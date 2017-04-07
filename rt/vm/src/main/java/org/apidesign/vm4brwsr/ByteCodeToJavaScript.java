@@ -1970,6 +1970,12 @@ abstract class ByteCodeToJavaScript implements Appendable {
         final String mn = findMethodName(m, cnt);
         append("m = ").append(destObject).append(".").append(mn);
         append(" = function(");
+        if (p.html4j) {
+            append(") {").append("\n");
+            if (p.html4j) {
+                append("  var r = (function(");
+            }
+        }
         String space = "";
         int index = 0;
         StringBuilder toValue = new StringBuilder();
@@ -1992,6 +1998,10 @@ abstract class ByteCodeToJavaScript implements Appendable {
             requireReference(pkg + "/$JsCallbacks$");
         } else {
             append(p.body);
+        }
+        if (p.html4j) {
+            append("\n}).apply(this, arguments");
+            append(");\n  return r === undefined ? null : r;\n");
         }
         append("\n}\n");
         return mn;

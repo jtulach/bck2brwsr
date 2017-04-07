@@ -36,19 +36,35 @@ public class Resources {
     static Object retObj() {
         return null;
     }
-    
+
     public static boolean isObj() {
         return retObj() != null;
     }
     public static boolean isResource(String name) {
         return Resources.class.getResource(name) != null;
     }
-    
+
+    @JavaScriptBody(args = { "add", "a", "b" }, body = "\n"
+            + "if (add) {\n"
+            + "  return a + b;\n"
+            + "}else {\n"
+            + "  return arguments[555];\n"
+            + "}\n")
+    static native String addArgs(boolean add, String a, String b);
+
+    public static String addDirect() {
+        return addArgs(true, "Hello", "World");
+    }
+
+    public static String unknown() {
+        return addArgs(false, null, null);
+    }
+
     public static String loadKO() throws IOException {
         InputStream is = Resources.class.getResourceAsStream("ko.js");
         return readIS(is, false);
     }
-    
+
     static String loadClazz() throws IOException {
         Object o = new Resources();
         InputStream is = o.getClass().getResourceAsStream("Bck2BrwsrToolkit.class");
@@ -64,17 +80,17 @@ public class Resources {
         if (len < 5) {
             return "No data read! Len: " + len;
         }
-        
+
         if (asString) {
             return new String(arr, 0, len, "UTF-8").toString().toString();
         }
-        
+
         StringBuilder sb = new StringBuilder();
         sb.append("[");
         for (int i = 0; i < len; i++) {
             sb.append(arr[i]).append(", ");
         }
-        
+
         return sb.toString().toString();
     }
     static long bytesToLong(byte b1, byte b2, int shift) {
