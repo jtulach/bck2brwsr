@@ -505,6 +505,22 @@ abstract class ByteCodeToJavaScript implements Appendable {
             this.ignoreOutput = 1;
         }
 
+        loopCode(stackMapIterator, byteCodes, trap, smapper, lmapper);
+        ignoreOutput = 0;
+        if (defineProp) {
+            append("\n}});");
+        } else {
+            append("\n};");
+        }
+        return defineProp;
+    }
+
+    private void loopCode(
+        final StackMapIterator stackMapIterator,
+        final byte[] byteCodes, TrapDataIterator trap,
+        final StackMapper smapper,
+        final LocalsMapper lmapper
+    ) throws IllegalStateException, NumberFormatException, IOException {
         int lastStackFrame;
         TrapData[] previousTrap = null;
         boolean wide = false;
@@ -622,7 +638,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                 case opc_iload: {
                     ++i;
                     final int indx = wide ? readUShort(byteCodes, i++)
-                                          : readUByte(byteCodes, i);
+                            : readUByte(byteCodes, i);
                     wide = false;
                     smapper.assign(this, VarType.INTEGER, lmapper.getI(indx));
                     break;
@@ -630,7 +646,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                 case opc_lload: {
                     ++i;
                     final int indx = wide ? readUShort(byteCodes, i++)
-                                          : readUByte(byteCodes, i);
+                            : readUByte(byteCodes, i);
                     wide = false;
                     smapper.assign(this, VarType.LONG, lmapper.getL(indx));
                     break;
@@ -638,7 +654,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                 case opc_fload: {
                     ++i;
                     final int indx = wide ? readUShort(byteCodes, i++)
-                                          : readUByte(byteCodes, i);
+                            : readUByte(byteCodes, i);
                     wide = false;
                     smapper.assign(this, VarType.FLOAT, lmapper.getF(indx));
                     break;
@@ -646,7 +662,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                 case opc_dload: {
                     ++i;
                     final int indx = wide ? readUShort(byteCodes, i++)
-                                          : readUByte(byteCodes, i);
+                            : readUByte(byteCodes, i);
                     wide = false;
                     smapper.assign(this, VarType.DOUBLE, lmapper.getD(indx));
                     break;
@@ -654,7 +670,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                 case opc_aload: {
                     ++i;
                     final int indx = wide ? readUShort(byteCodes, i++)
-                                          : readUByte(byteCodes, i);
+                            : readUByte(byteCodes, i);
                     wide = false;
                     smapper.assign(this, VarType.REFERENCE, lmapper.getA(indx));
                     break;
@@ -662,46 +678,46 @@ abstract class ByteCodeToJavaScript implements Appendable {
                 case opc_istore: {
                     ++i;
                     final int indx = wide ? readUShort(byteCodes, i++)
-                                          : readUByte(byteCodes, i);
+                            : readUByte(byteCodes, i);
                     wide = false;
                     emit(smapper, this, "var @1 = @2;",
-                         lmapper.setI(indx), smapper.popI());
+                            lmapper.setI(indx), smapper.popI());
                     break;
                 }
                 case opc_lstore: {
                     ++i;
                     final int indx = wide ? readUShort(byteCodes, i++)
-                                          : readUByte(byteCodes, i);
+                            : readUByte(byteCodes, i);
                     wide = false;
                     emit(smapper, this, "var @1 = @2;",
-                         lmapper.setL(indx), smapper.popL());
+                            lmapper.setL(indx), smapper.popL());
                     break;
                 }
                 case opc_fstore: {
                     ++i;
                     final int indx = wide ? readUShort(byteCodes, i++)
-                                          : readUByte(byteCodes, i);
+                            : readUByte(byteCodes, i);
                     wide = false;
                     emit(smapper, this, "var @1 = @2;",
-                         lmapper.setF(indx), smapper.popF());
+                            lmapper.setF(indx), smapper.popF());
                     break;
                 }
                 case opc_dstore: {
                     ++i;
                     final int indx = wide ? readUShort(byteCodes, i++)
-                                          : readUByte(byteCodes, i);
+                            : readUByte(byteCodes, i);
                     wide = false;
                     emit(smapper, this, "var @1 = @2;",
-                         lmapper.setD(indx), smapper.popD());
+                            lmapper.setD(indx), smapper.popD());
                     break;
                 }
                 case opc_astore: {
                     ++i;
                     final int indx = wide ? readUShort(byteCodes, i++)
-                                          : readUByte(byteCodes, i);
+                            : readUByte(byteCodes, i);
                     wide = false;
                     emit(smapper, this, "var @1 = @2;",
-                         lmapper.setA(indx), smapper.popA());
+                            lmapper.setA(indx), smapper.popA());
                     break;
                 }
                 case opc_astore_0:
@@ -802,11 +818,11 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     break;
                 case opc_idiv:
                     smapper.replace(this, VarType.INTEGER, numbers.div32(),
-                         smapper.getI(1), smapper.popI());
+                            smapper.getI(1), smapper.popI());
                     break;
                 case opc_ldiv:
                     smapper.replace(this, VarType.LONG, numbers.div64(),
-                         smapper.getL(1), smapper.popL());
+                            smapper.getL(1), smapper.popL());
                     break;
                 case opc_fdiv:
                     smapper.replace(this, VarType.FLOAT, "(@1 / @2)", smapper.getF(1), smapper.popF());
@@ -816,11 +832,11 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     break;
                 case opc_irem:
                     smapper.replace(this, VarType.INTEGER, numbers.mod32(),
-                         smapper.getI(1), smapper.popI());
+                            smapper.getI(1), smapper.popI());
                     break;
                 case opc_lrem:
                     smapper.replace(this, VarType.LONG, numbers.mod64(),
-                         smapper.getL(1), smapper.popL());
+                            smapper.getL(1), smapper.popL());
                     break;
                 case opc_frem:
                     smapper.replace(this, VarType.FLOAT, "(@1 % @2)", smapper.getF(1), smapper.popF());
@@ -879,17 +895,17 @@ abstract class ByteCodeToJavaScript implements Appendable {
                 case opc_iinc: {
                     ++i;
                     final int varIndx = wide ? readUShort(byteCodes, i++)
-                                             : readUByte(byteCodes, i);
+                            : readUByte(byteCodes, i);
                     ++i;
                     final int incrBy = wide ? readShort(byteCodes, i++)
-                                            : byteCodes[i];
+                            : byteCodes[i];
                     wide = false;
                     if (incrBy == 1) {
                         emit(smapper, this, "@1++;", lmapper.getI(varIndx));
                     } else {
                         emit(smapper, this, "@1 += @2;",
-                             lmapper.getI(varIndx),
-                             Integer.toString(incrBy));
+                                lmapper.getI(varIndx),
+                                Integer.toString(incrBy));
                     }
                     break;
                 }
@@ -932,23 +948,23 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     break;
                 case opc_f2d:
                     smapper.replace(this, VarType.DOUBLE, "@1",
-                         smapper.getF(0));
+                            smapper.getF(0));
                     break;
                 case opc_d2f:
                     smapper.replace(this, VarType.FLOAT, "@1",
-                         smapper.getD(0));
+                            smapper.getD(0));
                     break;
                 case opc_f2i:
                     smapper.replace(this, VarType.INTEGER, "((@1) | 0)",
-                         smapper.getF(0));
+                            smapper.getF(0));
                     break;
                 case opc_f2l:
                     smapper.replace(this, VarType.LONG, "(@1).toLong()",
-                         smapper.getF(0));
+                            smapper.getF(0));
                     break;
                 case opc_d2i:
                     smapper.replace(this, VarType.INTEGER, "((@1)| 0)",
-                         smapper.getD(0));
+                            smapper.getD(0));
                     break;
                 case opc_d2l:
                     smapper.replace(this, VarType.LONG, "(@1).toLong()", smapper.getD(0));
@@ -1026,8 +1042,8 @@ abstract class ByteCodeToJavaScript implements Appendable {
                             smapper.assign(this, VarType.LONG, "0x" + Integer.toHexString(low));
                         } else {
                             smapper.assign(this, VarType.LONG,
-                                "0x" + Integer.toHexString(hi) + ".next32(0x" + 
-                                    Integer.toHexString(low) + ")"
+                                    "0x" + Integer.toHexString(hi) + ".next32(0x" +
+                                            Integer.toHexString(low) + ")"
                             );
                         }
                     } else {
@@ -1041,100 +1057,100 @@ abstract class ByteCodeToJavaScript implements Appendable {
                 case opc_fcmpl:
                 case opc_fcmpg:
                     emit(smapper, this, "var @3 = (@2 == @1) ? 0 : ((@2 < @1) ? -1 : 1);",
-                         smapper.popF(), smapper.popF(), smapper.pushI());
+                            smapper.popF(), smapper.popF(), smapper.pushI());
                     break;
                 case opc_dcmpl:
                 case opc_dcmpg:
                     emit(smapper, this, "var @3 = (@2 == @1) ? 0 : ((@2 < @1) ? -1 : 1);",
-                         smapper.popD(), smapper.popD(), smapper.pushI());
+                            smapper.popD(), smapper.popD(), smapper.pushI());
                     break;
                 case opc_if_acmpeq:
                     i = generateIf(smapper, byteCodes, i, smapper.popA(), smapper.popA(),
-                                   "===", topMostLabel);
+                            "===", topMostLabel);
                     break;
                 case opc_if_acmpne:
                     i = generateIf(smapper, byteCodes, i, smapper.popA(), smapper.popA(),
-                                   "!==", topMostLabel);
+                            "!==", topMostLabel);
                     break;
                 case opc_if_icmpeq:
                     i = generateIf(smapper, byteCodes, i, smapper.popI(), smapper.popI(),
-                                   "==", topMostLabel);
+                            "==", topMostLabel);
                     break;
                 case opc_ifeq: {
                     int indx = i + readShortArg(byteCodes, i);
                     emitIf(smapper, this, "if ((@1) == 0) ",
-                         smapper.popI(), i, indx, topMostLabel);
+                            smapper.popI(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_ifne: {
                     int indx = i + readShortArg(byteCodes, i);
                     emitIf(smapper, this, "if ((@1) != 0) ",
-                         smapper.popI(), i, indx, topMostLabel);
+                            smapper.popI(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_iflt: {
                     int indx = i + readShortArg(byteCodes, i);
                     emitIf(smapper, this, "if ((@1) < 0) ",
-                         smapper.popI(), i, indx, topMostLabel);
+                            smapper.popI(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_ifle: {
                     int indx = i + readShortArg(byteCodes, i);
                     emitIf(smapper, this, "if ((@1) <= 0) ",
-                         smapper.popI(), i, indx, topMostLabel);
+                            smapper.popI(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_ifgt: {
                     int indx = i + readShortArg(byteCodes, i);
                     emitIf(smapper, this, "if ((@1) > 0) ",
-                         smapper.popI(), i, indx, topMostLabel);
+                            smapper.popI(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_ifge: {
                     int indx = i + readShortArg(byteCodes, i);
                     emitIf(smapper, this, "if ((@1) >= 0) ",
-                         smapper.popI(), i, indx, topMostLabel);
+                            smapper.popI(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_ifnonnull: {
                     int indx = i + readShortArg(byteCodes, i);
                     emitIf(smapper, this, "if ((@1) !== null) ",
-                         smapper.popA(), i, indx, topMostLabel);
+                            smapper.popA(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_ifnull: {
                     int indx = i + readShortArg(byteCodes, i);
                     emitIf(smapper, this, "if ((@1) === null) ",
-                         smapper.popA(), i, indx, topMostLabel);
+                            smapper.popA(), i, indx, topMostLabel);
                     i += 2;
                     break;
                 }
                 case opc_if_icmpne:
                     i = generateIf(smapper, byteCodes, i, smapper.popI(), smapper.popI(),
-                                   "!=", topMostLabel);
+                            "!=", topMostLabel);
                     break;
                 case opc_if_icmplt:
                     i = generateIf(smapper, byteCodes, i, smapper.popI(), smapper.popI(),
-                                   "<", topMostLabel);
+                            "<", topMostLabel);
                     break;
                 case opc_if_icmple:
                     i = generateIf(smapper, byteCodes, i, smapper.popI(), smapper.popI(),
-                                   "<=", topMostLabel);
+                            "<=", topMostLabel);
                     break;
                 case opc_if_icmpgt:
                     i = generateIf(smapper, byteCodes, i, smapper.popI(), smapper.popI(),
-                                   ">", topMostLabel);
+                            ">", topMostLabel);
                     break;
                 case opc_if_icmpge:
                     i = generateIf(smapper, byteCodes, i, smapper.popI(), smapper.popI(),
-                                   ">=", topMostLabel);
+                            ">=", topMostLabel);
                     break;
                 case opc_goto: {
                     smapper.flush(this);
@@ -1189,7 +1205,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     String type = jc.StringValue(nameAndType.cpx2);
                     String object = accessClass(mcn) + "(false)";
                     if (mn.startsWith("cons_")) {
-                        object += ".constructor";
+                    object += ".constructor";
                     }
                     append("var metHan = ");
                     append(accessStaticMethod(object, mn, mi));
@@ -1199,13 +1215,13 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     append(", '").append(mi[1]).append("', ");
                     String methodType = accessClass("java_lang_invoke_MethodType") + "(false).fromMethodDescriptorString__Ljava_lang_invoke_MethodType_2Ljava_lang_String_2Ljava_lang_ClassLoader_2(";
                     append(methodType).append("'").append(type).append("', null)");
-//                    if (numArguments > 0) {
-//                        append(vars[0]);
-//                        for (int j = 1; j < numArguments; ++j) {
-//                            append(", ");
-//                            append(vars[j]);
-//                        }
-//                    }
+                    //                    if (numArguments > 0) {
+                    //                        append(vars[0]);
+                    //                        for (int j = 1; j < numArguments; ++j) {
+                    //                            append(", ");
+                    //                            append(vars[j]);
+                    //                        }
+                    //                    }
                     append(");");
                     emit(smapper, this, "throw 'Invoke dynamic: ' + @1 + ': ' + metHan;", "" + indx);
                     i += 4;
@@ -1216,7 +1232,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     int indx = readUShortArg(byteCodes, i);
                     String ci = jc.getClassName(indx);
                     emit(smapper, this, "var @1 = new @2;",
-                         smapper.pushA(), accessClass(mangleClassName(ci)));
+                            smapper.pushA(), accessClass(mangleClassName(ci)));
                     addReference(ci);
                     i += 2;
                     break;
@@ -1242,49 +1258,49 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     break;
                 case opc_lastore:
                     emit(smapper, this, "Array.at(@3, @2, @1);",
-                         smapper.popL(), smapper.popI(), smapper.popA());
+                            smapper.popL(), smapper.popI(), smapper.popA());
                     break;
                 case opc_fastore:
                     emit(smapper, this, "Array.at(@3, @2, @1);",
-                         smapper.popF(), smapper.popI(), smapper.popA());
+                            smapper.popF(), smapper.popI(), smapper.popA());
                     break;
                 case opc_dastore:
                     emit(smapper, this, "Array.at(@3, @2, @1);",
-                         smapper.popD(), smapper.popI(), smapper.popA());
+                            smapper.popD(), smapper.popI(), smapper.popA());
                     break;
                 case opc_aastore:
                     emit(smapper, this, "Array.at(@3, @2, @1);",
-                         smapper.popA(), smapper.popI(), smapper.popA());
+                            smapper.popA(), smapper.popI(), smapper.popA());
                     break;
                 case opc_iastore:
                 case opc_bastore:
                 case opc_castore:
                 case opc_sastore:
                     emit(smapper, this, "Array.at(@3, @2, @1);",
-                         smapper.popI(), smapper.popI(), smapper.popA());
+                            smapper.popI(), smapper.popI(), smapper.popA());
                     break;
                 case opc_laload:
                     smapper.replace(this, VarType.LONG, "(@2[@1] || Array.at(@2, @1))",
-                         smapper.popI(), smapper.getA(0));
+                            smapper.popI(), smapper.getA(0));
                     break;
                 case opc_faload:
                     smapper.replace(this, VarType.FLOAT, "(@2[@1] || Array.at(@2, @1))",
-                         smapper.popI(), smapper.getA(0));
+                            smapper.popI(), smapper.getA(0));
                     break;
                 case opc_daload:
                     smapper.replace(this, VarType.DOUBLE, "(@2[@1] || Array.at(@2, @1))",
-                         smapper.popI(), smapper.getA(0));
+                            smapper.popI(), smapper.getA(0));
                     break;
                 case opc_aaload:
                     smapper.replace(this, VarType.REFERENCE, "(@2[@1] || Array.at(@2, @1))",
-                         smapper.popI(), smapper.getA(0));
+                            smapper.popI(), smapper.getA(0));
                     break;
                 case opc_iaload:
                 case opc_baload:
                 case opc_caload:
                 case opc_saload:
                     smapper.replace(this, VarType.INTEGER, "(@2[@1] || Array.at(@2, @1))",
-                         smapper.popI(), smapper.getA(0));
+                            smapper.popI(), smapper.getA(0));
                     break;
                 case opc_pop:
                 case opc_pop2:
@@ -1305,12 +1321,12 @@ abstract class ByteCodeToJavaScript implements Appendable {
 
                     if (vi1.isCategory2()) {
                         emit(smapper, this, "var @1 = @2;",
-                             smapper.pushT(vi1.getType()), vi1);
+                                smapper.pushT(vi1.getType()), vi1);
                     } else {
                         final Variable vi2 = smapper.get(1);
                         emit(smapper, this, "var @1 = @2, @3 = @4;",
-                             smapper.pushT(vi2.getType()), vi2,
-                             smapper.pushT(vi1.getType()), vi1);
+                                smapper.pushT(vi2.getType()), vi2,
+                                smapper.pushT(vi1.getType()), vi1);
                     }
                     break;
                 }
@@ -1322,7 +1338,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     final Variable vo1 = smapper.pushT(vi1.getType());
 
                     emit(smapper, this, "var @1 = @2, @3 = @4, @5 = @6;",
-                         vo1, vi1, vo2, vi2, vo3, vo1);
+                            vo1, vi1, vo2, vi2, vo3, vo1);
                     break;
                 }
                 case opc_dup2_x1: {
@@ -1335,7 +1351,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                         final Variable vo1 = smapper.pushT(vi1.getType());
 
                         emit(smapper, this, "var @1 = @2, @3 = @4, @5 = @6;",
-                             vo1, vi1, vo2, vi2, vo3, vo1);
+                                vo1, vi1, vo2, vi2, vo3, vo1);
                     } else {
                         final Variable vi3 = smapper.pop(this);
                         final Variable vo5 = smapper.pushT(vi2.getType());
@@ -1345,9 +1361,9 @@ abstract class ByteCodeToJavaScript implements Appendable {
                         final Variable vo1 = smapper.pushT(vi1.getType());
 
                         emit(smapper, this, "var @1 = @2, @3 = @4, @5 = @6,",
-                             vo1, vi1, vo2, vi2, vo3, vi3);
+                                vo1, vi1, vo2, vi2, vo3, vi3);
                         emit(smapper, this, " @1 = @2, @3 = @4;",
-                             vo4, vo1, vo5, vo2);
+                                vo4, vo1, vo5, vo2);
                     }
                     break;
                 }
@@ -1361,7 +1377,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                         final Variable vo1 = smapper.pushT(vi1.getType());
 
                         emit(smapper, this, "var @1 = @2, @3 = @4, @5 = @6;",
-                             vo1, vi1, vo2, vi2, vo3, vo1);
+                                vo1, vi1, vo2, vi2, vo3, vo1);
                     } else {
                         final Variable vi3 = smapper.pop(this);
                         final Variable vo4 = smapper.pushT(vi1.getType());
@@ -1370,7 +1386,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                         final Variable vo1 = smapper.pushT(vi1.getType());
 
                         emit(smapper, this, "var @1 = @2, @3 = @4, @5 = @6, @7 = @8;",
-                             vo1, vi1, vo2, vi2, vo3, vi3, vo4, vo1);
+                                vo1, vi1, vo2, vi2, vo3, vi3, vo4, vo1);
                     }
                     break;
                 }
@@ -1385,7 +1401,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                             final Variable vo1 = smapper.pushT(vi1.getType());
 
                             emit(smapper, this, "var @1 = @2, @3 = @4, @5 = @6;",
-                                 vo1, vi1, vo2, vi2, vo3, vo1);
+                                    vo1, vi1, vo2, vi2, vo3, vo1);
                         } else {
                             final Variable vi3 = smapper.pop(this);
                             final Variable vo4 = smapper.pushT(vi1.getType());
@@ -1394,7 +1410,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                             final Variable vo1 = smapper.pushT(vi1.getType());
 
                             emit(smapper, this, "var @1 = @2, @3 = @4, @5 = @6, @7 = @8;",
-                                 vo1, vi1, vo2, vi2, vo3, vi3, vo4, vo1);
+                                    vo1, vi1, vo2, vi2, vo3, vi3, vo4, vo1);
                         }
                     } else {
                         final Variable vi3 = smapper.pop(this);
@@ -1407,9 +1423,9 @@ abstract class ByteCodeToJavaScript implements Appendable {
                             final Variable vo1 = smapper.pushT(vi1.getType());
 
                             emit(smapper, this, "var @1 = @2, @3 = @4, @5 = @6,",
-                                 vo1, vi1, vo2, vi2, vo3, vi3);
+                                    vo1, vi1, vo2, vi2, vo3, vi3);
                             emit(smapper, this, " @1 = @2, @3 = @4;",
-                                 vo4, vo1, vo5, vo2);
+                                    vo4, vo1, vo5, vo2);
                         } else {
                             final Variable vi4 = smapper.pop(this);
                             final Variable vo6 = smapper.pushT(vi2.getType());
@@ -1420,9 +1436,9 @@ abstract class ByteCodeToJavaScript implements Appendable {
                             final Variable vo1 = smapper.pushT(vi1.getType());
                             
                             emit(smapper, this, "var @1 = @2, @3 = @4, @5 = @6, @7 = @8,",
-                                 vo1, vi1, vo2, vi2, vo3, vi3, vo4, vi4);
+                                    vo1, vi1, vo2, vi2, vo3, vi3, vo4, vi4);
                             emit(smapper, this, " @1 = @2, @3 = @4;",
-                                 vo5, vo1, vo6, vo2);
+                                    vo5, vo1, vo6, vo2);
                         }
                     }
                     break;
@@ -1435,7 +1451,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                         final Variable tmp = smapper.pushT(vi1.getType());
 
                         emit(smapper, this, "var @1 = @2, @2 = @3, @3 = @1;",
-                             tmp, vi1, vi2);
+                                tmp, vi1, vi2);
                         smapper.pop(1);
                     } else {
                         smapper.pop(2);
@@ -1445,12 +1461,12 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     break;
                 }
                 case opc_bipush:
-                    smapper.assign(this, VarType.INTEGER, 
-                        "(" + Integer.toString(byteCodes[++i]) + ")");
+                    smapper.assign(this, VarType.INTEGER,
+                            "(" + Integer.toString(byteCodes[++i]) + ")");
                     break;
                 case opc_sipush:
-                    smapper.assign(this, VarType.INTEGER, 
-                        "(" + Integer.toString(readShortArg(byteCodes, i)) + ")"
+                    smapper.assign(this, VarType.INTEGER,
+                            "(" + Integer.toString(readShortArg(byteCodes, i)) + ")"
                     );
                     i += 2;
                     break;
@@ -1463,14 +1479,14 @@ abstract class ByteCodeToJavaScript implements Appendable {
                         final String mangleClass = mangleClassName(fi[0]);
                         final String mangleClassAccess = accessClassFalse(mangleClass);
                         smapper.replace(this, type, "@2.call(@1)",
-                             smapper.getA(0),
-                             accessField(mangleClassAccess, null, fi)
+                                smapper.getA(0),
+                                accessField(mangleClassAccess, null, fi)
                         );
                     } else {
                         final String fieldOwner = mangleClassName(field.cls.getClassName());
                         smapper.replace(this, type, "@1@2",
-                             smapper.getA(0),
-                             accessField(fieldOwner, field, fi)
+                                smapper.getA(0),
+                                accessField(fieldOwner, field, fi)
                         );
                     }
                     i += 2;
@@ -1486,16 +1502,16 @@ abstract class ByteCodeToJavaScript implements Appendable {
                         final String mangleClass = mangleClassName(fi[0]);
                         final String mangleClassAccess = accessClassFalse(mangleClass);
                         emit(smapper, this, "@3.call(@2, @1);",
-                             smapper.popT(type),
-                             smapper.popA(),
-                             accessField(mangleClassAccess, null, fi)
+                                smapper.popT(type),
+                                smapper.popA(),
+                                accessField(mangleClassAccess, null, fi)
                         );
                     } else {
                         final String fieldOwner = mangleClassName(field.cls.getClassName());
                         emit(smapper, this, "@2@3 = @1;",
-                             smapper.popT(type),
-                             smapper.popA(),
-                             accessField(fieldOwner, field, fi)
+                                smapper.popT(type),
+                                smapper.popA(),
+                                accessField(fieldOwner, field, fi)
                         );
                     }
                     i += 2;
@@ -1519,8 +1535,8 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     String[] fi = jc.getFieldInfoName(indx);
                     final int type = VarType.fromFieldType(fi[2].charAt(0));
                     emit(smapper, this, "@1._@2(@3);",
-                         accessClassFalse(mangleClassName(fi[0])), fi[1],
-                         smapper.popT(type));
+                            accessClassFalse(mangleClassName(fi[0])), fi[1],
+                            smapper.popT(type));
                     i += 2;
                     addReference(fi[0]);
                     break;
@@ -1542,7 +1558,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                     smapper.clear();
 
                     emit(smapper, this, "{ var @1 = @2; throw @2; }",
-                         smapper.pushA(), v);
+                            smapper.pushA(), v);
                     break;
                 }
 
@@ -1565,7 +1581,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
                 default: {
                     wide = false;
                     emit(smapper, this, "throw 'unknown bytecode @1';",
-                         Integer.toString(c));
+                            Integer.toString(c));
                 }
             }
             if (debug(" //")) {
@@ -1584,13 +1600,6 @@ abstract class ByteCodeToJavaScript implements Appendable {
         while (openBraces-- > 0) {
             append('}');
         }
-        ignoreOutput = 0;
-        if (defineProp) {
-            append("\n}});");
-        } else {
-            append("\n};");
-        }
-        return defineProp;
     }
 
     private int generateIf(StackMapper mapper, byte[] byteCodes, 
