@@ -666,17 +666,17 @@ class LoopCode implements Runnable {
                     }
                 case ByteCodeParser.opc_invokeinterface:
                     {
-                        i = byteCodeToJavaScript.invokeVirtualMethod(out, byteCodes, i, smapper) + 2;
+                        i = invokeVirtualMethod(out, byteCodes, i, smapper) + 2;
                         break;
                     }
                 case ByteCodeParser.opc_invokevirtual:
-                    i = byteCodeToJavaScript.invokeVirtualMethod(out, byteCodes, i, smapper);
+                    i = invokeVirtualMethod(out, byteCodes, i, smapper);
                     break;
                 case ByteCodeParser.opc_invokespecial:
-                    i = byteCodeToJavaScript.invokeStaticMethod(out, byteCodes, i, smapper, false);
+                    i = invokeStaticMethod(out, byteCodes, i, smapper, false);
                     break;
                 case ByteCodeParser.opc_invokestatic:
-                    i = byteCodeToJavaScript.invokeStaticMethod(out, byteCodes, i, smapper, true);
+                    i = invokeStaticMethod(out, byteCodes, i, smapper, true);
                     break;
                 case ByteCodeParser.opc_invokedynamic:
                     {
@@ -1051,6 +1051,99 @@ class LoopCode implements Runnable {
             out.append('}');
         }
     }
-    
 
+    int invokeVirtualMethod(Appendable out, byte[] byteCodes, int i, final StackMapper mapper) throws IOException {
+        int methodIndex = ByteCodeToJavaScript.readUShortArg(byteCodes, i);
+        String[] mi = jc.getFieldInfoName(methodIndex);
+        char[] returnType = {'V'};
+        StringBuilder cnt = new StringBuilder();
+        String mn = ByteCodeToJavaScript.findMethodName(mi, cnt, returnType);
+        final int numArguments = cnt.length() + 1;
+        final CharSequence[] vars = new CharSequence[numArguments];
+        for (int j = numArguments - 1; j >= 0; --j) {
+            vars[j] = mapper.popValue();
+        }
+        if (returnType[0] != 'V') {
+            mapper.flush(out);
+            out.append("var ").append(mapper.pushT(VarType.fromFieldType(returnType[0]))).append(" = ");
+        }
+
+        boolean callbacksFinished = beginCall(mi, vars, false);
+        out.append(byteCodeToJavaScript.accessVirtualMethod(vars[0].toString(), mn, mi, numArguments));
+        String sep = "";
+        for (int j = 1; j < numArguments; ++j) {
+            out.append(sep);
+            out.append(vars[j]);
+            sep = ", ";
+        }
+        out.append(");");
+        i += 2;
+        endCall(callbacksFinished);
+        return i;
+    }
+
+    int invokeStaticMethod(Appendable out, byte[] byteCodes, int i, final StackMapper mapper, boolean isStatic) throws IOException {
+        int methodIndex = ByteCodeToJavaScript.readUShortArg(byteCodes, i);
+        String[] mi = jc.getFieldInfoName(methodIndex);
+        char[] returnType = {'V'};
+        StringBuilder cnt = new StringBuilder();
+        String mn = ByteCodeToJavaScript.findMethodName(mi, cnt, returnType);
+        final int numArguments = isStatic ? cnt.length() : cnt.length() + 1;
+        final CharSequence[] vars = new CharSequence[numArguments];
+        for (int j = numArguments - 1; j >= 0; --j) {
+            vars[j] = mapper.popValue();
+        }
+        if (("newUpdater__Ljava_util_concurrent_atomic_AtomicIntegerFieldUpdater_2Ljava_lang_Class_2Ljava_lang_String_2".equals(mn) && "java/util/concurrent/atomic/AtomicIntegerFieldUpdater".equals(mi[0])) || ("newUpdater__Ljava_util_concurrent_atomic_AtomicLongFieldUpdater_2Ljava_lang_Class_2Ljava_lang_String_2".equals(mn) && "java/util/concurrent/atomic/AtomicLongFieldUpdater".equals(mi[0]))) {
+            if (vars[1] instanceof String) {
+                String field = vars[1].toString();
+                if (field.length() > 2 && field.charAt(0) == '"' && field.charAt(field.length() - 1) == '"') {
+                    vars[1] = "c._" + field.substring(1, field.length() - 1);
+                }
+            }
+        }
+        if ("newUpdater__Ljava_util_concurrent_atomic_AtomicReferenceFieldUpdater_2Ljava_lang_Class_2Ljava_lang_Class_2Ljava_lang_String_2".equals(mn) && "java/util/concurrent/atomic/AtomicReferenceFieldUpdater".equals(mi[0])) {
+            if (vars[1] instanceof String) {
+                String field = vars[2].toString();
+                if (field.length() > 2 && field.charAt(0) == '"' && field.charAt(field.length() - 1) == '"') {
+                    vars[2] = "c._" + field.substring(1, field.length() - 1);
+                }
+            }
+        }
+        if (returnType[0] != 'V') {
+            mapper.flush(out);
+            out.append("var ").append(mapper.pushT(VarType.fromFieldType(returnType[0]))).append(" = ");
+        }
+        boolean callbacksFinished = beginCall(mi, vars, true);
+        final String in = mi[0];
+        String mcn = ByteCodeToJavaScript.mangleClassName(in);
+        String object = byteCodeToJavaScript.accessClassFalse(mcn);
+        if (mn.startsWith("cons_")) {
+            object += ".constructor";
+        }
+        out.append(byteCodeToJavaScript.accessStaticMethod(object, mn, mi));
+        if (isStatic) {
+            out.append('(');
+        } else {
+            out.append(".call(");
+        }
+        if (numArguments > 0) {
+            out.append(vars[0]);
+            for (int j = 1; j < numArguments; ++j) {
+                out.append(", ");
+                out.append(vars[j]);
+            }
+        }
+        out.append(");");
+        i += 2;
+        endCall(callbacksFinished);
+        byteCodeToJavaScript.addReference(out, in);
+        return i;
+    }
+
+    protected boolean beginCall(String[] mi, CharSequence[] vars, boolean isStatic) throws IOException {
+        return false;
+    }
+
+    protected void endCall(boolean callbacksFinished) throws IOException {
+    }
 }

@@ -39,34 +39,9 @@ abstract class ByteCodeToJavaScript {
     private final NumberOperations numbers = new NumberOperations();
     private final Appendable output;
     private boolean callbacks;
-    private int ignoreOutput;
 
     protected ByteCodeToJavaScript(final Appendable out) {
-        this.output = new Appendable() {
-            @Override
-            public Appendable append(CharSequence csq) throws IOException {
-                if (ignoreOutput == 0) {
-                    out.append(csq);
-                }
-                return this;
-            }
-
-            @Override
-            public Appendable append(CharSequence csq, int start, int end) throws IOException {
-                if (ignoreOutput == 0) {
-                    out.append(csq, start, end);
-                }
-                return this;
-            }
-
-            @Override
-            public Appendable append(char c) throws IOException {
-                if (ignoreOutput == 0) {
-                    out.append(c);
-                }
-                return this;
-            }
-        };
+        this.output = out;
     }
     
     /* Collects additional required resources.
@@ -467,7 +442,7 @@ abstract class ByteCodeToJavaScript {
                 ap.parseDefault(defaultAttr, jc);
                 out.append(";\n");
             } else {
-                if (debug(null, "  throw 'no code found for ")) {
+                if (debug(out, "  throw 'no code found for ")) {
                    out.append(jc.getClassName()).append('.')
                    .append(m.getName()).append("';\n");
                 }
@@ -486,15 +461,16 @@ abstract class ByteCodeToJavaScript {
             out.append("  var ").append(" lcA0 = this;\n");
         }
 
+        LoopCode loop;
         if (this.callbacks && !name.equals("class__V")) {
             lmapper.outputUndefinedCheck(out);
-            this.ignoreOutput = 1;
+            loop = new JsCallbackCode(this, out, numbers, jc);
         } else {
-
+            loop = new LoopCode(this, output, numbers, jc);
         }
 
-        new LoopCode(this, output, numbers, jc).loopCode(stackMapIterator, byteCodes, trap, smapper, lmapper);
-        ignoreOutput = 0;
+        loop.loopCode(stackMapIterator, byteCodes, trap, smapper, lmapper);
+
         if (defineProp) {
             out.append("\n}});");
         } else {
@@ -692,145 +668,6 @@ abstract class ByteCodeToJavaScript {
         }
         countArgs(descr, returnType, name, cnt);
         return name.toString();
-    }
-
-    int invokeStaticMethod(Appendable out, byte[] byteCodes, int i, final StackMapper mapper, boolean isStatic)
-    throws IOException {
-        int methodIndex = readUShortArg(byteCodes, i);
-        String[] mi = jc.getFieldInfoName(methodIndex);
-        char[] returnType = { 'V' };
-        StringBuilder cnt = new StringBuilder();
-        String mn = findMethodName(mi, cnt, returnType);
-        
-        final int numArguments = isStatic ? cnt.length() : cnt.length() + 1;
-        final CharSequence[] vars = new CharSequence[numArguments];
-
-        for (int j = numArguments - 1; j >= 0; --j) {
-            vars[j] = mapper.popValue();
-        }
-
-        if ((
-            "newUpdater__Ljava_util_concurrent_atomic_AtomicIntegerFieldUpdater_2Ljava_lang_Class_2Ljava_lang_String_2".equals(mn)
-            && "java/util/concurrent/atomic/AtomicIntegerFieldUpdater".equals(mi[0])
-        ) || (
-            "newUpdater__Ljava_util_concurrent_atomic_AtomicLongFieldUpdater_2Ljava_lang_Class_2Ljava_lang_String_2".equals(mn)
-            && "java/util/concurrent/atomic/AtomicLongFieldUpdater".equals(mi[0])
-        )) {
-            if (vars[1] instanceof String) {
-                String field = vars[1].toString();
-                if (field.length() > 2 && field.charAt(0) == '"' && field.charAt(field.length() - 1) == '"') {
-                    vars[1] = "c._" + field.substring(1, field.length() - 1);
-                }
-            }
-        }
-        if (
-            "newUpdater__Ljava_util_concurrent_atomic_AtomicReferenceFieldUpdater_2Ljava_lang_Class_2Ljava_lang_Class_2Ljava_lang_String_2".equals(mn)
-            && "java/util/concurrent/atomic/AtomicReferenceFieldUpdater".equals(mi[0])
-        ) {
-            if (vars[1] instanceof String) {
-                String field = vars[2].toString();
-                if (field.length() > 2 && field.charAt(0) == '"' && field.charAt(field.length() - 1) == '"') {
-                    vars[2] = "c._" + field.substring(1, field.length() - 1);
-                }
-            }
-        }
-
-        if (returnType[0] != 'V') {
-            mapper.flush(out);
-            out.append("var ")
-               .append(mapper.pushT(VarType.fromFieldType(returnType[0])))
-               .append(" = ");
-        }
-
-        boolean callbacksFinished = false;
-        if (callbacks
-            && ignoreOutput == 1
-            && !isSpecialHtmlJavaCall(mi)
-        ) {
-            ignoreOutput = 0;
-            out.append("return ");
-            callbacksFinished = true;
-        }
-
-        final String in = mi[0];
-        String mcn = mangleClassName(in);
-        String object = accessClassFalse(mcn);
-        if (mn.startsWith("cons_")) {
-            object += ".constructor";
-        }
-        out.append(accessStaticMethod(object, mn, mi));
-        if (isStatic) {
-            out.append('(');
-        } else {
-            out.append(".call(");
-        }
-        if (numArguments > 0) {
-            out.append(vars[0]);
-            for (int j = 1; j < numArguments; ++j) {
-                out.append(", ");
-                out.append(vars[j]);
-            }
-        }
-        out.append(");");
-        i += 2;
-        if (callbacksFinished) {
-            ignoreOutput = 2;
-        }
-        addReference(out, in);
-        return i;
-    }
-    int invokeVirtualMethod(Appendable out, byte[] byteCodes, int i, final StackMapper mapper)
-    throws IOException {
-        int methodIndex = readUShortArg(byteCodes, i);
-        String[] mi = jc.getFieldInfoName(methodIndex);
-        char[] returnType = { 'V' };
-        StringBuilder cnt = new StringBuilder();
-        String mn = findMethodName(mi, cnt, returnType);
-
-        final int numArguments = cnt.length() + 1;
-        final CharSequence[] vars =  new CharSequence[numArguments];
-
-        for (int j = numArguments - 1; j >= 0; --j) {
-            vars[j] = mapper.popValue();
-        }
-
-        if (returnType[0] != 'V') {
-            mapper.flush(out);
-            out.append("var ")
-                    .append(mapper.pushT(VarType.fromFieldType(returnType[0])))
-                    .append(" = ");
-        }
-
-        boolean callbacksFinished = false;
-        if (callbacks
-            && ignoreOutput == 1
-            && !isSpecialHtmlJavaCall(mi)
-        ) {
-            ignoreOutput = 0;
-            vars[0] = "lcA1";
-            out.append("return ");
-            callbacksFinished = true;
-        }
-
-        out.append(accessVirtualMethod(vars[0].toString(), mn, mi, numArguments));
-        String sep = "";
-        for (int j = 1; j < numArguments; ++j) {
-            out.append(sep);
-            out.append(vars[j]);
-            sep = ", ";
-        }
-        out.append(");");
-        i += 2;
-        if (callbacksFinished) {
-            ignoreOutput = 2;
-        }
-        return i;
-    }
-
-    private static boolean isSpecialHtmlJavaCall(String[] mi) {
-        return
-            mi[0].startsWith("org/netbeans/html/boot/spi/Fn") ||
-            mi[0].startsWith("org/apidesign/html/boot/spi/Fn");
     }
 
     void addReference(Appendable out, String cn) throws IOException {
