@@ -1871,7 +1871,7 @@ public final
     static native Object clone(Object self) throws CloneNotSupportedException;
 
     @JavaScriptOnly(name = "toJS", value = "function convToJS(v) {\n"
-        + "  if (v === null) return null;\n"
+        + "  if (v === null || v === undefined) return v;\n"
         + "  if (Object.prototype.toString.call(v) === '[object Array]') {\n"
         + "    return vm.org_apidesign_bck2brwsr_emul_lang_System(false).convArray__Ljava_lang_Object_2Ljava_lang_Object_2Ljava_lang_Object_2(v, convToJS);\n"
         + "  }\n"

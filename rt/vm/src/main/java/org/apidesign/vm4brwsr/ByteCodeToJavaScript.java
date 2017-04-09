@@ -42,6 +42,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
     private boolean outChanged;
     private boolean callbacks;
     private final NumberOperations numbers = new NumberOperations();
+    private int ignoreOutput;
 
     protected ByteCodeToJavaScript(Appendable out) {
         this.out = out;
@@ -49,6 +50,9 @@ abstract class ByteCodeToJavaScript implements Appendable {
     
     @Override
     public final Appendable append(CharSequence csq) throws IOException {
+        if (ignoreOutput != 0) {
+            return this;
+        }
         out.append(csq);
         outChanged = true;
         return this;
@@ -56,6 +60,9 @@ abstract class ByteCodeToJavaScript implements Appendable {
 
     @Override
     public final Appendable append(CharSequence csq, int start, int end) throws IOException {
+        if (ignoreOutput != 0) {
+            return this;
+        }
         out.append(csq, start, end);
         outChanged = true;
         return this;
@@ -63,6 +70,9 @@ abstract class ByteCodeToJavaScript implements Appendable {
 
     @Override
     public final Appendable append(char c) throws IOException {
+        if (ignoreOutput != 0) {
+            return this;
+        }
         out.append(c);
         outChanged = true;
         return this;
@@ -490,8 +500,9 @@ abstract class ByteCodeToJavaScript implements Appendable {
             append("  var ").append(" lcA0 = this;\n");
         }
 
-        if (this.callbacks) {
+        if (this.callbacks && !name.equals("class__V")) {
             lmapper.outputUndefinedCheck(this);
+            this.ignoreOutput = 1;
         }
 
         int lastStackFrame;
@@ -1573,6 +1584,7 @@ abstract class ByteCodeToJavaScript implements Appendable {
         while (openBraces-- > 0) {
             append('}');
         }
+        ignoreOutput = 0;
         if (defineProp) {
             append("\n}});");
         } else {
@@ -1820,16 +1832,18 @@ abstract class ByteCodeToJavaScript implements Appendable {
                .append(" = ");
         }
 
-        final String in = mi[0];
-        String mcn;
-        if (callbacks && (
-            in.equals("org/apidesign/html/boot/spi/Fn") ||
-            in.equals("org/netbeans/html/boot/spi/Fn")
-        )) {
-            mcn = "java_lang_Class";
-        } else {
-            mcn = mangleClassName(in);
+        boolean callbacksFinished = false;
+        if (callbacks
+            && ignoreOutput == 1
+            && !isSpecialHtmlJavaCall(mi)
+        ) {
+            ignoreOutput = 0;
+            append("return ");
+            callbacksFinished = true;
         }
+
+        final String in = mi[0];
+        String mcn = mangleClassName(in);
         String object = accessClassFalse(mcn);
         if (mn.startsWith("cons_")) {
             object += ".constructor";
@@ -1849,6 +1863,9 @@ abstract class ByteCodeToJavaScript implements Appendable {
         }
         append(");");
         i += 2;
+        if (callbacksFinished) {
+            ignoreOutput = 2;
+        }
         addReference(in);
         return i;
     }
@@ -1870,8 +1887,19 @@ abstract class ByteCodeToJavaScript implements Appendable {
         if (returnType[0] != 'V') {
             mapper.flush(this);
             append("var ")
-               .append(mapper.pushT(VarType.fromFieldType(returnType[0])))
-               .append(" = ");
+                    .append(mapper.pushT(VarType.fromFieldType(returnType[0])))
+                    .append(" = ");
+        }
+
+        boolean callbacksFinished = false;
+        if (callbacks
+            && ignoreOutput == 1
+            && !isSpecialHtmlJavaCall(mi)
+        ) {
+            ignoreOutput = 0;
+            vars[0] = "lcA1";
+            append("return ");
+            callbacksFinished = true;
         }
 
         append(accessVirtualMethod(vars[0].toString(), mn, mi, numArguments));
@@ -1883,7 +1911,16 @@ abstract class ByteCodeToJavaScript implements Appendable {
         }
         append(");");
         i += 2;
+        if (callbacksFinished) {
+            ignoreOutput = 2;
+        }
         return i;
+    }
+
+    private static boolean isSpecialHtmlJavaCall(String[] mi) {
+        return
+            mi[0].startsWith("org/netbeans/html/boot/spi/Fn") ||
+            mi[0].startsWith("org/apidesign/html/boot/spi/Fn");
     }
 
     private void addReference(String cn) throws IOException {
