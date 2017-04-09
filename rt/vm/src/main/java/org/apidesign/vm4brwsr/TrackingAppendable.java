@@ -17,34 +17,36 @@
  */
 package org.apidesign.vm4brwsr;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-/**
- *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
- */
-class VMinVM extends ByteCodeToJavaScript {
-    private VMinVM(Appendable out) {
-        super(out);
-    }
-    
-    static String toJavaScript(byte[] is) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        new VMinVM(sb).compile(new ByteArrayInputStream(is));
-        return sb.toString().toString();
+final class TrackingAppendable implements Appendable {
+    private final Appendable out;
+    private final Runnable onChange;
+
+    TrackingAppendable(Appendable out, Runnable onChange) {
+        this.out = out;
+        this.onChange = onChange;
     }
 
     @Override
-    protected boolean requireReference(String internalClassName) {
-        return false;
+    public final Appendable append(CharSequence csq) throws IOException {
+        out.append(csq);
+        onChange.run();
+        return this;
     }
 
     @Override
-    protected void requireScript(String resourcePath) {
+    public final Appendable append(CharSequence csq, int start, int end) throws IOException {
+        out.append(csq, start, end);
+        onChange.run();
+        return this;
     }
 
     @Override
-    protected void requireResource(Appendable out, String resourcePath) throws IOException {
+    public final Appendable append(char c) throws IOException {
+        out.append(c);
+        onChange.run();
+        return this;
     }
+
 }

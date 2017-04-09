@@ -149,7 +149,7 @@ final class VMLazy {
         }
 
         @Override
-        protected void requireResource(String resourcePath) throws IOException {
+        protected void requireResource(Appendable out, String resourcePath) throws IOException {
             requireReference(resourcePath);
         }
     }
