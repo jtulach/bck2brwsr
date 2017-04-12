@@ -1342,11 +1342,56 @@ abstract class ByteCodeToJavaScript {
 
         @Override
         protected void visitClassAttr(String annoType, String attr, String className) throws IOException {
-            final String slashType = className.substring(1, className.length() - 1);
-            requireReference(slashType);
+            if (className.startsWith("L")) {
+                final String slashType = className.substring(1, className.length() - 1);
+                requireReference(slashType);
 
-            final String cn = mangleClassName(slashType);
-            out.append(accessClassFalse(cn)).append(".constructor.$class");
+                final String cn = mangleClassName(slashType);
+                out.append(accessClassFalse(cn)).append(".constructor.$class");
+            } else {
+                String primitiveType = null;
+                switch (className.charAt(0)) {
+                    case 'J':
+                        primitiveType = "java_lang_Long";
+                        break;
+                    case 'I':
+                        primitiveType = "java_lang_Integer";
+                        break;
+                    case 'S':
+                        primitiveType = "java_lang_Short";
+                        break;
+                    case 'B':
+                        primitiveType = "java_lang_Byte";
+                        break;
+                    case 'F':
+                        primitiveType = "java_lang_Float";
+                        break;
+                    case 'D':
+                        primitiveType = "java_lang_Double";
+                        break;
+                    case 'C':
+                        primitiveType = "java_lang_Character";
+                        break;
+                    case 'Z':
+                        primitiveType = "java_lang_Boolean";
+                        break;
+                    case '[':
+                        String ac = accessClassFalse("java_lang_Class");
+                        String af = accessStaticMethod(ac, "forName__Ljava_lang_Class_2Ljava_lang_String_2", new String[] {
+                            "java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;"
+                        });
+                        out.append(af).append("(\"").append(className).append("\")");
+                        break;
+                    default:
+                        out.append(accessClassFalse("java_lang_Object")).append(".constructor.$class");
+
+                }
+                if (primitiveType != null) {
+                    String ac = accessClassFalse(primitiveType);
+                    String af = accessField(ac, null, new String[] { null, "TYPE" });
+                    out.append(af).append("()");
+                }
+            }
         }
     }
 }

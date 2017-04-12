@@ -120,6 +120,19 @@ public class Classes {
             return (ex.getClass().getName() + ":" + ex.getMessage()).toString().toString();
         }
     }
+
+    public static int defaultInt() {
+        return DefCls.class.getAnnotation(ClassesMarker.class).number();
+    }
+
+    public static String defaultCls() {
+        StringBuilder sb = new StringBuilder();
+        for (Class<?> c : DefCls.class.getAnnotation(ClassesMarker.class).clsArr()) {
+            sb.append(c.getName());
+        }
+        return sb.toString();
+    }
+
     public static int getMarker() {
         if (!Classes.class.isAnnotationPresent(ClassesMarker.class)) {
             return -2;
@@ -321,5 +334,18 @@ public class Classes {
     }
     
     private static interface SuperSerial extends Serializable {
+    }
+
+    @ClassesMarker(count = ClassesMarker.E.TWO, nicknames = "", clsArr = {
+        int.class, String.class, Integer.class,
+        byte.class, short.class, long.class,
+        float.class, double.class,
+        boolean.class, char.class,
+        int[].class, String[].class, Integer[][].class,
+        byte[][].class, short[][][].class, long[].class,
+        float[].class, double[].class,
+        boolean[][].class, char[][][].class,
+    })
+    public static class DefCls {
     }
 }
