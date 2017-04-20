@@ -33,7 +33,10 @@ import java.io.UnsupportedEncodingException;
 
 @TruffleLanguage.Registration(
     name = "Java",
-    mimeType = { "application/x-jar", "application/x-java-class", "text/java" },
+    mimeType = {
+        "application/x-jar", "application/x-java-archive",
+        "application/x-java-class", "text/java"
+    },
     version = "0.20"
 )
 public class Bck2BrwsrLanguage extends TruffleLanguage<VM> {

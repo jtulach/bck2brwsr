@@ -25,6 +25,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.spi.FileTypeDetector;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -58,8 +60,9 @@ public class Bck2BrwsrLanguageTest {
     @Test
     public void testHelloWorld() throws Exception {
         File jar = createHelloJar();
+        String mime = Files.probeContentType(jar.toPath());
 
-        Source src = Source.newBuilder(jar.toURI().toURL()).mimeType("application/x-jar").build();
+        Source src = Source.newBuilder(jar.toURI().toURL()).mimeType(mime).build();
         engine.eval(src);
 
         PolyglotEngine.Value nonExistingClass;
