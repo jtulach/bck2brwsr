@@ -55,7 +55,10 @@ public class Bck2BrwsrLanguage extends TruffleLanguage<VM> {
 
     @Override
     protected Object findExportedSymbol(VM context, String globalName, boolean onlyExplicit) {
-        return null;
+        if (onlyExplicit) {
+            return null;
+        }
+        return context.findClass(globalName);
     }
 
     @Override

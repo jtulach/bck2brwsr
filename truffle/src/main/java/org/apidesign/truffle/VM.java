@@ -20,6 +20,8 @@ package org.apidesign.truffle;
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.TruffleLanguage;
+import com.oracle.truffle.api.interop.TruffleObject;
+import com.oracle.truffle.api.interop.java.JavaInterop;
 import com.oracle.truffle.api.source.Source;
 import java.io.File;
 import java.io.IOException;
@@ -29,6 +31,8 @@ import org.apidesign.vm4brwsr.Bck2Brwsr;
 
 final class VM {
     final TruffleLanguage.Env env;
+    private Object vm;
+    private LoadClass loadClass;
 
     VM(TruffleLanguage.Env env) {
         this.env = env;
@@ -42,8 +46,7 @@ final class VM {
             Source bck2brwsr = Source.newBuilder(sb.toString()).mimeType("text/javascript").name("bck2brwsr.js").build();
 
             CallTarget vmInit = env.parse(bck2brwsr);
-            Object res = vmInit.call();
-            System.err.println("res: " + res);
+            vmInit.call();
 
             URL rt = VM.class.getResource("/emul-1.0-SNAPSHOT-debug.js");
             assert rt != null;
@@ -51,8 +54,7 @@ final class VM {
             Source rtJs = Source.newBuilder(rt).name("rt.js").mimeType("text/javascript").build();
 
             CallTarget rtInit = env.parse(rtJs);
-            res = rtInit.call();
-            System.err.println("res: " + res);
+            rtInit.call();
 
             Source atob = Source.newBuilder(
                 "atob = function(s) {\n"
@@ -62,13 +64,15 @@ final class VM {
             env.parse(atob).call();
 
             Source getVM = Source.newBuilder(
-              "bck2brwsr()\n"
+              "(function() { return bck2brwsr(); })();\n"
             ).mimeType("text/javascript").name("getvm.js").build();
             CallTarget get = env.parse(getVM);
-            res = get.call();
-            System.err.println("res: " + res);
+            vm = get.call();
 
-
+            Source loadSrc = Source.newBuilder(
+                "(function(vm, name) { return vm.loadClass(name); })"
+            ).mimeType("text/javascript").name("loadsrc.js").build();
+            loadClass = JavaInterop.asJavaFunction(LoadClass.class, (TruffleObject) env.parse(loadSrc).call());
         } catch (IOException ex) {
             throw raise(ex);
         }
@@ -82,6 +86,14 @@ final class VM {
         compiler.generate(sb);
         Source src = Source.newBuilder(sb.toString()).uri(jar.toURI()).name(jar.getName()).mimeType("text/javascript").build();
         env.parse(src).call();
+    }
+
+    Object findClass(String globalName) {
+        return loadClass.loadClass(vm, globalName);
+    }
+
+    private static interface LoadClass {
+        public Object loadClass(Object vm, String name);
     }
 
     static RuntimeException raise(Throwable ex) {

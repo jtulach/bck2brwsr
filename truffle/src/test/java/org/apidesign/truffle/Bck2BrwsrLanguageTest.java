@@ -19,30 +19,35 @@ package org.apidesign.truffle;
 
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.vm.PolyglotEngine;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class Bck2BrwsrLanguageTest {
 
     private static PolyglotEngine engine;
+    private static ByteArrayOutputStream out;
 
     public Bck2BrwsrLanguageTest() {
     }
 
     @BeforeClass
     public static void setUpClass() {
-        engine = PolyglotEngine.newBuilder().build();
+        out = new ByteArrayOutputStream();
+        engine = PolyglotEngine.newBuilder().setErr(out).setOut(out).build();
     }
 
     @AfterClass
@@ -52,6 +57,29 @@ public class Bck2BrwsrLanguageTest {
 
     @Test
     public void testHelloWorld() throws Exception {
+        File jar = createHelloJar();
+
+        Source src = Source.newBuilder(jar.toURI().toURL()).mimeType("application/x-jar").build();
+        engine.eval(src);
+
+        PolyglotEngine.Value nonExistingClass;
+        try {
+            nonExistingClass = engine.findGlobalSymbol(Hello.class.getCanonicalName() + '2');
+        } catch (Exception ex) {
+            nonExistingClass = null;
+        }
+        assertNull(nonExistingClass);
+
+        PolyglotEngine.Value in = engine.findGlobalSymbol(Hello.class.getCanonicalName());
+        assertNotNull(in);
+        Invoke invoke = in.as(Invoke.class);
+
+        out.reset();
+        invoke.invoke("sayHello");
+        assertEquals("Hello from Java!", out.toString("UTF-8").trim());
+    }
+
+    private File createHelloJar() throws IOException {
         URL u = Bck2BrwsrLanguageTest.class.getResource("Hello.class");
         assertNotNull("Hello.class found", u);
 
@@ -75,8 +103,11 @@ public class Bck2BrwsrLanguageTest {
         is.close();
         os.closeEntry();
         os.close();
+        return jar;
+    }
 
-        Source src = Source.newBuilder(jar.toURI().toURL()).mimeType("application/x-java-class").build();
-        engine.eval(src);
+    private static interface Invoke {
+        void invoke() throws Exception;
+        void invoke(String name, String... args) throws Exception;
     }
 }

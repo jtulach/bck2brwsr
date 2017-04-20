@@ -17,6 +17,8 @@
  */
 package org.apidesign.truffle;
 
-public class Hello {
-
+public final class Hello {
+    public static void sayHello() {
+        System.out.println("Hello from Java!");
+    }
 }
