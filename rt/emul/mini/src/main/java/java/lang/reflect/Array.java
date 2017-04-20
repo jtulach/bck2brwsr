@@ -27,6 +27,7 @@ package java.lang.reflect;
 
 import org.apidesign.bck2brwsr.core.Exported;
 import org.apidesign.bck2brwsr.core.JavaScriptPrototype;
+import org.apidesign.bck2brwsr.emul.reflect.MethodImpl;
 
 /**
  * The {@code Array} class provides static methods to dynamically create and
@@ -74,7 +75,7 @@ class Array {
         if (length < 0) {
             throw new NegativeArraySizeException();
         }
-        String sig = Method.findArraySignature(componentType);
+        String sig = MethodImpl.findArraySignature(componentType);
         return newArray(componentType.isPrimitive(), sig, null, length);
     }
     
@@ -117,7 +118,7 @@ class Array {
         for (int i = 1; i < dimensions.length; i++) {
             sig.append('[');
         }
-        sig.append(Method.findArraySignature(componentType));
+        sig.append(MethodImpl.findArraySignature(componentType));
         return multiNewArray(sig.toString(), dimensions, 0);
     }
 
@@ -200,7 +201,7 @@ class Array {
      */
     public static byte getByte(Object array, int index)
     throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
-        if (!Method.samePrimitive(array.getClass().getComponentType(), Byte.TYPE)) {
+        if (!MethodImpl.samePrimitive(array.getClass().getComponentType(), Byte.TYPE)) {
             throw new IllegalArgumentException();
         }
         byte[] arr = (byte[]) array;
@@ -245,7 +246,7 @@ class Array {
     public static short getShort(Object array, int index)
     throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
         final Class<?> t = array.getClass().getComponentType();
-        if (Method.samePrimitive(t, Short.TYPE)) {
+        if (MethodImpl.samePrimitive(t, Short.TYPE)) {
             short[] arr = (short[]) array;
             return arr[index];
         }
@@ -271,7 +272,7 @@ class Array {
     public static int getInt(Object array, int index) 
     throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
         final Class<?> t = array.getClass().getComponentType();
-        if (Method.samePrimitive(t, Integer.TYPE)) {
+        if (MethodImpl.samePrimitive(t, Integer.TYPE)) {
             int[] arr = (int[]) array;
             return arr[index];
         }
@@ -297,7 +298,7 @@ class Array {
     public static long getLong(Object array, int index)
     throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
         final Class<?> t = array.getClass().getComponentType();
-        if (Method.samePrimitive(t, Long.TYPE)) {
+        if (MethodImpl.samePrimitive(t, Long.TYPE)) {
             long[] arr = (long[]) array;
             return arr[index];
         }
@@ -323,7 +324,7 @@ class Array {
     public static float getFloat(Object array, int index)
     throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
         final Class<?> t = array.getClass().getComponentType();
-        if (Method.samePrimitive(t, Float.TYPE)) {
+        if (MethodImpl.samePrimitive(t, Float.TYPE)) {
             float[] arr = (float[]) array;
             return arr[index];
         }
@@ -349,7 +350,7 @@ class Array {
     public static double getDouble(Object array, int index)
     throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
         final Class<?> t = array.getClass().getComponentType();
-        if (Method.samePrimitive(t, Double.TYPE)) {
+        if (MethodImpl.samePrimitive(t, Double.TYPE)) {
             double[] arr = (double[]) array;
             return arr[index];
         }
@@ -423,7 +424,7 @@ class Array {
     public static void setByte(Object array, int index, byte b)
     throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
         Class<?> t = array.getClass().getComponentType();
-        if (Method.samePrimitive(t, Byte.TYPE)) {
+        if (MethodImpl.samePrimitive(t, Byte.TYPE)) {
             byte[] arr = (byte[]) array;
             arr[index] = b;
         } else {
@@ -471,7 +472,7 @@ class Array {
     public static void setShort(Object array, int index, short s)
     throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
         Class<?> t = array.getClass().getComponentType();
-        if (Method.samePrimitive(t, Short.TYPE)) {
+        if (MethodImpl.samePrimitive(t, Short.TYPE)) {
             short[] arr = (short[]) array;
             arr[index] = s;
         } else {
@@ -500,7 +501,7 @@ class Array {
     public static void setInt(Object array, int index, int i)
     throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
         Class<?> t = array.getClass().getComponentType();
-        if (Method.samePrimitive(t, Integer.TYPE)) {
+        if (MethodImpl.samePrimitive(t, Integer.TYPE)) {
             int[] arr = (int[]) array;
             arr[index] = i;
         } else {
@@ -528,7 +529,7 @@ class Array {
     public static void setLong(Object array, int index, long l)
     throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
         Class<?> t = array.getClass().getComponentType();
-        if (Method.samePrimitive(t, Long.TYPE)) {
+        if (MethodImpl.samePrimitive(t, Long.TYPE)) {
             long[] arr = (long[]) array;
             arr[index] = l;
         } else {
@@ -556,7 +557,7 @@ class Array {
     public static void setFloat(Object array, int index, float f)
     throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
         Class<?> t = array.getClass().getComponentType();
-        if (Method.samePrimitive(t, Float.TYPE)) {
+        if (MethodImpl.samePrimitive(t, Float.TYPE)) {
             float[] arr = (float[])array;
             arr[index] = f;
         } else {
@@ -584,7 +585,7 @@ class Array {
     public static void setDouble(Object array, int index, double d)
     throws IllegalArgumentException, ArrayIndexOutOfBoundsException {
         Class<?> t = array.getClass().getComponentType();
-        if (Method.samePrimitive(t, Double.TYPE)) {
+        if (MethodImpl.samePrimitive(t, Double.TYPE)) {
             double[] arr = (double[])array;
             arr[index] = d;
         } else {
@@ -651,6 +652,6 @@ class Array {
         return arr;
     }
     private static Object fromPrimitive(Class<?> t, Object array, int index) {
-        return Method.fromPrimitive(t, Method.atArray(array, index));
+        return MethodImpl.fromPrimitive(t, Method.atArray(array, index));
     }
 }

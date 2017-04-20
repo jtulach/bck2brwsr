@@ -25,9 +25,6 @@
 
 package java.lang.invoke;
 
-
-import java.util.*;
-
 /**
  * A method handle is a typed, directly executable reference to an underlying method,
  * constructor, field, or similar low-level operation, with optional
@@ -618,7 +615,7 @@ public abstract class MethodHandle {
      * @throws Throwable anything thrown by the target method invocation
      */
     public Object invokeWithArguments(java.util.List<?> arguments) throws Throwable {
-        return invokeWithArguments(arguments.toArray());
+        throw new IllegalStateException();
     }
 
     /**

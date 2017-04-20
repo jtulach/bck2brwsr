@@ -25,6 +25,8 @@
 
 package java.lang.reflect;
 
+import org.apidesign.bck2brwsr.emul.reflect.ProxiesImpl;
+
 
 /**
  * {@code Proxy} provides static methods for creating dynamic proxy
@@ -212,17 +214,6 @@ public class Proxy implements java.io.Serializable {
 
     private static final long serialVersionUID = -2222568056686623797L;
 
-    private final static Method getProxyClass;
-    static {
-        Class<?> pg;
-        try {
-            pg = Class.forName("org.apidesign.bck2brwsr.emul.reflect.ProxyImpl");
-            getProxyClass = pg.getMethod("getProxyClass", ClassLoader.class, Class[].class);
-        } catch (Exception ex) {
-            throw new IllegalStateException(ex);
-        }
-    }
-
     /**
      * the invocation handler for this proxy instance.
      * @serial
@@ -324,13 +315,7 @@ public class Proxy implements java.io.Serializable {
                                          Class<?>... interfaces)
         throws IllegalArgumentException
     {
-        try {
-            return (Class<?>) getProxyClass.invoke(null, loader, interfaces);
-        } catch (IllegalAccessException ex) {
-            throw new IllegalStateException(ex);
-        } catch (InvocationTargetException ex) {
-            throw (RuntimeException)ex.getTargetException();
-        }
+        return ProxiesImpl.create(interfaces, null).getClass();
     }
 
     /**
@@ -371,26 +356,7 @@ public class Proxy implements java.io.Serializable {
             throw new NullPointerException();
         }
 
-        /*
-         * Look up or generate the designated proxy class.
-         */
-        Class<?> cl = getProxyClass(loader, interfaces);
-
-        /*
-         * Invoke its constructor with the designated invocation handler.
-         */
-        try {
-            Constructor cons = cl.getConstructor(InvocationHandler.class);
-            return cons.newInstance(new Object[] { h });
-        } catch (NoSuchMethodException e) {
-            throw new IllegalStateException(e.toString());
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException(e.toString());
-        } catch (InstantiationException e) {
-            throw new IllegalStateException(e.toString());
-        } catch (InvocationTargetException e) {
-            throw new IllegalStateException(e.toString());
-        }
+        return ProxiesImpl.create(interfaces, h);
     }
 
     /**

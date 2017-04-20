@@ -52,13 +52,61 @@ public class ProxyTest {
             }
         }
         Anno anno = (Anno) Proxy.newProxyInstance(
-            Anno.class.getClassLoader(), 
+            Anno.class.getClassLoader(),
             new Class[] { Anno.class }, 
             new InvHandler()
         );
         return 2 + anno.age();
     }
+
+    @Compare public int hashCodeTest() throws Exception {
+        class InvHandler implements InvocationHandler {
+            @Override
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                return 40;
+            }
+        }
+        Anno anno = (Anno) Proxy.newProxyInstance(
+            Anno.class.getClassLoader(),
+            new Class[] { Anno.class },
+            new InvHandler()
+        );
+        return anno.hashCode();
+    }
     
+    @Compare public boolean isSubclassOfAnno() throws Exception {
+        class InvHandler implements InvocationHandler {
+            @Override
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                return 40;
+            }
+        }
+        Anno anno = (Anno) Proxy.newProxyInstance(
+            Anno.class.getClassLoader(),
+            new Class[] { Anno.class },
+            new InvHandler()
+        );
+        return Anno.class.isAssignableFrom(anno.getClass());
+    }
+
+    @Compare public String equalsCheck() throws Exception {
+        class InvHandler implements InvocationHandler {
+            @Override
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                return this == Proxy.getInvocationHandler(args[0]);
+            }
+        }
+        final InvocationHandler h1 = new InvHandler();
+        final InvocationHandler h2 = new InvHandler();
+        Object p1 = Proxy.newProxyInstance(Anno.class.getClassLoader(),
+            new Class[] { Anno.class }, h1);
+        Object p2 = Proxy.newProxyInstance(Anno.class.getClassLoader(),
+            new Class[] { Anno.class }, h1);
+        Object p3 = Proxy.newProxyInstance(Anno.class.getClassLoader(),
+            new Class[] { Anno.class }, h2);
+        return "12:" + p1.equals(p2) + "23:" + p2.equals(p3) + "31:" + p3.equals(p1);
+    }
+
     public static @interface Anno {
         public String name();
         public int age();

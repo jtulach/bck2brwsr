@@ -19,4 +19,14 @@
     <module>fake</module>
     <module>zip</module>
   </modules>
+  <profiles>
+      <profile>
+          <activation>
+              <jdk>1.8</jdk>
+          </activation>
+          <modules>
+              <module>minitest</module>
+          </modules>
+      </profile>
+  </profiles>
 </project>

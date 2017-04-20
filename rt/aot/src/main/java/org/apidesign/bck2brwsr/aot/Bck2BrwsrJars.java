@@ -320,7 +320,7 @@ public final class Bck2BrwsrJars {
                 return null;
             }
             if (ignoreBootClassPath && u.toExternalForm().contains("/rt.jar!")) {
-                LOG.log(Level.WARNING, "No bootdelegation for {0}", name);
+                LOG.log(Level.CONFIG, "No bootdelegation for {0}", name);
                 return null;
             }
             return u.openStream();

@@ -146,6 +146,10 @@ public abstract class MethodImpl {
     }
     
     public static Method[] findMethods(Class<?> clazz, int mask) {
+        return findMethods(clazz, mask, 0);
+    }
+
+    static Method[] findMethods(Class<?> clazz, int mask, int noMask) {
         Object[] namesAndData = findMethodData(clazz, "", false);
         int cnt = 0;
         for (int i = 0; i < namesAndData.length; i += 3) {
@@ -165,6 +169,9 @@ public abstract class MethodImpl {
             Class<?> cls = (Class<?>) namesAndData[i + 2];
             final Method m = INSTANCE.create(cls, name, data, sig);
             if ((m.getModifiers() & mask) == 0) {
+                continue;
+            }
+            if ((m.getModifiers() & noMask) != 0) {
                 continue;
             }
             namesAndData[cnt++] = m;
@@ -300,4 +307,85 @@ public abstract class MethodImpl {
         }
         return new E();
     }
+
+    public static Object fromPrimitive(Class<?> type, Object o) {
+        if (samePrimitive(type, Integer.TYPE)) {
+            return fromRaw(Integer.class, "valueOf__Ljava_lang_Integer_2I", o);
+        }
+        if (samePrimitive(type, Long.TYPE)) {
+            return fromRaw(Long.class, "valueOf__Ljava_lang_Long_2J", o);
+        }
+        if (samePrimitive(type, Double.TYPE)) {
+            return fromRaw(Double.class, "valueOf__Ljava_lang_Double_2D", o);
+        }
+        if (samePrimitive(type, Float.TYPE)) {
+            return fromRaw(Float.class, "valueOf__Ljava_lang_Float_2F", o);
+        }
+        if (samePrimitive(type, Byte.TYPE)) {
+            return fromRaw(Byte.class, "valueOf__Ljava_lang_Byte_2B", o);
+        }
+        if (samePrimitive(type, Boolean.TYPE)) {
+            return fromRaw(Boolean.class, "valueOf__Ljava_lang_Boolean_2Z", o);
+        }
+        if (samePrimitive(type, Short.TYPE)) {
+            return fromRaw(Short.class, "valueOf__Ljava_lang_Short_2S", o);
+        }
+        if (samePrimitive(type, Character.TYPE)) {
+            return fromRaw(Character.class, "valueOf__Ljava_lang_Character_2C", o);
+        }
+        if (type.getName().equals("void")) {
+            return null;
+        }
+        throw new IllegalStateException("Can't convert " + o);
+    }
+
+    public static boolean samePrimitive(Class<?> c1, Class<?> c2) {
+        if (c1 == c2) {
+            return true;
+        }
+        if (c1.isPrimitive()) {
+            return c1.getName().equals(c2.getName());
+        }
+        return false;
+    }
+
+    public static String findArraySignature(Class<?> type) {
+        if (!type.isPrimitive()) {
+            return "[L" + type.getName().replace('.', '/') + ";";
+        }
+        if (samePrimitive(type, Integer.TYPE)) {
+            return "[I";
+        }
+        if (samePrimitive(type, Long.TYPE)) {
+            return "[J";
+        }
+        if (samePrimitive(type, Double.TYPE)) {
+            return "[D";
+        }
+        if (samePrimitive(type, Float.TYPE)) {
+            return "[F";
+        }
+        if (samePrimitive(type, Byte.TYPE)) {
+            return "[B";
+        }
+        if (samePrimitive(type, Boolean.TYPE)) {
+            return "[Z";
+        }
+        if (samePrimitive(type, Short.TYPE)) {
+            return "[S";
+        }
+        if (samePrimitive(type, Character.TYPE)) {
+            return "[C";
+        }
+        throw new IllegalStateException("Can't create array for " + type);
+    }
+
+    @JavaScriptBody(args = {"cls", "m", "o"},
+            body = "return cls.cnstr(false)[m](o);"
+    )
+    private static native Integer fromRaw(Class<?> cls, String m, Object o);
+
+    @JavaScriptBody(args = {"o"}, body = "return o.valueOf();")
+    public static native Object toPrimitive(Object o);
+
 }
