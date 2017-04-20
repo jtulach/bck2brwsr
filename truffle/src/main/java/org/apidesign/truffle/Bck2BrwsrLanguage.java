@@ -17,7 +17,23 @@
  */
 package org.apidesign.truffle;
 
+import com.oracle.truffle.api.CallTarget;
+import com.oracle.truffle.api.CompilerDirectives;
+import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.TruffleLanguage;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.interop.java.JavaInterop;
+import com.oracle.truffle.api.nodes.RootNode;
+import com.oracle.truffle.api.source.Source;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PushbackInputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apidesign.bck2brwsr.aot.Bck2BrwsrJars;
+import org.apidesign.vm4brwsr.Bck2Brwsr;
 
 
 @TruffleLanguage.Registration(
@@ -52,4 +68,46 @@ public class Bck2BrwsrLanguage extends TruffleLanguage<VM> {
         return false;
     }
 
+    @Override
+    protected CallTarget parse(ParsingRequest request) throws Exception {
+        Source src = request.getSource();
+        InputStream is = src.getURL().openStream();
+        PushbackInputStream ahead = new PushbackInputStream(is, 4);
+        byte[] header = new byte[4];
+        int len = ahead.read(header);
+        if (len < 4) {
+            throw new IOException("Can't read " + src.getURI());
+        }
+        ahead.unread(header, 0, len);
+        if (header[0] == 0xCA && header[1] == 0xFE && header[2] == 0xBA && header[3] == 0xBE) {
+            throw new IOException("No single class read " + src.getURI());
+        }
+        if (header[0] == 0x50 && header[1] == 0x4B) {
+            final File jar = new File(src.getURI());
+            final ContextReference<VM> ref = getContextReference();
+            return Truffle.getRuntime().createCallTarget(new RootNode(this) {
+                @Override
+                public Object execute(VirtualFrame frame) {
+                    try {
+                        ref.get().compileJar(jar);
+                    } catch (IOException ex) {
+                        throw VM.raise(ex);
+                    }
+                    return JavaInterop.asTruffleValue(null);
+                }
+            });
+
+        }
+        throw new IOException("Unrecognized " + src.getURI());
+    }
+
+    public static String parseBase64Binary(String s) throws UnsupportedEncodingException {
+        final byte[] arr = javax.xml.bind.DatatypeConverter.parseBase64Binary(s);
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < arr.length; i++) {
+            int ch = arr[i];
+            sb.append((char) ch);
+        }
+        return sb.toString();
+    }
 }

@@ -39,5 +39,10 @@
             <version>${project.version}</version>
             <classifier>bck2brwsr</classifier>
         </dependency>
+        <dependency>
+            <groupId>org.apidesign.bck2brwsr</groupId>
+            <artifactId>aot</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

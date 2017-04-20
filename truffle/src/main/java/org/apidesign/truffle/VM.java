@@ -18,10 +18,13 @@
 package org.apidesign.truffle;
 
 import com.oracle.truffle.api.CallTarget;
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.source.Source;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import org.apidesign.bck2brwsr.aot.Bck2BrwsrJars;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 
 final class VM {
@@ -51,9 +54,15 @@ final class VM {
             res = rtInit.call();
             System.err.println("res: " + res);
 
+            Source atob = Source.newBuilder(
+                "atob = function(s) {\n"
+              + "  return new String(org.apidesign.truffle.Bck2BrwsrLanguage.parseBase64Binary(s));\n"
+              + "}\n"
+            ).name("atob.js").mimeType("text/javascript").build();
+            env.parse(atob).call();
+
             Source getVM = Source.newBuilder(
-                "function atob() { return null };\n"
-              + "bck2brwsr()\n"
+              "bck2brwsr()\n"
             ).mimeType("text/javascript").name("getvm.js").build();
             CallTarget get = env.parse(getVM);
             res = get.call();
@@ -63,6 +72,16 @@ final class VM {
         } catch (IOException ex) {
             throw raise(ex);
         }
+    }
+
+    @CompilerDirectives.TruffleBoundary
+    void compileJar(File jar) throws IOException {
+        Bck2Brwsr compiler = Bck2BrwsrJars.configureFrom(Bck2Brwsr.newCompiler(), jar);
+        compiler.library();
+        StringBuilder sb = new StringBuilder();
+        compiler.generate(sb);
+        Source src = Source.newBuilder(sb.toString()).uri(jar.toURI()).name(jar.getName()).mimeType("text/javascript").build();
+        env.parse(src).call();
     }
 
     static RuntimeException raise(Throwable ex) {
