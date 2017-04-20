@@ -15,10 +15,9 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.truffle;
+package org.apidesign.bck2brwsr.truffle;
 
 import com.oracle.truffle.api.CallTarget;
-import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -30,10 +29,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.apidesign.bck2brwsr.aot.Bck2BrwsrJars;
-import org.apidesign.vm4brwsr.Bck2Brwsr;
 
 
 @TruffleLanguage.Registration(

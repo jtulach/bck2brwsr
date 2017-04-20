@@ -15,7 +15,7 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.truffle;
+package org.apidesign.bck2brwsr.truffle;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives;
@@ -58,7 +58,7 @@ final class VM {
 
             Source atob = Source.newBuilder(
                 "atob = function(s) {\n"
-              + "  return new String(org.apidesign.truffle.Bck2BrwsrLanguage.parseBase64Binary(s));\n"
+              + "  return new String(org.apidesign.bck2brwsr.truffle.Bck2BrwsrLanguage.parseBase64Binary(s));\n"
               + "}\n"
             ).name("atob.js").mimeType("text/javascript").build();
             env.parse(atob).call();

@@ -15,7 +15,7 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.truffle;
+package org.apidesign.bck2brwsr.truffle;
 
 public final class Hello {
     public static void sayHello() {
