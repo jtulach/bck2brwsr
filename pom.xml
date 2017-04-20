@@ -25,6 +25,7 @@
     <module>ko</module>
     <module>launcher</module>
     <module>rt</module>
+    <module>truffle</module>
   </modules>
   <licenses>
       <license>
