@@ -10,6 +10,7 @@
     <packaging>jar</packaging>
     <name>Truffle Integration</name>
     <build>
+        <finalName>java4truffle-bck2brwsr</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
