@@ -31,6 +31,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
 import java.io.UnsupportedEncodingException;
+import javax.tools.Diagnostic;
+import javax.tools.JavaFileObject;
 
 
 @TruffleLanguage.Registration(
@@ -73,7 +75,7 @@ public class Bck2BrwsrLanguage extends TruffleLanguage<VM> {
 
     @Override
     protected CallTarget parse(ParsingRequest request) throws Exception {
-        Source src = request.getSource();
+        final Source src = request.getSource();
         InputStream is = openStream(src);
         PushbackInputStream ahead = new PushbackInputStream(is, 4);
         byte[] header = new byte[4];
@@ -85,9 +87,9 @@ public class Bck2BrwsrLanguage extends TruffleLanguage<VM> {
         if (header[0] == 0xCA && header[1] == 0xFE && header[2] == 0xBA && header[3] == 0xBE) {
             throw new IOException("No single class read " + src.getURI());
         }
+        final ContextReference<VM> ref = getContextReference();
         if (header[0] == 0x50 && header[1] == 0x4B) {
             final File jar = new File(src.getURI());
-            final ContextReference<VM> ref = getContextReference();
             return Truffle.getRuntime().createCallTarget(new RootNode(this) {
                 @Override
                 public Object execute(VirtualFrame frame) {
@@ -99,9 +101,27 @@ public class Bck2BrwsrLanguage extends TruffleLanguage<VM> {
                     return JavaInterop.asTruffleValue(null);
                 }
             });
-
         }
-        throw new IOException("Unrecognized " + src.getURI());
+
+        final Compile result = Compile.create(src);
+        if (!result.getErrors().isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            for (Diagnostic<? extends JavaFileObject> error : result.getErrors()) {
+                sb.append(error).append("\n");
+            }
+            throw new IllegalStateException(sb.toString());
+        }
+        return Truffle.getRuntime().createCallTarget(new RootNode(this) {
+            @Override
+            public Object execute(VirtualFrame frame) {
+                try {
+                    ref.get().compileClasses(src, result.getClasses());
+                } catch (Exception ex) {
+                    throw VM.raise(ex);
+                }
+                return JavaInterop.asTruffleValue(null);
+            }
+        });
     }
 
     private static InputStream openStream(Source src) throws IOException {

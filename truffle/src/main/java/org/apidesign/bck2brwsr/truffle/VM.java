@@ -23,9 +23,13 @@ import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.interop.java.JavaInterop;
 import com.oracle.truffle.api.source.Source;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
+import java.util.Enumeration;
+import java.util.Map;
 import org.apidesign.bck2brwsr.aot.Bck2BrwsrJars;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 
@@ -81,7 +85,7 @@ final class VM {
     @CompilerDirectives.TruffleBoundary
     void compileJar(File jar) throws IOException {
         Bck2Brwsr compiler = Bck2BrwsrJars.configureFrom(Bck2Brwsr.newCompiler(), jar);
-        compiler.library();
+        compiler = compiler.library();
         StringBuilder sb = new StringBuilder();
         compiler.generate(sb);
         Source src = Source.newBuilder(sb.toString()).uri(jar.toURI()).name(jar.getName()).mimeType("text/javascript").build();
@@ -90,6 +94,41 @@ final class VM {
 
     Object findClass(String globalName) {
         return loadClass.loadClass(vm, globalName);
+    }
+
+    @CompilerDirectives.TruffleBoundary
+    void compileClasses(Source src, final Map<String, byte[]> classes) throws Exception {
+        class Res implements Bck2Brwsr.Resources {
+            @Override
+            public InputStream get(String resource) throws IOException {
+                byte[] arr = classes.get(resource);
+                if (arr == null) {
+                    Enumeration<URL> en = Res.class.getClassLoader().getResources(resource);
+                    while (en.hasMoreElements()) {
+                        URL u = en.nextElement();
+                        if (u.toExternalForm().contains("/rt.jar")) {
+                            continue;
+                        }
+                        return u.openStream();
+                    }
+                    throw new IOException("Cannot find " + resource);
+                }
+                return new ByteArrayInputStream(arr);
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+        Bck2Brwsr compiler = Bck2Brwsr.newCompiler();
+        for (String c : classes.keySet()) {
+            if (c.endsWith(".class")) {
+                compiler = compiler.addRootClasses(c.substring(0, c.length() - 6));
+            }
+        }
+        compiler
+            .resources(new Res())
+            .library()
+            .generate(sb);
+        Source jsSrc = Source.newBuilder(sb.toString()).uri(src.getURI()).name(src.getName()).mimeType("text/javascript").build();
+        env.parse(jsSrc).call();
     }
 
     private static interface LoadClass {

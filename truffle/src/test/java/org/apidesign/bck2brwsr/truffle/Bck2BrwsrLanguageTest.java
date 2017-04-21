@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.spi.FileTypeDetector;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -58,7 +57,7 @@ public class Bck2BrwsrLanguageTest {
     }
 
     @Test
-    public void testHelloWorld() throws Exception {
+    public void testHelloWorldFromAJar() throws Exception {
         File jar = createHelloJar();
         String mime = Files.probeContentType(jar.toPath());
 
@@ -80,6 +79,19 @@ public class Bck2BrwsrLanguageTest {
         out.reset();
         invoke.invoke("sayHello");
         assertEquals("Hello from Java!", out.toString("UTF-8").trim());
+    }
+
+    @Test
+    public void testHelloWorldFromASource() throws Exception {
+        Source src = Source.newBuilder(
+            "package test; class Hello { static { System.out.println(\"Hello from Code!\"); } }"
+        ).mimeType("text/java").name("Hello.java").build();
+        engine.eval(src);
+
+        out.reset();
+        PolyglotEngine.Value in = engine.findGlobalSymbol("test.Hello");
+        assertNotNull(in);
+        assertEquals("Hello from Code!", out.toString("UTF-8").trim());
     }
 
     private File createHelloJar() throws IOException {
