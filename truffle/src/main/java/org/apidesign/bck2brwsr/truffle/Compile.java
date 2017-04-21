@@ -562,6 +562,14 @@ final class Compile implements DiagnosticListener<JavaFileObject> {
                         }
                     }
                 }
+                Iterator<Map.Entry<String, List<String>>> it = classPathContent.entrySet().iterator();
+                while (it.hasNext()) {
+                    Map.Entry<String, List<String>> entry = it.next();
+                    if (entry.getKey().startsWith("/java/")) {
+                        continue;
+                    }
+                    it.remove();
+                }
             }
             List<String> content = classPathContent.get(folder);
             return content == null ? Collections.<String>emptyList() : content;
