@@ -77,7 +77,7 @@ public class Bck2BrwsrLanguageTest {
         Invoke invoke = in.as(Invoke.class);
 
         out.reset();
-        invoke.invoke("sayHello");
+        invoke.sayHello();
         assertEquals("Hello from Java!", out.toString("UTF-8").trim());
     }
 
@@ -121,8 +121,8 @@ public class Bck2BrwsrLanguageTest {
         return jar;
     }
 
+    @FunctionalInterface
     private static interface Invoke {
-        void invoke() throws Exception;
-        void invoke(String name, String... args) throws Exception;
+        void sayHello(String... args) throws Exception;
     }
 }

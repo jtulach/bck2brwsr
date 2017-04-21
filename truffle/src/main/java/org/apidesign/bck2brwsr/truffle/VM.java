@@ -92,8 +92,8 @@ final class VM {
         env.parse(src).call();
     }
 
-    Object findClass(String globalName) {
-        return loadClass.loadClass(vm, globalName);
+    final ClassObject findClass(String globalName) {
+        return new ClassObject(loadClass.loadClass(vm, globalName));
     }
 
     @CompilerDirectives.TruffleBoundary
@@ -132,7 +132,7 @@ final class VM {
     }
 
     private static interface LoadClass {
-        public Object loadClass(Object vm, String name);
+        public TruffleObject loadClass(Object vm, String name);
     }
 
     static RuntimeException raise(Throwable ex) {
