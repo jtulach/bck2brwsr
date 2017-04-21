@@ -67,7 +67,7 @@ public class JavaJSInteropTest {
     public void accessInstanceMethods() throws Exception {
         Source src = Source.newBuilder(
               "package testinst;\n"
-            + "final class Sum {\n"
+            + "public final class Sum {\n"
             + "  public int add(int a, int b) {\n"
             + "    return a + b;\n"
             + "  }\n"

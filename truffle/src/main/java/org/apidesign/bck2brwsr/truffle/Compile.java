@@ -270,7 +270,14 @@ final class Compile implements DiagnosticListener<JavaFileObject> {
 
         @Override
         public boolean isNameCompatible(String simpleName, Kind kind) {
-            return this.kind == kind && getSimpleName(path).equals(simpleName);
+            if (this.kind != kind) {
+                return false;
+            }
+            String name = getSimpleName(path);
+            if (name.endsWith(".java")) { // NOI18N
+                return simpleName.equals(name.substring(0, name.length() - 5));
+            }
+            return simpleName.equals(name);
         }
 
         @Override
