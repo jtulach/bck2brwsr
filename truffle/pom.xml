@@ -9,17 +9,43 @@
     <artifactId>truffle</artifactId>
     <packaging>jar</packaging>
     <name>Truffle Integration</name>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
     <dependencies>
         <dependency>
             <groupId>com.oracle.truffle</groupId>
             <artifactId>truffle-api</artifactId>
             <version>0.25</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apidesign.bck2brwsr</groupId>
             <artifactId>vm4brwsr</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.javascript</groupId>
+                    <artifactId>closure-compiler</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
