@@ -21,4 +21,8 @@ public final class Hello {
     public static void sayHello() {
         System.out.println("Hello from Java!");
     }
+
+    public static void main(String... args) {
+        System.out.println("Hello from Main!");
+    }
 }

@@ -58,7 +58,7 @@ public class Bck2BrwsrLanguageTest {
 
     @Test
     public void testHelloWorldFromAJar() throws Exception {
-        File jar = createHelloJar();
+        File jar = createHelloJar(false);
         String mime = Files.probeContentType(jar.toPath());
 
         Source src = Source.newBuilder(jar.toURI().toURL()).mimeType(mime).build();
@@ -94,7 +94,18 @@ public class Bck2BrwsrLanguageTest {
         assertEquals("Hello from Code!", out.toString("UTF-8").trim());
     }
 
-    private File createHelloJar() throws IOException {
+    @Test
+    public void testHelloWorldFromMainClass() throws Exception {
+        File jar = createHelloJar(true);
+        String mime = Files.probeContentType(jar.toPath());
+
+        out.reset();
+        Source src = Source.newBuilder(jar.toURI().toURL()).mimeType(mime).build();
+        engine.eval(src);
+        assertEquals("Hello from Main!", out.toString("UTF-8").trim());
+    }
+
+    private File createHelloJar(boolean mainClass) throws IOException {
         URL u = Bck2BrwsrLanguageTest.class.getResource("Hello.class");
         assertNotNull("Hello.class found", u);
 
@@ -103,6 +114,9 @@ public class Bck2BrwsrLanguageTest {
         mf.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
         mf.getMainAttributes().putValue("Bundle-SymbolicName", "test");
         mf.getMainAttributes().putValue("Export-Package", Hello.class.getPackage().getName());
+        if (mainClass) {
+            mf.getMainAttributes().putValue("Main-Class", Hello.class.getName());
+        }
         jar.deleteOnExit();
         JarOutputStream os = new JarOutputStream(new FileOutputStream(jar), mf);
         os.putNextEntry(new JarEntry(Hello.class.getCanonicalName().replace('.', '/') + ".class"));

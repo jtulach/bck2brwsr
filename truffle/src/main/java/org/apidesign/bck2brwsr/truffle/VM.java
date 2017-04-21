@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Map;
+import java.util.jar.JarFile;
 import org.apidesign.bck2brwsr.aot.Bck2BrwsrJars;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 
@@ -90,6 +91,14 @@ final class VM {
         compiler.generate(sb);
         Source src = Source.newBuilder(sb.toString()).uri(jar.toURI()).name(jar.getName()).mimeType("text/javascript").build();
         env.parse(src).call();
+
+        JarFile jf = new JarFile(jar);
+        String mainClass = jf.getManifest().getMainAttributes().getValue("Main-Class");
+        jf.close();
+        if (mainClass != null) {
+            RunMain main = JavaInterop.asJavaObject(RunMain.class, findClass(mainClass));
+            main.main();
+        }
     }
 
     final ClassObject findClass(String globalName) {
@@ -134,6 +143,11 @@ final class VM {
     private static interface LoadClass {
         public TruffleObject loadClass(Object vm, String name);
     }
+
+    private static interface RunMain {
+        public void main(String... args);
+    }
+
 
     static RuntimeException raise(Throwable ex) {
         return raise(RuntimeException.class, ex);
