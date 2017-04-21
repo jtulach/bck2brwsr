@@ -24,7 +24,9 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.interop.java.JavaInterop;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.Source;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
@@ -72,7 +74,7 @@ public class Bck2BrwsrLanguage extends TruffleLanguage<VM> {
     @Override
     protected CallTarget parse(ParsingRequest request) throws Exception {
         Source src = request.getSource();
-        InputStream is = src.getURL().openStream();
+        InputStream is = openStream(src);
         PushbackInputStream ahead = new PushbackInputStream(is, 4);
         byte[] header = new byte[4];
         int len = ahead.read(header);
@@ -100,6 +102,19 @@ public class Bck2BrwsrLanguage extends TruffleLanguage<VM> {
 
         }
         throw new IOException("Unrecognized " + src.getURI());
+    }
+
+    private static InputStream openStream(Source src) throws IOException {
+        if (src.getURL() != null) {
+            return src.getURL().openStream();
+        }
+        if (src.getPath() != null) {
+            File f = new File(src.getPath());
+            if (f.exists()) {
+                return new FileInputStream(f);
+            }
+        }
+        return new ByteArrayInputStream(src.getCode().getBytes("UTF-8"));
     }
 
     public static String parseBase64Binary(String s) throws UnsupportedEncodingException {
