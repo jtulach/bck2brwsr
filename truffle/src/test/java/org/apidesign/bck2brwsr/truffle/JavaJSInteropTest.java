@@ -63,4 +63,31 @@ public class JavaJSInteropTest {
         assertEquals(13, value);
     }
 
+    @Test
+    public void accessInstanceMethods() throws Exception {
+        Source src = Source.newBuilder(
+              "package testinst;\n"
+            + "final class Sum {\n"
+            + "  public int add(int a, int b) {\n"
+            + "    return a + b;\n"
+            + "  }\n"
+            + "  public int all(int[] a) {\n"
+            + "    int sum = 0;\n"
+            + "    for (int v : a) { sum += v; };\n"
+            + "    return sum;\n"
+            + "  }\n"
+            + "}\n"
+        ).mimeType("text/java").name("Sum.java").build();
+        engine.eval(src);
+
+        Source js = Source.newBuilder(
+                "var Sum = Interop.import('testinst.Sum');\n"
+              + "var sum = new Sum();"
+              + "sum.add(1, 6) + sum.all([3, 3]);"
+        ).mimeType("text/javascript").name("thirteen.js").build();
+
+        int value = engine.eval(js).as(Number.class).intValue();
+        assertEquals(13, value);
+    }
+
 }

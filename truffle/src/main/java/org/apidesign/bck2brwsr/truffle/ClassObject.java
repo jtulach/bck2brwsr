@@ -24,10 +24,7 @@ import com.oracle.truffle.api.interop.MessageResolution;
 import com.oracle.truffle.api.interop.Resolve;
 import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.interop.UnknownIdentifierException;
-import com.oracle.truffle.api.interop.UnsupportedMessageException;
-import com.oracle.truffle.api.interop.java.JavaInterop;
 import com.oracle.truffle.api.nodes.Node;
-import java.util.List;
 
 @MessageResolution(receiverType = ClassObject.class)
 final class ClassObject implements TruffleObject {
@@ -46,36 +43,16 @@ final class ClassObject implements TruffleObject {
         return ClassObjectForeign.ACCESS;
     }
 
-    private static class FindKeysNode extends Node {
-        @Child
-        private Node keys = Message.KEYS.createNode();
-
-        final String findKey(ClassObject clazz, String shortName) {
-            String underscoreName = shortName + "__";
-            List<?> names;
-            try {
-                names = JavaInterop.asJavaObject(List.class, ForeignAccess.sendKeys(keys, clazz.jsClass));
-            } catch (UnsupportedMessageException ex) {
-                throw ex.raise();
-            }
-            for (Object n : names) {
-                if (n instanceof String && ((String) n).startsWith(underscoreName)) {
-                    return (String) n;
-                }
-            }
-            throw UnknownIdentifierException.raise(shortName);
-        }
-    }
 
     @Resolve(message = "INVOKE")
-    static abstract class StaticMethodCall extends Node {
+    static abstract class InstanceMethodCall extends Node {
         @Child
-        private FindKeysNode find = new FindKeysNode();
+        private FindKeysNode find = new FindKeysNode(false);
         @Child
         private Node invoke;
 
         protected Object access(ClassObject clazz, String name, Object... args) {
-            String n = find.findKey(clazz, name);
+            String n = find.findKey(clazz.jsClass, name);
             if (invoke == null) {
                 invoke = Message.createInvoke(args.length).createNode();
             }
@@ -87,15 +64,41 @@ final class ClassObject implements TruffleObject {
         }
     }
 
+    @Resolve(message = "NEW")
+    static abstract class New extends Node {
+        @Child
+        private Node constructor = Message.READ.createNode();
+        @Child
+        private Node newInst = Message.createExecute(1).createNode();
+        @Child
+        private Node cons__V = Message.READ.createNode();
+        @Child
+        private Node initInst = Message.createExecute(1).createNode();
+
+        protected Object access(ClassObject clazz, Object... args) {
+            try {
+                TruffleObject cnstr = (TruffleObject) ForeignAccess.sendRead(constructor, clazz.jsClass, "constructor");
+//                TruffleObject d = (TruffleObject) ForeignAccess.sendRead(cons__V, cnstr, "cons__V");
+                TruffleObject instance = (TruffleObject) ForeignAccess.sendExecute(newInst, cnstr);
+//                ForeignAccess.sendExecute(initInst, d, instance);
+                return new JavaObject(instance);
+            } catch (UnknownIdentifierException ex) {
+                throw UnknownIdentifierException.raise("<init>");
+            } catch (InteropException ex) {
+                throw ex.raise();
+            }
+        }
+    }
+
     @Resolve(message = "READ")
     static abstract class StaticFieldRead extends Node {
         @Child
-        private FindKeysNode find = new FindKeysNode();
+        private FindKeysNode find = new FindKeysNode(false);
         @Child
         private Node read = Message.READ.createNode();
 
         protected Object access(ClassObject clazz, String name) {
-            String n = find.findKey(clazz, name);
+            String n = find.findKey(clazz.jsClass, name);
             try {
                 return ForeignAccess.sendInvoke(read, clazz.jsClass, (String) n);
             } catch (InteropException ex) {
