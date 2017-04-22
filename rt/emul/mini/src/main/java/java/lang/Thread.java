@@ -983,27 +983,7 @@ class Thread implements Runnable {
      */
     public final synchronized void join(long millis)
     throws InterruptedException {
-        long base = System.currentTimeMillis();
-        long now = 0;
-
-        if (millis < 0) {
-            throw new IllegalArgumentException("timeout value is negative");
-        }
-
-        if (millis == 0) {
-            while (isAlive()) {
-                wait(0);
-            }
-        } else {
-            while (isAlive()) {
-                long delay = millis - now;
-                if (delay <= 0) {
-                    break;
-                }
-                wait(delay);
-                now = System.currentTimeMillis() - base;
-            }
-        }
+        throw new InterruptedException();
     }
 
     /**
@@ -1033,21 +1013,7 @@ class Thread implements Runnable {
      */
     public final synchronized void join(long millis, int nanos)
     throws InterruptedException {
-
-        if (millis < 0) {
-            throw new IllegalArgumentException("timeout value is negative");
-        }
-
-        if (nanos < 0 || nanos > 999999) {
-            throw new IllegalArgumentException(
-                                "nanosecond timeout value out of range");
-        }
-
-        if (nanos >= 500000 || (nanos != 0 && millis == 0)) {
-            millis++;
-        }
-
-        join(millis);
+        throw new InterruptedException();
     }
 
     /**
@@ -1066,7 +1032,7 @@ class Thread implements Runnable {
      *          cleared when this exception is thrown.
      */
     public final void join() throws InterruptedException {
-        join(0);
+        throw new InterruptedException();
     }
 
     /**

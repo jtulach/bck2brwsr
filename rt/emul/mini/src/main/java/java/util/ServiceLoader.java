@@ -25,16 +25,9 @@
 
 package java.util;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
 
 
 /**
@@ -191,7 +184,7 @@ public final class ServiceLoader<S>
     private ClassLoader loader;
 
     // Cached providers, in instantiation order
-    private LinkedHashMap<String,S> providers = new LinkedHashMap<>();
+    private Providers providers = new Providers(null, null);
 
     // The current lazy-lookup iterator
     private LazyIterator lookupIterator;
@@ -237,14 +230,26 @@ public final class ServiceLoader<S>
         fail(service, u + ":" + line + ": " + msg);
     }
 
+    private static String readLine(InputStream is) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        for (;;) {
+            int ch = is.read();
+            if (ch == -1 || ch == '\n') {
+                break;
+            }
+            sb.append((char)ch);
+        }
+        return sb.length() == 0 ? null : sb.toString();
+    }
+
     // Parse a single line from the given configuration file, adding the name
     // on the line to the names list.
     //
-    private int parseLine(Class service, URL u, BufferedReader r, int lc,
-                          List<String> names)
+    private int parseLine(Class service, URL u, InputStream r, int lc,
+                          Names names)
         throws IOException, ServiceConfigurationError
     {
-        String ln = r.readLine();
+        String ln = readLine(r);
         if (ln == null) {
             return -1;
         }
@@ -263,8 +268,9 @@ public final class ServiceLoader<S>
                 if (!Character.isJavaIdentifierPart(cp) && (cp != '.'))
                     fail(service, u, lc, "Illegal provider-class name: " + ln);
             }
-            if (!providers.containsKey(ln) && !names.contains(ln))
-                names.add(ln);
+            if (!providers.containsKey(ln)) {
+                names.addIfMissing(ln);
+            }
         }
         return lc + 1;
     }
@@ -286,28 +292,87 @@ public final class ServiceLoader<S>
     //         If an I/O error occurs while reading from the given URL, or
     //         if a configuration-file format error is detected
     //
-    private Iterator<String> parse(Class service, URL u)
+    private Names parse(Class service, URL u)
         throws ServiceConfigurationError
     {
         InputStream in = null;
-        BufferedReader r = null;
-        ArrayList<String> names = new ArrayList<>();
+        Names names = new Names(null);
         try {
             in = u.openStream();
-            r = new BufferedReader(new InputStreamReader(in, "utf-8"));
             int lc = 1;
-            while ((lc = parseLine(service, u, r, lc, names)) >= 0);
+            while ((lc = parseLine(service, u, in, lc, names)) >= 0);
         } catch (IOException x) {
             fail(service, "Error reading configuration file", x);
         } finally {
             try {
-                if (r != null) r.close();
                 if (in != null) in.close();
             } catch (IOException y) {
                 fail(service, "Error closing configuration file", y);
             }
         }
-        return names.iterator();
+        return names.next;
+    }
+
+    private static class Providers<S> {
+        private Providers<S> next;
+        private final String name;
+        final S service;
+
+        Providers(String name, S service) {
+            this.name = name;
+            this.service = service;
+        }
+
+        void clear() {
+            next = null;
+        }
+
+        boolean containsKey(String ln) {
+            Providers<S> p = next;
+            while (p != null) {
+                if (p.name.equals(ln)) {
+                    return true;
+                }
+                p = p.next;
+            }
+            return false;
+        }
+
+        void put(String cn, S obj) {
+            Providers<S> p = this;
+            while (p.next != null) {
+                p = p.next;
+            }
+            p.next = new Providers<>(cn, obj);
+        }
+
+        Providers next() {
+            return next;
+        }
+
+    }
+
+    private static class Names {
+        private final String name;
+        private Names next;
+
+        Names(String name) {
+            this.name = name;
+        }
+
+        void addIfMissing(String ln) {
+            Names n = this;
+            for (;;) {
+                if (ln.equals(n.name)) {
+                    return;
+                }
+                if (n.next == null) {
+                    n.next = new Names(ln);
+                    return;
+                }
+                n = n.next;
+            }
+        }
     }
 
     // Private inner class implementing fully-lazy provider lookup
@@ -319,7 +384,7 @@ public final class ServiceLoader<S>
         Class<S> service;
         ClassLoader loader;
         Enumeration<URL> configs = null;
-        Iterator<String> pending = null;
+        Names pending = null;
         String nextName = null;
 
         private LazyIterator(Class<S> service, ClassLoader loader) {
@@ -342,13 +407,14 @@ public final class ServiceLoader<S>
                     fail(service, "Error locating configuration files", x);
                 }
             }
-            while ((pending == null) || !pending.hasNext()) {
+            while (pending == null) {
                 if (!configs.hasMoreElements()) {
                     return false;
                 }
                 pending = parse(service, configs.nextElement());
             }
-            nextName = pending.next();
+            nextName = pending.name;
+            pending = pending.next;
             return true;
         }
 
@@ -423,18 +489,20 @@ public final class ServiceLoader<S>
     public Iterator<S> iterator() {
         return new Iterator<S>() {
 
-            Iterator<Map.Entry<String,S>> knownProviders
-                = providers.entrySet().iterator();
+            Providers knownProviders = providers.next();
 
             public boolean hasNext() {
-                if (knownProviders.hasNext())
+                if (knownProviders != null)
                     return true;
                 return lookupIterator.hasNext();
             }
 
             public S next() {
-                if (knownProviders.hasNext())
-                    return knownProviders.next().getValue();
+                if (knownProviders != null) {
+                    Providers<S> p = knownProviders;
+                    knownProviders = knownProviders.next();
+                    return p.service;
+                }
                 return lookupIterator.next();
             }
 
