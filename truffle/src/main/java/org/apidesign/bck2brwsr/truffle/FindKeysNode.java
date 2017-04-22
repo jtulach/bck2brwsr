@@ -60,4 +60,13 @@ final class FindKeysNode extends Node {
         throw UnknownIdentifierException.raise(shortName);
     }
 
+    static void unwrapArgs(Object[] args) {
+        for (int i = 0; i < args.length; i++) {
+            if (args[i] instanceof ClassObject) {
+                args[i] = ((ClassObject)args[i]).jsClass;
+            } else if (args[i] instanceof JavaObject) {
+                args[i] = ((JavaObject)args[i]).jsObj;
+            }
+        }
+    }
 }

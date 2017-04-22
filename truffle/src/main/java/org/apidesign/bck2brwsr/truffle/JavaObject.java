@@ -27,7 +27,7 @@ import com.oracle.truffle.api.nodes.Node;
 
 @MessageResolution(receiverType = JavaObject.class)
 final class JavaObject implements TruffleObject {
-    private final TruffleObject jsObj;
+    final TruffleObject jsObj;
 
     public JavaObject(TruffleObject instance) {
         this.jsObj = instance;
@@ -55,6 +55,7 @@ final class JavaObject implements TruffleObject {
             if (invoke == null) {
                 invoke = Message.createInvoke(args.length).createNode();
             }
+            FindKeysNode.unwrapArgs(args);
             try {
                 return ForeignAccess.sendInvoke(invoke, obj.jsObj, (String) n, args);
             } catch (InteropException ex) {

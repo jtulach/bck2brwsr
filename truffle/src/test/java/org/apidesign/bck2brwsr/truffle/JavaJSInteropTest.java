@@ -90,4 +90,31 @@ public class JavaJSInteropTest {
         assertEquals(13, value);
     }
 
+    @Test
+    public void instanceArgument() throws Exception {
+        Source src = Source.newBuilder(
+              "package instarg;\n"
+            + "public final class Sum {\n"
+            + "  public int add(int a, int b) {\n"
+            + "    return a + b;\n"
+            + "  }\n"
+            + "  public static int all(Sum s, int[] a) {\n"
+            + "    int sum = 0;\n"
+            + "    for (int v : a) { sum = s.add(sum, v); };\n"
+            + "    return sum;\n"
+            + "  }\n"
+            + "}\n"
+        ).mimeType("text/java").name("Sum.java").build();
+        engine.eval(src);
+
+        Source js = Source.newBuilder(
+                "var Sum = Interop.import('instarg.Sum');\n"
+              + "var sum = new Sum();"
+              + "Sum.all(sum, [3, 1, 3, 6]);"
+        ).mimeType("text/javascript").name("thirteen.js").build();
+
+        int value = engine.eval(js).as(Number.class).intValue();
+        assertEquals(13, value);
+    }
+
 }
