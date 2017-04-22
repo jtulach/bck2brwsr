@@ -412,13 +412,13 @@ abstract class VM extends ByteCodeToJavaScript {
         String def = "\n  invoker." + mangledName + " = function(target";
         if (invokerMethods.indexOf(def) == -1) {
             invokerMethods.append(def);
-            for (int j = 0; j < params; j++) {
+            for (int j = 1; j < params; j++) {
                 invokerMethods.append(", p").append(j);
             }
             invokerMethods.append(") {\n    return target['").
                 append(mangledName).append("'](");
-            for (int j = 0; j < params; j++) {
-                if (j > 0) {
+            for (int j = 1; j < params; j++) {
+                if (j > 1) {
                     invokerMethods.append(",");
                 }
                 invokerMethods.append("p").append(j);
