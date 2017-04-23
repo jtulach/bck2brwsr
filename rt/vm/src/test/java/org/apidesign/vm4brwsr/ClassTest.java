@@ -259,6 +259,20 @@ public class ClassTest {
         );
     }
 
+    @Test public void defaultInt() throws Exception {
+        assertExec("Int attr", Classes.class,
+            "defaultInt__I",
+            42
+        );
+    }
+
+    @Test public void defaultCls() throws Exception {
+        String exp = Classes.defaultCls();
+        assertExec("Cls attr", Classes.class,
+            "defaultCls__Ljava_lang_String_2", exp
+        );
+    }
+
     @Test public void nameOfSuperInterface() throws Exception {
         String exp = Classes.superInterface();
         assertExec("Can get name of superinterface?", Classes.class,

@@ -12,6 +12,7 @@ script:
   - mvn -f rt/emul/mini test $RUN_PARAMS
   - mvn -f rt/emul/zip test $RUN_PARAMS
   - mvn -f javaquery install $RUN_PARAMS
+  - if type firefox; then mvn -f ko/fx test $RUN_PARAMS; fi
 os:
   - linux
   - osx

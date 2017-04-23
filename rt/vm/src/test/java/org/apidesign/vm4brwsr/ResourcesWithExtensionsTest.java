@@ -58,6 +58,18 @@ public class ResourcesWithExtensionsTest {
         );
     }
 
+    @Test public void undefinedIsNull() throws Exception {
+        assertExec("undefined is converted to null on return",
+            Resources.class, "unknown__Ljava_lang_String_2", null
+        );
+    }
+
+    @Test public void varsAreOK() throws Exception {
+        assertExec("Access to args",
+            Resources.class, "addDirect__Ljava_lang_String_2", "HelloWorld"
+        );
+    }
+
     @Test public void thisObjJSIsFound() throws Exception {
         assertExec("The resources used as @JavaScriptResource aren't available",
             Resources.class, "isResource__ZLjava_lang_String_2", 0.0, "thisObj"

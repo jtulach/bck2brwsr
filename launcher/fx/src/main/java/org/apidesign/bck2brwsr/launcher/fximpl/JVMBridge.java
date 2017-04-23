@@ -199,12 +199,18 @@ public final class JVMBridge {
         }
 
         final Object checkArray(Object val) {
+            if (val instanceof String && val == undefined()) {
+                return null;
+            }
             int length = ((Number) arraySizeFn().call("array", val, null)).intValue();
             if (length == -1) {
                 return val;
             }
             Object[] arr = new Object[length];
             arraySizeFn().call("array", val, arr);
+            for (int i = 0; i < arr.length; i++) {
+                arr[i] = checkArray(arr[i]);
+            }
             return arr;
         }
         private JSObject arraySize;
@@ -230,6 +236,21 @@ public final class JVMBridge {
                 }
             }
             return arraySize;
+        }
+
+        private Object undefined;
+
+        private final Object undefined() {
+            if (undefined == null) {
+                try {
+                    undefined = defineJSFn(""
+                        + "  return undefined;", null, null
+                    ).invokeImpl(null, false);
+                } catch (Exception ex) {
+                    throw new IllegalStateException(ex);
+                }
+            }
+            return undefined;
         }
 
     }

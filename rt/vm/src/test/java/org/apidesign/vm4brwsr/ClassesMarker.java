@@ -30,6 +30,7 @@ public @interface ClassesMarker {
     String[] nicknames();
     E count() default E.ONE;
     Class<?> self() default Object.class;
+    Class<?>[] clsArr() default {};
     
     enum E {
         ONE, TWO;

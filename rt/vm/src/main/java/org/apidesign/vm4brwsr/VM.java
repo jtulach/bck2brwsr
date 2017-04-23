@@ -60,7 +60,7 @@ abstract class VM extends ByteCodeToJavaScript {
     }
 
     @Override
-    boolean debug(String msg) throws IOException {
+    boolean debug(Appendable out, String msg) throws IOException {
         return false;
     }
     
@@ -95,22 +95,22 @@ abstract class VM extends ByteCodeToJavaScript {
             fixedNames.add(Class.class.getName().replace('.', '/'));
             fixedNames.add(ArithmeticException.class.getName().replace('.', '/'));
         }
-        vm.doCompile(fixedNames.addAndNew(both));
+        vm.doCompile(out, fixedNames.addAndNew(both));
     }
 
-    private void doCompile(StringArray names) throws IOException {
-        generatePrologue();
-        append("\n  var invoker = {};");
-        append("\n  function registerClass(vm, name, fn) {");
-        append("\n    if (!vm[name]) vm[name] = fn;");
-        append("\n    return vm[name];");
-        append("\n  }");
-        generateBody(names);
-        append(invokerMethods);
+    private void doCompile(Appendable out, StringArray names) throws IOException {
+        generatePrologue(out);
+        out.append("\n  var invoker = {};");
+        out.append("\n  function registerClass(vm, name, fn) {");
+        out.append("\n    if (!vm[name]) vm[name] = fn;");
+        out.append("\n    return vm[name];");
+        out.append("\n  }");
+        generateBody(out, names);
+        out.append(invokerMethods);
         
         for (String r : asBinary.toArray()) {
-            append("\n  ").append(getExportsObject()).append("['registerResource']('");
-            append(r).append("', '");
+            out.append("\n  ").append(getExportsObject()).append("['registerResource']('");
+            out.append(r).append("', '");
             InputStream is = this.resources.get(r);
             int avail = is.available();
             if (avail <= 0) {
@@ -135,12 +135,12 @@ abstract class VM extends ByteCodeToJavaScript {
                 System.arraycopy(arr, 0, tmp, 0, offset);
                 arr = tmp;
             }
-            append(btoa(arr));
-            append("');");
+            out.append(btoa(arr));
+            out.append("');");
         }
         
-        append("\n");
-        generateEpilogue();
+        out.append("\n");
+        generateEpilogue(out);
     }
 
     @JavaScriptBody(args = { "arr" }, body = "return btoa(arr);")
@@ -148,9 +148,9 @@ abstract class VM extends ByteCodeToJavaScript {
         return javax.xml.bind.DatatypeConverter.printBase64Binary(arr);
     }
 
-    protected abstract void generatePrologue() throws IOException;
+    protected abstract void generatePrologue(Appendable out) throws IOException;
 
-    protected abstract void generateEpilogue() throws IOException;
+    protected abstract void generateEpilogue(Appendable out) throws IOException;
 
     protected abstract String getExportsObject();
 
@@ -159,21 +159,21 @@ abstract class VM extends ByteCodeToJavaScript {
     protected abstract void lazyReference(Appendable out, String n) throws IOException;
     
     @Override
-    protected final void declareClass(ClassData classData, String mangledName)
+    protected final void declareClass(Appendable out, ClassData classData, String mangledName)
             throws IOException {
         if (exportedSymbols.isExported(classData)) {
-            append("registerClass(").append(getExportsObject()).append(",'")
+            out.append("registerClass(").append(getExportsObject()).append(",'")
                                                .append(mangledName)
                                                .append("',")
                             .append(mangledName)
                .append(")");
             exportedCount++;
         } else {
-            append(mangledName);
+            out.append(mangledName);
         }
     }
 
-    protected String generateClass(String className) throws IOException {
+    protected String generateClass(Appendable out, String className) throws IOException {
         ClassData classData = classDataCache.getClassData(className);
         if (classData == null) {
             throw new IOException("Can't find class " + className);
@@ -182,31 +182,27 @@ abstract class VM extends ByteCodeToJavaScript {
     }
 
     @Override
-    protected void declaredField(FieldData fieldData,
-                                 String destObject,
-                                 String mangledName) throws IOException {
+    protected void declaredField(Appendable out, FieldData fieldData, String destObject, String mangledName) throws IOException {
         if (exportedSymbols.isExported(fieldData)) {
-            exportMember(destObject, mangledName);
+            exportMember(out, destObject, mangledName);
         }
     }
 
     @Override
-    protected void declaredMethod(MethodData methodData,
-                                  String destObject,
-                                  String mangledName) throws IOException {
+    protected void declaredMethod(Appendable out, MethodData methodData, String destObject, String mangledName) throws IOException {
         if (isHierarchyExported(methodData)) {
-            exportMember(destObject, mangledName);
+            exportMember(out, destObject, mangledName);
         }
     }
 
-    private void exportMember(String destObject, String memberName)
+    private void exportMember(Appendable out, String destObject, String memberName)
             throws IOException {
-        append("\n").append(destObject).append("['")
+        out.append("\n").append(destObject).append("['")
         .append(memberName)
         .append("'] = m;\n");
     }
 
-    private void generateBody(StringArray names) throws IOException {
+    private void generateBody(Appendable out, StringArray names) throws IOException {
         StringArray processed = new StringArray();
         StringArray initCode = new StringArray();
         StringArray skipClass = new StringArray();
@@ -228,12 +224,12 @@ abstract class VM extends ByteCodeToJavaScript {
                 }
                 InputStream is = resources.get(name + ".class");
                 if (is == null) {
-                    lazyReference(this, name);
+                    lazyReference(out, name);
                     skipClass.add(name);
                     continue;
                 }
                 try {
-                    String ic = generateClass(name);
+                    String ic = generateClass(out, name);
                     processed.add(name);
                     initCode.add(ic == null ? "" : ic);
                 } catch (RuntimeException ex) {
@@ -245,7 +241,7 @@ abstract class VM extends ByteCodeToJavaScript {
                 while (resource.startsWith("/")) {
                     resource = resource.substring(1);
                 }
-                requireResourceImpl(false, resource);
+                requireResourceImpl(out, false, resource);
                 asBinary.remove(resource);
             }
             scripts = new StringArray();
@@ -258,7 +254,7 @@ abstract class VM extends ByteCodeToJavaScript {
                 if (indx >= 0) {
                     final String theCode = initCode.toArray()[indx];
                     if (!theCode.isEmpty()) {
-                        append(theCode).append("\n");
+                        out.append(theCode).append("\n");
                     }
                     initCode.toArray()[indx] = "";
                 }
@@ -266,21 +262,21 @@ abstract class VM extends ByteCodeToJavaScript {
         }
     }
 
-    final void requireResourceImpl(boolean useEval, String resource) throws IOException {
+    final void requireResourceImpl(Appendable out, boolean useEval, String resource) throws IOException {
         InputStream emul = resources.get(resource);
         if (emul == null) {
             throw new IOException("Can't find " + resource);
         }
-        append("\n// resource from ").append(resource).append("\n");
-        append("\n");
+        out.append("\n// resource from ").append(resource).append("\n");
+        out.append("\n");
         if (useEval) {
-            append("(0 || eval)(\"");
+            out.append("(0 || eval)(\"");
         }
-        readResource(useEval, emul, this);
+        readResource(useEval, emul, out);
         if (useEval) {
-            append("\");");
+            out.append("\");");
         }
-        append("\n");
+        out.append("\n");
     }
 
     private static void readResource(boolean escape, InputStream emul, Appendable out) throws IOException {
@@ -416,13 +412,13 @@ abstract class VM extends ByteCodeToJavaScript {
         String def = "\n  invoker." + mangledName + " = function(target";
         if (invokerMethods.indexOf(def) == -1) {
             invokerMethods.append(def);
-            for (int j = 0; j < params; j++) {
+            for (int j = 1; j < params; j++) {
                 invokerMethods.append(", p").append(j);
             }
             invokerMethods.append(") {\n    return target['").
                 append(mangledName).append("'](");
-            for (int j = 0; j < params; j++) {
-                if (j > 0) {
+            for (int j = 1; j < params; j++) {
+                if (j > 1) {
                     invokerMethods.append(",");
                 }
                 invokerMethods.append("p").append(j);
@@ -516,13 +512,13 @@ abstract class VM extends ByteCodeToJavaScript {
         }
 
         @Override
-        protected void generatePrologue() throws IOException {
-            append("(function VM(global) {var fillInVMSkeleton = function(vm) {");
+        protected void generatePrologue(Appendable out) throws IOException {
+            out.append("(function VM(global) {var fillInVMSkeleton = function(vm) {");
         }
 
         @Override
-        protected void generateEpilogue() throws IOException {
-            append(
+        protected void generateEpilogue(Appendable out) throws IOException {
+            out.append(
                   "  return vm;\n"
                 + "  };\n"
                 + "  var extensions = [];\n"
@@ -726,7 +722,7 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "    }\n"
                 + "    return loader;\n"
                 + "  };\n");
-            append(
+            out.append(
                   "  global.bck2brwsr.register = function(config, extension) {\n"
                 + "    if (!config || config['magic'] !== 'kafčo') {\n"
                 + "      console.log('Will not register: ' + extension);\n"
@@ -753,7 +749,7 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "    }\n"
                 + "    return null;\n"
                 + "  };\n");
-            append("}(this));");
+            out.append("}(this));");
         }
 
         @Override
@@ -780,8 +776,8 @@ abstract class VM extends ByteCodeToJavaScript {
         }
 
         @Override
-        protected void requireResource(String resourcePath) throws IOException {
-            requireResourceImpl(true, resourcePath);
+        protected void requireResource(Appendable out, String resourcePath) throws IOException {
+            requireResourceImpl(out, true, resourcePath);
             super.asBinary.remove(resourcePath);
         }
     }
@@ -800,28 +796,28 @@ abstract class VM extends ByteCodeToJavaScript {
         }
 
         @Override
-        protected void generatePrologue() throws IOException {
-            append(
+        protected void generatePrologue(Appendable out) throws IOException {
+            out.append(
                   "bck2brwsr.register({\n"
                 + "  'magic' : 'kafčo'"
             );
             if (classpath != null && classpath.toArray().length > 0) {
-                append(
+                out.append(
                   ",\n  'classpath' : [\n"
                 );
                 String sep = "    ";
                 for (String s : classpath.toArray()) {
-                    append(sep).append("'").append(s).append("'");
+                    out.append(sep).append("'").append(s).append("'");
                     sep = ",\n    ";
                 }
-                append(
+                out.append(
                   "\n  ]"
                 );
             }
-            append(
+            out.append(
                   "\n}, function(exports) {\n"
                 + "  var vm = {};\n");
-            append("  function link(n, assign) {\n"
+            out.append("  function link(n, assign) {\n"
                 + "    function replaceAll(s, o, n) {\n"
                 + "      var pos = 0;\n"
                 + "      for (;;) {\n"
@@ -846,8 +842,8 @@ abstract class VM extends ByteCodeToJavaScript {
         }
 
         @Override
-        protected void generateEpilogue() throws IOException {
-            append("});");
+        protected void generateEpilogue(Appendable out) throws IOException {
+            out.append("});");
             if (exportedCount == 0) {
                 throw new IOException("Creating library without any exported symbols is useless!");
             }
@@ -862,10 +858,10 @@ abstract class VM extends ByteCodeToJavaScript {
         }
 
         @Override
-        protected String generateClass(String className) throws IOException {
+        protected String generateClass(Appendable out, String className) throws IOException {
             if (isExternalClass(className)) {
                 final String cls = className.replace("_", "_1").replace('/', '_');
-                append("\n").append(assignClass(cls))
+                out.append("\n").append(assignClass(cls))
                    .append("link('")
                    .append(className)
                    .append("', function(f) { ").append(assignClass(cls)).append(" f; });");
@@ -873,7 +869,7 @@ abstract class VM extends ByteCodeToJavaScript {
                 return null;
             }
 
-            return super.generateClass(className);
+            return super.generateClass(out, className);
         }
 
         @Override
@@ -899,8 +895,8 @@ abstract class VM extends ByteCodeToJavaScript {
         }
 
         @Override
-        protected void requireResource(String resourcePath) throws IOException {
-            requireResourceImpl(true, resourcePath);
+        protected void requireResource(Appendable out, String resourcePath) throws IOException {
+            requireResourceImpl(out, true, resourcePath);
             super.asBinary.remove(resourcePath);
         }
     }
