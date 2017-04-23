@@ -25,8 +25,6 @@
 
 package java.io;
 
-import java.util.Arrays;
-
 /**
  * This class implements an output stream in which the data is
  * written into a byte array. The buffer automatically grows as data
@@ -110,7 +108,7 @@ public class ByteArrayOutputStream extends OutputStream {
                 throw new OutOfMemoryError();
             newCapacity = Integer.MAX_VALUE;
         }
-        buf = Arrays.copyOf(buf, newCapacity);
+        buf = copyOf(buf, newCapacity);
     }
 
     /**
@@ -138,7 +136,7 @@ public class ByteArrayOutputStream extends OutputStream {
             throw new IndexOutOfBoundsException();
         }
         ensureCapacity(count + len);
-        System.arraycopy(b, off, buf, count, len);
+        org.apidesign.bck2brwsr.emul.lang.System.arraycopy(b, off, buf, count, len);
         count += len;
     }
 
@@ -175,7 +173,7 @@ public class ByteArrayOutputStream extends OutputStream {
      * @see     java.io.ByteArrayOutputStream#size()
      */
     public synchronized byte toByteArray()[] {
-        return Arrays.copyOf(buf, count);
+        return copyOf(buf, count);
     }
 
     /**
@@ -267,6 +265,13 @@ public class ByteArrayOutputStream extends OutputStream {
      *
      */
     public void close() throws IOException {
+    }
+
+    private static byte[] copyOf(byte[] original, int newLength) {
+        byte[] copy = new byte[newLength];
+        org.apidesign.bck2brwsr.emul.lang.System.arraycopy(original, 0, copy, 0,
+                Math.min(original.length, newLength));
+        return copy;
     }
 
 }

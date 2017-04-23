@@ -18,8 +18,6 @@
 package org.apidesign.bck2brwsr.ko2brwsr;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Map;
 import net.java.html.BrwsrCtx;
@@ -96,7 +94,7 @@ public final class Bck2BrwsrKnockoutImpl extends KnockoutTCK {
     private static native String findBaseURL();
     
     @Override
-    public URI prepareURL(String content, String mimeType, String[] parameters) {
+    public String prepareWebResource(String content, String mimeType, String[] parameters) {
         try {
             final URL baseURL = new URL(findBaseURL());
             StringBuilder sb = new StringBuilder();
@@ -110,12 +108,27 @@ public final class Bck2BrwsrKnockoutImpl extends KnockoutTCK {
 
             URL query = new URL(baseURL, sb.toString());
             String uri = (String) query.getContent(new Class[] { String.class });
-            URI connectTo = new URI(uri.trim());
-            return connectTo;
+            return uri.trim();
         } catch (IOException ex) {
             throw new IllegalStateException(ex);
-        } catch (URISyntaxException ex) {
-            throw new IllegalStateException(ex);
         }
-    }    
+    }
+
+    @Override
+    public boolean scheduleLater(int delay, Runnable r) {
+        return setTimeout(r, delay);
+    }
+
+    @JavaScriptBody(args = { "r", "timeout" }, body =
+          ""
+        + "if (!!window && !!window.setTimeout) {\n"
+        + "  window.setTimeout(function() {\n"
+        + "    r.run__V();\n"
+        + "  }, timeout);\n"
+        + "  return true;\n"
+        + "}\n"
+        + "return false;\n"
+    )
+    private static native boolean setTimeout(Runnable r, int timeout);
+
 }
