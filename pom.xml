@@ -49,6 +49,11 @@
           <name>NetBeans</name>
           <url>http://bits.netbeans.org/maven2/</url>
       </repository>
+      <repository>
+          <id>stagging</id>
+          <name>Stagging</name>
+          <url>https://maven.java.net/content/repositories/orgapidesign-1059/</url>
+      </repository>
   </repositories>
   <pluginRepositories>
       <pluginRepository>
@@ -61,6 +66,11 @@
           <releases>
               <enabled>true</enabled>
           </releases>
+      </pluginRepository>
+      <pluginRepository>
+          <id>stagging</id>
+          <name>Stagging</name>
+          <url>https://maven.java.net/content/repositories/orgapidesign-1059/</url>
       </pluginRepository>
   </pluginRepositories>
   <build>
