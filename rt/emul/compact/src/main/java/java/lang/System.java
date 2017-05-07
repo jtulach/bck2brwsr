@@ -116,8 +116,17 @@ public class System {
     
     static {
         in = new ByteArrayInputStream(new byte[0]);
-        out = new PrintStream(new BufferedOutputStream(new SystemStream("log")));
-        err = new PrintStream(new BufferedOutputStream(new SystemStream("warn")));
+        PrintStream log;
+        PrintStream warn;
+        try {
+            log = new PrintStream(new BufferedOutputStream(new SystemStream("log")));
+            warn = new PrintStream(new BufferedOutputStream(new SystemStream("warn")));
+        } catch (Exception ex) {
+            log = null;
+            warn = null;
+        }
+        out = log;
+        err = warn;
     }
 
     private static final class SystemStream extends OutputStream {
