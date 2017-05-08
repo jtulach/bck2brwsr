@@ -1629,9 +1629,8 @@ public final
     }
     
     @JavaScriptBody(args = {  }, body = 
-        "if (this.fnc) {\n"
-      + "  var c = this.fnc(false).constructor.$class;\n"
-//      + "  java.lang.System.out.println('will call: ' + (!!this.fnc) + ' res: ' + c.jvmName);\n"
+        "if (this['fnc']) {\n"
+      + "  var c = this['fnc'](false).constructor.$class;\n"
       + "  if (c) return c;\n"
       + "}\n"
       + "return null;"
@@ -1679,7 +1678,7 @@ public final
         "  Object.defineProperty(c, 'array', { 'configurable': true, 'writable': true, 'value': true });\n" +
         "  Array[sig] = c;\n" +
         "}\n" +
-        "if (!c.fnc) Object.defineProperty(c, 'fnc', { 'configurable': true, 'writable': true, 'value' : fnc });\n" +
+        "if (!c['fnc']) Object.defineProperty(c, 'fnc', { 'configurable': true, 'writable': true, 'value' : fnc });\n" +
         "return c;"
     )
     private static native Class<?> defineArray(String sig, Object fnc);

@@ -698,7 +698,6 @@ public final
         + "for(var i = 0; i < length; i++) arr[i] = value;\n"
         + "Object.defineProperty(arr, 'jvmName', { 'configurable': true, 'writable': true, 'value': sig });\n"
         + "Object.defineProperty(arr, 'fnc', { 'configurable': true, 'writable': true, 'value' : fn });\n"
-//        + "java.lang.System.out.println('Assigned ' + arr.jvmName + ' fn: ' + (!!arr.fnc));\n"
         + "return arr;"
     )
     static native Object newArray(boolean primitive, String sig, Object fn, int length);
