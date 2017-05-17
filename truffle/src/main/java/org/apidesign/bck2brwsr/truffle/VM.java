@@ -20,6 +20,7 @@ package org.apidesign.bck2brwsr.truffle;
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.TruffleLanguage;
+import com.oracle.truffle.api.TruffleOptions;
 import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.interop.java.JavaInterop;
 import com.oracle.truffle.api.source.Source;
@@ -35,6 +36,18 @@ import org.apidesign.bck2brwsr.aot.Bck2BrwsrJars;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 
 final class VM {
+    private static Source rtJs;
+    static {
+        if (TruffleOptions.AOT) {
+            try {
+                rtJs();
+            } catch (IOException ex) {
+                throw new AssertionError("Cannot preload rt.js", ex);
+            }
+            assert rtJs != null;
+        }
+    }
+
     final TruffleLanguage.Env env;
     private Object vm;
     private LoadClass loadClass;
@@ -53,12 +66,7 @@ final class VM {
             CallTarget vmInit = env.parse(bck2brwsr);
             vmInit.call();
 
-            URL rt = VM.class.getResource("/emul-1.0-SNAPSHOT-debug.js");
-            assert rt != null;
-
-            Source rtJs = Source.newBuilder(rt).name("rt.js").mimeType("text/javascript").build();
-
-            CallTarget rtInit = env.parse(rtJs);
+            CallTarget rtInit = env.parse(rtJs());
             rtInit.call();
 
             Source atob = Source.newBuilder(
@@ -81,6 +89,15 @@ final class VM {
         } catch (IOException ex) {
             throw raise(ex);
         }
+    }
+
+    private static Source rtJs() throws IOException {
+        if (rtJs == null) {
+            URL rt = VM.class.getResource("/emul-1.0-SNAPSHOT-debug.js");
+            assert rt != null;
+            rtJs = Source.newBuilder(rt).name("rt.js").mimeType("text/javascript").build();
+        }
+        return rtJs;
     }
 
     @CompilerDirectives.TruffleBoundary
