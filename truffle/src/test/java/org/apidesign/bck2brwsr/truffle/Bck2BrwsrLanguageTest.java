@@ -58,7 +58,7 @@ public class Bck2BrwsrLanguageTest {
 
     @Test
     public void testHelloWorldFromAJar() throws Exception {
-        File jar = createHelloJar(false);
+        File jar = createHelloJar(false, true);
         String mime = Files.probeContentType(jar.toPath());
 
         Source src = Source.newBuilder(jar.toURI().toURL()).mimeType(mime).build();
@@ -96,7 +96,7 @@ public class Bck2BrwsrLanguageTest {
 
     @Test
     public void testHelloWorldFromMainClass() throws Exception {
-        File jar = createHelloJar(true);
+        File jar = createHelloJar(true, false);
         String mime = Files.probeContentType(jar.toPath());
 
         out.reset();
@@ -105,15 +105,28 @@ public class Bck2BrwsrLanguageTest {
         assertEquals("Hello from Main!", out.toString("UTF-8").trim());
     }
 
-    private File createHelloJar(boolean mainClass) throws IOException {
+    @Test
+    public void testHelloWorldFromMainClassAndOsgi() throws Exception {
+        File jar = createHelloJar(true, true);
+        String mime = Files.probeContentType(jar.toPath());
+
+        out.reset();
+        Source src = Source.newBuilder(jar.toURI().toURL()).mimeType(mime).build();
+        engine.eval(src);
+        assertEquals("Hello from Main!", out.toString("UTF-8").trim());
+    }
+
+    private File createHelloJar(boolean mainClass, boolean osgi) throws IOException {
         URL u = Bck2BrwsrLanguageTest.class.getResource("Hello.class");
         assertNotNull("Hello.class found", u);
 
         File jar = File.createTempFile("hello", ".jar");
         Manifest mf = new Manifest();
         mf.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
-        mf.getMainAttributes().putValue("Bundle-SymbolicName", "test");
-        mf.getMainAttributes().putValue("Export-Package", Hello.class.getPackage().getName());
+        if (osgi) {
+            mf.getMainAttributes().putValue("Bundle-SymbolicName", "test");
+            mf.getMainAttributes().putValue("Export-Package", Hello.class.getPackage().getName());
+        }
         if (mainClass) {
             mf.getMainAttributes().putValue("Main-Class", Hello.class.getName());
         }

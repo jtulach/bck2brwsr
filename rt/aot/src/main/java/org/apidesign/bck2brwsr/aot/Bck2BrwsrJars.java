@@ -158,6 +158,10 @@ public final class Bck2BrwsrJars {
         final Attributes mainAttributes = manifest == null ? null : manifest.getMainAttributes();
         String cp = mainAttributes == null ? null : mainAttributes.getValue("Class-Path"); // NOI18N
         String[] parts = cp == null ? new String[0] : cp.split(" ");
+        String mainClass = mainAttributes == null ? null : mainAttributes.getValue("Main-Class"); // NOI18N
+        if (mainClass != null) {
+            exported.add(mainClass.replace('.', '/'));
+        }
 
         if (c == null) {
             c = Bck2Brwsr.newCompiler();
