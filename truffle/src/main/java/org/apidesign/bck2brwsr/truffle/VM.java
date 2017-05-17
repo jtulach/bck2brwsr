@@ -21,7 +21,12 @@ import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.TruffleOptions;
+import com.oracle.truffle.api.interop.ArityException;
+import com.oracle.truffle.api.interop.ForeignAccess;
+import com.oracle.truffle.api.interop.InteropException;
+import com.oracle.truffle.api.interop.Message;
 import com.oracle.truffle.api.interop.TruffleObject;
+import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.interop.java.JavaInterop;
 import com.oracle.truffle.api.source.Source;
 import java.io.ByteArrayInputStream;
@@ -70,12 +75,16 @@ final class VM {
             rtInit.call();
 
             Source atob = Source.newBuilder(
-                "atob = function(s) {\n"
-              + "  return new String(org.apidesign.bck2brwsr.truffle.Bck2BrwsrLanguage.parseBase64Binary(s));\n"
-              + "}\n"
+                "(function(f) {\n"
+              + "  this.atob = f;\n"
+              + "})\n"
             ).name("atob.js").mimeType("text/javascript").build();
-            env.parse(atob).call();
-
+            TruffleObject registerAtob = (TruffleObject) env.parse(atob).call();
+            try {
+                ForeignAccess.sendExecute(Message.createExecute(1).createNode(), registerAtob, new AtoB());
+            } catch (InteropException ex) {
+                throw raise(ex);
+            }
             Source getVM = Source.newBuilder(
               "(function() { return bck2brwsr(); })();\n"
             ).mimeType("text/javascript").name("getvm.js").build();
