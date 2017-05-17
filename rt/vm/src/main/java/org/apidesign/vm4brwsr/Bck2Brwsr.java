@@ -75,6 +75,7 @@ import java.io.InputStream;
  * @author Jaroslav Tulach
  */
 public final class Bck2Brwsr {
+    private static final boolean ignoreClosureCompiler = "false".equals(System.getProperty("bck2brwsr.closure.compiler")); // NOI18N
     private final ObfuscationLevel level;
     private final StringArray exported;
     private final StringArray classes;
@@ -327,7 +328,7 @@ public final class Bck2Brwsr {
      * @since 0.5
      */
     public void generate(Appendable out) throws IOException {
-        if (level != ObfuscationLevel.NONE) {
+        if (!ignoreClosureCompiler && level != ObfuscationLevel.NONE) {
             try {
                 ClosureWrapper.produceTo(out, level, this);
                 return;
