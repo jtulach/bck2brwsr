@@ -20,6 +20,7 @@ package org.apidesign.bck2brwsr.truffle;
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.TruffleLanguage;
+import com.oracle.truffle.api.TruffleOptions;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.interop.java.JavaInterop;
 import com.oracle.truffle.api.nodes.RootNode;
@@ -103,6 +104,15 @@ public class Bck2BrwsrLanguage extends TruffleLanguage<VM> {
             });
         }
 
+        if (TruffleOptions.AOT) {
+            throw new IOException("Can't compile Java source: " + src.getURI());
+        } else {
+            return compileJavaSource(src);
+        }
+    }
+
+    private CallTarget compileJavaSource(final Source src) throws IOException {
+        final ContextReference<VM> ref = getContextReference();
         final Compile result = Compile.create(src);
         if (!result.getErrors().isEmpty()) {
             StringBuilder sb = new StringBuilder();
