@@ -28,6 +28,7 @@ import com.oracle.truffle.api.interop.Message;
 import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.interop.java.JavaInterop;
+import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -54,8 +55,8 @@ final class VM {
     }
 
     final TruffleLanguage.Env env;
-    private Object vm;
-    private LoadClass loadClass;
+    private TruffleObject vm;
+    private LoadClassNode loadClass;
 
     VM(TruffleLanguage.Env env) {
         this.env = env;
@@ -89,12 +90,8 @@ final class VM {
               "(function() { return bck2brwsr(); })();\n"
             ).mimeType("text/javascript").name("getvm.js").build();
             CallTarget get = env.parse(getVM);
-            vm = get.call();
-
-            Source loadSrc = Source.newBuilder(
-                "(function(vm, name) { return vm.loadClass(name); })"
-            ).mimeType("text/javascript").name("loadsrc.js").build();
-            loadClass = JavaInterop.asJavaFunction(LoadClass.class, (TruffleObject) env.parse(loadSrc).call());
+            vm = (TruffleObject) get.call();
+            loadClass = new LoadClassNode(vm);
         } catch (IOException ex) {
             throw raise(ex);
         }
@@ -122,13 +119,17 @@ final class VM {
         String mainClass = jf.getManifest().getMainAttributes().getValue("Main-Class");
         jf.close();
         if (mainClass != null) {
-            RunMain main = JavaInterop.asJavaObject(RunMain.class, findClass(mainClass));
-            main.main();
+            final Node invoke = Message.createInvoke(0).createNode();
+            try {
+                ForeignAccess.sendInvoke(invoke, findClass(mainClass), "main");
+            } catch (InteropException ex) {
+                throw raise(ex);
+            }
         }
     }
 
     final ClassObject findClass(String globalName) {
-        return new ClassObject(loadClass.loadClass(vm, globalName));
+        return new ClassObject(loadClass.loadClass(globalName));
     }
 
     @CompilerDirectives.TruffleBoundary
@@ -165,15 +166,6 @@ final class VM {
         Source jsSrc = Source.newBuilder(sb.toString()).uri(src.getURI()).name(src.getName()).mimeType("text/javascript").build();
         env.parse(jsSrc).call();
     }
-
-    private static interface LoadClass {
-        public TruffleObject loadClass(Object vm, String name);
-    }
-
-    private static interface RunMain {
-        public void main(String... args);
-    }
-
 
     static RuntimeException raise(Throwable ex) {
         return raise(RuntimeException.class, ex);
