@@ -74,7 +74,6 @@ abstract class VM extends ByteCodeToJavaScript {
         
         VM vm;
         if (config.isExtension()) {
-            fixedNames.add(VM.class.getName().replace('.', '/'));
             vm = new Extension(out, 
                 config.getResources(), both, config.exported(),
                 config.allResources(), config.classpath()
