@@ -24,11 +24,40 @@ import java.io.File;
 public class Main {
     public static void main(String... args) throws Exception {
         PolyglotEngine engine = PolyglotEngine.newBuilder().build();
-        for (String file : args) {
-            if (file.endsWith(".jar")) {
-                Source src = Source.newBuilder(new File(file)).mimeType("application/x-jar").build();
-                engine.eval(src);
+        String jarFile = null;
+        for (int i = 0; i < args.length; i++) {
+            if (isOption(args[i], "cp", "classpath")) {
+                for (String element : args[++i].split(File.pathSeparator)) {
+                    Source src = Source.newBuilder(new File(element)).mimeType("application/x-jar").build();
+                    engine.eval(src);
+                }
+                continue;
+            }
+            if (isOption(args[i], "jar")) {
+                if (jarFile != null) {
+                    throw new IllegalArgumentException("Only one executable JAR may be present.");
+                }
+                jarFile = args[++i];
+                continue;
+            }
+            jarFile = null;
+            break;
+        }
+
+        if (jarFile == null) {
+            throw new IllegalArgumentException("Usage: -cp jar1:jar2:jar3 -jar jarToExecute");
+        }
+
+        Source src = Source.newBuilder(new File(jarFile)).mimeType("application/x-jar").build();
+        engine.eval(src);
+    }
+
+    private static boolean isOption(String arg, String... options) {
+        for (String option : options) {
+            if (("-" + option).equals(arg)) {
+                return true;
             }
         }
+        return false;
     }
 }
