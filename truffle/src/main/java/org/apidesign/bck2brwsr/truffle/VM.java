@@ -21,28 +21,29 @@ import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.TruffleOptions;
-import com.oracle.truffle.api.interop.ArityException;
 import com.oracle.truffle.api.interop.ForeignAccess;
 import com.oracle.truffle.api.interop.InteropException;
 import com.oracle.truffle.api.interop.Message;
 import com.oracle.truffle.api.interop.TruffleObject;
-import com.oracle.truffle.api.interop.UnsupportedMessageException;
-import com.oracle.truffle.api.interop.java.JavaInterop;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.Map;
-import java.util.jar.JarFile;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
 import org.apidesign.bck2brwsr.aot.Bck2BrwsrJars;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 
 final class VM {
     private static Source rtJs;
+    private static final ClassLoader rtJarClassLoader = createJarClassLoader();
     static {
         if (TruffleOptions.AOT) {
             try {
@@ -106,18 +107,39 @@ final class VM {
         return rtJs;
     }
 
+    private static ClassLoader createJarClassLoader() {
+        File rtJar = null;
+        for (String jar : System.getProperty("java.class.path").split(File.pathSeparator)) {
+            if (jar.contains("emul") && jar.endsWith("-rt.jar")) {
+                rtJar = new File(jar);
+                break;
+            }
+        }
+        try {
+            if (rtJar == null) {
+                URL self = VM.class.getProtectionDomain().getCodeSource().getLocation();
+                rtJar = new File(self.toURI());
+            }
+            return new SingleJarLoader(rtJar);
+        } catch (IOException | URISyntaxException ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
+
     @CompilerDirectives.TruffleBoundary
     void compileJar(File jar) throws IOException {
-        Bck2Brwsr compiler = Bck2BrwsrJars.configureFrom(Bck2Brwsr.newCompiler(), jar);
+        Bck2Brwsr compiler = Bck2BrwsrJars.configureFrom(Bck2Brwsr.newCompiler(), jar, rtJarClassLoader);
         compiler = compiler.library();
         StringBuilder sb = new StringBuilder();
         compiler.generate(sb);
         Source src = Source.newBuilder(sb.toString()).uri(jar.toURI()).name(jar.getName()).mimeType("text/javascript").build();
         env.parse(src).call();
 
-        JarFile jf = new JarFile(jar);
-        String mainClass = jf.getManifest().getMainAttributes().getValue("Main-Class");
-        jf.close();
+        Manifest manifest;
+        try (JarInputStream is = new JarInputStream(new FileInputStream(jar), false)) {
+            manifest = is.getManifest();
+        }
+        String mainClass = manifest.getMainAttributes().getValue("Main-Class");
         if (mainClass != null) {
             final Node invoke = Message.createInvoke(0).createNode();
             try {

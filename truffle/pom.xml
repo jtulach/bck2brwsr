@@ -6,18 +6,16 @@
         <artifactId>bck2brwsr</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
-    <artifactId>truffle</artifactId>
+    <groupId>org.apidesign.bck2brwsr</groupId>
+    <artifactId>java4truffle-bck2brwsr</artifactId>
     <packaging>jar</packaging>
-    <name>Truffle Integration</name>
+    <name>Java for Truffle via Bck2Brwsr</name>
     <build>
-        <finalName>java4truffle-bck2brwsr</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.0.0</version>
-                <configuration>
-                </configuration>
                 <executions>
                     <execution>
                         <phase>package</phase>
