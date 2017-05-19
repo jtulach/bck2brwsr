@@ -33,12 +33,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.Attributes;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
+import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 
 /** Utilities to process JAR files and set a compiler
@@ -122,12 +120,12 @@ public final class Bck2BrwsrJars {
      * @since 0.14
      */
     public static Bck2Brwsr configureFrom(
-        Bck2Brwsr c, File jar, final ClassLoader classpath, final boolean ignoreBootClassPath
+        Bck2Brwsr c, final File jar, final ClassLoader classpath, final boolean ignoreBootClassPath
     ) throws IOException {
         if (jar.isDirectory()) {
             return configureDir(ignoreBootClassPath, c, jar, classpath);
         }
-        final JarFile jf = new JarFile(jar);
+        final Iterable<? extends FastJar.Entry> entries = FastJar.list(jar);
         final List<String> classes = new ArrayList<>();
         List<String> resources = new ArrayList<>();
         Set<String> exported = new HashSet<>();
@@ -144,17 +142,23 @@ public final class Bck2BrwsrJars {
                 if (resource.startsWith("/")) {
                     resource = resource.substring(1);
                 }
-                ZipEntry ze = jf.getEntry(resource);
-                if (ze != null) {
-                    is = jf.getInputStream(ze);
+                for (FastJar.Entry e : entries) {
+                    if (resource.equals(e.name)) {
+                        is = FastJar.getInputStream(jar, e);
+                        break;
+                    }
                 }
                 return is == null ? super.get(resource) : is;
             }
         }
         JarRes jarRes = new JarRes();
 
-        listJAR(jf, jarRes, resources, exported);
-        final Manifest manifest = jf.getManifest();
+        final Manifest manifest;
+        try (JarInputStream is = new JarInputStream(new FileInputStream(jar), false)) {
+            manifest = is.getManifest();
+        }
+
+        listJAR(jar, manifest, entries, jarRes, resources, exported);
         final Attributes mainAttributes = manifest == null ? null : manifest.getMainAttributes();
         String cp = mainAttributes == null ? null : mainAttributes.getValue("Class-Path"); // NOI18N
         String[] parts = cp == null ? new String[0] : cp.split(" ");
@@ -176,13 +180,11 @@ public final class Bck2BrwsrJars {
     }
     
     private static void listJAR(
-        JarFile j, EmulationResources classes,
+        File jar, Manifest manifest, Iterable<? extends FastJar.Entry> entries, EmulationResources classes,
         List<String> resources, Set<String> keep
     ) throws IOException {
-        Enumeration<JarEntry> en = j.entries();
-        while (en.hasMoreElements()) {
-            JarEntry e = en.nextElement();
-            final String n = e.getName();
+        for (FastJar.Entry e : entries) {
+            final String n = e.name;
             if (n.endsWith("/")) {
                 continue;
             }
@@ -191,7 +193,7 @@ public final class Bck2BrwsrJars {
             }
             int last = n.lastIndexOf('/');
             String pkg = n.substring(0, last + 1);
-            if (pkg.startsWith("java/")) {
+            if (pkg.startsWith("java/") && keep != null) {
                 keep.add(pkg);
             }
             if (n.endsWith(".class")) {
@@ -199,7 +201,7 @@ public final class Bck2BrwsrJars {
             } else {
                 resources.add(n);
                 if (n.startsWith("META-INF/services/") && keep != null) {
-                    BufferedReader r = new BufferedReader(new InputStreamReader(j.getInputStream(e)));
+                    BufferedReader r = new BufferedReader(new InputStreamReader(FastJar.getInputStream(jar, e)));
                     for (;;) {
                         String l = r.readLine();
                         if (l == null) {
@@ -215,7 +217,6 @@ public final class Bck2BrwsrJars {
             }
         }
         if (keep != null) {
-            final Manifest manifest = j.getManifest();
             if (manifest != null) {
                 final Attributes mainAttr = manifest.getMainAttributes();
                 if (mainAttr != null) {
