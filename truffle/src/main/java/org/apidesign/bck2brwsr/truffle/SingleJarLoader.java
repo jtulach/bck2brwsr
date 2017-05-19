@@ -42,10 +42,15 @@ final class SingleJarLoader extends ClassLoader {
         Enumeration<JarEntry> en = jarFile.entries();
         while (en.hasMoreElements()) {
             JarEntry entry = en.nextElement();
-            if (entry.getName().endsWith("/")) {
+            final String name = entry.getName();
+            if (!name.endsWith(".class")) {
                 continue;
             }
-            if (!entry.getName().startsWith("java/")) {
+            if (!name.startsWith("java/") &&
+                !name.startsWith("org/apidesign/bck2brwsr/emul/lang/") &&
+                !name.startsWith("org/apidesign/bck2brwsr/emul/reflect/") &&
+                !name.startsWith("org/apidesign/vm4brwsr/api/")
+            ) {
                 continue;
             }
             byte[] arr = new byte[(int) entry.getSize()];
@@ -61,7 +66,7 @@ final class SingleJarLoader extends ClassLoader {
                     break;
                 }
             }
-            resources.put(entry.getName(), arr);
+            resources.put(name, arr);
         }
         jarFile.close();
         if (resources.isEmpty()) {
