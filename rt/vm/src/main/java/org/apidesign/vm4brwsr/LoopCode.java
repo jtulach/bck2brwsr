@@ -97,6 +97,8 @@ class LoopCode implements Runnable {
             }
             final int c = ByteCodeToJavaScript.readUByte(byteCodes, i);
             switch (c) {
+                case ByteCodeParser.opc_nop:
+                    break;
                 case ByteCodeParser.opc_aload_0:
                     smapper.assign(out, VarType.REFERENCE, lmapper.getA(0));
                     break;
