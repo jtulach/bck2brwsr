@@ -17,22 +17,10 @@
  */
 package org.apidesign.bck2brwsr.kotlintest
 
-import org.apidesign.bck2brwsr.vmtest.Compare;
-import org.apidesign.bck2brwsr.vmtest.VMTest;
-import org.testng.annotations.Factory;
-
-class SplitTest {
-    @Compare
-    fun splitWordsIntoParts() : String {
+class Split {
+    fun splitHelloWorld() : String {
         val t = "Hello World!"
         val words = t.split(" ")
         return words[1] + "_" + words[0];
-    }
-
-    companion object {
-        @Factory @JvmStatic
-        fun create(): Array<out Any> {
-            return VMTest.create(SplitTest::class.java);
-        }
     }
 }
