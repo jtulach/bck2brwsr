@@ -47,6 +47,7 @@ final class ClosureWrapper extends CommandLineRunner {
 
     private String compiledCode;
     private String externsCode;
+    private IOException compilerError;
 
     private ClosureWrapper(Appendable out,
                            String compilationLevel, Bck2Brwsr config, PrintStream err) {
@@ -100,7 +101,8 @@ final class ClosureWrapper extends CommandLineRunner {
                 VM.compile(sb, config);
                 compiledCode = sb.toString();
             } catch (IOException ex) {
-                compiledCode = ex.getMessage();
+                compilerError = ex;
+                return "// Error: " + ex.getMessage();
             }
         }
         return compiledCode;
@@ -151,6 +153,9 @@ final class ClosureWrapper extends CommandLineRunner {
         );
         try {
             int result = cw.doRun();
+            if (cw.compilerError != null) {
+                throw cw.compilerError;
+            }
             if (result != 0) {
                 throw new IOException(out.toString());
             }
