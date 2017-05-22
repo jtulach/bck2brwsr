@@ -19,8 +19,8 @@ package org.apidesign.bck2brwsr.kotlintest
 
 class Split {
     fun splitHelloWorld() : String {
-        val t = "Hello World!"
-        val words = t.split(" ")
+        val hello = "Hello World!"
+        val words = hello.split(" ")
         return words[1] + "_" + words[0];
     }
 }

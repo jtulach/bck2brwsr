@@ -8,7 +8,7 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
     <groupId>org.apidesign.bck2brwsr</groupId>
-    <artifactId>kotlinetest</artifactId>
+    <artifactId>kotlintest</artifactId>
     <name>Kotlin Tests</name>
     <url>http://maven.apache.org</url>
     <properties>
@@ -95,9 +95,6 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <systemProperties>
-                        <vmtest.precompiled>.*</vmtest.precompiled>
-                    </systemProperties>
                 </configuration>
             </plugin>
             <plugin>
