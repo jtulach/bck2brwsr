@@ -381,4 +381,27 @@ public class ReflectionTest {
             nameStatic = n;
         }
     }
+
+    public static final class Co_Ty {
+        public static Co_Ty fac_to_ry() {
+            return new Co_Ty("Co ty na to?");
+        }
+        private final String msg;
+
+        private Co_Ty(String msg) {
+            this.msg = msg;
+        }
+
+        @Override
+        public String toString() {
+            return msg;
+        }
+    }
+
+    @Compare
+    public String underscoresInNames() throws Exception {
+        Method factory = Co_Ty.class.getMethod("fac_to_ry");
+        Co_Ty coTy = (Co_Ty) factory.invoke(null);
+        return coTy.toString();
+    }
 }

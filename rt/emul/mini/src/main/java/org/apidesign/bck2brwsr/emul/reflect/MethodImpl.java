@@ -125,7 +125,9 @@ public abstract class MethodImpl {
         return arr;
     }
     public static Method findMethod(
-        Class<?> clazz, String name, Class<?>... parameterTypes) {
+        Class<?> clazz, String name, Class<?>... parameterTypes
+    ) {
+        name = name.replace("_", "_1");
         Object[] data = findMethodData(clazz, name + "__", false);
         BIG: for (int i = 0; i < data.length; i += 3) {
             String sig = ((String) data[i]).substring(name.length() + 2);
@@ -185,7 +187,7 @@ public abstract class MethodImpl {
     
     @Exported static String toSignature(Method m) {
         StringBuilder sb = new StringBuilder();
-        sb.append(m.getName()).append("__");
+        sb.append(m.getName().replace("_", "_1")).append("__");
         appendType(sb, m.getReturnType());
         Class<?>[] arr = m.getParameterTypes();
         for (int i = 0; i < arr.length; i++) {
@@ -236,7 +238,7 @@ public abstract class MethodImpl {
             appendType(sb, type.getComponentType());
             return;
         }
-        sb.append('L').append(type.getName().replace('.', '_'));
+        sb.append('L').append(type.getName().replace("_", "_1").replace('.', '_'));
         sb.append("_2");
     }
 
