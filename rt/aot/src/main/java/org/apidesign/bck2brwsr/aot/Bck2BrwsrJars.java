@@ -183,6 +183,7 @@ public final class Bck2BrwsrJars {
         File jar, Manifest manifest, Iterable<? extends FastJar.Entry> entries, EmulationResources classes,
         List<String> resources, Set<String> keep
     ) throws IOException {
+        Set<String> packages = new HashSet<>();
         for (FastJar.Entry e : entries) {
             final String n = e.name;
             if (n.endsWith("/")) {
@@ -193,6 +194,7 @@ public final class Bck2BrwsrJars {
             }
             int last = n.lastIndexOf('/');
             String pkg = n.substring(0, last + 1);
+            packages.add(pkg);
             if (pkg.startsWith("java/") && keep != null) {
                 keep.add(pkg);
             }
@@ -217,16 +219,20 @@ public final class Bck2BrwsrJars {
             }
         }
         if (keep != null) {
+            boolean exported = false;
             if (manifest != null) {
                 final Attributes mainAttr = manifest.getMainAttributes();
                 if (mainAttr != null) {
-                    exportPublicPackages(mainAttr, keep);
+                    exported = exportPublicPackages(mainAttr, keep);
                 }
+            }
+            if (!exported) {
+                keep.addAll(packages);
             }
         }
     }
 
-    static void exportPublicPackages(final Attributes mainAttr, Set<String> keep) {
+    static boolean exportPublicPackages(final Attributes mainAttr, Set<String> keep) {
         String exp = mainAttr.getValue("Export-Package"); // NOI18N
         if (exp != null) {
             for (String def : exp.split(",")) {
@@ -235,7 +241,7 @@ public final class Bck2BrwsrJars {
                     break;
                 }
             }
-            return;
+            return true;
         }
         exp = mainAttr.getValue("OpenIDE-Module-Public-Packages");
         if (exp != null) {
@@ -245,7 +251,9 @@ public final class Bck2BrwsrJars {
                     keep.add(def.substring(0, def.length() - 1).replace('.', '/'));
                 }
             }
+            return true;
         }
+        return false;
     }
     
     static byte[] readFrom(InputStream is) throws IOException {

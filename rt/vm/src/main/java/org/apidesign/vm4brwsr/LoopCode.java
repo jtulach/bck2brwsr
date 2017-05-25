@@ -97,6 +97,8 @@ class LoopCode implements Runnable {
             }
             final int c = ByteCodeToJavaScript.readUByte(byteCodes, i);
             switch (c) {
+                case ByteCodeParser.opc_nop:
+                    break;
                 case ByteCodeParser.opc_aload_0:
                     smapper.assign(out, VarType.REFERENCE, lmapper.getA(0));
                     break;
@@ -915,15 +917,9 @@ class LoopCode implements Runnable {
                     {
                         final Variable vi1 = smapper.get(0);
                         final Variable vi2 = smapper.get(1);
-                        if (vi1.getType() == vi2.getType()) {
-                            final Variable tmp = smapper.pushT(vi1.getType());
-                            ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2, @2 = @3, @3 = @1;", tmp, vi1, vi2);
-                            smapper.pop(1);
-                        } else {
-                            smapper.pop(2);
-                            smapper.pushT(vi1.getType());
-                            smapper.pushT(vi2.getType());
-                        }
+                        final Variable tmp = smapper.pushT(vi1.getType());
+                        ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2, @2 = @3, @3 = @1;", tmp, vi1, vi2);
+                        smapper.pop(1);
                         break;
                     }
                 case ByteCodeParser.opc_bipush:

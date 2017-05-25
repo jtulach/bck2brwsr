@@ -36,7 +36,7 @@
               <configuration>
                   <skip>true</skip>
               </configuration>
-          </plugin>      
+          </plugin>
           <plugin>
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-surefire-plugin</artifactId>
@@ -71,14 +71,35 @@
                               <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
                                   <targetExtension>.csv</targetExtension>
                               </fileMapper>
-                          </fileMappers>                          
+                          </fileMappers>
                       </transformationSet>
                   </transformationSets>
               </configuration>
           </plugin>
+          <plugin>
+              <groupId>org.jetbrains.kotlin</groupId>
+              <artifactId>kotlin-maven-plugin</artifactId>
+              <version>1.1.1</version>
+              <executions>
+                  <execution>
+                      <id>compile</id>
+                      <phase>process-sources</phase>
+                      <goals>
+                          <goal>compile</goal>
+                      </goals>
+                  </execution>
+                  <execution>
+                      <id>test-compile</id>
+                      <phase>process-test-sources</phase>
+                      <goals>
+                          <goal>test-compile</goal>
+                      </goals>
+                  </execution>
+              </executions>
+          </plugin>
       </plugins>
   </build>
-  
+
   <dependencies>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
@@ -107,6 +128,11 @@
       <artifactId>launcher.http</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-stdlib</artifactId>
+      <version>1.1.1</version>
     </dependency>
   </dependencies>
 </project>

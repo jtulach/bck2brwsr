@@ -88,8 +88,16 @@ public class ExceptionsTest {
         try {
             Object ret = code.invokeMethod(clazz, method, "org.apidesign.Unknown");
             fail("We expect an CNFE!");
-        } catch (ScriptException scriptException) {
-            // script exception should be OK
+        } catch (Exception ex) {
+            if (ex instanceof ScriptException) {
+                // script exception should be OK
+            } else {
+                if (ex.getClass().getSimpleName().equals("UserScriptException")) {
+                    // ok on GraalVM
+                } else {
+                    throw ex;
+                }
+            }
         }
         {
             // 2nd invocation

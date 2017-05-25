@@ -19,7 +19,7 @@ Object.defineProperty(Array, "at", { configurable: true, writable: true, value :
   }
 }});
 Object.defineProperty(Array.prototype, "getClass__Ljava_lang_Class_2", { configurable: true, writable: true, value : function() {
-  return vm.java_lang_Class(false).defineArray__Ljava_lang_Class_2Ljava_lang_String_2Ljava_lang_Object_2(this.jvmName, this.fnc);
+  return vm.java_lang_Class(false).defineArray__Ljava_lang_Class_2Ljava_lang_String_2Ljava_lang_Object_2(this.jvmName, this['fnc']);
 }});
 Object.defineProperty(Array.prototype, "clone__Ljava_lang_Object_2", { configurable: true, writable: true, value : function() {
   var s = this.length;
@@ -28,6 +28,6 @@ Object.defineProperty(Array.prototype, "clone__Ljava_lang_Object_2", { configura
       ret[i] = this[i];
   }
   ret.jvmName = this.jvmName;
-  ret.fnc = this.fnc;
+  ret['fnc'] = this['fnc'];
   return ret;
 }});

@@ -19,6 +19,7 @@ package org.apidesign.bck2brwsr.emul.reflect;
 
 import java.lang.reflect.Method;
 import java.util.Enumeration;
+import static org.testng.Assert.fail;
 import org.testng.annotations.Test;
 
 /**
@@ -45,5 +46,21 @@ public class MethodImplTest {
         
         assert en.nextElement() == m.getReturnType() : "Return type is the same";
         assert en.nextElement() == m.getParameterTypes()[0] : "1st param type is the same";
+    }
+
+    public static final class Co_Ty {
+        public static Co_Ty fac_to_ry() {
+            return null;
+        }
+    }
+
+    @Test
+    public void underscoresInNames() throws Exception {
+        Method factory = Co_Ty.class.getMethod("fac_to_ry");
+        String sig = MethodImpl.toSignature(factory);
+        if (sig.equals("fac_1to_1ry__Lorg_apidesign_bck2brwsr_emul_reflect_MethodImplTest$Co_1Ty_2")) {
+            return;
+        }
+        fail(sig);
     }
 }
