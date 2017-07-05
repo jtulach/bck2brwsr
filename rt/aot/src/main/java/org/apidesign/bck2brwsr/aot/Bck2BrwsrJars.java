@@ -175,6 +175,7 @@ public final class Bck2BrwsrJars {
         JarFile j, EmulationResources classes,
         List<String> resources, Set<String> keep
     ) throws IOException {
+        Set<String> packages = new HashSet<>();
         Enumeration<JarEntry> en = j.entries();
         while (en.hasMoreElements()) {
             JarEntry e = en.nextElement();
@@ -187,7 +188,8 @@ public final class Bck2BrwsrJars {
             }
             int last = n.lastIndexOf('/');
             String pkg = n.substring(0, last + 1);
-            if (pkg.startsWith("java/")) {
+            packages.add(pkg);
+            if (pkg.startsWith("java/") && keep != null) {
                 keep.add(pkg);
             }
             if (n.endsWith(".class")) {
@@ -212,16 +214,20 @@ public final class Bck2BrwsrJars {
         }
         if (keep != null) {
             final Manifest manifest = j.getManifest();
+            boolean exported = false;
             if (manifest != null) {
                 final Attributes mainAttr = manifest.getMainAttributes();
                 if (mainAttr != null) {
-                    exportPublicPackages(mainAttr, keep);
+                    exported = exportPublicPackages(mainAttr, keep);
                 }
+            }
+            if (!exported) {
+                keep.addAll(packages);
             }
         }
     }
 
-    static void exportPublicPackages(final Attributes mainAttr, Set<String> keep) {
+    static boolean exportPublicPackages(final Attributes mainAttr, Set<String> keep) {
         String exp = mainAttr.getValue("Export-Package"); // NOI18N
         if (exp != null) {
             for (String def : exp.split(",")) {
@@ -230,7 +236,7 @@ public final class Bck2BrwsrJars {
                     break;
                 }
             }
-            return;
+            return true;
         }
         exp = mainAttr.getValue("OpenIDE-Module-Public-Packages");
         if (exp != null) {
@@ -240,7 +246,9 @@ public final class Bck2BrwsrJars {
                     keep.add(def.substring(0, def.length() - 1).replace('.', '/'));
                 }
             }
+            return true;
         }
+        return false;
     }
     
     static byte[] readFrom(InputStream is) throws IOException {

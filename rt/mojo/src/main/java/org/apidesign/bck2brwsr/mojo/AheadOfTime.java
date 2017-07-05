@@ -137,7 +137,9 @@ public class AheadOfTime extends AbstractMojo {
                 Bck2Brwsr c = Bck2BrwsrJars.configureFrom(null, mainJar, loader, ignoreBootClassPath);
                 if (exports != null) {
                     for (String e : exports) {
-                        c = c.addExported(e.replace('.', '/'));
+                        if (e != null) {
+                            c = c.addExported(e.replace('.', '/'));
+                        }
                     }
                 }
                 Writer w = new OutputStreamWriter(new FileOutputStream(mainJavaScript), "UTF-8");

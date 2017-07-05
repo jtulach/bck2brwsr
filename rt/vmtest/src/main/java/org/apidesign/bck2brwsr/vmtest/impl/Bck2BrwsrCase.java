@@ -136,10 +136,24 @@ public final class Bck2BrwsrCase implements ITest {
         return type;
     }
     static void dumpJS(StringBuilder sb, Bck2BrwsrCase c) throws IOException {
-        File f = File.createTempFile(c.m.getName(), ".js");
+        String outputdir = System.getProperty("vmtest.output");
+        File f;
+        if (outputdir != null) {
+            f = new File(outputdir, c.m.getName() + ".js");
+            f.getParentFile().mkdirs();
+        } else {
+            f = File.createTempFile(c.m.getName(), ".js");
+        }
         try (final Writer w = new OutputStreamWriter(new FileOutputStream(f), "UTF-8")) {
             w.append(c.l.toString());
         }
-        sb.append("Path: ").append(f.getPath());
+
+        File index = new File(f.getPath().substring(0, f.getPath().length() - 2) + "html");
+        try (final Writer w = new OutputStreamWriter(new FileOutputStream(index), "UTF-8")) {
+            w.append("<h1>" + c.m.getName() + "</h1>\n");
+            w.append("<script src='" + f.getName() + "'></script>\n");
+        }
+
+        sb.append("\nOpen: ").append(index.getPath());
     }
 }

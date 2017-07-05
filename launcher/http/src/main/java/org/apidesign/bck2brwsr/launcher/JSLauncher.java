@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.JarURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -47,6 +48,7 @@ final class JSLauncher extends Launcher {
     private Invocable code;
     private List<Seq> codeSeq = new LinkedList<>();
     private Object console;
+    private final List<InvocationContext> executed = new ArrayList<>();
 
     JSLauncher() {
         addClassLoader(Bck2Brwsr.class.getClassLoader());
@@ -54,6 +56,7 @@ final class JSLauncher extends Launcher {
 
     @Override InvocationContext runMethod(InvocationContext mi) {
         loaders.add(mi.clazz.getClassLoader());
+        executed.add(mi);
         try {
             long time = System.currentTimeMillis();
             LOG.log(Level.FINE, "Invoking {0}.{1}", new Object[]{mi.clazz.getName(), mi.methodName});
@@ -113,13 +116,15 @@ final class JSLauncher extends Launcher {
         code = (Invocable) mach;
 
         sb.append(
-              "function initVM(console) {\n"
+              "\n"
+            + "function initVM(console) {\n"
             + "  return new bck2brwsr(function(res, skip) {\n"
-            + "    return console.read(res, skip);"
+            + "    if (!console) { return null; }\n"
+            + "    return console.read(res, skip);\n"
             + "  });\n"
-            + "};"
+            + "};\n"
         );
-        sb.append("atob = function(s) { return new String(org.apidesign.bck2brwsr.launcher.impl.Console.parseBase64Binary(s)); }");
+        sb.append("\nthis.atob || (this.atob = function(s) { return new String(org.apidesign.bck2brwsr.launcher.impl.Console.parseBase64Binary(s)); })\n");
         codeSeq.add(new Eval(null, sb));
 
         Object vm = code.invokeFunction("initVM", new Ldr());
@@ -136,6 +141,26 @@ final class JSLauncher extends Launcher {
         for (Seq seq : codeSeq) {
             sb.append(seq.toString());
         }
+
+        sb.append("(function() {\n");
+        sb.append("  function register(name, fn) {\n");
+        sb.append("    var element = document.createElement('button');\n");
+        sb.append("    element.innerHTML = name;\n");
+        sb.append("    document.body.appendChild(element);\n");
+        sb.append("    element.addEventListener('click', fn);\n");
+        sb.append("  }\n");
+        sb.append("  var outVM = initVM();\n");
+        for (InvocationContext mi : executed) {
+            sb.append("  register('").append(mi.methodName).append("', function () {\n");
+            sb.append("    var c = outVM.loadClass('").append(Console.class.getName()).append("');\n");
+            sb.append("    c.invoke__Ljava_lang_String_2Ljava_lang_String_2Ljava_lang_String_2(\n");
+            sb.append("      '").append(mi.clazz.getName()).append("',\n");
+            sb.append("      '").append(mi.methodName).append("'\n");
+            sb.append("    );\n");
+            sb.append("  });\n");
+        }
+        sb.append("})(this);\n");
+
         return sb.toString();
     }
 
@@ -188,7 +213,8 @@ final class JSLauncher extends Launcher {
             String compile = CompileCP.compileFromClassPath(u, null);
             LOG.fine("// eval: " + u);
             LOG.log(Level.FINEST, compile);
-            new Eval(u, compile);
+            Eval eval = new Eval(u, compile);
+            codeSeq.add(eval);
             LOG.finer("// end of " + u);
             return null;
         }

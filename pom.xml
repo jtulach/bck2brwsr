@@ -130,6 +130,9 @@
                         <element>${trufflejs.jar}</element>
                     </additionalClasspathElements>
                     <jvm>${test.java.home}/bin/java</jvm>
+                    <systemProperties>
+                        <vmtest.output>${project.build.directory}/jstests</vmtest.output>
+                    </systemProperties>
                 </configuration>
               </plugin>
               <plugin>
