@@ -15,20 +15,25 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.tck;
+package org.apidesign.bck2brwsr.mini.tck;
 
-/**
- *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
- */
-public class InheritanceA {
-    private String name;
-    
-    public void setA(String n) {
-        this.name = n;
+class StaticUse {
+    public static final Object NON_NULL = new Object();
+    public static int cnt;
+    static {
+        if (cnt++ != 0) {
+            throw new IllegalStateException("Multiple initialization of a <cinit>");
+        }
     }
     
-    public String getA() {
-        return name;
+    StaticUse() {
+    }
+    
+    public void instanceMethod() {
+        throw new IllegalStateException();
+    }
+
+    public static int plus(int a, int b) {
+        return a + b;
     }
 }

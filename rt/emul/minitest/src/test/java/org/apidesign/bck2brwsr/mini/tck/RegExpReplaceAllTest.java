@@ -15,7 +15,7 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.tck;
+package org.apidesign.bck2brwsr.mini.tck;
 
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
@@ -23,38 +23,32 @@ import org.testng.annotations.Factory;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  */
-public class BooleanTest {
+public class RegExpReplaceAllTest {
 
-    @Compare public String booleanTRUE() {
-        return toString(Boolean.TRUE);
+    @Compare public String replaceAll() {
+        return "JavaScript".replaceAll("Script", "One");
     }
 
-    @Compare public String booleanFALSE() {
-        return toString(Boolean.FALSE);
+    @Compare public String replaceAllTwice() {
+        return "Script JavaScript!".replaceAll("Script", "One");
     }
 
-    @Compare public String newBooleanTRUE() {
-        return toString(new Boolean(true));
+    
+    @Compare public String replaceAllRegexp() {
+        return "JavaScript".replaceAll("S....t", "One");
     }
 
-    @Compare public String newBooleanFALSE() {
-        return toString(new Boolean(false));
+    @Compare public String replaceAllRegexpTwice() {
+        return "Script JavaScript!".replaceAll("S....t", "One");
     }
 
-    @Compare public String booleanNull() {
-        return toString(null);
+    @Compare public String replaceFirstRegexpOnly() {
+        return "Script JavaScript!".replaceFirst("S....t", "One");
     }
-
-    private static String toString(Boolean value) {
-        boolean trueValue = Boolean.TRUE.equals(value);
-        boolean falseValue = Boolean.FALSE.equals(value);
-        return "T:" + trueValue + "F:" + falseValue;
-    }
-
-
+    
     @Factory public static Object[] create() {
-        return VMTest.create(BooleanTest.class);
+        return VMTest.create(RegExpReplaceAllTest.class);
     }
 }

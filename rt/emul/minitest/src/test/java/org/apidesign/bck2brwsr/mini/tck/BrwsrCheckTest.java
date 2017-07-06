@@ -15,9 +15,11 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.tck;
+package org.apidesign.bck2brwsr.mini.tck;
 
-import org.apidesign.bck2brwsr.vmtest.Compare;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
+import org.apidesign.bck2brwsr.vmtest.BrwsrTest;
+import org.apidesign.bck2brwsr.vmtest.HtmlFragment;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
 
@@ -25,37 +27,31 @@ import org.testng.annotations.Factory;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class CharacterTest {
-    @Compare public boolean dolarJavaStart() {
-        return Character.isJavaIdentifierStart('$');
+public class BrwsrCheckTest {
+
+    @BrwsrTest public void assertWindowObjectIsDefined() {
+        assert window() != null : "No window object found!";
     }
 
-    @Compare public boolean dolarJavaPart() {
-        return Character.isJavaIdentifierPart('$');
-    }
-
-    @Compare public boolean numberJavaStart() {
-        return Character.isJavaIdentifierStart('3');
-    }
-
-    @Compare public boolean numberJavaPart() {
-        return Character.isJavaIdentifierPart('3');
-    }
-
-    @Compare public String testWhiteSpaces() {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 1; i < 128; i++) {
-            char ch = (char)i;
-            if (Character.isWhitespace(ch)) {
-                sb.append(i).append(",");
-            }
-        }
-        return sb.toString();
+    
+    
+    
+    @HtmlFragment("<h1 id='hello'>\n"
+        + "Hello!\n"
+        + "</h1>\n")
+    @BrwsrTest public void accessProvidedFragment() {
+        assert getElementById("hello") != null : "Element with 'hello' ID found";
     }
     
     @Factory
     public static Object[] create() {
-        return VMTest.create(CharacterTest.class);
+        return VMTest.create(BrwsrCheckTest.class);
     }
+    
 
+    @JavaScriptBody(args = {}, body = "return window;")
+    private static native Object window();
+
+    @JavaScriptBody(args = { "id" }, body = "return window.document.getElementById(id);")
+    private static native Object getElementById(String id);
 }

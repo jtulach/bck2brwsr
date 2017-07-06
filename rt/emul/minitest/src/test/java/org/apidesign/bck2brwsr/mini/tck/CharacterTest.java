@@ -15,7 +15,7 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.tck;
+package org.apidesign.bck2brwsr.mini.tck;
 
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
@@ -25,21 +25,37 @@ import org.testng.annotations.Factory;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class StaticUseSubTest {
-    @Compare public String staticFieldInitializationInSuperClass() throws Exception {
-        Object ret = StaticUseSub.getNonNull();
-        return ret.getClass().getName();
-    }
-    
-    @Compare public String isNullPointerTheSame() throws Exception {
-        try {
-            return StaticUseSub.getNull().getClass().toString();
-        } catch (NullPointerException ex) {
-            return ex.getClass().getName();
-        }
+public class CharacterTest {
+    @Compare public boolean dolarJavaStart() {
+        return Character.isJavaIdentifierStart('$');
     }
 
-    @Factory public static Object[] create() {
-        return VMTest.create(StaticUseSubTest.class);
+    @Compare public boolean dolarJavaPart() {
+        return Character.isJavaIdentifierPart('$');
     }
+
+    @Compare public boolean numberJavaStart() {
+        return Character.isJavaIdentifierStart('3');
+    }
+
+    @Compare public boolean numberJavaPart() {
+        return Character.isJavaIdentifierPart('3');
+    }
+
+    @Compare public String testWhiteSpaces() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 1; i < 128; i++) {
+            char ch = (char)i;
+            if (Character.isWhitespace(ch)) {
+                sb.append(i).append(",");
+            }
+        }
+        return sb.toString();
+    }
+    
+    @Factory
+    public static Object[] create() {
+        return VMTest.create(CharacterTest.class);
+    }
+
 }

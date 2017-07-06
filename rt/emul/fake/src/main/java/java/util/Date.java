@@ -15,20 +15,8 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.tck;
+package java.util;
 
-/**
- *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
- */
-public class InheritanceB extends InheritanceA {
-    private String name;
-    
-    public void setB(String n) {
-        this.name = n;
-    }
-    
-    public String getB() {
-        return name;
-    }
+public abstract class Date {
+    public abstract long getTime();
 }

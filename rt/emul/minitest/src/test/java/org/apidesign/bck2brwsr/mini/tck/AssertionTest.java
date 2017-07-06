@@ -15,9 +15,8 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.tck;
+package org.apidesign.bck2brwsr.mini.tck;
 
-import org.apidesign.bck2brwsr.vmtest.BrwsrTest;
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
@@ -26,38 +25,19 @@ import org.testng.annotations.Factory;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class NotifyWaitTest {
-    
+public class AssertionTest {
 
-    @Compare public synchronized String canCallNotify() throws Exception {
-        notify();
-        return "OK";
-    }
-
-    @Compare public synchronized String canCallNotifyAll() throws Exception {
-        notifyAll();
-        return "OK";
-    }
-    
-    @BrwsrTest public synchronized String throwsInterruptedException() {
+    @Compare public Object checkAssert() throws ClassNotFoundException {
         try {
-            wait();
-            throw new IllegalStateException();
-        } catch (InterruptedException ex) {
-            return "OK";
-        }
-    }
-
-    @BrwsrTest public synchronized String waitMsThrowsInterruptedException() {
-        try {
-            wait(32);
-            throw new IllegalStateException();
-        } catch (InterruptedException ex) {
-            return "OK";
+            assert false : "Is assertion status on?";
+            return null;
+        } catch (AssertionError ex) {
+            return ex.getClass().getName();
         }
     }
     
-    @Factory public static Object[] create() {
-        return VMTest.create(NotifyWaitTest.class);
+    @Factory
+    public static Object[] create() {
+        return VMTest.create(AssertionTest.class);
     }
 }

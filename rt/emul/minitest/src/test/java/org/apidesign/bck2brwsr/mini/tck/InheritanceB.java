@@ -15,27 +15,20 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.tck;
-
-import org.apidesign.bck2brwsr.vmtest.Compare;
-import org.apidesign.bck2brwsr.vmtest.VMTest;
-import org.testng.annotations.Factory;
+package org.apidesign.bck2brwsr.mini.tck;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class InheritanceTest {
-
-    @Compare public String checkFieldsIndependent() throws ClassNotFoundException {
-        InheritanceB ib = new InheritanceB();
-        ib.setA("A");
-        ib.setB("B");
-        return "A: " + ib.getA() + " B: " + ib.getB();
+public class InheritanceB extends InheritanceA {
+    private String name;
+    
+    public void setB(String n) {
+        this.name = n;
     }
     
-    @Factory
-    public static Object[] create() {
-        return VMTest.create(InheritanceTest.class);
+    public String getB() {
+        return name;
     }
 }

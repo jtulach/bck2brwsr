@@ -24,9 +24,8 @@
  */
 
 package java.util;
-import java.util.Date;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
+import org.apidesign.bck2brwsr.emul.lang.System;
 
 /**
  * A facility for threads to schedule tasks for future execution in a
@@ -120,9 +119,9 @@ public class Timer {
     /**
      * This ID is used to generate thread names.
      */
-    private final static AtomicInteger nextSerialNumber = new AtomicInteger(0);
+    private static int nextSerialNumber = 0;
     private static int serialNumber() {
-        return nextSerialNumber.getAndIncrement();
+        return nextSerialNumber++;
     }
 
     /**
@@ -638,8 +637,11 @@ class TaskQueue {
      */
     void add(TimerTask task) {
         // Grow backing store if necessary
-        if (size + 1 == queue.length)
-            queue = Arrays.copyOf(queue, 2*queue.length);
+        if (size + 1 == queue.length) {
+            TimerTask[] tmp = new TimerTask[2*queue.length];
+            System.arraycopy(queue, 0, tmp, 0, queue.length);
+            queue = tmp;
+        }
 
         queue[++size] = task;
         fixUp(size);

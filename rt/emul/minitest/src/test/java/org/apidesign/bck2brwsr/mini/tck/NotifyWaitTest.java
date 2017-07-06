@@ -15,11 +15,10 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.tck;
+package org.apidesign.bck2brwsr.mini.tck;
 
-import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.vmtest.BrwsrTest;
-import org.apidesign.bck2brwsr.vmtest.HtmlFragment;
+import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
 
@@ -27,31 +26,38 @@ import org.testng.annotations.Factory;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class BrwsrCheckTest {
+public class NotifyWaitTest {
+    
 
-    @BrwsrTest public void assertWindowObjectIsDefined() {
-        assert window() != null : "No window object found!";
+    @Compare public synchronized String canCallNotify() throws Exception {
+        notify();
+        return "OK";
     }
 
-    
-    
-    
-    @HtmlFragment("<h1 id='hello'>\n"
-        + "Hello!\n"
-        + "</h1>\n")
-    @BrwsrTest public void accessProvidedFragment() {
-        assert getElementById("hello") != null : "Element with 'hello' ID found";
+    @Compare public synchronized String canCallNotifyAll() throws Exception {
+        notifyAll();
+        return "OK";
     }
     
-    @Factory
-    public static Object[] create() {
-        return VMTest.create(BrwsrCheckTest.class);
+    @BrwsrTest public synchronized String throwsInterruptedException() {
+        try {
+            wait();
+            throw new IllegalStateException();
+        } catch (InterruptedException ex) {
+            return "OK";
+        }
+    }
+
+    @BrwsrTest public synchronized String waitMsThrowsInterruptedException() {
+        try {
+            wait(32);
+            throw new IllegalStateException();
+        } catch (InterruptedException ex) {
+            return "OK";
+        }
     }
     
-
-    @JavaScriptBody(args = {}, body = "return window;")
-    private static native Object window();
-
-    @JavaScriptBody(args = { "id" }, body = "return window.document.getElementById(id);")
-    private static native Object getElementById(String id);
+    @Factory public static Object[] create() {
+        return VMTest.create(NotifyWaitTest.class);
+    }
 }

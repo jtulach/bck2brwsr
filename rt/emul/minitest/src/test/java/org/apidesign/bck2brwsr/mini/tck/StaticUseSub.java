@@ -15,29 +15,16 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.tck;
+package org.apidesign.bck2brwsr.mini.tck;
 
-import org.apidesign.bck2brwsr.vmtest.Compare;
-import org.apidesign.bck2brwsr.vmtest.VMTest;
-import org.testng.annotations.Factory;
-
-/**
- *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
- */
-public class AssertionTest {
-
-    @Compare public Object checkAssert() throws ClassNotFoundException {
-        try {
-            assert false : "Is assertion status on?";
-            return null;
-        } catch (AssertionError ex) {
-            return ex.getClass().getName();
-        }
+public class StaticUseSub extends StaticUse {
+    private StaticUseSub() {
     }
     
-    @Factory
-    public static Object[] create() {
-        return VMTest.create(AssertionTest.class);
+    public static Object getNonNull() {
+        return NON_NULL;
+    }
+    static Object getNull() {
+        return null;
     }
 }

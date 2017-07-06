@@ -15,27 +15,20 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.tck;
-
-import org.apidesign.bck2brwsr.vmtest.Compare;
-import org.apidesign.bck2brwsr.vmtest.VMTest;
-import org.testng.annotations.Factory;
+package org.apidesign.bck2brwsr.mini.tck;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class ClassLoaderTest {
-    @Compare public Object unknownResource() {
-        return ClassLoader.getSystemResource("really/unknown/resource.txt");
+public class InheritanceA {
+    private String name;
+    
+    public void setA(String n) {
+        this.name = n;
     }
     
-    @Compare public boolean indenpotentSetOfClassloaderIsOK() {
-        Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader());
-        return Thread.currentThread().getContextClassLoader() == ClassLoader.getSystemClassLoader();
-    }
-
-    @Factory public static Object[] create() {
-        return VMTest.create(ClassLoaderTest.class);
+    public String getA() {
+        return name;
     }
 }
