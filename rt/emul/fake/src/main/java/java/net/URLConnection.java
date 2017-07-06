@@ -29,5 +29,5 @@ public abstract class URLConnection {
     }
     public abstract void connect() throws IOException;
     public abstract InputStream getInputStream() throws IOException;
-    
+    public abstract URL getURL();
 }
