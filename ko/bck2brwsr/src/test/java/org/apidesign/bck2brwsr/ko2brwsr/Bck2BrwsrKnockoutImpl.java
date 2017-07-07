@@ -18,6 +18,8 @@
 package org.apidesign.bck2brwsr.ko2brwsr;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Map;
 import net.java.html.BrwsrCtx;
@@ -92,8 +94,17 @@ public final class Bck2BrwsrKnockoutImpl extends KnockoutTCK {
         + "return h;\n"
     )
     private static native String findBaseURL();
-    
+
     @Override
+    public URI prepareURL(String content, String mimeType, String[] parameters) {
+        try {
+            return new URI(prepareWebResource(content, mimeType, parameters));
+        } catch (URISyntaxException ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
+
+
     public String prepareWebResource(String content, String mimeType, String[] parameters) {
         try {
             final URL baseURL = new URL(findBaseURL());
@@ -114,7 +125,6 @@ public final class Bck2BrwsrKnockoutImpl extends KnockoutTCK {
         }
     }
 
-    @Override
     public boolean scheduleLater(int delay, Runnable r) {
         return setTimeout(r, delay);
     }
