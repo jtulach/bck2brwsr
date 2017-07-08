@@ -73,7 +73,7 @@
             <plugin>
                 <groupId>org.apidesign.bck2brwsr</groupId>
                 <artifactId>bck2brwsr-maven-plugin</artifactId>
-                <version>${bck2brwsr.version}</version>
+                <version>${project.version}</version>
                 <executions>
                     <execution>
                         <goals>
@@ -149,7 +149,7 @@
         <dependency>
             <groupId>org.apidesign.bck2brwsr</groupId>
             <artifactId>emul</artifactId>
-            <version>${bck2brwsr.version}</version>
+            <version>${project.version}</version>
             <classifier>rt</classifier>
         </dependency>
         <dependency>
@@ -166,14 +166,14 @@
         <dependency>
             <groupId>org.apidesign.bck2brwsr</groupId>
             <artifactId>emul</artifactId>
-            <version>${bck2brwsr.version}</version>
+            <version>${project.version}</version>
             <classifier>bck2brwsr</classifier>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apidesign.bck2brwsr</groupId>
             <artifactId>ko-bck2brwsr</artifactId>
-            <version>${bck2brwsr.version}</version>
+            <version>${project.version}</version>
             <classifier>bck2brwsr</classifier>
             <scope>provided</scope>
         </dependency>
@@ -279,7 +279,7 @@
                     <plugin>
                         <groupId>org.apidesign.bck2brwsr</groupId>
                         <artifactId>bck2brwsr-maven-plugin</artifactId>
-                        <version>${bck2brwsr.version}</version>
+                        <version>${project.version}</version>
                         <executions>
                             <execution>
                                 <goals>
