@@ -15,7 +15,6 @@
     <module>mini</module>
     <module>compact</module>
     <module>compacttest</module>
-    <module>kotlintest</module>
     <module>brwsrtest</module>
     <module>fake</module>
     <module>zip</module>
@@ -27,6 +26,7 @@
           </activation>
           <modules>
               <module>minitest</module>
+              <module>kotlintest</module>
           </modules>
       </profile>
   </profiles>
