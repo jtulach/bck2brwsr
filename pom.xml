@@ -38,9 +38,9 @@
       <url>http://apidesign.org</url>
   </organization>
   <scm>
-      <connection>scm:hg:http://source.apidesign.org/hg/bck2brwsr</connection>
-      <developerConnection>scm:hg:https://source.apidesign.org/hg/bck2brwsr</developerConnection>
-      <url>http://source.apidesign.org/hg/bck2brwsr</url>
+      <connection>scm:git:https://github.com/jtulach/bck2brwsr.git</connection>
+      <developerConnection>scm:git:https://github.com/jtulach/bck2brwsr.git</developerConnection>
+      <url>https://github.com/jtulach/bck2brwsr</url>
     <tag>HEAD</tag>
   </scm>
   <repositories>
