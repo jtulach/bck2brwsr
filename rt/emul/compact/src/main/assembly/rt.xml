@@ -20,6 +20,7 @@
       </includes>
       <excludes>
           <exclude>org.apidesign.bck2brwsr:core:*</exclude>
+          <exclude>org.apidesign.bck2brwsr:fake:*</exclude>
           <exclude>org.apidesign.bck2brwsr:vm4brwsr:*</exclude>
           <exclude>org.apidesign.bck2brwsr:aot:*</exclude>
           <exclude>org.apidesign.bck2brwsr:launcher.fx:*</exclude>
