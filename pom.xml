@@ -19,6 +19,7 @@
       <netbeans.compile.on.save>none</netbeans.compile.on.save>
       <trufflejs.jar>${project.build.directory}/test-classes</trufflejs.jar>
       <test.java.home>${java.home}</test.java.home>
+      <javadoc.opts>-author</javadoc.opts>
   </properties>
   <modules>
     <module>javaquery</module>
@@ -141,6 +142,7 @@
                 <version>2.9</version>
                 <configuration>
                     <skip>true</skip>
+                    <additionalparam>${javadoc.opts}</additionalparam>
                 </configuration>
               </plugin>
             <plugin>
@@ -296,6 +298,7 @@
           </activation>
           <properties>
             <jfxrt.jar>${java.home}/lib/ext/jfxrt.jar</jfxrt.jar>
+            <javadoc.opts>-Xdoclint:none</javadoc.opts>
           </properties>
       </profile>
       <profile>
