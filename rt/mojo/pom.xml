@@ -4,11 +4,11 @@
   <parent>
     <groupId>org.apidesign.bck2brwsr</groupId>
     <artifactId>rt</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.20</version>
   </parent>
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>bck2brwsr-maven-plugin</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>0.20</version>
   <packaging>maven-plugin</packaging>
   <name>Bck2Brwsr Maven Plugin</name>
   <url>http://bck2brwsr.apidesign.org/</url>
