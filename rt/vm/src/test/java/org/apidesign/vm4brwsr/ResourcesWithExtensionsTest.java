@@ -52,6 +52,13 @@ public class ResourcesWithExtensionsTest {
             Resources.class, "isObj__Z", 1.0
         );
     }
+
+    @Test public void yellowHorseFound() throws Exception {
+        assertExec("Non ASCII text properly transpiled",
+            Resources.class, "getHorse__Ljava_lang_String_2", "Žluťoučký kůň"
+        );
+    }
+
     @Test public void objJSIsFound() throws Exception {
         assertExec("The resources used as @JavaScriptResource aren't available",
             Resources.class, "isResource__ZLjava_lang_String_2", 0.0, "obj"

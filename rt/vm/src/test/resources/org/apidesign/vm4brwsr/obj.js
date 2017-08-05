@@ -16,5 +16,4 @@
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
 this.thisObj = {};
-
-
+this.thisObj.yellowish_horse = 'Žluťoučký kůň';

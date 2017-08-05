@@ -37,6 +37,15 @@ public class Resources {
         return null;
     }
 
+    @JavaScriptBody(args = {}, body = "return thisObj.yellowish_horse;")
+    static String retHorse() {
+        return null;
+    }
+
+    public static String getHorse() {
+        return retHorse();
+    }
+
     public static boolean isObj() {
         return retObj() != null;
     }

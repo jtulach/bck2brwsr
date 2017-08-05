@@ -19,6 +19,8 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.vm4brwsr.ByteCodeParser.ClassData;
 import org.apidesign.vm4brwsr.ByteCodeParser.FieldData;
@@ -38,7 +40,7 @@ abstract class VM extends ByteCodeToJavaScript {
     int exportedCount;
 
     private VM(
-        Appendable out, Bck2Brwsr.Resources resources, 
+        Appendable out, Bck2Brwsr.Resources resources,
         StringArray explicitlyExported, StringArray asBinary
     ) {
         super(out);
@@ -63,18 +65,18 @@ abstract class VM extends ByteCodeToJavaScript {
     boolean debug(Appendable out, String msg) throws IOException {
         return false;
     }
-    
-    static void compile(Appendable out, 
+
+    static void compile(Appendable out,
         Bck2Brwsr config
     ) throws IOException {
         String[] both = config.classes().toArray();
-        
+
         final StringArray fixedNames = new StringArray();
         boolean addThree = false;
-        
+
         VM vm;
         if (config.isExtension()) {
-            vm = new Extension(out, 
+            vm = new Extension(out,
                 config.getResources(), both, config.exported(),
                 config.allResources(), config.classpath()
             );
@@ -84,11 +86,11 @@ abstract class VM extends ByteCodeToJavaScript {
                 fixedNames.add(VM.class.getName().replace('.', '/'));
                 addThree = true;
             }
-            vm = new Standalone(out, 
+            vm = new Standalone(out,
                 config.getResources(), config.exported(),
                 config.allResources()
             );
-        }            
+        }
         if (addThree) {
             fixedNames.add(Object.class.getName().replace('.', '/'));
             fixedNames.add(Class.class.getName().replace('.', '/'));
@@ -106,7 +108,7 @@ abstract class VM extends ByteCodeToJavaScript {
         out.append("\n  }");
         generateBody(out, names);
         out.append(invokerMethods);
-        
+
         for (String r : asBinary.toArray()) {
             out.append("\n  ").append(getExportsObject()).append("['registerResource']('");
             out.append(r).append("', '");
@@ -137,7 +139,7 @@ abstract class VM extends ByteCodeToJavaScript {
             out.append(btoa(arr));
             out.append("');");
         }
-        
+
         out.append("\n");
         generateEpilogue(out);
     }
@@ -156,7 +158,7 @@ abstract class VM extends ByteCodeToJavaScript {
     protected abstract boolean isExternalClass(String className);
 
     protected abstract void lazyReference(Appendable out, String n) throws IOException;
-    
+
     @Override
     protected final void declareClass(Appendable out, ClassData classData, String mangledName)
             throws IOException {
@@ -271,49 +273,44 @@ abstract class VM extends ByteCodeToJavaScript {
         if (useEval) {
             out.append("(0 || eval)(\"");
         }
-        readResource(useEval, emul, out);
+        try (Reader r = new InputStreamReader(emul, "UTF-8")) {
+            readResource(useEval, r, out);
+        }
         if (useEval) {
             out.append("\");");
         }
         out.append("\n");
     }
 
-    private static void readResource(boolean escape, InputStream emul, Appendable out) throws IOException {
-        try {
-            for (;;) {
-                int ch = emul.read();
-                if (ch == -1) {
-                    break;
-                }
-                if (ch < 0 || ch > 255) {
-                    throw new IOException("Invalid char in emulation " + ch);
-                }
-                if (escape) {
-                    switch (ch) {
-                        case '"':
-                            out.append("\\\"");
-                            break;
-                        case '\\':
-                            out.append("\\\\");
-                            break;
-                        case '\n':
-                            out.append("\\n\"\n + \"");
-                            break;
-                        case '\t':
-                            out.append("\\t");
-                            break;
-                        case '\r':
-                            out.append("\\r");
-                            break;
-                        default:
-                            out.append((char)ch);
-                    }
-                } else {
-                    out.append((char)ch);
-                }
+    private static void readResource(boolean escape, Reader emul, Appendable out) throws IOException {
+        for (;;) {
+            int ch = emul.read();
+            if (ch == -1) {
+                break;
             }
-        } finally {
-            emul.close();
+            if (escape) {
+                switch (ch) {
+                    case '"':
+                        out.append("\\\"");
+                        break;
+                    case '\\':
+                        out.append("\\\\");
+                        break;
+                    case '\n':
+                        out.append("\\n\"\n + \"");
+                        break;
+                    case '\t':
+                        out.append("\\t");
+                        break;
+                    case '\r':
+                        out.append("\\r");
+                        break;
+                    default:
+                        out.append((char)ch);
+                }
+            } else {
+                out.append((char)ch);
+            }
         }
     }
 
@@ -325,7 +322,7 @@ abstract class VM extends ByteCodeToJavaScript {
 
     private StringArray scripts = new StringArray();
     private StringArray references = new StringArray();
-    
+
     @Override
     protected boolean requireReference(String cn) {
         return references.addIfMissing(cn);
@@ -340,7 +337,7 @@ abstract class VM extends ByteCodeToJavaScript {
     String assignClass(String className) {
         return "vm." + className + " = ";
     }
-    
+
     @Override
     String accessClass(String className) {
         return "vm." + className;
@@ -382,9 +379,9 @@ abstract class VM extends ByteCodeToJavaScript {
 
     @Override
     protected String accessVirtualMethod(
-            String object, 
-            String mangledName, 
-            String[] fieldInfoName, 
+            String object,
+            String mangledName,
+            String[] fieldInfoName,
             int params
     ) throws IOException {
         final ClassData referencedClass =
@@ -406,7 +403,7 @@ abstract class VM extends ByteCodeToJavaScript {
         return accessThroughInvoker(object, mangledName, params);
     }
 
-    private String accessThroughInvoker(String object, String mangledName, int params) 
+    private String accessThroughInvoker(String object, String mangledName, int params)
     throws IOException {
         String def = "\n  invoker." + mangledName + " = function(target";
         if (invokerMethods.indexOf(def) == -1) {
@@ -504,7 +501,7 @@ abstract class VM extends ByteCodeToJavaScript {
 
     private static final class Standalone extends VM {
         private Standalone(Appendable out,
-            Bck2Brwsr.Resources resources, 
+            Bck2Brwsr.Resources resources,
             StringArray explicitlyExported, StringArray asBinary
         ) {
             super(out, resources, explicitlyExported, asBinary);
@@ -760,7 +757,7 @@ abstract class VM extends ByteCodeToJavaScript {
         protected boolean isExternalClass(String className) {
             return false;
         }
-        
+
         @Override
         protected void lazyReference(Appendable out, String n) throws IOException {
             String cls = n.replace('/', '_');
@@ -880,7 +877,7 @@ abstract class VM extends ByteCodeToJavaScript {
         protected boolean isExternalClass(String className) {
             return !extensionClasses.contains(className);
         }
-        
+
         @Override
         protected void lazyReference(Appendable out, String n) throws IOException {
             String cls = n.replace('/', '_');
