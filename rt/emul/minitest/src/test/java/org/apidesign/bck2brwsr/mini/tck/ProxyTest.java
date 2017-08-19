@@ -17,6 +17,7 @@
  */
 package org.apidesign.bck2brwsr.mini.tck;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -42,6 +43,22 @@ public class ProxyTest {
             new InvHandler()
         );
         return anno.name();
+    }
+    
+    @Compare public String castAnnoToAnnotation() throws Exception {
+        class InvHandler implements InvocationHandler {
+            @Override
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                assert method.getName().equals("annotationType");
+                return Anno.class;
+            }
+        }
+        Annotation anno = (Annotation) Proxy.newProxyInstance(
+            Anno.class.getClassLoader(), 
+            new Class[] { Anno.class }, 
+            new InvHandler()
+        );
+        return anno.annotationType().getName();
     }
 
     @Compare public int getPrimitiveType() throws Exception {

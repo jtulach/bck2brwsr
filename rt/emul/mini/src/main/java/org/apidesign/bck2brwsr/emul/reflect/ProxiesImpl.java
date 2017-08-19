@@ -71,11 +71,19 @@ public final class ProxiesImpl extends Proxy {
     public static Proxy create(Class[] classes, InvocationHandler h) {
         resetClass();
         ProxiesImpl impl = new ProxiesImpl(h);
+        implementMethods(classes, impl);
+        return impl;
+    }
+
+    private static void implementMethods(Class[] classes, ProxiesImpl impl) {
+        if (classes == null) {
+            return;
+        }
         for (Class c: classes) {
             Object[] info = findProps(c);
             implement(impl, c.getCanonicalName(), info);
+            implementMethods(c.getInterfaces(), impl);
         }
-        return impl;
     }
 
     private static Object[] findProps(Class<?> annoClass) {
