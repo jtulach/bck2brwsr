@@ -437,6 +437,12 @@ public class LongArithmeticTest {
         long res = mul64shr64(16, 1561751147, -1);
         return res;
     }
+
+    @Compare public double longBitsToDouble() {
+        long res = mul64shr64(16, 1561751147, -1);
+        double ignore = Double.longBitsToDouble(res);
+        return 0.0;
+    }
     
     @Factory
     public static Object[] create() {

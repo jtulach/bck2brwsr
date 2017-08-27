@@ -951,7 +951,7 @@ public final class Double extends Number implements Comparable<Double> {
         + "}\n"
         + "var m = (hi & 0xfffff).next32(bits);\n"
         + "if (e === 0) {\n"
-        + "  m = m.shl64(1);\n"
+        + "  m = __shl64(m, 1);\n"
         + "} else {\n"
         + "  m.hi = m.high32() | 0x100000;\n"
         + "}\n"
