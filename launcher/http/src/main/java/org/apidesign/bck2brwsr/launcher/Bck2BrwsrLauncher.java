@@ -114,7 +114,7 @@ final class Bck2BrwsrLauncher extends BaseHTTPLauncher {
             + "    var c = cache[res];\n"
             + "    if (c) {\n"
             + "      if (c[skip] === empty) return null;\n"
-            + "      if (c[skip]) return c[skip];\n"
+            + "      if (c[skip] !== undefined) return c[skip];\n"
             + "    } else {\n"
             + "      cache[res] = c = new Array();\n"
             + "    }\n"
