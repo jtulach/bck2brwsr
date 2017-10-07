@@ -82,9 +82,8 @@
     </dependency>
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
-      <artifactId>emul</artifactId>
+      <artifactId>emul.mini</artifactId>
       <version>${project.version}</version>
-      <classifier>rt</classifier>
       <type>jar</type>
       <scope>compile</scope>
     </dependency>
