@@ -37,7 +37,7 @@ public final class VMLazyTest extends VMLazyAbstract {
         sb.append("\nfunction test(clazz, method) {");
         sb.append("\n  if (!data.bck2brwsr) data.bck2brwsr = bck2brwsr(function(name) { return loader.get(name); });");
         sb.append("\n  var c = data.bck2brwsr.loadClass(clazz);");
-        sb.append("\n  return c[method]();");
+        sb.append("\n  return c.invoke(method.split('__')[0]);");
         sb.append("\n}");
         
         sb.append("\nfunction checkKO() {");

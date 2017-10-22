@@ -65,7 +65,7 @@ public class VMinVMTest {
         try {
             ret = code.invokeFunction("bck2brwsr");
             ret = code.invokeMethod(ret, "loadClass", VMinVM.class.getName());
-            ret = code.invokeMethod(ret, "toJavaScript__Ljava_lang_String_2_3B", arr);
+            ret = code.invokeMethod(ret, "invoke", "toJavaScript", arr);
         } catch (Exception ex) {
             File f = File.createTempFile("execution", ".js");
             FileWriter w = new FileWriter(f);
