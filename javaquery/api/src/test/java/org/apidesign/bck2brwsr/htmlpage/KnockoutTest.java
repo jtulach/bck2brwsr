@@ -39,7 +39,7 @@ import org.testng.annotations.Test;
     @Property(name="name", type=String.class),
     @Property(name="results", type=String.class, array = true),
     @Property(name="callbackCount", type=int.class),
-    @Property(name="people", type=PersonImpl.class, array = true)
+    @Property(name="people", type=Person.class, array = true)
 }) 
 public class KnockoutTest {
     
