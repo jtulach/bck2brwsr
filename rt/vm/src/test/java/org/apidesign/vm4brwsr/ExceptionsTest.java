@@ -83,10 +83,8 @@ public class ExceptionsTest {
     @Test public void testThreeCalls() throws Exception {
         Object clazz = code.loadClass("loadClass", Exceptions.class.getName());
         
-        String method = "readCounter__ILjava_lang_String_2";
-        
         try {
-            Object ret = code.invokeMethod(clazz, method, "org.apidesign.Unknown");
+            Object ret = code.invokeMethod(clazz, "invoke", "readCounter", "org.apidesign.Unknown");
             fail("We expect an CNFE!");
         } catch (Exception ex) {
             if (ex instanceof ScriptException) {
@@ -101,13 +99,13 @@ public class ExceptionsTest {
         }
         {
             // 2nd invocation
-            Object ret = code.invokeMethod(clazz, method, "java.lang.String");
+            Object ret = code.invokeMethod(clazz, "invoke", "readCounter", "java.lang.String");
             assertTrue(ret instanceof Number, "Is number: " + ret);
             assertEquals(((Number)ret).doubleValue(), 2.0);
         }
         {
             // 3rd invocation
-            Object ret = code.invokeMethod(clazz, method, "java.lang.Integer");
+            Object ret = code.invokeMethod(clazz, "invoke", "readCounter", "java.lang.Integer");
             assertTrue(ret instanceof Number, "Is number: " + ret);
             assertEquals(((Number)ret).doubleValue(), 3.0);
         }
