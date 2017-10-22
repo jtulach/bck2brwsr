@@ -92,8 +92,23 @@
         <script src="vm/bck2brwsr.js"></script>
         <script>
             var vm = bck2brwsr('app/calculator.js');
-            var c = vm.loadClass('org.apidesign.bck2brwsr.demo.calc.staticcompilation.Calc');
-            c.invoke('main');
+            vm.loadClass('org.apidesign.bck2brwsr.demo.calc.staticcompilation.Preinit', function(Preinit) {
+                var fourtyTwo = Preinit.invoke('fourtyPlus', 2);
+                if (fourtyTwo !== 42) {
+                    throw 'Expecting fourtyTwo: ' + fourtyTwo;
+                }
+                try {
+                    var nothing = Preinit.invoke('twentyPlus', 1);
+                } catch (e) {
+                    var ok = true;
+                }
+                if (!ok) {
+                    throw 'Twenty plus is not static method: ' + nothing;
+                }
+                vm.loadClass('org.apidesign.bck2brwsr.demo.calc.staticcompilation.Calc', function(c) {
+                    c.invoke('main');
+                });
+            });
         </script>
     </body>
 </html>
