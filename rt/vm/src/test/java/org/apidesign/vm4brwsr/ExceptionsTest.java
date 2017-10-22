@@ -84,7 +84,8 @@ public class ExceptionsTest {
         Object clazz = code.loadClass("loadClass", Exceptions.class.getName());
         
         String method = "readCounter__ILjava_lang_String_2";
-        
+        String shortMethod = "readCounter";
+
         try {
             Object ret = code.invokeMethod(clazz, method, "org.apidesign.Unknown");
             fail("We expect an CNFE!");
@@ -101,7 +102,7 @@ public class ExceptionsTest {
         }
         {
             // 2nd invocation
-            Object ret = code.invokeMethod(clazz, method, "java.lang.String");
+            Object ret = code.invokeMethod(clazz, shortMethod, "java.lang.String");
             assertTrue(ret instanceof Number, "Is number: " + ret);
             assertEquals(((Number)ret).doubleValue(), 2.0);
         }

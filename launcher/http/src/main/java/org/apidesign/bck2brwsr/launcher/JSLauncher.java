@@ -62,7 +62,7 @@ final class JSLauncher extends Launcher {
             LOG.log(Level.FINE, "Invoking {0}.{1}", new Object[]{mi.clazz.getName(), mi.methodName});
             String res = code.invokeMethod(
                 console,
-                "invoke__Ljava_lang_String_2Ljava_lang_String_2Ljava_lang_String_2",
+                "invokeTest__Ljava_lang_String_2Ljava_lang_String_2Ljava_lang_String_2",
                 mi.clazz.getName(), mi.methodName).toString();
             time = System.currentTimeMillis() - time;
             LOG.log(Level.FINE, "Resut of {0}.{1} = {2} in {3} ms", new Object[]{mi.clazz.getName(), mi.methodName, res, time});
@@ -153,7 +153,7 @@ final class JSLauncher extends Launcher {
         for (InvocationContext mi : executed) {
             sb.append("  register('").append(mi.methodName).append("', function () {\n");
             sb.append("    var c = outVM.loadClass('").append(Console.class.getName()).append("');\n");
-            sb.append("    c.invoke__Ljava_lang_String_2Ljava_lang_String_2Ljava_lang_String_2(\n");
+            sb.append("    c.invokeTest__Ljava_lang_String_2Ljava_lang_String_2Ljava_lang_String_2(\n");
             sb.append("      '").append(mi.clazz.getName()).append("',\n");
             sb.append("      '").append(mi.methodName).append("'\n");
             sb.append("    );\n");

@@ -73,9 +73,9 @@ public class StaticMethodTest {
     @Test public void doubleWithoutLong() throws Exception {
         assertExec(
             "Should be two",
-            StaticMethod.class, "minus__DDJ", 
+            StaticMethod.class, "invoke",
             Double.valueOf(2),
-            3.0d, 1l
+            "minus", 3.0d, 1l
         );
     }
     

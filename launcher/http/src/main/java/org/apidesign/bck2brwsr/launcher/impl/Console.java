@@ -232,7 +232,7 @@ public class Console {
         return sb.toString();
     }
     
-    static String invoke(String clazz, String method) throws 
+    static String invokeTest(String clazz, String method) throws 
     ClassNotFoundException, InvocationTargetException, IllegalAccessException, 
     InstantiationException, InterruptedException {
         final Object r = new Case(null).invokeMethod(clazz, method, null);

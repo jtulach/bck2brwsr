@@ -23,11 +23,7 @@ import static org.testng.Assert.assertNotNull;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
-/** Implements loading class by class.
- *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
- */
-public final class VMLazyTest extends VMLazyAbstract {
+public final class VMLazyInvokeTest extends VMLazyAbstract {
     private static TestVM code;
 
     @BeforeClass
@@ -37,13 +33,12 @@ public final class VMLazyTest extends VMLazyAbstract {
         sb.append("\nfunction test(clazz, method) {");
         sb.append("\n  if (!data.bck2brwsr) data.bck2brwsr = bck2brwsr(function(name) { return loader.get(name); });");
         sb.append("\n  var c = data.bck2brwsr.loadClass(clazz);");
-        sb.append("\n  return c[method]();");
+        sb.append("\n  return c.invoke(method.split('__')[0]);");
         sb.append("\n}");
-        
         sb.append("\nfunction checkKO() {");
         sb.append("\n  return ko !== null;");
         sb.append("\n}");
-       
+
         ScriptEngine[] arr = { null };
         code = TestVM.compileClass(sb, arr,
             new String[]{"org/apidesign/vm4brwsr/VM", "org/apidesign/vm4brwsr/StaticMethod"}
@@ -61,5 +56,6 @@ public final class VMLazyTest extends VMLazyAbstract {
     public static void releaseTheCode() {
         code = null;
     }
-    
+
+
 }

@@ -25,11 +25,8 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import javax.script.Invocable;
 import javax.script.ScriptContext;
@@ -67,10 +64,7 @@ public final class TestVM {
         Object ret = null;
         try {
             ret = code.invokeMethod(bck2brwsr, "loadClass", clazz.getName());
-            List<Object> ma = new ArrayList<>();
-            ma.add(method);
-            ma.addAll(Arrays.asList(args));
-            ret = code.invokeMethod(ret, "invoke", ma.toArray());
+            ret = code.invokeMethod(ret, method, args);
         } catch (ScriptException ex) {
             fail("Execution failed in " + dumpJS(codeSeq) + ": " + ex.getMessage(), ex);
         } catch (NoSuchMethodException ex) {
