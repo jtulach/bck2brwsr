@@ -27,6 +27,8 @@ import java.io.Writer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.WeakHashMap;
 import org.apidesign.bck2brwsr.launcher.Launcher;
 import org.apidesign.bck2brwsr.launcher.InvocationContext;
 import org.apidesign.bck2brwsr.vmtest.HtmlFragment;
@@ -135,25 +137,36 @@ public final class Bck2BrwsrCase implements ITest {
     final String typeName() {
         return type;
     }
-    static void dumpJS(StringBuilder sb, Bck2BrwsrCase c) throws IOException {
-        String outputdir = System.getProperty("vmtest.output");
-        File f;
-        if (outputdir != null) {
-            f = new File(outputdir, c.m.getName() + ".js");
-            f.getParentFile().mkdirs();
-        } else {
-            f = File.createTempFile(c.m.getName(), ".js");
-        }
-        try (final Writer w = new OutputStreamWriter(new FileOutputStream(f), "UTF-8")) {
-            w.append(c.l.toString());
+
+    private static final Map<Class<?>, File> dumps = new WeakHashMap<>();
+    final void dumpJS(StringBuilder sb) throws IOException {
+        final Class<?> declaringClass = this.m.getDeclaringClass();
+        File dumpFile = dumps.get(declaringClass);
+        if (dumpFile == null) {
+            String outputdir = System.getProperty("vmtest.output");
+            String fileName = declaringClass.getSimpleName();
+            if (outputdir != null) {
+                dumpFile = new File(outputdir, fileName + ".js");
+                dumpFile.getParentFile().mkdirs();
+            } else {
+                dumpFile = File.createTempFile(fileName, ".js");
+            }
+            try (final Writer w = new OutputStreamWriter(new FileOutputStream(dumpFile), "UTF-8")) {
+                w.append(l.toString());
+            }
+
+            try (final Writer w = new OutputStreamWriter(new FileOutputStream(indexDumpFile(dumpFile)), "UTF-8")) {
+                w.append("<h1>" + m.getName() + "</h1>\n");
+                w.append("<script src='" + dumpFile.getName() + "'></script>\n");
+            }
+
+            dumps.put(declaringClass, dumpFile);
         }
 
-        File index = new File(f.getPath().substring(0, f.getPath().length() - 2) + "html");
-        try (final Writer w = new OutputStreamWriter(new FileOutputStream(index), "UTF-8")) {
-            w.append("<h1>" + c.m.getName() + "</h1>\n");
-            w.append("<script src='" + f.getName() + "'></script>\n");
-        }
+        sb.append("\nOpen: ").append(indexDumpFile(dumpFile).getPath());
+    }
 
-        sb.append("\nOpen: ").append(index.getPath());
+    private static File indexDumpFile(File dumpFile) {
+        return new File(dumpFile.getPath().substring(0, dumpFile.getPath().length() - 2) + "html");
     }
 }
