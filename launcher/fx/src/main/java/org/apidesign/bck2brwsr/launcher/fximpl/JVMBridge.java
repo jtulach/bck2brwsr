@@ -274,7 +274,12 @@ public final class JVMBridge {
         final Object invokeImpl(Object thiz, boolean arrayChecks, Object... args) throws Exception {
             try {
                 List<Object> all = new ArrayList<Object>(args.length + 1);
-                all.add(thiz == null ? fn : thiz);
+                if (thiz == null) {
+                    all.add(fn);
+                } else {
+                    all.add(thiz);
+                    ((WebPresenter) presenter()).keep(thiz);
+                }
                 for (int i = 0; i < args.length; i++) {
                     Object conv = args[i];
                     if (arrayChecks) {
