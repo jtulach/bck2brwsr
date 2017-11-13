@@ -40,7 +40,9 @@ public class ExceptionStackTest {
         PrintWriter pw = new PrintWriter(sw);
         ex.printStackTrace(pw);
         pw.close();
-        return sw.toString().contains("ExceptionStackTest");
+
+        String trace = sw.toString();
+        return trace.contains("ExceptionStackTest") || trace.contains("containsClassName");
     }
 
     @Factory public static Object[] create() {
