@@ -43,26 +43,26 @@ abstract class ByteCodeToJavaScript {
     protected ByteCodeToJavaScript(final Appendable out) {
         this.output = out;
     }
-    
+
     /* Collects additional required resources.
-     * 
+     *
      * @param internalClassName classes that were referenced and should be loaded in order the
-     *   generated JavaScript code works properly. The names are in internal 
-     *   JVM form so String is <code>java/lang/String</code>. 
+     *   generated JavaScript code works properly. The names are in internal
+     *   JVM form so String is <code>java/lang/String</code>.
      */
     protected abstract boolean requireReference(String internalClassName);
-    
+
     /*
      * @param resourcePath name of resources to read
      */
     protected abstract void requireScript(String resourcePath) throws IOException;
-    
+
     protected abstract void requireResource(Appendable out, String resourcePath) throws IOException;
-    
+
     /** Allows subclasses to redefine what field a function representing a
      * class gets assigned. By default it returns the suggested name followed
      * by <code>" = "</code>;
-     * 
+     *
      * @param className suggested name of the class
      */
     /* protected */ String assignClass(String className) {
@@ -71,7 +71,7 @@ abstract class ByteCodeToJavaScript {
     /* protected */ String accessClass(String classOperation) {
         return classOperation;
     }
-    
+
     final String accessClassFalse(String classOperation) {
         if (mangleClassName(jc.getClassName()).equals(classOperation)) {
             return "c";
@@ -98,9 +98,9 @@ abstract class ByteCodeToJavaScript {
     }
 
     protected String accessVirtualMethod(
-            String object, 
-            String mangledName, 
-            String[] fieldInfoName, 
+            String object,
+            String mangledName,
+            String[] fieldInfoName,
             int params
     ) throws IOException {
         return object + "." + mangledName + '(';
@@ -117,11 +117,11 @@ abstract class ByteCodeToJavaScript {
     protected void declaredMethod(Appendable out, MethodData methodData, String destObject, String mangledName) throws IOException {
     }
 
-    /** Prints out a debug message. 
-     * 
+    /** Prints out a debug message.
+     *
      * @param msg the message
      * @return true if the message has been printed
-     * @throws IOException 
+     * @throws IOException
      */
     boolean debug(Appendable out, String msg) throws IOException {
         out.append(msg);
@@ -133,10 +133,10 @@ abstract class ByteCodeToJavaScript {
      *
      * @param classFile input stream with code of the .class file
      * @return the initialization code for this class, if any. Otherwise <code>null</code>
-     * 
+     *
      * @throws IOException if something goes wrong during read or write or translating
      */
-    
+
     public String compile(InputStream classFile) throws IOException {
         return compile(new ClassData(classFile));
     }
@@ -162,7 +162,7 @@ abstract class ByteCodeToJavaScript {
         byte[] arrData = jc.findAnnotationData(true);
         {
             String[] arr = findAnnotation(arrData, jc,
-                "org.apidesign.bck2brwsr.core.ExtraJavaScript", 
+                "org.apidesign.bck2brwsr.core.ExtraJavaScript",
                 "resource", "processByteCode"
             );
             if (arr != null) {
@@ -174,25 +174,9 @@ abstract class ByteCodeToJavaScript {
                 }
             }
         }
-        final String jsResource;
-        {
-            String[] arr = findAnnotation(arrData, jc,
-                "net.java.html.js.JavaScriptResource", 
-                "value"
-            );
-            if (arr != null) {
-                if (arr[0].startsWith("/")) {
-                    jsResource = arr[0];
-                } else {
-                    int last = cn.lastIndexOf('/');
-                    jsResource = cn.substring(0, last + 1).replace('.', '/') + arr[0];
-                }
-            } else {
-                jsResource = null;
-            }
-        }
+        StringArray jsResources = findJavaScriptResources(arrData, cn);
         String[] proto = findAnnotation(arrData, jc,
-            "org.apidesign.bck2brwsr.core.JavaScriptPrototype", 
+            "org.apidesign.bck2brwsr.core.JavaScriptPrototype",
             "container", "prototype"
         );
         StringArray toInitilize = new StringArray();
@@ -333,11 +317,13 @@ abstract class ByteCodeToJavaScript {
             out.append("\n    var refs_").append(ref).append(";");
         }
         classRefs.clear();
-        
-        if (jsResource != null) {
-            requireResource(out, jsResource);
+
+        if (jsResources != null) {
+            for (String r : jsResources.toArray()) {
+                requireResource(out, r);
+            }
         }
-        
+
         out.append("\n  }");
         out.append("\n  if (arguments.length === 0) {");
         out.append("\n    if (!(this instanceof CLS)) {");
@@ -366,6 +352,32 @@ abstract class ByteCodeToJavaScript {
 //            sb.append("\n").append(init).append("();");
 //        }
         return "";
+    }
+
+    private StringArray findJavaScriptResources(byte[] arr, final String cn) throws IOException {
+        if (arr == null) {
+            return null;
+        }
+        final StringArray values = StringArray.asList();
+        final String simple = "Lnet/java/html/js/JavaScriptResource;";
+        final String multi = "Lnet/java/html/js/JavaScriptResource$Group;";
+        AnnotationParser ap = new AnnotationParser(false, true) {
+            @Override
+            protected void visitAttr(String type, String attr, String at, String value) {
+                if (!"value".equals(attr)) {
+                    return;
+                }
+                if (type.equals(simple) || type.equals(multi)) {
+                    if (!value.startsWith("/")) {
+                        int last = cn.lastIndexOf('/');
+                        value = cn.substring(0, last + 1).replace('.', '/') + value;
+                    }
+                    values.add(value);
+                }
+            }
+        };
+        ap.parse(arr, jc);
+        return values;
     }
 
     private boolean javaScriptOnly(Appendable out, byte[] anno) throws IOException {
@@ -420,10 +432,10 @@ abstract class ByteCodeToJavaScript {
         final LocalsMapper lmapper =
                 new LocalsMapper(stackMapIterator.getArguments());
 
-        boolean defineProp = 
+        boolean defineProp =
             "java/lang/Object".equals(jc.getClassName()) ||
             "java/lang/reflect/Array".equals(jc.getClassName());
-        
+
         if (defineProp) {
             out.append("Object.defineProperty(").append(destObject).
                 append(", '").append(name).append("', { configurable: true, writable: true, value: m = function(");
@@ -480,7 +492,7 @@ abstract class ByteCodeToJavaScript {
     }
 
     static int generateIf(Appendable out, StackMapper mapper, byte[] byteCodes,
-        int i, final CharSequence v2, final CharSequence v1, 
+        int i, final CharSequence v2, final CharSequence v1,
         final String test, int topMostLabel
     ) throws IOException {
         mapper.flush(out);
@@ -491,7 +503,7 @@ abstract class ByteCodeToJavaScript {
         goTo(out, i, indx, topMostLabel);
         return i + 2;
     }
-    
+
     int readInt4(byte[] byteCodes, int offset) {
         final int d = byteCodes[offset + 0] << 24;
         final int c = byteCodes[offset + 1] << 16;
@@ -535,14 +547,14 @@ abstract class ByteCodeToJavaScript {
                 case ')':
                     count = false;
                     continue;
-                case 'B': 
-                case 'C': 
-                case 'D': 
-                case 'F': 
-                case 'I': 
-                case 'J': 
-                case 'S': 
-                case 'Z': 
+                case 'B':
+                case 'C':
+                case 'D':
+                case 'F':
+                case 'I':
+                case 'J':
+                case 'S':
+                case 'Z':
                     if (count) {
                         if (array) {
                             sig.append("_3");
@@ -564,7 +576,7 @@ abstract class ByteCodeToJavaScript {
                     }
                     array = false;
                     continue;
-                case 'V': 
+                case 'V':
                     assert !count;
                     returnType[0] = 'V';
                     sig.insert(firstPos, 'V');
@@ -596,11 +608,11 @@ abstract class ByteCodeToJavaScript {
             }
         }
     }
-    
+
     static String mangleSig(String sig) {
         return mangleSig(sig, 0, sig.length());
     }
-    
+
     private static String mangleMethodName(String name) {
         StringBuilder sb = new StringBuilder(name.length() * 2);
         int last = name.length();
@@ -622,7 +634,7 @@ abstract class ByteCodeToJavaScript {
                 case '_': sb.append("_1"); break;
                 case ';': sb.append("_2"); break;
                 case '[': sb.append("_3"); break;
-                default: 
+                default:
                     if (Character.isJavaIdentifierPart(ch)) {
                         sb.append(ch);
                     } else {
@@ -638,7 +650,7 @@ abstract class ByteCodeToJavaScript {
         }
         return sb.toString();
     }
-    
+
     static String mangleClassName(String name) {
         return mangleSig(name);
     }
@@ -651,8 +663,8 @@ abstract class ByteCodeToJavaScript {
             name.append("class"); // NOI18N
         } else {
             name.append(mangleMethodName(m.getName()));
-        } 
-        
+        }
+
         countArgs(m.getInternalSig(), new char[1], name, cnt);
         return name.toString();
     }
@@ -714,13 +726,13 @@ abstract class ByteCodeToJavaScript {
             public P() {
                 super(false, true);
             }
-            
+
             int cnt;
             String[] args = new String[30];
             String body;
             boolean javacall;
             boolean html4j;
-            
+
             @Override
             protected void visitAttr(String type, String attr, String at, String value) {
                 if (type.equals(jvmType)) {
@@ -793,7 +805,7 @@ abstract class ByteCodeToJavaScript {
         out.append("\n}\n");
         return mn;
     }
-    
+
     private CharSequence mangleCallbacks(String pkgName, String body) {
         StringBuilder sb = new StringBuilder();
         int pos = 0;
@@ -931,9 +943,9 @@ abstract class ByteCodeToJavaScript {
         //return jc.getName().getInternalName().replace('/', '_');
         return mangleClassName(jc.getClassName());
     }
-    
+
     private static String[] findAnnotation(
-        byte[] arr, ClassData cd, final String className, 
+        byte[] arr, ClassData cd, final String className,
         final String... attrNames
     ) throws IOException {
         if (arr == null) {
@@ -954,7 +966,7 @@ abstract class ByteCodeToJavaScript {
                     }
                 }
             }
-            
+
         };
         ap.parse(arr, cd);
         return found[0] ? values : null;
@@ -970,7 +982,7 @@ abstract class ByteCodeToJavaScript {
                 case 'Z':
                 case 'C':
                 case 'I': return " = 0;";
-                case 'F': 
+                case 'F':
                 case 'D': return " = 0.0;";
                 default:
                     throw new IllegalStateException(is);
@@ -1243,7 +1255,7 @@ abstract class ByteCodeToJavaScript {
             out.append(Integer.toString(cc));
         }
     }
-    
+
     @JavaScriptBody(args = "msg", body = "")
     static void println(String msg) {
         System.err.println(msg);
