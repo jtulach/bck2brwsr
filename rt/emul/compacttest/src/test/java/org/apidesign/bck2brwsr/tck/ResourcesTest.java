@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Enumeration;
-import net.java.html.js.JavaScriptBody;
 import org.apidesign.bck2brwsr.vmtest.BrwsrTest;
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
@@ -118,7 +117,7 @@ public class ResourcesTest {
         return java;
     }
 
-    @JavaScriptBody(args = { "url" }, body =
+    @org.apidesign.bck2brwsr.core.JavaScriptBody(args = { "url" }, body =
         "if (typeof XMLHttpRequest === 'undefined') return null;\n" +
         "var xhr = new XMLHttpRequest();\n" +
         "xhr.overrideMimeType('text\\/plain; charset=x-user-defined');\n" +
