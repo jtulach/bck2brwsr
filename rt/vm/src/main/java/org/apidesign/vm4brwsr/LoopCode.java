@@ -440,7 +440,7 @@ class LoopCode implements Runnable {
                     ByteCodeToJavaScript.emit(out, smapper, "return @1;", smapper.popA());
                     break;
                 case ByteCodeParser.opc_i2l:
-                    smapper.replace(out, VarType.LONG, "@1", smapper.getI(0));
+                    smapper.replace(out, VarType.LONG, "(@1).toLong()", smapper.getI(0));
                     break;
                 case ByteCodeParser.opc_i2f:
                     smapper.replace(out, VarType.FLOAT, "@1", smapper.getI(0));
@@ -496,7 +496,7 @@ class LoopCode implements Runnable {
                     smapper.assign(out, VarType.DOUBLE, "0");
                     break;
                 case ByteCodeParser.opc_lconst_0:
-                    smapper.assign(out, VarType.LONG, "0");
+                    smapper.assign(out, VarType.LONG, "(0).toLong()");
                     break;
                 case ByteCodeParser.opc_fconst_0:
                     smapper.assign(out, VarType.FLOAT, "0");
@@ -548,7 +548,7 @@ class LoopCode implements Runnable {
                             final int low = (int) (lv.longValue() & -1);
                             final int hi = (int) (lv.longValue() >> 32);
                             if (hi == 0) {
-                                smapper.assign(out, VarType.LONG, "0x" + Integer.toHexString(low));
+                                smapper.assign(out, VarType.LONG, "0x" + Integer.toHexString(low) + ".toLong()");
                             } else {
                                 smapper.assign(out, VarType.LONG, "0x" + Integer.toHexString(hi) + ".next32(0x" + Integer.toHexString(low) + ")");
                             }
