@@ -80,7 +80,7 @@ public final class TestVM {
             // in case of Long it is necessary convert it to number
             // since the Long is represented by two numbers in JavaScript
             try {
-                final Object toFP = ((ScriptEngine)code).eval("Number.prototype.toFP");
+                final Object toFP = ((ScriptEngine)code).eval("Number.prototype['__bit64']['toFP']");
                 if (ret instanceof Long) {
                     ret = code.invokeMethod(toFP, "call", ret);
                 }

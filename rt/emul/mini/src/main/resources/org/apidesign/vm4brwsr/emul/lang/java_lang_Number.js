@@ -1377,6 +1377,12 @@ $h_Ldemo_client_Module$.prototype = $c_Ldemo_client_Module$.prototype;
 $c_Ldemo_client_Module$.prototype.to64__I__I__J = (function(lo, hi) {
   return new $c_sjsr_RuntimeLong().init___I(lo).$$plus__sjsr_RuntimeLong__sjsr_RuntimeLong(new $c_sjsr_RuntimeLong().init___I(hi).$$less$less__I__sjsr_RuntimeLong(32))
 });
+$c_Ldemo_client_Module$.prototype.high32__J__I = (function(a) {
+  return a.$$greater$greater__I__sjsr_RuntimeLong(32).toInt__I()
+});
+$c_Ldemo_client_Module$.prototype.low32__J__I = (function(a) {
+  return a.$$amp__sjsr_RuntimeLong__sjsr_RuntimeLong(new $c_sjsr_RuntimeLong().init___I((-1))).toInt__I()
+});
 $c_Ldemo_client_Module$.prototype.fromDouble__D__J = (function(a) {
   return $m_sjsr_RuntimeLong$().fromDouble__D__sjsr_RuntimeLong(a)
 });
@@ -1427,6 +1433,12 @@ $c_Ldemo_client_Module$.prototype.compare64__J__J__I = (function(a, b) {
 });
 $c_Ldemo_client_Module$.prototype.$$js$exported$meth$to64__I__I__O = (function(lo, hi) {
   return this.to64__I__I__J(lo, hi)
+});
+$c_Ldemo_client_Module$.prototype.$$js$exported$meth$high32__J__O = (function(a) {
+  return this.high32__J__I(a)
+});
+$c_Ldemo_client_Module$.prototype.$$js$exported$meth$low32__J__O = (function(a) {
+  return this.low32__J__I(a)
 });
 $c_Ldemo_client_Module$.prototype.$$js$exported$meth$fromDouble__D__O = (function(a) {
   return this.fromDouble__D__J(a)
@@ -1541,6 +1553,14 @@ $c_Ldemo_client_Module$.prototype.toDouble = (function(arg$1) {
 $c_Ldemo_client_Module$.prototype.fromDouble = (function(arg$1) {
   var prep0 = $uD(arg$1);
   return this.$$js$exported$meth$fromDouble__D__O(prep0)
+});
+$c_Ldemo_client_Module$.prototype.low32 = (function(arg$1) {
+  var prep0 = $uJ(arg$1);
+  return this.$$js$exported$meth$low32__J__O(prep0)
+});
+$c_Ldemo_client_Module$.prototype.high32 = (function(arg$1) {
+  var prep0 = $uJ(arg$1);
+  return this.$$js$exported$meth$high32__J__O(prep0)
 });
 $c_Ldemo_client_Module$.prototype.to64 = (function(arg$1, arg$2) {
   var prep0 = $uI(arg$1);
@@ -10194,25 +10214,14 @@ var Module = $m_Ldemo_client_Module$();
         if (this === 0) {
             return low;
         }
-        var l = new Number(low);
-        l.hi = this | 0;
-        return l;
-    };
-
-    numberPrototype.high32 = function() {
-        return high32(this);
+        return Module.to64(low, this);
     };
 
     numberPrototype.toFP = function() {
-        return this.hi ? this.hi * (__m32 + 1) + low32(this) : low32(this);
+        return Module.toDouble(this);
     };
     numberPrototype.toLong = function() {
-        var r = Module.fromDouble(this);
-        try {
-            throw 'x';
-        } catch (x) {
-        }
-        return r;
+        return Module.fromDouble(this);
     };
 
     numberPrototype.toExactString = function() {
@@ -10268,6 +10277,9 @@ var Module = $m_Ldemo_client_Module$();
     b.shr64 = function(x, y) { return Module.shr64(x, y); };
     b.ushr64 = function(x, y) { return Module.ushr64(x, y); };
     b.compare64 = function(x, y) { return Module.compare64(x, y); };
+    b.high32 = function(x) { return Module.high32(x); }
+    b.low32 = function(x) { return Module.low32(x); }
+    b.toFP = function(x) { return Module.toDouble(x); }
 })(Number.prototype);
 
 vm.java_lang_Number(false);

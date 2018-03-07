@@ -453,10 +453,10 @@ class LoopCode implements Runnable {
                     break;
             // max int check?
                 case ByteCodeParser.opc_l2f:
-                    smapper.replace(out, VarType.FLOAT, "(@1).toFP()", smapper.getL(0));
+                    smapper.replace(out, VarType.FLOAT, numbers.toFP(), smapper.getL(0));
                     break;
                 case ByteCodeParser.opc_l2d:
-                    smapper.replace(out, VarType.DOUBLE, "(@1).toFP()", smapper.getL(0));
+                    smapper.replace(out, VarType.DOUBLE, numbers.toFP(), smapper.getL(0));
                     break;
                 case ByteCodeParser.opc_f2d:
                     smapper.replace(out, VarType.DOUBLE, "@1", smapper.getF(0));
