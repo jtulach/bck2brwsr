@@ -10231,7 +10231,7 @@ var Module = $m_Ldemo_client_Module$();
         if (this === 0) {
             return low;
         }
-        return Module.to64(low, this);
+        return Module.to64(low | 0, this | 0);
     };
 
     numberPrototype.toFP = function() {
@@ -10239,45 +10239,6 @@ var Module = $m_Ldemo_client_Module$();
     };
     numberPrototype.toLong = function() {
         return Module.fromDouble(this.valueOf());
-    };
-
-    numberPrototype.toExactString = function() {
-        if (this.hi) {
-            // check for Long.MIN_VALUE
-            if ((this.hi == (0x80000000 | 0)) && (low32(this) == 0)) {
-                return '-9223372036854775808';
-            }
-            var res = 0;
-            var a = [6, 9, 2, 7, 6, 9, 4, 9, 2, 4];
-            var s = '';
-            var digit;
-            var neg = this.hi < 0;
-            if (neg) {
-                var x = neg64(this);
-                var hi = x.hi;
-                var low = low32(x);
-            } else {
-                var hi = this.hi;
-                var low = low32(this);
-            }
-            for (var i = 0; i < a.length; i++) {
-                res += hi * a[i];
-                var low_digit = low % 10;
-                digit = (res % 10) + low_digit;
-
-                low = Math.floor(low / 10);
-                res = Math.floor(res / 10);
-
-                if (digit >= 10) {
-                    digit -= 10;
-                    res++;
-                }
-                s = String(digit).concat(s);
-            }
-            s = String(res).concat(s).replace(/^0+/, '');
-            return (neg ? '-' : '').concat(s);
-        }
-        return String(low32(this));
     };
 
     var b = numberPrototype['__bit64'] = {};

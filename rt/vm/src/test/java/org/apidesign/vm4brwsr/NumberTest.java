@@ -225,6 +225,20 @@ public class NumberTest {
         );
     }
 
+    @Test public void longToStringNull() throws Exception {
+        String res = Numbers.longToString(null);
+        assertExec("Gives the same value",
+            Numbers.class, "longToString__Ljava_lang_String_2Ljava_lang_Long_2",
+            res, (Object) null);
+    }
+
+    @Test public void longToString1() throws Exception {
+        String res = Numbers.longToString(1L);
+        assertExec("Gives the same value",
+            Numbers.class, "longToString__Ljava_lang_String_2Ljava_lang_Long_2",
+            res, 1);
+    }
+
     private static TestVM code;
 
     @BeforeClass

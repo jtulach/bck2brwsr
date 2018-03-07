@@ -75,6 +75,13 @@ public class Numbers {
     public static String floatToString() {
         return new Float(7.0).toString().toString();
     }
+    public static String longToString(Long x) {
+        // try { throw new IllegalAccessError(); } catch (Error e) {}
+        if (x == null) {
+            x = 7541432143243212321L;
+        }
+        return Long.toString(x);
+    }
     
     public static double seven(int todo) {
         switch (todo) {
