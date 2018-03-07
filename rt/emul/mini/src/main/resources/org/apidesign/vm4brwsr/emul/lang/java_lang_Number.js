@@ -693,8 +693,14 @@ var $uI = function(value) {
   return $asInt(value) | 0;
 };
 var $uJ = function(value) {
-  return null === value ? $m_sjsr_RuntimeLong$().Zero$1
-                        : $as_sjsr_RuntimeLong(value);
+  if (value === null) {
+    return $m_sjsr_RuntimeLong$().Zero$1;
+  }
+  if ($is_sjsr_RuntimeLong(value)) {
+    return value;
+  } else {
+    return Module.$$js$exported$meth$fromDouble__D__O(value)
+  }
 };
 var $uF = function(value) {
   /* Here, it is fine to use + instead of fround, because asFloat already
@@ -1410,6 +1416,9 @@ $c_Ldemo_client_Module$.prototype.and64__J__J__J = (function(a, b) {
 $c_Ldemo_client_Module$.prototype.or64__J__J__J = (function(a, b) {
   return a.$$bar__sjsr_RuntimeLong__sjsr_RuntimeLong(b)
 });
+$c_Ldemo_client_Module$.prototype.xor64__J__J__J = (function(a, b) {
+  return a.$$up__sjsr_RuntimeLong__sjsr_RuntimeLong(b)
+});
 $c_Ldemo_client_Module$.prototype.neg64__J__J = (function(a) {
   return a.unary$und$tilde__sjsr_RuntimeLong()
 });
@@ -1467,6 +1476,9 @@ $c_Ldemo_client_Module$.prototype.$$js$exported$meth$and64__J__J__O = (function(
 $c_Ldemo_client_Module$.prototype.$$js$exported$meth$or64__J__J__O = (function(a, b) {
   return this.or64__J__J__J(a, b)
 });
+$c_Ldemo_client_Module$.prototype.$$js$exported$meth$xor64__J__J__O = (function(a, b) {
+  return this.xor64__J__J__J(a, b)
+});
 $c_Ldemo_client_Module$.prototype.$$js$exported$meth$neg64__J__O = (function(a) {
   return this.neg64__J__J(a)
 });
@@ -1510,6 +1522,11 @@ $c_Ldemo_client_Module$.prototype.shl64 = (function(arg$1, arg$2) {
 $c_Ldemo_client_Module$.prototype.neg64 = (function(arg$1) {
   var prep0 = $uJ(arg$1);
   return this.$$js$exported$meth$neg64__J__O(prep0)
+});
+$c_Ldemo_client_Module$.prototype.xor64 = (function(arg$1, arg$2) {
+  var prep0 = $uJ(arg$1);
+  var prep1 = $uJ(arg$2);
+  return this.$$js$exported$meth$xor64__J__J__O(prep0, prep1)
 });
 $c_Ldemo_client_Module$.prototype.or64 = (function(arg$1, arg$2) {
   var prep0 = $uJ(arg$1);
