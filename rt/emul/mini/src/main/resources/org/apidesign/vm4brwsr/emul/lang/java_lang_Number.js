@@ -10238,7 +10238,7 @@ var Module = $m_Ldemo_client_Module$();
         return Module.toDouble(this);
     };
     numberPrototype.toLong = function() {
-        return Module.fromDouble(this);
+        return Module.fromDouble(this.valueOf());
     };
 
     numberPrototype.toExactString = function() {
