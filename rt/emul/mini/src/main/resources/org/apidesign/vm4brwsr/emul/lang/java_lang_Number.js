@@ -1380,14 +1380,14 @@ function $h_Ldemo_client_Module$() {
   /*<skip>*/
 }
 $h_Ldemo_client_Module$.prototype = $c_Ldemo_client_Module$.prototype;
-$c_Ldemo_client_Module$.prototype.to64__I__I__J = (function(lo, hi) {
-  return new $c_sjsr_RuntimeLong().init___I(lo).$$plus__sjsr_RuntimeLong__sjsr_RuntimeLong(new $c_sjsr_RuntimeLong().init___I(hi).$$less$less__I__sjsr_RuntimeLong(32))
+$c_Ldemo_client_Module$.prototype.to64__I__I__O = (function(lo, hi) {
+  return new $c_sjsr_RuntimeLong().init___I__I(lo, hi)
 });
-$c_Ldemo_client_Module$.prototype.high32__J__I = (function(a) {
-  return a.$$greater$greater__I__sjsr_RuntimeLong(32).toInt__I()
+$c_Ldemo_client_Module$.prototype.high32__sjsr_RuntimeLong__I = (function(a) {
+  return a.hi__I()
 });
-$c_Ldemo_client_Module$.prototype.low32__J__I = (function(a) {
-  return a.$$amp__sjsr_RuntimeLong__sjsr_RuntimeLong(new $c_sjsr_RuntimeLong().init___I((-1))).toInt__I()
+$c_Ldemo_client_Module$.prototype.low32__sjsr_RuntimeLong__I = (function(a) {
+  return a.lo__I()
 });
 $c_Ldemo_client_Module$.prototype.fromDouble__D__J = (function(a) {
   return $m_sjsr_RuntimeLong$().fromDouble__D__sjsr_RuntimeLong(a)
@@ -1441,13 +1441,13 @@ $c_Ldemo_client_Module$.prototype.compare64__J__J__I = (function(a, b) {
   return 1
 });
 $c_Ldemo_client_Module$.prototype.$$js$exported$meth$to64__I__I__O = (function(lo, hi) {
-  return this.to64__I__I__J(lo, hi)
+  return this.to64__I__I__O(lo, hi)
 });
-$c_Ldemo_client_Module$.prototype.$$js$exported$meth$high32__J__O = (function(a) {
-  return this.high32__J__I(a)
+$c_Ldemo_client_Module$.prototype.$$js$exported$meth$high32__sjsr_RuntimeLong__O = (function(a) {
+  return this.high32__sjsr_RuntimeLong__I(a)
 });
-$c_Ldemo_client_Module$.prototype.$$js$exported$meth$low32__J__O = (function(a) {
-  return this.low32__J__I(a)
+$c_Ldemo_client_Module$.prototype.$$js$exported$meth$low32__sjsr_RuntimeLong__O = (function(a) {
+  return this.low32__sjsr_RuntimeLong__I(a)
 });
 $c_Ldemo_client_Module$.prototype.$$js$exported$meth$fromDouble__D__O = (function(a) {
   return this.fromDouble__D__J(a)
@@ -1572,12 +1572,12 @@ $c_Ldemo_client_Module$.prototype.fromDouble = (function(arg$1) {
   return this.$$js$exported$meth$fromDouble__D__O(prep0)
 });
 $c_Ldemo_client_Module$.prototype.low32 = (function(arg$1) {
-  var prep0 = $uJ(arg$1);
-  return this.$$js$exported$meth$low32__J__O(prep0)
+  var prep0 = $as_sjsr_RuntimeLong(arg$1);
+  return this.$$js$exported$meth$low32__sjsr_RuntimeLong__O(prep0)
 });
 $c_Ldemo_client_Module$.prototype.high32 = (function(arg$1) {
-  var prep0 = $uJ(arg$1);
-  return this.$$js$exported$meth$high32__J__O(prep0)
+  var prep0 = $as_sjsr_RuntimeLong(arg$1);
+  return this.$$js$exported$meth$high32__sjsr_RuntimeLong__O(prep0)
 });
 $c_Ldemo_client_Module$.prototype.to64 = (function(arg$1, arg$2) {
   var prep0 = $uI(arg$1);
