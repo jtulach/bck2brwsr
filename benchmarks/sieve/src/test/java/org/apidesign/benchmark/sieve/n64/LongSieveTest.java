@@ -46,23 +46,36 @@ public class LongSieveTest extends Primes {
         return res;
     }
 
-/*
-    @Compare(slowdown = 3.0)
-    public long fiveThousand() throws IOException {
+    @Compare(slowdown = 20.0)
+    public long twoThousand() throws IOException {
         LongSieveTest sieve = new LongSieveTest();
         int now = time();
-        long res = sieve.compute(5000);
+        long res = sieve.compute(2000);
         int took = time() - now;
-        log("oneThousand in " + took + " ms");
+        log("twoThousand in " + took + " ms");
         return res;
+
     }
+
+    @Compare(slowdown = 20.0)
+    public long threeThousand() throws IOException {
+        LongSieveTest sieve = new LongSieveTest();
+        int now = time();
+        long res = sieve.compute(3000);
+        int took = time() - now;
+        log("threeThousand in " + took + " ms");
+        return res;
+
+    }
+
+/*
     @Compare(slowdown = 3.0)
     public long tenThousand() throws IOException {
         LongSieveTest sieve = new LongSieveTest();
         int now = time();
         long res = sieve.compute(10000);
         int took = time() - now;
-        log("oneThousand in " + took + " ms");
+        log("tenThousand in " + took + " ms");
         return res;
     }
 */
