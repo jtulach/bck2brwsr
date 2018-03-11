@@ -1420,7 +1420,7 @@ $c_Ldemo_client_Module$.prototype.xor64__J__J__J = (function(a, b) {
   return a.$$up__sjsr_RuntimeLong__sjsr_RuntimeLong(b)
 });
 $c_Ldemo_client_Module$.prototype.neg64__J__J = (function(a) {
-  return a.unary$und$tilde__sjsr_RuntimeLong()
+  return a.unary$und$minus__sjsr_RuntimeLong()
 });
 $c_Ldemo_client_Module$.prototype.shl64__J__I__J = (function(a, n) {
   return a.$$less$less__I__sjsr_RuntimeLong(n)

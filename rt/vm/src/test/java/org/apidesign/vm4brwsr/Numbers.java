@@ -75,14 +75,27 @@ public class Numbers {
     public static String floatToString() {
         return new Float(7.0).toString().toString();
     }
-    public static String longToString(Long x) {
+    public static String longToString(Long x, boolean negative) {
         // try { throw new IllegalAccessError(); } catch (Error e) {}
         if (x == null) {
             x = 7541432143243212321L;
         }
+        if (negative) {
+            x = -x;
+        }
         return Long.toString(x);
     }
-    
+    public static int stringToLong(String x) {
+        Long l = Long.parseLong(x, 10);
+        return l.intValue() | (int)(l >> 32);
+    }
+
+
+    @JavaScriptBody(args = { "msg" }, body = "print(msg);")
+    private static void log(String msg) {
+        System.err.println(msg);
+    }
+
     public static double seven(int todo) {
         switch (todo) {
             case 0: return sevenNew().doubleValue();
