@@ -861,10 +861,13 @@ public final class Double extends Number implements Comparable<Double> {
      * @since 1.3
      */
     public static long doubleToRawLongBits(double value) {
-        int[] arr = { 0, 0 };
+        int[] arr = {0, 0};
         doubleToRawLongBits(value, arr);
-        long l = arr[1];
-        return (l << 32) | arr[0];
+        long l1 = arr[1];
+        long hi = l1 << 32;
+        long lo = arr[0];
+        lo = (lo << 32) >>> 32;
+        return hi | lo;
     }
     
     @JavaScriptBody(args = { "value", "arr" }, body = ""
