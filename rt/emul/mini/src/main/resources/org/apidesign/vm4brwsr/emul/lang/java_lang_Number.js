@@ -23,6 +23,15 @@ var $g =
   (typeof $env["global"] === "object" && $env["global"])
     ? $env["global"]
     : ((typeof global === "object" && global && global["Object"] === Object) ? global : this);
+
+ if (!$g) {
+    $g = 0 || eval("this");
+ }
+ 
+ if (!$g) {
+    throw 'Cannot find global: ' + $g;
+ }
+
 $env["global"] = $g;
 
 // Where to send exports
