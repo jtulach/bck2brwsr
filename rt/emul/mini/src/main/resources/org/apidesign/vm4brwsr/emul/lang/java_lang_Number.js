@@ -24,9 +24,13 @@ var $g =
     ? $env["global"]
     : ((typeof global === "object" && global && global["Object"] === Object) ? global : this);
 
- if (!$g) {
+if (!$g && typeof window !== 'undefined') {
+    $g = window;
+}
+
+if (!$g) {
     $g = 0 || eval("this");
- }
+}
  
  if (!$g) {
     throw 'Cannot find global: ' + $g;
@@ -4724,7 +4728,11 @@ $c_jl_Long$.prototype.divideUnsigned__J__J__J = (function(dividend, divisor) {
 });
 $c_jl_Long$.prototype.divModUnsigned__p1__J__J__Z__J = (function(a, b, isDivide) {
   if (b.equals__sjsr_RuntimeLong__Z($m_sjsr_RuntimeLong$().Zero__sjsr_RuntimeLong())) {
-    throw new $c_jl_ArithmeticException().init___T("/ by zero")
+        var exception = new vm.java_lang_ArithmeticException;
+        vm.java_lang_ArithmeticException(false).constructor
+          .cons__VLjava_lang_String_2.call(exception, "/ by zero");
+
+        throw exception;
   };
   var shift = ((this.numberOfLeadingZeros__J__I(b) - this.numberOfLeadingZeros__J__I(a)) | 0);
   var bShift = b.$$less$less__I__sjsr_RuntimeLong(shift);
@@ -5648,7 +5656,11 @@ $c_sjsr_RuntimeLong$.prototype.divide__sjsr_RuntimeLong__sjsr_RuntimeLong__sjsr_
 });
 $c_sjsr_RuntimeLong$.prototype.divideImpl__I__I__I__I__I = (function(alo, ahi, blo, bhi) {
   if ($m_sjsr_RuntimeLong$Utils$().isZero__I__I__Z(blo, bhi)) {
-    throw new $c_jl_ArithmeticException().init___T("/ by zero")
+        var exception = new vm.java_lang_ArithmeticException;
+        vm.java_lang_ArithmeticException(false).constructor
+          .cons__VLjava_lang_String_2.call(exception, "/ by zero");
+
+        throw exception;
   };
   if ($m_sjsr_RuntimeLong$Utils$().isInt32__I__I__Z(alo, ahi)) {
     if ($m_sjsr_RuntimeLong$Utils$().isInt32__I__I__Z(blo, bhi)) {
@@ -5724,7 +5736,11 @@ $c_sjsr_RuntimeLong$.prototype.remainder__sjsr_RuntimeLong__sjsr_RuntimeLong__sj
 });
 $c_sjsr_RuntimeLong$.prototype.remainderImpl__I__I__I__I__I = (function(alo, ahi, blo, bhi) {
   if ($m_sjsr_RuntimeLong$Utils$().isZero__I__I__Z(blo, bhi)) {
-    throw new $c_jl_ArithmeticException().init___T("/ by zero")
+        var exception = new vm.java_lang_ArithmeticException;
+        vm.java_lang_ArithmeticException(false).constructor
+          .cons__VLjava_lang_String_2.call(exception, "/ by zero");
+
+        throw exception;
   };
   if ($m_sjsr_RuntimeLong$Utils$().isInt32__I__I__Z(alo, ahi)) {
     if ($m_sjsr_RuntimeLong$Utils$().isInt32__I__I__Z(blo, bhi)) {
