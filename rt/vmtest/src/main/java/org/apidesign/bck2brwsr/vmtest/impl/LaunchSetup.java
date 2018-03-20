@@ -56,7 +56,7 @@ public final class LaunchSetup {
                     break;
                 case "script": js = Launcher.createJavaScript(); break; // NOI18N
                 default: throw new IllegalArgumentException(
-                    "Unknown value of vmtest.js property: " + p
+                    "Only 'brwsr' and 'script' values of vmtest.js property allowed: " + p
                 );
             }
         }

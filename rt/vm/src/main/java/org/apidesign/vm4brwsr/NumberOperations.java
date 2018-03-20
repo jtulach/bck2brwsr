@@ -108,6 +108,11 @@ final class NumberOperations {
         return "__compare64(@2,@1)";
     }
 
+    public String toFP() {
+        used |= BIT64;
+        return "__toFP(@1)";
+    }
+
     public String generate() {
         if (used == 0) {
             return "";
@@ -166,6 +171,7 @@ final class NumberOperations {
                 "    var __shr64 = Number.prototype['__bit64']['shr64'];\n" +
                 "    var __ushr64 = Number.prototype['__bit64']['ushr64'];\n" +
                 "    var __compare64 = Number.prototype['__bit64']['compare64'];\n" +
+                "    var __toFP = Number.prototype['__bit64']['toFP'];\n" +
                 ""
             );
         }

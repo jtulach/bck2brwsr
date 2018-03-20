@@ -27,9 +27,10 @@
     function high32(x) {
         return x.hi ? x.hi : (Math.floor(low32(x) / (__m32 + 1))) | 0;
     };
-    numberPrototype.toFP = function() {
+    function toFP() {
         return this.hi ? this.hi * (__m32 + 1) + low32(this) : low32(this);
-    };
+    }
+    numberPrototype.toFP = toFP;
     numberPrototype.toLong = function() {
         var hi = (low32(this) / (__m32 + 1)) | 0;
         var low = (low32(this) % (__m32 + 1)) | 0;
@@ -235,12 +236,14 @@
         return add64(ret, 1);
     };
     
-    function __handleDivByZero() {
-        var exception = new vm.java_lang_ArithmeticException;
-        vm.java_lang_ArithmeticException(false).constructor
-          .cons__VLjava_lang_String_2.call(exception, "/ by zero");
+    function __handleDivByZero(v) {
+        if ((low32(v) == 0) && (high32(v) == 0)) {
+            var exception = new vm.java_lang_ArithmeticException;
+            vm.java_lang_ArithmeticException(false).constructor
+              .cons__VLjava_lang_String_2.call(exception, "/ by zero");
 
-        throw exception;
+            throw exception;
+        }
     }
 
     function __Int64(hi32, lo32) {
@@ -488,9 +491,7 @@
             v = y;
         }
 
-        if ((low32(v) === 0) && (high32(v) === 0)) {
-            __handleDivByZero();
-        }
+        __handleDivByZero(v);
 
         if (high32(u) === 0) {
             if (high32(v) === 0) {
@@ -529,9 +530,7 @@
             v = y;
         }
 
-        if ((low32(v) === 0) && (high32(v) === 0)) {
-            __handleDivByZero();
-        }
+        __handleDivByZero(v);
 
         if (high32(u) === 0) {
             var result = (high32(v) === 0) ? (low32(u) % low32(v)) : low32(u);
@@ -563,6 +562,11 @@
     b.shr64 = shr64;
     b.ushr64 = ushr64;
     b.compare64 = compare64;
+    b.toFP = function(x) {
+        return toFP.call(x);
+    };
+    b.high32 = high32;
+    b.low32 = low32;
 })(Number.prototype);
 
 vm.java_lang_Number(false);
