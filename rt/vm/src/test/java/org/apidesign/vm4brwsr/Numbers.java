@@ -48,6 +48,7 @@ public class Numbers {
         byte[] arr = {(byte)64, (byte)8, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0};
         ByteArrayInputStream is = new ByteArrayInputStream(arr);
         DataInputStream dis = new DataInputStream(is);
+//        debugger();
         return dis.readDouble();
     }
     public static long deserLong(byte[] arr) throws IOException {
@@ -76,7 +77,7 @@ public class Numbers {
         return new Float(7.0).toString().toString();
     }
     public static String longToString(Long x, boolean negative) {
-        // try { throw new IllegalAccessError(); } catch (Error e) {}
+        // debugger();
         if (x == null) {
             x = 7541432143243212321L;
         }
@@ -86,6 +87,7 @@ public class Numbers {
         return Long.toString(x);
     }
     public static int stringToLong(String x) {
+        debugger();
         Long l = Long.parseLong(x, 10);
         return l.intValue() | (int)(l >> 32);
     }
@@ -94,6 +96,13 @@ public class Numbers {
     @JavaScriptBody(args = { "msg" }, body = "print(msg);")
     private static void log(String msg) {
         System.err.println(msg);
+    }
+
+    private static void debugger() {
+        try {
+            throw new IllegalAccessError();
+        } catch (Error e) {
+        }
     }
 
     public static double seven(int todo) {
@@ -111,6 +120,7 @@ public class Numbers {
             default: throw new IllegalStateException();
         }
     }
+
     public static boolean bseven(int todo) {
         switch (todo) {
             case 30: return bvalueOf(Boolean.FALSE);
