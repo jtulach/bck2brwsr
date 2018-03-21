@@ -31,7 +31,7 @@ if (!$g && typeof window !== 'undefined') {
 if (!$g) {
     $g = 0 || eval("this");
 }
- 
+
  if (!$g) {
     throw 'Cannot find global: ' + $g;
  }
@@ -1445,13 +1445,7 @@ $c_Ldemo_client_Module$.prototype.ushr64__J__I__J = (function(a, n) {
   return a.$$greater$greater$greater__I__sjsr_RuntimeLong(n)
 });
 $c_Ldemo_client_Module$.prototype.compare64__J__J__I = (function(a, b) {
-  if (a.equals__sjsr_RuntimeLong__Z(b)) {
-    return 0
-  };
-  if (a.$$less__sjsr_RuntimeLong__Z(b)) {
-    return (-1)
-  };
-  return 1
+  return $m_jl_Long$().compare__J__J__I(a, b)
 });
 $c_Ldemo_client_Module$.prototype.$$js$exported$meth$to64__I__I__O = (function(lo, hi) {
   return this.to64__I__I__O(lo, hi)
@@ -4722,6 +4716,9 @@ $c_jl_Long$.prototype.toUnsignedStringInternalLarge__p1__J__I__T = (function(i, 
 });
 $c_jl_Long$.prototype.hashCode__J__I = (function(value) {
   return (value.toInt__I() ^ value.$$greater$greater$greater__I__sjsr_RuntimeLong(32).toInt__I())
+});
+$c_jl_Long$.prototype.compare__J__J__I = (function(x, y) {
+  return (x.equals__sjsr_RuntimeLong__Z(y) ? 0 : (x.$$less__sjsr_RuntimeLong__Z(y) ? (-1) : 1))
 });
 $c_jl_Long$.prototype.divideUnsigned__J__J__J = (function(dividend, divisor) {
   return this.divModUnsigned__p1__J__J__Z__J(dividend, divisor, true)
