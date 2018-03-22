@@ -16,100 +16,11 @@
 
 
 // Get the environment info
-var $env = (typeof __ScalaJSEnv === "object" && __ScalaJSEnv) ? __ScalaJSEnv : {};
-
-// Global scope
-var $g =
-  (typeof $env["global"] === "object" && $env["global"])
-    ? $env["global"]
-    : ((typeof global === "object" && global && global["Object"] === Object) ? global : this);
-
-if (!$g && typeof window !== 'undefined') {
-    $g = window;
-}
-
-if (!$g) {
-    $g = 0 || eval("this");
-}
-
+var $eval = eval;
+var $g = 0 || $eval("this");
  if (!$g) {
     throw 'Cannot find global: ' + $g;
  }
-
-$env["global"] = $g;
-
-// Where to send exports
-
-
-
-var $e =
-  (typeof $env["exportsNamespace"] === "object" && $env["exportsNamespace"])
-    ? $env["exportsNamespace"] : $g;
-
-$env["exportsNamespace"] = $e;
-
-// Freeze the environment info
-$g["Object"]["freeze"]($env);
-
-// Linking info - must be in sync with scala.scalajs.runtime.LinkingInfo
-var $linkingInfo = {
-  "envInfo": $env,
-  "semantics": {
-
-
-
-
-
-
-    "asInstanceOfs": 2,
-
-
-
-
-
-
-
-
-    "arrayIndexOutOfBounds": 2,
-
-
-
-
-
-
-
-
-    "moduleInit": 2,
-
-
-
-
-
-    "strictFloats": false,
-
-
-    "productionMode": true
-
-
-
-  },
-
-
-
-  "assumingES6": false,
-
-  "linkerVersion": "0.6.22",
-  "globalThis": this
-};
-$g["Object"]["freeze"]($linkingInfo);
-$g["Object"]["freeze"]($linkingInfo["semantics"]);
-
-// Snapshots of builtins and polyfills
-
-
-
-
-
 
 var $imul = $g["Math"]["imul"] || (function(a, b) {
   // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/imul
