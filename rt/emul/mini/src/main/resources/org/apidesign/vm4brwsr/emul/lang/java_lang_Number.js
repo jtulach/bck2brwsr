@@ -1495,57 +1495,6 @@ function $m_jl_FloatingPointBits$() {
   return $n_jl_FloatingPointBits$
 }
 /** @constructor */
-function $c_s_util_hashing_MurmurHash3() {
-  /*<skip>*/
-}
-$c_s_util_hashing_MurmurHash3.prototype = new $h_O();
-$c_s_util_hashing_MurmurHash3.prototype.constructor = $c_s_util_hashing_MurmurHash3;
-/** @constructor */
-function $h_s_util_hashing_MurmurHash3() {
-  /*<skip>*/
-}
-$h_s_util_hashing_MurmurHash3.prototype = $c_s_util_hashing_MurmurHash3.prototype;
-$c_s_util_hashing_MurmurHash3.prototype.mixLast__I__I__I = (function(hash, data) {
-  var k = data;
-  k = $imul((-862048943), k);
-  var i = k;
-  k = ((i << 15) | ((i >>> 17) | 0));
-  k = $imul(461845907, k);
-  return (hash ^ k)
-});
-$c_s_util_hashing_MurmurHash3.prototype.mix__I__I__I = (function(hash, data) {
-  var h = this.mixLast__I__I__I(hash, data);
-  var i = h;
-  h = ((i << 13) | ((i >>> 19) | 0));
-  return (((-430675100) + $imul(5, h)) | 0)
-});
-$c_s_util_hashing_MurmurHash3.prototype.avalanche__p1__I__I = (function(hash) {
-  var h = hash;
-  h = (h ^ ((h >>> 16) | 0));
-  h = $imul((-2048144789), h);
-  h = (h ^ ((h >>> 13) | 0));
-  h = $imul((-1028477387), h);
-  h = (h ^ ((h >>> 16) | 0));
-  return h
-});
-$c_s_util_hashing_MurmurHash3.prototype.productHash__s_Product__I__I = (function(x, seed) {
-  var arr = x.productArity__I();
-  if ((arr === 0)) {
-    return $f_T__hashCode__I(x.productPrefix__T())
-  } else {
-    var h = seed;
-    var i = 0;
-    while ((i < arr)) {
-      h = this.mix__I__I__I(h, $m_sr_Statics$().anyHash__O__I(x.productElement__I__O(i)));
-      i = ((1 + i) | 0)
-    };
-    return this.finalizeHash__I__I__I(h, arr)
-  }
-});
-$c_s_util_hashing_MurmurHash3.prototype.finalizeHash__I__I__I = (function(hash, length) {
-  return this.avalanche__p1__I__I((hash ^ length))
-});
-/** @constructor */
 function $c_sjsr_package$() {
   /*<skip>*/
 }
@@ -1586,62 +1535,6 @@ function $m_sjsr_package$() {
     $n_sjsr_package$ = new $c_sjsr_package$()
   };
   return $n_sjsr_package$
-}
-/** @constructor */
-function $c_sr_Statics$() {
-  /*<skip>*/
-}
-$c_sr_Statics$.prototype = new $h_O();
-$c_sr_Statics$.prototype.constructor = $c_sr_Statics$;
-/** @constructor */
-function $h_sr_Statics$() {
-  /*<skip>*/
-}
-$h_sr_Statics$.prototype = $c_sr_Statics$.prototype;
-$c_sr_Statics$.prototype.doubleHash__D__I = (function(dv) {
-  var iv = $doubleToInt(dv);
-  if ((iv === dv)) {
-    return iv
-  } else {
-    var this$1 = $m_sjsr_RuntimeLong$();
-    var lo = this$1.scala$scalajs$runtime$RuntimeLong$$fromDoubleImpl__D__I(dv);
-    var hi = this$1.scala$scalajs$runtime$RuntimeLong$$hiReturn$f;
-    return (($m_sjsr_RuntimeLong$().scala$scalajs$runtime$RuntimeLong$$toDouble__I__I__D(lo, hi) === dv) ? (lo ^ hi) : $m_jl_FloatingPointBits$().numberHashCode__D__I(dv))
-  }
-});
-$c_sr_Statics$.prototype.anyHash__O__I = (function(x) {
-  if ((x === null)) {
-    return 0
-  } else if (((typeof x) === "number")) {
-    var x3 = (+x);
-    return this.doubleHash__D__I(x3)
-  } else if ($is_sjsr_RuntimeLong(x)) {
-    var t = $uJ(x);
-    var lo = t.lo$2;
-    var hi = t.hi$2;
-    return this.longHash__J__I(new $c_sjsr_RuntimeLong(lo, hi))
-  } else {
-    return $dp_hashCode__I(x)
-  }
-});
-$c_sr_Statics$.prototype.longHash__J__I = (function(lv) {
-  var lo = lv.lo$2;
-  var lo$1 = lv.hi$2;
-  return ((lo$1 === (lo >> 31)) ? lo : (lo ^ lo$1))
-});
-var $d_sr_Statics$ = new $TypeData().initClass({
-  sr_Statics$: 0
-}, false, "scala.runtime.Statics$", {
-  sr_Statics$: 1,
-  O: 1
-});
-$c_sr_Statics$.prototype.$classData = $d_sr_Statics$;
-var $n_sr_Statics$ = (void 0);
-function $m_sr_Statics$() {
-  if ((!$n_sr_Statics$)) {
-    $n_sr_Statics$ = new $c_sr_Statics$()
-  };
-  return $n_sr_Statics$
 }
 /** @constructor */
 function $c_jl_Number() {
@@ -1715,38 +1608,6 @@ function $is_jl_Throwable(obj) {
 }
 function $isArrayOf_jl_Throwable(obj, depth) {
   return (!(!(((obj && obj.$classData) && (obj.$classData.arrayDepth === depth)) && obj.$classData.arrayBase.ancestors.jl_Throwable)))
-}
-/** @constructor */
-function $c_s_util_hashing_MurmurHash3$() {
-  this.seqSeed$2 = 0;
-  this.mapSeed$2 = 0;
-  this.setSeed$2 = 0;
-  $n_s_util_hashing_MurmurHash3$ = this;
-  this.seqSeed$2 = $f_T__hashCode__I("Seq");
-  this.mapSeed$2 = $f_T__hashCode__I("Map");
-  this.setSeed$2 = $f_T__hashCode__I("Set")
-}
-$c_s_util_hashing_MurmurHash3$.prototype = new $h_s_util_hashing_MurmurHash3();
-$c_s_util_hashing_MurmurHash3$.prototype.constructor = $c_s_util_hashing_MurmurHash3$;
-/** @constructor */
-function $h_s_util_hashing_MurmurHash3$() {
-  /*<skip>*/
-}
-$h_s_util_hashing_MurmurHash3$.prototype = $c_s_util_hashing_MurmurHash3$.prototype;
-var $d_s_util_hashing_MurmurHash3$ = new $TypeData().initClass({
-  s_util_hashing_MurmurHash3$: 0
-}, false, "scala.util.hashing.MurmurHash3$", {
-  s_util_hashing_MurmurHash3$: 1,
-  s_util_hashing_MurmurHash3: 1,
-  O: 1
-});
-$c_s_util_hashing_MurmurHash3$.prototype.$classData = $d_s_util_hashing_MurmurHash3$;
-var $n_s_util_hashing_MurmurHash3$ = (void 0);
-function $m_s_util_hashing_MurmurHash3$() {
-  if ((!$n_s_util_hashing_MurmurHash3$)) {
-    $n_s_util_hashing_MurmurHash3$ = new $c_s_util_hashing_MurmurHash3$()
-  };
-  return $n_s_util_hashing_MurmurHash3$
 }
 function $f_sr_BoxedUnit__toString__T($thiz) {
   return "undefined"
@@ -2194,9 +2055,6 @@ function $f_jl_Double__hashCode__I($thiz) {
   var value = (+$thiz);
   return $m_jl_FloatingPointBits$().numberHashCode__D__I(value)
 }
-function $isArrayOf_jl_Double(obj, depth) {
-  return (!(!(((obj && obj.$classData) && (obj.$classData.arrayDepth === depth)) && obj.$classData.arrayBase.ancestors.jl_Double)))
-}
 var $d_jl_Double = new $TypeData().initClass({
   jl_Double: 0
 }, false, "java.lang.Double", {
@@ -2496,32 +2354,6 @@ var $d_jl_ArithmeticException = new $TypeData().initClass({
 });
 $c_jl_ArithmeticException.prototype.$classData = $d_jl_ArithmeticException;
 /** @constructor */
-function $c_jl_IndexOutOfBoundsException(s) {
-  this.s$1 = null;
-  this.e$1 = null;
-  this.stackTraceStateInternal$1 = null;
-  this.stackTrace$1 = null;
-  $c_jl_Throwable.prototype.init___T__jl_Throwable.call(this, s, null)
-}
-$c_jl_IndexOutOfBoundsException.prototype = new $h_jl_RuntimeException();
-$c_jl_IndexOutOfBoundsException.prototype.constructor = $c_jl_IndexOutOfBoundsException;
-/** @constructor */
-function $h_jl_IndexOutOfBoundsException() {
-  /*<skip>*/
-}
-$h_jl_IndexOutOfBoundsException.prototype = $c_jl_IndexOutOfBoundsException.prototype;
-var $d_jl_IndexOutOfBoundsException = new $TypeData().initClass({
-  jl_IndexOutOfBoundsException: 0
-}, false, "java.lang.IndexOutOfBoundsException", {
-  jl_IndexOutOfBoundsException: 1,
-  jl_RuntimeException: 1,
-  jl_Exception: 1,
-  jl_Throwable: 1,
-  O: 1,
-  Ljava_io_Serializable: 1
-});
-$c_jl_IndexOutOfBoundsException.prototype.$classData = $d_jl_IndexOutOfBoundsException;
-/** @constructor */
 function $c_sjs_js_JavaScriptException(exception) {
   this.s$1 = null;
   this.e$1 = null;
@@ -2538,36 +2370,11 @@ function $h_sjs_js_JavaScriptException() {
   /*<skip>*/
 }
 $h_sjs_js_JavaScriptException.prototype = $c_sjs_js_JavaScriptException.prototype;
-$c_sjs_js_JavaScriptException.prototype.productPrefix__T = (function() {
-  return "JavaScriptException"
-});
-$c_sjs_js_JavaScriptException.prototype.productArity__I = (function() {
-  return 1
-});
 $c_sjs_js_JavaScriptException.prototype.fillInStackTrace__jl_Throwable = (function() {
-  this.setStackTraceStateInternal__O__(this.exception$4);
   return this
 });
-$c_sjs_js_JavaScriptException.prototype.productElement__I__O = (function(x$1) {
-  switch (x$1) {
-    case 0: {
-      return this.exception$4;
-      break
-    }
-    default: {
-      throw new $c_jl_IndexOutOfBoundsException(("" + x$1))
-    }
-  }
-});
-$c_sjs_js_JavaScriptException.prototype.getMessage__T = (function() {
-  return $dp_toString__T(this.exception$4)
-});
 $c_sjs_js_JavaScriptException.prototype.hashCode__I = (function() {
-  var this$2 = $m_s_util_hashing_MurmurHash3$();
-  return this$2.productHash__s_Product__I__I(this, (-889275714))
-});
-$c_sjs_js_JavaScriptException.prototype.setStackTraceStateInternal__O__ = (function(e) {
-  this.stackTraceStateInternal$1 = e
+  return 1973
 });
 function $is_sjs_js_JavaScriptException(obj) {
   return (!(!((obj && obj.$classData) && obj.$classData.ancestors.sjs_js_JavaScriptException)))
