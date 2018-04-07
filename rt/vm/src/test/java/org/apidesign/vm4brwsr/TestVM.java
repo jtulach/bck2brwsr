@@ -250,7 +250,7 @@ public final class TestVM {
     }
 
     private static void defineAtoB(ScriptEngine js) throws ScriptException {
-        js.eval("atob = function(s) { return new String(org.apidesign.vm4brwsr.ResourcesTest.parseBase64Binary(s)); }");
+        js.eval("atob = function(s) { return new String(Packages.org.apidesign.vm4brwsr.ResourcesTest.parseBase64Binary(s)); }");
     }
 
     Object loadClass(String loadClass, String name) throws ScriptException, NoSuchMethodException {
