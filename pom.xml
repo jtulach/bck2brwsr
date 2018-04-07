@@ -78,9 +78,9 @@
       <plugins>
          <plugin>
               <inherited>false</inherited>
-              <groupId>com.mycila.maven-license-plugin</groupId>
-              <artifactId>maven-license-plugin</artifactId>
-              <version>1.9.0</version>
+              <groupId>com.mycila</groupId>
+              <artifactId>license-maven-plugin</artifactId>
+              <version>3.0</version>
               <executions>
                   <execution>
                       <id>blah</id>
@@ -106,7 +106,13 @@
                        <exclude>rt/aot-junit/**</exclude>
                        <exclude>javaquery/api/src/main/resources/org/apidesign/bck2brwsr/htmlpage/knockout*.js</exclude>
                        <exclude>ko/archetype/src/main/resources/archetype-resources/**</exclude>
+                       <include>**/.scala</include>
+                       <include>**/.kt</include>
                   </excludes>
+                  <mapping>
+                      <sbt>JAVADOC_STYLE</sbt>
+                  </mapping>
+                  <failIfUnknown>true</failIfUnknown>
               </configuration>
           </plugin>
            <plugin>
