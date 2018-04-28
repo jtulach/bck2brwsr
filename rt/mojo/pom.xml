@@ -31,6 +31,12 @@
   <packaging>maven-plugin</packaging>
   <name>Bck2Brwsr Maven Plugin</name>
   <url>http://bck2brwsr.apidesign.org/</url>
+  <repositories>
+      <repository>
+          <id>gradle</id>
+          <url>https://repo.gradle.org/gradle/libs-releases-local/</url>
+      </repository>
+  </repositories>
       <build>
         <plugins>
             <plugin>
@@ -122,6 +128,19 @@
         <artifactId>aot</artifactId>
       <version>${project.version}</version>
       <type>jar</type>
+    </dependency>
+    <!-- gradle plugin -->
+    <dependency>
+        <groupId>org.gradle</groupId>
+        <artifactId>gradle-core</artifactId>
+        <version>3.0</version>
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy</artifactId>
+        <version>1.8.3</version>
+        <scope>provided</scope>
     </dependency>
 </dependencies>
 </project>
