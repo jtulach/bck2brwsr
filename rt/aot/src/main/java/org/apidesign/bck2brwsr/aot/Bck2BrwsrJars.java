@@ -188,6 +188,9 @@ public final class Bck2BrwsrJars {
             }
             int last = n.lastIndexOf('/');
             String pkg = n.substring(0, last + 1);
+            if (pkg.isEmpty()) {
+                pkg = "/";
+            }
             packages.add(pkg);
             if (pkg.startsWith("java/") && keep != null) {
                 keep.add(pkg);

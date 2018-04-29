@@ -73,7 +73,7 @@ final class ExportedSymbols {
 
     private boolean isMarkedAsExportedPackage(String pkgName) {
         if (pkgName == null) {
-            return false;
+            pkgName = "";
         }
         if (pkgName.startsWith("java/")) {
             return true;

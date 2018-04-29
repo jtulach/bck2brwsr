@@ -68,6 +68,25 @@
                     <target>1.7</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.fortasoft</groupId>
+                <artifactId>gradle-maven-plugin</artifactId>
+                <version>1.0.8</version>
+                <configuration>
+                    <tasks>
+                        <task>bck2brwsrAot</task>
+                    </tasks>
+                    <gradleProjectDirectory>src/test/resources/org/apidesign/bck2brwsr/mojo/gradle1</gradleProjectDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>invoke</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
       </build>
       

@@ -108,6 +108,8 @@
                        <exclude>ko/archetype/src/main/resources/archetype-resources/**</exclude>
                        <include>**/.scala</include>
                        <include>**/.kt</include>
+                       <include>**/.gradle/**</include>
+                       <include>**/gradle*/build/**</include>
                   </excludes>
                   <mapping>
                       <sbt>JAVADOC_STYLE</sbt>

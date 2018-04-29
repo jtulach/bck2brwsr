@@ -185,7 +185,7 @@ abstract class AheadOfTimeBase<Art> {
                 arr.add(file(a).toURI().toURL());
             }
         }
-        return new URLClassLoader(arr.toArray(new URL[0]), Java2JavaScript.class.getClassLoader());
+        return new URLClassLoader(arr.toArray(new URL[0]), AheadOfTimeBase.class.getClassLoader());
     }
 
     private RuntimeException raise(String msg, Throwable cause) throws RuntimeException {

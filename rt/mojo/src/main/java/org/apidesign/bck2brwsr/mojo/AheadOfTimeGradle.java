@@ -20,7 +20,6 @@ package org.apidesign.bck2brwsr.mojo;
 
 import java.util.Set;
 import org.gradle.api.Action;
-import org.gradle.api.DefaultTask;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
@@ -29,7 +28,7 @@ public final class AheadOfTimeGradle implements Plugin<Project> {
 
     @Override
     public void apply(final Project p) {
-        final AheadOfTimeTask process = p.getTasks().create("aot-js", AheadOfTimeTask.class, new Action<AheadOfTimeTask>() {
+        final AheadOfTimeTask aot = p.getTasks().create("bck2brwsrAot", AheadOfTimeTask.class, new Action<AheadOfTimeTask>() {
             @Override
             public void execute(AheadOfTimeTask process) {
             }
@@ -40,20 +39,14 @@ public final class AheadOfTimeGradle implements Plugin<Project> {
                 Set<? extends Task> tasks = (Set<? extends Task>) p.property("tasks");
                 for (Task task : tasks) {
                     if (task.getName().startsWith("jar")) {
-                        process.dependsOn(task);
-                    }
-                    if (
-                            task.getName().equals("assemble")
-                    ) {
-                        if (task instanceof DefaultTask) {
-                            ((DefaultTask)task).dependsOn(process);
-                        }
+                        aot.dependsOn(task);
+                        aot.registerJarTask(task);
                     }
                 }
-                process.doLast(new Action<Task>() {
+                aot.doLast(new Action<Task>() {
                     @Override
                     public void execute(Task t) {
-                        process.generate(p);
+                        aot.generate(p);
                     }
                 });
             }
