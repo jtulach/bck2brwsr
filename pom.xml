@@ -111,6 +111,7 @@
                   </excludes>
                   <mapping>
                       <sbt>JAVADOC_STYLE</sbt>
+                      <gradle>JAVADOC_STYLE</gradle>
                   </mapping>
                   <failIfUnknown>true</failIfUnknown>
               </configuration>
