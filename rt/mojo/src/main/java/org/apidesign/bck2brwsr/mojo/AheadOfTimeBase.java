@@ -49,7 +49,7 @@ abstract class AheadOfTimeBase<Art> {
     protected abstract boolean generateAotLibraries();
     protected abstract File mainJar();
     protected abstract File vm();
-    protected abstract Collection<Art> artifacts();
+    protected abstract Iterable<Art> artifacts();
     protected abstract void logInfo(String msg);
     protected abstract Exception failure(String msg, Throwable cause);
 
@@ -62,16 +62,18 @@ abstract class AheadOfTimeBase<Art> {
 
     protected final void work() {
         URLClassLoader loader;
+        final Iterable<Art> artifacts = artifacts();
         try {
-            loader = buildClassLoader(mainJar(), artifacts());
+            loader = buildClassLoader(mainJar(), artifacts);
         } catch (MalformedURLException ex) {
             throw raise("Can't initialize classloader", ex);
         }
-        for (Art a : artifacts()) {
-            if (file(a) == null) {
+        for (Art a : artifacts) {
+            final File aFile = file(a);
+            if (aFile == null) {
                 continue;
             }
-            String n = file(a).getName();
+            String n = aFile.getName();
             if (!n.endsWith(".jar")) {
                 continue;
             }
@@ -81,14 +83,14 @@ abstract class AheadOfTimeBase<Art> {
             File aot = new File(mainJavaScript().getParent(), classPathPrefix());
             aot.mkdirs();
             File js = new File(aot, n.substring(0, n.length() - 4) + ".js");
-            if (js.lastModified() > file(a).lastModified()) {
+            if (js.lastModified() > aFile.lastModified()) {
                 logInfo("Skipping " + js + " as it already exists.");
                 continue;
             }
             try {
                 aotLibrary(a, js , loader);
             } catch (IOException ex) {
-                throw raise("Can't compile " + file(a), ex);
+                throw raise("Can't compile " + aFile, ex);
             }
         }
 
@@ -175,7 +177,7 @@ abstract class AheadOfTimeBase<Art> {
                     generate(w);
         }
     }
-    private URLClassLoader buildClassLoader(File root, Collection<Art> deps) throws MalformedURLException {
+    private URLClassLoader buildClassLoader(File root, Iterable<Art> deps) throws MalformedURLException {
         List<URL> arr = new ArrayList<>();
         if (root != null) {
             arr.add(root.toURI().toURL());
