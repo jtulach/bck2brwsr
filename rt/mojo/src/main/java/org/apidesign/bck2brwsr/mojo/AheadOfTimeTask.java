@@ -19,26 +19,81 @@ package org.apidesign.bck2brwsr.mojo;
 
 import java.io.File;
 import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Set;
 import org.apidesign.vm4brwsr.ObfuscationLevel;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.Dependency;
+import org.gradle.api.artifacts.DependencyArtifact;
+import org.gradle.api.artifacts.ModuleDependency;
 
 public class AheadOfTimeTask extends DefaultTask {
     private Task jarTask;
+
+    public AheadOfTimeTask() {
+    }
 
     void registerJarTask(Task task) {
         assert this.jarTask == null;
         this.jarTask = task;
     }
 
+    Iterable<File> mainClassPath(Project p) {
+        final Set<?> allSourceSets = (Set<?>) p.property("sourceSets");
+        if (allSourceSets == null) {
+            throw new GradleException("Cannot find sourceSets for project " + p);
+        }
+        for (Object sourceSet : allSourceSets) {
+            final String name = invoke(String.class, sourceSet, "getName");
+            if ("main".equals(name)) { // NOI18N
+                Iterable<File> cp = invoke(Iterable.class, sourceSet, "getCompileClasspath");
+                return cp;
+            }
+        }
+        throw new GradleException("Cannot find main sourceSet for project " + p);
+    }
+
+    void dump(Project p) {
+        System.err.println("this: " + this);
+
+        final Set<?> allSourceSets = (Set<?>) p.property("sourceSets");
+        if (allSourceSets == null) {
+            throw new GradleException("Cannot find sourceSets for project " + p);
+        }
+        for (Object sourceSet : allSourceSets) {
+            final String name = invoke(String.class, sourceSet, "getName");
+            System.err.println("set: " + name);
+            Iterable cp = invoke(Iterable.class, sourceSet, "getCompileClasspath");
+            for (Object elem : cp) {
+                final File pathElement = (File) elem;
+                //process.addClasspathEntry(pathElement);
+                System.err.println("  addClasspathEntry: " + pathElement);
+            }
+            Configuration conf = p.getConfigurations().getByName(invoke(String.class, sourceSet, "getCompileConfigurationName"));
+            for (Dependency d : conf.getAllDependencies()) {
+                System.err.println("  dep: " + d.getGroup() + " name: " + d.getName() + " @ " + d.getVersion());
+                if (d instanceof ModuleDependency) {
+                    System.err.println("     trans: " + ((ModuleDependency) d).isTransitive());
+                }
+                Set<?> artifacts = invoke(Set.class, d, "getArtifacts");
+                for (Object ao : artifacts) {
+                    DependencyArtifact da = (DependencyArtifact) ao;
+                    System.err.println("    a: " + da.getName() + " u: " + da.getUrl());
+                }
+            }
+            Iterable<?> outs = invoke(Iterable.class, sourceSet, "getOutput");
+            for (Object classes : outs) {
+                //process.addRoot((File) classes);
+                System.err.println("  addRoot: " + classes);
+            }
+        }
+    }
 
     void generate(final Project p) {
-        class Work extends AheadOfTimeBase<Object> {
+        class Work extends AheadOfTimeBase<File> {
             @Override
             protected File vm() {
                 return new File(p.getBuildDir(), "bck2brwsr.js");
@@ -80,8 +135,8 @@ public class AheadOfTimeTask extends DefaultTask {
             }
 
             @Override
-            protected Collection<Object> artifacts() {
-                return Collections.emptyList();
+            protected Iterable<File> artifacts() {
+                return mainClassPath(p);
             }
 
             @Override
@@ -99,53 +154,35 @@ public class AheadOfTimeTask extends DefaultTask {
             }
 
             @Override
-            protected File file(Object a) {
-                throw new UnsupportedOperationException();
+            protected File file(File a) {
+                return a;
             }
 
             @Override
-            protected String scope(Object a) {
-                throw new UnsupportedOperationException();
+            protected String scope(File a) {
+                return "compile";
             }
 
             @Override
-            protected String classifier(Object a) {
-                throw new UnsupportedOperationException();
+            protected String classifier(File a) {
+                return "unknown";
             }
 
             @Override
-            protected String artifactId(Object a) {
-                throw new UnsupportedOperationException();
+            protected String artifactId(File a) {
+                return "unknown";
             }
 
             @Override
-            protected String groupId(Object a) {
-                throw new UnsupportedOperationException();
+            protected String groupId(File a) {
+                return "unknown";
             }
 
             @Override
-            protected String version(Object a) {
-                throw new UnsupportedOperationException();
+            protected String version(File a) {
+                return "unknown";
             }
 
-        }
-
-        final Set<?> allSourceSets = (Set<?>) p.property("sourceSets");
-        if (allSourceSets == null) {
-            throw new GradleException("Cannot find sourceSets for project " + p);
-        }
-        for (Object sourceSet : allSourceSets) {
-            Iterable cp = invoke(Iterable.class, sourceSet, "getRuntimeClasspath");
-            for (Object elem : cp) {
-                final File pathElement = (File) elem;
-                //process.addClasspathEntry(pathElement);
-                System.err.println("addClasspathEntry: " + pathElement);
-            }
-            Iterable<?> outs = invoke(Iterable.class, sourceSet, "getOutput");
-            for (Object classes : outs) {
-                //process.addRoot((File) classes);
-                System.err.println("addRoot: " + classes);
-            }
         }
 
         try {
