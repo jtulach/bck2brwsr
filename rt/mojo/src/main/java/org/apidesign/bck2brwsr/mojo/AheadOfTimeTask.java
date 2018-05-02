@@ -94,19 +94,23 @@ public class AheadOfTimeTask extends DefaultTask {
 
     void generate(final Project p) {
         class Work extends AheadOfTimeBase<File> {
+            private File webDir() {
+                return new File(p.getBuildDir(), "web");
+            }
+
             @Override
             protected File vm() {
-                return new File(p.getBuildDir(), "bck2brwsr.js");
+                return new File(webDir(), "bck2brwsr.js");
             }
 
             @Override
             protected File mainJavaScript() {
-                return new File(p.getBuildDir(), "test.js");
+                return new File(webDir(), "main.js");
             }
 
             @Override
             protected String classPathPrefix() {
-                return "";
+                return "lib";
             }
 
             @Override
