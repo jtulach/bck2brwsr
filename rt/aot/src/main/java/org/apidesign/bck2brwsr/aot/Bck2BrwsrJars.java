@@ -157,7 +157,7 @@ public final class Bck2BrwsrJars {
         final Manifest manifest = jf.getManifest();
         final Attributes mainAttributes = manifest == null ? null : manifest.getMainAttributes();
         String cp = mainAttributes == null ? null : mainAttributes.getValue("Class-Path"); // NOI18N
-        String[] parts = cp == null ? new String[0] : cp.split(" ");
+        String[] parts = cp == null ? null : cp.split(" ");
 
         if (c == null) {
             c = Bck2Brwsr.newCompiler();

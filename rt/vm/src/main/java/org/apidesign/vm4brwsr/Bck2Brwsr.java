@@ -263,16 +263,17 @@ public final class Bck2Brwsr {
      * The runtime system then prefers seek for ".js" suffix of the library
      * and only then seeks for the classical ".jar" path.
      * 
-     * @param classpath the array of JARs that are referenced by this library -
-     *   by default gets turned into 
+     * @param classpath the array of JARs that are referenced by this library,
+     *   one can specify {@code library((String[])null)} to turn the library
+     *   mode on, but keep the list of libraries unchanged
      * @return new instance of the compiler with library flag changed
      * @since 0.9
      */
     public Bck2Brwsr library(String... classpath) {
+        final StringArray newCP = classpath == null ? this.classpath : StringArray.asList(classpath);
         return new Bck2Brwsr(
             level, exported, classes, 
-            resources, res, true, 
-            StringArray.asList(classpath)
+            resources, res, true, newCP
         );
     }
     
