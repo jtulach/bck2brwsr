@@ -136,9 +136,11 @@ abstract class AheadOfTimeBase<Art> {
     }
 
     private void aotLibrary(Art a, File js, URLClassLoader loader) throws IOException {
+        List<String> libsCp = new ArrayList<>();
         for (Art b : artifacts()) {
+            final File file = file(b);
             if ("bck2brwsr".equals(classifier(b))) { // NOI18N
-                JarFile jf = new JarFile(file(b));
+                JarFile jf = new JarFile(file);
                 Manifest man = jf.getManifest();
                 for (Map.Entry<String, Attributes> entrySet : man.getEntries().entrySet()) {
                     String entryName = entrySet.getKey();
@@ -154,13 +156,15 @@ abstract class AheadOfTimeBase<Art> {
                             obfuscation() != ObfuscationLevel.FULL && "true".equals(attr.getValue("Bck2BrwsrDebug"))
                         )
                     ) {
-                        logInfo("Extracting " + js + " from " + file(b));
+                        logInfo("Extracting " + js + " from " + file);
                         try (InputStream is = jf.getInputStream(new ZipEntry(entryName))) {
                             Files.copy(is, js.toPath(), StandardCopyOption.REPLACE_EXISTING);
                         }
                         return;
                     }
                 }
+            } else {
+                libsCp.add(classPathPrefix() + '/' + file.getName());
             }
         }
         if (!generateAotLibraries()) {
@@ -168,7 +172,8 @@ abstract class AheadOfTimeBase<Art> {
         }
         logInfo("Generating " + js);
         try (Writer w = new OutputStreamWriter(new FileOutputStream(js), "UTF-8")) {
-            Bck2Brwsr c = Bck2BrwsrJars.configureFrom(null, file(a), loader, ignoreBootClassPath());
+            Bck2Brwsr withLibsCp = Bck2Brwsr.newCompiler().library(libsCp.toArray(new String[0]));
+            Bck2Brwsr c = Bck2BrwsrJars.configureFrom(withLibsCp, file(a), loader, ignoreBootClassPath());
             if (exports() != null) {
                 c = c.addExported(exports());
             }
