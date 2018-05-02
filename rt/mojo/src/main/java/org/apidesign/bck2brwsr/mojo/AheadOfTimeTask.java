@@ -29,8 +29,12 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.DependencyArtifact;
 import org.gradle.api.artifacts.ModuleDependency;
+import org.gradle.api.artifacts.ResolveException;
+import org.gradle.api.artifacts.ResolvedArtifact;
+import org.gradle.api.artifacts.UnknownConfigurationException;
 
 public class AheadOfTimeTask extends DefaultTask {
+    private static final String RUNTIME_CONF_NAME = "runtime";
     private Task jarTask;
 
     public AheadOfTimeTask() {
@@ -41,19 +45,12 @@ public class AheadOfTimeTask extends DefaultTask {
         this.jarTask = task;
     }
 
-    Iterable<File> mainClassPath(Project p) {
-        final Set<?> allSourceSets = (Set<?>) p.property("sourceSets");
-        if (allSourceSets == null) {
-            throw new GradleException("Cannot find sourceSets for project " + p);
+    Iterable<ResolvedArtifact> mainClassPath(Project p) {
+        Configuration conf = p.getConfigurations().getByName(RUNTIME_CONF_NAME);
+        if (conf == null) {
+            throw new GradleException("Cannot find " + RUNTIME_CONF_NAME + " configuration for project " + p);
         }
-        for (Object sourceSet : allSourceSets) {
-            final String name = invoke(String.class, sourceSet, "getName");
-            if ("main".equals(name)) { // NOI18N
-                Iterable<File> cp = invoke(Iterable.class, sourceSet, "getCompileClasspath");
-                return cp;
-            }
-        }
-        throw new GradleException("Cannot find main sourceSet for project " + p);
+        return conf.getResolvedConfiguration().getResolvedArtifacts();
     }
 
     void dump(Project p) {
@@ -72,7 +69,10 @@ public class AheadOfTimeTask extends DefaultTask {
                 //process.addClasspathEntry(pathElement);
                 System.err.println("  addClasspathEntry: " + pathElement);
             }
-            Configuration conf = p.getConfigurations().getByName(invoke(String.class, sourceSet, "getCompileConfigurationName"));
+            final String runtimeName = invoke(String.class, sourceSet, "getRuntimeConfigurationName");
+            dumpConf(p, runtimeName);
+            final String compileName = invoke(String.class, sourceSet, "getCompileConfigurationName");
+            Configuration conf = dumpConf(p, compileName);
             for (Dependency d : conf.getAllDependencies()) {
                 System.err.println("  dep: " + d.getGroup() + " name: " + d.getName() + " @ " + d.getVersion());
                 if (d instanceof ModuleDependency) {
@@ -92,8 +92,19 @@ public class AheadOfTimeTask extends DefaultTask {
         }
     }
 
+    private Configuration dumpConf(Project p, final String compileName) throws UnknownConfigurationException, ResolveException {
+        Configuration conf = p.getConfigurations().getByName(compileName);
+        for (ResolvedArtifact a : conf.getResolvedConfiguration().getResolvedArtifacts()) {
+            System.err.println("       g: " + a.getModuleVersion().getId().getGroup());
+            System.err.println("       a: " + a.getModuleVersion().getId().getName());
+            System.err.println("       v: " + a.getModuleVersion().getId().getVersion());
+            System.err.println("       f: " + a.getFile());
+        }
+        return conf;
+    }
+
     void generate(final Project p) {
-        class Work extends AheadOfTimeBase<File> {
+        class Work extends AheadOfTimeBase<ResolvedArtifact> {
             private File webDir() {
                 return new File(p.getBuildDir(), "web");
             }
@@ -139,7 +150,7 @@ public class AheadOfTimeTask extends DefaultTask {
             }
 
             @Override
-            protected Iterable<File> artifacts() {
+            protected Iterable<ResolvedArtifact> artifacts() {
                 return mainClassPath(p);
             }
 
@@ -158,33 +169,33 @@ public class AheadOfTimeTask extends DefaultTask {
             }
 
             @Override
-            protected File file(File a) {
-                return a;
+            protected File file(ResolvedArtifact a) {
+                return a.getFile();
             }
 
             @Override
-            protected String scope(File a) {
-                return "compile";
+            protected String scope(ResolvedArtifact a) {
+                return "runtime";
             }
 
             @Override
-            protected String classifier(File a) {
-                return "unknown";
+            protected String classifier(ResolvedArtifact a) {
+                return a.getClassifier();
             }
 
             @Override
-            protected String artifactId(File a) {
-                return "unknown";
+            protected String artifactId(ResolvedArtifact a) {
+                return a.getName();
             }
 
             @Override
-            protected String groupId(File a) {
-                return "unknown";
+            protected String groupId(ResolvedArtifact a) {
+                return a.getModuleVersion().getId().getGroup();
             }
 
             @Override
-            protected String version(File a) {
-                return "unknown";
+            protected String version(ResolvedArtifact a) {
+                return a.getModuleVersion().getId().getVersion();
             }
 
         }
