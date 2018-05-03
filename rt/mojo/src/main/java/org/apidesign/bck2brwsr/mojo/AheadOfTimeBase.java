@@ -68,6 +68,7 @@ abstract class AheadOfTimeBase<Art> {
         } catch (MalformedURLException ex) {
             throw raise("Can't initialize classloader", ex);
         }
+        List<String> libsCp = new ArrayList<>();
         for (Art a : artifacts) {
             final File aFile = file(a);
             if (aFile == null) {
@@ -88,7 +89,7 @@ abstract class AheadOfTimeBase<Art> {
                 continue;
             }
             try {
-                aotLibrary(a, js , loader);
+                aotLibrary(a, artifacts, js, loader, libsCp);
             } catch (IOException ex) {
                 throw raise("Can't compile " + aFile, ex);
             }
@@ -99,7 +100,8 @@ abstract class AheadOfTimeBase<Art> {
                 logInfo("Skipping " + mainJavaScript() + " as it already exists.");
             } else {
                 logInfo("Generating " + mainJavaScript());
-                Bck2Brwsr c = Bck2BrwsrJars.configureFrom(null, mainJar(), loader, ignoreBootClassPath());
+                Bck2Brwsr withLibsCp = Bck2Brwsr.newCompiler().library(libsCp.toArray(new String[0]));
+                Bck2Brwsr c = Bck2BrwsrJars.configureFrom(withLibsCp, mainJar(), loader, ignoreBootClassPath());
                 if (exports() != null) {
                     for (String e : exports()) {
                         if (e != null) {
@@ -135,9 +137,8 @@ abstract class AheadOfTimeBase<Art> {
         }
     }
 
-    private void aotLibrary(Art a, File js, URLClassLoader loader) throws IOException {
-        List<String> libsCp = new ArrayList<>();
-        for (Art b : artifacts()) {
+    private void aotLibrary(Art a, Iterable<Art> allArtifacts, File js, URLClassLoader loader, List<String> libsCp) throws IOException {
+        for (Art b : allArtifacts) {
             final File file = file(b);
             if ("bck2brwsr".equals(classifier(b))) { // NOI18N
                 JarFile jf = new JarFile(file);
@@ -157,23 +158,22 @@ abstract class AheadOfTimeBase<Art> {
                         )
                     ) {
                         logInfo("Extracting " + js + " from " + file);
+                        libsCp.add(js.getParentFile().getName() + '/' + js.getName());
                         try (InputStream is = jf.getInputStream(new ZipEntry(entryName))) {
                             Files.copy(is, js.toPath(), StandardCopyOption.REPLACE_EXISTING);
                         }
                         return;
                     }
                 }
-            } else {
-                libsCp.add(classPathPrefix() + '/' + file.getName());
             }
         }
         if (!generateAotLibraries()) {
             throw raise("Not generating " + js + " and no precompiled version found!", null);
         }
         logInfo("Generating " + js);
+        libsCp.add(js.getParentFile().getName() + '/' + js.getName());
         try (Writer w = new OutputStreamWriter(new FileOutputStream(js), "UTF-8")) {
-            Bck2Brwsr withLibsCp = Bck2Brwsr.newCompiler().library(libsCp.toArray(new String[0]));
-            Bck2Brwsr c = Bck2BrwsrJars.configureFrom(withLibsCp, file(a), loader, ignoreBootClassPath());
+            Bck2Brwsr c = Bck2BrwsrJars.configureFrom(null, file(a), loader, ignoreBootClassPath());
             if (exports() != null) {
                 c = c.addExported(exports());
             }
