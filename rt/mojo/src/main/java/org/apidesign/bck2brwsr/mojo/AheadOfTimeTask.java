@@ -19,6 +19,7 @@ package org.apidesign.bck2brwsr.mojo;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import org.apidesign.vm4brwsr.ObfuscationLevel;
 import org.gradle.api.DefaultTask;
@@ -34,7 +35,7 @@ import org.gradle.api.artifacts.ResolvedArtifact;
 import org.gradle.api.artifacts.UnknownConfigurationException;
 
 public class AheadOfTimeTask extends DefaultTask {
-    private static final String RUNTIME_CONF_NAME = "runtime";
+    static final String CONF_NAME = "bck2brwsr";
     private Task jarTask;
 
     public AheadOfTimeTask() {
@@ -46,9 +47,9 @@ public class AheadOfTimeTask extends DefaultTask {
     }
 
     Iterable<ResolvedArtifact> mainClassPath(Project p) {
-        Configuration conf = p.getConfigurations().getByName(RUNTIME_CONF_NAME);
+        Configuration conf = p.getConfigurations().getByName(CONF_NAME);
         if (conf == null) {
-            throw new GradleException("Cannot find " + RUNTIME_CONF_NAME + " configuration for project " + p);
+            throw new GradleException("Cannot find " + CONF_NAME + " configuration for project " + p);
         }
         return conf.getResolvedConfiguration().getResolvedArtifacts();
     }

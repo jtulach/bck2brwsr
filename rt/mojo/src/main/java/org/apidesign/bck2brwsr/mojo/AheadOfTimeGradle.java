@@ -18,16 +18,31 @@
 
 package org.apidesign.bck2brwsr.mojo;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 import java.util.Set;
+import static org.apidesign.bck2brwsr.mojo.AheadOfTimeTask.CONF_NAME;
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.ConfigurationContainer;
 
 public final class AheadOfTimeGradle implements Plugin<Project> {
 
     @Override
     public void apply(final Project p) {
+        final ConfigurationContainer confs = p.getConfigurations();
+        if (confs.findByName(CONF_NAME) == null) {
+            Configuration bck2brwsr = confs.create(CONF_NAME);
+            Configuration runtime = confs.findByName("runtime");
+            if (runtime != null) {
+                bck2brwsr.extendsFrom(runtime);
+            }
+            p.getDependencies().add("bck2brwsr", "org.apidesign.bck2brwsr:emul:" + findOwnVersion() + ":rt");
+        }
         final AheadOfTimeTask aot = p.getTasks().create("bck2brwsrAot", AheadOfTimeTask.class, new Action<AheadOfTimeTask>() {
             @Override
             public void execute(AheadOfTimeTask process) {
@@ -51,5 +66,24 @@ public final class AheadOfTimeGradle implements Plugin<Project> {
                 });
             }
         });
+    }
+
+    String findOwnVersion() {
+        try (InputStream is = AheadOfTimeGradle.class.getResourceAsStream(
+            "/META-INF/maven/org.apidesign.bck2brwsr/bck2brwsr-maven-plugin/pom.properties")
+        ) {
+            if (is == null) {
+                return "1.0-SNAPSHOT";
+            }
+            Properties p = new Properties();
+            p.load(is);
+            String version = p.getProperty("version");
+            if (version == null) {
+                throw new IllegalStateException("Cannot find version");
+            }
+            return version;
+        } catch (IOException ex) {
+            throw new IllegalStateException("Cannot read version", ex);
+        }
     }
 }

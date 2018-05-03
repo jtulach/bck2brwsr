@@ -20,7 +20,7 @@ defaultTasks 'clean', 'build', 'bck2brwsrAot'
 
 buildscript {
     repositories {
-        mavenLocal()
+        mavenCentral()
     }
     dependencies {
         classpath "org.ow2.asm:asm:5.0"
@@ -39,6 +39,7 @@ apply plugin: 'bck2brwsr'
 
 repositories {
     mavenCentral()
+    mavenLocal()
 }
 
 dependencies {
