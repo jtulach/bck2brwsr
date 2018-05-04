@@ -77,6 +77,9 @@
                         <task>bck2brwsrAot</task>
                     </tasks>
                     <gradleProjectDirectory>src/test/resources/org/apidesign/bck2brwsr/mojo/gradle1</gradleProjectDirectory>
+                    <args>
+                        <arg>-PprjVersion=${project.version}</arg>
+                    </args>
                 </configuration>
                 <executions>
                     <execution>
