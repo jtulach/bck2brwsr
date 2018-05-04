@@ -41,8 +41,8 @@ public final class AheadOfTimeGradle implements Plugin<Project> {
             if (runtime != null) {
                 bck2brwsr.extendsFrom(runtime);
             }
-            p.getDependencies().add("bck2brwsr", "org.apidesign.bck2brwsr:emul:" + findOwnVersion() + ":rt");
         }
+        final Configuration bck2brwsr = confs.findByName(CONF_NAME);
         final AheadOfTimeTask aot = p.getTasks().create("bck2brwsrAot", AheadOfTimeTask.class, new Action<AheadOfTimeTask>() {
             @Override
             public void execute(AheadOfTimeTask process) {
@@ -51,6 +51,9 @@ public final class AheadOfTimeGradle implements Plugin<Project> {
         p.afterEvaluate(new Action<Project>() {
             @Override
             public void execute(final Project p) {
+                if (bck2brwsr.getDependencies().isEmpty()) {
+                    p.getDependencies().add("bck2brwsr", "org.apidesign.bck2brwsr:emul:" + findOwnVersion() + ":rt");
+                }
                 Set<? extends Task> tasks = (Set<? extends Task>) p.property("tasks");
                 for (Task task : tasks) {
                     if (task.getName().startsWith("jar")) {

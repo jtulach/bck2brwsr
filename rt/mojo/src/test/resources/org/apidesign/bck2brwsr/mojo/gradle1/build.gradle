@@ -44,5 +44,6 @@ repositories {
 
 dependencies {
     compile "org.netbeans.html:net.java.html.boot:1.5.1"
+    bck2brwsr "org.apidesign.bck2brwsr:emul.mini:1.0-SNAPSHOT"
 }
 

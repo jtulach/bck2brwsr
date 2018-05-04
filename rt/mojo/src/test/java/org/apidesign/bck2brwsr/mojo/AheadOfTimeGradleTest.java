@@ -18,6 +18,8 @@
 package org.apidesign.bck2brwsr.mojo;
 
 import java.io.InputStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import static org.testng.Assert.*;
 import org.testng.annotations.Test;
 
@@ -33,10 +35,10 @@ public class AheadOfTimeGradleTest {
         assertEquals(read, len, "Whole stream read");
         String text = new String(arr);
         assertClasspath(text, "lib/net.java.html.boot-1.5.1.js");
-        assertClasspath(text, "lib/emul-1.0-SNAPSHOT-rt.js");
+        assertClasspath(text, "lib/emul.mini-[0-9\\.\\-SNAPSHOT]*.js");
     }
 
-    private void assertClasspath(String text, String imprt) {
+    private void assertClasspath(String text, String importRegexp) {
         int cp = text.indexOf("classpath");
         assertTrue(cp > 0, "classpath found in\n" + text);
         int begin = text.indexOf("[", cp);
@@ -46,7 +48,9 @@ public class AheadOfTimeGradleTest {
 
         String section = text.substring(begin, end + 1);
 
-        assertNotEquals(section.indexOf(imprt), -1, "found " + imprt + " in\n" + section);
+        Pattern p = Pattern.compile(importRegexp);
+        Matcher m = p.matcher(section);
+        assertTrue(m.find(), "found " + importRegexp + " in\n" + section);
     }
 
 }
