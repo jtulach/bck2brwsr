@@ -79,6 +79,7 @@
                     <gradleProjectDirectory>src/test/resources/org/apidesign/bck2brwsr/mojo/gradle1</gradleProjectDirectory>
                     <args>
                         <arg>-PprjVersion=${project.version}</arg>
+                        <arg>-PnjhVersion=${net.java.html.version}</arg>
                     </args>
                 </configuration>
                 <executions>
@@ -151,6 +152,20 @@
       <version>${project.version}</version>
       <type>jar</type>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.netbeans.html</groupId>
+        <artifactId>net.java.html.boot</artifactId>
+        <version>${net.java.html.version}</version>
+        <type>jar</type>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm</artifactId>
+        <version>5.0</version>
+        <type>jar</type>
+        <scope>test</scope>
     </dependency>
     <!-- gradle plugin -->
     <dependency>

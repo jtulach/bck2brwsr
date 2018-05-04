@@ -20,7 +20,7 @@ defaultTasks 'clean', 'build', 'bck2brwsrAot'
 
 buildscript {
     repositories {
-        mavenCentral()
+        mavenLocal()
     }
     dependencies {
         classpath "org.ow2.asm:asm:5.0"
@@ -38,12 +38,11 @@ apply plugin: 'java'
 apply plugin: 'bck2brwsr'
 
 repositories {
-    mavenCentral()
     mavenLocal()
 }
 
 dependencies {
-    compile "org.netbeans.html:net.java.html.boot:1.5.1"
+    compile "org.netbeans.html:net.java.html.boot:${njhVersion}"
     bck2brwsr "org.apidesign.bck2brwsr:emul.mini:${prjVersion}"
 }
 
