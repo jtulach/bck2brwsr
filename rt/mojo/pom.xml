@@ -130,12 +130,6 @@
         <artifactId>launcher.http</artifactId>
         <version>${project.version}</version>
         <scope>runtime</scope>
-        <exclusions>
-            <exclusion>
-                <groupId>org.apidesign.bck2brwsr</groupId>
-                <artifactId>emul</artifactId>
-            </exclusion>
-        </exclusions>
     </dependency>
     <dependency>
         <groupId>${project.groupId}</groupId>
