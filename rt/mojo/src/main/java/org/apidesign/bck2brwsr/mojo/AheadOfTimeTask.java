@@ -20,6 +20,7 @@ package org.apidesign.bck2brwsr.mojo;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 import org.apidesign.vm4brwsr.ObfuscationLevel;
 import org.gradle.api.DefaultTask;
@@ -142,6 +143,14 @@ public class AheadOfTimeTask extends DefaultTask {
 
             @Override
             protected boolean generateAotLibraries() {
+                Map<String, ?> props = p.getProperties();
+                Object gen = props.get("bck2brwsrGenerateAotLibraries");
+                if (gen instanceof String) {
+                    return Boolean.valueOf((String)gen);
+                }
+                if (gen instanceof Boolean) {
+                    return (Boolean)gen;
+                }
                 return true;
             }
 

@@ -38,7 +38,10 @@ repositories {
     mavenLocal()
 }
 
+ext.bck2brwsrGenerateAotLibraries = false
+
 dependencies {
+    compileOnly "org.apidesign.bck2brwsr:ko-bck2brwsr:${prjVersion}:bck2brwsr"
     compile "org.netbeans.html:net.java.html.boot:${njhVersion}"
 }
 
