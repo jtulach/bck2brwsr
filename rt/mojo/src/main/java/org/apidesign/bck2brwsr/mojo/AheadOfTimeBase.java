@@ -80,6 +80,9 @@ abstract class AheadOfTimeBase<Art> {
             if ("provided".equals(scope(a))) {
                 continue;
             }
+            if ("bck2brwsr".equals(classifier(a))) {
+                continue;
+            }
             File aot = new File(mainJavaScript().getParent(), classPathPrefix());
             aot.mkdirs();
             File js = new File(aot, n.substring(0, n.length() - 4) + ".js");

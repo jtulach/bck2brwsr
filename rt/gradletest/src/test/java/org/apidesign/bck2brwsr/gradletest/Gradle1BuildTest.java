@@ -18,6 +18,8 @@
 package org.apidesign.bck2brwsr.gradletest;
 
 import java.io.InputStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import static org.testng.Assert.*;
 import org.testng.annotations.Test;
 
@@ -32,11 +34,11 @@ public class Gradle1BuildTest {
         int read = is.read(arr);
         assertEquals(read, len, "Whole stream read");
         String text = new String(arr);
-        assertClasspath(text, "lib/net.java.html.boot-1.5.1.js");
-        assertClasspath(text, "lib/emul-1.0-SNAPSHOT-rt.js");
+        assertClasspath(text, "lib/net.java.html.boot-[0-9\\.]*.js", 3);
+        assertClasspath(text, "lib/emul-[0-9\\.\\-SNAPSHOT]*-rt.js", 3);
     }
 
-    private void assertClasspath(String text, String imprt) {
+    private void assertClasspath(String text, String imprt, int expElements) {
         int cp = text.indexOf("classpath");
         assertTrue(cp > 0, "classpath found in\n" + text);
         int begin = text.indexOf("[", cp);
@@ -44,9 +46,20 @@ public class Gradle1BuildTest {
 
         assertTrue(end > begin, "end is after begin: " + end + " > " + begin + "\n" + text);
 
-        String section = text.substring(begin, end + 1);
+        String section = text.substring(begin + 1, end);
 
-        assertNotEquals(section.indexOf(imprt), -1, "found " + imprt + " in\n" + section);
+        String[] elements = section.split(",");
+        assertEquals(elements.length, expElements, "Expecting " + expElements + " classpath elements in\n" + section);
+
+        for (String e : elements) {
+            e = e.replace('"', ' ').trim();
+            Pattern p = Pattern.compile(imprt);
+            Matcher m = p.matcher(e);
+            if (m.matches()) {
+                return;
+            }
+        }
+        fail("Not found " + imprt + " in\n" + section);
     }
 
 }

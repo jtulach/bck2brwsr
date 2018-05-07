@@ -53,6 +53,7 @@ public final class AheadOfTimeGradle implements Plugin<Project> {
             public void execute(final Project p) {
                 if (bck2brwsr.getDependencies().isEmpty()) {
                     p.getDependencies().add("bck2brwsr", "org.apidesign.bck2brwsr:emul:" + findOwnVersion() + ":rt");
+                    p.getDependencies().add("bck2brwsr", "org.apidesign.bck2brwsr:emul:" + findOwnVersion() + ":bck2brwsr");
                 }
                 Set<? extends Task> tasks = (Set<? extends Task>) p.property("tasks");
                 for (Task task : tasks) {

@@ -36,7 +36,7 @@ public class AheadOfTimeGradleTest {
         int read = is.read(arr);
         assertEquals(read, len, "Whole stream read");
         String text = new String(arr);
-        assertClasspath(text, "lib/net.java.html.boot-1.5.1.js", u);
+        assertClasspath(text, "lib/net.java.html.boot-[0-9\\.]*.js", u);
         assertClasspath(text, "lib/emul.mini-[0-9\\.\\-SNAPSHOT]*.js", u);
     }
 
