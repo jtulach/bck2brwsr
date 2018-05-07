@@ -62,6 +62,7 @@
                 <version>1.0.8</version>
                 <configuration>
                     <tasks>
+                        <task>clean</task>
                         <task>bck2brwsrAot</task>
                     </tasks>
                     <gradleProjectDirectory>src/test/resources/org/apidesign/bck2brwsr/gradletest/gradle1</gradleProjectDirectory>
