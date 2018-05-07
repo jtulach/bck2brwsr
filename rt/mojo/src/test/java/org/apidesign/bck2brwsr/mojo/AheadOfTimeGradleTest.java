@@ -18,6 +18,7 @@
 package org.apidesign.bck2brwsr.mojo;
 
 import java.io.InputStream;
+import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import static org.testng.Assert.*;
@@ -27,20 +28,21 @@ public class AheadOfTimeGradleTest {
 
     @Test
     public void verifyMainJS() throws Exception {
-        InputStream is = AheadOfTimeGradleTest.class.getResourceAsStream("gradle1/build/web/main.js");
-        assertNotNull(is, "main.js has been generated");
+        URL u = AheadOfTimeGradleTest.class.getResource("gradle1/build/web/main.js");
+        assertNotNull(u, "main.js has been generated");
+        InputStream is = u.openStream();
         int len = is.available();
         byte[] arr = new byte[len];
         int read = is.read(arr);
         assertEquals(read, len, "Whole stream read");
         String text = new String(arr);
-        assertClasspath(text, "lib/net.java.html.boot-1.5.1.js");
-        assertClasspath(text, "lib/emul.mini-[0-9\\.\\-SNAPSHOT]*.js");
+        assertClasspath(text, "lib/net.java.html.boot-1.5.1.js", u);
+        assertClasspath(text, "lib/emul.mini-[0-9\\.\\-SNAPSHOT]*.js", u);
     }
 
-    private void assertClasspath(String text, String importRegexp) {
+    private void assertClasspath(String text, String importRegexp, URL u) {
         int cp = text.indexOf("classpath");
-        assertTrue(cp > 0, "classpath found in\n" + text);
+        assertTrue(cp > 0, "classpath found in " + u + "\n" + text);
         int begin = text.indexOf("[", cp);
         int end = text.indexOf("]", cp);
 
@@ -50,7 +52,7 @@ public class AheadOfTimeGradleTest {
 
         Pattern p = Pattern.compile(importRegexp);
         Matcher m = p.matcher(section);
-        assertTrue(m.find(), "found " + importRegexp + " in\n" + section);
+        assertTrue(m.find(), "found " + importRegexp + " in " + u + "\n" + section);
     }
 
 }
