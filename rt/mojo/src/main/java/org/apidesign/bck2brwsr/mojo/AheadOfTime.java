@@ -145,8 +145,11 @@ public class AheadOfTime extends AbstractMojo {
             }
 
             @Override
-            protected String scope(Artifact a) {
-                return a.getScope();
+            protected Scope scope(Artifact a) {
+                if ("provided".equals(a.getScope())) {
+                    return Scope.PROVIDED;
+                }
+                return Scope.RUNTIME;
             }
 
             @Override

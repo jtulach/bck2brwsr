@@ -19,7 +19,11 @@ package org.apidesign.bck2brwsr.mojo;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apidesign.vm4brwsr.ObfuscationLevel;
@@ -47,10 +51,13 @@ public class AheadOfTimeTask extends DefaultTask {
         this.jarTask = task;
     }
 
-    Iterable<ResolvedArtifact> mainClassPath(Project p) {
-        Configuration conf = p.getConfigurations().getByName(CONF_NAME);
+    private static Collection<ResolvedArtifact> mainClassPath(Project p, String confName, boolean fail) {
+        Configuration conf = p.getConfigurations().getByName(confName);
         if (conf == null) {
-            throw new GradleException("Cannot find " + CONF_NAME + " configuration for project " + p);
+            if (fail) {
+                throw new GradleException("Cannot find " + confName + " configuration for project " + p);
+            }
+            return Collections.emptyList();
         }
         return conf.getResolvedConfiguration().getResolvedArtifacts();
     }
@@ -107,6 +114,9 @@ public class AheadOfTimeTask extends DefaultTask {
 
     void generate(final Project p) {
         class Work extends AheadOfTimeBase<ResolvedArtifact> {
+            private Collection<ResolvedArtifact> bck2brwsr;
+            private Collection<ResolvedArtifact> compileOnly;
+
             private File webDir() {
                 return new File(p.getBuildDir(), "web");
             }
@@ -161,7 +171,16 @@ public class AheadOfTimeTask extends DefaultTask {
 
             @Override
             protected Iterable<ResolvedArtifact> artifacts() {
-                return mainClassPath(p);
+                Set<ResolvedArtifact> all = new LinkedHashSet<>();
+                if (bck2brwsr == null) {
+                    bck2brwsr = mainClassPath(p, CONF_NAME, true);
+                }
+                all.addAll(bck2brwsr);
+                if (compileOnly == null) {
+                    compileOnly = mainClassPath(p, "compileOnly", false);
+                }
+                all.addAll(compileOnly);
+                return all;
             }
 
             @Override
@@ -184,8 +203,11 @@ public class AheadOfTimeTask extends DefaultTask {
             }
 
             @Override
-            protected String scope(ResolvedArtifact a) {
-                return "runtime";
+            protected Scope scope(ResolvedArtifact a) {
+                if (bck2brwsr != null && bck2brwsr.contains(a)) {
+                    return Scope.RUNTIME;
+                }
+                return Scope.PROVIDED;
             }
 
             @Override

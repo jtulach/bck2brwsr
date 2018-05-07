@@ -53,7 +53,7 @@ abstract class AheadOfTimeBase<Art> {
     protected abstract Exception failure(String msg, Throwable cause);
 
     protected abstract File file(Art a);
-    protected abstract String scope(Art a);
+    protected abstract Scope scope(Art a);
     protected abstract String classifier(Art a);
     protected abstract String artifactId(Art a);
     protected abstract String groupId(Art a);
@@ -77,7 +77,7 @@ abstract class AheadOfTimeBase<Art> {
             if (!n.endsWith(".jar")) {
                 continue;
             }
-            if ("provided".equals(scope(a))) {
+            if (Scope.PROVIDED == scope(a)) {
                 continue;
             }
             if ("bck2brwsr".equals(classifier(a))) {
@@ -203,5 +203,9 @@ abstract class AheadOfTimeBase<Art> {
 
     private static <E extends Exception> E raise(Class<E> type, Throwable ex) throws E {
         throw (E)ex;
+    }
+
+    enum Scope {
+        PROVIDED, RUNTIME;
     }
 }
