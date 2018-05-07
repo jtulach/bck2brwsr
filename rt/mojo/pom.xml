@@ -79,6 +79,7 @@
                     </tasks>
                     <gradleProjectDirectory>src/test/resources/org/apidesign/bck2brwsr/mojo/gradle1</gradleProjectDirectory>
                     <args>
+                        <arg>--refresh-dependencies</arg>
                         <arg>-PprjVersion=${project.version}</arg>
                         <arg>-PnjhVersion=${net.java.html.version}</arg>
                     </args>
