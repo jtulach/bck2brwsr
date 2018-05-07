@@ -24,6 +24,7 @@ import java.util.Properties;
 import java.util.Set;
 import static org.apidesign.bck2brwsr.mojo.AheadOfTimeTask.CONF_NAME;
 import org.gradle.api.Action;
+import org.gradle.api.GradleScriptException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
@@ -48,6 +49,12 @@ public final class AheadOfTimeGradle implements Plugin<Project> {
             public void execute(AheadOfTimeTask process) {
             }
         });
+        final ShowTask show = p.getTasks().create("bck2brwsrShow", ShowTask.class, new Action<ShowTask>() {
+            @Override
+            public void execute(ShowTask process) {
+            }
+        });
+        show.dependsOn(aot);
         p.afterEvaluate(new Action<Project>() {
             @Override
             public void execute(final Project p) {
@@ -66,6 +73,16 @@ public final class AheadOfTimeGradle implements Plugin<Project> {
                     @Override
                     public void execute(Task t) {
                         aot.generate(p);
+                    }
+                });
+                show.doLast(new Action<Task>() {
+                    @Override
+                    public void execute(Task t) {
+                        try {
+                            show.show(p);
+                        } catch (IOException ex) {
+                            throw new GradleScriptException(ex.getMessage(), ex);
+                        }
                     }
                 });
             }

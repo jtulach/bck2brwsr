@@ -39,6 +39,7 @@ repositories {
 }
 
 ext.bck2brwsrGenerateAotLibraries = false
+ext.mainClassName = 'Gradle1Check'
 
 dependencies {
     compileOnly "org.apidesign.bck2brwsr:ko-bck2brwsr:${prjVersion}:bck2brwsr"

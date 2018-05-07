@@ -30,4 +30,16 @@ public class Gradle1Check implements Callable<Integer> {
     private static int compute() {
         return -1;
     }
+
+    public static void main(String... args) throws Exception {
+        Gradle1Check g = new Gradle1Check();
+        Integer value = g.call();
+        System.err.println("Gradle1Check value: " + value);
+        if (value == 42) {
+            System.exit(0);
+        } else {
+            System.err.println("Wrong value. Expecting 42.");
+            System.exit(1);
+        }
+    }
 }
