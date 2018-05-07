@@ -157,7 +157,7 @@ public class AheadOfTimeTask extends DefaultTask {
 
             @Override
             protected void logInfo(String msg) {
-                p.getLogger().info(msg);
+                p.getLogger().lifecycle(msg);
             }
 
             @Override
