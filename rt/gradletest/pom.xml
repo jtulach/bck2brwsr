@@ -63,7 +63,7 @@
                 <configuration>
                     <tasks>
                         <task>clean</task>
-                        <task>bck2brwsrShow</task>
+                        <task>bck2brwsrAot</task>
                     </tasks>
                     <gradleProjectDirectory>src/test/resources/org/apidesign/bck2brwsr/gradletest/gradle1</gradleProjectDirectory>
                     <args>
