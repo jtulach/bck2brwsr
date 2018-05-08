@@ -21,10 +21,13 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.JarURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -334,7 +337,16 @@ public final class Bck2BrwsrJars {
                 LOG.log(Level.CONFIG, "No bootdelegation for {0}", name);
                 return null;
             }
-            return u.openStream();
+            try {
+                return u.openStream();
+            } catch (FileNotFoundException ex) {
+                URLConnection c = u.openConnection();
+                c.setDefaultUseCaches(false);
+                if (c instanceof JarURLConnection) {
+                    c.setUseCaches(false);
+                }
+                return c.getInputStream();
+            }
         }
 
         private final class NoConvRes implements Bck2Brwsr.Resources {
