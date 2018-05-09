@@ -53,6 +53,7 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.apidesign.bck2brwsr.launcher.InvocationContext.Resource;
 import org.glassfish.grizzly.PortRange;
@@ -77,6 +78,7 @@ import org.glassfish.grizzly.websockets.WebSocketEngine;
  */
 abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable, Callable<HttpServer> {
     static final Logger LOG = Logger.getLogger(BaseHTTPLauncher.class.getName());
+    private static final Logger OUT = Logger.getLogger(BaseHTTPLauncher.class.getName() + ".out");
     private static final InvocationContext END = new InvocationContext(null, null, null);
     private final Set<ClassLoader> loaders = new LinkedHashSet<ClassLoader>();
     private final BlockingQueue<InvocationContext> methods = new LinkedBlockingQueue<InvocationContext>();
@@ -219,12 +221,25 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
         for (NetworkListener listener : s.getListeners()) {
             listener.registerAddOn(addon);
         }
-        Logger l = Logger.getLogger("org.glassfish.grizzly.http.server.HttpHandler");
-        l.setLevel(Level.FINE);
-        l.setUseParentHandlers(false);
-        ConsoleHandler ch = new ConsoleHandler();
-        ch.setLevel(Level.ALL);
-        l.addHandler(ch);
+        ConsoleHandler consoleHandler = new ConsoleHandler();
+        consoleHandler.setFormatter(new java.util.logging.Formatter() {
+            @Override
+            public String format(LogRecord record) {
+                String message = formatMessage(record);
+                return String.format("[%s] %s\n", record.getLevel(), message);
+            };
+        });
+        consoleHandler.setLevel(Level.ALL);
+
+        Logger handleLogger = Logger.getLogger("org.glassfish.grizzly.http.server.HttpHandler");
+        handleLogger.setLevel(Level.FINE);
+
+        Logger serverLogger = Logger.getLogger("org.glassfish.grizzly.http.server");
+        serverLogger.setUseParentHandlers(false);
+        serverLogger.addHandler(consoleHandler);
+
+        LOG.addHandler(consoleHandler);
+        LOG.setUseParentHandlers(false);
         return s;
     }
 
@@ -908,6 +923,15 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
 
         @Override
         public void service(Request request, Response response) throws Exception {
+            final String console = request.getParameter("console");
+            if (console != null) {
+                String msg = request.getParameter("msg");
+                if ("log".equals(console)) {
+                    OUT.info(msg);
+                } else {
+                    OUT.warning(msg);
+                }
+            }
             final String exit = request.getParameter("exit");
             if (exit != null) {
                 int exitCode;

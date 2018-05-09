@@ -25,4 +25,8 @@ public class Preinit {
     public int twentyPlus(int x) {
         return 20 + x;
     }
+
+    public static void sayHello(String msg) {
+        System.out.println("Hello " + msg);
+    }
 }

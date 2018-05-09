@@ -105,6 +105,9 @@
                 if (!ok) {
                     throw 'Twenty plus is not static method: ' + nothing;
                 }
+                Preinit.invoke("sayHello", "from browser!");
+                Preinit.invoke("sayHello", "again from browser!");
+                Preinit.invoke("sayHello", "and now let the calculator run!");
                 vm.loadClass('org.apidesign.bck2brwsr.demo.calc.staticcompilation.Calc', function(c) {
                     c.invoke('main');
                 });

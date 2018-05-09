@@ -131,6 +131,12 @@ public class System {
 
     private static final class SystemStream extends OutputStream {
         private final String method;
+        private Runnable sendOK = new Runnable() {
+            @Override
+            public void run() {
+                sendOK = null;
+            }
+        };
 
         public SystemStream(String method) {
             this.method = method;
@@ -138,11 +144,35 @@ public class System {
 
         @Override
         public void write(byte b[], int off, int len) throws IOException {
-            write(method, new String(b, off, len, "UTF-8"));
+            String line = new String(b, off, len, "UTF-8");
+            int i = line.length() - 1;
+            while (i >= 0 && line.charAt(i) < 20) {
+                i--;
+            }
+            line = line.substring(0, i + 1);
+            if (!line.isEmpty()) {
+                write(method, line);
+                write(method, line, sendOK);
+            }
         }
 
-        @JavaScriptBody(args = { "method", "b" }, body = "if (typeof console !== 'undefined') console[method](b.toString());")
+        @JavaScriptBody(args = { "method", "b" }, body = ""
+          + "if (typeof console !== 'undefined') console[method](b.toString());"
+        )
         private static native void write(String method, String b);
+
+        @JavaScriptBody(args = { "method", "msg", "onFail" }, body = ""
+            + "if (!onFail) return;\n"
+            + "var xhttp = new XMLHttpRequest();\n"
+            + "xhttp.open('GET', '/?console=' + method + '&msg=' + msg, true);\n"
+            + "xhttp.onreadystatechange = function () {\n"
+            + "  if (xhttp.status > 400) {\n"
+            + "    onFail.run();\n"
+            + "  }\n"
+            + "};\n"
+            + "xhttp.send();\n"
+        )
+        private static native void write(String method, String msg, Runnable onFail);
 
         @Override
         public void write(int b) throws IOException {
