@@ -152,7 +152,7 @@ public class System {
             line = line.substring(0, i + 1);
             if (!line.isEmpty()) {
                 write(method, line);
-                write(method, line, sendOK);
+                writeRemote(method, line, sendOK);
             }
         }
 
@@ -163,16 +163,20 @@ public class System {
 
         @JavaScriptBody(args = { "method", "msg", "onFail" }, body = ""
             + "if (!onFail) return;\n"
+            + "if (typeof XMLHttpRequest === 'undefined') {\n"
+            + "  onFail.run__V();\n"
+            + "  return;\n"
+            + "}\n"
             + "var xhttp = new XMLHttpRequest();\n"
             + "xhttp.open('GET', '/?console=' + method + '&msg=' + msg, true);\n"
             + "xhttp.onreadystatechange = function () {\n"
-            + "  if (xhttp.status > 400) {\n"
-            + "    onFail.run();\n"
+            + "  if (xhttp.status === 0 || xhttp.status > 400) {\n"
+            + "    onFail.run__V();\n"
             + "  }\n"
             + "};\n"
             + "xhttp.send();\n"
         )
-        private static native void write(String method, String msg, Runnable onFail);
+        private static native void writeRemote(String method, String msg, Runnable onFail);
 
         @Override
         public void write(int b) throws IOException {
