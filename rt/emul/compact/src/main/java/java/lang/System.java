@@ -33,20 +33,20 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
 public class System {
     private System() {
     }
-    
+
     public static void arraycopy(Object value, int srcBegin, Object dst, int dstBegin, int count) {
         org.apidesign.bck2brwsr.emul.lang.System.arraycopy(value, srcBegin, dst, dstBegin, count);
     }
-    
+
     public static long currentTimeMillis() {
         return org.apidesign.bck2brwsr.emul.lang.System.currentTimeMillis();
     }
-    
+
     public static long nanoTime() {
         return org.apidesign.bck2brwsr.emul.lang.System.nanoTime();
-        
+
     }
-    
+
     public static int identityHashCode(Object obj) {
         return Class.defaultHashCode(obj);
     }
@@ -57,22 +57,22 @@ public class System {
         }
         return null;
     }
-    
+
     @JavaScriptBody(args = {}, body = "return (typeof navigator !== 'undefined') ? navigator.userAgent : 'unknown';")
     private static native String userAgent();
-    
+
     public static String getProperty(String key, String def) {
         return def;
     }
-    
+
     public static Properties getProperties() {
         throw new SecurityException();
     }
-    
+
     public static void setProperties(Properties p) {
         throw new SecurityException();
     }
-    
+
     /**
      * Returns the system-dependent line separator string.  It always
      * returns the same value - the initial value of the {@linkplain
@@ -95,13 +95,13 @@ public class System {
     )
     public static void exit(int exitCode) {
     }
-    
+
     public final static InputStream in;
 
     public final static PrintStream out;
 
     public final static PrintStream err;
-    
+
     public static void setOut(PrintStream out) {
         throw new SecurityException();
     }
@@ -113,14 +113,17 @@ public class System {
     public static void setErr(PrintStream err) {
         throw new SecurityException();
     }
-    
+
     static {
         in = new ByteArrayInputStream(new byte[0]);
         PrintStream log;
         PrintStream warn;
+        final SystemStream rawWarn;
         try {
             log = new PrintStream(new BufferedOutputStream(new SystemStream("log")));
-            warn = new PrintStream(new BufferedOutputStream(new SystemStream("warn")));
+            rawWarn = new SystemStream("warn");
+            org.apidesign.bck2brwsr.emul.lang.System.registerStdErr(rawWarn);
+            warn = new PrintStream(new BufferedOutputStream(rawWarn));
         } catch (Exception ex) {
             log = null;
             warn = null;
@@ -168,7 +171,8 @@ public class System {
             + "  return;\n"
             + "}\n"
             + "var xhttp = new XMLHttpRequest();\n"
-            + "xhttp.open('GET', '/?console=' + method + '&msg=' + msg, true);\n"
+            + "var safeMsg = encodeURIComponent(msg);\n"
+            + "xhttp.open('GET', '/?console=' + method + '&msg=' + safeMsg, true);\n"
             + "xhttp.onreadystatechange = function () {\n"
             + "  if (xhttp.status === 0 || xhttp.status > 400) {\n"
             + "    onFail.run__V();\n"

@@ -235,6 +235,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
         handleLogger.setLevel(Level.FINE);
 
         Logger serverLogger = Logger.getLogger("org.glassfish.grizzly.http.server");
+        serverLogger.setLevel(Level.INFO);
         serverLogger.setUseParentHandlers(false);
         serverLogger.addHandler(consoleHandler);
 

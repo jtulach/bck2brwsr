@@ -639,7 +639,8 @@ public class Throwable implements Serializable {
      * </pre>
      */
     public void printStackTrace() {
-        warn(toStackTrace());
+        String trace = toStackTrace();
+        org.apidesign.bck2brwsr.emul.lang.System.printStackTrace(trace);
     }
 
     private String toStackTrace() {
@@ -659,8 +660,6 @@ public class Throwable implements Serializable {
         String s = sb.toString();
         return s;
     }
-    @JavaScriptBody(args = { "msg" }, body = "if (console) console.warn(msg.toString());")
-    private native void warn(String msg);
 
     /**
      * Prints this throwable and its backtrace to the specified print stream.
