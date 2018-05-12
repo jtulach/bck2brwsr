@@ -154,11 +154,6 @@ abstract class ByteCodeToJavaScript {
     private String compileImpl(Appendable out, final String cn) throws IOException {
         this.numbers.reset();
         this.callbacks = cn.endsWith("/$JsCallbacks$");
-        if (jc.getMajor_version() < 50 && !cn.endsWith("/package-info")) {
-            throw new IOException("Can't compile " + cn + ". Class file version " + jc.getMajor_version() + "."
-                + jc.getMinor_version() + " - recompile with -target 1.6 (at least)."
-            );
-        }
         byte[] arrData = jc.findAnnotationData(true);
         {
             String[] arr = findAnnotation(arrData, jc,
@@ -354,6 +349,14 @@ abstract class ByteCodeToJavaScript {
         return "";
     }
 
+    private void versionCheck() throws IOException {
+        if (jc.getMajor_version() < 50) {
+            throw new IOException("Can't compile " + jc.getClassName() + ". Class file version " + jc.getMajor_version() + "."
+                    + jc.getMinor_version() + " - recompile with -target 1.6 (at least)."
+            );
+        }
+    }
+
     private StringArray findJavaScriptResources(byte[] arr, final String cn) throws IOException {
         if (arr == null) {
             return null;
@@ -466,6 +469,8 @@ abstract class ByteCodeToJavaScript {
             }
             return defineProp;
         }
+
+        versionCheck();
 
         final StackMapper smapper = new StackMapper();
 

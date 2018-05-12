@@ -86,10 +86,6 @@ abstract class AheadOfTimeBase<Art> {
             File aot = new File(mainJavaScript().getParent(), classPathPrefix());
             aot.mkdirs();
             File js = new File(aot, n.substring(0, n.length() - 4) + ".js");
-            if (js.lastModified() > aFile.lastModified()) {
-                logInfo("Skipping " + js + " as it already exists.");
-                continue;
-            }
             try {
                 aotLibrary(a, artifacts, js, loader, libsCp);
             } catch (IOException ex) {
@@ -140,6 +136,12 @@ abstract class AheadOfTimeBase<Art> {
     }
 
     private void aotLibrary(Art a, Iterable<Art> allArtifacts, File js, URLClassLoader loader, List<String> libsCp) throws IOException {
+        File aFile = file(a);
+        if (js.lastModified() > aFile.lastModified()) {
+            logInfo("Skipping " + js + " as it already exists.");
+            libsCp.add(js.getParentFile().getName() + '/' + js.getName());
+            return;
+        }
         for (Art b : allArtifacts) {
             final File file = file(b);
             if ("bck2brwsr".equals(classifier(b))) { // NOI18N
