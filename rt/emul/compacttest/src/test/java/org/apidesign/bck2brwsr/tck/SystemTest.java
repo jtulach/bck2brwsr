@@ -56,7 +56,9 @@ public class SystemTest {
     @JavaScriptBody(args = { "o" }, body = "return o.join('');")
     String textCapture(Object o) throws java.io.IOException {
         ByteArrayOutputStream b = (ByteArrayOutputStream) o;
-        return new String(b.toByteArray(), "UTF-8");
+        String raw = new String(b.toByteArray(), "UTF-8");
+        raw = raw.replace('\n', ' ').replace('\r', ' ').trim();
+        return raw;
     }
     
     @Factory public static Object[] create() {
