@@ -165,14 +165,16 @@ public class System {
         private static native void write(String method, String b);
 
         @JavaScriptBody(args = { "method", "msg", "onFail" }, body = ""
-            + "if (!onFail) return;\n"
+            + "if (!onFail) {\n"
+            + "   return;\n"
+            + "}\n"
             + "if (typeof XMLHttpRequest === 'undefined') {\n"
             + "  onFail.run__V();\n"
             + "  return;\n"
             + "}\n"
             + "var xhttp = new XMLHttpRequest();\n"
             + "var safeMsg = encodeURIComponent(msg);\n"
-            + "xhttp.open('GET', '/?console=' + method + '&msg=' + safeMsg, true);\n"
+            + "xhttp.open('GET', '/console/' + method + '/?msg=' + safeMsg, true);\n"
             + "xhttp.onreadystatechange = function () {\n"
             + "  if (xhttp.status === 0 || xhttp.status > 400) {\n"
             + "    onFail.run__V();\n"

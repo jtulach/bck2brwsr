@@ -208,6 +208,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
         if (path != null) {
             vm.addDocRoot(path);
         }
+        conf.addHttpHandler(new Console(), "/console/");
         if (addClasses) {
             conf.addHttpHandler(new Classes(resources), "/classes/");
         }
@@ -913,6 +914,20 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
 
     }
 
+    private class Console extends HttpHandler {
+        @Override
+        public void service(Request request, Response rspns) throws Exception {
+            String url = request.getRequestURI();
+            String msg = request.getParameter("msg");
+            if (url.endsWith("/log/")) {
+                OUT.info(msg);
+            } else {
+                OUT.warning(msg);
+            }
+            rspns.finish();
+        }
+    }
+
     private class VMAndPages extends StaticHttpHandler {
         private final boolean unitTestMode;
         private String vmResource;
@@ -924,15 +939,6 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
 
         @Override
         public void service(Request request, Response response) throws Exception {
-            final String console = request.getParameter("console");
-            if (console != null) {
-                String msg = request.getParameter("msg");
-                if ("log".equals(console)) {
-                    OUT.info(msg);
-                } else {
-                    OUT.warning(msg);
-                }
-            }
             final String exit = request.getParameter("exit");
             if (exit != null) {
                 int exitCode;
