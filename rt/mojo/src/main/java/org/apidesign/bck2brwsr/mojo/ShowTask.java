@@ -20,9 +20,13 @@ package org.apidesign.bck2brwsr.mojo;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.Flushable;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.file.Files;
 import java.util.LinkedList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -39,29 +43,34 @@ import org.gradle.api.logging.Logger;
 
 public class ShowTask extends DefaultTask {
     void show(final Project p) throws IOException {
+        String mainClass = (String) p.getProperties().get("mainClassName");
+        if (mainClass == null) {
+            throw new GradleScriptException("Define property ext.mainClassName in the project", null);
+        }
+
         File web = new File(p.getBuildDir(), "web");
         web.mkdirs();
         File index = new File(web, "index.html");
         if (!index.exists()) {
-            String mainClass = (String) p.getProperties().get("mainClassName");
-            if (mainClass == null) {
-                throw new GradleScriptException("Define property ext.mainClassName in the project", null);
-            }
             try (FileWriter w = new FileWriter(index)) {
                 w.write(""
                     + "<html>\n"
                     + "<body>\n"
-                    + "<script src='bck2brwsr.js'></script>\n"
-                    + "<script>\n"
-                    + "var vm = bck2brwsr('main.js');\n"
-                    + "vm.loadClass('" + mainClass + "', function(mainClass) {\n"
-                    + "  mainClass.invoke('main');\n"
-                    + "});\n"
-                    + "</script>\n"
+                    + UtilBase.invokeSnippet(mainClass)
                     + "</body>\n"
                     + "</html>\n"
                 );
             }
+        } else {
+            byte[] arr = Files.readAllBytes(index.toPath());
+            String data = new String(arr, "UTF-8");
+            String newText = UtilBase.mangleIndexPage(data, mainClass);
+            if (!newText.equals(data)) {
+                try (Writer w = new OutputStreamWriter(new FileOutputStream(index), "UTF-8")) {
+                    w.write(newText);
+                }
+            }
+
         }
 
         final Logger gradleLogger = this.getLogger();
