@@ -19,6 +19,7 @@ package org.apidesign.bck2brwsr.mojo;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -138,6 +139,18 @@ public class AheadOfTimeTask extends DefaultTask {
 
             @Override
             protected ObfuscationLevel obfuscation() {
+                Map<String, ?> props = p.getProperties();
+                Object gen = props.get("bck2brwsrObfuscation");
+                if (gen instanceof ObfuscationLevel) {
+                    return (ObfuscationLevel) gen;
+                }
+                if (gen instanceof String) {
+                    try {
+                        return ObfuscationLevel.valueOf((String) gen);
+                    } catch (IllegalArgumentException e) {
+                        throw new IllegalArgumentException("Expeceting one of " + Arrays.toString(ObfuscationLevel.values()) + " but was " + gen);
+                    }
+                }
                 return ObfuscationLevel.FULL;
             }
 
