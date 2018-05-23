@@ -143,6 +143,9 @@ public class ShowTask extends DefaultTask {
             SimpleFormatter sf = new SimpleFormatter();
             for (LogRecord record : arr) {
                 String msg = sf.formatMessage(record);
+                if (msg == null) {
+                    msg = "";
+                }
                 for (String line : msg.split("\n")) {
                     if (record.getLevel().intValue() >= Level.WARNING.intValue()) {
                         gradleLogger.warn(line);
