@@ -17,6 +17,7 @@
  */
 package org.apidesign.bck2brwsr.mojo;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.regex.Matcher;
@@ -30,14 +31,27 @@ public class AheadOfTimeGradleTest {
     public void verifyMainJS() throws Exception {
         URL u = AheadOfTimeGradleTest.class.getResource("gradle1/build/web/main.js");
         assertNotNull(u, "main.js has been generated");
+        String text = readStream(u);
+        assertClasspath(text, "lib/net.java.html.boot-[0-9\\.]*.js", u);
+        assertClasspath(text, "lib/emul.mini-[0-9\\.\\-SNAPSHOT]*.js", u);
+    }
+
+    private static String readStream(URL u) throws IOException {
         InputStream is = u.openStream();
         int len = is.available();
         byte[] arr = new byte[len];
         int read = is.read(arr);
         assertEquals(read, len, "Whole stream read");
         String text = new String(arr);
-        assertClasspath(text, "lib/net.java.html.boot-[0-9\\.]*.js", u);
-        assertClasspath(text, "lib/emul.mini-[0-9\\.\\-SNAPSHOT]*.js", u);
+        return text;
+    }
+
+    @Test
+    public void verifyPagesCopied() throws Exception {
+        URL u = AheadOfTimeGradleTest.class.getResource("gradle2/build/web/test.html");
+        assertNotNull(u, "test.html has been generated");
+        String html = readStream(u);
+        assertNotEquals(html.indexOf("<h1>Testing file</h1>"), -1, "Content found:\n" + html);
     }
 
     private void assertClasspath(String text, String importRegexp, URL u) {

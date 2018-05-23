@@ -18,6 +18,7 @@
 
 package org.apidesign.bck2brwsr.mojo;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -30,6 +31,7 @@ import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
+import org.gradle.api.tasks.Copy;
 
 public final class AheadOfTimeGradle implements Plugin<Project> {
 
@@ -49,12 +51,19 @@ public final class AheadOfTimeGradle implements Plugin<Project> {
             public void execute(AheadOfTimeTask process) {
             }
         });
+        final Copy copyPages = p.getTasks().create("bck2brwsrPages", Copy.class, new Action<Copy>() {
+            @Override
+            public void execute(Copy t) {
+            }
+        });
+        copyPages.from(p.fileTree("src/main/webapp/pages"));
+        copyPages.into(new File(p.getBuildDir(), "web"));
         final ShowTask show = p.getTasks().create("bck2brwsrShow", ShowTask.class, new Action<ShowTask>() {
             @Override
             public void execute(ShowTask process) {
             }
         });
-        show.dependsOn(aot);
+        show.dependsOn(aot, copyPages);
         p.afterEvaluate(new Action<Project>() {
             @Override
             public void execute(final Project p) {

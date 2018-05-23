@@ -76,8 +76,8 @@
                     <tasks>
                         <task>clean</task>
                         <task>bck2brwsrAot</task>
+                        <task>bck2brwsrPages</task>
                     </tasks>
-                    <gradleProjectDirectory>src/test/resources/org/apidesign/bck2brwsr/mojo/gradle1</gradleProjectDirectory>
                     <args>
                         <arg>--refresh-dependencies</arg>
                         <arg>-PprjVersion=${project.version}</arg>
@@ -86,10 +86,24 @@
                 </configuration>
                 <executions>
                     <execution>
+                        <id>gradle1</id>
                         <phase>generate-test-resources</phase>
                         <goals>
                             <goal>invoke</goal>
                         </goals>
+                        <configuration>
+                            <gradleProjectDirectory>src/test/resources/org/apidesign/bck2brwsr/mojo/gradle1</gradleProjectDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>gradle2</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>invoke</goal>
+                        </goals>
+                        <configuration>
+                            <gradleProjectDirectory>src/test/resources/org/apidesign/bck2brwsr/mojo/gradle2</gradleProjectDirectory>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
