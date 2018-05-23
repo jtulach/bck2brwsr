@@ -40,7 +40,7 @@ public final class AheadOfTimeGradle implements Plugin<Project> {
         final ConfigurationContainer confs = p.getConfigurations();
         if (confs.findByName(CONF_NAME) == null) {
             Configuration bck2brwsr = confs.create(CONF_NAME);
-            Configuration runtime = confs.findByName("runtime");
+            Configuration runtime = confs.findByName("compile");
             if (runtime != null) {
                 bck2brwsr.extendsFrom(runtime);
             }

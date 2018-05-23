@@ -22,9 +22,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apidesign.vm4brwsr.ObfuscationLevel;
@@ -33,12 +31,7 @@ import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
-import org.gradle.api.artifacts.Dependency;
-import org.gradle.api.artifacts.DependencyArtifact;
-import org.gradle.api.artifacts.ModuleDependency;
-import org.gradle.api.artifacts.ResolveException;
 import org.gradle.api.artifacts.ResolvedArtifact;
-import org.gradle.api.artifacts.UnknownConfigurationException;
 
 public class AheadOfTimeTask extends DefaultTask {
     static final String CONF_NAME = "bck2brwsr";
@@ -61,56 +54,6 @@ public class AheadOfTimeTask extends DefaultTask {
             return Collections.emptyList();
         }
         return conf.getResolvedConfiguration().getResolvedArtifacts();
-    }
-
-    void dump(Project p) {
-        System.err.println("this: " + this);
-
-        final Set<?> allSourceSets = (Set<?>) p.property("sourceSets");
-        if (allSourceSets == null) {
-            throw new GradleException("Cannot find sourceSets for project " + p);
-        }
-        for (Object sourceSet : allSourceSets) {
-            final String name = invoke(String.class, sourceSet, "getName");
-            System.err.println("set: " + name);
-            Iterable cp = invoke(Iterable.class, sourceSet, "getCompileClasspath");
-            for (Object elem : cp) {
-                final File pathElement = (File) elem;
-                //process.addClasspathEntry(pathElement);
-                System.err.println("  addClasspathEntry: " + pathElement);
-            }
-            final String runtimeName = invoke(String.class, sourceSet, "getRuntimeConfigurationName");
-            dumpConf(p, runtimeName);
-            final String compileName = invoke(String.class, sourceSet, "getCompileConfigurationName");
-            Configuration conf = dumpConf(p, compileName);
-            for (Dependency d : conf.getAllDependencies()) {
-                System.err.println("  dep: " + d.getGroup() + " name: " + d.getName() + " @ " + d.getVersion());
-                if (d instanceof ModuleDependency) {
-                    System.err.println("     trans: " + ((ModuleDependency) d).isTransitive());
-                }
-                Set<?> artifacts = invoke(Set.class, d, "getArtifacts");
-                for (Object ao : artifacts) {
-                    DependencyArtifact da = (DependencyArtifact) ao;
-                    System.err.println("    a: " + da.getName() + " u: " + da.getUrl());
-                }
-            }
-            Iterable<?> outs = invoke(Iterable.class, sourceSet, "getOutput");
-            for (Object classes : outs) {
-                //process.addRoot((File) classes);
-                System.err.println("  addRoot: " + classes);
-            }
-        }
-    }
-
-    private Configuration dumpConf(Project p, final String compileName) throws UnknownConfigurationException, ResolveException {
-        Configuration conf = p.getConfigurations().getByName(compileName);
-        for (ResolvedArtifact a : conf.getResolvedConfiguration().getResolvedArtifacts()) {
-            System.err.println("       g: " + a.getModuleVersion().getId().getGroup());
-            System.err.println("       a: " + a.getModuleVersion().getId().getName());
-            System.err.println("       v: " + a.getModuleVersion().getId().getVersion());
-            System.err.println("       f: " + a.getFile());
-        }
-        return conf;
     }
 
     void generate(final Project p) {
@@ -151,7 +94,7 @@ public class AheadOfTimeTask extends DefaultTask {
                         throw new IllegalArgumentException("Expeceting one of " + Arrays.toString(ObfuscationLevel.values()) + " but was " + gen);
                     }
                 }
-                return ObfuscationLevel.FULL;
+                return ObfuscationLevel.MINIMAL;
             }
 
             @Override
