@@ -37,6 +37,8 @@ version '1.0-SNAPSHOT'
 apply plugin: 'java'
 apply plugin: 'bck2brwsr'
 
+mainClassName = 'Gradle2Check'
+
 repositories {
     mavenLocal()
 }

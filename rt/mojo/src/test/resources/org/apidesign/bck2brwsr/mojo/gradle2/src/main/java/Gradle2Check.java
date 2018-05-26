@@ -19,7 +19,7 @@
 import net.java.html.js.JavaScriptBody;
 import java.util.concurrent.Callable;
 
-public class Gradle2Check implements Callable<Integer> {
+final class Gradle2Check implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
@@ -29,5 +29,9 @@ public class Gradle2Check implements Callable<Integer> {
     @JavaScriptBody(args = {}, body = "return 42;")
     private static int compute() {
         return -1;
+    }
+
+    public static void main(String... args) throws Exception {
+        System.err.println("out: " + new Gradle2Check().call());
     }
 }

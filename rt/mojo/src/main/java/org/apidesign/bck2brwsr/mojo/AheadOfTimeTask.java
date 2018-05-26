@@ -99,6 +99,10 @@ public class AheadOfTimeTask extends DefaultTask {
 
             @Override
             protected String[] exports() {
+                String mainClass = AheadOfTimeGradle.findMainClass(p);
+                if (mainClass != null) {
+                    return new String[] { mainClass };
+                }
                 return new String[0];
             }
 

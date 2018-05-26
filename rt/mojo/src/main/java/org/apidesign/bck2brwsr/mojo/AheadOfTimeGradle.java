@@ -34,10 +34,17 @@ import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.tasks.Copy;
 
 public final class AheadOfTimeGradle implements Plugin<Project> {
-    private static final String GROUP = "Java(Script)";
+    static final String GROUP = "Java(Script)";
+    static final String PROP_MAIN_CLASS_NAME = "mainClassName";
+
+    static String findMainClass(final Project p) {
+        String mainClass = (String) p.getProperties().get(PROP_MAIN_CLASS_NAME);
+        return mainClass;
+    }
 
     @Override
     public void apply(final Project p) {
+        p.getExtensions().getExtraProperties().set(PROP_MAIN_CLASS_NAME, null);
         final ConfigurationContainer confs = p.getConfigurations();
         if (confs.findByName(CONF_NAME) == null) {
             Configuration bck2brwsr = confs.create(CONF_NAME);

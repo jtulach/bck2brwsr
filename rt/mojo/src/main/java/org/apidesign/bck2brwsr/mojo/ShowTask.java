@@ -36,6 +36,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
 import org.apidesign.bck2brwsr.launcher.Launcher;
+import static org.apidesign.bck2brwsr.mojo.AheadOfTimeGradle.PROP_MAIN_CLASS_NAME;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleScriptException;
 import org.gradle.api.Project;
@@ -43,9 +44,9 @@ import org.gradle.api.logging.Logger;
 
 public class ShowTask extends DefaultTask {
     void show(final Project p) throws IOException {
-        String mainClass = (String) p.getProperties().get("mainClassName");
+        String mainClass = AheadOfTimeGradle.findMainClass(p);
         if (mainClass == null) {
-            throw new GradleScriptException("Define property ext.mainClassName in the project", null);
+            throw new GradleScriptException("Define property " + PROP_MAIN_CLASS_NAME + " in the project", null);
         }
 
         File web = new File(p.getBuildDir(), "web");
