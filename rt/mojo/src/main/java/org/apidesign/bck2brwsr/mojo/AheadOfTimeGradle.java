@@ -34,6 +34,7 @@ import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.tasks.Copy;
 
 public final class AheadOfTimeGradle implements Plugin<Project> {
+    private static final String GROUP = "Java(Script)";
 
     @Override
     public void apply(final Project p) {
@@ -51,19 +52,28 @@ public final class AheadOfTimeGradle implements Plugin<Project> {
             public void execute(AheadOfTimeTask process) {
             }
         });
+        aot.setGroup(GROUP);
+        aot.setDescription("Transpiles your JARs to JavaScript files in build/web directory");
         final Copy copyPages = p.getTasks().create("bck2brwsrPages", Copy.class, new Action<Copy>() {
             @Override
             public void execute(Copy t) {
             }
         });
-        copyPages.from(p.fileTree("src/main/webapp/pages"));
+        final String pages = "src/main/webapp/pages";
+        copyPages.from(p.fileTree(pages));
         copyPages.into(new File(p.getBuildDir(), "web"));
         final ShowTask show = p.getTasks().create("bck2brwsrShow", ShowTask.class, new Action<ShowTask>() {
             @Override
             public void execute(ShowTask process) {
             }
         });
+        copyPages.setGroup(GROUP);
+        copyPages.setDescription("Copies web pages from " + pages + " to build/web directory");
+
         show.dependsOn(aot, copyPages);
+        show.setGroup(GROUP);
+        show.setDescription("Runs your program in the browser");
+
         p.afterEvaluate(new Action<Project>() {
             @Override
             public void execute(final Project p) {
