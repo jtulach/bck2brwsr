@@ -44,7 +44,9 @@ public final class AheadOfTimeGradle implements Plugin<Project> {
 
     @Override
     public void apply(final Project p) {
-        p.getExtensions().getExtraProperties().set(PROP_MAIN_CLASS_NAME, null);
+        if (!p.hasProperty(PROP_MAIN_CLASS_NAME)) {
+            p.getExtensions().getExtraProperties().set(PROP_MAIN_CLASS_NAME, null);
+        }
         final ConfigurationContainer confs = p.getConfigurations();
         if (confs.findByName(CONF_NAME) == null) {
             Configuration bck2brwsr = confs.create(CONF_NAME);
