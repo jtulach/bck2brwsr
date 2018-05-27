@@ -19,10 +19,18 @@ package org.apidesign.bck2brwsr.mojo;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Set;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
+import org.apache.maven.artifact.resolver.ArtifactResolutionException;
+import org.apache.maven.artifact.resolver.ArtifactResolver;
+import org.apache.maven.artifact.versioning.VersionRange;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -40,6 +48,8 @@ import org.apidesign.vm4brwsr.ObfuscationLevel;
     defaultPhase = LifecyclePhase.PACKAGE
 )
 public class AheadOfTime extends AbstractMojo {
+    private static final String GROUPID = "org.apidesign.bck2brwsr";
+    
     @Parameter(defaultValue = "${project}")
     private MavenProject prj;
     
@@ -68,7 +78,16 @@ public class AheadOfTime extends AbstractMojo {
     
     @Parameter(defaultValue = "true")
     private boolean ignoreBootClassPath;
-    
+
+    @Component
+    private ArtifactResolver artifactResolver;
+
+    @Component
+    private ArtifactFactory artifactFactory;
+
+    @Parameter(required=true, readonly=true, property="localRepository")
+    private ArtifactRepository localRepository;
+
     /**
      * The obfuscation level for the generated JavaScript file.
      *
@@ -79,6 +98,52 @@ public class AheadOfTime extends AbstractMojo {
     
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        final Set<Artifact> artifacts = prj.getArtifacts();
+        boolean foundEmul = false;
+        for (Artifact a : artifacts) {
+            if (
+                GROUPID.equals(a.getGroupId()) &&
+                a.getArtifactId() != null &&
+                a.getArtifactId().contains("emul")
+            ) {
+                foundEmul = true;
+                break;
+            }
+        }
+        if (!foundEmul) {
+
+            Artifact rt = artifactFactory.createDependencyArtifact(
+                GROUPID,
+                "emul",
+                VersionRange.createFromVersion(UtilBase.findOwnVersion()),
+                "jar",
+                "rt",
+                "runtime"
+            );
+            try {
+                artifactResolver.resolve(rt, prj.getRemoteArtifactRepositories(), localRepository);
+            } catch (ArtifactResolutionException | ArtifactNotFoundException ex) {
+                throw new MojoExecutionException("Cannot resolve " + rt, ex);
+            }
+            artifacts.add(rt);
+
+            Artifact bck2brwsrRt = artifactFactory.createDependencyArtifact(
+                GROUPID,
+                "emul",
+                VersionRange.createFromVersion(UtilBase.findOwnVersion()),
+                "jar",
+                "bck2brwsr",
+                "provided"
+            );
+            try {
+                artifactResolver.resolve(bck2brwsrRt, prj.getRemoteArtifactRepositories(), localRepository);
+            } catch (ArtifactResolutionException | ArtifactNotFoundException ex) {
+                throw new MojoExecutionException("Cannot resolve " + bck2brwsrRt, ex);
+            }
+            artifacts.add(bck2brwsrRt);
+        }
+        System.err.println("artifacts: " + artifacts);
+
         class Work extends AheadOfTimeBase<Artifact> {
             @Override
             protected File mainJavaScript() {
@@ -122,7 +187,7 @@ public class AheadOfTime extends AbstractMojo {
 
             @Override
             protected Collection<Artifact> artifacts() {
-                return prj.getArtifacts();
+                return artifacts;
             }
 
             @Override

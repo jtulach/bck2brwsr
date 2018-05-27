@@ -18,14 +18,67 @@
 
 package org.apidesign.bck2brwsr.mojo;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.file.Files;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 final class UtilBase {
+
+    static String findOwnVersion() {
+        try (final InputStream is = UtilBase.class.getResourceAsStream("/META-INF/maven/org.apidesign.bck2brwsr/bck2brwsr-maven-plugin/pom.properties")) {
+            if (is == null) {
+                return "1.0-SNAPSHOT";
+            }
+            Properties p = new Properties();
+            p.load(is);
+            String version = p.getProperty("version");
+            if (version == null) {
+                throw new IllegalStateException("Cannot find version");
+            }
+            return version;
+        } catch (IOException ex) {
+            throw new IllegalStateException("Cannot read version", ex);
+        }
+    }
+
+    static void verifyIndexHtml(File directory, String mainJS, String mainClass) throws IOException {
+        File index = new File(directory, "index.html");
+        if (!index.exists()) {
+            try (final FileWriter w = new FileWriter(index)) {
+                w.write("" +
+                    "<html>\n" +
+                    "    <head>\n" +
+                    "        <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n" +
+                    "    </head>" +
+                    "<body>\n" +
+                    UtilBase.invokeSnippet(mainJS, mainClass) +
+                    "</body>\n" +
+                    "</html>\n"
+                );
+            }
+        } else {
+            byte[] arr = Files.readAllBytes(index.toPath());
+            String data = new String(arr, "UTF-8");
+            String newText = UtilBase.mangleIndexPage(data, mainJS, mainClass);
+            if (!newText.equals(data)) {
+                try (final Writer w = new OutputStreamWriter(new FileOutputStream(index), "UTF-8")) {
+                    w.write(newText);
+                }
+            }
+        }
+    }
     private UtilBase() {
     }
 
-    static String mangleIndexPage(String data, String mainClass) {
+    static String mangleIndexPage(String data, String mainJS, String mainClass) {
         Pattern loadClass = Pattern.compile("loadClass *\\( *[\"']" + mainClass);
         Matcher loadClassMatcher = loadClass.matcher(data);
         if (loadClassMatcher.find()) {
@@ -35,17 +88,17 @@ final class UtilBase {
         int endOfBody = data.toLowerCase().lastIndexOf("</body>");
         String newText =
             data.substring(0, endOfBody) +
-            invokeSnippet(mainClass) +
+            invokeSnippet(mainJS, mainClass) +
             data.substring(endOfBody);
         return newText;
     }
 
-    static String invokeSnippet(String mainClass) {
+    static String invokeSnippet(String mainJS, String mainClass) {
         return "\n"
             + "\n"
             + "\n"
             + "<script src='bck2brwsr.js'></script>\n"
-            + "<script>\n" + "var vm = bck2brwsr('main.js');\n"
+            + "<script>\n" + "var vm = bck2brwsr('" + mainJS + "');\n"
             + "vm.loadClass('" + mainClass + "', function(mainClass) {\n"
             + "  mainClass.invoke('main');\n"
             + "});\n"

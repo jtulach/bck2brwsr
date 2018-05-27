@@ -20,13 +20,8 @@ package org.apidesign.bck2brwsr.mojo;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.Flushable;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.file.Files;
 import java.util.LinkedList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -51,31 +46,7 @@ public class ShowTask extends DefaultTask {
 
         File web = new File(p.getBuildDir(), "web");
         web.mkdirs();
-        File index = new File(web, "index.html");
-        if (!index.exists()) {
-            try (FileWriter w = new FileWriter(index)) {
-                w.write(""
-                    + "<html>\n"
-                    + "    <head>\n"
-                    + "        <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n"
-                    + "    </head>"
-                    + "<body>\n"
-                    + UtilBase.invokeSnippet(mainClass)
-                    + "</body>\n"
-                    + "</html>\n"
-                );
-            }
-        } else {
-            byte[] arr = Files.readAllBytes(index.toPath());
-            String data = new String(arr, "UTF-8");
-            String newText = UtilBase.mangleIndexPage(data, mainClass);
-            if (!newText.equals(data)) {
-                try (Writer w = new OutputStreamWriter(new FileOutputStream(index), "UTF-8")) {
-                    w.write(newText);
-                }
-            }
-
-        }
+        UtilBase.verifyIndexHtml(web, "main.js", mainClass);
 
         final Logger gradleLogger = this.getLogger();
         final java.util.logging.Logger javaLogger = java.util.logging.Logger.getLogger("org.apidesign.bck2brwsr.launcher.BaseHTTPLauncher");

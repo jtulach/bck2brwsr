@@ -23,6 +23,8 @@ import org.apache.maven.plugin.AbstractMojo;
 import java.io.File;
 import java.io.Flushable;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -55,11 +57,24 @@ public class ShowMojo extends AbstractMojo {
     /** Root of all pages, and files, etc. */
     @Parameter
     private File directory;
+
+    @Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}.js")
+    private File mainJavaScript;
     
     @Override
     public void execute() throws MojoExecutionException {
         if (startpage == null) {
-            throw new MojoExecutionException("You have to provide a start page");
+            if (mainJavaScript != null && mainJavaScript.exists()) {
+                directory = mainJavaScript.getParentFile();
+                try {
+                    UtilBase.verifyIndexHtml(directory, mainJavaScript.getName(), "Hello");
+                } catch (IOException ex) {
+                    throw new MojoExecutionException("Cannot generate index.html in " + directory, ex);
+                }
+                startpage = "index.html";
+            } else {
+                throw new MojoExecutionException("You have to provide a start page");
+            }
         }
         if (directory == null) {
             throw new MojoExecutionException("You have to provide a root directory");

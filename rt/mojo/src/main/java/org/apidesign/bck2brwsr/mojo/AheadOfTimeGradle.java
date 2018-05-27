@@ -87,8 +87,8 @@ public final class AheadOfTimeGradle implements Plugin<Project> {
             @Override
             public void execute(final Project p) {
                 if (bck2brwsr.getDependencies().isEmpty()) {
-                    p.getDependencies().add("bck2brwsr", "org.apidesign.bck2brwsr:emul:" + findOwnVersion() + ":rt");
-                    p.getDependencies().add("bck2brwsr", "org.apidesign.bck2brwsr:emul:" + findOwnVersion() + ":bck2brwsr");
+                    p.getDependencies().add("bck2brwsr", "org.apidesign.bck2brwsr:emul:" + UtilBase.findOwnVersion() + ":rt");
+                    p.getDependencies().add("bck2brwsr", "org.apidesign.bck2brwsr:emul:" + UtilBase.findOwnVersion() + ":bck2brwsr");
                 }
                 Set<? extends Task> tasks = (Set<? extends Task>) p.property("tasks");
                 for (Task task : tasks) {
@@ -115,24 +115,5 @@ public final class AheadOfTimeGradle implements Plugin<Project> {
                 });
             }
         });
-    }
-
-    String findOwnVersion() {
-        try (InputStream is = AheadOfTimeGradle.class.getResourceAsStream(
-            "/META-INF/maven/org.apidesign.bck2brwsr/bck2brwsr-maven-plugin/pom.properties")
-        ) {
-            if (is == null) {
-                return "1.0-SNAPSHOT";
-            }
-            Properties p = new Properties();
-            p.load(is);
-            String version = p.getProperty("version");
-            if (version == null) {
-                throw new IllegalStateException("Cannot find version");
-            }
-            return version;
-        } catch (IOException ex) {
-            throw new IllegalStateException("Cannot read version", ex);
-        }
     }
 }
