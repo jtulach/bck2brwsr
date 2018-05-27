@@ -842,7 +842,7 @@ abstract class VM extends ByteCodeToJavaScript {
         protected void generatePrologue(Appendable out) throws IOException {
             out.append(
                   "bck2brwsr.register({\n"
-                + "  'magic' : 'kafčo'"
+                + "  'magic' : 'kaf\\u010do'"
             );
             if (classpath != null && classpath.toArray().length > 0) {
                 out.append(
