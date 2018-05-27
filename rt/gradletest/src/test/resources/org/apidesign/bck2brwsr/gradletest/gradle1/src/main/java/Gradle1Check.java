@@ -19,7 +19,7 @@
 import net.java.html.js.JavaScriptBody;
 import java.util.concurrent.Callable;
 
-public class Gradle1Check implements Callable<Integer> {
+final class Gradle1Check implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
