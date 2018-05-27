@@ -56,6 +56,9 @@ public class ShowTask extends DefaultTask {
             try (FileWriter w = new FileWriter(index)) {
                 w.write(""
                     + "<html>\n"
+                    + "    <head>\n"
+                    + "        <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n"
+                    + "    </head>"
                     + "<body>\n"
                     + UtilBase.invokeSnippet(mainClass)
                     + "</body>\n"
