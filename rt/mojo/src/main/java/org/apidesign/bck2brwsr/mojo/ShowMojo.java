@@ -23,6 +23,7 @@ import org.apache.maven.plugin.AbstractMojo;
 import java.io.File;
 import java.io.Flushable;
 import java.io.IOException;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -58,6 +59,9 @@ public class ShowMojo extends AbstractMojo {
     @Parameter
     private File directory;
 
+    @Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}.jar")
+    private File mainJar;
+
     @Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}.js")
     private File mainJavaScript;
     
@@ -67,7 +71,11 @@ public class ShowMojo extends AbstractMojo {
             if (mainJavaScript != null && mainJavaScript.exists()) {
                 directory = mainJavaScript.getParentFile();
                 try {
-                    UtilBase.verifyIndexHtml(directory, mainJavaScript.getName(), "Hello");
+                    Set<String> mainClasses = UtilAsm.findMainClass(mainJar);
+                    if (mainClasses.isEmpty()) {
+                        throw new MojoExecutionException("Cannot find main class in " + mainJar);
+                    }
+                    UtilBase.verifyIndexHtml(directory, mainJavaScript.getName(), mainClasses.iterator().next());
                 } catch (IOException ex) {
                     throw new MojoExecutionException("Cannot generate index.html in " + directory, ex);
                 }

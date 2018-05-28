@@ -142,7 +142,6 @@ public class AheadOfTime extends AbstractMojo {
             }
             artifacts.add(bck2brwsrRt);
         }
-        System.err.println("artifacts: " + artifacts);
 
         class Work extends AheadOfTimeBase<Artifact> {
             @Override
