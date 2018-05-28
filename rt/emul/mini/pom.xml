@@ -23,11 +23,11 @@
   <parent>
     <groupId>org.apidesign.bck2brwsr</groupId>
     <artifactId>emul.pom</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.23</version>
   </parent>
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>emul.mini</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>0.23</version>
   <name>Minimal API Profile</name>
   <url>http://maven.apache.org</url>
   <properties>
@@ -37,7 +37,7 @@
     <dependency>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>core</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>0.23</version>
       <type>jar</type>
       <scope>provided</scope>
     </dependency>

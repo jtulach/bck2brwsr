@@ -22,13 +22,13 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>ko</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>0.23</version>
   <packaging>pom</packaging>
   <name>Bck2Brwsr Knockout Support</name>
   <parent>
     <groupId>org.apidesign</groupId>
     <artifactId>bck2brwsr</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.23</version>
   </parent>  
   <modules>
     <module>bck2brwsr</module>
