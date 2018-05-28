@@ -129,6 +129,16 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
 
     @Override
     public void showURL(String startpage) throws IOException {
+        if (startpage.startsWith("http:") || startpage.startsWith("https:")) {
+            try {
+                URI fullUri = new URI(startpage);
+                showBrwsr(fullUri);
+                return;
+            } catch (URISyntaxException ex) {
+                // OK, go on
+            }
+        }
+
         if (!startpage.startsWith("/")) {
             startpage = "/" + startpage;
         }

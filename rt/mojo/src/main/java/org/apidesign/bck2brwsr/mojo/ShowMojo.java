@@ -85,6 +85,14 @@ public class ShowMojo extends AbstractMojo {
             }
         }
         if (directory == null) {
+            if (startpage.startsWith("http:") || startpage.startsWith("https:")) {
+                try {
+                    Launcher.showURL(launcher, null, startpage);
+                } catch (IOException ex) {
+                    throw new MojoExecutionException("Can't show the browser", ex);
+                }
+                return;
+            }
             throw new MojoExecutionException("You have to provide a root directory");
         }
         try {
