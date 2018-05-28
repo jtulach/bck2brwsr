@@ -16,30 +16,35 @@
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
 
-defaultTasks 'clean', 'build', 'bck2brwsrAot'
-
 buildscript {
     repositories {
         mavenLocal()
     }
-    dependencies {
-        classpath "org.apidesign.bck2brwsr:bck2brwsr-maven-plugin:${prjVersion}"
+    if ("true".equals(skipTests)) {
+        println("Skipping bck2brwsr plugin...")
+    } else {
+        dependencies {
+            classpath "org.apidesign.bck2brwsr:bck2brwsr-maven-plugin:${prjVersion}"
+        }
     }
 }
-
-
-group 'org.netbeans.html.gradle1'
-version '1.0-SNAPSHOT'
-
-apply plugin: 'java'
-apply plugin: 'bck2brwsr'
 
 repositories {
     mavenLocal()
 }
 
-ext.bck2brwsrGenerateAotLibraries = false
-mainClassName = 'Gradle1Check'
+group 'org.netbeans.html.gradle1'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+if ("true".equals(skipTests)) {
+    println("Skipping bck2brwsr plugin...")
+} else {
+    apply plugin: 'bck2brwsr'
+    ext.bck2brwsrGenerateAotLibraries = false
+    mainClassName = 'Gradle1Check'
+}
+
 
 dependencies {
     compileOnly "org.apidesign.bck2brwsr:ko-bck2brwsr:${prjVersion}:bck2brwsr"

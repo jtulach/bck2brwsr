@@ -16,8 +16,6 @@
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
 
-defaultTasks 'clean', 'build', 'bck2brwsrAot'
-
 buildscript {
     repositories {
         mavenLocal()

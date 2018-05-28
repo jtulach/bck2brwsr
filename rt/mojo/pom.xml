@@ -31,6 +31,10 @@
   <packaging>maven-plugin</packaging>
   <name>Bck2Brwsr Maven Plugin</name>
   <url>http://bck2brwsr.apidesign.org/</url>
+  <properties>
+      <gradle.bck2brwsrAot>bck2brwsrAot</gradle.bck2brwsrAot>
+      <gradle.bck2brwsrPages>bck2brwsrPages</gradle.bck2brwsrPages>
+  </properties>
   <repositories>
       <repository>
           <id>gradle</id>
@@ -75,8 +79,8 @@
                 <configuration>
                     <tasks>
                         <task>clean</task>
-                        <task>bck2brwsrAot</task>
-                        <task>bck2brwsrPages</task>
+                        <task>${gradle.bck2brwsrAot}</task>
+                        <task>${gradle.bck2brwsrPages}</task>
                     </tasks>
                     <args>
                         <arg>--refresh-dependencies</arg>
@@ -208,4 +212,14 @@
         <scope>provided</scope>
     </dependency>
 </dependencies>
+    <profiles>
+        <profile>
+            <id>jvnet-release</id>
+            <properties>
+                <skipTests>true</skipTests>
+                <gradle.bck2brwsrAot>tasks</gradle.bck2brwsrAot>
+                <gradle.bck2brwsrPages>tasks</gradle.bck2brwsrPages>
+            </properties>
+        </profile>
+    </profiles>
 </project>
