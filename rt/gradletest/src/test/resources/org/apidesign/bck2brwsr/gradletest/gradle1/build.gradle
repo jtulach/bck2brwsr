@@ -20,7 +20,7 @@ buildscript {
     repositories {
         mavenLocal()
     }
-    if ("true".equals(skipTests)) {
+    if ("true".equals(skipGradle)) {
         println("Skipping bck2brwsr plugin...")
     } else {
         dependencies {
@@ -37,7 +37,7 @@ group 'org.netbeans.html.gradle1'
 version '1.0-SNAPSHOT'
 
 apply plugin: 'java'
-if ("true".equals(skipTests)) {
+if ("true".equals(skipGradle)) {
     println("Skipping bck2brwsr plugin...")
 } else {
     apply plugin: 'bck2brwsr'

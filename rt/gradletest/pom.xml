@@ -73,7 +73,7 @@
                         <arg>--refresh-dependencies</arg>
                         <arg>-PprjVersion=${project.version}</arg>
                         <arg>-PnjhVersion=${net.java.html.version}</arg>
-                        <arg>-PskipTests=${skipTests}</arg>
+                        <arg>-PskipGradle=${skipGradle}</arg>
                     </args>
                 </configuration>
                 <executions>
@@ -115,6 +115,7 @@
             <id>jvnet-release</id>
             <properties>
                 <skipTests>true</skipTests>
+                <skipGradle>true</skipGradle>
                 <gradle.bck2brwsrAot>tasks</gradle.bck2brwsrAot>
             </properties>
         </profile>
