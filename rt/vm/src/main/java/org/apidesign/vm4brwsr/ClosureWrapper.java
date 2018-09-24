@@ -180,6 +180,7 @@ final class ClosureWrapper extends CommandLineRunner {
         "jvmName",
         "primitive",
         "superclass",
+        "interfaces",
         "cnstr",
         "add32",
         "sub32",
