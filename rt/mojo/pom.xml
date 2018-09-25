@@ -72,45 +72,6 @@
                     <target>1.7</target>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.fortasoft</groupId>
-                <artifactId>gradle-maven-plugin</artifactId>
-                <version>1.0.8</version>
-                <configuration>
-                    <tasks>
-                        <task>clean</task>
-                        <task>${gradle.bck2brwsrAot}</task>
-                        <task>${gradle.bck2brwsrPages}</task>
-                    </tasks>
-                    <args>
-                        <arg>--refresh-dependencies</arg>
-                        <arg>-PprjVersion=${project.version}</arg>
-                        <arg>-PnjhVersion=${net.java.html.version}</arg>
-                    </args>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>gradle1</id>
-                        <phase>generate-test-resources</phase>
-                        <goals>
-                            <goal>invoke</goal>
-                        </goals>
-                        <configuration>
-                            <gradleProjectDirectory>src/test/resources/org/apidesign/bck2brwsr/mojo/gradle1</gradleProjectDirectory>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>gradle2</id>
-                        <phase>generate-test-resources</phase>
-                        <goals>
-                            <goal>invoke</goal>
-                        </goals>
-                        <configuration>
-                            <gradleProjectDirectory>src/test/resources/org/apidesign/bck2brwsr/mojo/gradle2</gradleProjectDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
       </build>
       
@@ -220,6 +181,55 @@
                 <gradle.bck2brwsrAot>tasks</gradle.bck2brwsrAot>
                 <gradle.bck2brwsrPages>tasks</gradle.bck2brwsrPages>
             </properties>
+        </profile>
+        <profile>
+            <id>jdk-8</id>
+            <activation>
+                <jdk>1.8</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.fortasoft</groupId>
+                        <artifactId>gradle-maven-plugin</artifactId>
+                        <version>1.0.8</version>
+                        <configuration>
+                            <tasks>
+                                <task>clean</task>
+                                <task>${gradle.bck2brwsrAot}</task>
+                                <task>${gradle.bck2brwsrPages}</task>
+                            </tasks>
+                            <args>
+                                <arg>--refresh-dependencies</arg>
+                                <arg>-PprjVersion=${project.version}</arg>
+                                <arg>-PnjhVersion=${net.java.html.version}</arg>
+                            </args>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>gradle1</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>invoke</goal>
+                                </goals>
+                                <configuration>
+                                    <gradleProjectDirectory>src/test/resources/org/apidesign/bck2brwsr/mojo/gradle1</gradleProjectDirectory>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>gradle2</id>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>invoke</goal>
+                                </goals>
+                                <configuration>
+                                    <gradleProjectDirectory>src/test/resources/org/apidesign/bck2brwsr/mojo/gradle2</gradleProjectDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 </project>

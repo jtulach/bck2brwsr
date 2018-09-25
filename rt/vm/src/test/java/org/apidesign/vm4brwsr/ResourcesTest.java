@@ -18,6 +18,7 @@
 package org.apidesign.vm4brwsr;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Base64;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -69,7 +70,7 @@ public class ResourcesTest {
     }
     
     public static String parseBase64Binary(String s) throws UnsupportedEncodingException {
-        final byte[] arr = javax.xml.bind.DatatypeConverter.parseBase64Binary(s);
+        final byte[] arr = Base64.getDecoder().decode(s);
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < arr.length; i++) {
             int ch = arr[i];

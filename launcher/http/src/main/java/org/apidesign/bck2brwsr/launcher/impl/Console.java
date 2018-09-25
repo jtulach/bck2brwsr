@@ -22,6 +22,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Base64;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
@@ -248,7 +249,7 @@ public class Console {
     private static native Object schedule(Runnable r, int time);
 
     public static String parseBase64Binary(String s) throws UnsupportedEncodingException {
-        final byte[] arr = javax.xml.bind.DatatypeConverter.parseBase64Binary(s);
+        final byte[] arr = Base64.getDecoder().decode(s);
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < arr.length; i++) {
             int ch = arr[i];

@@ -59,32 +59,6 @@
                     <skip>true</skip>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.fortasoft</groupId>
-                <artifactId>gradle-maven-plugin</artifactId>
-                <version>1.0.8</version>
-                <configuration>
-                    <tasks>
-                        <task>clean</task>
-                        <task>${gradle.bck2brwsrAot}</task>
-                    </tasks>
-                    <gradleProjectDirectory>src/test/resources/org/apidesign/bck2brwsr/gradletest/gradle1</gradleProjectDirectory>
-                    <args>
-                        <arg>--refresh-dependencies</arg>
-                        <arg>-PprjVersion=${project.version}</arg>
-                        <arg>-PnjhVersion=${net.java.html.version}</arg>
-                        <arg>-PskipGradle=${skipGradle}</arg>
-                    </args>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>generate-test-resources</phase>
-                        <goals>
-                            <goal>invoke</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 
@@ -118,6 +92,42 @@
                 <skipGradle>true</skipGradle>
                 <gradle.bck2brwsrAot>tasks</gradle.bck2brwsrAot>
             </properties>
+        </profile>
+        <profile>
+            <id>jdk8</id>
+            <activation>
+                <jdk>1.8</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.fortasoft</groupId>
+                        <artifactId>gradle-maven-plugin</artifactId>
+                        <version>1.0.8</version>
+                        <configuration>
+                            <tasks>
+                                <task>clean</task>
+                                <task>${gradle.bck2brwsrAot}</task>
+                            </tasks>
+                            <gradleProjectDirectory>src/test/resources/org/apidesign/bck2brwsr/gradletest/gradle1</gradleProjectDirectory>
+                            <args>
+                                <arg>--refresh-dependencies</arg>
+                                <arg>-PprjVersion=${project.version}</arg>
+                                <arg>-PnjhVersion=${net.java.html.version}</arg>
+                                <arg>-PskipGradle=${skipGradle}</arg>
+                            </args>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>invoke</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 </project>

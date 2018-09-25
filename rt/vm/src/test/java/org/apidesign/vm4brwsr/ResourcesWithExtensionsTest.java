@@ -111,12 +111,6 @@ public class ResourcesWithExtensionsTest {
     }
     
     public static String parseBase64Binary(String s) throws UnsupportedEncodingException {
-        final byte[] arr = javax.xml.bind.DatatypeConverter.parseBase64Binary(s);
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < arr.length; i++) {
-            int ch = arr[i];
-            sb.append((char)ch);
-        }
-        return sb.toString();
+        return ResourcesTest.parseBase64Binary(s);
     }
 }

@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Base64;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.vm4brwsr.ByteCodeParser.ClassData;
 import org.apidesign.vm4brwsr.ByteCodeParser.FieldData;
@@ -146,7 +147,7 @@ abstract class VM extends ByteCodeToJavaScript {
 
     @JavaScriptBody(args = { "arr" }, body = "return btoa(arr);")
     private static String btoa(byte[] arr) {
-        return javax.xml.bind.DatatypeConverter.printBase64Binary(arr);
+        return Base64.getEncoder().encodeToString(arr);
     }
 
     protected abstract void generatePrologue(Appendable out) throws IOException;
