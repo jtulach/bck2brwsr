@@ -69,7 +69,7 @@ final class FXInspect implements Runnable {
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
-                Debugger debugger = engine.impl_getDebugger();
+                Debugger debugger = getDebugger();
                 debugger.setEnabled(true);
                 debugger.setMessageCallback(new Callback<String,Void>() {
                     @Override
@@ -100,12 +100,22 @@ final class FXInspect implements Runnable {
                 Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
-                        engine.impl_getDebugger().sendMessage(message);
+                        getDebugger().sendMessage(message);
                     }
                 });
             }
         } catch (IOException ioex) {
             ioex.printStackTrace();
+        }
+    }
+
+    final Debugger getDebugger() throws RuntimeException {
+        try {
+            return (Debugger) engine.getClass().getMethod("impl_getDebugger").invoke(engine); // NOI18N
+        } catch (RuntimeException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
         }
     }
 }

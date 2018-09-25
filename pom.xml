@@ -13,7 +13,7 @@
   </parent>  
   <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-      <netbeans.version>RELEASE80</netbeans.version>
+      <netbeans.version>RELEASE82</netbeans.version>
       <license>COPYING</license>
       <net.java.html.version>1.5.1</net.java.html.version>
       <netbeans.compile.on.save>none</netbeans.compile.on.save>

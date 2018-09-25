@@ -66,11 +66,10 @@
       <version>${grizzly.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.oracle</groupId>
-      <artifactId>javafx</artifactId>
-      <version>2.2</version>
-      <scope>system</scope>
-      <systemPath>${jfxrt.jar}</systemPath>
+        <groupId>org.openjfx</groupId>
+        <artifactId>javafx-web</artifactId>
+        <version>11</version>
+        <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.testng</groupId>

@@ -46,13 +46,18 @@ final class FXBrwsrLauncher extends BaseHTTPLauncher {
     private static final Logger LOG = Logger.getLogger(FXBrwsrLauncher.class.getName());
     static {
         try {
-            Method m = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
-            m.setAccessible(true);
-            URL l = new URL("file://" + System.getProperty("java.home") + "/lib/jfxrt.jar");
-            LOG.log(Level.INFO, "url : {0}", l);
-            m.invoke(ClassLoader.getSystemClassLoader(), l);
-        } catch (Exception ex) {
-            throw new LinkageError("Can't add jfxrt.jar on the classpath", ex);
+            Class.forName("javafx.application.Application");
+            // OK, found
+        } catch (ClassNotFoundException noFX) {
+            try {
+                Method m = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+                m.setAccessible(true);
+                URL l = new URL("file://" + System.getProperty("java.home") + "/lib/jfxrt.jar");
+                LOG.log(Level.INFO, "url : {0}", l);
+                m.invoke(ClassLoader.getSystemClassLoader(), l);
+            } catch (Exception ex) {
+                throw new LinkageError("Can't add jfxrt.jar on the classpath", ex);
+            }
         }
     }
 

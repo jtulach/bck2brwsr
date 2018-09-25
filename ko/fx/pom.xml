@@ -53,11 +53,10 @@
   </build>
   <dependencies>
     <dependency>
-        <groupId>com.oracle</groupId>
-        <artifactId>javafx</artifactId>
-        <version>2.2</version>
-        <scope>system</scope>
-        <systemPath>${jfxrt.jar}</systemPath>
+        <groupId>org.openjfx</groupId>
+        <artifactId>javafx-web</artifactId>
+        <version>11</version>
+        <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.json</groupId>
@@ -118,28 +117,4 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-  <profiles>
-      <profile>
-          <id>jdk8</id>
-          <activation>
-              <file>
-                  <exists>${java.home}/lib/ext/jfxrt.jar</exists>
-              </file>
-          </activation>
-          <properties>
-            <jfxrt.jar>${java.home}/lib/ext/jfxrt.jar</jfxrt.jar>
-          </properties>
-      </profile>
-      <profile>
-          <id>jdk7</id>
-          <activation>
-              <file>
-                  <exists>${java.home}/lib/jfxrt.jar</exists>
-              </file>
-          </activation>
-          <properties>
-            <jfxrt.jar>${java.home}/lib/jfxrt.jar</jfxrt.jar>
-          </properties>
-      </profile>
-  </profiles>
 </project>
