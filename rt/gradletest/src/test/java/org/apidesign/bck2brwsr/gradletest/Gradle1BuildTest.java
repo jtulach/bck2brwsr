@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import static org.testng.Assert.*;
+import org.testng.SkipException;
 import org.testng.annotations.Test;
 
 public class Gradle1BuildTest {
@@ -28,7 +29,7 @@ public class Gradle1BuildTest {
     @Test
     public void verifyMainJS() throws Exception {
         InputStream is = Gradle1BuildTest.class.getResourceAsStream("gradle1/build/web/main.js");
-        assertNotNull(is, "main.js has been generated");
+        assertOrAssumeNotNull(is, "main.js has been generated");
         int len = is.available();
         byte[] arr = new byte[len];
         int read = is.read(arr);
@@ -60,6 +61,19 @@ public class Gradle1BuildTest {
             }
         }
         fail("Not found " + imprt + " in\n" + section);
+    }
+
+    private void assertOrAssumeNotNull(InputStream is, String msg) {
+        try {
+            Class.forName("java.lang.Module");
+            // skip the test on JDK9 and newer
+            if (is == null) {
+                throw new SkipException("Ignoring on JDK9: " + msg);
+            }
+        } catch (ClassNotFoundException ex) {
+            // assert on JDK8
+            assertNotNull(is, msg);
+        }
     }
 
 }
