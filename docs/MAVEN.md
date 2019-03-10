@@ -43,9 +43,9 @@ and also console of your terminal window.
 
 ## Interacting with Java
 
-While in browser console (press F12 to open it), you can interact with the
-Java virtual machine by loading **public** Java class and invoking its
-**public** static methods:
+While in browser console (press F12 to open the developer tools with the console tab),
+you can interact with the Java virtual machine by loading **public** Java class
+and invoking its **public** static methods:
 ```js
 vm.loadClass("java.lang.System", function(System) {
   System.exit(0)
