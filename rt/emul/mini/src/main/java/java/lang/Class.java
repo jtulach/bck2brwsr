@@ -1840,11 +1840,16 @@ public final
     )
     static native void registerToString();
     
+    static Class<?> classFor(Object self) {
+        Class<?> c = classFor0(self);
+        return c == null ? Object.class : c;
+    }
+
     @JavaScriptBody(args = {"self"}, body
             = "var c = self.constructor.$class;\n"
             + "return c ? c : null;\n"
     )
-    static native Class<?> classFor(Object self);
+    private static native Class<?> classFor0(Object self);
     
     @Exported
     @JavaScriptBody(args = { "self" }, body

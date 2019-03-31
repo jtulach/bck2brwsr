@@ -25,7 +25,6 @@
 
 package java.lang;
 
-import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.core.JavaScriptPrototype;
 
 /**
@@ -65,8 +64,7 @@ public class Object {
      *         <cite>The Java&trade; Language Specification</cite>.
      */
     public final Class<?> getClass() {
-        Class<?> c = Class.classFor(this);
-        return c == null ? Object.class : c;
+        return Class.classFor(this);
     }
 
     /**

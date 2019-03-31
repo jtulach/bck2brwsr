@@ -174,6 +174,7 @@ abstract class ByteCodeToJavaScript {
             "org.apidesign.bck2brwsr.core.JavaScriptPrototype",
             "container", "prototype"
         );
+        String specialContainerSpecified = null;
         StringArray toInitilize = new StringArray();
         final String className = className(jc);
         out.append("\n\n");
@@ -192,6 +193,8 @@ abstract class ByteCodeToJavaScript {
             out.append("\n    var p = CLS.prototype = ").append(proto[1]).append(";");
             if (proto[0] == null) {
                 proto[0] = "p";
+            } else {
+                specialContainerSpecified = proto[0];
             }
             out.append("\n    var c = ").append(proto[0]).append(";");
             out.append("\n    var sprcls = null;");
@@ -249,7 +252,6 @@ abstract class ByteCodeToJavaScript {
             out.append("\n    m.cls = CLS;");
         }
         out.append(numbers.generate());
-        out.append("\n    c.constructor = CLS;");
         out.append("\n    function ").append(className).append("fillInstOf(x) {");
         String instOfName = "$instOf_" + className;
         out.append("\n        Object.defineProperty(x, '").append(instOfName).append("', { value : true });");
@@ -275,6 +277,11 @@ abstract class ByteCodeToJavaScript {
         out.append("\n    CLS.$class = 'temp';");
         out.append("\n    CLS.$class = ");
         out.append(accessClass("java_lang_Class")).append("(true);");
+        if (!"Object.prototype".equals(specialContainerSpecified)) {
+            out.append("\n    c.constructor = CLS;");
+        } else {
+            out.append("\n    c.constructor.$class = CLS.$class;");
+        }
         out.append("\n    CLS.$class.jvmName = '").append(cn).append("';");
         out.append("\n    CLS.$class.superclass = sprcls;");
         out.append("\n    CLS.$class.interfaces = function() { return [");
