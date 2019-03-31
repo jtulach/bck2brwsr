@@ -1089,6 +1089,9 @@ class LoopCode implements Runnable {
         for (int j = numArguments - 1; j >= 0; --j) {
             vars[j] = mapper.popValue();
         }
+        if ("java/lang/Object".equals(mi[0]) && "<init>".equals(mi[1])) {
+            return i + 2;
+        }
         if (("newUpdater__Ljava_util_concurrent_atomic_AtomicIntegerFieldUpdater_2Ljava_lang_Class_2Ljava_lang_String_2".equals(mn) && "java/util/concurrent/atomic/AtomicIntegerFieldUpdater".equals(mi[0])) || ("newUpdater__Ljava_util_concurrent_atomic_AtomicLongFieldUpdater_2Ljava_lang_Class_2Ljava_lang_String_2".equals(mn) && "java/util/concurrent/atomic/AtomicLongFieldUpdater".equals(mi[0]))) {
             if (vars[1] instanceof String) {
                 String field = vars[1].toString();
