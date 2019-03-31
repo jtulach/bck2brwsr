@@ -146,6 +146,14 @@ public class InstanceTest {
         );
     }
 
+    @Test public void objectConstructor() throws Exception {
+        assertExec(
+            "Constructor of {} is Object",
+            Instance.class, "objectConstructor__Z",
+            Double.valueOf(1)
+        );
+    }
+
     @Test public void jsObjectIsLikeJavaObject() throws Exception {
         assertExec(
             "JavaScript object is instance of Java Object",

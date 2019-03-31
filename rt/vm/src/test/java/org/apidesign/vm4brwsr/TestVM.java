@@ -45,7 +45,14 @@ public final class TestVM {
     private TestVM(Invocable code, CharSequence codeSeq) throws ScriptException, NoSuchMethodException {
         this.code = code;
         this.codeSeq = codeSeq;
-        this.bck2brwsr = ((ScriptEngine)code).eval("bck2brwsr(function(n) { return loader.get(n); })");
+        final ScriptEngine eng = (ScriptEngine)code;
+        Object objBefore = eng.eval("Object");
+        assertEquals(eng.eval("(new Object()).constructor === Object"), Boolean.TRUE, "new Obj constr before");
+        assertEquals(eng.eval("({}).constructor === Object"), Boolean.TRUE, "Obj constr before");
+        this.bck2brwsr = eng.eval("bck2brwsr(function(n) { return loader.get(n); })");
+        Object objAfter = eng.eval("Object");
+        assertEquals(eng.eval("(new Object()).constructor === Object"), Boolean.TRUE, "new Obj constr after. ObjBefore: " + objBefore + " objAfter: " + objAfter);
+        assertEquals(eng.eval("({}).constructor === Object"), Boolean.TRUE, "Obj constr after");
         ((ScriptEngine)code).getContext().setAttribute("loader", this, ScriptContext.ENGINE_SCOPE);
     }
     

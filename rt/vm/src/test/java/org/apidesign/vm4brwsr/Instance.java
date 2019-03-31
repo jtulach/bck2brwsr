@@ -122,8 +122,20 @@ public class Instance {
         
         return constructor(x) == constructor(y);
     }
+
+    public static boolean objectConstructor() {
+        Object x = jsObj();
+
+        return constructor(x) == jsObjClass();
+    }
+
     @JavaScriptBody(args = {}, body = "return {};")
     private static Object jsObj() {
+        return null;
+    }
+
+    @JavaScriptBody(args = {}, body = "return Object;")
+    private static Object jsObjClass() {
         return null;
     }
     
