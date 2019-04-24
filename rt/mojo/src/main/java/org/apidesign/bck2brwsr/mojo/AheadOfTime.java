@@ -19,6 +19,7 @@ package org.apidesign.bck2brwsr.mojo;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
@@ -141,6 +142,9 @@ public class AheadOfTime extends AbstractMojo {
                 throw new MojoExecutionException("Cannot resolve " + bck2brwsrRt, ex);
             }
             artifacts.add(bck2brwsrRt);
+        }
+        if (Objects.equals(vm, mainJavaScript)) {
+            throw new MojoExecutionException("Cannot generate: <vm>" + vm.getName() + "</vm> and <mainJavaScript>" + mainJavaScript.getName() + "</mainJavaScript> point to the same file: " + vm);
         }
 
         class Work extends AheadOfTimeBase<Artifact> {
