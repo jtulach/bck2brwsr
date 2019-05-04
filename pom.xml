@@ -13,7 +13,7 @@
   </parent>  
   <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-      <netbeans.version>RELEASE82</netbeans.version>
+      <netbeans.version>RELEASE110</netbeans.version>
       <license>COPYING</license>
       <net.java.html.version>1.5.1</net.java.html.version>
       <netbeans.compile.on.save>none</netbeans.compile.on.save>
@@ -45,11 +45,6 @@
     <tag>HEAD</tag>
   </scm>
   <repositories>
-      <repository>
-          <id>netbeans</id>
-          <name>NetBeans</name>
-          <url>http://bits.netbeans.org/maven2/</url>
-      </repository>
       <!--
       <repository>
           <id>stagging</id>
@@ -70,11 +65,13 @@
               <enabled>true</enabled>
           </releases>
       </pluginRepository>
+      <!--
       <pluginRepository>
           <id>stagging</id>
           <name>Stagging</name>
           <url>https://maven.java.net/content/repositories/orgapidesign-1059/</url>
       </pluginRepository>
+      -->
   </pluginRepositories>
   <build>
       <plugins>
