@@ -42,6 +42,9 @@ public class Bck2BrwsrJavaScriptBodyTest extends JavaScriptTCK {
             if (arr[i].getSimpleName().startsWith("GC")) {
                 arr[i] = Object.class;
             }
+            if (arr[i].getSimpleName().equals("ExposedPropertiesTest")) {
+                arr[i] = Object.class;
+            }
         }
         return arr;
     }

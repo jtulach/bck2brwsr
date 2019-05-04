@@ -35,7 +35,7 @@ public class Gradle1BuildTest {
         int read = is.read(arr);
         assertEquals(read, len, "Whole stream read");
         String text = new String(arr);
-        assertClasspath(text, "lib/net.java.html.boot-[0-9\\.]*.js", 3);
+        assertClasspath(text, "lib/net.java.html.boot-[0-9\\.\\-SNAPSHOT]*.js", 3);
         assertClasspath(text, "lib/emul-[0-9\\.\\-SNAPSHOT]*-rt.js", 3);
     }
 

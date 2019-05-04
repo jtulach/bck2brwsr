@@ -20,8 +20,6 @@ package org.apidesign.bck2brwsr.mojo;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import static org.testng.Assert.*;
@@ -35,7 +33,7 @@ public class AheadOfTimeGradleTest {
         URL u = AheadOfTimeGradleTest.class.getResource("gradle1/build/web/main.js");
         assertOrAssumeNotNull(u, "main.js has been generated");
         String text = readStream(u);
-        assertClasspath(text, "lib/net.java.html.boot-[0-9\\.]*.js", u);
+        assertClasspath(text, "lib/net.java.html.boot-[0-9\\.\\-SNAPSHOT]*.js", u);
         assertClasspath(text, "lib/emul.mini-[0-9\\.\\-SNAPSHOT]*.js", u);
     }
 

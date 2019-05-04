@@ -36,7 +36,7 @@ public final class Dialogs {
     @JavaScriptBody(
         args = { "msg", "callback" }, 
         javacall = true, 
-        body = "if (confirm(msg)) {\n"
+        body = "if (typeof confirm === 'undefined' || confirm(msg)) {\n"
              + "  callback.@java.lang.Runnable::run()();\n"
              + "}\n"
     )

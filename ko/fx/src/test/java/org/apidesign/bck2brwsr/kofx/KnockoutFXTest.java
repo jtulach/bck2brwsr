@@ -64,6 +64,9 @@ public final class KnockoutFXTest extends KnockoutTCK {
             if (arr[i].getName().contains("GCBodyTest")) {
                 arr[i] = Object.class;
             }
+            if (arr[i].getSimpleName().equals("ExposedPropertiesTest")) {
+                arr[i] = Object.class;
+            }
         }
         return arr;
     }

@@ -37,6 +37,11 @@ public class JavaScriptBodyFXBrwsrTest extends JavaScriptTCK {
     
     private static Class[] filterTestClasses() {
         Class[] arr = testClasses();
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i].getSimpleName().equals("ExposedPropertiesTest")) {
+                arr[i] = Object.class;
+            }
+        }
         return arr;
     }
 }
