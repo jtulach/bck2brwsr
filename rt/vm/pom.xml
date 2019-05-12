@@ -40,13 +40,6 @@
     <bck2brwsr.obfuscationlevel>MINIMAL</bck2brwsr.obfuscationlevel>
   </properties>
   
-  <repositories>
-      <repository>
-          <id>netbeans</id>
-          <name>NetBeans</name>
-          <url>http://bits.netbeans.org/maven2/</url>
-      </repository>
-  </repositories>
   <pluginRepositories>
     <pluginRepository>
         <id>mc-release</id>
@@ -60,11 +53,6 @@
         </releases>
     </pluginRepository>
   </pluginRepositories>
-  <scm>
-      <connection>scm:hg:http://source.apidesign.org/hg/bck2brwsr</connection>
-      <url>http://source.apidesign.org/hg/bck2brwsr</url>
-    <tag>HEAD</tag>
-  </scm>
   <build>
       <plugins>
           <plugin>
