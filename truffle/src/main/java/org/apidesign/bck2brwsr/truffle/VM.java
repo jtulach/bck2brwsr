@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Enumeration;
@@ -58,6 +59,7 @@ final class VM {
     final TruffleLanguage.Env env;
     private TruffleObject vm;
     private LoadClassNode loadClass;
+    private Object jsNull;
 
     VM(TruffleLanguage.Env env) {
         this.env = env;
@@ -74,7 +76,7 @@ final class VM {
             vmInit.call();
 
             CallTarget rtInit = env.parse(rtJs());
-            rtInit.call();
+            jsNull = rtInit.call();
 
             Source atob = Source.newBuilder(
                 "(function(f) {\n"
@@ -98,11 +100,25 @@ final class VM {
         }
     }
 
+    final Object jsNull() {
+        return jsNull;
+    }
+
     private static Source rtJs() throws IOException {
         if (rtJs == null) {
-            URL rt = VM.class.getResource("/emul-1.0-SNAPSHOT-debug.js");
+            InputStream rt = VM.class.getResourceAsStream("/emul-1.0-SNAPSHOT-debug.js");
             assert rt != null;
-            rtJs = Source.newBuilder(rt).name("rt.js").mimeType("text/javascript").build();
+            InputStreamReader r = new InputStreamReader(rt);
+            StringBuilder sb = new StringBuilder();
+            char[] arr = new char[4096];
+            for (;;) {
+                int len = r.read(arr);
+                if (len == -1) {
+                    break;
+                }
+                sb.append(arr, 0, len);
+            }
+            rtJs = Source.newBuilder("js", sb, "rt.js").build();
         }
         return rtJs;
     }

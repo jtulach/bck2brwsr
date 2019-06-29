@@ -39,7 +39,10 @@ import javax.tools.JavaFileObject;
     name = "Java",
     byteMimeTypes = {
         "application/x-jar", "application/x-java-archive",
-        "application/x-java-class", "text/java"
+        "application/x-java-class"
+    },
+    characterMimeTypes = {
+        "text/java"
     },
     defaultMimeType = "application/x-jar",
     dependentLanguages = "js",
@@ -100,7 +103,7 @@ public class Bck2BrwsrLanguage extends TruffleLanguage<VM> {
                     } catch (IOException ex) {
                         throw VM.raise(ex);
                     }
-                    return nullValue();
+                    return nullValue(ref.get());
                 }
             });
         }
@@ -130,13 +133,13 @@ public class Bck2BrwsrLanguage extends TruffleLanguage<VM> {
                 } catch (Exception ex) {
                     throw VM.raise(ex);
                 }
-                return nullValue();
+                return nullValue(ref.get());
             }
         });
     }
 
-    private static Object nullValue() {
-        return null;
+    private static Object nullValue(VM vm) {
+        return vm.jsNull();
     }
 
     private static InputStream openStream(Source src) throws IOException {
