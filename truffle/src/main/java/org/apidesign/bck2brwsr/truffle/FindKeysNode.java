@@ -22,8 +22,8 @@ import com.oracle.truffle.api.interop.InteropException;
 import com.oracle.truffle.api.interop.Message;
 import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.interop.UnknownIdentifierException;
-import com.oracle.truffle.api.interop.java.JavaInterop;
 import com.oracle.truffle.api.nodes.Node;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -48,7 +48,8 @@ final class FindKeysNode extends Node {
                 js = (TruffleObject) ForeignAccess.sendRead(prototype, js, "__proto__");
             }
 
-            names = JavaInterop.asJavaObject(List.class, ForeignAccess.sendKeys(keys, js));
+            //names = JavaInterop.asJavaObject(List.class, ForeignAccess.sendKeys(keys, js));
+            names = Collections.emptyList();
         } catch (InteropException ex) {
             throw ex.raise();
         }

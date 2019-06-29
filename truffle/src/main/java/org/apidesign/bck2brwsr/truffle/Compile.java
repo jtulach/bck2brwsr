@@ -69,8 +69,8 @@ final class Compile implements DiagnosticListener<JavaFileObject> {
     private final String cls;
 
     private Compile(Source code) throws IOException {
-        this.pkg = findPkg(code.getCode());
-        this.cls = findCls(code.getCode());
+        this.pkg = findPkg(code.getCharacters());
+        this.cls = findCls(code.getCharacters());
         classes = compile(code);
     }
 
@@ -101,7 +101,7 @@ final class Compile implements DiagnosticListener<JavaFileObject> {
         final ClassLoaderFileManager clfm = new ClassLoaderFileManager();
         final JavaFileObject file = clfm.createMemoryFileObject(ClassLoaderFileManager.convertFQNToResource(pkg.isEmpty() ? cls : pkg + "." + cls) + Kind.SOURCE.extension,
                 Kind.SOURCE,
-                code.getCode().getBytes());
+                code.getBytes().toByteArray());
 
         JavaFileManager jfm = new ForwardingJavaFileManager<JavaFileManager>(clfm) {
         };
@@ -122,7 +122,7 @@ final class Compile implements DiagnosticListener<JavaFileObject> {
     public void report(Diagnostic<? extends JavaFileObject> diagnostic) {
         errors.add(diagnostic);
     }
-    private static String findPkg(String java) throws IOException {
+    private static String findPkg(CharSequence java) throws IOException {
         Pattern p = Pattern.compile("package\\p{javaWhitespace}*([\\p{Alnum}\\.]+)\\p{javaWhitespace}*;", Pattern.MULTILINE);
         Matcher m = p.matcher(java);
         if (!m.find()) {
@@ -131,7 +131,7 @@ final class Compile implements DiagnosticListener<JavaFileObject> {
         String pkg = m.group(1);
         return pkg;
     }
-    private static String findCls(String java) throws IOException {
+    private static String findCls(CharSequence java) throws IOException {
         Pattern p = Pattern.compile("class\\p{javaWhitespace}*([\\p{Alnum}\\.]+)\\p{javaWhitespace}", Pattern.MULTILINE);
         Matcher m = p.matcher(java);
         if (!m.find()) {

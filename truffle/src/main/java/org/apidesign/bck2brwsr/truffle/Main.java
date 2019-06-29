@@ -17,19 +17,19 @@
  */
 package org.apidesign.bck2brwsr.truffle;
 
-import com.oracle.truffle.api.source.Source;
-import com.oracle.truffle.api.vm.PolyglotEngine;
 import java.io.File;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Source;
 
 public class Main {
     public static void main(String... args) throws Exception {
-        PolyglotEngine engine = PolyglotEngine.newBuilder().build();
+        Context ctx = Context.newBuilder().build();
         String jarFile = null;
         for (int i = 0; i < args.length; i++) {
             if (isOption(args[i], "cp", "classpath")) {
                 for (String element : args[++i].split(File.pathSeparator)) {
-                    Source src = Source.newBuilder(new File(element)).mimeType("application/x-jar").build();
-                    engine.eval(src);
+                    Source src = Source.newBuilder("Java", new File(element)).mimeType("application/x-jar").build();
+                    ctx.eval(src);
                 }
                 continue;
             }
@@ -48,8 +48,8 @@ public class Main {
             throw new IllegalArgumentException("Usage: -cp jar1:jar2:jar3 -jar jarToExecute");
         }
 
-        Source src = Source.newBuilder(new File(jarFile)).mimeType("application/x-jar").build();
-        engine.eval(src);
+        Source src = Source.newBuilder("Java", new File(jarFile)).mimeType("application/x-jar").build();
+        ctx.eval(src);
     }
 
     private static boolean isOption(String arg, String... options) {

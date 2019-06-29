@@ -10,6 +10,9 @@
     <artifactId>java4truffle-bck2brwsr</artifactId>
     <packaging>jar</packaging>
     <name>Java for Truffle via Bck2Brwsr</name>
+    <properties>
+        <graalvm.version>19.0.2</graalvm.version>
+    </properties>
     <build>
         <plugins>
             <plugin>
@@ -36,9 +39,9 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>com.oracle.truffle</groupId>
+            <groupId>org.graalvm.truffle</groupId>
             <artifactId>truffle-api</artifactId>
-            <version>0.25</version>
+            <version>${graalvm.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -60,9 +63,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.oracle.truffle</groupId>
+            <groupId>org.graalvm.truffle</groupId>
             <artifactId>truffle-dsl-processor</artifactId>
-            <version>0.25</version>
+            <version>${graalvm.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -81,6 +84,12 @@
             <groupId>org.apidesign.bck2brwsr</groupId>
             <artifactId>aot</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.graalvm.js</groupId>
+            <artifactId>js</artifactId>
+            <version>${graalvm.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

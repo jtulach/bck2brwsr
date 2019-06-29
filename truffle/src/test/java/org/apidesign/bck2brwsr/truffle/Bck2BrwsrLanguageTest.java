@@ -17,8 +17,6 @@
  */
 package org.apidesign.bck2brwsr.truffle;
 
-import com.oracle.truffle.api.source.Source;
-import com.oracle.truffle.api.vm.PolyglotEngine;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -30,6 +28,9 @@ import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Source;
+import org.graalvm.polyglot.Value;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -39,7 +40,7 @@ import org.junit.Test;
 
 public class Bck2BrwsrLanguageTest {
 
-    private static PolyglotEngine engine;
+    private static Context ctx;
     private static ByteArrayOutputStream out;
 
     public Bck2BrwsrLanguageTest() {
@@ -48,12 +49,12 @@ public class Bck2BrwsrLanguageTest {
     @BeforeClass
     public static void setUpClass() {
         out = new ByteArrayOutputStream();
-        engine = PolyglotEngine.newBuilder().setErr(out).setOut(out).build();
+        ctx = Context.newBuilder().err(out).out(out).build();
     }
 
     @AfterClass
     public static void tearDownClass() {
-        engine.dispose();
+        ctx.getEngine().close();
     }
 
     @Test
@@ -61,18 +62,18 @@ public class Bck2BrwsrLanguageTest {
         File jar = createHelloJar(false, true);
         String mime = Files.probeContentType(jar.toPath());
 
-        Source src = Source.newBuilder(jar.toURI().toURL()).mimeType(mime).build();
-        engine.eval(src);
+        Source src = Source.newBuilder("Java", jar.toURI().toURL()).mimeType(mime).build();
+        ctx.eval(src);
 
-        PolyglotEngine.Value nonExistingClass;
+        Value nonExistingClass;
         try {
-            nonExistingClass = engine.findGlobalSymbol(Hello.class.getCanonicalName() + '2');
+            nonExistingClass = ctx.getPolyglotBindings().getMember(Hello.class.getCanonicalName() + '2');
         } catch (Exception ex) {
             nonExistingClass = null;
         }
         assertNull(nonExistingClass);
 
-        PolyglotEngine.Value in = engine.findGlobalSymbol(Hello.class.getCanonicalName());
+        Value in = ctx.getPolyglotBindings().getMember(Hello.class.getCanonicalName());
         assertNotNull(in);
         Invoke invoke = in.as(Invoke.class);
 
@@ -84,12 +85,14 @@ public class Bck2BrwsrLanguageTest {
     @Test
     public void testHelloWorldFromASource() throws Exception {
         Source src = Source.newBuilder(
-            "package test; class Hello { static { System.out.println(\"Hello from Code!\"); } }"
-        ).mimeType("text/java").name("Hello.java").build();
-        engine.eval(src);
+            "Java",
+            "package test; class Hello { static { System.out.println(\"Hello from Code!\"); } }",
+            "Hello.java"
+        ).mimeType("text/java").build();
+        ctx.eval(src);
 
         out.reset();
-        PolyglotEngine.Value in = engine.findGlobalSymbol("test.Hello");
+        Value in = ctx.getPolyglotBindings().getMember("test.Hello");
         assertNotNull(in);
         assertEquals("Hello from Code!", out.toString("UTF-8").trim());
     }
@@ -100,8 +103,8 @@ public class Bck2BrwsrLanguageTest {
         String mime = Files.probeContentType(jar.toPath());
 
         out.reset();
-        Source src = Source.newBuilder(jar.toURI().toURL()).mimeType(mime).build();
-        engine.eval(src);
+        Source src = Source.newBuilder("Java", jar.toURI().toURL()).mimeType(mime).build();
+        ctx.eval(src);
         assertEquals("Hello from Main!", out.toString("UTF-8").trim());
     }
 
@@ -111,8 +114,8 @@ public class Bck2BrwsrLanguageTest {
         String mime = Files.probeContentType(jar.toPath());
 
         out.reset();
-        Source src = Source.newBuilder(jar.toURI().toURL()).mimeType(mime).build();
-        engine.eval(src);
+        Source src = Source.newBuilder("Java", jar.toURI().toURL()).mimeType(mime).build();
+        ctx.eval(src);
         assertEquals("Hello from Main!", out.toString("UTF-8").trim());
     }
 

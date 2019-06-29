@@ -17,30 +17,31 @@
  */
 package org.apidesign.bck2brwsr.truffle;
 
-import com.oracle.truffle.api.source.Source;
-import com.oracle.truffle.api.vm.PolyglotEngine;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Source;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class JavaJSInteropTest {
-    private static PolyglotEngine engine;
+    private static Context ctx;
 
     @BeforeClass
     public static void setUpClass() {
-        engine = PolyglotEngine.newBuilder().build();
+        ctx = Context.newBuilder().build();
     }
 
     @AfterClass
     public static void tearDownClass() {
-        engine.dispose();
+        ctx.getEngine().close();
     }
 
     @Test
     public void accessStaticMethods() throws Exception {
         Source src = Source.newBuilder(
-              "package test;\n"
+            "Java",
+            "package test;\n"
             + "final class Sum {\n"
             + "  public static int add(int a, int b) {\n"
             + "    return a + b;\n"
@@ -50,22 +51,26 @@ public class JavaJSInteropTest {
             + "    for (int v : a) { sum += v; };\n"
             + "    return sum;\n"
             + "  }\n"
-            + "}\n"
-        ).mimeType("text/java").name("Sum.java").build();
-        engine.eval(src);
+            + "}\n",
+            "Sum.java"
+        ).mimeType("text/java").build();
+        ctx.eval(src);
 
         Source js = Source.newBuilder(
+                "Java",
                 "var Sum = Interop.import('test.Sum');\n"
-              + "Sum.add(1, 6) + Sum.all([3, 3]);"
-        ).mimeType("text/javascript").name("thirteen.js").build();
+              + "Sum.add(1, 6) + Sum.all([3, 3]);",
+                "thirteen.js"
+        ).mimeType("text/javascript").build();
 
-        int value = engine.eval(js).as(Number.class).intValue();
+        int value = ctx.eval(js).as(Number.class).intValue();
         assertEquals(13, value);
     }
 
     @Test
     public void accessInstanceMethods() throws Exception {
         Source src = Source.newBuilder(
+            "Java",
               "package testinst;\n"
             + "public final class Sum {\n"
             + "  public int add(int a, int b) {\n"
@@ -76,23 +81,27 @@ public class JavaJSInteropTest {
             + "    for (int v : a) { sum += v; };\n"
             + "    return sum;\n"
             + "  }\n"
-            + "}\n"
-        ).mimeType("text/java").name("Sum.java").build();
-        engine.eval(src);
+            + "}\n",
+              "Sum.java"
+        ).mimeType("text/java").build();
+        ctx.eval(src);
 
         Source js = Source.newBuilder(
+                "Java",
                 "var Sum = Interop.import('testinst.Sum');\n"
               + "var sum = new Sum();"
-              + "sum.add(1, 6) + sum.all([3, 3]);"
-        ).mimeType("text/javascript").name("thirteen.js").build();
+              + "sum.add(1, 6) + sum.all([3, 3]);",
+                "thirteen.js"
+        ).mimeType("text/javascript").build();
 
-        int value = engine.eval(js).as(Number.class).intValue();
+        int value = ctx.eval(js).as(Number.class).intValue();
         assertEquals(13, value);
     }
 
     @Test
     public void instanceArgument() throws Exception {
         Source src = Source.newBuilder(
+                "Java",
               "package instarg;\n"
             + "public final class Sum {\n"
             + "  public int add(int a, int b) {\n"
@@ -103,17 +112,20 @@ public class JavaJSInteropTest {
             + "    for (int v : a) { sum = s.add(sum, v); };\n"
             + "    return sum;\n"
             + "  }\n"
-            + "}\n"
-        ).mimeType("text/java").name("Sum.java").build();
-        engine.eval(src);
+            + "}\n",
+              "Sum.java"
+        ).mimeType("text/java").build();
+        ctx.eval(src);
 
         Source js = Source.newBuilder(
+                "Java",
                 "var Sum = Interop.import('instarg.Sum');\n"
               + "var sum = new Sum();"
-              + "Sum.all(sum, [3, 1, 3, 6]);"
-        ).mimeType("text/javascript").name("thirteen.js").build();
+              + "Sum.all(sum, [3, 1, 3, 6]);",
+                "thirteen.js"
+        ).mimeType("text/javascript").build();
 
-        int value = engine.eval(js).as(Number.class).intValue();
+        int value = ctx.eval(js).as(Number.class).intValue();
         assertEquals(13, value);
     }
 

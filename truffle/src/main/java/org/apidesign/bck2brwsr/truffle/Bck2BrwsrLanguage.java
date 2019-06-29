@@ -22,7 +22,6 @@ import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.TruffleOptions;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.interop.java.JavaInterop;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.Source;
 import java.io.ByteArrayInputStream;
@@ -31,18 +30,20 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
-import java.io.UnsupportedEncodingException;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 
 
 @TruffleLanguage.Registration(
+    id = "Java",
     name = "Java",
-    mimeType = {
+    byteMimeTypes = {
         "application/x-jar", "application/x-java-archive",
         "application/x-java-class", "text/java"
     },
-    version = "0.20"
+    defaultMimeType = "application/x-jar",
+    dependentLanguages = "js",
+    version = "0.30"
 )
 public class Bck2BrwsrLanguage extends TruffleLanguage<VM> {
 
@@ -99,7 +100,7 @@ public class Bck2BrwsrLanguage extends TruffleLanguage<VM> {
                     } catch (IOException ex) {
                         throw VM.raise(ex);
                     }
-                    return JavaInterop.asTruffleValue(null);
+                    return nullValue();
                 }
             });
         }
@@ -129,9 +130,13 @@ public class Bck2BrwsrLanguage extends TruffleLanguage<VM> {
                 } catch (Exception ex) {
                     throw VM.raise(ex);
                 }
-                return JavaInterop.asTruffleValue(null);
+                return nullValue();
             }
         });
+    }
+
+    private static Object nullValue() {
+        return null;
     }
 
     private static InputStream openStream(Source src) throws IOException {
@@ -144,6 +149,6 @@ public class Bck2BrwsrLanguage extends TruffleLanguage<VM> {
                 return new FileInputStream(f);
             }
         }
-        return new ByteArrayInputStream(src.getCode().getBytes("UTF-8"));
+        return new ByteArrayInputStream(src.getBytes().toByteArray());
     }
 }
