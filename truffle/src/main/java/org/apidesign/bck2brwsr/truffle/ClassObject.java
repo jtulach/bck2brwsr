@@ -23,7 +23,6 @@ import com.oracle.truffle.api.interop.ForeignAccess;
 import com.oracle.truffle.api.interop.InteropException;
 import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.Message;
-import com.oracle.truffle.api.interop.MessageResolution;
 import com.oracle.truffle.api.interop.Resolve;
 import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.interop.UnknownIdentifierException;
@@ -53,6 +52,11 @@ final class ClassObject implements TruffleObject {
     }
 
     @ExportMessage
+    static boolean isInstantiable(ClassObject clazz) {
+        return true;
+    }
+
+    @ExportMessage
     static boolean isMemberInvocable(ClassObject clazz, String name) {
         return true;
     }
@@ -75,29 +79,16 @@ final class ClassObject implements TruffleObject {
         throw new UnsupportedOperationException();
     }
 
-    @Resolve(message = "NEW")
-    static abstract class New extends Node {
-        @Child
-        private Node constructor = Message.READ.createNode();
-        @Child
-        private Node newInst = Message.createExecute(1).createNode();
-        @Child
-        private Node cons__V = Message.READ.createNode();
-        @Child
-        private Node initInst = Message.createExecute(1).createNode();
-
-        protected Object access(ClassObject clazz, Object... args) {
-            try {
-                TruffleObject cnstr = (TruffleObject) ForeignAccess.sendRead(constructor, clazz.jsClass, "constructor");
-//                TruffleObject d = (TruffleObject) ForeignAccess.sendRead(cons__V, cnstr, "cons__V");
-                TruffleObject instance = (TruffleObject) ForeignAccess.sendExecute(newInst, cnstr);
-//                ForeignAccess.sendExecute(initInst, d, instance);
-                return new JavaObject(instance);
-            } catch (UnknownIdentifierException ex) {
-                throw UnknownIdentifierException.raise("<init>");
-            } catch (InteropException ex) {
-                throw ex.raise();
-            }
+    @ExportMessage
+    static Object instantiate(ClassObject clazz, Object[] args,
+        @CachedLibrary(limit = "3") InteropLibrary interop
+    ) throws UnsupportedMessageException, ArityException, UnsupportedTypeException {
+        try {
+            Object cnstr = interop.readMember(clazz.jsClass, "constructor");
+            Object instance = interop.execute(cnstr);
+            return new JavaObject((TruffleObject) instance);
+        } catch (UnknownIdentifierException ex) {
+            throw ex.raise();
         }
     }
 

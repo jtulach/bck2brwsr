@@ -60,7 +60,7 @@ public class JavaJSInteropTest {
         Source js = Source.newBuilder(
                 "js",
                 "var Sum = Polyglot.import('jvm')['test.Sum'];\n"
-              + "Sum.add(1, 6) + Sum.all([3, 3]);",
+              + "Sum.add(1, 6) + Sum.all([3, 3]);\n",
                 "thirteen.js"
         ).mimeType("text/javascript").build();
 
@@ -90,8 +90,8 @@ public class JavaJSInteropTest {
         Source js = Source.newBuilder(
                 "js",
                 "var Sum = Polyglot.import('jvm')['testinst.Sum'];\n"
-              + "var sum = new Sum();"
-              + "sum.add(1, 6) + sum.all([3, 3]);",
+              + "var sum = new Sum();\n"
+              + "sum.add(1, 6) + sum.all([3, 3]);\n",
                 "thirteen.js"
         ).mimeType("text/javascript").build();
 
@@ -121,8 +121,8 @@ public class JavaJSInteropTest {
         Source js = Source.newBuilder(
                 "js",
                 "var Sum = Polyglot.import('jvm')['instarg.Sum'];\n"
-              + "var sum = new Sum();"
-              + "Sum.all(sum, [3, 1, 3, 6]);",
+              + "var sum = new Sum()\n;"
+              + "Sum.all(sum, [3, 1, 3, 6]);\n",
                 "thirteen.js"
         ).mimeType("text/javascript").build();
 

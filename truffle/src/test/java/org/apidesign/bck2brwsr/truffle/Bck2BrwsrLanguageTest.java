@@ -162,5 +162,6 @@ public class Bck2BrwsrLanguageTest {
     @HostAccess.Implementable
     public static interface HelloInterface {
         int sayHello(String... args) throws Exception;
+        void main(String... args) throws Exception;
     }
 }
