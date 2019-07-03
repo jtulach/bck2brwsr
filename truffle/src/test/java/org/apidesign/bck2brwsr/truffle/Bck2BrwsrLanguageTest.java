@@ -98,7 +98,9 @@ public class Bck2BrwsrLanguageTest {
         ctx.eval(src);
 
         out.reset();
-        Value in = ctx.getPolyglotBindings().getMember("test.Hello");
+        final Value classes = ctx.getPolyglotBindings().getMember("jvm");
+        assertFalse("jvm object found", classes.isNull());
+        Value in = classes.getMember("test.Hello");
         assertNotNull(in);
         assertEquals("Hello from Code!", out.toString("UTF-8").trim());
     }
