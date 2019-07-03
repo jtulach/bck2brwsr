@@ -29,10 +29,13 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.HostAccess;
+import org.graalvm.polyglot.PolyglotAccess;
 import org.graalvm.polyglot.Source;
 import org.graalvm.polyglot.Value;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import org.junit.BeforeClass;
@@ -49,7 +52,7 @@ public class Bck2BrwsrLanguageTest {
     @BeforeClass
     public static void setUpClass() {
         out = new ByteArrayOutputStream();
-        ctx = Context.newBuilder().err(out).out(out).build();
+        ctx = Context.newBuilder().err(out).out(out).allowPolyglotAccess(PolyglotAccess.ALL).build();
     }
 
     @AfterClass
@@ -66,20 +69,23 @@ public class Bck2BrwsrLanguageTest {
         ctx.eval(src);
 
         Value nonExistingClass;
+        final Value classes = ctx.getPolyglotBindings().getMember("jvm");
+        assertFalse("jvm object found", classes.isNull());
         try {
-            nonExistingClass = ctx.getPolyglotBindings().getMember(Hello.class.getCanonicalName() + '2');
+            nonExistingClass = classes.getMember(Hello.class.getCanonicalName() + '2');
         } catch (Exception ex) {
             nonExistingClass = null;
         }
         assertNull(nonExistingClass);
 
-        Value in = ctx.getPolyglotBindings().getMember(Hello.class.getCanonicalName());
+        Value in = classes.getMember(Hello.class.getCanonicalName());
         assertNotNull(in);
-        Invoke invoke = in.as(Invoke.class);
+        HelloInterface invoke = in.as(HelloInterface.class);
 
         out.reset();
-        invoke.sayHello();
+        int res = invoke.sayHello();
         assertEquals("Hello from Java!", out.toString("UTF-8").trim());
+        assertEquals(1, res);
     }
 
     @Test
@@ -151,8 +157,8 @@ public class Bck2BrwsrLanguageTest {
         return jar;
     }
 
-    @FunctionalInterface
-    private static interface Invoke {
-        void sayHello(String... args) throws Exception;
+    @HostAccess.Implementable
+    public static interface HelloInterface {
+        int sayHello(String... args) throws Exception;
     }
 }

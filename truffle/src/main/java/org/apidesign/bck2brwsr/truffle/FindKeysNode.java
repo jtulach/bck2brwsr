@@ -19,12 +19,11 @@ package org.apidesign.bck2brwsr.truffle;
 
 import com.oracle.truffle.api.interop.ForeignAccess;
 import com.oracle.truffle.api.interop.InteropException;
+import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.Message;
 import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.interop.UnknownIdentifierException;
 import com.oracle.truffle.api.nodes.Node;
-import java.util.Collections;
-import java.util.List;
 
 
 final class FindKeysNode extends Node {
@@ -32,7 +31,7 @@ final class FindKeysNode extends Node {
     private Node prototype;
 
     @Child
-    private Node keys = Message.KEYS.createNode();
+    private InteropLibrary keys = InteropLibrary.getFactory().createDispatched(3);
 
     FindKeysNode(boolean prototype) {
         this.prototype = prototype ? Message.READ.createNode() : null;
@@ -42,21 +41,21 @@ final class FindKeysNode extends Node {
 
     final String findKey(TruffleObject js, String shortName) {
         String underscoreName = shortName + "__";
-        List<?> names;
         try {
             if (prototype != null) {
                 js = (TruffleObject) ForeignAccess.sendRead(prototype, js, "__proto__");
             }
 
-            //names = JavaInterop.asJavaObject(List.class, ForeignAccess.sendKeys(keys, js));
-            names = Collections.emptyList();
+            Object jsKeys = keys.getMembers(js);
+            long jsSize = keys.getArraySize(jsKeys);
+            for (int i = 0; i < jsSize; i++) {
+                Object n = keys.readArrayElement(jsKeys, i);
+                if (n instanceof String && ((String) n).startsWith(underscoreName)) {
+                    return (String) n;
+                }
+            }
         } catch (InteropException ex) {
             throw ex.raise();
-        }
-        for (Object n : names) {
-            if (n instanceof String && ((String) n).startsWith(underscoreName)) {
-                return (String) n;
-            }
         }
         throw UnknownIdentifierException.raise(shortName);
     }

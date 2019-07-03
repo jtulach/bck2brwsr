@@ -23,8 +23,11 @@ import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.TruffleOptions;
 import com.oracle.truffle.api.interop.ForeignAccess;
 import com.oracle.truffle.api.interop.InteropException;
+import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.Message;
 import com.oracle.truffle.api.interop.TruffleObject;
+import com.oracle.truffle.api.library.ExportLibrary;
+import com.oracle.truffle.api.library.ExportMessage;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 import java.io.ByteArrayInputStream;
@@ -42,7 +45,8 @@ import java.util.jar.Manifest;
 import org.apidesign.bck2brwsr.aot.Bck2BrwsrJars;
 import org.apidesign.vm4brwsr.Bck2Brwsr;
 
-final class VM {
+@ExportLibrary(InteropLibrary.class)
+final class VM implements TruffleObject {
     private static Source rtJs;
     private static final ClassLoader rtJarClassLoader = createJarClassLoader();
     static {
@@ -95,6 +99,13 @@ final class VM {
             CallTarget get = env.parse(getVM);
             vm = (TruffleObject) get.call();
             loadClass = new LoadClassNode(vm);
+
+            try {
+                InteropLibrary.getFactory().getUncached().writeMember(env.getPolyglotBindings(), "jvm", this);
+            } catch (InteropException ex) {
+                throw new IllegalStateException(ex);
+            }
+
         } catch (IOException ex) {
             throw raise(ex);
         }
@@ -148,7 +159,7 @@ final class VM {
         compiler = compiler.library();
         StringBuilder sb = new StringBuilder();
         compiler.generate(sb);
-        Source src = Source.newBuilder(sb.toString()).uri(jar.toURI()).name(jar.getName()).mimeType("text/javascript").build();
+        Source src = Source.newBuilder(sb.toString()).uri(jar.toURI()).name(jsName(jar)).mimeType("text/javascript").build();
         env.parse(src).call();
 
         Manifest manifest;
@@ -164,6 +175,15 @@ final class VM {
                 throw raise(ex);
             }
         }
+    }
+
+    protected String jsName(File jar) {
+        String name = jar.getName();
+        int dot = name.lastIndexOf('.');
+        if (dot != -1) {
+            name = name.substring(0, dot) + ".js";
+        }
+        return name;
     }
 
     final ClassObject findClass(String globalName) {
@@ -211,5 +231,26 @@ final class VM {
 
     static <E extends Exception> E raise(Class<E> type, Throwable ex) throws E {
         throw (E)ex;
+    }
+
+    @ExportMessage
+    static Object readMember(VM obj, String name) {
+        ClassObject clazz = obj.findClass(name);
+        return clazz;
+    }
+
+    @ExportMessage
+    static boolean isMemberReadable(VM obj, String name) {
+        return true;
+    }
+
+    @ExportMessage
+    static boolean hasMembers(VM obj) {
+        return true;
+    }
+
+    @ExportMessage
+    static Object getMembers(VM obj, boolean includeInternal) {
+        throw new IllegalStateException();
     }
 }

@@ -18,8 +18,9 @@
 package org.apidesign.bck2brwsr.truffle;
 
 public final class Hello {
-    public static void sayHello() {
+    public static int sayHello() {
         System.out.println("Hello from Java!");
+        return 1;
     }
 
     public static void main(String... args) {
