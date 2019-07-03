@@ -19,11 +19,7 @@ package org.apidesign.bck2brwsr.truffle;
 
 import com.oracle.truffle.api.dsl.Cached;
 import com.oracle.truffle.api.interop.ArityException;
-import com.oracle.truffle.api.interop.ForeignAccess;
-import com.oracle.truffle.api.interop.InteropException;
 import com.oracle.truffle.api.interop.InteropLibrary;
-import com.oracle.truffle.api.interop.Message;
-import com.oracle.truffle.api.interop.Resolve;
 import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.interop.UnknownIdentifierException;
 import com.oracle.truffle.api.interop.UnsupportedMessageException;
@@ -31,7 +27,6 @@ import com.oracle.truffle.api.interop.UnsupportedTypeException;
 import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.library.ExportLibrary;
 import com.oracle.truffle.api.library.ExportMessage;
-import com.oracle.truffle.api.nodes.Node;
 
 @ExportLibrary(InteropLibrary.class)
 final class ClassObject implements TruffleObject {
@@ -89,23 +84,6 @@ final class ClassObject implements TruffleObject {
             return new JavaObject((TruffleObject) instance);
         } catch (UnknownIdentifierException ex) {
             throw ex.raise();
-        }
-    }
-
-    @Resolve(message = "READ")
-    static abstract class StaticFieldRead extends Node {
-        @Child
-        private FindKeysNode find = new FindKeysNode(false);
-        @Child
-        private Node read = Message.READ.createNode();
-
-        protected Object access(ClassObject clazz, String name) {
-            String n = find.findKey(clazz.jsClass, name);
-            try {
-                return ForeignAccess.sendInvoke(read, clazz.jsClass, (String) n);
-            } catch (InteropException ex) {
-                throw ex.raise();
-            }
         }
     }
 }
