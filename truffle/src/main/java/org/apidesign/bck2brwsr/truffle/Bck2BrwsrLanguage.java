@@ -59,7 +59,7 @@ public class Bck2BrwsrLanguage extends TruffleLanguage<VM> {
     protected void initializeContext(VM context) throws Exception {
         context.initialize();
     }
-
+/* TBD:
     @Override
     protected Object findExportedSymbol(VM context, String globalName, boolean onlyExplicit) {
         if (onlyExplicit) {
@@ -67,7 +67,7 @@ public class Bck2BrwsrLanguage extends TruffleLanguage<VM> {
         }
         return context.findClass(globalName);
     }
-
+*/
     @Override
     protected Object getLanguageGlobal(VM context) {
         return null;
@@ -81,31 +81,33 @@ public class Bck2BrwsrLanguage extends TruffleLanguage<VM> {
     @Override
     protected CallTarget parse(ParsingRequest request) throws Exception {
         final Source src = request.getSource();
-        InputStream is = openStream(src);
-        PushbackInputStream ahead = new PushbackInputStream(is, 4);
-        byte[] header = new byte[4];
-        int len = ahead.read(header);
-        if (len < 4) {
-            throw new IOException("Can't read " + src.getURI());
-        }
-        ahead.unread(header, 0, len);
-        if (header[0] == 0xCA && header[1] == 0xFE && header[2] == 0xBA && header[3] == 0xBE) {
-            throw new IOException("No single class read " + src.getURI());
-        }
-        final ContextReference<VM> ref = getContextReference();
-        if (header[0] == 0x50 && header[1] == 0x4B) {
-            final File jar = new File(src.getURI());
-            return Truffle.getRuntime().createCallTarget(new RootNode(this) {
-                @Override
-                public Object execute(VirtualFrame frame) {
-                    try {
-                        ref.get().compileJar(jar);
-                    } catch (IOException ex) {
-                        throw VM.raise(ex);
+        if (src.hasBytes()) {
+            InputStream is = openStream(src);
+            PushbackInputStream ahead = new PushbackInputStream(is, 4);
+            byte[] header = new byte[4];
+            int len = ahead.read(header);
+            if (len < 4) {
+                throw new IOException("Can't read " + src.getURI());
+            }
+            ahead.unread(header, 0, len);
+            if (header[0] == 0xCA && header[1] == 0xFE && header[2] == 0xBA && header[3] == 0xBE) {
+                throw new IOException("No single class read " + src.getURI());
+            }
+            final ContextReference<VM> ref = getContextReference();
+            if (header[0] == 0x50 && header[1] == 0x4B) {
+                final File jar = new File(src.getURI());
+                return Truffle.getRuntime().createCallTarget(new RootNode(this) {
+                    @Override
+                    public Object execute(VirtualFrame frame) {
+                        try {
+                            ref.get().compileJar(jar);
+                        } catch (IOException ex) {
+                            throw VM.raise(ex);
+                        }
+                        return nullValue(ref.get());
                     }
-                    return nullValue(ref.get());
-                }
-            });
+                });
+            }
         }
 
         if (TruffleOptions.AOT) {

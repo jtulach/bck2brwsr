@@ -32,6 +32,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -99,9 +100,9 @@ final class Compile implements DiagnosticListener<JavaFileObject> {
 
     private Map<String, byte[]> compile(final Source code) throws IOException {
         final ClassLoaderFileManager clfm = new ClassLoaderFileManager();
+        final byte[] bytes = code.getCharacters().toString().getBytes(StandardCharsets.UTF_8);
         final JavaFileObject file = clfm.createMemoryFileObject(ClassLoaderFileManager.convertFQNToResource(pkg.isEmpty() ? cls : pkg + "." + cls) + Kind.SOURCE.extension,
-                Kind.SOURCE,
-                code.getBytes().toByteArray());
+                Kind.SOURCE, bytes);
 
         JavaFileManager jfm = new ForwardingJavaFileManager<JavaFileManager>(clfm) {
         };
