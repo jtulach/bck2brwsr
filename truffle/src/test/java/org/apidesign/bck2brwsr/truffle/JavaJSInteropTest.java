@@ -18,6 +18,7 @@
 package org.apidesign.bck2brwsr.truffle;
 
 import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.PolyglotAccess;
 import org.graalvm.polyglot.Source;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
@@ -29,7 +30,7 @@ public class JavaJSInteropTest {
 
     @BeforeClass
     public static void setUpClass() {
-        ctx = Context.newBuilder().build();
+        ctx = Context.newBuilder().allowPolyglotAccess(PolyglotAccess.ALL).build();
     }
 
     @AfterClass
@@ -57,8 +58,8 @@ public class JavaJSInteropTest {
         ctx.eval(src);
 
         Source js = Source.newBuilder(
-                "Java",
-                "var Sum = Interop.import('test.Sum');\n"
+                "js",
+                "var Sum = Polyglot.import('jvm')['test.Sum'];\n"
               + "Sum.add(1, 6) + Sum.all([3, 3]);",
                 "thirteen.js"
         ).mimeType("text/javascript").build();
@@ -87,8 +88,8 @@ public class JavaJSInteropTest {
         ctx.eval(src);
 
         Source js = Source.newBuilder(
-                "Java",
-                "var Sum = Interop.import('testinst.Sum');\n"
+                "js",
+                "var Sum = Polyglot.import('jvm')['testinst.Sum'];\n"
               + "var sum = new Sum();"
               + "sum.add(1, 6) + sum.all([3, 3]);",
                 "thirteen.js"
@@ -118,8 +119,8 @@ public class JavaJSInteropTest {
         ctx.eval(src);
 
         Source js = Source.newBuilder(
-                "Java",
-                "var Sum = Interop.import('instarg.Sum');\n"
+                "js",
+                "var Sum = Polyglot.import('jvm')['instarg.Sum'];\n"
               + "var sum = new Sum();"
               + "Sum.all(sum, [3, 1, 3, 6]);",
                 "thirteen.js"
