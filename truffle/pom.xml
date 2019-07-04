@@ -12,6 +12,8 @@
     <name>Java for Truffle via Bck2Brwsr</name>
     <properties>
         <graalvm.version>19.0.2</graalvm.version>
+        <native.image>${java.home}/bin/native-image</native.image>
+        <mainClass>org.apidesign.bck2brwsr.truffle.Main</mainClass>
     </properties>
     <build>
         <plugins>
@@ -30,7 +32,7 @@
                 <configuration>
                     <transformers>
                         <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                            <mainClass>org.apidesign.bck2brwsr.truffle.Main</mainClass>
+                            <mainClass>${mainClass}</mainClass>
                         </transformer>
                     </transformers>
                 </configuration>
@@ -92,4 +94,43 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <profiles>
+        <profile>
+            <id>native-image</id>
+            <activation>
+                <file>
+                    <exists>${native.image}</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.6.0</version>
+                        <executions>
+                            <execution>
+                                <id>native-image</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>${native.image}</executable>
+                                    <arguments>
+                                        <argument>--language:js</argument>
+                                        <argument>-H:Name=${project.build.directory}/${project.build.finalName}</argument>
+                                        <argument>--allow-incomplete-classpath</argument>
+                                        <argument>-cp</argument>
+                                        <argument>${project.build.directory}/${project.build.finalName}.jar</argument>
+                                        <argument>${mainClass}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

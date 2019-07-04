@@ -23,7 +23,7 @@ import org.graalvm.polyglot.Source;
 
 public class Main {
     public static void main(String... args) throws Exception {
-        Context ctx = Context.newBuilder().build();
+        Context ctx = Context.newBuilder().allowAllAccess(true).build();
         String jarFile = null;
         for (int i = 0; i < args.length; i++) {
             if (isOption(args[i], "cp", "classpath")) {
