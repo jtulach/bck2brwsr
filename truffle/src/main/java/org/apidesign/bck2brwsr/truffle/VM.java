@@ -21,14 +21,11 @@ import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.TruffleOptions;
-import com.oracle.truffle.api.interop.ForeignAccess;
 import com.oracle.truffle.api.interop.InteropException;
 import com.oracle.truffle.api.interop.InteropLibrary;
-import com.oracle.truffle.api.interop.Message;
 import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.library.ExportLibrary;
 import com.oracle.truffle.api.library.ExportMessage;
-import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -74,7 +71,7 @@ final class VM implements TruffleObject {
             StringBuilder sb = new StringBuilder();
             Bck2Brwsr.newCompiler().standalone(false).generate(sb);
 
-            Source bck2brwsr = Source.newBuilder(sb.toString()).mimeType("text/javascript").name("bck2brwsr.js").build();
+            Source bck2brwsr = Source.newBuilder("js", sb.toString(), "bck2brwsr.js").mimeType("text/javascript").build();
 
             CallTarget vmInit = env.parse(bck2brwsr);
             vmInit.call();
@@ -82,20 +79,21 @@ final class VM implements TruffleObject {
             CallTarget rtInit = env.parse(rtJs());
             jsNull = rtInit.call();
 
-            Source atob = Source.newBuilder(
+            Source atob = Source.newBuilder("js",
                 "(function(f) {\n"
               + "  this.atob = f;\n"
-              + "})\n"
-            ).name("atob.js").mimeType("text/javascript").build();
+              + "})\n", "atob.js"
+            ).mimeType("text/javascript").build();
             TruffleObject registerAtob = (TruffleObject) env.parse(atob).call();
             try {
-                ForeignAccess.sendExecute(Message.createExecute(1).createNode(), registerAtob, new AtoB());
+                InteropLibrary interop = InteropLibrary.getFactory().getUncached();
+                interop.execute(registerAtob, new AtoB());
             } catch (InteropException ex) {
                 throw raise(ex);
             }
-            Source getVM = Source.newBuilder(
-              "(function() { return bck2brwsr(); })();\n"
-            ).mimeType("text/javascript").name("getvm.js").build();
+            Source getVM = Source.newBuilder("js",
+              "(function() {\n return bck2brwsr();\n})();\n", "getvm.js"
+            ).mimeType("text/javascript").build();
             CallTarget get = env.parse(getVM);
             vm = (TruffleObject) get.call();
             loadClass = new LoadClassNode(vm);
@@ -162,17 +160,19 @@ final class VM implements TruffleObject {
         Source src = Source.newBuilder(sb.toString()).uri(jar.toURI()).name(jsName(jar)).mimeType("text/javascript").build();
         env.parse(src).call();
 
-        Manifest manifest;
-        try (JarInputStream is = new JarInputStream(new FileInputStream(jar), false)) {
-            manifest = is.getManifest();
-        }
-        String mainClass = manifest.getMainAttributes().getValue("Main-Class");
-        if (mainClass != null) {
-            final Node invoke = Message.createInvoke(0).createNode();
-            try {
-                ForeignAccess.sendInvoke(invoke, findClass(mainClass), "main");
-            } catch (InteropException ex) {
-                throw raise(ex);
+        if (jar.isFile()) {
+            Manifest manifest;
+            try (JarInputStream is = new JarInputStream(new FileInputStream(jar), false)) {
+                manifest = is.getManifest();
+            }
+            String mainClass = manifest.getMainAttributes().getValue("Main-Class");
+            if (mainClass != null) {
+                InteropLibrary interop = InteropLibrary.getFactory().getUncached();
+                try {
+                    interop.invokeMember(findClass(mainClass), "main");
+                } catch (InteropException ex) {
+                    throw raise(ex);
+                }
             }
         }
     }

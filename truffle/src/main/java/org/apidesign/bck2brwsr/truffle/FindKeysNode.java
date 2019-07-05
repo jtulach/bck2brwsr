@@ -17,10 +17,8 @@
  */
 package org.apidesign.bck2brwsr.truffle;
 
-import com.oracle.truffle.api.interop.ForeignAccess;
 import com.oracle.truffle.api.interop.InteropException;
 import com.oracle.truffle.api.interop.InteropLibrary;
-import com.oracle.truffle.api.interop.Message;
 import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.interop.UnknownIdentifierException;
 import com.oracle.truffle.api.nodes.Node;
@@ -28,13 +26,16 @@ import com.oracle.truffle.api.nodes.Node;
 
 final class FindKeysNode extends Node {
     @Child
-    private Node prototype;
+    private InteropLibrary prototype;
 
     @Child
-    private InteropLibrary keys = InteropLibrary.getFactory().createDispatched(3);
+    private InteropLibrary keys;
 
-    FindKeysNode(boolean prototype) {
-        this.prototype = prototype ? Message.READ.createNode() : null;
+    FindKeysNode(boolean prototype, boolean cached) {
+        this.prototype = prototype ? InteropLibrary.getFactory().createDispatched(3) : null;
+        this.keys = cached ?
+            InteropLibrary.getFactory().createDispatched(3) :
+            InteropLibrary.getFactory().getUncached();
     }
 
 
@@ -43,7 +44,7 @@ final class FindKeysNode extends Node {
         String underscoreName = shortName + "__";
         try {
             if (prototype != null) {
-                js = (TruffleObject) ForeignAccess.sendRead(prototype, js, "__proto__");
+                js = (TruffleObject) prototype.readMember(js, "__proto__");
             }
 
             Object jsKeys = keys.getMembers(js);

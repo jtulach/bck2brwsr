@@ -46,7 +46,7 @@ final class JavaObject implements TruffleObject {
     static abstract class StaticMethodCall extends Node {
 
         @Node.Child
-        private FindKeysNode find = new FindKeysNode(true);
+        private FindKeysNode find = new FindKeysNode(true, true);
         @Node.Child
         private Node invoke;
 

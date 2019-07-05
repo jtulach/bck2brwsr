@@ -67,11 +67,11 @@ final class ClassObject implements TruffleObject {
     }
 
     static FindKeysNode createFindKeysNode(int b) {
-        return new FindKeysNode(b > 0);
+        return new FindKeysNode(b > 0, true);
     }
 
     static FindKeysNode getUncached() {
-        throw new UnsupportedOperationException();
+        return new FindKeysNode(false, false);
     }
 
     @ExportMessage

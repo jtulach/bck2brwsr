@@ -30,6 +30,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
+import java.net.URI;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 
@@ -39,7 +40,8 @@ import javax.tools.JavaFileObject;
     name = "Java",
     byteMimeTypes = {
         "application/x-jar", "application/x-java-archive",
-        "application/x-java-class"
+        "application/x-java-class",
+        "application/x-dir"
     },
     characterMimeTypes = {
         "text/java"
@@ -82,31 +84,28 @@ public class Bck2BrwsrLanguage extends TruffleLanguage<VM> {
     protected CallTarget parse(ParsingRequest request) throws Exception {
         final Source src = request.getSource();
         if (src.hasBytes()) {
+            final ContextReference<VM> ref = getContextReference();
             InputStream is = openStream(src);
             PushbackInputStream ahead = new PushbackInputStream(is, 4);
             byte[] header = new byte[4];
             int len = ahead.read(header);
             if (len < 4) {
-                throw new IOException("Can't read " + src.getURI());
+                final URI uri = src.getURI();
+                if ("file".equals(uri.getScheme())) {
+                    File dir = new File(uri);
+                    if (dir.isDirectory()) {
+                        return Truffle.getRuntime().createCallTarget(new ProcessJarDir(this, ref, dir));
+                    }
+                }
+                throw new IOException("Can't read " + uri);
             }
             ahead.unread(header, 0, len);
             if (header[0] == 0xCA && header[1] == 0xFE && header[2] == 0xBA && header[3] == 0xBE) {
                 throw new IOException("No single class read " + src.getURI());
             }
-            final ContextReference<VM> ref = getContextReference();
             if (header[0] == 0x50 && header[1] == 0x4B) {
                 final File jar = new File(src.getURI());
-                return Truffle.getRuntime().createCallTarget(new RootNode(this) {
-                    @Override
-                    public Object execute(VirtualFrame frame) {
-                        try {
-                            ref.get().compileJar(jar);
-                        } catch (IOException ex) {
-                            throw VM.raise(ex);
-                        }
-                        return nullValue(ref.get());
-                    }
-                });
+                return Truffle.getRuntime().createCallTarget(new ProcessJarDir(this, ref, jar));
             }
         }
 
@@ -155,5 +154,27 @@ public class Bck2BrwsrLanguage extends TruffleLanguage<VM> {
             }
         }
         return new ByteArrayInputStream(src.getBytes().toByteArray());
+    }
+
+    private static class ProcessJarDir extends RootNode {
+
+        private final ContextReference<VM> ref;
+        private final File jar;
+
+        ProcessJarDir(TruffleLanguage<?> language, ContextReference<VM> ref, File jar) {
+            super(language);
+            this.ref = ref;
+            this.jar = jar;
+        }
+
+        @Override
+        public Object execute(VirtualFrame frame) {
+            try {
+                ref.get().compileJar(jar);
+            } catch (IOException ex) {
+                throw VM.raise(ex);
+            }
+            return nullValue(ref.get());
+        }
     }
 }

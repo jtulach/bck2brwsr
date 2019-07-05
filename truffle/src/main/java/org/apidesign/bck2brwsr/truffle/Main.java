@@ -20,16 +20,30 @@ package org.apidesign.bck2brwsr.truffle;
 import java.io.File;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Source;
+import org.graalvm.polyglot.Value;
+import org.graalvm.polyglot.io.ByteSequence;
 
 public class Main {
     public static void main(String... args) throws Exception {
         Context ctx = Context.newBuilder().allowAllAccess(true).build();
         String jarFile = null;
+        String mainClass = null;
         for (int i = 0; i < args.length; i++) {
             if (isOption(args[i], "cp", "classpath")) {
                 for (String element : args[++i].split(File.pathSeparator)) {
-                    Source src = Source.newBuilder("Java", new File(element)).mimeType("application/x-jar").build();
-                    ctx.eval(src);
+                    final File file = new File(element);
+                    if (file.isFile()) {
+                        Source src = Source.newBuilder("Java", file).mimeType("application/x-jar").build();
+                        ctx.eval(src);
+                    } else {
+                        if (file.isDirectory()) {
+                            Source src = Source.newBuilder("Java", ByteSequence.create(new byte[0]), file.getPath()).
+                                mimeType("application/x-dir").
+                                uri(file.toURI()).
+                                build();
+                            ctx.eval(src);
+                        }
+                    }
                 }
                 continue;
             }
@@ -40,16 +54,24 @@ public class Main {
                 jarFile = args[++i];
                 continue;
             }
-            jarFile = null;
+            if (jarFile == null && mainClass == null) {
+                mainClass = args[i];
+            }
             break;
         }
 
-        if (jarFile == null) {
-            throw new IllegalArgumentException("Usage: -cp jar1:jar2:jar3 -jar jarToExecute");
+        if (jarFile == null && mainClass == null) {
+            throw new IllegalArgumentException("Usage: -cp jar1:jar2:jar3 [-jar jarToExecute | mainClass ]");
         }
 
-        Source src = Source.newBuilder("Java", new File(jarFile)).mimeType("application/x-jar").build();
-        ctx.eval(src);
+        if (jarFile != null) {
+            Source src = Source.newBuilder("Java", new File(jarFile)).mimeType("application/x-jar").build();
+            ctx.eval(src);
+        } else {
+            Value jvm = ctx.getPolyglotBindings().getMember("jvm");
+            Value clazz = jvm.getMember(mainClass);
+            clazz.invokeMember("main", (Object[]) new String[0]);
+        }
     }
 
     private static boolean isOption(String arg, String... options) {

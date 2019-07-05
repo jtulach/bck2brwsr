@@ -7,13 +7,14 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
     <groupId>org.apidesign.bck2brwsr</groupId>
-    <artifactId>java4truffle-bck2brwsr</artifactId>
+    <artifactId>java4graal</artifactId>
     <packaging>jar</packaging>
     <name>Java for Truffle via Bck2Brwsr</name>
     <properties>
         <graalvm.version>19.0.2</graalvm.version>
         <native.image>${java.home}/bin/native-image</native.image>
         <mainClass>org.apidesign.bck2brwsr.truffle.Main</mainClass>
+        <binary>${project.build.directory}/${project.artifactId}</binary>
     </properties>
     <build>
         <plugins>
@@ -35,6 +36,15 @@
                             <mainClass>${mainClass}</mainClass>
                         </transformer>
                     </transformers>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin>
         </plugins>
@@ -119,11 +129,27 @@
                                     <executable>${native.image}</executable>
                                     <arguments>
                                         <argument>--language:js</argument>
-                                        <argument>-H:Name=${project.build.directory}/${project.build.finalName}</argument>
+                                        <argument>-H:Name=${binary}</argument>
                                         <argument>--allow-incomplete-classpath</argument>
                                         <argument>-cp</argument>
                                         <argument>${project.build.directory}/${project.build.finalName}.jar</argument>
                                         <argument>${mainClass}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>native-test</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>${binary}</executable>
+                                    <classpathScope>test</classpathScope>
+                                    <arguments>
+                                        <argument>-cp</argument>
+                                        <argument>${project.build.directory}/test-classes</argument>
+                                        <argument>org.apidesign.bck2brwsr.truffle.Hello</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
