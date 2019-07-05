@@ -43,7 +43,7 @@ public class SystemTest {
     
     @JavaScriptBody(args = {}, body = ""
         + "var lines = [];"
-        + "console.log = function(l) { lines.push(l); };"
+        + "console.log = function(l) { lines.push(l + '\\n'); };"
         + "return lines;")
     Object initCapture() {
         ByteArrayOutputStream os = new ByteArrayOutputStream();

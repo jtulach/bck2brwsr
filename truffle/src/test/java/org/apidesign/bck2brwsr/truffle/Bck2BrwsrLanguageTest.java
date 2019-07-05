@@ -102,7 +102,7 @@ public class Bck2BrwsrLanguageTest {
         assertFalse("jvm object found", classes.isNull());
         Value in = classes.getMember("test.Hello");
         assertNotNull(in);
-        assertEquals("Hello from Code!", out.toString("UTF-8").trim());
+        assertEquals("Hello from Code!\n", out.toString("UTF-8"));
     }
 
     @Test

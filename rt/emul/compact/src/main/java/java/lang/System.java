@@ -122,6 +122,7 @@ public class System {
 
     private static final class SystemStream extends OutputStream {
         private final String method;
+        private final StringBuilder pending = new StringBuilder();
 
         public SystemStream(String method) {
             this.method = method;
@@ -129,7 +130,18 @@ public class System {
 
         @Override
         public void write(byte b[], int off, int len) throws IOException {
-            write(method, new String(b, off, len, "UTF-8"));
+            pending.append(new String(b, off, len, "UTF-8"));
+            int lastLine = pending.lastIndexOf("\n");
+            if (lastLine >= 0) {
+                write(method, pending.substring(0, lastLine));
+                pending.delete(0, lastLine + 1);
+            }
+        }
+
+        @Override
+        public void close() throws IOException {
+            write(method, pending.toString());
+            pending.setLength(0);
         }
 
         @JavaScriptBody(args = { "method", "b" }, body = "if (typeof console !== 'undefined') console[method](b.toString());")
