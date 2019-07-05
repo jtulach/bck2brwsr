@@ -192,6 +192,9 @@ public final class Bck2BrwsrJars {
             if (n.startsWith("META-INF/maven/")) {
                 continue;
             }
+            if (n.equals("module-info.class")) {
+                continue;
+            }
             int last = n.lastIndexOf('/');
             String pkg = n.substring(0, last + 1);
             packages.add(pkg);
@@ -346,7 +349,7 @@ public final class Bck2BrwsrJars {
             }
         }
 
-        private void addClassResource(String n) throws IOException {
+        final void addClassResource(String n) throws IOException {
             if (proc != null) {
                 try (InputStream is = this.get(n)) {
                     Map<String, byte[]> conv = proc.process(n, readFrom(is), new NoConvRes());
