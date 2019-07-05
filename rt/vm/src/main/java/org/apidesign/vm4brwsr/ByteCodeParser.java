@@ -730,7 +730,7 @@ final class ByteCodeParser {
                         break;
                     case 0:
                     default:
-                        throw new ClassFormatError("invalid constant type: " + (int) tags[i]);
+                        throw new IOException("invalid constant type: " + (int) tags[i]);
                 }
             }
         }

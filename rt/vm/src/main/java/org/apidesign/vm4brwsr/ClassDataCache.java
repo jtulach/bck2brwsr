@@ -48,7 +48,11 @@ final class ClassDataCache {
         Object cacheEntry = classDataMap.get(className);
         if (cacheEntry == null) {
             final InputStream is = loadClass(resources, className);
-            cacheEntry = (is != null) ? new ClassData(is) : MISSING_CLASS;
+            try {
+                cacheEntry = (is != null) ? new ClassData(is) : MISSING_CLASS;
+            } catch (IOException ex) {
+                throw new IOException("Cannot process " + className, ex);
+            }
             classDataMap.put(className, cacheEntry);
         }
 
