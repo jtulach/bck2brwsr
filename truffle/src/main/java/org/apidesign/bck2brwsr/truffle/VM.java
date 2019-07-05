@@ -165,7 +165,8 @@ final class VM implements TruffleObject {
             try (JarInputStream is = new JarInputStream(new FileInputStream(jar), false)) {
                 manifest = is.getManifest();
             }
-            String mainClass = manifest.getMainAttributes().getValue("Main-Class");
+            String mainClass = manifest != null && manifest.getMainAttributes() != null ?
+                manifest.getMainAttributes().getValue("Main-Class") : null;
             if (mainClass != null) {
                 InteropLibrary interop = InteropLibrary.getFactory().getUncached();
                 try {
