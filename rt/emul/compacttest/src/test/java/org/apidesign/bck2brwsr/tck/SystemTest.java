@@ -42,9 +42,12 @@ public class SystemTest {
     }
     
     @JavaScriptBody(args = {}, body = ""
-        + "var lines = [];"
-        + "console.log = function(l) { lines.push(l + '\\n'); };"
-        + "return lines;")
+        + "var lines = [];\n"
+        + "console.log = function(l) {\n"
+        + "  lines.push(l + '\\n');\n"
+        + "};\n"
+        + "return lines;\n"
+    )
     Object initCapture() {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(os);
@@ -53,11 +56,12 @@ public class SystemTest {
         return os;
     }
     
-    @JavaScriptBody(args = { "o" }, body = "return o.join('');")
+    @JavaScriptBody(args = { "o" }, body = "\n"
+        + "return o.join('');\n"
+    )
     String textCapture(Object o) throws java.io.IOException {
         ByteArrayOutputStream b = (ByteArrayOutputStream) o;
         String raw = new String(b.toByteArray(), "UTF-8");
-        raw = raw.replace('\n', ' ').replace('\r', ' ').trim();
         return raw;
     }
     

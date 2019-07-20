@@ -149,11 +149,6 @@ public class System {
         @Override
         public void write(byte b[], int off, int len) throws IOException {
             String line = new String(b, off, len, "UTF-8");
-            int i = line.length() - 1;
-            while (i >= 0 && line.charAt(i) < 20) {
-                i--;
-            }
-            line = line.substring(0, i + 1);
             pending.append(line);
             int lastLine = pending.lastIndexOf("\n");
             if (lastLine >= 0) {
