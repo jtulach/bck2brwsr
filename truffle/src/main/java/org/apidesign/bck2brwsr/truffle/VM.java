@@ -24,8 +24,10 @@ import com.oracle.truffle.api.TruffleOptions;
 import com.oracle.truffle.api.interop.InteropException;
 import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.TruffleObject;
+import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.library.ExportLibrary;
 import com.oracle.truffle.api.library.ExportMessage;
+import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -59,7 +61,6 @@ final class VM implements TruffleObject {
 
     final TruffleLanguage.Env env;
     private TruffleObject vm;
-    private LoadClassNode loadClass;
     private Object jsNull;
 
     VM(TruffleLanguage.Env env) {
@@ -96,7 +97,6 @@ final class VM implements TruffleObject {
             ).mimeType("text/javascript").build();
             CallTarget get = env.parse(getVM);
             vm = (TruffleObject) get.call();
-            loadClass = new LoadClassNode(vm);
 
             try {
                 InteropLibrary.getFactory().getUncached().writeMember(env.getPolyglotBindings(), "jvm", this);
@@ -170,7 +170,7 @@ final class VM implements TruffleObject {
             if (mainClass != null) {
                 InteropLibrary interop = InteropLibrary.getFactory().getUncached();
                 try {
-                    interop.invokeMember(findClass(mainClass), "main");
+                    interop.invokeMember(findClass(interop, mainClass), "main");
                 } catch (InteropException ex) {
                     throw raise(ex);
                 }
@@ -187,9 +187,20 @@ final class VM implements TruffleObject {
         return name;
     }
 
-    final ClassObject findClass(String globalName) {
-        return new ClassObject(loadClass.loadClass(globalName));
+    final ClassObject findClass(InteropLibrary invoke, String globalName) {
+        return new ClassObject(loadClass(invoke, globalName));
     }
+
+    private TruffleObject loadClass(InteropLibrary invoke, String name) {
+        Object clazz;
+        try {
+            clazz = invoke.invokeMember(vm, "loadClass", name);
+        } catch (InteropException ex) {
+            throw VM.raise(ex);
+        }
+        return (TruffleObject) clazz;
+    }
+
 
     @CompilerDirectives.TruffleBoundary
     void compileClasses(Source src, final Map<String, byte[]> classes) throws Exception {
@@ -235,8 +246,8 @@ final class VM implements TruffleObject {
     }
 
     @ExportMessage
-    static Object readMember(VM obj, String name) {
-        ClassObject clazz = obj.findClass(name);
+    static Object readMember(VM obj, String name, @CachedLibrary(limit = "3") InteropLibrary invoke) {
+        ClassObject clazz = obj.findClass(invoke, name);
         return clazz;
     }
 
