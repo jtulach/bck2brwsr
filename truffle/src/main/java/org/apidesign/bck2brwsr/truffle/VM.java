@@ -195,6 +195,7 @@ final class VM implements TruffleObject {
         Object clazz;
         try {
             clazz = invoke.invokeMember(vm, "loadClass", name);
+            clazz = invoke.readMember(clazz, "__raw__");
         } catch (InteropException ex) {
             throw VM.raise(ex);
         }
