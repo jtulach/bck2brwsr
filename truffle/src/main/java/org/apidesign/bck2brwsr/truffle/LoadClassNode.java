@@ -18,16 +18,15 @@
 
 package org.apidesign.bck2brwsr.truffle;
 
-import com.oracle.truffle.api.interop.ForeignAccess;
 import com.oracle.truffle.api.interop.InteropException;
-import com.oracle.truffle.api.interop.Message;
+import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.nodes.Node;
 
 final class LoadClassNode extends Node {
     private final TruffleObject vm;
     @Node.Child
-    private Node invoke = Message.createInvoke(1).createNode();
+    private InteropLibrary invoke = InteropLibrary.getFactory().getUncached();
 
     LoadClassNode(TruffleObject vm) {
         this.vm = vm;
@@ -36,7 +35,7 @@ final class LoadClassNode extends Node {
     TruffleObject loadClass(String name) {
         Object clazz;
         try {
-            clazz = ForeignAccess.sendInvoke(invoke, vm, "loadClass", name);
+            clazz = invoke.invokeMember(vm, "loadClass", name);
         } catch (InteropException ex) {
             throw VM.raise(ex);
         }

@@ -18,39 +18,31 @@
 package org.apidesign.bck2brwsr.truffle;
 
 import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.interop.ForeignAccess;
-import com.oracle.truffle.api.interop.MessageResolution;
-import com.oracle.truffle.api.interop.Resolve;
+import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.TruffleObject;
-import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.library.ExportLibrary;
+import com.oracle.truffle.api.library.ExportMessage;
 
-@MessageResolution(receiverType = AtoB.class)
+@ExportLibrary(InteropLibrary.class)
 final class AtoB implements TruffleObject {
-    @Override
-    public ForeignAccess getForeignAccess() {
-        return AtoBForeign.ACCESS;
+    @ExportMessage
+    static boolean isExecutable(AtoB obj) {
+        return true;
     }
 
-    static boolean isInstance(TruffleObject obj) {
-        return obj instanceof AtoB;
+    @ExportMessage
+    static String execute(AtoB obj, Object[] args) {
+        return parseBase64Binary((String) args[0]);
     }
 
-    @Resolve(message = "EXECUTE")
-    static abstract class ExecuteAtoB extends Node {
-        protected String access(AtoB obj, Object... args) {
-            return parseBase64Binary((String) args[0]);
+    @CompilerDirectives.TruffleBoundary
+    private static String parseBase64Binary(String s) {
+        final byte[] arr = javax.xml.bind.DatatypeConverter.parseBase64Binary(s);
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < arr.length; i++) {
+            int ch = arr[i];
+            sb.append((char) ch);
         }
-
-        @CompilerDirectives.TruffleBoundary
-        static String parseBase64Binary(String s) {
-            final byte[] arr = javax.xml.bind.DatatypeConverter.parseBase64Binary(s);
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < arr.length; i++) {
-                int ch = arr[i];
-                sb.append((char) ch);
-            }
-            return sb.toString();
-        }
-
+        return sb.toString();
     }
 }

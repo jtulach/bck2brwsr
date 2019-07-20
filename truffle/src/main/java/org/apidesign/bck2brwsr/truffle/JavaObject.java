@@ -17,15 +17,19 @@
  */
 package org.apidesign.bck2brwsr.truffle;
 
-import com.oracle.truffle.api.interop.ForeignAccess;
+import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.interop.ArityException;
 import com.oracle.truffle.api.interop.InteropException;
-import com.oracle.truffle.api.interop.Message;
-import com.oracle.truffle.api.interop.MessageResolution;
-import com.oracle.truffle.api.interop.Resolve;
+import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.TruffleObject;
-import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.interop.UnknownIdentifierException;
+import com.oracle.truffle.api.interop.UnsupportedMessageException;
+import com.oracle.truffle.api.interop.UnsupportedTypeException;
+import com.oracle.truffle.api.library.CachedLibrary;
+import com.oracle.truffle.api.library.ExportLibrary;
+import com.oracle.truffle.api.library.ExportMessage;
 
-@MessageResolution(receiverType = JavaObject.class)
+@ExportLibrary(InteropLibrary.class)
 final class JavaObject implements TruffleObject {
     final TruffleObject jsObj;
 
@@ -33,35 +37,39 @@ final class JavaObject implements TruffleObject {
         this.jsObj = instance;
     }
 
-    static boolean isInstance(TruffleObject obj) {
-        return obj instanceof JavaObject;
+    @ExportMessage
+    static boolean hasMembers(JavaObject obj) {
+        return true;
+    }
+    @ExportMessage
+    static boolean isMemberInvocable(JavaObject obj, String name) {
+        return true;
     }
 
-    @Override
-    public ForeignAccess getForeignAccess() {
-        return JavaObjectForeign.ACCESS;
-    }
-
-    @Resolve(message = "INVOKE")
-    static abstract class StaticMethodCall extends Node {
-
-        @Node.Child
-        private FindKeysNode find = new FindKeysNode(true, true);
-        @Node.Child
-        private Node invoke;
-
-        protected Object access(JavaObject obj, String name, Object... args) {
-            String n = find.findKey(obj.jsObj, name);
-            if (invoke == null) {
-                invoke = Message.createInvoke(args.length).createNode();
-            }
-            FindKeysNode.unwrapArgs(args);
-            try {
-                return ForeignAccess.sendInvoke(invoke, obj.jsObj, (String) n, args);
-            } catch (InteropException ex) {
-                throw ex.raise();
-            }
+    @ExportMessage
+    static Object invokeMember(JavaObject obj, String name, Object[] args,
+        @Cached("createFindKeysNode(1)") FindKeysNode find,
+        @CachedLibrary(limit = "3") InteropLibrary interop
+    ) throws UnsupportedMessageException, ArityException, UnknownIdentifierException, UnsupportedTypeException  {
+        String n = find.findKey(obj.jsObj, name);
+        FindKeysNode.unwrapArgs(args);
+        try {
+            return interop.invokeMember(obj.jsObj, (String) n, args);
+        } catch (InteropException ex) {
+            throw ex.raise();
         }
     }
 
+    static FindKeysNode createFindKeysNode(int b) {
+        return new FindKeysNode(b > 0, true);
+    }
+
+    static FindKeysNode getUncached() {
+        return new FindKeysNode(false, false);
+    }
+
+    @ExportMessage
+    static Object getMembers(JavaObject obj, boolean includeInternal) {
+        throw new UnsupportedOperationException();
+    }
 }
