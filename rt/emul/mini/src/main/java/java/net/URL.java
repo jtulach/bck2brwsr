@@ -1104,8 +1104,11 @@ public final class URL implements java.io.Serializable {
                 }
                 
                 class ResourceConnection extends URLConnection implements Closeable {
+                    private final URL u;
+
                     public ResourceConnection(URL url) {
                         super(url);
+                        this.u = url;
                     }
                     
                     Object stream = is;
@@ -1114,7 +1117,7 @@ public final class URL implements java.io.Serializable {
                     public void connect() throws IOException {
                         if (stream == null) {
                             try {
-                                byte[] arr = (byte[]) url.getContent(new Class[]{byte[].class});
+                                byte[] arr = (byte[]) u.getContent(new Class[]{byte[].class});
                                 stream = new ByteArrayInputStream(arr);
                             } catch (IOException ex) {
                                 stream = ex;
@@ -1134,9 +1137,14 @@ public final class URL implements java.io.Serializable {
 
                     @Override
                     public void close() throws IOException {
-                        if (url.blob != null) {
-                            closeBlob(url.blob.toExternalForm());
+                        if (u.blob != null) {
+                            closeBlob(u.blob.toExternalForm());
                         }
+                    }
+
+                    @Override
+                    public URL getURL() {
+                        return u;
                     }
                 }
                 return new ResourceConnection(u);

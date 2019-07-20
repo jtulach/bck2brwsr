@@ -1,6 +1,6 @@
 /**
  * Back 2 Browser Bytecode Translator
- * Copyright (C) 2012-2017 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * Copyright (C) 2012-2018 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,11 +25,8 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import javax.script.Invocable;
 import javax.script.ScriptContext;
@@ -67,10 +64,7 @@ public final class TestVM {
         Object ret = null;
         try {
             ret = code.invokeMethod(bck2brwsr, "loadClass", clazz.getName());
-            List<Object> ma = new ArrayList<>();
-            ma.add(method);
-            ma.addAll(Arrays.asList(args));
-            ret = code.invokeMethod(ret, "invoke", ma.toArray());
+            ret = code.invokeMethod(ret, method, args);
         } catch (ScriptException ex) {
             fail("Execution failed in " + dumpJS(codeSeq) + ": " + ex.getMessage(), ex);
         } catch (NoSuchMethodException ex) {
@@ -86,7 +80,7 @@ public final class TestVM {
             // in case of Long it is necessary convert it to number
             // since the Long is represented by two numbers in JavaScript
             try {
-                final Object toFP = ((ScriptEngine)code).eval("Number.prototype.toFP");
+                final Object toFP = ((ScriptEngine)code).eval("Number.prototype['__bit64']['toFP']");
                 if (ret instanceof Long) {
                     ret = code.invokeMethod(toFP, "call", ret);
                 }
@@ -256,7 +250,7 @@ public final class TestVM {
     }
 
     private static void defineAtoB(ScriptEngine js) throws ScriptException {
-        js.eval("atob = function(s) { return new String(org.apidesign.vm4brwsr.ResourcesTest.parseBase64Binary(s)); }");
+        js.eval("atob = function(s) { return new String(Packages.org.apidesign.vm4brwsr.ResourcesTest.parseBase64Binary(s)); }");
     }
 
     Object loadClass(String loadClass, String name) throws ScriptException, NoSuchMethodException {

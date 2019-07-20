@@ -1,6 +1,6 @@
 /**
  * Back 2 Browser Bytecode Translator
- * Copyright (C) 2012-2017 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * Copyright (C) 2012-2018 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,13 +46,18 @@ final class FXBrwsrLauncher extends BaseHTTPLauncher {
     private static final Logger LOG = Logger.getLogger(FXBrwsrLauncher.class.getName());
     static {
         try {
-            Method m = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
-            m.setAccessible(true);
-            URL l = new URL("file://" + System.getProperty("java.home") + "/lib/jfxrt.jar");
-            LOG.log(Level.INFO, "url : {0}", l);
-            m.invoke(ClassLoader.getSystemClassLoader(), l);
-        } catch (Exception ex) {
-            throw new LinkageError("Can't add jfxrt.jar on the classpath", ex);
+            Class.forName("javafx.application.Application");
+            // OK, found
+        } catch (ClassNotFoundException noFX) {
+            try {
+                Method m = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+                m.setAccessible(true);
+                URL l = new URL("file://" + System.getProperty("java.home") + "/lib/jfxrt.jar");
+                LOG.log(Level.INFO, "url : {0}", l);
+                m.invoke(ClassLoader.getSystemClassLoader(), l);
+            } catch (Exception ex) {
+                throw new LinkageError("Can't add jfxrt.jar on the classpath", ex);
+            }
         }
     }
 

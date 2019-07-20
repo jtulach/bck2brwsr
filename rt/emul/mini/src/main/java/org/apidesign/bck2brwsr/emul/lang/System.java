@@ -19,6 +19,7 @@ package org.apidesign.bck2brwsr.emul.lang;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.reflect.Method;
 import org.apidesign.bck2brwsr.core.Exported;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
@@ -29,10 +30,12 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  */
 @Exported
 public class System {
+    private static OutputStream stdErr;
+
     private System() {
     }
 
-    @JavaScriptBody(args = { "value", "srcBegin", "dst", "dstBegin", "count" }, body = 
+    @JavaScriptBody(args = { "value", "srcBegin", "dst", "dstBegin", "count" }, body =
         "if (srcBegin < dstBegin) {\n" +
         "    while (count-- > 0) {\n" +
         "        dst[dstBegin + count] = value[srcBegin + count];\n" +
@@ -53,12 +56,12 @@ public class System {
         }
     }
 
-    @JavaScriptBody(args = { "arr", "expectedSize" }, body = 
+    @JavaScriptBody(args = { "arr", "expectedSize" }, body =
         "while (expectedSize > arr.length) { arr.push(0); }; return arr;"
     )
     public static native byte[] expandArray(byte[] arr, int expectedSize);
 
-    @JavaScriptBody(args = { "arr", "expectedSize" }, body = 
+    @JavaScriptBody(args = { "arr", "expectedSize" }, body =
         "while (expectedSize > arr.length) { arr.push(0); }; return arr;"
     )
     public static native char[] expandArray(char[] arr, int expectedSize);
@@ -75,7 +78,7 @@ public class System {
     }
     @JavaScriptBody(args = { "obj" }, body="return vm.java_lang_Object(false).hashCode__I.call(obj);")
     public static native int identityHashCode(Object obj);
-    
+
     public static Closeable activate() {
         return DUMMY;
     }
@@ -86,7 +89,7 @@ public class System {
     };
     @JavaScriptBody(args = { "fn", "p" }, body = "return fn(p);")
     private static native Object invoke(Object fn, Object p);
-    
+
     @Exported
     private static Object convArray(Object o, Object convToJS) {
         if (o instanceof Object[]) {
@@ -100,4 +103,23 @@ public class System {
         }
         return o;
     }
+
+    public static void registerStdErr(OutputStream os) {
+        stdErr = os;
+    }
+
+    public static void printStackTrace(String trace) {
+        if (stdErr != null) {
+            try {
+                stdErr.write(trace.getBytes("UTF-8"));
+            } catch (IOException ex) {
+                warn(trace);
+            }
+        } else {
+            warn(trace);
+        }
+    }
+
+    @JavaScriptBody(args = { "msg" }, body = "if (console) console.warn(msg.toString());")
+    private static native void warn(String msg);
 }

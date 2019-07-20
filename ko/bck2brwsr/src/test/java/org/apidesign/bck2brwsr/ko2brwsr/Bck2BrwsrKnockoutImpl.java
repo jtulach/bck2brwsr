@@ -1,6 +1,6 @@
 /**
  * Back 2 Browser Bytecode Translator
- * Copyright (C) 2012-2017 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * Copyright (C) 2012-2018 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -94,9 +94,18 @@ public final class Bck2BrwsrKnockoutImpl extends KnockoutTCK {
         + "return h;\n"
     )
     private static native String findBaseURL();
-    
+
     @Override
     public URI prepareURL(String content, String mimeType, String[] parameters) {
+        try {
+            return new URI(prepareWebResource(content, mimeType, parameters));
+        } catch (URISyntaxException ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
+
+
+    public String prepareWebResource(String content, String mimeType, String[] parameters) {
         try {
             final URL baseURL = new URL(findBaseURL());
             StringBuilder sb = new StringBuilder();
@@ -110,12 +119,26 @@ public final class Bck2BrwsrKnockoutImpl extends KnockoutTCK {
 
             URL query = new URL(baseURL, sb.toString());
             String uri = (String) query.getContent(new Class[] { String.class });
-            URI connectTo = new URI(uri.trim());
-            return connectTo;
+            return uri.trim();
         } catch (IOException ex) {
             throw new IllegalStateException(ex);
-        } catch (URISyntaxException ex) {
-            throw new IllegalStateException(ex);
         }
-    }    
+    }
+
+    public boolean scheduleLater(int delay, Runnable r) {
+        return setTimeout(r, delay);
+    }
+
+    @JavaScriptBody(args = { "r", "timeout" }, body =
+          ""
+        + "if (!!window && !!window.setTimeout) {\n"
+        + "  window.setTimeout(function() {\n"
+        + "    r.run__V();\n"
+        + "  }, timeout);\n"
+        + "  return true;\n"
+        + "}\n"
+        + "return false;\n"
+    )
+    private static native boolean setTimeout(Runnable r, int timeout);
+
 }

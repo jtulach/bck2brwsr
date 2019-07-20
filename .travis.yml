@@ -1,4 +1,8 @@
 language: java
+sudo: false
+addons:
+  firefox: "53.0"
+
 before_script:
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start || echo Without Xvfb
@@ -10,9 +14,8 @@ script:
   - mvn -f rt/vm test $RUN_PARAMS
   - mvn -f rt/emul/brwsrtest test $RUN_PARAMS
   - mvn -f rt/emul/mini test $RUN_PARAMS
-  - mvn -f rt/emul/zip test $RUN_PARAMS
-  - mvn -f javaquery install $RUN_PARAMS
+  - if false; then mvn -f rt/emul/zip test $RUN_PARAMS; fi
+  - if false; then mvn -f javaquery install $RUN_PARAMS; fi
   - if type firefox; then mvn -f ko/fx test $RUN_PARAMS; fi
 os:
   - linux
-  - osx

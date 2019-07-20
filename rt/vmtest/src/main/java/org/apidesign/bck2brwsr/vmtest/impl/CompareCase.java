@@ -1,6 +1,6 @@
 /**
  * Back 2 Browser Bytecode Translator
- * Copyright (C) 2012-2017 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * Copyright (C) 2012-2018 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -121,7 +121,7 @@ public final class CompareCase implements ITest {
         } catch (AssertionError e) {
             StringBuilder sb = new StringBuilder();
             sb.append(e.getMessage());
-            Bck2BrwsrCase.dumpJS(sb, second);
+            second.dumpJS(sb);
             throw new AssertionError(sb.toString());
         }
         if (slowdown > 0.0) {

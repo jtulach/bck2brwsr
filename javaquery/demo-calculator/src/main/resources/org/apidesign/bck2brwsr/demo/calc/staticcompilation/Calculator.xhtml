@@ -2,7 +2,7 @@
 <!--
 
     Back 2 Browser Bytecode Translator
-    Copyright (C) 2012-2017 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+    Copyright (C) 2012-2018 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -92,8 +92,26 @@
         <script src="vm/bck2brwsr.js"></script>
         <script>
             var vm = bck2brwsr('app/calculator.js');
-            var c = vm.loadClass('org.apidesign.bck2brwsr.demo.calc.staticcompilation.Calc');
-            c.invoke('main');
+            vm.loadClass('org.apidesign.bck2brwsr.demo.calc.staticcompilation.Preinit', function(Preinit) {
+                var fourtyTwo = Preinit.invoke('fourtyPlus', 2);
+                if (fourtyTwo !== 42) {
+                    throw 'Expecting fourtyTwo: ' + fourtyTwo;
+                }
+                try {
+                    var nothing = Preinit.invoke('twentyPlus', 1);
+                } catch (e) {
+                    var ok = true;
+                }
+                if (!ok) {
+                    throw 'Twenty plus is not static method: ' + nothing;
+                }
+                Preinit.invoke("sayHello", "from browser!");
+                Preinit.invoke("sayHello", "again from browser!");
+                Preinit.invoke("sayHello", "and now let the calculator run!");
+                vm.loadClass('org.apidesign.bck2brwsr.demo.calc.staticcompilation.Calc', function(c) {
+                    c.invoke('main');
+                });
+            });
         </script>
     </body>
 </html>

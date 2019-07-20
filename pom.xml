@@ -13,12 +13,13 @@
   </parent>  
   <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-      <netbeans.version>RELEASE80</netbeans.version>
+      <netbeans.version>RELEASE110</netbeans.version>
       <license>COPYING</license>
-      <net.java.html.version>1.4</net.java.html.version>
+      <net.java.html.version>1.6.1</net.java.html.version>
       <netbeans.compile.on.save>none</netbeans.compile.on.save>
       <trufflejs.jar>${project.build.directory}/test-classes</trufflejs.jar>
       <test.java.home>${java.home}</test.java.home>
+      <javadoc.opts>-author</javadoc.opts>
   </properties>
   <modules>
     <module>javaquery</module>
@@ -39,22 +40,19 @@
       <url>http://apidesign.org</url>
   </organization>
   <scm>
-      <connection>scm:hg:http://source.apidesign.org/hg/bck2brwsr</connection>
-      <developerConnection>scm:hg:https://source.apidesign.org/hg/bck2brwsr</developerConnection>
-      <url>http://source.apidesign.org/hg/bck2brwsr</url>
+      <connection>scm:git:https://github.com/jtulach/bck2brwsr.git</connection>
+      <developerConnection>scm:git:https://github.com/jtulach/bck2brwsr.git</developerConnection>
+      <url>https://github.com/jtulach/bck2brwsr</url>
     <tag>HEAD</tag>
   </scm>
   <repositories>
-      <repository>
-          <id>netbeans</id>
-          <name>NetBeans</name>
-          <url>http://bits.netbeans.org/maven2/</url>
-      </repository>
+      <!--
       <repository>
           <id>stagging</id>
           <name>Stagging</name>
           <url>https://maven.java.net/content/repositories/orgapidesign-1059/</url>
       </repository>
+       -->
   </repositories>
   <pluginRepositories>
       <pluginRepository>
@@ -68,19 +66,21 @@
               <enabled>true</enabled>
           </releases>
       </pluginRepository>
+      <!--
       <pluginRepository>
           <id>stagging</id>
           <name>Stagging</name>
           <url>https://maven.java.net/content/repositories/orgapidesign-1059/</url>
       </pluginRepository>
+      -->
   </pluginRepositories>
   <build>
       <plugins>
          <plugin>
               <inherited>false</inherited>
-              <groupId>com.mycila.maven-license-plugin</groupId>
-              <artifactId>maven-license-plugin</artifactId>
-              <version>1.9.0</version>
+              <groupId>com.mycila</groupId>
+              <artifactId>license-maven-plugin</artifactId>
+              <version>3.0</version>
               <executions>
                   <execution>
                       <id>blah</id>
@@ -106,7 +106,16 @@
                        <exclude>rt/aot-junit/**</exclude>
                        <exclude>javaquery/api/src/main/resources/org/apidesign/bck2brwsr/htmlpage/knockout*.js</exclude>
                        <exclude>ko/archetype/src/main/resources/archetype-resources/**</exclude>
+                       <include>**/.scala</include>
+                       <include>**/.kt</include>
+                       <include>**/.gradle/**</include>
+                       <include>**/gradle*/build/**</include>
                   </excludes>
+                  <mapping>
+                      <sbt>JAVADOC_STYLE</sbt>
+                      <gradle>JAVADOC_STYLE</gradle>
+                  </mapping>
+                  <failIfUnknown>true</failIfUnknown>
               </configuration>
           </plugin>
            <plugin>
@@ -142,6 +151,7 @@
                 <version>2.9</version>
                 <configuration>
                     <skip>true</skip>
+                    <additionalparam>${javadoc.opts}</additionalparam>
                 </configuration>
               </plugin>
             <plugin>
@@ -297,6 +307,7 @@
           </activation>
           <properties>
             <jfxrt.jar>${java.home}/lib/ext/jfxrt.jar</jfxrt.jar>
+            <javadoc.opts>-Xdoclint:none</javadoc.opts>
           </properties>
       </profile>
       <profile>

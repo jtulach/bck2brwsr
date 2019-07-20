@@ -1,6 +1,6 @@
 /**
  * Back 2 Browser Bytecode Translator
- * Copyright (C) 2012-2017 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * Copyright (C) 2012-2018 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,7 +62,9 @@ public class ExceptionsTest {
             return (String) obj;
         } catch (ClassCastException ex) {
             assert ex.getMessage().contains("cannot be cast to") : "Contains the right text: " + ex.getMessage();
-            throw ex;
+            assert ex.getMessage().contains("java.lang.Integer") : "Talks about Integer: " + ex.getMessage();
+            assert ex.getMessage().contains("java.lang.String") : "Talks about String: " + ex.getMessage();
+            throw new ClassCastException("java.lang.Integer cannot be cast to java.lang.String");
         }
     }
     

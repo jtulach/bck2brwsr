@@ -1,6 +1,6 @@
 /**
  * Back 2 Browser Bytecode Translator
- * Copyright (C) 2012-2017 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * Copyright (C) 2012-2018 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Enumeration;
-import net.java.html.js.JavaScriptBody;
 import org.apidesign.bck2brwsr.vmtest.BrwsrTest;
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
@@ -118,7 +117,7 @@ public class ResourcesTest {
         return java;
     }
 
-    @JavaScriptBody(args = { "url" }, body =
+    @org.apidesign.bck2brwsr.core.JavaScriptBody(args = { "url" }, body =
         "if (typeof XMLHttpRequest === 'undefined') return null;\n" +
         "var xhr = new XMLHttpRequest();\n" +
         "xhr.overrideMimeType('text\\/plain; charset=x-user-defined');\n" +

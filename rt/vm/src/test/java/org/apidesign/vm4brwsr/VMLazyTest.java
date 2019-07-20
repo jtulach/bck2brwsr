@@ -1,6 +1,6 @@
 /**
  * Back 2 Browser Bytecode Translator
- * Copyright (C) 2012-2017 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * Copyright (C) 2012-2018 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,17 +19,15 @@ package org.apidesign.vm4brwsr;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
-import javax.script.ScriptException;
-import org.testng.annotations.BeforeClass;
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertNotNull;
 import org.testng.annotations.AfterClass;
-import org.testng.annotations.Test;
+import org.testng.annotations.BeforeClass;
 
 /** Implements loading class by class.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class VMLazyTest {
+public final class VMLazyTest extends VMLazyAbstract {
     private static TestVM code;
 
     @BeforeClass
@@ -39,7 +37,7 @@ public class VMLazyTest {
         sb.append("\nfunction test(clazz, method) {");
         sb.append("\n  if (!data.bck2brwsr) data.bck2brwsr = bck2brwsr(function(name) { return loader.get(name); });");
         sb.append("\n  var c = data.bck2brwsr.loadClass(clazz);");
-        sb.append("\n  return c[method]();");
+        sb.append("\n  return c.invoke(method.split('__')[0]);");
         sb.append("\n}");
         
         sb.append("\nfunction checkKO() {");
@@ -52,50 +50,16 @@ public class VMLazyTest {
         );
         arr[0].getContext().setAttribute("loader", new BytesLoader(), ScriptContext.ENGINE_SCOPE);
     }
+
+    @Override
+    TestVM findCode() {
+        assertNotNull(code);
+        return code;
+    }
+
     @AfterClass
     public static void releaseTheCode() {
         code = null;
     }
     
-    @Test public void invokeStaticMethod() throws Exception {
-        assertExec("Trying to get -1", "test", Double.valueOf(-1),
-            StaticMethod.class.getName(), "minusOne__I"
-        );
-    }
-
-    @Test public void loadDependantClass() throws Exception {
-        assertExec("Expecting zero", "test", Double.valueOf(0),
-            InstanceSub.class.getName(), "recallDbl__D"
-        );
-    }
-
-    @Test public void loadClassWithAssociatedScript() throws Exception {
-        assertExec("ko is defined", "test", true,
-            Script.class.getName(), "checkNotNull__Z"
-        );
-        
-        Object res = code.invokeFunction("checkKO");
-        assertEquals(res, true, "KO is defined on a global level");
-    }
-
-    private static void assertExec(String msg, String methodName, Object expRes, Object... args) throws Exception {
-        Object ret = null;
-        try {
-            ret = code.invokeFunction(methodName, args);
-        } catch (ScriptException ex) {
-            fail("Execution failed in\n" + code.toString(), ex);
-        } catch (NoSuchMethodException ex) {
-            fail("Cannot find method in\n" + code.toString(), ex);
-        }
-        if (ret == null && expRes == null) {
-            return;
-        }
-        if (expRes instanceof Double && ret instanceof Number) {
-            ret = ((Number)ret).doubleValue();
-        }
-        if (expRes.equals(ret)) {
-            return;
-        }
-        assertEquals(ret, expRes, msg + "was: " + ret + "\n" + code.toString());
-    }
 }

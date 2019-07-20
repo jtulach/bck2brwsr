@@ -1,6 +1,6 @@
 /**
  * Back 2 Browser Bytecode Translator
- * Copyright (C) 2012-2017 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * Copyright (C) 2012-2018 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,23 +27,13 @@ import java.util.Enumeration;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public final class BytesLoader {
-    private static final StringArray requested = new StringArray();
+    private final StringArray requested = new StringArray();
 
     public byte[] get(String name) throws IOException {
         if (!requested.addIfMissing(name)) {
             throw new IllegalStateException("Requested for second time: " + name);
         }
         byte[] arr = readClass(name);
-        /*
-        System.err.print("loader['" + name + "'] = [");
-        for (int i = 0; i < arr.length; i++) {
-        if (i > 0) {
-        System.err.print(", ");
-        }
-        System.err.print(arr[i]);
-        }
-        System.err.println("]");
-         */
         return arr;
     }
 

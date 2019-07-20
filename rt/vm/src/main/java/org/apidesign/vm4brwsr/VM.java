@@ -1,6 +1,6 @@
 /**
  * Back 2 Browser Bytecode Translator
- * Copyright (C) 2012-2017 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * Copyright (C) 2012-2018 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,9 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.Base64;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.vm4brwsr.ByteCodeParser.ClassData;
 import org.apidesign.vm4brwsr.ByteCodeParser.FieldData;
@@ -38,7 +41,7 @@ abstract class VM extends ByteCodeToJavaScript {
     int exportedCount;
 
     private VM(
-        Appendable out, Bck2Brwsr.Resources resources, 
+        Appendable out, Bck2Brwsr.Resources resources,
         StringArray explicitlyExported, StringArray asBinary
     ) {
         super(out);
@@ -63,18 +66,18 @@ abstract class VM extends ByteCodeToJavaScript {
     boolean debug(Appendable out, String msg) throws IOException {
         return false;
     }
-    
-    static void compile(Appendable out, 
+
+    static void compile(Appendable out,
         Bck2Brwsr config
     ) throws IOException {
         String[] both = config.classes().toArray();
-        
+
         final StringArray fixedNames = new StringArray();
         boolean addThree = false;
-        
+
         VM vm;
         if (config.isExtension()) {
-            vm = new Extension(out, 
+            vm = new Extension(out,
                 config.getResources(), both, config.exported(),
                 config.allResources(), config.classpath()
             );
@@ -84,11 +87,11 @@ abstract class VM extends ByteCodeToJavaScript {
                 fixedNames.add(VM.class.getName().replace('.', '/'));
                 addThree = true;
             }
-            vm = new Standalone(out, 
+            vm = new Standalone(out,
                 config.getResources(), config.exported(),
                 config.allResources()
             );
-        }            
+        }
         if (addThree) {
             fixedNames.add(Object.class.getName().replace('.', '/'));
             fixedNames.add(Class.class.getName().replace('.', '/'));
@@ -106,7 +109,7 @@ abstract class VM extends ByteCodeToJavaScript {
         out.append("\n  }");
         generateBody(out, names);
         out.append(invokerMethods);
-        
+
         for (String r : asBinary.toArray()) {
             out.append("\n  ").append(getExportsObject()).append("['registerResource']('");
             out.append(r).append("', '");
@@ -137,14 +140,14 @@ abstract class VM extends ByteCodeToJavaScript {
             out.append(btoa(arr));
             out.append("');");
         }
-        
+
         out.append("\n");
         generateEpilogue(out);
     }
 
     @JavaScriptBody(args = { "arr" }, body = "return btoa(arr);")
     private static String btoa(byte[] arr) {
-        return javax.xml.bind.DatatypeConverter.printBase64Binary(arr);
+        return Base64.getEncoder().encodeToString(arr);
     }
 
     protected abstract void generatePrologue(Appendable out) throws IOException;
@@ -156,7 +159,7 @@ abstract class VM extends ByteCodeToJavaScript {
     protected abstract boolean isExternalClass(String className);
 
     protected abstract void lazyReference(Appendable out, String n) throws IOException;
-    
+
     @Override
     protected final void declareClass(Appendable out, ClassData classData, String mangledName)
             throws IOException {
@@ -271,49 +274,44 @@ abstract class VM extends ByteCodeToJavaScript {
         if (useEval) {
             out.append("(0 || eval)(\"");
         }
-        readResource(useEval, emul, out);
+        try (Reader r = new InputStreamReader(emul, "UTF-8")) {
+            readResource(useEval, r, out);
+        }
         if (useEval) {
             out.append("\");");
         }
         out.append("\n");
     }
 
-    private static void readResource(boolean escape, InputStream emul, Appendable out) throws IOException {
-        try {
-            for (;;) {
-                int ch = emul.read();
-                if (ch == -1) {
-                    break;
-                }
-                if (ch < 0 || ch > 255) {
-                    throw new IOException("Invalid char in emulation " + ch);
-                }
-                if (escape) {
-                    switch (ch) {
-                        case '"':
-                            out.append("\\\"");
-                            break;
-                        case '\\':
-                            out.append("\\\\");
-                            break;
-                        case '\n':
-                            out.append("\\n\"\n + \"");
-                            break;
-                        case '\t':
-                            out.append("\\t");
-                            break;
-                        case '\r':
-                            out.append("\\r");
-                            break;
-                        default:
-                            out.append((char)ch);
-                    }
-                } else {
-                    out.append((char)ch);
-                }
+    private static void readResource(boolean escape, Reader emul, Appendable out) throws IOException {
+        for (;;) {
+            int ch = emul.read();
+            if (ch == -1) {
+                break;
             }
-        } finally {
-            emul.close();
+            if (escape) {
+                switch (ch) {
+                    case '"':
+                        out.append("\\\"");
+                        break;
+                    case '\\':
+                        out.append("\\\\");
+                        break;
+                    case '\n':
+                        out.append("\\n\"\n + \"");
+                        break;
+                    case '\t':
+                        out.append("\\t");
+                        break;
+                    case '\r':
+                        out.append("\\r");
+                        break;
+                    default:
+                        out.append((char)ch);
+                }
+            } else {
+                out.append((char)ch);
+            }
         }
     }
 
@@ -325,7 +323,7 @@ abstract class VM extends ByteCodeToJavaScript {
 
     private StringArray scripts = new StringArray();
     private StringArray references = new StringArray();
-    
+
     @Override
     protected boolean requireReference(String cn) {
         return references.addIfMissing(cn);
@@ -340,7 +338,7 @@ abstract class VM extends ByteCodeToJavaScript {
     String assignClass(String className) {
         return "vm." + className + " = ";
     }
-    
+
     @Override
     String accessClass(String className) {
         return "vm." + className;
@@ -382,9 +380,9 @@ abstract class VM extends ByteCodeToJavaScript {
 
     @Override
     protected String accessVirtualMethod(
-            String object, 
-            String mangledName, 
-            String[] fieldInfoName, 
+            String object,
+            String mangledName,
+            String[] fieldInfoName,
             int params
     ) throws IOException {
         final ClassData referencedClass =
@@ -406,7 +404,7 @@ abstract class VM extends ByteCodeToJavaScript {
         return accessThroughInvoker(object, mangledName, params);
     }
 
-    private String accessThroughInvoker(String object, String mangledName, int params) 
+    private String accessThroughInvoker(String object, String mangledName, int params)
     throws IOException {
         String def = "\n  invoker." + mangledName + " = function(target";
         if (invokerMethods.indexOf(def) == -1) {
@@ -504,7 +502,7 @@ abstract class VM extends ByteCodeToJavaScript {
 
     private static final class Standalone extends VM {
         private Standalone(Appendable out,
-            Bck2Brwsr.Resources resources, 
+            Bck2Brwsr.Resources resources,
             StringArray explicitlyExported, StringArray asBinary
         ) {
             super(out, resources, explicitlyExported, asBinary);
@@ -539,12 +537,53 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "  };\n"
                 + "  var pending = [];\n"
                 + "  var pendingClasses = [];\n"
+                + "  function wrapJavaMethod(wrapper, m, method) {\n"
+                + "    wrapper[m] = function() {\n"
+                + "      return method.apply(null, arguments);\n"
+                + "    };\n"
+                + "    var underscores = m.indexOf('__');\n"
+                + "    if (underscores >= 0) {\n"
+                + "      var shortName = m.substring(0, underscores);\n"
+                + "      if (!wrapper[shortName]) {\n"
+                + "        wrapper[shortName] = wrapper[m];\n"
+                + "      }\n"
+                + "    }\n"
+                + "  }\n"
+                + "  function wrapAllMethods(wrapper, realClass) {\n"
+                + "    for (var m in realClass) {\n"
+                + "      var method = realClass[m];\n"
+                + "      if (method && (method['access'] & 8) === 8) {\n"
+                + "        wrapJavaMethod(wrapper, m, method);\n"
+                + "      }\n"
+                + "    }\n"
+                + "  }\n"
+                + "  function wrapJava(vm, clazz, callback, realClass) {\n"
+                + "    var wrapper = {\n"
+                + "    };\n"
+                + "    if (realClass) {\n"
+                + "      wrapAllMethods(wrapper, realClass)\n"
+                + "    }\n"
+                + "    if (!wrapper['invoke']) {\n"
+                + "      wrapper['invoke'] = function() {\n"
+                + "         return invokeMethod(vm, clazz, arguments);\n"
+                + "      }\n"
+                + "    }\n"
+                + "    if (typeof callback === 'function') {\n"
+                + "      callback(wrapper);\n"
+                + "    }\n"
+                + "    return wrapper;\n"
+                + "  }\n"
                 + "  function extensionLoaded(ev) {\n"
                 + "    var at = pending.indexOf(ev.target);\n"
                 + "    pending.splice(at, 1);\n"
                 + "    if (pending.length === 0) {\n"
-                + "      for (var i = 0; i < pendingClasses.length; i += 3) {\n"
-                + "        invokeMethod(pendingClasses[i], pendingClasses[i + 1], pendingClasses[i + 2]);\n"
+                + "      for (var i = 0; i < pendingClasses.length; i += 4) {\n"
+                + "        var vm = pendingClasses[i];\n"
+                + "        var clazz = pendingClasses[i + 1];\n"
+                + "        var args = pendingClasses[i + 2];\n"
+                + "        var callback = pendingClasses[i + 3];\n"
+                + "        invokeMethod(vm, clazz, args);\n"
+                + "        wrapJava(vm, clazz, callback);\n"
                 + "      }\n"
                 + "      pendingClasses = [];\n"
                 + "    }\n"
@@ -558,7 +597,10 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "      var found = '';\n"
                 + "      for (var m in clazz) {\n"
                 + "        if (m.indexOf(prefix) === 0) {\n"
-                + "          return clazz[m].apply(null, args);\n"
+                + "          var method = clazz[m];\n"
+                + "          if ((method['access'] & 8) === 8) {\n"
+                + "            return method.apply(null, args);\n"
+                + "          }\n"
                 + "        }\n"
                 + "        found += m.toString() + '\\n'\n"
                 + "      }\n"
@@ -675,10 +717,13 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "    var loadClass = function(name) {\n"
                 + "      var attr = mangleClass(name);\n"
                 + "      var fn = vm[attr];\n"
-                + "      if (fn) return fn(false);\n"
+                + "      if (fn) {\n"
+                + "         return fn(false);\n"
+                + "      };\n"
                 + "      try {\n"
                 + "        var arr = loadBytes(replaceAll(name, '.', '/') + '.class');\n"
-                + "        return reload(name, arr, true);\n"
+                + "        var newClazz = reload(name, arr, true);\n"
+                + "        return newClazz;\n"
                 + "      } catch (err) {\n"
                 + "        fn = vm[attr];\n"
                 + "        if (fn) return fn(false);\n"
@@ -692,14 +737,12 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "    vm['_reload'] = reload;\n"
                 + "    vm['loadBytes'] = loadBytes;\n"
                 + "    initVM();\n"
-                + "    loader.loadClass = function(name) {\n"
+                + "    loader.loadClass = function(name, callback) {\n"
                 + "      if (pending.length === 0) {\n"
                 + "        try {\n"
-                + "          var c = loadClass(name);\n"
-                + "          c['invoke'] = function() {\n"
-                + "            return invokeMethod(vm, name, arguments);\n"
-                + "          };\n"
-                + "          return c;\n"
+                + "          var c = loadClass(name, callback);\n"
+                + "          var w = wrapJava(vm, name, callback, c);\n"
+                + "          return w;\n"
                 + "        } catch (err) {\n"
                 + "          if (pending.length === 0) throw err;\n"
                 + "        }\n"
@@ -707,6 +750,7 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "      pendingClasses.push(vm);\n"
                 + "      pendingClasses.push(name);\n"
                 + "      pendingClasses.push(null);\n"
+                + "      pendingClasses.push(callback);\n"
                 + "      return {\n"
                 + "        'invoke' : function() {\n"
                 + "          if (pending.length === 0) {\n"
@@ -716,6 +760,7 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "          pendingClasses.push(vm);\n"
                 + "          pendingClasses.push(name);\n"
                 + "          pendingClasses.push(arguments);\n"
+                + "          pendingClasses.push(null);\n"
                 + "        }\n"
                 + "      };\n"
                 + "    }\n"
@@ -760,7 +805,7 @@ abstract class VM extends ByteCodeToJavaScript {
         protected boolean isExternalClass(String className) {
             return false;
         }
-        
+
         @Override
         protected void lazyReference(Appendable out, String n) throws IOException {
             String cls = n.replace('/', '_');
@@ -798,7 +843,7 @@ abstract class VM extends ByteCodeToJavaScript {
         protected void generatePrologue(Appendable out) throws IOException {
             out.append(
                   "bck2brwsr.register({\n"
-                + "  'magic' : 'kafčo'"
+                + "  'magic' : 'kaf\\u010do'"
             );
             if (classpath != null && classpath.toArray().length > 0) {
                 out.append(
@@ -880,7 +925,7 @@ abstract class VM extends ByteCodeToJavaScript {
         protected boolean isExternalClass(String className) {
             return !extensionClasses.contains(className);
         }
-        
+
         @Override
         protected void lazyReference(Appendable out, String n) throws IOException {
             String cls = n.replace('/', '_');

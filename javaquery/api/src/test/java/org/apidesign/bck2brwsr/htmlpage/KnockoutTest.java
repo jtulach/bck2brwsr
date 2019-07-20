@@ -1,6 +1,6 @@
 /**
  * Back 2 Browser Bytecode Translator
- * Copyright (C) 2012-2017 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * Copyright (C) 2012-2018 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ import org.testng.annotations.Test;
     @Property(name="name", type=String.class),
     @Property(name="results", type=String.class, array = true),
     @Property(name="callbackCount", type=int.class),
-    @Property(name="people", type=PersonImpl.class, array = true)
+    @Property(name="people", type=Person.class, array = true)
 }) 
 public class KnockoutTest {
     

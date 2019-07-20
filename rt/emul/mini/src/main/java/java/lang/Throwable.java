@@ -208,7 +208,7 @@ public class Throwable implements Serializable {
      * @serial
      * @since 1.4
      */
-    private StackTraceElement[] stackTrace = UNASSIGNED_STACK;
+    private Object stackTrace = UNASSIGNED_STACK;
 
     // Setting this static field introduces an acceptable
     // initialization dependency on a few java.util classes.
@@ -639,10 +639,27 @@ public class Throwable implements Serializable {
      * </pre>
      */
     public void printStackTrace() {
-        warn(getClass().getName() + ": " + getMessage());
+        String trace = toStackTrace();
+        org.apidesign.bck2brwsr.emul.lang.System.printStackTrace(trace);
     }
-    @JavaScriptBody(args = { "msg" }, body = "if (console) console.warn(msg.toString());")
-    private native void warn(String msg);
+
+    private String toStackTrace() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getClass().getName());
+        sb.append(": ");
+        sb.append(getMessage());
+        if (stackTrace instanceof String) {
+            sb.append("\n");
+            sb.append(stackTrace);
+        } else if (stackTrace instanceof Object[]) {
+            Object[] arr = (Object[]) stackTrace;
+            for (int i = 0; i < arr.length; i++) {
+                sb.append("\n    ").append(arr[i].toString());
+            }
+        }
+        String s = sb.toString();
+        return s;
+    }
 
     /**
      * Prints this throwable and its backtrace to the specified print stream.
@@ -650,9 +667,7 @@ public class Throwable implements Serializable {
      * @param s {@code PrintStream} to use for output
      */
     public void printStackTrace(PrintStream s) {
-        s.print(getClass().getName());
-        s.print(": ");
-        s.println(getMessage());
+        s.println(toStackTrace());
     }
 
     /**
@@ -663,7 +678,7 @@ public class Throwable implements Serializable {
      * @since   JDK1.1
      */
     public void printStackTrace(PrintWriter s) {
-        s.append(getClass().getName()).append(": ").println(getMessage());
+        s.println(toStackTrace());
     }
 
 //    /**
@@ -725,14 +740,17 @@ public class Throwable implements Serializable {
     public synchronized Throwable fillInStackTrace() {
         if (stackTrace != null ||
             backtrace != null /* Out of protocol state */ ) {
-            fillInStackTrace(0);
-            stackTrace = UNASSIGNED_STACK;
+            String stack = fillInStackTrace0();
+            stackTrace = stack == null ? UNASSIGNED_STACK : stack;
         }
         return this;
     }
 
-    @JavaScriptBody(args = { "dummy" }, body = "")
-    private native Throwable fillInStackTrace(int dummy);
+    @JavaScriptBody(args = {}, body = 
+        "var e = new Error();\n" +
+        "return e.stack ? e.stack : null;\n"
+    )
+    private native String fillInStackTrace0();
 
     /**
      * Provides programmatic access to the stack trace information printed by

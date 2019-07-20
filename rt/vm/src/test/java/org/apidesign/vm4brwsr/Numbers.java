@@ -1,6 +1,6 @@
 /**
  * Back 2 Browser Bytecode Translator
- * Copyright (C) 2012-2017 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * Copyright (C) 2012-2018 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,6 +48,7 @@ public class Numbers {
         byte[] arr = {(byte)64, (byte)8, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0, (byte)0};
         ByteArrayInputStream is = new ByteArrayInputStream(arr);
         DataInputStream dis = new DataInputStream(is);
+//        debugger();
         return dis.readDouble();
     }
     public static long deserLong(byte[] arr) throws IOException {
@@ -75,7 +76,35 @@ public class Numbers {
     public static String floatToString() {
         return new Float(7.0).toString().toString();
     }
-    
+    public static String longToString(Long x, boolean negative) {
+        // debugger();
+        if (x == null) {
+            x = 7541432143243212321L;
+        }
+        if (negative) {
+            x = -x;
+        }
+        return Long.toString(x);
+    }
+    public static int stringToLong(String x) {
+        debugger();
+        Long l = Long.parseLong(x, 10);
+        return l.intValue() | (int)(l >> 32);
+    }
+
+
+    @JavaScriptBody(args = { "msg" }, body = "print(msg);")
+    private static void log(String msg) {
+        System.err.println(msg);
+    }
+
+    private static void debugger() {
+        try {
+            throw new IllegalAccessError();
+        } catch (Error e) {
+        }
+    }
+
     public static double seven(int todo) {
         switch (todo) {
             case 0: return sevenNew().doubleValue();
@@ -91,6 +120,7 @@ public class Numbers {
             default: throw new IllegalStateException();
         }
     }
+
     public static boolean bseven(int todo) {
         switch (todo) {
             case 30: return bvalueOf(Boolean.FALSE);

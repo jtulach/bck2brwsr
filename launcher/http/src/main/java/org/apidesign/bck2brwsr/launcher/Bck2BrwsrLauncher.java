@@ -1,6 +1,6 @@
 /**
  * Back 2 Browser Bytecode Translator
- * Copyright (C) 2012-2017 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * Copyright (C) 2012-2018 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -114,7 +114,7 @@ final class Bck2BrwsrLauncher extends BaseHTTPLauncher {
             + "    var c = cache[res];\n"
             + "    if (c) {\n"
             + "      if (c[skip] === empty) return null;\n"
-            + "      if (c[skip]) return c[skip];\n"
+            + "      if (c[skip] !== undefined) return c[skip];\n"
             + "    } else {\n"
             + "      cache[res] = c = new Array();\n"
             + "    }\n"

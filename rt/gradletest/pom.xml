@@ -1,0 +1,133 @@
+<?xml version="1.0"?>
+<!--
+
+    Back 2 Browser Bytecode Translator
+    Copyright (C) 2012-2018 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, version 2 of the License.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program. Look for COPYING file in the top folder.
+    If not, see http://opensource.org/licenses/GPL-2.0.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.apidesign.bck2brwsr</groupId>
+        <artifactId>rt</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <groupId>org.apidesign.bck2brwsr</groupId>
+    <artifactId>gradletest</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <name>Bck2Brwsr Gradle Plugin Tests</name>
+    <url>http://bck2brwsr.apidesign.org/</url>
+    <properties>
+        <gradle.bck2brwsrAot>bck2brwsrAot</gradle.bck2brwsrAot>
+    </properties>
+    <repositories>
+        <repository>
+            <id>gradle</id>
+            <url>https://repo.gradle.org/gradle/libs-releases-local/</url>
+        </repository>
+    </repositories>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.8.2</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>bck2brwsr-maven-plugin</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apidesign.bck2brwsr</groupId>
+            <artifactId>vmtest</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.html</groupId>
+            <artifactId>net.java.html.boot</artifactId>
+            <version>${net.java.html.version}</version>
+            <type>jar</type>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <profiles>
+        <profile>
+            <id>jvnet-release</id>
+            <properties>
+                <skipTests>true</skipTests>
+                <skipGradle>true</skipGradle>
+                <gradle.bck2brwsrAot>tasks</gradle.bck2brwsrAot>
+            </properties>
+        </profile>
+        <profile>
+            <id>jdk8</id>
+            <activation>
+                <jdk>1.8</jdk>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.fortasoft</groupId>
+                        <artifactId>gradle-maven-plugin</artifactId>
+                        <version>1.0.8</version>
+                        <configuration>
+                            <tasks>
+                                <task>clean</task>
+                                <task>${gradle.bck2brwsrAot}</task>
+                            </tasks>
+                            <gradleProjectDirectory>src/test/resources/org/apidesign/bck2brwsr/gradletest/gradle1</gradleProjectDirectory>
+                            <args>
+                                <arg>--refresh-dependencies</arg>
+                                <arg>-PprjVersion=${project.version}</arg>
+                                <arg>-PnjhVersion=${net.java.html.version}</arg>
+                                <arg>-PskipGradle=${skipGradle}</arg>
+                            </args>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>generate-test-resources</phase>
+                                <goals>
+                                    <goal>invoke</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

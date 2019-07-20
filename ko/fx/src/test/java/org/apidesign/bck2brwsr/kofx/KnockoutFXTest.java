@@ -1,6 +1,6 @@
 /**
  * Back 2 Browser Bytecode Translator
- * Copyright (C) 2012-2017 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * Copyright (C) 2012-2018 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,6 +62,9 @@ public final class KnockoutFXTest extends KnockoutTCK {
         Class[] arr = testClasses();
         for (int i = 0; i < arr.length; i++) {
             if (arr[i].getName().contains("GCBodyTest")) {
+                arr[i] = Object.class;
+            }
+            if (arr[i].getSimpleName().equals("ExposedPropertiesTest")) {
                 arr[i] = Object.class;
             }
         }

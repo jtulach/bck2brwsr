@@ -262,14 +262,13 @@ public final class Long extends Number implements Comparable<Long> {
      * @param   i   a {@code long} to be converted.
      * @return  a string representation of the argument in base&nbsp;10.
      */
-    @JavaScriptBody(args = "i", body = "return i.toExactString();")
     public static String toString(long i) {
         if (i == Long.MIN_VALUE)
             return "-9223372036854775808";
         int size = (i < 0) ? stringSize(-i) + 1 : stringSize(i);
         char[] buf = new char[size];
         getChars(i, size, buf);
-        return new String(buf, 0, size);
+        return new String(buf, 0, size).toString();
     }
 
     /**

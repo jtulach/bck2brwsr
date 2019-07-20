@@ -1,6 +1,6 @@
 /**
  * Back 2 Browser Bytecode Translator
- * Copyright (C) 2012-2017 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * Copyright (C) 2012-2018 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -221,7 +221,8 @@ public final class JVMBridge {
                     arraySize = (JSObject) defineJSFn("  var k = {};"
                         + "  k.array = function(arr, to) {"
                         + "    if (to === null) {"
-                        + "      if (Object.prototype.toString.call(arr) === '[object Array]') return arr.length;"
+                        + "      var isArr = Array.isArray(arr);"
+                        + "      if (isArr) return arr.length;"
                         + "      else return -1;"
                         + "    } else {"
                         + "      var l = arr.length;"
@@ -273,7 +274,12 @@ public final class JVMBridge {
         final Object invokeImpl(Object thiz, boolean arrayChecks, Object... args) throws Exception {
             try {
                 List<Object> all = new ArrayList<Object>(args.length + 1);
-                all.add(thiz == null ? fn : thiz);
+                if (thiz == null) {
+                    all.add(fn);
+                } else {
+                    all.add(thiz);
+                    ((WebPresenter) presenter()).keep(thiz);
+                }
                 for (int i = 0; i < args.length; i++) {
                     Object conv = args[i];
                     if (arrayChecks) {

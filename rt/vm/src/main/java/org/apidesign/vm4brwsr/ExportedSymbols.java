@@ -1,6 +1,6 @@
 /**
  * Back 2 Browser Bytecode Translator
- * Copyright (C) 2012-2017 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * Copyright (C) 2012-2018 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -73,7 +73,7 @@ final class ExportedSymbols {
 
     private boolean isMarkedAsExportedPackage(String pkgName) {
         if (pkgName == null) {
-            return false;
+            pkgName = "";
         }
         if (pkgName.startsWith("java/")) {
             return true;

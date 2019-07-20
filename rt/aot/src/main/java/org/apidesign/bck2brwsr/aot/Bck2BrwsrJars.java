@@ -1,6 +1,6 @@
 /**
  * Back 2 Browser Bytecode Translator
- * Copyright (C) 2012-2017 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * Copyright (C) 2012-2018 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,10 +21,13 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.JarURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -161,7 +164,7 @@ public final class Bck2BrwsrJars {
         listJAR(jar, manifest, entries, jarRes, resources, exported);
         final Attributes mainAttributes = manifest == null ? null : manifest.getMainAttributes();
         String cp = mainAttributes == null ? null : mainAttributes.getValue("Class-Path"); // NOI18N
-        String[] parts = cp == null ? new String[0] : cp.split(" ");
+        String[] parts = cp == null ? null : cp.split(" ");
         String mainClass = mainAttributes == null ? null : mainAttributes.getValue("Main-Class"); // NOI18N
         if (mainClass != null) {
             exported.add(mainClass.replace('.', '/'));
@@ -197,6 +200,9 @@ public final class Bck2BrwsrJars {
             }
             int last = n.lastIndexOf('/');
             String pkg = n.substring(0, last + 1);
+            if (pkg.isEmpty()) {
+                pkg = "/";
+            }
             packages.add(pkg);
             if (pkg.startsWith("java/") && keep != null) {
                 keep.add(pkg);
@@ -339,7 +345,16 @@ public final class Bck2BrwsrJars {
                 LOG.log(Level.CONFIG, "No bootdelegation for {0}", name);
                 return null;
             }
-            return u.openStream();
+            try {
+                return u.openStream();
+            } catch (FileNotFoundException ex) {
+                URLConnection c = u.openConnection();
+                c.setDefaultUseCaches(false);
+                if (c instanceof JarURLConnection) {
+                    c.setUseCaches(false);
+                }
+                return c.getInputStream();
+            }
         }
 
         private final class NoConvRes implements Bck2Brwsr.Resources {

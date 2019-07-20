@@ -1,6 +1,6 @@
 /**
  * Back 2 Browser Bytecode Translator
- * Copyright (C) 2012-2017 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * Copyright (C) 2012-2018 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,6 +53,7 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.apidesign.bck2brwsr.launcher.InvocationContext.Resource;
 import org.glassfish.grizzly.PortRange;
@@ -77,6 +78,7 @@ import org.glassfish.grizzly.websockets.WebSocketEngine;
  */
 abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable, Callable<HttpServer> {
     static final Logger LOG = Logger.getLogger(BaseHTTPLauncher.class.getName());
+    private static final Logger OUT = Logger.getLogger(BaseHTTPLauncher.class.getName() + ".out");
     private static final InvocationContext END = new InvocationContext(null, null, null);
     private final Set<ClassLoader> loaders = new LinkedHashSet<ClassLoader>();
     private final BlockingQueue<InvocationContext> methods = new LinkedBlockingQueue<InvocationContext>();
@@ -127,6 +129,16 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
 
     @Override
     public void showURL(String startpage) throws IOException {
+        if (startpage.startsWith("http:") || startpage.startsWith("https:")) {
+            try {
+                URI fullUri = new URI(startpage);
+                showBrwsr(fullUri);
+                return;
+            } catch (URISyntaxException ex) {
+                // OK, go on
+            }
+        }
+
         if (!startpage.startsWith("/")) {
             startpage = "/" + startpage;
         }
@@ -206,6 +218,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
         if (path != null) {
             vm.addDocRoot(path);
         }
+        conf.addHttpHandler(new Console(), "/console/");
         if (addClasses) {
             conf.addHttpHandler(new Classes(resources), "/classes/");
         }
@@ -219,12 +232,26 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
         for (NetworkListener listener : s.getListeners()) {
             listener.registerAddOn(addon);
         }
-        Logger l = Logger.getLogger("org.glassfish.grizzly.http.server.HttpHandler");
-        l.setLevel(Level.FINE);
-        l.setUseParentHandlers(false);
-        ConsoleHandler ch = new ConsoleHandler();
-        ch.setLevel(Level.ALL);
-        l.addHandler(ch);
+        ConsoleHandler consoleHandler = new ConsoleHandler();
+        consoleHandler.setFormatter(new java.util.logging.Formatter() {
+            @Override
+            public String format(LogRecord record) {
+                String message = formatMessage(record);
+                return String.format("[%s] %s\n", record.getLevel(), message);
+            };
+        });
+        consoleHandler.setLevel(Level.ALL);
+
+        Logger handleLogger = Logger.getLogger("org.glassfish.grizzly.http.server.HttpHandler");
+        handleLogger.setLevel(Level.FINE);
+
+        Logger serverLogger = Logger.getLogger("org.glassfish.grizzly.http.server");
+        serverLogger.setLevel(Level.INFO);
+        serverLogger.setUseParentHandlers(false);
+        serverLogger.addHandler(consoleHandler);
+
+        LOG.addHandler(consoleHandler);
+        LOG.setUseParentHandlers(false);
         return s;
     }
 
@@ -895,6 +922,20 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
         }
 
 
+    }
+
+    private class Console extends HttpHandler {
+        @Override
+        public void service(Request request, Response rspns) throws Exception {
+            String url = request.getRequestURI();
+            String msg = request.getParameter("msg");
+            if (url.endsWith("/log/")) {
+                OUT.info(msg);
+            } else {
+                OUT.warning(msg);
+            }
+            rspns.finish();
+        }
     }
 
     private class VMAndPages extends StaticHttpHandler {

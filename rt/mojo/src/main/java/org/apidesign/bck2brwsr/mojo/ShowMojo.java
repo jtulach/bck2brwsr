@@ -1,6 +1,6 @@
 /**
  * Back 2 Browser Bytecode Translator
- * Copyright (C) 2012-2017 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * Copyright (C) 2012-2018 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,9 @@ import org.apache.maven.plugin.AbstractMojo;
 import java.io.File;
 import java.io.Flushable;
 import java.io.IOException;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -55,13 +58,41 @@ public class ShowMojo extends AbstractMojo {
     /** Root of all pages, and files, etc. */
     @Parameter
     private File directory;
+
+    @Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}.jar")
+    private File mainJar;
+
+    @Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}.js")
+    private File mainJavaScript;
     
     @Override
     public void execute() throws MojoExecutionException {
         if (startpage == null) {
-            throw new MojoExecutionException("You have to provide a start page");
+            if (mainJavaScript != null && mainJavaScript.exists()) {
+                directory = mainJavaScript.getParentFile();
+                try {
+                    Set<String> mainClasses = UtilAsm.findMainClass(mainJar);
+                    if (mainClasses.isEmpty()) {
+                        throw new MojoExecutionException("Cannot find main class in " + mainJar);
+                    }
+                    UtilBase.verifyIndexHtml(directory, mainJavaScript.getName(), mainClasses.iterator().next());
+                } catch (IOException ex) {
+                    throw new MojoExecutionException("Cannot generate index.html in " + directory, ex);
+                }
+                startpage = "index.html";
+            } else {
+                throw new MojoExecutionException("You have to provide a start page");
+            }
         }
         if (directory == null) {
+            if (startpage.startsWith("http:") || startpage.startsWith("https:")) {
+                try {
+                    Launcher.showURL(launcher, null, startpage);
+                } catch (IOException ex) {
+                    throw new MojoExecutionException("Can't show the browser", ex);
+                }
+                return;
+            }
             throw new MojoExecutionException("You have to provide a root directory");
         }
         try {

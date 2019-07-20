@@ -1,6 +1,6 @@
 /**
  * Back 2 Browser Bytecode Translator
- * Copyright (C) 2012-2017 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * Copyright (C) 2012-2018 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Base64;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
@@ -232,7 +233,7 @@ public class Console {
         return sb.toString();
     }
     
-    static String invoke(String clazz, String method) throws 
+    static String invokeTest(String clazz, String method) throws 
     ClassNotFoundException, InvocationTargetException, IllegalAccessException, 
     InstantiationException, InterruptedException {
         final Object r = new Case(null).invokeMethod(clazz, method, null);
@@ -248,7 +249,7 @@ public class Console {
     private static native Object schedule(Runnable r, int time);
 
     public static String parseBase64Binary(String s) throws UnsupportedEncodingException {
-        final byte[] arr = javax.xml.bind.DatatypeConverter.parseBase64Binary(s);
+        final byte[] arr = Base64.getDecoder().decode(s);
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < arr.length; i++) {
             int ch = arr[i];

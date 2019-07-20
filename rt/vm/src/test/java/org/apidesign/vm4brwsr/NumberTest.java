@@ -1,6 +1,6 @@
 /**
  * Back 2 Browser Bytecode Translator
- * Copyright (C) 2012-2017 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * Copyright (C) 2012-2018 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -223,6 +223,55 @@ public class NumberTest {
             Numbers.class, "around__ILjava_lang_Object_2II", 
             exp, null, 5, 8
         );
+    }
+
+    @Test public void stringToLong300() throws Exception {
+        int res = Numbers.stringToLong("300");
+        assertExec("Gives the same value",
+            Numbers.class, "stringToLong__ILjava_lang_String_2",
+            res, "300");
+    }
+
+    @Test public void stringToLong255() throws Exception {
+        int res = Numbers.stringToLong("255");
+        assertExec("Gives the same value",
+            Numbers.class, "stringToLong__ILjava_lang_String_2",
+            res, "255");
+    }
+
+    @Test public void stringToLong123() throws Exception {
+        int res = Numbers.stringToLong("123");
+        assertExec("Gives the same value",
+            Numbers.class, "stringToLong__ILjava_lang_String_2",
+            res, "123");
+    }
+
+    @Test public void stringToLong0() throws Exception {
+        int res = Numbers.stringToLong("0");
+        assertExec("Gives the same value",
+            Numbers.class, "stringToLong__ILjava_lang_String_2",
+            res, "0");
+    }
+
+    @Test public void longToStringNull() throws Exception {
+        String res = Numbers.longToString(null, false);
+        assertExec("Gives the same value",
+            Numbers.class, "longToString__Ljava_lang_String_2Ljava_lang_Long_2Z",
+            res, null, false);
+    }
+
+    @Test public void longToString1() throws Exception {
+        String res = Numbers.longToString(1L, false);
+        assertExec("Gives the same value",
+            Numbers.class, "longToString__Ljava_lang_String_2Ljava_lang_Long_2Z",
+            res, 1, false);
+    }
+
+    @Test public void longToStringNeg1() throws Exception {
+        String res = Numbers.longToString(1L, true);
+        assertExec("Gives the same value",
+            Numbers.class, "longToString__Ljava_lang_String_2Ljava_lang_Long_2Z",
+            res, 1, true);
     }
 
     private static TestVM code;

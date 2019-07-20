@@ -1,6 +1,6 @@
 /**
  * Back 2 Browser Bytecode Translator
- * Copyright (C) 2012-2017 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * Copyright (C) 2012-2018 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,35 +18,25 @@
 package org.apidesign.bck2brwsr.mojo;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.jar.Attributes;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
-import java.util.zip.ZipEntry;
+import java.util.Objects;
+import java.util.Set;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
+import org.apache.maven.artifact.resolver.ArtifactResolutionException;
+import org.apache.maven.artifact.resolver.ArtifactResolver;
+import org.apache.maven.artifact.versioning.VersionRange;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
-import org.apidesign.bck2brwsr.aot.Bck2BrwsrJars;
-import org.apidesign.vm4brwsr.Bck2Brwsr;
 import org.apidesign.vm4brwsr.ObfuscationLevel;
 
 /**
@@ -59,6 +49,8 @@ import org.apidesign.vm4brwsr.ObfuscationLevel;
     defaultPhase = LifecyclePhase.PACKAGE
 )
 public class AheadOfTime extends AbstractMojo {
+    private static final String GROUPID = "org.apidesign.bck2brwsr";
+    
     @Parameter(defaultValue = "${project}")
     private MavenProject prj;
     
@@ -87,7 +79,16 @@ public class AheadOfTime extends AbstractMojo {
     
     @Parameter(defaultValue = "true")
     private boolean ignoreBootClassPath;
-    
+
+    @Component
+    private ArtifactResolver artifactResolver;
+
+    @Component
+    private ArtifactFactory artifactFactory;
+
+    @Parameter(required=true, readonly=true, property="localRepository")
+    private ArtifactRepository localRepository;
+
     /**
      * The obfuscation level for the generated JavaScript file.
      *
@@ -98,131 +99,147 @@ public class AheadOfTime extends AbstractMojo {
     
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        URLClassLoader loader;
-        try {
-            loader = buildClassLoader(mainJar, prj.getArtifacts());
-        } catch (MalformedURLException ex) {
-            throw new MojoFailureException("Can't initialize classloader");
+        final Set<Artifact> artifacts = prj.getArtifacts();
+        boolean foundEmul = false;
+        for (Artifact a : artifacts) {
+            if (
+                GROUPID.equals(a.getGroupId()) &&
+                a.getArtifactId() != null &&
+                a.getArtifactId().contains("emul")
+            ) {
+                foundEmul = true;
+                break;
+            }
         }
-        for (Artifact a : prj.getArtifacts()) {
-            if (a.getFile() == null) {
-                continue;
-            }
-            String n = a.getFile().getName();
-            if (!n.endsWith(".jar")) {
-                continue;
-            }
-            if ("provided".equals(a.getScope())) {
-                continue;
-            }
-            File aot = new File(mainJavaScript.getParent(), classPathPrefix);
-            aot.mkdirs();
-            File js = new File(aot, n.substring(0, n.length() - 4) + ".js");
-            if (js.lastModified() > a.getFile().lastModified()) {
-                getLog().info("Skipping " + js + " as it already exists.");
-                continue;
-            }
+        if (!foundEmul) {
+
+            Artifact rt = artifactFactory.createDependencyArtifact(
+                GROUPID,
+                "emul",
+                VersionRange.createFromVersion(UtilBase.findOwnVersion()),
+                "jar",
+                "rt",
+                "runtime"
+            );
             try {
-                aotLibrary(a, js , loader);
-            } catch (IOException ex) {
-                throw new MojoFailureException("Can't compile " + a.getFile(), ex);
+                artifactResolver.resolve(rt, prj.getRemoteArtifactRepositories(), localRepository);
+            } catch (ArtifactResolutionException | ArtifactNotFoundException ex) {
+                throw new MojoExecutionException("Cannot resolve " + rt, ex);
             }
-        }
-        
-        try {
-            if (mainJavaScript.lastModified() > mainJar.lastModified()) {
-                getLog().info("Skipping " + mainJavaScript + " as it already exists.");
-            } else {
-                getLog().info("Generating " + mainJavaScript);
-                Bck2Brwsr c = Bck2BrwsrJars.configureFrom(null, mainJar, loader, ignoreBootClassPath);
-                if (exports != null) {
-                    for (String e : exports) {
-                        c = c.addExported(e.replace('.', '/'));
-                    }
-                }
-                Writer w = new OutputStreamWriter(new FileOutputStream(mainJavaScript), "UTF-8");
-                c.
-                        obfuscation(obfuscation).
-                        generate(w);
-                w.close();
-            }
-        } catch (IOException ex) {
-            throw new MojoFailureException("Cannot generate script for " + mainJar, ex);
-        }
-            
-        try {
-            Writer w = new OutputStreamWriter(new FileOutputStream(vm), "UTF-8");
-            Bck2Brwsr.newCompiler().
-                    obfuscation(obfuscation).
-                    standalone(false).
-                    resources(new Bck2Brwsr.Resources() {
+            artifacts.add(rt);
 
-                @Override
-                public InputStream get(String resource) throws IOException {
-                    return null;
-                }
-            }).
-                    generate(w);
-            w.close();
-            
-        } catch (IOException ex) {
-            throw new MojoExecutionException("Can't compile", ex);
+            Artifact bck2brwsrRt = artifactFactory.createDependencyArtifact(
+                GROUPID,
+                "emul",
+                VersionRange.createFromVersion(UtilBase.findOwnVersion()),
+                "jar",
+                "bck2brwsr",
+                "provided"
+            );
+            try {
+                artifactResolver.resolve(bck2brwsrRt, prj.getRemoteArtifactRepositories(), localRepository);
+            } catch (ArtifactResolutionException | ArtifactNotFoundException ex) {
+                throw new MojoExecutionException("Cannot resolve " + bck2brwsrRt, ex);
+            }
+            artifacts.add(bck2brwsrRt);
         }
-    }
+        if (Objects.equals(vm, mainJavaScript)) {
+            throw new MojoExecutionException("Cannot generate: <vm>" + vm.getName() + "</vm> and <mainJavaScript>" + mainJavaScript.getName() + "</mainJavaScript> point to the same file: " + vm);
+        }
 
-    private void aotLibrary(Artifact a, File js, URLClassLoader loader) throws IOException, MojoExecutionException {
-        for (Artifact b : prj.getArtifacts()) {
-            if ("bck2brwsr".equals(b.getClassifier())) { // NOI18N
-                getLog().debug("Inspecting " + b.getFile());
-                JarFile jf = new JarFile(b.getFile());
-                Manifest man = jf.getManifest();
-                for (Map.Entry<String, Attributes> entrySet : man.getEntries().entrySet()) {
-                    String entryName = entrySet.getKey();
-                    Attributes attr = entrySet.getValue();
-                    
-                    if (
-                        a.getArtifactId().equals(attr.getValue("Bck2BrwsrArtifactId")) &&
-                        a.getGroupId().equals(attr.getValue("Bck2BrwsrGroupId")) &&
-                        a.getVersion().equals(attr.getValue("Bck2BrwsrVersion")) &&
-                        (
-                            obfuscation == ObfuscationLevel.FULL && "true".equals(attr.getValue("Bck2BrwsrMinified"))
-                            ||
-                            obfuscation != ObfuscationLevel.FULL && "true".equals(attr.getValue("Bck2BrwsrDebug"))
-                        )
-                    ) {
-                        getLog().info("Extracting " + js + " from " + b.getFile());
-                        InputStream is = jf.getInputStream(new ZipEntry(entryName));
-                        Files.copy(is, js.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                        is.close();
-                        return;
-                    }
+        class Work extends AheadOfTimeBase<Artifact> {
+            @Override
+            protected File mainJavaScript() {
+                return mainJavaScript;
+            }
+
+            @Override
+            protected String classPathPrefix() {
+                return classPathPrefix;
+            }
+
+            @Override
+            protected ObfuscationLevel obfuscation() {
+                return obfuscation;
+            }
+
+            @Override
+            protected String[] exports() {
+                return exports;
+            }
+
+            @Override
+            protected boolean ignoreBootClassPath() {
+                return ignoreBootClassPath;
+            }
+
+            @Override
+            protected boolean generateAotLibraries() {
+                return generateAotLibraries;
+            }
+
+            @Override
+            protected File mainJar() {
+                return mainJar;
+            }
+
+            @Override
+            protected File vm() {
+                return vm;
+            }
+
+            @Override
+            protected Collection<Artifact> artifacts() {
+                return artifacts;
+            }
+
+            @Override
+            protected void logInfo(String msg) {
+                getLog().info(msg);
+            }
+
+            @Override
+            protected Exception failure(String msg, Throwable cause) {
+                if (cause != null) {
+                    return new MojoFailureException(msg, cause);
+                } else {
+                    return new MojoExecutionException(msg);
                 }
             }
-        }
-        if (!generateAotLibraries) {
-            throw new MojoExecutionException("Not generating " + js + " and no precompiled version found!");
-        }
-        getLog().info("Generating " + js);
-        Writer w = new OutputStreamWriter(new FileOutputStream(js), "UTF-8");
-        Bck2Brwsr c = Bck2BrwsrJars.configureFrom(null, a.getFile(), loader, ignoreBootClassPath);
-        if (exports != null) {
-            c = c.addExported(exports);
-        }
-        c.
-            obfuscation(obfuscation).
-            generate(w);
-        w.close();
-    }
-    private static URLClassLoader buildClassLoader(File root, Collection<Artifact> deps) throws MalformedURLException {
-        List<URL> arr = new ArrayList<URL>();
-        if (root != null) {
-            arr.add(root.toURI().toURL());
-        }
-        for (Artifact a : deps) {
-            if (a.getFile() != null) {
-                arr.add(a.getFile().toURI().toURL());
+
+            @Override
+            protected File file(Artifact a) {
+                return a.getFile();
+            }
+
+            @Override
+            protected Scope scope(Artifact a) {
+                if ("provided".equals(a.getScope())) {
+                    return Scope.PROVIDED;
+                }
+                return Scope.RUNTIME;
+            }
+
+            @Override
+            protected String classifier(Artifact a) {
+                return a.getClassifier();
+            }
+
+            @Override
+            protected String artifactId(Artifact a) {
+                return a.getArtifactId();
+            }
+
+            @Override
+            protected String groupId(Artifact a) {
+                return a.getGroupId();
+            }
+
+            @Override
+            protected String version(Artifact a) {
+                return a.getVersion();
             }
         }
-        return new URLClassLoader(arr.toArray(new URL[0]), Java2JavaScript.class.getClassLoader());
+        new Work().work();
     }
 }

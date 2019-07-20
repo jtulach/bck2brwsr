@@ -33,20 +33,20 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
 public class System {
     private System() {
     }
-    
+
     public static void arraycopy(Object value, int srcBegin, Object dst, int dstBegin, int count) {
         org.apidesign.bck2brwsr.emul.lang.System.arraycopy(value, srcBegin, dst, dstBegin, count);
     }
-    
+
     public static long currentTimeMillis() {
         return org.apidesign.bck2brwsr.emul.lang.System.currentTimeMillis();
     }
-    
+
     public static long nanoTime() {
         return org.apidesign.bck2brwsr.emul.lang.System.nanoTime();
-        
+
     }
-    
+
     public static int identityHashCode(Object obj) {
         return Class.defaultHashCode(obj);
     }
@@ -57,22 +57,22 @@ public class System {
         }
         return null;
     }
-    
+
     @JavaScriptBody(args = {}, body = "return (typeof navigator !== 'undefined') ? navigator.userAgent : 'unknown';")
     private static native String userAgent();
-    
+
     public static String getProperty(String key, String def) {
         return def;
     }
-    
+
     public static Properties getProperties() {
         throw new SecurityException();
     }
-    
+
     public static void setProperties(Properties p) {
         throw new SecurityException();
     }
-    
+
     /**
      * Returns the system-dependent line separator string.  It always
      * returns the same value - the initial value of the {@linkplain
@@ -95,13 +95,13 @@ public class System {
     )
     public static void exit(int exitCode) {
     }
-    
+
     public final static InputStream in;
 
     public final static PrintStream out;
 
     public final static PrintStream err;
-    
+
     public static void setOut(PrintStream out) {
         throw new SecurityException();
     }
@@ -113,16 +113,34 @@ public class System {
     public static void setErr(PrintStream err) {
         throw new SecurityException();
     }
-    
+
     static {
         in = new ByteArrayInputStream(new byte[0]);
-        out = new PrintStream(new BufferedOutputStream(new SystemStream("log")));
-        err = new PrintStream(new BufferedOutputStream(new SystemStream("warn")));
+        PrintStream log;
+        PrintStream warn;
+        final SystemStream rawWarn;
+        try {
+            log = new PrintStream(new BufferedOutputStream(new SystemStream("log")));
+            rawWarn = new SystemStream("warn");
+            org.apidesign.bck2brwsr.emul.lang.System.registerStdErr(rawWarn);
+            warn = new PrintStream(new BufferedOutputStream(rawWarn));
+        } catch (Exception ex) {
+            log = null;
+            warn = null;
+        }
+        out = log;
+        err = warn;
     }
 
     private static final class SystemStream extends OutputStream {
         private final String method;
         private final StringBuilder pending = new StringBuilder();
+        private Runnable sendOK = new Runnable() {
+            @Override
+            public void run() {
+                sendOK = null;
+            }
+        };
 
         public SystemStream(String method) {
             this.method = method;
@@ -130,22 +148,55 @@ public class System {
 
         @Override
         public void write(byte b[], int off, int len) throws IOException {
-            pending.append(new String(b, off, len, "UTF-8"));
+            String line = new String(b, off, len, "UTF-8");
+            int i = line.length() - 1;
+            while (i >= 0 && line.charAt(i) < 20) {
+                i--;
+            }
+            line = line.substring(0, i + 1);
+            pending.append(line);
             int lastLine = pending.lastIndexOf("\n");
             if (lastLine >= 0) {
-                write(method, pending.substring(0, lastLine));
+                doWrite(pending.substring(0, lastLine));
                 pending.delete(0, lastLine + 1);
             }
         }
 
         @Override
         public void close() throws IOException {
-            write(method, pending.toString());
+            doWrite(pending.toString());
             pending.setLength(0);
         }
 
-        @JavaScriptBody(args = { "method", "b" }, body = "if (typeof console !== 'undefined') console[method](b.toString());")
+        void doWrite(String line) {
+            write(method, line);
+            writeRemote(method, line, sendOK);
+        }
+
+        @JavaScriptBody(args = { "method", "b" }, body = ""
+          + "if (typeof console !== 'undefined') console[method](b.toString());"
+        )
         private static native void write(String method, String b);
+
+        @JavaScriptBody(args = { "method", "msg", "onFail" }, body = ""
+            + "if (!onFail) {\n"
+            + "   return;\n"
+            + "}\n"
+            + "if (typeof XMLHttpRequest === 'undefined') {\n"
+            + "  onFail.run__V();\n"
+            + "  return;\n"
+            + "}\n"
+            + "var xhttp = new XMLHttpRequest();\n"
+            + "var safeMsg = encodeURIComponent(msg);\n"
+            + "xhttp.open('GET', '/console/' + method + '/?msg=' + safeMsg, true);\n"
+            + "xhttp.onreadystatechange = function () {\n"
+            + "  if (xhttp.status === 0 || xhttp.status > 400) {\n"
+            + "    onFail.run__V();\n"
+            + "  }\n"
+            + "};\n"
+            + "xhttp.send();\n"
+        )
+        private static native void writeRemote(String method, String msg, Runnable onFail);
 
         @Override
         public void write(int b) throws IOException {

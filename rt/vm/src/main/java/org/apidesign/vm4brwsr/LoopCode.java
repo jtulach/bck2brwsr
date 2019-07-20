@@ -1,6 +1,6 @@
 /**
  * Back 2 Browser Bytecode Translator
- * Copyright (C) 2012-2017 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * Copyright (C) 2012-2018 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -440,7 +440,7 @@ class LoopCode implements Runnable {
                     ByteCodeToJavaScript.emit(out, smapper, "return @1;", smapper.popA());
                     break;
                 case ByteCodeParser.opc_i2l:
-                    smapper.replace(out, VarType.LONG, "@1", smapper.getI(0));
+                    smapper.replace(out, VarType.LONG, "(@1).toLong()", smapper.getI(0));
                     break;
                 case ByteCodeParser.opc_i2f:
                     smapper.replace(out, VarType.FLOAT, "@1", smapper.getI(0));
@@ -453,10 +453,10 @@ class LoopCode implements Runnable {
                     break;
             // max int check?
                 case ByteCodeParser.opc_l2f:
-                    smapper.replace(out, VarType.FLOAT, "(@1).toFP()", smapper.getL(0));
+                    smapper.replace(out, VarType.FLOAT, numbers.toFP(), smapper.getL(0));
                     break;
                 case ByteCodeParser.opc_l2d:
-                    smapper.replace(out, VarType.DOUBLE, "(@1).toFP()", smapper.getL(0));
+                    smapper.replace(out, VarType.DOUBLE, numbers.toFP(), smapper.getL(0));
                     break;
                 case ByteCodeParser.opc_f2d:
                     smapper.replace(out, VarType.DOUBLE, "@1", smapper.getF(0));
@@ -496,7 +496,7 @@ class LoopCode implements Runnable {
                     smapper.assign(out, VarType.DOUBLE, "0");
                     break;
                 case ByteCodeParser.opc_lconst_0:
-                    smapper.assign(out, VarType.LONG, "0");
+                    smapper.assign(out, VarType.LONG, "(0).toLong()");
                     break;
                 case ByteCodeParser.opc_fconst_0:
                     smapper.assign(out, VarType.FLOAT, "0");
@@ -548,7 +548,7 @@ class LoopCode implements Runnable {
                             final int low = (int) (lv.longValue() & -1);
                             final int hi = (int) (lv.longValue() >> 32);
                             if (hi == 0) {
-                                smapper.assign(out, VarType.LONG, "0x" + Integer.toHexString(low));
+                                smapper.assign(out, VarType.LONG, "0x" + Integer.toHexString(low) + ".toLong()");
                             } else {
                                 smapper.assign(out, VarType.LONG, "0x" + Integer.toHexString(hi) + ".next32(0x" + Integer.toHexString(low) + ")");
                             }
@@ -1088,6 +1088,9 @@ class LoopCode implements Runnable {
         final CharSequence[] vars = new CharSequence[numArguments];
         for (int j = numArguments - 1; j >= 0; --j) {
             vars[j] = mapper.popValue();
+        }
+        if ("java/lang/Object".equals(mi[0]) && "<init>".equals(mi[1])) {
+            return i + 2;
         }
         if (("newUpdater__Ljava_util_concurrent_atomic_AtomicIntegerFieldUpdater_2Ljava_lang_Class_2Ljava_lang_String_2".equals(mn) && "java/util/concurrent/atomic/AtomicIntegerFieldUpdater".equals(mi[0])) || ("newUpdater__Ljava_util_concurrent_atomic_AtomicLongFieldUpdater_2Ljava_lang_Class_2Ljava_lang_String_2".equals(mn) && "java/util/concurrent/atomic/AtomicLongFieldUpdater".equals(mi[0]))) {
             if (vars[1] instanceof String) {

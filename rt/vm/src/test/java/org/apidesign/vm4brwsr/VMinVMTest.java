@@ -1,6 +1,6 @@
 /**
  * Back 2 Browser Bytecode Translator
- * Copyright (C) 2012-2017 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * Copyright (C) 2012-2018 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -65,7 +65,7 @@ public class VMinVMTest {
         try {
             ret = code.invokeFunction("bck2brwsr");
             ret = code.invokeMethod(ret, "loadClass", VMinVM.class.getName());
-            ret = code.invokeMethod(ret, "toJavaScript__Ljava_lang_String_2_3B", arr);
+            ret = code.invokeMethod(ret, "invoke", "toJavaScript", arr);
         } catch (Exception ex) {
             File f = File.createTempFile("execution", ".js");
             FileWriter w = new FileWriter(f);
