@@ -39,7 +39,7 @@ import javax.tools.JavaFileObject;
     id = "Java",
     name = "Java",
     byteMimeTypes = {
-        "application/x-jar", "application/x-java-archive",
+        "application/x-jar", "application/x-java-archive", "application/java-archive",
         "application/x-java-class",
         "application/x-dir"
     },
