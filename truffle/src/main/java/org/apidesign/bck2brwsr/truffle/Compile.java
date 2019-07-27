@@ -457,12 +457,19 @@ final class Compile implements DiagnosticListener<JavaFileObject> {
 
         @Override
         public boolean hasLocation(Location location) {
+            if (location.getName().contains("_MODULE_")) {
+                return false;
+            }
             for (Location l : StandardLocation.values()) {
                 if (l.equals(location)) {
                     return true;
                 }
             }
             return false;
+        }
+
+        public Location getLocationForModule(Location location, String moduleName) throws IOException {
+            return location;
         }
 
         @Override
