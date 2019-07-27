@@ -22,6 +22,7 @@ import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.library.ExportLibrary;
 import com.oracle.truffle.api.library.ExportMessage;
+import java.util.Base64;
 
 @ExportLibrary(InteropLibrary.class)
 final class AtoB implements TruffleObject {
@@ -37,7 +38,7 @@ final class AtoB implements TruffleObject {
 
     @CompilerDirectives.TruffleBoundary
     private static String parseBase64Binary(String s) {
-        final byte[] arr = javax.xml.bind.DatatypeConverter.parseBase64Binary(s);
+        final byte[] arr = Base64.getDecoder().decode(s);
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < arr.length; i++) {
             int ch = arr[i];
