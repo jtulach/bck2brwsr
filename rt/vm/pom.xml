@@ -40,19 +40,6 @@
     <bck2brwsr.obfuscationlevel>MINIMAL</bck2brwsr.obfuscationlevel>
   </properties>
   
-  <pluginRepositories>
-    <pluginRepository>
-        <id>mc-release</id>
-        <name>Local Maven repository of releases</name>
-        <url>http://mc-repo.googlecode.com/svn/maven2/releases</url>
-        <snapshots>
-            <enabled>false</enabled>
-        </snapshots>
-        <releases>
-            <enabled>true</enabled>
-        </releases>
-    </pluginRepository>
-  </pluginRepositories>
   <build>
       <plugins>
           <plugin>
