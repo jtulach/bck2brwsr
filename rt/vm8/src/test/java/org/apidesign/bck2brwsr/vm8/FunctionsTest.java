@@ -43,6 +43,23 @@ public class FunctionsTest {
         return fn.invoke(null, null, null, null, null);
     }
 
+    @Compare
+    public int computeComposition() {
+        int[] sum = {0};
+        Functions.Compute<Integer> inc = () -> sum[0]++;
+        Functions.Compute<Integer> ret = () -> sum[0];
+        return inc.andThen(inc).andThen(inc).andThen(inc).andThen(ret).get();
+    }
+
+    @Compare
+    public int absorbComposition() {
+        int[] sum = {0};
+        Functions.Absorb<Integer> inc = (value) -> sum[0] += value;
+        Functions.Absorb<Integer> incFiveTimes = inc.andThen(inc).andThen(inc).andThen(inc).andThen(inc);
+        incFiveTimes.use(30);
+        return sum[0];
+    }
+
     @Factory public static Object[] create() {
         return VMTest.create(FunctionsTest.class);
     }
