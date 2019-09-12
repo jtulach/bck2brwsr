@@ -116,14 +116,24 @@
             <artifactId>aot</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.graalvm.js</groupId>
-            <artifactId>js</artifactId>
-            <version>${graalvm.version}</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
     <profiles>
+        <profile>
+            <id>regular-jdk</id>
+            <activation>
+                <file>
+                    <missing>${native.image}</missing>
+                </file>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.graalvm.js</groupId>
+                    <artifactId>js</artifactId>
+                    <version>${graalvm.version}</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+        </profile>
         <profile>
             <id>native-image</id>
             <activation>
@@ -149,7 +159,9 @@
                                     <arguments>
                                         <argument>--language:js</argument>
                                         <argument>-H:Name=${binary}</argument>
+                                        <argument>-H:+TraceClassInitialization</argument>
                                         <argument>--allow-incomplete-classpath</argument>
+                                        <argument>--initialize-at-build-time</argument>
                                         <argument>-cp</argument>
                                         <argument>${project.build.directory}/${project.build.finalName}.jar</argument>
                                         <argument>${mainClass}</argument>
@@ -173,6 +185,13 @@
                                 </configuration>
                             </execution>
                         </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <argLine>-XX:-UseJVMCIClassLoader</argLine>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
