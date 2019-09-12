@@ -17,6 +17,8 @@
  */
 package org.apidesign.bck2brwsr.vm8;
 
+import java.util.Objects;
+
 public class Functions {
     public interface SimpleOne<P1, P2, P3, P4, R> extends BaseOne<P1, P2, P3, P4, java.lang.Object, R> {
         public R invoke(P1 p1, P2 p2, P3 p3, P4 p4);
@@ -26,6 +28,30 @@ public class Functions {
             return invoke(p1, p2, p3, p4);
         }
     }
+
+    public interface Compute<T> {
+        public T get();
+
+        default <X> Compute<X> andThen(Compute<X> next) {
+            return () -> {
+                this.get();
+                return next.get();
+            };
+        }
+    }
+
+    public interface Absorb<T> {
+        void use(T t);
+
+        default Absorb<T> andThen(Absorb<? super T> after) {
+            Objects.requireNonNull(after);
+            return (T t) -> {
+                use(t);
+                after.use(t);
+            };
+        }
+    }
+
 
     public interface BaseOne<P1, P2, P3, P4, P5, R> {
         public R invoke(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5);
