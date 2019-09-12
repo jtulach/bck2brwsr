@@ -159,7 +159,6 @@
                                     <arguments>
                                         <argument>--language:js</argument>
                                         <argument>-H:Name=${binary}</argument>
-                                        <argument>-H:+TraceClassInitialization</argument>
                                         <argument>--allow-incomplete-classpath</argument>
                                         <argument>--initialize-at-build-time</argument>
                                         <argument>-cp</argument>

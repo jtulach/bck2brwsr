@@ -24,8 +24,12 @@ import org.graalvm.polyglot.Value;
 import org.graalvm.polyglot.io.ByteSequence;
 
 public class Main {
+    private static final Context CTX;
+    static {
+        CTX = Context.newBuilder().allowAllAccess(true).build();
+        CTX.initialize("Java");
+    }
     public static void main(String... args) throws Exception {
-        Context ctx = Context.newBuilder().allowAllAccess(true).build();
         String jarFile = null;
         String mainClass = null;
         for (int i = 0; i < args.length; i++) {
@@ -34,14 +38,14 @@ public class Main {
                     final File file = new File(element);
                     if (file.isFile()) {
                         Source src = Source.newBuilder("Java", file).mimeType("application/x-jar").build();
-                        ctx.eval(src);
+                        CTX.eval(src);
                     } else {
                         if (file.isDirectory()) {
                             Source src = Source.newBuilder("Java", ByteSequence.create(new byte[0]), file.getPath()).
                                 mimeType("application/x-dir").
                                 uri(file.toURI()).
                                 build();
-                            ctx.eval(src);
+                            CTX.eval(src);
                         }
                     }
                 }
@@ -66,9 +70,9 @@ public class Main {
 
         if (jarFile != null) {
             Source src = Source.newBuilder("Java", new File(jarFile)).mimeType("application/x-jar").build();
-            ctx.eval(src);
+            CTX.eval(src);
         } else {
-            Value jvm = ctx.getPolyglotBindings().getMember("jvm");
+            Value jvm = CTX.getPolyglotBindings().getMember("jvm");
             Value clazz = jvm.getMember(mainClass);
             clazz.invokeMember("main", (Object[]) new String[0]);
         }
