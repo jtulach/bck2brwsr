@@ -23,7 +23,7 @@
     <parent>
         <groupId>org.apidesign.bck2brwsr</groupId>
         <artifactId>benchmarks</artifactId>
-        <version>0.32</version>
+        <version>1.0-SNAPSHOT</version>
     </parent>
     <name>JBox2d OSGI Wrapper</name>
     <packaging>bundle</packaging>
