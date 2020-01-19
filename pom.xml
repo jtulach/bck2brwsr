@@ -13,9 +13,9 @@
   </parent>  
   <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-      <netbeans.version>RELEASE110</netbeans.version>
+      <netbeans.version>RELEASE112</netbeans.version>
       <license>COPYING</license>
-      <net.java.html.version>1.6.1</net.java.html.version>
+      <net.java.html.version>1.7</net.java.html.version>
       <netbeans.compile.on.save>none</netbeans.compile.on.save>
       <trufflejs.jar>${project.build.directory}/test-classes</trufflejs.jar>
       <test.java.home>${java.home}</test.java.home>
@@ -113,7 +113,7 @@
             <configuration>
               <mavenExecutorId>forked-path</mavenExecutorId>
               <useReleaseProfile>false</useReleaseProfile>
-              <arguments>-Pjvnet-release -Pgpg</arguments>
+              <arguments>-Pjvnet-release -Pgpg -DskipTests</arguments>
               <tag>release-${releaseVersion}</tag>
             </configuration>
           </plugin>
