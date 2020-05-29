@@ -76,9 +76,26 @@ public final class JVMBridge {
         }
     }
 
-    public Class<?> loadClass(String name) throws ClassNotFoundException {
+    public final static class NewInstance {
+        private final Class<?> clazz;
+
+        NewInstance(Class<?> clazz) {
+            this.clazz = clazz;
+        }
+
+        public String getName() {
+            return this.clazz.getName();
+        }
+
+        public Object newInstance() throws ReflectiveOperationException {
+            return this.clazz.newInstance();
+        }
+    }
+
+    public Object loadClass(String name) throws ClassNotFoundException {
         Fn.activate(presenter);
-        return Class.forName(name, true, cl);
+        Class<?> clazz = Class.forName(name, true, cl);
+        return new NewInstance(clazz);
     }
 
     private final class WebPresenter implements Fn.Presenter,
