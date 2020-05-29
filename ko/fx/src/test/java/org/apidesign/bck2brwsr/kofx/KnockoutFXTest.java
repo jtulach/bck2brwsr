@@ -60,11 +60,16 @@ public final class KnockoutFXTest extends KnockoutTCK {
     
     private static Class[] filterTestClasses() {
         Class[] arr = testClasses();
+        final String version = System.getProperty("java.version");
+        boolean jdk8 = version != null && version.startsWith("1.8");
         for (int i = 0; i < arr.length; i++) {
             if (arr[i].getName().contains("GCBodyTest")) {
                 arr[i] = Object.class;
             }
             if (arr[i].getSimpleName().equals("ExposedPropertiesTest")) {
+                arr[i] = Object.class;
+            }
+            if (jdk8 && arr[i].getSimpleName().equals("WebSocketTest")) {
                 arr[i] = Object.class;
             }
         }
