@@ -30,7 +30,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.script.Bindings;
 import javax.script.Invocable;
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -96,6 +98,8 @@ final class JSLauncher extends Launcher {
         ScriptEngineManager sem = new ScriptEngineManager();
         ScriptEngine truffleJS = sem.getEngineByName("Graal.js");
         if (truffleJS != null) {
+            Bindings b = truffleJS.getBindings(ScriptContext.ENGINE_SCOPE);
+            b.put("polyglot.js.allowHostAccess", true);
             return truffleJS;
         }
         ScriptEngine js = sem.getEngineByExtension("js");
