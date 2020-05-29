@@ -28,6 +28,7 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
+import javax.script.Bindings;
 import javax.script.Invocable;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
@@ -158,6 +159,8 @@ public final class TestVM {
         ScriptEngineManager sem = new ScriptEngineManager();
         ScriptEngine truffleJS = sem.getEngineByName("Graal.js");
         if (truffleJS != null) {
+            Bindings b = truffleJS.getBindings(ScriptContext.ENGINE_SCOPE);
+            b.put("polyglot.js.allowHostAccess", true);
             return truffleJS;
         }
         ScriptEngine js = sem.getEngineByExtension("js");
@@ -249,8 +252,15 @@ public final class TestVM {
         }
     }
 
-    private static void defineAtoB(ScriptEngine js) throws ScriptException {
-        js.eval("atob = function(s) { return new String(Packages.org.apidesign.vm4brwsr.ResourcesTest.parseBase64Binary(s)); }");
+
+    private static void defineAtoB(ScriptEngine js) throws ScriptException, NoSuchMethodException {
+        Object register = js.eval("(function(convert) {\n"
+                + "  var global = (0 || eval('this'));\n"
+                + "  global.atob = function(s) { return new String(convert.convert(s)); }\n"
+                + "})"
+        );
+        Base64Convert convert = Base64Convert.create();
+        ((Invocable)js).invokeMethod(register, "call", null, convert);
     }
 
     Object loadClass(String loadClass, String name) throws ScriptException, NoSuchMethodException {
