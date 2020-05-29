@@ -22,7 +22,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.fail;
 import org.testng.annotations.Test;
 
-abstract class VMLazyAbstract {
+public abstract class VMLazyAbstract {
     abstract TestVM findCode();
 
     @Test public void invokeStaticMethod() throws Exception {

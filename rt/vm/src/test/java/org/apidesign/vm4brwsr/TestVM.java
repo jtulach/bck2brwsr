@@ -254,13 +254,13 @@ public final class TestVM {
 
 
     private static void defineAtoB(ScriptEngine js) throws ScriptException, NoSuchMethodException {
-        Object register = js.eval("(function(convert) {\n"
-                + "  var global = (0 || eval('this'));\n"
+        Object thiz = js.eval("this");
+        Object register = js.eval("(function(global, convert) {\n"
                 + "  global.atob = function(s) { return new String(convert.convert(s)); }\n"
                 + "})"
         );
         Base64Convert convert = Base64Convert.create();
-        ((Invocable)js).invokeMethod(register, "call", null, convert);
+        ((Invocable)js).invokeMethod(register, "call", thiz, thiz, convert);
     }
 
     Object loadClass(String loadClass, String name) throws ScriptException, NoSuchMethodException {
