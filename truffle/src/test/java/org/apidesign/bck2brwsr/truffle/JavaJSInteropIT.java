@@ -25,7 +25,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class JavaJSInteropTest {
+public class JavaJSInteropIT {
     private static Context ctx;
 
     @BeforeClass

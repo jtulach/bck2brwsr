@@ -22,10 +22,10 @@ import java.net.URL;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
-public class MainTest {
+public class MainIT {
     @Test
     public void runMain() throws Exception {
-        URL url = MainTest.class.getProtectionDomain().getCodeSource().getLocation();
+        URL url = MainIT.class.getProtectionDomain().getCodeSource().getLocation();
         File testClasses = new File(url.toURI());
         assertTrue("Directory found: " + testClasses, testClasses.isDirectory());
 

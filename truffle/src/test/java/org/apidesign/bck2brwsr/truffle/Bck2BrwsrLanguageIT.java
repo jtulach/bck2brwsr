@@ -41,12 +41,12 @@ import static org.junit.Assert.assertNull;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class Bck2BrwsrLanguageTest {
+public class Bck2BrwsrLanguageIT {
 
     private static Context ctx;
     private static ByteArrayOutputStream out;
 
-    public Bck2BrwsrLanguageTest() {
+    public Bck2BrwsrLanguageIT() {
     }
 
     @BeforeClass
@@ -128,7 +128,7 @@ public class Bck2BrwsrLanguageTest {
     }
 
     private File createHelloJar(boolean mainClass, boolean osgi) throws IOException {
-        URL u = Bck2BrwsrLanguageTest.class.getResource("Hello.class");
+        URL u = Bck2BrwsrLanguageIT.class.getResource("Hello.class");
         assertNotNull("Hello.class found", u);
 
         File jar = File.createTempFile("hello", ".jar");
