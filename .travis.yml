@@ -1,21 +1,59 @@
 language: java
-sudo: false
-addons:
-  firefox: "53.0"
-
+services:
+  - xvfb
+before_install:
+  - sudo apt-get -qq update || echo no sudo apt-get
+  - sudo apt-get install -y firefox|| echo no sudo apt-get
+  - if [ -n "$URL" ]; then pushd /tmp; curl -L $URL -o jdk.tgz; tar fxz jdk.tgz; JAVA_HOME=`pwd`/$DIR; popd; export JAVA_HOME; fi
+  - echo Java is $JAVA_HOME
+  - ls -l $JAVA_HOME
 before_script:
   - export DISPLAY=:99.0
-  - sh -e /etc/init.d/xvfb start || echo Without Xvfb
+  - sh -e /etc/init.d/xvfb start || echo No X11
   - sleep 3
 script:
-  - RUN_PARAMS="-Dvmtest.brwsrs=open -Dskip.benchmarks=true"
-  - if type firefox; then RUN_PARAMS="-Dvmtest.brwsrs=firefox -Dskip.benchmarks=true"; fi
-  - mvn clean install -DskipTests $RUN_PARAMS
-  - mvn -f rt/vm test $RUN_PARAMS
-  - mvn -f rt/emul/brwsrtest test $RUN_PARAMS
-  - mvn -f rt/emul/mini test $RUN_PARAMS
-  - if false; then mvn -f rt/emul/zip test $RUN_PARAMS; fi
-  - if false; then mvn -f javaquery install $RUN_PARAMS; fi
-  - if type firefox; then mvn -f ko/fx test $RUN_PARAMS; fi
-os:
-  - linux
+  - $JAVA_HOME/bin/java -version
+  - mvn install -DskipTests $ARGS
+  - (firefox&) || echo No firefox
+  - ln -s `type -p firefox` $HOME/xdg-open || echo No xdg-open
+  - PATH=$HOME:$PATH
+  - mvn verify $ARGS
+
+matrix:
+  include:
+    - os: linux
+      name: Linux JDK8
+      dist: trusty
+      jdk: openjdk8
+      env:
+        - ARGS=-Dnone
+        - DIR=zulu8.40.0.25-ca-fx-jdk8.0.222-linux_x64
+        - URL=https://cdn.azul.com/zulu/bin/$DIR.tar.gz
+    - os: linux
+      name: Linux GraalVM11 19.3.1
+      dist: trusty
+      jdk: openjdk8
+      env:
+        - ARGS=-Dnone
+        - DIR=graalvm-ce-java11-19.3.1
+        - URL=https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.1/graalvm-ce-java11-linux-amd64-19.3.1.tar.gz
+    - os: linux
+      name: Linux JDK11
+      dist: trusty
+      jdk: openjdk11
+      env:
+        - ARGS=-Dnone
+#    - os: linux
+#      name: Linux JDK14 (latest)
+#      dist: trusty
+#      jdk: openjdk14
+#      env:
+#        - ARGS=-Dnone
+    - os: osx
+      name: Mac JDK8
+      osx_image: xcode9.3
+      jdk: openjdk11
+      env:
+        - ARGS=-Dnone
+        - DIR=zulu8.40.0.25-ca-fx-jdk8.0.222-macosx_x64
+        - URL=https://cdn.azul.com/zulu/bin/$DIR.tar.gz
