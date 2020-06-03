@@ -22,6 +22,7 @@ import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.interop.UnknownIdentifierException;
 import com.oracle.truffle.api.nodes.Node;
+import static org.apidesign.bck2brwsr.truffle.VM.raise;
 
 
 final class FindKeysNode extends Node {
@@ -56,9 +57,9 @@ final class FindKeysNode extends Node {
                 }
             }
         } catch (InteropException ex) {
-            throw ex.raise();
+            throw raise(ex);
         }
-        throw UnknownIdentifierException.raise(shortName);
+        throw raise(UnknownIdentifierException.create(shortName));
     }
 
     static void unwrapArgs(Object[] args) {

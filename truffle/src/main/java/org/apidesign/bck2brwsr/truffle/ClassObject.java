@@ -27,6 +27,7 @@ import com.oracle.truffle.api.interop.UnsupportedTypeException;
 import com.oracle.truffle.api.library.CachedLibrary;
 import com.oracle.truffle.api.library.ExportLibrary;
 import com.oracle.truffle.api.library.ExportMessage;
+import static org.apidesign.bck2brwsr.truffle.VM.raise;
 
 @ExportLibrary(InteropLibrary.class)
 final class ClassObject implements TruffleObject {
@@ -83,7 +84,7 @@ final class ClassObject implements TruffleObject {
             Object instance = interop.execute(cnstr);
             return new JavaObject((TruffleObject) instance);
         } catch (UnknownIdentifierException ex) {
-            throw ex.raise();
+            throw raise(ex);
         }
     }
 }

@@ -30,7 +30,7 @@
     <packaging>jar</packaging>
     <name>Java for Truffle via Bck2Brwsr</name>
     <properties>
-        <graalvm.version>19.0.2</graalvm.version>
+        <graalvm.version>19.3.1</graalvm.version>
         <native.image>${java.home}/bin/native-image</native.image>
         <mainClass>org.apidesign.bck2brwsr.truffle.Main</mainClass>
         <binary>${project.build.directory}/${project.artifactId}</binary>
