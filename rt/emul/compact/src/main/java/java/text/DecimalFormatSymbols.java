@@ -43,7 +43,6 @@ import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.Currency;
 import java.util.Locale;
-import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -536,6 +535,7 @@ public class DecimalFormatSymbols implements Cloneable, Serializable {
             data = new Object[3];
 //            ResourceBundle rb = LocaleData.getNumberFormatData(lookupLocale);
 //            data[0] = rb.getStringArray("NumberElements");
+            data[0] = getNumberElements();
             needCacheUpdate = true;
         }
 
@@ -831,4 +831,22 @@ public class DecimalFormatSymbols implements Cloneable, Serializable {
         }
     }
      */
+
+    // taken from sun.text.resources.FormatData
+    private static String[] getNumberElements() {
+        return new String[]{
+            ".", // decimal separator
+            ",", // group (thousands) separator
+            ";", // list separator
+            "%", // percent sign
+            "0", // native 0 digit
+            "#", // pattern digit
+            "-", // minus sign
+            "E", // exponential
+            "\u2030", // per mille
+            "\u221e", // infinity
+            "\ufffd" // NaN
+        };
+    }
+
 }

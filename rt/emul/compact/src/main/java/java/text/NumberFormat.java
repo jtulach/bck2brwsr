@@ -753,12 +753,12 @@ public abstract class NumberFormat extends Format  {
 
         /* try the cache first */
         String[] numberPatterns = (String[])cachedLocaleData.get(desiredLocale);
-//        if (numberPatterns == null) { /* cache miss */
+        if (numberPatterns == null) { /* cache miss */
 //            ResourceBundle resource = LocaleData.getNumberFormatData(desiredLocale);
-//            numberPatterns = resource.getStringArray("NumberPatterns");
+            numberPatterns = getNumberPatterns();
 //            /* update cache */
 //            cachedLocaleData.put(desiredLocale, numberPatterns);
-//        }
+        }
 
         DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(desiredLocale);
         int entry = (choice == INTEGERSTYLE) ? NUMBERSTYLE : choice;
@@ -1156,4 +1156,13 @@ public abstract class NumberFormat extends Format  {
         }
     }
     */
+
+    // taken from sun.text.resources.FormatData
+    private static String[] getNumberPatterns() {
+        return new String[] {
+            "#,##0.###;-#,##0.###", // decimal pattern
+            "\u00a4 #,##0.00;-\u00a4 #,##0.00", // currency pattern
+            "#,##0%" // percent pattern
+        };
+    }
 }

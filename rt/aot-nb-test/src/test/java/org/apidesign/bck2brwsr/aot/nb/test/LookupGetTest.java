@@ -38,6 +38,23 @@ public class LookupGetTest {
         return a.getClass().getName();
     }
 
+    @Compare public String findAll() {
+        StringBuilder sb = new StringBuilder();
+        for (Iface a : Lookup.getDefault().lookupAll(Iface.class)) {
+            sb.append(a.getClass().getName()).append("\n");
+        }
+        return sb.toString();
+    }
+
+    @Compare public String findResult() {
+        StringBuilder sb = new StringBuilder();
+        Lookup.Result<Iface> result = Lookup.getDefault().lookupResult(Iface.class);
+        for (Iface a : result.allInstances()) {
+            sb.append(a.getClass().getName()).append("\n");
+        }
+        return sb.toString();
+    }
+
     @Factory public static Object[] create() {
         return VMTest.create(LookupGetTest.class);
     }
@@ -45,7 +62,10 @@ public class LookupGetTest {
     public static interface Iface {
     }
 
-    @ServiceProvider(service = Iface.class)
-    public static final class Impl implements Iface {
+    @ServiceProvider(service = Iface.class, position = 30)
+    public static final class Impl1 implements Iface {
+    }
+    @ServiceProvider(service = Iface.class, position = 50)
+    public static final class Impl2 implements Iface {
     }
 }

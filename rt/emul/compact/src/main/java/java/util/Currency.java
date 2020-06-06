@@ -182,6 +182,7 @@ public final class Currency implements Serializable {
     private static final int VALID_FORMAT_VERSION = 1;
 
     static {
+        /*
         AccessController.doPrivileged(new PrivilegedAction() {
             public Object run() {
                 String homeDir = System.getProperty("java.home");
@@ -244,6 +245,7 @@ public final class Currency implements Serializable {
                 return null;
             }
         });
+        */
     }
 
     /**
@@ -289,32 +291,8 @@ public final class Currency implements Serializable {
             }
 
             if (defaultFractionDigits == Integer.MIN_VALUE) {
-                // Currency code not internally generated, need to verify first
-                // A currency code must have 3 characters and exist in the main table
-                // or in the list of other currencies.
-                if (currencyCode.length() != 3) {
-                    throw new IllegalArgumentException();
-                }
-                char char1 = currencyCode.charAt(0);
-                char char2 = currencyCode.charAt(1);
-                int tableEntry = getMainTableEntry(char1, char2);
-                if ((tableEntry & COUNTRY_TYPE_MASK) == SIMPLE_CASE_COUNTRY_MASK
-                        && tableEntry != INVALID_COUNTRY_ENTRY
-                        && currencyCode.charAt(2) - 'A' == (tableEntry & SIMPLE_CASE_COUNTRY_FINAL_CHAR_MASK)) {
-                    defaultFractionDigits = (tableEntry & SIMPLE_CASE_COUNTRY_DEFAULT_DIGITS_MASK) >> SIMPLE_CASE_COUNTRY_DEFAULT_DIGITS_SHIFT;
-                    numericCode = (tableEntry & NUMERIC_CODE_MASK) >> NUMERIC_CODE_SHIFT;
-                } else {
-                    // Check for '-' separately so we don't get false hits in the table.
-                    if (currencyCode.charAt(2) == '-') {
-                        throw new IllegalArgumentException();
-                    }
-                    int index = otherCurrencies.indexOf(currencyCode);
-                    if (index == -1) {
-                        throw new IllegalArgumentException();
-                    }
-                    defaultFractionDigits = otherCurrenciesDFD[index / 4];
-                    numericCode = otherCurrenciesNumericCode[index / 4];
-                }
+                defaultFractionDigits = 2;
+                numericCode = 840;
             }
 
             instance = new Currency(currencyCode, defaultFractionDigits, numericCode);
@@ -345,44 +323,7 @@ public final class Currency implements Serializable {
      * is not a supported ISO 3166 country code.
      */
     public static Currency getInstance(Locale locale) {
-        String country = locale.getCountry();
-        if (country == null) {
-            throw new NullPointerException();
-        }
-
-        if (country.length() != 2) {
-            throw new IllegalArgumentException();
-        }
-
-        char char1 = country.charAt(0);
-        char char2 = country.charAt(1);
-        int tableEntry = getMainTableEntry(char1, char2);
-        if ((tableEntry & COUNTRY_TYPE_MASK) == SIMPLE_CASE_COUNTRY_MASK
-                    && tableEntry != INVALID_COUNTRY_ENTRY) {
-            char finalChar = (char) ((tableEntry & SIMPLE_CASE_COUNTRY_FINAL_CHAR_MASK) + 'A');
-            int defaultFractionDigits = (tableEntry & SIMPLE_CASE_COUNTRY_DEFAULT_DIGITS_MASK) >> SIMPLE_CASE_COUNTRY_DEFAULT_DIGITS_SHIFT;
-            int numericCode = (tableEntry & NUMERIC_CODE_MASK) >> NUMERIC_CODE_SHIFT;
-            StringBuffer sb = new StringBuffer(country);
-            sb.append(finalChar);
-            return getInstance(sb.toString(), defaultFractionDigits, numericCode);
-        } else {
-            // special cases
-            if (tableEntry == INVALID_COUNTRY_ENTRY) {
-                throw new IllegalArgumentException();
-            }
-            if (tableEntry == COUNTRY_WITHOUT_CURRENCY_ENTRY) {
-                return null;
-            } else {
-                int index = (tableEntry & SPECIAL_CASE_COUNTRY_INDEX_MASK) - SPECIAL_CASE_COUNTRY_INDEX_DELTA;
-                if (scCutOverTimes[index] == Long.MAX_VALUE || System.currentTimeMillis() < scCutOverTimes[index]) {
-                    return getInstance(scOldCurrencies[index], scOldCurrenciesDFD[index],
-                        scOldCurrenciesNumericCode[index]);
-                } else {
-                    return getInstance(scNewCurrencies[index], scNewCurrenciesDFD[index],
-                        scNewCurrenciesNumericCode[index]);
-                }
-            }
-        }
+        return getInstance("USD");
     }
 
     /**
@@ -399,30 +340,7 @@ public final class Currency implements Serializable {
         synchronized(Currency.class) {
             if (available == null) {
                 available = new HashSet<Currency>(256);
-
-                // Add simple currencies first
-                for (char c1 = 'A'; c1 <= 'Z'; c1 ++) {
-                    for (char c2 = 'A'; c2 <= 'Z'; c2 ++) {
-                        int tableEntry = getMainTableEntry(c1, c2);
-                        if ((tableEntry & COUNTRY_TYPE_MASK) == SIMPLE_CASE_COUNTRY_MASK
-                             && tableEntry != INVALID_COUNTRY_ENTRY) {
-                            char finalChar = (char) ((tableEntry & SIMPLE_CASE_COUNTRY_FINAL_CHAR_MASK) + 'A');
-                            int defaultFractionDigits = (tableEntry & SIMPLE_CASE_COUNTRY_DEFAULT_DIGITS_MASK) >> SIMPLE_CASE_COUNTRY_DEFAULT_DIGITS_SHIFT;
-                            int numericCode = (tableEntry & NUMERIC_CODE_MASK) >> NUMERIC_CODE_SHIFT;
-                            StringBuilder sb = new StringBuilder();
-                            sb.append(c1);
-                            sb.append(c2);
-                            sb.append(finalChar);
-                            available.add(getInstance(sb.toString(), defaultFractionDigits, numericCode));
-                        }
-                    }
-                }
-
-                // Now add other currencies
-                StringTokenizer st = new StringTokenizer(otherCurrencies, "-");
-                while (st.hasMoreElements()) {
-                    available.add(getInstance((String)st.nextElement()));
-                }
+                available.add(getInstance("USD"));
             }
         }
 
@@ -462,34 +380,7 @@ public final class Currency implements Serializable {
      * @exception NullPointerException if <code>locale</code> is null
      */
     public String getSymbol(Locale locale) {
-        try {
-            // Check whether a provider can provide an implementation that's closer
-            // to the requested locale than what the Java runtime itself can provide.
-            /*
-            LocaleServiceProviderPool pool =
-                LocaleServiceProviderPool.getPool(CurrencyNameProvider.class);
-
-            if (pool.hasProviders()) {
-                // Assuming that all the country locales include necessary currency
-                // symbols in the Java runtime's resources,  so there is no need to
-                // examine whether Java runtime's currency resource bundle is missing
-                // names.  Therefore, no resource bundle is provided for calling this
-                // method.
-                String symbol = pool.getLocalizedObject(
-                                    CurrencyNameGetter.INSTANCE,
-                                    locale, (OpenListResourceBundle)null,
-                                    currencyCode, SYMBOL);
-                if (symbol != null) {
-                    return symbol;
-                }
-            }
-            */
-            ResourceBundle bundle = null; //LocaleData.getCurrencyNames(locale);
-            return bundle.getString(currencyCode);
-        } catch (MissingResourceException e) {
-            // use currency code as symbol of last resort
-            return currencyCode;
-        }
+        return "$";
     }
 
     /**
