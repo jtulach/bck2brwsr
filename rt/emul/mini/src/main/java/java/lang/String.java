@@ -2747,7 +2747,7 @@ public final class String
         String p = format;
         for (int i = 0; i < args.length; i++) {
             String v = args[i] == null ? "null" : args[i].toString();
-            p = p.replaceFirst("%s", v);
+            p = p.replaceFirst("%[a-zA-Z]", v);
         }
         return p;
         // return new Formatter(l).format(format, args).toString();

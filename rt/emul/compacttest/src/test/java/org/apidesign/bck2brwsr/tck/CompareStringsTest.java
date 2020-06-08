@@ -189,6 +189,10 @@ public class CompareStringsTest {
         return String.format((Locale)null, "Hello %s!", "World");
     }
 
+    @Compare public String formatNumber() {
+        return String.format((Locale)null, "%s id %d", "Test", 2);
+    }
+
     @Compare public String replaceWithItself() {
         return "org.apidesign.bck2brwsr.core.JavaScriptBody".replace(".", "\\.");
     }
