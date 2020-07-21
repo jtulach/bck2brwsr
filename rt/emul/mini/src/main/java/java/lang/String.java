@@ -2945,15 +2945,19 @@ public final class String
         "return i[s];"
     )
     public native String intern();
-    
-    
+
+    private static final String SMALL_UTF = "utf";
+    private static final String BIG_UTF = "UTF";
+    private static final String EIGHT = "8";
+
     private static <T> T checkUTF8(T data, String charsetName)
-        throws UnsupportedEncodingException {
+                    throws UnsupportedEncodingException {
         if (charsetName == null) {
             throw new NullPointerException("charsetName");
         }
-        if (!charsetName.equalsIgnoreCase("UTF-8")
-            && !charsetName.equalsIgnoreCase("UTF8")) {
+        if (charsetName.length() < 4 || charsetName.length() > 5
+                        || !(charsetName.startsWith(SMALL_UTF) || charsetName.startsWith(BIG_UTF))
+                        || !charsetName.endsWith(EIGHT)) {
             throw new UnsupportedEncodingException(charsetName);
         }
         return data;
