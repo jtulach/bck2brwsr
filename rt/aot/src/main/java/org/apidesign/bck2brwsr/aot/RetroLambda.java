@@ -23,11 +23,15 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import net.orfjackal.retrolambda.ClassAnalyzer;
 import net.orfjackal.retrolambda.Transformers;
 import net.orfjackal.retrolambda.asm.ClassReader;
 import net.orfjackal.retrolambda.asm.Opcodes;
+import static net.orfjackal.retrolambda.asm.Opcodes.H_INVOKESPECIAL;
+import net.orfjackal.retrolambda.asm.Type;
 import net.orfjackal.retrolambda.files.OutputDirectory;
-import net.orfjackal.retrolambda.interfaces.ClassHierarchyAnalyzer;
+import net.orfjackal.retrolambda.interfaces.MethodRef;
 import net.orfjackal.retrolambda.lambdas.LambdaClassDumper;
 import net.orfjackal.retrolambda.lambdas.LambdaClassSaver;
 import org.apidesign.bck2brwsr.core.ExtraJavaScript;
@@ -42,20 +46,45 @@ final class RetroLambda extends OutputDirectory implements BytecodeProcessor {
     private Map<String,byte[]> converted;
     private final Transformers transformers;
     private final LambdaClassSaver saver;
-    
+    private final ClassAnalyzer analyzer = new ClassAnalyzer() {
+        @Override
+        protected String companionClassName(String name) {
+            return name;
+        }
+
+    /*
+        @Override
+        public Optional<Type> getCompanionClass(Type type) {
+            return Optional.empty();
+        }
+
+        @Override
+        public MethodRef getMethodCallTarget(MethodRef original) {
+            if (original.tag == H_INVOKESPECIAL) {
+                // change Interface.super.defaultMethod() calls to static calls on the companion class
+                MethodRef impl = getMethodDefaultImplementation(original);
+                if (impl != null) {
+                    return impl;
+                }
+            }
+            return original;
+        }
+    */
+    };
+
     public RetroLambda() {
         super(null);
-        transformers = new Transformers(Opcodes.V1_7, false, new ClassHierarchyAnalyzer());
-        saver = new LambdaClassSaver(this, transformers);
+        transformers = new Transformers(Opcodes.V1_7, false, analyzer);
+        saver = new LambdaClassSaver(this, transformers, true);
     }
 
     @Override
-    public void writeFile(Path relativePath, byte[] content) throws IOException {
-        throw new UnsupportedOperationException();
+    public void writeClass(byte[] bytecode, boolean isJavacHacksEnabled) throws IOException {
+        writeFile(null, bytecode);
     }
 
     @Override
-    public void writeClass(byte[] bytecode) throws IOException {
+    public void writeFile(Path relativePath, byte[] bytecode) throws IOException {
         if (bytecode == null) {
             return;
         }
@@ -71,7 +100,7 @@ final class RetroLambda extends OutputDirectory implements BytecodeProcessor {
         }
         converted.put(className, backportedBytecode);
     }
-    
+
     @Override
     public Map<String, byte[]> process(
         String className, byte[] byteCode, Bck2Brwsr.Resources resources
@@ -81,12 +110,13 @@ final class RetroLambda extends OutputDirectory implements BytecodeProcessor {
         if (major <= 51) {
             return null;
         }
-        
+
         ClassLoader prev = Thread.currentThread().getContextClassLoader();
         try (LambdaClassDumper dumper = new LambdaClassDumper(saver)) {
             Thread.currentThread().setContextClassLoader(new ResLdr(resources));
             dumper.install();
-            
+
+            analyzer.analyze(new ClassReader(byteCode));
             byte[] newB = transformers.backportClass(new ClassReader(byteCode));
             if (!Arrays.equals(newB, byteCode)) {
                 putBytecode(className, newB);
@@ -96,19 +126,19 @@ final class RetroLambda extends OutputDirectory implements BytecodeProcessor {
         } finally {
             Thread.currentThread().setContextClassLoader(prev);
         }
-        
+
         Map<String, byte[]> ret = converted;
         converted = null;
         return ret;
     }
-   
+
     private static final class ResLdr extends ClassLoader {
         private final Bck2Brwsr.Resources res;
 
         public ResLdr(Bck2Brwsr.Resources res) {
             this.res = res;
         }
-        
+
         @Override
         public Class<?> loadClass(String name) throws ClassNotFoundException {
             Class<?> c = findLoadedClass(name);
@@ -129,5 +159,5 @@ final class RetroLambda extends OutputDirectory implements BytecodeProcessor {
                 return super.loadClass(name);
             }
         }
-    }    
+    }
 }
