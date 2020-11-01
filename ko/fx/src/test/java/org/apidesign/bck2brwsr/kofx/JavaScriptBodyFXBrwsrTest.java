@@ -27,8 +27,15 @@ import org.testng.annotations.Factory;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class JavaScriptBodyFXBrwsrTest extends JavaScriptTCK {
-    @Factory public static Object[] create() {
+    @Factory public static Object[] create() throws ClassNotFoundException {
         System.getProperties().remove("vmtest.brwsrs");
+
+        try {
+            Class.forName("javafx.application.Application");
+        } catch (LinkageError err) {
+            return new Object[0];
+        }
+
         return VMTest.newTests().
             withLaunchers("fxbrwsr").
             withClasses(filterTestClasses()).
