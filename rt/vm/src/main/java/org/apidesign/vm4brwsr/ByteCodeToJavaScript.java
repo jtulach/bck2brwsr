@@ -349,12 +349,11 @@ abstract class ByteCodeToJavaScript {
         return "";
     }
 
-    private void versionCheck() throws IOException {
+    private boolean versionCheck() throws IOException {
         if (jc.getMajor_version() < 50) {
-            throw new IOException("Can't compile " + jc.getClassName() + ". Class file version " + jc.getMajor_version() + "."
-                    + jc.getMinor_version() + " - recompile with -target 1.6 (at least)."
-            );
+            return false;
         }
+        return true;
     }
 
     private StringArray findJavaScriptResources(byte[] arr, final String cn) throws IOException {
@@ -470,7 +469,15 @@ abstract class ByteCodeToJavaScript {
             return defineProp;
         }
 
-        versionCheck();
+        if (!versionCheck()) {
+            out.append("  throw '" + jc.getClassName() + " compiled with too old Java version: " + jc.getMajor_version() + " - recompile with -target 1.6';\n");
+            if (defineProp) {
+                out.append("}});");
+            } else {
+                out.append("};");
+            }
+            return defineProp;
+        }
 
         final StackMapper smapper = new StackMapper();
 
