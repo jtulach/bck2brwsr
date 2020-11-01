@@ -151,7 +151,7 @@ final class RetroLambda extends OutputDirectory implements BytecodeProcessor {
             String r = name.replace('.', '/') + ".class";
             try (InputStream is = res.get(r)) {
                 if (is == null) {
-                    throw new ClassNotFoundException(name);
+                    return Class.forName(name);
                 }
                 byte[] arr = Bck2BrwsrJars.readFrom(is);
                 return defineClass(name, arr, 0, arr.length);
