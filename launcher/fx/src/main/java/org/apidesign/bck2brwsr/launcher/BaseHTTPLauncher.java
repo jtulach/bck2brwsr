@@ -1035,6 +1035,9 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
                 }
             } catch (IOException ex) {
                 LOG.log(Level.SEVERE, "Cannot handle " + res, ex);
+                for (Throwable t = ex; t != null; t = t.getCause()) {
+                    LOG.log(Level.SEVERE, t.getMessage());
+                }
             }
             InputStream is = null;
             try {
