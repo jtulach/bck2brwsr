@@ -157,7 +157,7 @@ final class VM implements TruffleObject {
         compiler = compiler.library();
         StringBuilder sb = new StringBuilder();
         compiler.generate(sb);
-        Source src = Source.newBuilder(sb.toString()).uri(jar.toURI()).name(jsName(jar)).mimeType("text/javascript").build();
+        Source src = Source.newBuilder("js", sb.toString(), jsName(jar)).uri(jar.toURI()).mimeType("text/javascript").build();
         env.parse(src).call();
 
         if (jar.isFile()) {
@@ -234,7 +234,7 @@ final class VM implements TruffleObject {
             .resources(new Res())
             .library()
             .generate(sb);
-        Source jsSrc = Source.newBuilder(sb.toString()).uri(src.getURI()).name(src.getName()).mimeType("text/javascript").build();
+        Source jsSrc = Source.newBuilder("js", sb.toString(), src.getName()).uri(src.getURI()).mimeType("text/javascript").build();
         env.parse(jsSrc).call();
     }
 
