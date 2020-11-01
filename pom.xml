@@ -143,15 +143,28 @@
                     <additionalparam>${javadoc.opts}</additionalparam>
                 </configuration>
               </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
-                </configuration>
-            </plugin>
+              <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-compiler-plugin</artifactId>
+                  <version>3.8.1</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>org.frgaal</groupId>
+                          <artifactId>compiler-maven-plugin</artifactId>
+                          <version>14.0.2</version>
+                      </dependency>
+                  </dependencies>
+                  <configuration>
+                      <compilerId>frgaal</compilerId>
+                      <source>14</source>
+                      <target>8</target>
+                      <testTarget>8</testTarget>
+                      <compilerArgs>
+                          <arg>-Xlint:deprecation</arg>
+                          <arg>--enable-safe-preview</arg>
+                      </compilerArgs>
+                  </configuration>
+              </plugin>
           </plugins>
       </pluginManagement>
   </build>
