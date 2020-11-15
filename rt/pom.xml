@@ -37,6 +37,7 @@
     <module>gradletest</module>
     <module>vm</module>
     <module>vmtest</module>
+    <module>retrolambda/retrolambda</module>
     <module>aot</module>
     <module>aot-nb-test</module>
     <module>aot-mn-test</module>

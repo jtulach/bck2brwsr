@@ -1,0 +1,4 @@
+[submodule "rt/retrolambda"]
+	path = rt/retrolambda
+	url = https://github.com/jtulach/retrolambda.git
+	branch = Bck2BrwsrUpdatingTo2.5.7

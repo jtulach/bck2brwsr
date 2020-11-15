@@ -92,6 +92,7 @@
                        <exclude>rt/vm/src/main/java/org/apidesign/vm4brwsr/ByteCodeParser.java</exclude>
                        <exclude>rt/archetype/src/main/resources/archetype-resources/**</exclude>
                        <exclude>rt/emul/*/src/test/resources/**</exclude>
+                       <exclude>rt/retrolambda/**</exclude>
                        <exclude>rt/aot-junit/**</exclude>
                        <exclude>javaquery/api/src/main/resources/org/apidesign/bck2brwsr/htmlpage/knockout*.js</exclude>
                        <exclude>ko/archetype/src/main/resources/archetype-resources/**</exclude>
