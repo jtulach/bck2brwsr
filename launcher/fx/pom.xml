@@ -65,8 +65,22 @@
     <dependency>
         <artifactId>webswing-app-toolkit</artifactId>
         <groupId>org.webswing</groupId>
-        <version>20.1.3</version>
+        <version>20.1.8</version>
         <scope>provided</scope>
+        <exclusions>
+            <exclusion>
+                <groupId>jdk.jsobject.modpatch</groupId>
+                <artifactId>jdk.jsobject.modpatch</artifactId>
+            </exclusion>
+            <exclusion>
+                <groupId>java.desktop.modpatch</groupId>
+                <artifactId>java.desktop.modpatch</artifactId>
+            </exclusion>
+            <exclusion>
+                <groupId>org.webswing</groupId>
+                <artifactId>webswing-api</artifactId>
+            </exclusion>
+        </exclusions>
     </dependency>
     <dependency>
       <groupId>org.testng</groupId>

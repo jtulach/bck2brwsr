@@ -151,17 +151,17 @@
                       <dependency>
                           <groupId>org.frgaal</groupId>
                           <artifactId>compiler-maven-plugin</artifactId>
-                          <version>14.0.2</version>
+                          <version>15.0.0</version>
                       </dependency>
                   </dependencies>
                   <configuration>
                       <compilerId>frgaal</compilerId>
-                      <source>14</source>
+                      <source>15</source>
                       <target>8</target>
                       <testTarget>8</testTarget>
                       <compilerArgs>
                           <arg>-Xlint:deprecation</arg>
-                          <arg>--enable-safe-preview</arg>
+                          <arg>--enable-preview</arg>
                       </compilerArgs>
                   </configuration>
               </plugin>
