@@ -31,7 +31,9 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.net.URL;
 import org.apidesign.bck2brwsr.core.Exported;
@@ -606,7 +608,25 @@ public final
      * @since 1.5
      */
     public TypeVariable<Class<T>>[] getTypeParameters() {
-        throw new UnsupportedOperationException();
+        if (getName().equals("java.util.List")) {
+            return new TypeVariable[] { new TypeVariable() {
+                @Override
+                public Type[] getBounds() {
+                    return new Type[0];
+                }
+
+                @Override
+                public GenericDeclaration getGenericDeclaration() {
+                    throw new UnsupportedOperationException("getGenericDeclaration");
+                }
+
+                @Override
+                public String getName() {
+                    return Object.class.getName();
+                }
+            } };
+        }
+        return new TypeVariable[0];
     }
  
     /**

@@ -30,13 +30,13 @@ matrix:
         - DIR=zulu8.40.0.25-ca-fx-jdk8.0.222-linux_x64
         - URL=https://cdn.azul.com/zulu/bin/$DIR.tar.gz
     - os: linux
-      name: Linux GraalVM11 19.3.1
+      name: Linux GraalVM11 19.3.3
       dist: trusty
       jdk: openjdk8
       env:
         - ARGS=-Dnone
-        - DIR=graalvm-ce-java11-19.3.1
-        - URL=https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.1/graalvm-ce-java11-linux-amd64-19.3.1.tar.gz
+        - DIR=graalvm-ce-java11-19.3.3
+        - URL=https://github.com/graalvm/graalvm-ce-builds/releases/download/vm-19.3.3/graalvm-ce-java11-linux-amd64-19.3.3.tar.gz
     - os: linux
       name: Linux JDK11
       dist: trusty
