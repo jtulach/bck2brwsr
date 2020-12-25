@@ -62,6 +62,11 @@ public enum OnEvent {
     PAUSE("onpause"),
     PLAY("onplay"),
     PLAYING("onplaying"),
+    POINTER_DOWN("onpointerdown"),
+    POINTER_MOVE("onpointermove"),
+    POINTER_OUT("onpointerout"),
+    POINTER_OVER("onpointerover"),
+    POINTER_UP("onpointerup"),
     PROGRESS("onprogress"),
     RATE_CHANGE("onratechange"),
     READY_STATE_CHANGE("onreadystatechange"),
@@ -74,6 +79,9 @@ public enum OnEvent {
     SUBMIT("onsubmit"),
     SUSPEND("onsuspend"),
     TIME_UPDATE("ontimeupdate"),
+    TOUCH_END("ontouchend"),
+    TOUCH_MOVE("ontouchmove"),
+    TOUCH_START("ontouchstart"),
     VOLUME_CHANGE("onvolumechange"),
     WAITING("onwaiting");
     
