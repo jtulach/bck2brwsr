@@ -89,7 +89,7 @@ public class GraphicsContext {
     @JavaScriptBody(args = {"x", "y", "width", "height"}, body = "this._context().clearRect(x,y,width,height);")
     public native void clearRect(double x, double y, double width, double height);
 
-    @JavaScriptBody(args = {"x", "y", "width", "height"}, body = "this._context().rectect(x,y,width,height);")
+    @JavaScriptBody(args = {"x", "y", "width", "height"}, body = "this._context().rect(x,y,width,height);")
     public native void rect(double x, double y, double width, double height);
 
     @JavaScriptBody(args = {}, body = "this._context().save();")
