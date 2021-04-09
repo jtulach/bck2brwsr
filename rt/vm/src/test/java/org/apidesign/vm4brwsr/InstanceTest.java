@@ -161,6 +161,22 @@ public class InstanceTest {
             Double.valueOf(31)
         );
     }
+
+    @Test public void hiInstance() throws Exception {
+        assertExec(
+            "Calls Instance private method",
+            Instance.class, "hiInstance__Ljava_lang_String_2",
+            "Hi Instance!Instance"
+        );
+    }
+
+    @Test public void hiInstanceSub() throws Exception {
+        assertExec(
+            "Calls Instance private method",
+            Instance.class, "hiInstanceSub__Ljava_lang_String_2",
+            "Hi Instance!InstanceSub"
+        );
+    }
     
     protected String startCompilationWith() {
         return "org/apidesign/vm4brwsr/Instance";

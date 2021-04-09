@@ -37,4 +37,8 @@ public class InstanceSub extends Instance implements GetByte {
     public static double recallDbl() {
         return defaultDblValue();
     }
+
+    private String sayHi() {
+        return "Hi InstanceSub!";
+    }
 }

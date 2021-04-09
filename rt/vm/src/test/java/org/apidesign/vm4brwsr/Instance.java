@@ -155,4 +155,22 @@ public class Instance {
     int sum(int i, int i0) {
         return i + i0;
     }
+
+    public static String hiInstance() {
+        return Call.hi(new Instance());
+    }
+
+    public static String hiInstanceSub() {
+        return Call.hi(new InstanceSub(1, 2.0));
+    }
+
+    private static class Call {
+        private static String hi(Instance i) {
+            return i.sayHi() + i.getClass().getSimpleName();
+        }
+    }
+
+    private String sayHi() {
+        return "Hi Instance!";
+    }
 }
