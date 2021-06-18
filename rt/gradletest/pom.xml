@@ -94,12 +94,13 @@
                     <plugin>
                         <groupId>org.thingsboard</groupId>
                         <artifactId>gradle-maven-plugin</artifactId>
-                        <version>1.0.9</version>
+                        <version>1.0.10</version>
                         <configuration>
                             <tasks>
                                 <task>clean</task>
                                 <task>${gradle.bck2brwsrAot}</task>
                             </tasks>
+                            <gradleVersion>7.0</gradleVersion>
                             <gradleProjectDirectory>src/test/resources/org/apidesign/bck2brwsr/gradletest/gradle1</gradleProjectDirectory>
                             <args>
                                 <arg>--refresh-dependencies</arg>

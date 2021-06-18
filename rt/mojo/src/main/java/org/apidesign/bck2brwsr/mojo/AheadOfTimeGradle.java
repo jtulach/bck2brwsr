@@ -20,8 +20,6 @@ package org.apidesign.bck2brwsr.mojo;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 import java.util.Set;
 import static org.apidesign.bck2brwsr.mojo.AheadOfTimeTask.CONF_NAME;
 import org.gradle.api.Action;
@@ -50,7 +48,7 @@ public final class AheadOfTimeGradle implements Plugin<Project> {
         final ConfigurationContainer confs = p.getConfigurations();
         if (confs.findByName(CONF_NAME) == null) {
             Configuration bck2brwsr = confs.create(CONF_NAME);
-            Configuration runtime = confs.findByName("compile");
+            Configuration runtime = confs.findByName("runtimeClasspath");
             if (runtime != null) {
                 bck2brwsr.extendsFrom(runtime);
             }
@@ -94,7 +92,7 @@ public final class AheadOfTimeGradle implements Plugin<Project> {
                 for (Task task : tasks) {
                     if (task.getName().startsWith("jar")) {
                         aot.dependsOn(task);
-                        aot.registerJarTask(task);
+                        aot.registerJarTask(p, task);
                     }
                 }
                 aot.doLast(new Action<Task>() {

@@ -183,7 +183,7 @@
                     <plugin>
                         <groupId>org.thingsboard</groupId>
                         <artifactId>gradle-maven-plugin</artifactId>
-                        <version>1.0.9</version>
+                        <version>1.0.10</version>
                         <configuration>
                             <tasks>
                                 <task>clean</task>
@@ -195,6 +195,7 @@
                                 <arg>-PprjVersion=${project.version}</arg>
                                 <arg>-PnjhVersion=${net.java.html.version}</arg>
                             </args>
+                            <gradleVersion>7.0</gradleVersion>
                         </configuration>
                         <executions>
                             <execution>
