@@ -15,23 +15,30 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.ko2brwsr;
+package java.util;
 
-import org.apidesign.bck2brwsr.vmtest.VMTest;
-import org.netbeans.html.json.tck.KOTest;
-import org.testng.annotations.Factory;
+import net.java.html.json.Models;
+import org.apidesign.bck2brwsr.ko2brwsr.Bck2BrwsrJavaScriptImpl;
 
-/**
- *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
- */
-public class Bck2BrwsrJavaScriptBodyTest {
-    @Factory public static Object[] create() {
-        return VMTest.newTests().
-            withClasses(Bck2BrwsrJavaScriptImpl.tests()).
-            withClasses(Bck2BrwsrKnockoutImpl.createClasses()).
-            withLaunchers("bck2brwsr").
-            withTestAnnotation(KOTest.class).
-            build();
+public class ArrayList<T> {
+    static {
+        Bck2BrwsrJavaScriptImpl.init();
+    }
+    private final List<T> list = Models.asList();
+
+    public boolean isEmpty() {
+        return list.isEmpty();
+    }
+
+    public boolean add(T t) {
+        return list.add(t);
+    }
+
+    public T get(int i) {
+        return list.get(i);
+    }
+
+    public int size() {
+        return list.size();
     }
 }
