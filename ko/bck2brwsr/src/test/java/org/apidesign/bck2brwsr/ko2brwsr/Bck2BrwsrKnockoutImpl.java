@@ -108,7 +108,7 @@ public final class Bck2BrwsrKnockoutImpl extends KnockoutTCK {
         }
     }
 
-
+    @Override
     public String prepareWebResource(String content, String mimeType, String[] parameters) {
         try {
             final URL baseURL = new URL(findBaseURL());
@@ -117,8 +117,7 @@ public final class Bck2BrwsrKnockoutImpl extends KnockoutTCK {
             for (int i = 0; i < parameters.length; i++) {
                 sb.append("&param" + i).append("=").append(parameters[i]);
             }
-            String mangle = content.replace("\n", "%0a")
-                .replace("\"", "\\\"").replace(" ", "%20");
+            String mangle = content.replace("\n", "%0a").replace(" ", "%20");
             sb.append("&content=").append(mangle);
 
             URL query = new URL(baseURL, sb.toString());
