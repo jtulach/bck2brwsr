@@ -44,15 +44,6 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
                 <version>2.8.2</version>
                 <configuration>
@@ -103,12 +94,13 @@
                     <plugin>
                         <groupId>org.thingsboard</groupId>
                         <artifactId>gradle-maven-plugin</artifactId>
-                        <version>1.0.9</version>
+                        <version>1.0.10</version>
                         <configuration>
                             <tasks>
                                 <task>clean</task>
                                 <task>${gradle.bck2brwsrAot}</task>
                             </tasks>
+                            <gradleVersion>7.0</gradleVersion>
                             <gradleProjectDirectory>src/test/resources/org/apidesign/bck2brwsr/gradletest/gradle1</gradleProjectDirectory>
                             <args>
                                 <arg>--refresh-dependencies</arg>

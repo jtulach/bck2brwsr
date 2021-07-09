@@ -55,6 +55,9 @@ public class System {
         if ("os.name".equals(name)) {
             return userAgent();
         }
+        if ("java.version".equals(name)) {
+            return "1.7";
+        }
         return null;
     }
 

@@ -63,15 +63,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
-                </configuration>
-            </plugin>
         </plugins>
       </build>
       
@@ -192,7 +183,7 @@
                     <plugin>
                         <groupId>org.thingsboard</groupId>
                         <artifactId>gradle-maven-plugin</artifactId>
-                        <version>1.0.9</version>
+                        <version>1.0.10</version>
                         <configuration>
                             <tasks>
                                 <task>clean</task>
@@ -204,6 +195,7 @@
                                 <arg>-PprjVersion=${project.version}</arg>
                                 <arg>-PnjhVersion=${net.java.html.version}</arg>
                             </args>
+                            <gradleVersion>7.0</gradleVersion>
                         </configuration>
                         <executions>
                             <execution>

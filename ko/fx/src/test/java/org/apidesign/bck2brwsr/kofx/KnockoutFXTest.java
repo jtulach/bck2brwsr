@@ -50,14 +50,21 @@ public final class KnockoutFXTest extends KnockoutTCK {
     public KnockoutFXTest() {
     }
 
-    @Factory public static Object[] compatibilityTests() {
+    @Factory public static Object[] compatibilityTests() throws ClassNotFoundException {
         System.getProperties().remove("vmtest.brwsrs");
+
+        try {
+            Class.forName("javafx.application.Application");
+        } catch (LinkageError err) {
+            return new Object[0];
+        }
+
         return VMTest.newTests().
             withClasses(filterTestClasses()).
             withTestAnnotation(KOTest.class).
             withLaunchers("fxbrwsr").build();
     }
-    
+
     private static Class[] filterTestClasses() {
         Class[] arr = testClasses();
         final String version = System.getProperty("java.version");
@@ -75,7 +82,7 @@ public final class KnockoutFXTest extends KnockoutTCK {
         }
         return arr;
     }
-    
+
     @Override
     public BrwsrCtx createContext() {
         final Fn.Presenter p = Fn.activePresenter();
@@ -107,7 +114,7 @@ public final class KnockoutFXTest extends KnockoutTCK {
         }
         return json;
     }
-    
+
     @JavaScriptBody(args = {}, body = "return new Object();")
     private static native Object createJSON();
     @JavaScriptBody(args = { "json", "key", "value" }, body = "json[key] = value;")
@@ -120,7 +127,7 @@ public final class KnockoutFXTest extends KnockoutTCK {
     )
     public native Object executeScript(String script, Object[] arguments);
 
-    @JavaScriptBody(args = {  }, body = 
+    @JavaScriptBody(args = {  }, body =
           "var h;"
         + "if (!!window && !!window.location && !!window.location.href)\n"
         + "  h = window.location.href;\n"
@@ -129,7 +136,7 @@ public final class KnockoutFXTest extends KnockoutTCK {
         + "return h;\n"
     )
     private static native String findBaseURL();
-    
+
     @Override
     public URI prepareURL(String content, String mimeType, String[] parameters) {
         try {
@@ -139,8 +146,7 @@ public final class KnockoutFXTest extends KnockoutTCK {
             for (int i = 0; i < parameters.length; i++) {
                 sb.append("&param" + i).append("=").append(parameters[i]);
             }
-            String mangle = content.replace("\n", "%0a")
-                .replace("\"", "\\\"").replace(" ", "%20");
+            String mangle = content.replace("\n", "%0a").replace(" ", "%20");
             sb.append("&content=").append(mangle);
 
             URL query = new URL(baseURL, sb.toString());

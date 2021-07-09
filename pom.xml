@@ -15,7 +15,7 @@
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <netbeans.version>RELEASE120-u1</netbeans.version>
       <license>COPYING</license>
-      <net.java.html.version>1.7</net.java.html.version>
+      <net.java.html.version>1.7.2</net.java.html.version>
       <netbeans.compile.on.save>none</netbeans.compile.on.save>
       <trufflejs.jar>${project.build.directory}/test-classes</trufflejs.jar>
       <test.java.home>${java.home}</test.java.home>
@@ -143,15 +143,28 @@
                     <additionalparam>${javadoc.opts}</additionalparam>
                 </configuration>
               </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
-                </configuration>
-            </plugin>
+              <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-compiler-plugin</artifactId>
+                  <version>3.8.1</version>
+                  <dependencies>
+                      <dependency>
+                          <groupId>org.frgaal</groupId>
+                          <artifactId>compiler-maven-plugin</artifactId>
+                          <version>15.0.0</version>
+                      </dependency>
+                  </dependencies>
+                  <configuration>
+                      <compilerId>frgaal</compilerId>
+                      <source>15</source>
+                      <target>8</target>
+                      <testTarget>8</testTarget>
+                      <compilerArgs>
+                          <arg>-Xlint:deprecation</arg>
+                          <arg>--enable-preview</arg>
+                      </compilerArgs>
+                  </configuration>
+              </plugin>
           </plugins>
       </pluginManagement>
   </build>

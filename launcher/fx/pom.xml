@@ -34,15 +34,6 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
                     <subpackages>org.apidesign.bck2brwsr.launcher.fx</subpackages>
@@ -70,6 +61,26 @@
         <artifactId>javafx-web</artifactId>
         <version>11</version>
         <scope>provided</scope>
+    </dependency>
+    <dependency>
+        <artifactId>webswing-app-toolkit</artifactId>
+        <groupId>org.webswing</groupId>
+        <version>20.1.8</version>
+        <scope>provided</scope>
+        <exclusions>
+            <exclusion>
+                <groupId>jdk.jsobject.modpatch</groupId>
+                <artifactId>jdk.jsobject.modpatch</artifactId>
+            </exclusion>
+            <exclusion>
+                <groupId>java.desktop.modpatch</groupId>
+                <artifactId>java.desktop.modpatch</artifactId>
+            </exclusion>
+            <exclusion>
+                <groupId>org.webswing</groupId>
+                <artifactId>webswing-api</artifactId>
+            </exclusion>
+        </exclusions>
     </dependency>
     <dependency>
       <groupId>org.testng</groupId>

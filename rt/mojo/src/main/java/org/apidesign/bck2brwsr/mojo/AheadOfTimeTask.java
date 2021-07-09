@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import org.apidesign.vm4brwsr.ObfuscationLevel;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
@@ -32,17 +33,32 @@ import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ResolvedArtifact;
+import org.gradle.api.tasks.OutputFile;
+import org.gradle.api.tasks.OutputFiles;
 
 public class AheadOfTimeTask extends DefaultTask {
     static final String CONF_NAME = "bck2brwsr";
     private Task jarTask;
+    @OutputFile
+    private File bck2brwsrJs;
+    @OutputFile
+    private File mainJs;
+    @OutputFiles
+    private Map<String,File> libraries;
 
     public AheadOfTimeTask() {
     }
 
-    void registerJarTask(Task task) {
+    void registerJarTask(Project p, Task task) {
         assert this.jarTask == null;
         this.jarTask = task;
+        this.bck2brwsrJs = new File(webDir(p), "bck2brwsr.js");
+        this.mainJs = new File(webDir(p), "main.js");
+        this.libraries = new TreeMap<>();
+    }
+
+    private File webDir(Project p) {
+        return new File(p.getBuildDir(), "web");
     }
 
     private static Collection<ResolvedArtifact> mainClassPath(Project p, String confName, boolean fail) {
@@ -59,25 +75,24 @@ public class AheadOfTimeTask extends DefaultTask {
     void generate(final Project p) {
         class Work extends AheadOfTimeBase<ResolvedArtifact> {
             private Collection<ResolvedArtifact> bck2brwsr;
-            private Collection<ResolvedArtifact> compileOnly;
-
-            private File webDir() {
-                return new File(p.getBuildDir(), "web");
-            }
+            private Collection<ResolvedArtifact> compileClasspath;
 
             @Override
             protected File vm() {
-                return new File(webDir(), "bck2brwsr.js");
+                return getBck2brwsrJs();
             }
 
             @Override
             protected File mainJavaScript() {
-                return new File(webDir(), "main.js");
+                return getMainJs();
             }
 
             @Override
-            protected String classPathPrefix() {
-                return "lib";
+            protected File libraryPath(String path) {
+                File dir = new File(mainJavaScript().getParent(), "lib");
+                File jsFile = new File(dir, path);
+                libraries.put(path, jsFile);
+                return jsFile;
             }
 
             @Override
@@ -136,10 +151,10 @@ public class AheadOfTimeTask extends DefaultTask {
                     bck2brwsr = mainClassPath(p, CONF_NAME, true);
                 }
                 all.addAll(bck2brwsr);
-                if (compileOnly == null) {
-                    compileOnly = mainClassPath(p, "compileOnly", false);
+                if (compileClasspath == null) {
+                    compileClasspath = mainClassPath(p, "compileClasspath", false);
                 }
-                all.addAll(compileOnly);
+                all.addAll(compileClasspath);
                 return all;
             }
 
@@ -208,6 +223,18 @@ public class AheadOfTimeTask extends DefaultTask {
         } catch (Exception ex) {
             throw new IllegalStateException(ex);
         }
+    }
+
+    public File getBck2brwsrJs() {
+        return bck2brwsrJs;
+    }
+
+    public File getMainJs() {
+        return mainJs;
+    }
+
+    public Map<String,File> getLibraries() {
+        return libraries;
     }
 
 }

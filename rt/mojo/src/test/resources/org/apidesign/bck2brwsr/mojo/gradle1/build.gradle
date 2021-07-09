@@ -40,7 +40,7 @@ repositories {
 }
 
 dependencies {
-    compile "org.netbeans.html:net.java.html.boot:${njhVersion}"
+    implementation "org.netbeans.html:net.java.html.boot:${njhVersion}"
     bck2brwsr "org.apidesign.bck2brwsr:emul.mini:${prjVersion}"
 }
 

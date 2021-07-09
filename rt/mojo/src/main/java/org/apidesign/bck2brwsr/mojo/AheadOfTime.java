@@ -154,10 +154,11 @@ public class AheadOfTime extends AbstractMojo {
             }
 
             @Override
-            protected String classPathPrefix() {
-                return classPathPrefix;
+            protected File libraryPath(String fileNameJs) {
+                File dir = new File(mainJavaScript().getParent(), classPathPrefix);
+                return new File(dir, fileNameJs);
             }
-
+            
             @Override
             protected ObfuscationLevel obfuscation() {
                 return obfuscation;
