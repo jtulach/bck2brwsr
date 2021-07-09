@@ -98,6 +98,7 @@ abstract class ByteCodeToJavaScript {
     }
 
     protected String accessVirtualMethod(
+            ClassData caller,
             String object,
             String mangledName,
             String[] fieldInfoName,
