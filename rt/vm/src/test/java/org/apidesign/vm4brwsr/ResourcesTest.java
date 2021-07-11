@@ -68,14 +68,4 @@ public class ResourcesTest {
     ) throws Exception {
         code.assertExec(msg, clazz, method, ret, args);
     }
-    
-    public static String parseBase64Binary(String s) throws UnsupportedEncodingException {
-        final byte[] arr = Base64.getDecoder().decode(s);
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < arr.length; i++) {
-            int ch = arr[i];
-            sb.append((char)ch);
-        }
-        return sb.toString();
-    }
 }

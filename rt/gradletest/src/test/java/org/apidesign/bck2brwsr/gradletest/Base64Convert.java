@@ -15,7 +15,7 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.vm4brwsr;
+package org.apidesign.bck2brwsr.gradletest;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Base64;

@@ -211,7 +211,7 @@ public final class TestVM {
         }
         b2b.generate(sb);
         try {
-            defineAtoB(eng[0]);
+            Base64Convert.defineAtoB(eng[0]);
             Object res = eng[0].eval(sb.toString());
             assertTrue(eng[0] instanceof Invocable, "It is invocable object: " + res);
             return new TestVM((Invocable) eng[0], sb);
@@ -238,7 +238,7 @@ public final class TestVM {
             eng[0] = js;
         }
         try {
-            defineAtoB(js);
+            Base64Convert.defineAtoB(js);
             
             Object res = js.eval(sb.toString());
             assertTrue(js instanceof Invocable, "It is invocable object: " + res);
@@ -250,17 +250,6 @@ public final class TestVM {
             fail("Could not evaluate:" + ex.getClass() + ":" + ex.getMessage() + "\n" + sb, ex);
             return null;
         }
-    }
-
-
-    private static void defineAtoB(ScriptEngine js) throws ScriptException, NoSuchMethodException {
-        Object thiz = js.eval("this");
-        Object register = js.eval("(function(global, convert) {\n"
-                + "  global.atob = function(s) { return new String(convert.convert(s)); }\n"
-                + "})"
-        );
-        Base64Convert convert = Base64Convert.create();
-        ((Invocable)js).invokeMethod(register, "call", thiz, thiz, convert);
     }
 
     Object loadClass(String loadClass, String name) throws ScriptException, NoSuchMethodException {

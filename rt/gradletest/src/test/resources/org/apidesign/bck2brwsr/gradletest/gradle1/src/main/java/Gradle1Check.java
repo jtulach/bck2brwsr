@@ -26,11 +26,20 @@ final class Gradle1Check {
         return -1;
     }
 
-    public static void main(String... args) throws Exception {
-        Callable<Integer> g = Gradle1Check::compute;
+    public static String formulate() throws Exception {
+        Callable<Integer> g = new Callable<Integer>() {
+            public Integer call() throws Exception {
+                return compute();
+            }
+        };
         Integer value = g.call();
-        System.err.println("Gradle1Check value: " + value);
-        if (value == 42) {
+        return "Gradle1Check value: " + value;
+    }
+
+    public static void main(String... args) throws Exception {
+        String text = formulate();
+        System.err.println(text);
+        if (text.endsWith("42")) {
             System.exit(0);
         } else {
             System.err.println("Wrong value. Expecting 42.");
