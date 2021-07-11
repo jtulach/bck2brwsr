@@ -26,7 +26,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.JarURLConnection;
@@ -237,8 +239,13 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
             @Override
             public String format(LogRecord record) {
                 String message = formatMessage(record);
-                return String.format("[%s] %s\n", record.getLevel(), message);
-            };
+                StringWriter w = new StringWriter();
+                w.append(String.format("[%s] %s\n", record.getLevel(), message));
+                if (record.getThrown() != null) {
+                    record.getThrown().printStackTrace(new PrintWriter(w));
+                }
+                return w.toString();
+            }
         });
         consoleHandler.setLevel(Level.ALL);
 
