@@ -683,51 +683,14 @@ class LoopCode implements Runnable {
                 case ByteCodeParser.opc_invokedynamic:
                     {
                         int indx = ByteCodeToJavaScript.readUShortArg(byteCodes, i);
-                        ByteCodeToJavaScript.println("invoke dynamic: " + indx);
                         ByteCodeParser.CPX2 c2 = jc.getCpoolEntry(indx);
                         ByteCodeParser.BootMethodData bm = jc.getBootMethod(c2.cpx1);
+                        String[] methodAndType = jc.getNameAndType(c2.cpx2);
                         ByteCodeParser.CPX2 methodHandle = jc.getCpoolEntry(bm.method);
-                        ByteCodeToJavaScript.println("  type: " + methodHandle.cpx1);
                         String[] mi = jc.getFieldInfoName(methodHandle.cpx2);
-                        String mcn = ByteCodeToJavaScript.mangleClassName(mi[0]);
-                        char[] returnType = {'V'};
-                        StringBuilder cnt = new StringBuilder();
-                        String mn = ByteCodeToJavaScript.findMethodName(mi, cnt, returnType);
-                        StringBuilder sb = new StringBuilder();
-                        sb.append("We don't handle invokedynamic, need to preprocess ahead-of-time:\n");
-                        sb.append("  mi[0]: ").append(mi[0]).append("\n");
-                        sb.append("  mi[1]: ").append(mi[1]).append("\n");
-                        sb.append("  mi[2]: ").append(mi[2]).append("\n");
-                        sb.append("  mn   : ").append(mn).append("\n");
-                        sb.append("  name and type: ").append(jc.stringValue(c2.cpx2, true)).append("\n");
-                        throw new IOException(sb.toString());
-                        /*
-                        CPX2 nameAndType = jc.getCpoolEntry(c2.cpx2);
-                        String type = jc.StringValue(nameAndType.cpx2);
-                        String object = accessClass(mcn) + "(false)";
-                        if (mn.startsWith("cons_")) {
-                        object += ".constructor";
-                        }
-                        append("var metHan = ");
-                        append(accessStaticMethod(object, mn, mi));
-                        append('(');
-                        String lookup = accessClass("java_lang_invoke_MethodHandles") + "(false).findFor__Ljava_lang_invoke_MethodHandles$Lookup_2Ljava_lang_Class_2(CLS.$class)";
-                        append(lookup);
-                        append(", '").append(mi[1]).append("', ");
-                        String methodType = accessClass("java_lang_invoke_MethodType") + "(false).fromMethodDescriptorString__Ljava_lang_invoke_MethodType_2Ljava_lang_String_2Ljava_lang_ClassLoader_2(";
-                        append(methodType).append("'").append(type).append("', null)");
-                        //                    if (numArguments > 0) {
-                        //                        append(vars[0]);
-                        //                        for (int j = 1; j < numArguments; ++j) {
-                        //                            append(", ");
-                        //                            append(vars[j]);
-                        //                        }
-                        //                    }
-                        append(");");
-                        emit(smapper, this, "throw 'Invoke dynamic: ' + @1 + ': ' + metHan;", "" + indx);
+                        handleIndy(indx, methodAndType, mi, bm, smapper);
                         i += 4;
                         break;
-                         */
                     }
                 case ByteCodeParser.opc_new:
                     {
@@ -1046,6 +1009,28 @@ class LoopCode implements Runnable {
         while (openBraces-- > 0) {
             out.append('}');
         }
+    }
+
+    private void handleIndy(int indx, String[] methodAndType, String[] mi, ByteCodeParser.BootMethodData bm, StackMapper mapper) throws IOException {
+        for (IndyHandler h : byteCodeToJavaScript.getIndyHandlers()) {
+            if (h.factoryClazz.equals(mi[0]) && h.factoryMethod.equals(mi[1])) {
+                IndyHandler.Ctx ctx = new IndyHandler.Ctx(methodAndType, bm);
+                if (h.handle(ctx)) {
+                    return;
+                }
+            }
+        }
+        char[] returnType = {'V'};
+        StringBuilder cnt = new StringBuilder();
+        String mn = ByteCodeToJavaScript.findMethodName(mi, cnt, returnType);
+        StringBuilder sb = new StringBuilder();
+        sb.append("No invokedynamic handler for: ").append(mi[0]).append('.').append(mi[1]).append(mi[2]);
+        sb.append("to call ").append(methodAndType[1]).append(".").append(methodAndType[0]);
+        out.append("\n    throw '").append(sb.toString().replace('\'', ' ').replace("\n", "\\n")).append("';\n");
+
+        String sig = methodAndType[1].substring(methodAndType[1].lastIndexOf(')') + 1);
+        int type = VarType.fromFieldType(sig.charAt(0));
+        mapper.pushT(type);
     }
 
     int invokeVirtualMethod(Appendable out, byte[] byteCodes, int i, final StackMapper mapper) throws IOException {

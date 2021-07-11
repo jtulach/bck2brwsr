@@ -38,10 +38,14 @@ abstract class ByteCodeToJavaScript {
     private final StringArray classRefs = new StringArray();
     private final NumberOperations numbers = new NumberOperations();
     private final Appendable output;
+    private final IndyHandler[] indyHandlers;
     private boolean callbacks;
 
     protected ByteCodeToJavaScript(final Appendable out) {
         this.output = out;
+        this.indyHandlers = new IndyHandler[] {
+            new MetafactoryHandler(),
+        };
     }
 
     /* Collects additional required resources.
@@ -1278,6 +1282,10 @@ abstract class ByteCodeToJavaScript {
                 return at;
             }
         }
+    }
+
+    IndyHandler[] getIndyHandlers() {
+        return indyHandlers;
     }
 
     private class GenerateAnno extends AnnotationParser {
