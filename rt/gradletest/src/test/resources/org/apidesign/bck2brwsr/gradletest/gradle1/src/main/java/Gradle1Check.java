@@ -19,12 +19,7 @@
 import net.java.html.js.JavaScriptBody;
 import java.util.concurrent.Callable;
 
-final class Gradle1Check implements Callable<Integer> {
-
-    @Override
-    public Integer call() throws Exception {
-        return compute();
-    }
+final class Gradle1Check {
 
     @JavaScriptBody(args = {}, body = "return 42;")
     private static int compute() {
@@ -32,7 +27,7 @@ final class Gradle1Check implements Callable<Integer> {
     }
 
     public static void main(String... args) throws Exception {
-        Gradle1Check g = new Gradle1Check();
+        Callable<Integer> g = Gradle1Check::compute;
         Integer value = g.call();
         System.err.println("Gradle1Check value: " + value);
         if (value == 42) {

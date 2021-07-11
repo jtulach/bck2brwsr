@@ -46,6 +46,10 @@ if ("true".equals(skipGradle)) {
     mainClassName = 'Gradle1Check'
 }
 
+compileJava {
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
+}
 
 dependencies {
     compileOnly "org.apidesign.bck2brwsr:ko-bck2brwsr:${prjVersion}:bck2brwsr"

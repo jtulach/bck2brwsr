@@ -18,6 +18,7 @@
 package org.apidesign.bck2brwsr.gradletest;
 
 import java.io.InputStream;
+import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import static org.testng.Assert.*;
@@ -28,13 +29,16 @@ public class Gradle1BuildTest {
 
     @Test
     public void verifyMainJS() throws Exception {
-        InputStream is = Gradle1BuildTest.class.getResourceAsStream("gradle1/build/web/main.js");
+        URL u = Gradle1BuildTest.class.getResource("gradle1/build/web/main.js");
+        assertNotNull(u, "main.js has been generated");
+        InputStream is = u.openStream();
         assertOrAssumeNotNull(is, "main.js has been generated");
         int len = is.available();
         byte[] arr = new byte[len];
         int read = is.read(arr);
         assertEquals(read, len, "Whole stream read");
         String text = new String(arr);
+        assertEquals(text.indexOf("Failed to obfuscate"), -1, "The code should be obfuscated " + u);
         assertClasspath(text, "lib/net.java.html.boot-[0-9\\.\\-SNAPSHOT]*.js", 3);
         assertClasspath(text, "lib/emul-[0-9\\.\\-SNAPSHOT]*-rt.js", 3);
     }

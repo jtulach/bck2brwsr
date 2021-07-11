@@ -26,15 +26,28 @@ import static org.testng.Assert.*;
 import org.testng.SkipException;
 import org.testng.annotations.Test;
 
-public class AheadOfTimeGradleTest {
+public class AheadOfTimeGradleIT {
 
     @Test
     public void verifyMainJS() throws Exception {
-        URL u = AheadOfTimeGradleTest.class.getResource("gradle1/build/web/main.js");
+        URL u = AheadOfTimeGradleIT.class.getResource("gradle1/build/web/main.js");
         assertOrAssumeNotNull(u, "main.js has been generated");
         String text = readStream(u);
+        assertObfuscated(text, u);
         assertClasspath(text, "lib/net.java.html.boot-[0-9\\.\\-SNAPSHOT]*.js", u);
         assertClasspath(text, "lib/emul.mini-[0-9\\.\\-SNAPSHOT]*.js", u);
+    }
+
+    private void assertObfuscated(String text, URL u) {
+        final int at = text.indexOf("Failed to obfuscate");
+        if (at == -1) {
+            return;
+        }
+        int end = text.indexOf("*", at);
+        if (end == -1) {
+            end = text.length();
+        }
+        fail("The code in " + u + " should be obfuscated " + text.substring(at, end));
     }
 
     private static String readStream(URL u) throws IOException {
@@ -49,7 +62,7 @@ public class AheadOfTimeGradleTest {
 
     @Test
     public void verifyPagesCopied() throws Exception {
-        URL u = AheadOfTimeGradleTest.class.getResource("gradle2/build/web/test.html");
+        URL u = AheadOfTimeGradleIT.class.getResource("gradle2/build/web/test.html");
         assertOrAssumeNotNull(u, "test.html has been generated");
         String html = readStream(u);
         assertNotEquals(html.indexOf("<h1>Testing file</h1>"), -1, "Content found:\n" + html);

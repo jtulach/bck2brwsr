@@ -17,14 +17,8 @@
  */
 
 buildscript {
-    repositories {
-        mavenLocal()
-    }
     dependencies {
-        classpath "org.ow2.asm:asm:5.0"
-        classpath files(      "../../../../../../../../target/classes/")
-        classpath fileTree(dir: '../../../../../../../../../vm/target/', include: ['*.jar'])
-        classpath fileTree(dir: '../../../../../../../../../aot/target/', include: ['*.jar'])
+        classpath fileTree(dir: "../../../../../../../../target/", include: ['bck2brwsr-maven-plugin*.jar'])
     }
 }
 
@@ -34,6 +28,11 @@ version '1.0-SNAPSHOT'
 
 apply plugin: 'java'
 apply plugin: 'bck2brwsr'
+
+compileJava {
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
+}
 
 mainClassName = 'Gradle2Check'
 

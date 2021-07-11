@@ -309,6 +309,7 @@ public final class Bck2BrwsrJars {
                 Class<?> bpClass = Class.forName("org.apidesign.bck2brwsr.aot.RetroLambda");
                 p = (BytecodeProcessor) bpClass.newInstance();
             } catch (Throwable t) {
+                t.printStackTrace();
                 p = null;
             }
             this.proc = p;

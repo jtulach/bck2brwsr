@@ -63,9 +63,54 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.4</version>
+                <configuration>
+                    <artifactSet>
+                        <includes>
+                            <include>org.apidesign.bck2brwsr:*</include>
+                            <include>com.google.*:*</include>
+                            <include>net.orfjackal.retrolambda:retrolambda</include>
+                            <include>args4j:args4j</include>
+                        </includes>
+                        <excludes>
+                            <exclude>org.apache.maven:*</exclude>
+                        </excludes>
+                    </artifactSet>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>integration-tests</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <includes>**/*IT.*</includes>
+                            <additionalClasspathElements>
+                                <classpath>${basedir}/src/test/resources/</classpath>
+                            </additionalClasspathElements>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
       </build>
-      
+
 <dependencies>
     <dependency>
         <groupId>org.apache.maven</groupId>
@@ -200,7 +245,7 @@
                         <executions>
                             <execution>
                                 <id>gradle1</id>
-                                <phase>generate-test-resources</phase>
+                                <phase>pre-integration-test</phase>
                                 <goals>
                                     <goal>invoke</goal>
                                 </goals>
@@ -210,7 +255,7 @@
                             </execution>
                             <execution>
                                 <id>gradle2</id>
-                                <phase>generate-test-resources</phase>
+                                <phase>pre-integration-test</phase>
                                 <goals>
                                     <goal>invoke</goal>
                                 </goals>
