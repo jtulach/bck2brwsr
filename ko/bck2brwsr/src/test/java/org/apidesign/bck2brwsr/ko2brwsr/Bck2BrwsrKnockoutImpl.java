@@ -38,6 +38,10 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = KnockoutTCK.class)
 public final class Bck2BrwsrKnockoutImpl extends KnockoutTCK {
+    public Bck2BrwsrKnockoutImpl() {
+        Bck2BrwsrJavaScriptImpl.init();
+    }
+
     static Class[] createClasses() {
         final Class<?>[] arr = testClasses();
         for (int i = 0; i < arr.length; i++) {
@@ -47,7 +51,7 @@ public final class Bck2BrwsrKnockoutImpl extends KnockoutTCK {
         }
         return arr;
     }
-    
+
     @Override
     public BrwsrCtx createContext() {
         KO4J ko = new KO4J(null);
@@ -58,11 +62,11 @@ public final class Bck2BrwsrKnockoutImpl extends KnockoutTCK {
     }
 
 
-    
+
     @Override
     public Object createJSON(Map<String, Object> values) {
         Object json = createJSON();
-        
+
         for (Map.Entry<String, Object> entry : values.entrySet()) {
             putValue(json, entry.getKey(), entry.getValue());
         }
@@ -79,13 +83,13 @@ public final class Bck2BrwsrKnockoutImpl extends KnockoutTCK {
     public Object executeScript(String script, Object[] arguments) {
         return execScript(script, arguments);
     }
-    
-    @JavaScriptBody(args = { "s", "args" }, body = 
+
+    @JavaScriptBody(args = { "s", "args" }, body =
         "var f = new Function(s); return f.apply(null, args);"
     )
     private static native Object execScript(String s, Object[] arguments);
-    
-    @JavaScriptBody(args = {  }, body = 
+
+    @JavaScriptBody(args = {  }, body =
           "var h;"
         + "if (!!window && !!window.location && !!window.location.href)\n"
         + "  h = window.location.href;\n"
@@ -104,7 +108,7 @@ public final class Bck2BrwsrKnockoutImpl extends KnockoutTCK {
         }
     }
 
-
+    @Override
     public String prepareWebResource(String content, String mimeType, String[] parameters) {
         try {
             final URL baseURL = new URL(findBaseURL());
@@ -113,8 +117,7 @@ public final class Bck2BrwsrKnockoutImpl extends KnockoutTCK {
             for (int i = 0; i < parameters.length; i++) {
                 sb.append("&param" + i).append("=").append(parameters[i]);
             }
-            String mangle = content.replace("\n", "%0a")
-                .replace("\"", "\\\"").replace(" ", "%20");
+            String mangle = content.replace("\n", "%0a").replace(" ", "%20");
             sb.append("&content=").append(mangle);
 
             URL query = new URL(baseURL, sb.toString());

@@ -19,23 +19,27 @@
 import net.java.html.js.JavaScriptBody;
 import java.util.concurrent.Callable;
 
-final class Gradle1Check implements Callable<Integer> {
-
-    @Override
-    public Integer call() throws Exception {
-        return compute();
-    }
+final class Gradle1Check {
 
     @JavaScriptBody(args = {}, body = "return 42;")
     private static int compute() {
         return -1;
     }
 
-    public static void main(String... args) throws Exception {
-        Gradle1Check g = new Gradle1Check();
+    public static String formulate() throws Exception {
+        Callable<Integer> g = new Callable<Integer>() {
+            public Integer call() throws Exception {
+                return compute();
+            }
+        };
         Integer value = g.call();
-        System.err.println("Gradle1Check value: " + value);
-        if (value == 42) {
+        return "Gradle1Check value: " + value;
+    }
+
+    public static void main(String... args) throws Exception {
+        String text = formulate();
+        System.err.println(text);
+        if (text.endsWith("42")) {
             System.exit(0);
         } else {
             System.err.println("Wrong value. Expecting 42.");

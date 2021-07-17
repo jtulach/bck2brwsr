@@ -61,7 +61,7 @@ public class JsArrayTest {
 
     @Factory
     public static Object[] create() {
-        Fn.activate(Scripts.createPresenter());
+        Fn.activate(Scripts.newPresenter().build());
         return VMTest.create(JsArrayTest.class);
     }
 

@@ -26,13 +26,13 @@ import java.util.TreeSet;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import net.orfjackal.retrolambda.asm.AnnotationVisitor;
-import net.orfjackal.retrolambda.asm.Attribute;
-import net.orfjackal.retrolambda.asm.ClassReader;
-import net.orfjackal.retrolambda.asm.ClassVisitor;
-import net.orfjackal.retrolambda.asm.FieldVisitor;
-import net.orfjackal.retrolambda.asm.MethodVisitor;
-import net.orfjackal.retrolambda.asm.Opcodes;
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.Attribute;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 
 final class UtilAsm {
     private UtilAsm() {

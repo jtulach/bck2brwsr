@@ -1626,9 +1626,9 @@ final class ByteCodeParser {
     } // end InnerClassData
     
     static class BootMethodData {
-        private final ClassData clazz;
+        final ClassData clazz;
         final int method;
-        private final int[] args;
+        final int[] args;
 
         private BootMethodData(ClassData clazz, int method, int[] args) {
             this.clazz = clazz;
@@ -1636,14 +1636,22 @@ final class ByteCodeParser {
             this.args = args;
         }
 
+        int getArguments() {
+            return args.length;
+        }
+
+        String getArgument(int index) {
+            return clazz.stringValue(args[index], false);
+        }
+
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
             sb.append(clazz.stringValue(method, true));
             sb.append('(');
-            for (int indx : args) {
+            for (int i = 0; i < getArguments(); i++) {
                 sb.append("\n  ");
-                sb.append(clazz.stringValue(indx, true));
+                sb.append(getArgument(i));
             }
             sb.append(')');
             return sb.toString();

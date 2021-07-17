@@ -41,7 +41,7 @@ import org.apidesign.vm4brwsr.ObfuscationLevel;
 
 abstract class AheadOfTimeBase<Art> {
     protected abstract File mainJavaScript();
-    protected abstract String classPathPrefix();
+    protected abstract File libraryPath(String fileNameJs);
     protected abstract ObfuscationLevel obfuscation();
     protected abstract String[] exports();
     protected abstract boolean ignoreBootClassPath();
@@ -83,10 +83,10 @@ abstract class AheadOfTimeBase<Art> {
             if ("bck2brwsr".equals(classifier(a))) {
                 continue;
             }
-            File aot = new File(mainJavaScript().getParent(), classPathPrefix());
-            aot.mkdirs();
-            File js = new File(aot, n.substring(0, n.length() - 4) + ".js");
+            final String libNameJs = n.substring(0, n.length() - 4) + ".js";
+            File js = libraryPath(libNameJs);
             try {
+                js.getParentFile().mkdirs();
                 aotLibrary(a, artifacts, js, loader, libsCp);
             } catch (IOException ex) {
                 throw raise("Can't compile " + aFile, ex);

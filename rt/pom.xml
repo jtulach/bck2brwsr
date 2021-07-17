@@ -42,11 +42,21 @@
   </modules>
   <profiles>
       <profile>
+          <id>vm8</id>
           <activation>
-              <jdk>1.8</jdk>
+              <jdk>[1.8,)</jdk>
           </activation>
           <modules>
               <module>vm8</module>
+          </modules>
+      </profile>
+      <profile>
+          <id>vm11</id>
+          <activation>
+              <jdk>[11,)</jdk>
+          </activation>
+          <modules>
+              <module>vm11</module>
           </modules>
       </profile>
   </profiles>

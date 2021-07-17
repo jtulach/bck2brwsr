@@ -19,6 +19,7 @@
 buildscript {
     repositories {
         mavenLocal()
+        mavenCentral()
     }
     if ("true".equals(skipGradle)) {
         println("Skipping bck2brwsr plugin...")
@@ -45,9 +46,13 @@ if ("true".equals(skipGradle)) {
     mainClassName = 'Gradle1Check'
 }
 
+compileJava {
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
+}
 
 dependencies {
     compileOnly "org.apidesign.bck2brwsr:ko-bck2brwsr:${prjVersion}:bck2brwsr"
-    compile "org.netbeans.html:net.java.html.boot:${njhVersion}"
+    implementation "org.netbeans.html:net.java.html.boot:${njhVersion}"
 }
 

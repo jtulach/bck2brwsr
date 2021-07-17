@@ -18,7 +18,6 @@
 package org.apidesign.bck2brwsr.ko2brwsr;
 
 import org.apidesign.bck2brwsr.vmtest.VMTest;
-import org.netbeans.html.json.tck.JavaScriptTCK;
 import org.netbeans.html.json.tck.KOTest;
 import org.testng.annotations.Factory;
 
@@ -26,26 +25,13 @@ import org.testng.annotations.Factory;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class Bck2BrwsrJavaScriptBodyTest extends JavaScriptTCK {
+public class Bck2BrwsrJavaScriptBodyTest {
     @Factory public static Object[] create() {
         return VMTest.newTests().
-            withClasses(tests()).
+            withClasses(Bck2BrwsrJavaScriptImpl.tests()).
             withClasses(Bck2BrwsrKnockoutImpl.createClasses()).
             withLaunchers("bck2brwsr").
             withTestAnnotation(KOTest.class).
             build();
-    }
-    
-    static Class[] tests() {
-        final Class<?>[] arr = testClasses();
-        for (int i = 0; i < arr.length; i++) {
-            if (arr[i].getSimpleName().startsWith("GC")) {
-                arr[i] = Object.class;
-            }
-            if (arr[i].getSimpleName().equals("ExposedPropertiesTest")) {
-                arr[i] = Object.class;
-            }
-        }
-        return arr;
     }
 }

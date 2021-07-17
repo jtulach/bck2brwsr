@@ -109,8 +109,4 @@ public class ResourcesWithExtensionsTest {
     ) throws Exception {
         code.assertExec(msg, clazz, method, ret, args);
     }
-    
-    public static String parseBase64Binary(String s) throws UnsupportedEncodingException {
-        return ResourcesTest.parseBase64Binary(s);
-    }
 }

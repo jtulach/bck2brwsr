@@ -38,10 +38,14 @@ abstract class ByteCodeToJavaScript {
     private final StringArray classRefs = new StringArray();
     private final NumberOperations numbers = new NumberOperations();
     private final Appendable output;
+    private final IndyHandler[] indyHandlers;
     private boolean callbacks;
 
     protected ByteCodeToJavaScript(final Appendable out) {
         this.output = out;
+        this.indyHandlers = new IndyHandler[] {
+            new MetafactoryHandler(),
+        };
     }
 
     /* Collects additional required resources.
@@ -98,6 +102,7 @@ abstract class ByteCodeToJavaScript {
     }
 
     protected String accessVirtualMethod(
+            ClassData caller,
             String object,
             String mangledName,
             String[] fieldInfoName,
@@ -253,13 +258,22 @@ abstract class ByteCodeToJavaScript {
         out.append("\n    function ").append(className).append("fillInstOf(x) {");
         String instOfName = "$instOf_" + className;
         out.append("\n        Object.defineProperty(x, '").append(instOfName).append("', { value : true });");
+        MethodData functionalInterfaceMethod = null;
         if (jc.isInterface()) {
+            int cnt = 0;
             for (MethodData m : jc.getMethods()) {
-                if ((m.getAccess() & ACC_ABSTRACT) == 0
-                    && (m.getAccess() & ACC_STATIC) == 0
-                    && (m.getAccess() & ACC_PRIVATE) == 0) {
-                    final String mn = findMethodName(m, new StringBuilder());
-                    out.append("\n        if (!x['").append(mn).append("']) Object.defineProperty(x, '").append(mn).append("', { value : c['").append(mn).append("']});");
+                if ((m.getAccess() & ACC_ABSTRACT) == 0) {
+                    if ((m.getAccess() & ACC_STATIC) == 0
+                        && (m.getAccess() & ACC_PRIVATE) == 0) {
+                        final String mn = findMethodName(m, new StringBuilder());
+                        out.append("\n        if (!x['").append(mn).append("']) Object.defineProperty(x, '").append(mn).append("', { value : c['").append(mn).append("']});");
+                    }
+                } else {
+                    functionalInterfaceMethod = m;
+                    cnt++;
+                }
+                if (cnt != 1) {
+                    functionalInterfaceMethod = null;
                 }
             }
         }
@@ -277,6 +291,14 @@ abstract class ByteCodeToJavaScript {
         out.append(accessClass("java_lang_Class")).append("(true);");
         out.append("\n    CLS.$class.jvmName = '").append(cn).append("';");
         out.append("\n    CLS.$class.superclass = sprcls;");
+        if (functionalInterfaceMethod != null) {
+            final String mn = findMethodName(functionalInterfaceMethod, new StringBuilder());
+            out.append("\n    CLS.$class.$lambda = function(arr, fn) {");
+            out.append("\n      var inst = new CLS();");
+            out.append("\n      inst['").append(mn).append("'] = function() { return fn(arr, arguments); };");
+            out.append("\n      return inst;");
+            out.append("\n    };");
+        }
         out.append("\n    CLS.$class.interfaces = function() { return [");
         {
             boolean first = true;
@@ -537,7 +559,7 @@ abstract class ByteCodeToJavaScript {
         return readShort(byteCodes, offsetInstruction + 1);
     }
 
-    private static void countArgs(String descriptor, char[] returnType, StringBuilder sig, StringBuilder cnt) {
+    static void countArgs(String descriptor, char[] returnType, StringBuilder sig, StringBuilder cnt) {
         int i = 0;
         Boolean count = null;
         boolean array = false;
@@ -1277,6 +1299,10 @@ abstract class ByteCodeToJavaScript {
                 return at;
             }
         }
+    }
+
+    IndyHandler[] getIndyHandlers() {
+        return indyHandlers;
     }
 
     private class GenerateAnno extends AnnotationParser {

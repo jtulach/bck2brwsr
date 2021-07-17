@@ -380,6 +380,7 @@ abstract class VM extends ByteCodeToJavaScript {
 
     @Override
     protected String accessVirtualMethod(
+            ClassData caller,
             String object,
             String mangledName,
             String[] fieldInfoName,
@@ -391,16 +392,23 @@ abstract class VM extends ByteCodeToJavaScript {
                 classDataCache.findMethod(referencedClass,
                                           fieldInfoName[1],
                                           fieldInfoName[2]);
-
-        if ((method != null)
-                && !isExternalClass(method.cls.getClassName())
-                && (((method.access & ByteCodeParser.ACC_FINAL) != 0)
-                        || ((referencedClass.getAccessFlags()
-                                 & ByteCodeParser.ACC_FINAL) != 0)
-                        || !isHierarchyExported(method))) {
-            return object + "." + mangledName + '(';
+        if (method != null) {
+            boolean methodIsPrivate = (method.access & ByteCodeParser.ACC_PRIVATE) != 0;
+            if (methodIsPrivate && referencedClass != caller) {
+                String mcn = mangleClassName(referencedClass.getClassName());
+                String nestedClass = accessClassFalse(mcn);
+                return nestedClass + "." + mangledName + ".call(" + object;
+            }
+            boolean methodIsFinal = (method.access & ByteCodeParser.ACC_FINAL) != 0;
+            boolean classIsFinal = (referencedClass.getAccessFlags() & ByteCodeParser.ACC_FINAL) != 0;
+            if (!isExternalClass(method.cls.getClassName()) && (
+                methodIsFinal ||
+                classIsFinal ||
+                !isHierarchyExported(method)
+            )) {
+                return object + "." + mangledName + '(';
+            }
         }
-
         return accessThroughInvoker(object, mangledName, params);
     }
 
@@ -771,7 +779,7 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "  };\n");
             out.append(
                   "  global.bck2brwsr.register = function(config, extension) {\n"
-                + "    if (!config || config['magic'] !== 'kafčo') {\n"
+                + "    if (!config || config['magic'] !== 'melta') {\n"
                 + "      console.log('Will not register: ' + extension);\n"
                 + "      return false;\n"
                 + "    }\n"
@@ -846,7 +854,7 @@ abstract class VM extends ByteCodeToJavaScript {
         protected void generatePrologue(Appendable out) throws IOException {
             out.append(
                   "bck2brwsr.register({\n"
-                + "  'magic' : 'kaf\\u010do'"
+                + "  'magic' : 'melta'"
             );
             if (classpath != null && classpath.toArray().length > 0) {
                 out.append(

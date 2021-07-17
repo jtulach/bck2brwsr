@@ -18,21 +18,44 @@
 package org.apidesign.vm4brwsr;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Base64;
+import javax.script.Invocable;
+import javax.script.ScriptEngine;
+import javax.script.ScriptException;
 
 public abstract class Base64Convert {
+    static void defineAtoB(ScriptEngine js) throws ScriptException, NoSuchMethodException {
+        Object thiz = js.eval("this");
+        Object register = js.eval("""
+            (function(global, convert) {
+              global.atob = function(s) {
+                return new String(convert.convert(s));
+              }
+            })"""
+        );
+        Base64Convert convert = Base64Convert.create();
+        ((Invocable) js).invokeMethod(register, "call", thiz, thiz, convert);
+    }
+
     private Base64Convert() {
     }
 
     public abstract Object convert(String s) throws UnsupportedEncodingException;
 
-    public static Base64Convert create() {
+    private static Base64Convert create() {
         return new Impl8();
     }
 
     private static final class Impl8 extends Base64Convert {
         @Override
         public Object convert(String s) throws UnsupportedEncodingException {
-            return org.apidesign.vm4brwsr.ResourcesTest.parseBase64Binary(s);
+            final byte[] arr = Base64.getDecoder().decode(s);
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < arr.length; i++) {
+                int ch = arr[i];
+                sb.append((char)ch);
+            }
+            return sb.toString();
         }
     }
 }
