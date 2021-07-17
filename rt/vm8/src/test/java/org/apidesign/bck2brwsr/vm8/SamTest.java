@@ -50,6 +50,77 @@ public class SamTest {
         return inc.andThen(inc).andThen(inc).andThen(ret).get();
     }
 
+    @Compare
+    public int primitiveToObjectInstanceLambda() {
+        class Cnt {
+            int sum = 0;
+
+            int increment() {
+                return sum++;
+            }
+
+            int value() {
+                return sum;
+            }
+        }
+        Cnt sum = new Cnt();
+        Functions.Compute<Integer> inc = sum::increment;
+        Functions.Compute<Integer> ret = sum::value;
+        return inc.andThen(inc).andThen(inc).andThen(ret).get();
+    }
+
+    public interface LongCompute {
+
+        public long get();
+
+        default LongCompute andThen(LongCompute next) {
+            return () -> {
+                this.get();
+                return next.get();
+            };
+        }
+    }
+
+    @Compare
+    public int primitiveInstanceLambda() {
+        class Cnt {
+            int sum = 0;
+
+            int increment() {
+                return sum++;
+            }
+
+            int value() {
+                return sum;
+            }
+        }
+        Cnt sum = new Cnt();
+        LongCompute inc = sum::increment;
+        LongCompute ret = sum::value;
+        long r = inc.andThen(inc).andThen(inc).andThen(ret).get();
+        return (int)r;
+    }
+
+    @Compare
+    public int objectToPrimitiveInstanceLambda() {
+        class Cnt {
+            int sum = 0;
+
+            Integer increment() {
+                return sum++;
+            }
+
+            Integer value() {
+                return sum;
+            }
+        }
+        Cnt sum = new Cnt();
+        LongCompute inc = sum::increment;
+        LongCompute ret = sum::value;
+        long r = inc.andThen(inc).andThen(inc).andThen(ret).get();
+        return (int)r;
+    }
+
     static abstract class VirtualLambdaSum {
         abstract Integer increment();
         abstract Integer value();

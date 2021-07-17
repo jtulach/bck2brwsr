@@ -97,7 +97,7 @@ final class MetafactoryHandler extends IndyHandler {
             String mangledMethod = ByteCodeToJavaScript.findMethodName(methodInfoName, cnt, returnType);
 
             String sep = "";
-            ctx.out.append("\n      return ");
+            ctx.out.append("\n      var ret = ");
             if (isVirtual) {
                 if (fixedArgsCount > 0) {
                     ctx.out.append("args1[0]");
@@ -131,6 +131,59 @@ final class MetafactoryHandler extends IndyHandler {
                 sep = ", ";
             }
             ctx.out.append(");");
+
+            String convertType;
+            String convertMethod;
+            switch (returnType[0]) {
+                case 'I':
+                    convertType = "java_lang_Integer";
+                    convertMethod = "valueOf__Ljava_lang_Integer_2I";
+                    break;
+                case 'J':
+                    convertType = "java_lang_Long";
+                    convertMethod = "valueOf__Ljava_lang_Long_2J";
+                    break;
+                case 'D':
+                    convertType = "java_lang_Double";
+                    convertMethod = "valueOf__Ljava_lang_Double_2D";
+                    break;
+                case 'F':
+                    convertType = "java_lang_Float";
+                    convertMethod = "valueOf__Ljava_lang_Float_2F";
+                    break;
+                case 'B':
+                    convertType = "java_lang_Byte";
+                    convertMethod = "valueOf__Ljava_lang_Byte_2B";
+                    break;
+                case 'Z':
+                    convertType = "java_lang_Boolean";
+                    convertMethod = "valueOf__Ljava_lang_Boolean_2Z";
+                    break;
+                case 'S':
+                    convertType = "java_lang_Short";
+                    convertMethod = "valueOf__Ljava_lang_Short_2S";
+                    break;
+                case 'C':
+                    convertType = "java_lang_Character";
+                    convertMethod = "valueOf__Ljava_lang_Character_2C";
+                    break;
+                case 'L':
+                case 'V':
+                    convertType = null;
+                    convertMethod = null;
+                    break;
+                default:
+                    throw new IllegalStateException("Unexpected return type: " + returnType[0]);
+            }
+
+            if (convertType != null) {
+                String jvmConvertType = convertType.replace('_', '/');
+                ctx.byteCodeToJavaScript.requireReference(jvmConvertType);
+                ctx.out.append("\n      ret = ").append(ctx.byteCodeToJavaScript.accessClassFalse(convertType));
+                ctx.out.append(".").append(convertMethod).append("(ret);");
+            }
+
+            ctx.out.append("\n      return ret;");
             ctx.out.append("\n   })");
         }
         return true;

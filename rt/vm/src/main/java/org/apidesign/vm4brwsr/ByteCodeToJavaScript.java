@@ -292,10 +292,22 @@ abstract class ByteCodeToJavaScript {
         out.append("\n    CLS.$class.jvmName = '").append(cn).append("';");
         out.append("\n    CLS.$class.superclass = sprcls;");
         if (functionalInterfaceMethod != null) {
-            final String mn = findMethodName(functionalInterfaceMethod, new StringBuilder());
+            char[] returnType = { 'V' };
+            final String mn = findMethodName(functionalInterfaceMethod, new StringBuilder(), returnType);
             out.append("\n    CLS.$class.$lambda = function(arr, fn) {");
             out.append("\n      var inst = new CLS();");
-            out.append("\n      inst['").append(mn).append("'] = function() { return fn(arr, arguments); };");
+            out.append("\n      inst['").append(mn).append("'] = function() {");
+            out.append("\n          var ret = fn(arr, arguments);");
+            switch (returnType[0]) {
+                case 'V':
+                    break;
+                case 'L':
+                    out.append("\n      return ret;");
+                    break;
+                default:
+                    out.append("\n      return ret.valueOf();");
+            }
+            out.append("\n      };");
             out.append("\n      return inst;");
             out.append("\n    };");
         }
@@ -683,6 +695,10 @@ abstract class ByteCodeToJavaScript {
     }
 
     private static String findMethodName(MethodData m, StringBuilder cnt) {
+        return findMethodName(m, cnt, new char[1]);
+    }
+
+    private static String findMethodName(MethodData m, StringBuilder cnt, char[] retType) {
         StringBuilder name = new StringBuilder();
         if ("<init>".equals(m.getName())) { // NOI18N
             name.append("cons"); // NOI18N
@@ -691,8 +707,7 @@ abstract class ByteCodeToJavaScript {
         } else {
             name.append(mangleMethodName(m.getName()));
         }
-
-        countArgs(m.getInternalSig(), new char[1], name, cnt);
+        countArgs(m.getInternalSig(), retType, name, cnt);
         return name.toString();
     }
 
