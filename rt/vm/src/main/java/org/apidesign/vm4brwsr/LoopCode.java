@@ -1014,7 +1014,7 @@ class LoopCode implements Runnable {
     private void handleIndy(int indx, String[] methodAndType, String[] mi, ByteCodeParser.BootMethodData bm, StackMapper mapper) throws IOException {
         for (IndyHandler h : byteCodeToJavaScript.getIndyHandlers()) {
             if (h.factoryClazz.equals(mi[0]) && h.factoryMethod.equals(mi[1])) {
-                IndyHandler.Ctx ctx = new IndyHandler.Ctx(methodAndType, bm);
+                IndyHandler.Ctx ctx = new IndyHandler.Ctx(out, mapper, byteCodeToJavaScript, methodAndType, bm);
                 if (h.handle(ctx)) {
                     return;
                 }

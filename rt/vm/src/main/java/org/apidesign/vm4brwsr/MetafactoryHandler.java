@@ -17,17 +17,82 @@
  */
 package org.apidesign.vm4brwsr;
 
+import java.io.IOException;
+
 final class MetafactoryHandler extends IndyHandler {
     MetafactoryHandler() {
         super("java/lang/invoke/LambdaMetafactory", "metafactory");
     }
 
     @Override
-    protected boolean handle(Ctx ctx) {
-        for (int i = 0; i < ctx.bm.getArguments(); i++) {
-            System.err.println("  arg#" + i + " = " + ctx.bm.getArgument(i));
+    protected boolean handle(Ctx ctx) throws IOException {
+        final int fixedArgsCount;
+        {
+            final String sig = ctx.mt[1];
+            int typeEnd = sig.lastIndexOf(')');
+            String typeSig = sig.substring(typeEnd + 1);
+            if (!typeSig.startsWith("L") || !typeSig.endsWith(";")) {
+                return false;
+            }
+            final String type = typeSig.substring(1, typeSig.length() - 1);
+            ctx.byteCodeToJavaScript.requireReference(type);
+            final String mangledType = ByteCodeToJavaScript.mangleClassName(type);
+            String interfaceToCreate = ctx.byteCodeToJavaScript.accessClassFalse(mangledType);
+
+            StringBuilder sigB = new StringBuilder();
+            StringBuilder cnt = new StringBuilder();
+            char[] returnType = { 'V' };
+            boolean isStatic = true;
+            ByteCodeToJavaScript.countArgs(sig, returnType, sigB, cnt);
+
+            fixedArgsCount = isStatic ? cnt.length() : cnt.length() + 1;
+            final CharSequence[] vars = new CharSequence[fixedArgsCount];
+            for (int j = fixedArgsCount - 1; j >= 0; --j) {
+                vars[j] = ctx.stackMapper.popValue();
+            }
+
+            assert returnType[0] == 'L';
+
+            ctx.stackMapper.flush(ctx.out);
+
+            final Variable samVar = ctx.stackMapper.pushA();
+            ctx.out.append("var ").append(samVar).append(" = ").append(interfaceToCreate).append(".constructor.$class.functional([");
+
+            String sep = "";
+            for (int j = 0; j < fixedArgsCount; j++) {
+                ctx.out.append(sep).append(vars[j]);
+                sep = ", ";
+            }
+
+            ctx.out.append("], function(args1, args2) {\n");
         }
-        return false;
+        {
+            ByteCodeParser.CPX2 methodHandle = ctx.bm.clazz.getCpoolEntry(ctx.bm.args[1]);
+
+            String[] methodInfoName = ctx.bm.clazz.getFieldInfoName(methodHandle.cpx2);
+            ctx.byteCodeToJavaScript.requireReference(methodInfoName[0]);
+            final String mangledType = ByteCodeToJavaScript.mangleClassName(methodInfoName[0]);
+            StringBuilder cnt = new StringBuilder();
+            char[] returnType = { 'V' };
+            String mangledMethod = ByteCodeToJavaScript.findMethodName(methodInfoName, cnt, returnType);
+
+            ctx.out.append("\n      return ");
+            ctx.out.append(ctx.byteCodeToJavaScript.accessClassFalse(mangledType));
+            ctx.out.append(".").append(mangledMethod).append('(');
+            String sep = "";
+            for (int i = 0; i < cnt.length(); i++) {
+                ctx.out.append(sep);
+                if (i < fixedArgsCount) {
+                    ctx.out.append("args1[" + i + "]");
+                } else {
+                    ctx.out.append("args2[" + (i - fixedArgsCount) + "]");
+                }
+                sep = ", ";
+            }
+            ctx.out.append(");");
+            ctx.out.append("\n   })");
+        }
+        return true;
     }
 
 }

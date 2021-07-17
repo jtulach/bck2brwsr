@@ -17,6 +17,8 @@
  */
 package org.apidesign.vm4brwsr;
 
+import java.io.IOException;
+
 abstract class IndyHandler {
     final String factoryClazz;
     final String factoryMethod;
@@ -26,13 +28,19 @@ abstract class IndyHandler {
         this.factoryMethod = method;
     }
 
-    protected abstract boolean handle(Ctx ctx);
+    protected abstract boolean handle(Ctx ctx) throws IOException ;
 
     static class Ctx {
+        final Appendable out;
+        final StackMapper stackMapper;
+        final ByteCodeToJavaScript byteCodeToJavaScript;
         final ByteCodeParser.BootMethodData bm;
         final String[] mt;
 
-        Ctx(String[] methodAndType, ByteCodeParser.BootMethodData bm) {
+        Ctx(Appendable out, StackMapper m, ByteCodeToJavaScript bc, String[] methodAndType, ByteCodeParser.BootMethodData bm) {
+            this.out = out;
+            this.stackMapper = m;
+            this.byteCodeToJavaScript = bc;
             this.mt = methodAndType;
             this.bm = bm;
         }

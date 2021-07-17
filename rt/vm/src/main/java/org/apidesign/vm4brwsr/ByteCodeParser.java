@@ -1626,9 +1626,9 @@ final class ByteCodeParser {
     } // end InnerClassData
     
     static class BootMethodData {
-        private final ClassData clazz;
+        final ClassData clazz;
         final int method;
-        private final int[] args;
+        final int[] args;
 
         private BootMethodData(ClassData clazz, int method, int[] args) {
             this.clazz = clazz;
