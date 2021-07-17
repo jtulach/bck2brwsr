@@ -293,7 +293,7 @@ abstract class ByteCodeToJavaScript {
         out.append("\n    CLS.$class.superclass = sprcls;");
         if (functionalInterfaceMethod != null) {
             final String mn = findMethodName(functionalInterfaceMethod, new StringBuilder());
-            out.append("\n    CLS.$class.functional = function(arr, fn) {");
+            out.append("\n    CLS.$class.$lambda = function(arr, fn) {");
             out.append("\n      var inst = new CLS();");
             out.append("\n      inst['").append(mn).append("'] = function() { return fn(arr, arguments); };");
             out.append("\n      return inst;");

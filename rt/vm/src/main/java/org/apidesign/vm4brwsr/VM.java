@@ -779,7 +779,7 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "  };\n");
             out.append(
                   "  global.bck2brwsr.register = function(config, extension) {\n"
-                + "    if (!config || config['magic'] !== 'kafčo') {\n"
+                + "    if (!config || config['magic'] !== 'melta') {\n"
                 + "      console.log('Will not register: ' + extension);\n"
                 + "      return false;\n"
                 + "    }\n"
@@ -854,7 +854,7 @@ abstract class VM extends ByteCodeToJavaScript {
         protected void generatePrologue(Appendable out) throws IOException {
             out.append(
                   "bck2brwsr.register({\n"
-                + "  'magic' : 'kaf\\u010do'"
+                + "  'magic' : 'melta'"
             );
             if (classpath != null && classpath.toArray().length > 0) {
                 out.append(

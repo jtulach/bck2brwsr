@@ -78,7 +78,7 @@ final class MetafactoryHandler extends IndyHandler {
             ctx.stackMapper.flush(ctx.out);
 
             final Variable samVar = ctx.stackMapper.pushA();
-            ctx.out.append("var ").append(samVar).append(" = ").append(interfaceToCreate).append(".constructor.$class.functional([");
+            ctx.out.append("var ").append(samVar).append(" = ").append(interfaceToCreate).append(".constructor.$class.$lambda([");
 
             String sep = "";
             for (int j = 0; j < fixedArgsCount; j++) {

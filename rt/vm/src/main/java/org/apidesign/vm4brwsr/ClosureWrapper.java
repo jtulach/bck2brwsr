@@ -170,6 +170,7 @@ final class ClosureWrapper extends CommandLineRunner {
         "bck2BrwsrThrwrbl",
         "register",
         "$class",
+        "$lambda",
         "anno",
         "array",
         "access",

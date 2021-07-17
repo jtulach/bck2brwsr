@@ -65,6 +65,7 @@
             <classifier>bck2brwsr</classifier>
             <scope>provided</scope>
         </dependency>
+        <!-- disabled due to change of format to melta
         <dependency>
             <groupId>com.dukescript.libraries</groupId>
             <artifactId>net.java.html.lib.jquery</artifactId>
@@ -72,6 +73,7 @@
             <classifier>bck2brwsr</classifier>
             <scope>provided</scope>
         </dependency>
+        -->
         <dependency>
             <groupId>org.netbeans.html</groupId>
             <artifactId>net.java.html.boot.script</artifactId>
@@ -124,9 +126,11 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <!-- disabled due to change of format to melta
                     <systemProperties>
                         <vmtest.precompiled>.*</vmtest.precompiled>
                     </systemProperties>
+                    -->
                 </configuration>
             </plugin>
         </plugins>
