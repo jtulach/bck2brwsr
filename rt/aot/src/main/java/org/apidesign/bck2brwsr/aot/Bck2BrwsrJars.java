@@ -296,7 +296,6 @@ public final class Bck2BrwsrJars {
     static class EmulationResources implements Bck2Brwsr.Resources {
         private final List<String> classes;
         private final Map<String,byte[]> converted = new HashMap<>();
-        private final BytecodeProcessor proc;
         private final ClassLoader cp;
         private final boolean ignoreBootClassPath;
 
@@ -304,15 +303,6 @@ public final class Bck2BrwsrJars {
             this.ignoreBootClassPath = ignoreBootClassPath;
             this.classes = classes;
             this.cp = cp != null ? cp : Bck2BrwsrJars.class.getClassLoader();
-            BytecodeProcessor p;
-            try {
-                Class<?> bpClass = Class.forName("org.apidesign.bck2brwsr.aot.RetroLambda");
-                p = (BytecodeProcessor) bpClass.newInstance();
-            } catch (Throwable t) {
-                t.printStackTrace();
-                p = null;
-            }
-            this.proc = p;
         }
 
         protected final InputStream getConverted(String name) throws IOException {
@@ -366,28 +356,6 @@ public final class Bck2BrwsrJars {
         }
 
         final void addClassResource(String n) throws IOException {
-            if (proc != null) {
-                try (InputStream is = this.get(n)) {
-                    Map<String, byte[]> conv = proc.process(n, readFrom(is), new NoConvRes());
-                    if (conv != null) {
-                        boolean found = false;
-                        for (Map.Entry<String, byte[]> entrySet : conv.entrySet()) {
-                            String res = entrySet.getKey();
-                            byte[] bytes = entrySet.getValue();
-                            if (res.equals(n)) {
-                                found = true;
-                            }
-                            assert res.endsWith(".class") : "Wrong resource: " + res;
-                            converted.put(res, bytes);
-                            classes.add(res.substring(0, res.length() - 6));
-                        }
-                        if (!found) {
-                            throw new IOException("Cannot find " + n + " among " + conv);
-                        }
-                        return;
-                    }
-                }
-            }
             classes.add(n.substring(0, n.length() - 6));
         }
     }

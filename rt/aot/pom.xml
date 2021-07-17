@@ -47,12 +47,6 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>net.orfjackal.retrolambda</groupId>
-            <artifactId>retrolambda</artifactId>
-            <version>2.5.7</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
             <scope>test</scope>

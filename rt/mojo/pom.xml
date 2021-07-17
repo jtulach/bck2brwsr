@@ -72,7 +72,6 @@
                         <includes>
                             <include>org.apidesign.bck2brwsr:*</include>
                             <include>com.google.*:*</include>
-                            <include>net.orfjackal.retrolambda:retrolambda</include>
                             <include>args4j:args4j</include>
                         </includes>
                         <excludes>
@@ -206,6 +205,12 @@
         <groupId>org.codehaus.groovy</groupId>
         <artifactId>groovy</artifactId>
         <version>1.8.3</version>
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm</artifactId>
+        <version>9.0</version>
         <scope>provided</scope>
     </dependency>
 </dependencies>
