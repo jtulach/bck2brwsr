@@ -27,6 +27,29 @@ final class MetafactoryHandler extends IndyHandler {
     @Override
     protected boolean handle(Ctx ctx) throws IOException {
         final int fixedArgsCount;
+        ByteCodeParser.CPX2 methodHandle = ctx.bm.clazz.getCpoolEntry(ctx.bm.args[1]);
+        boolean isStatic;
+        boolean isVirtual = false;
+        switch (methodHandle.cpx1) {
+            case 6: /* REF_invokeStatic */
+                isStatic = true;
+                break;
+            case 5: /* REF_invokeVirtual */
+            case 9: /* REF_invokeInterface */
+                isVirtual = true;
+                // fallthru
+            case 7: /* REF_invokeSpecial */
+            case 8: /* REF_newInvokeSpecial */
+                isStatic = false;
+                break;
+            case 1: /* REF_getField */
+            case 2: /* REF_getStatic */
+            case 3: /* REF_putField */
+            case 4: /* REF_putStatic */
+            default:
+                // unsupported by this indy handler
+                return false;
+        }
         {
             final String sig = ctx.mt[1];
             int typeEnd = sig.lastIndexOf(')');
@@ -42,10 +65,9 @@ final class MetafactoryHandler extends IndyHandler {
             StringBuilder sigB = new StringBuilder();
             StringBuilder cnt = new StringBuilder();
             char[] returnType = { 'V' };
-            boolean isStatic = true;
             ByteCodeToJavaScript.countArgs(sig, returnType, sigB, cnt);
 
-            fixedArgsCount = isStatic ? cnt.length() : cnt.length() + 1;
+            fixedArgsCount = cnt.length();
             final CharSequence[] vars = new CharSequence[fixedArgsCount];
             for (int j = fixedArgsCount - 1; j >= 0; --j) {
                 vars[j] = ctx.stackMapper.popValue();
@@ -67,8 +89,6 @@ final class MetafactoryHandler extends IndyHandler {
             ctx.out.append("], function(args1, args2) {\n");
         }
         {
-            ByteCodeParser.CPX2 methodHandle = ctx.bm.clazz.getCpoolEntry(ctx.bm.args[1]);
-
             String[] methodInfoName = ctx.bm.clazz.getFieldInfoName(methodHandle.cpx2);
             ctx.byteCodeToJavaScript.requireReference(methodInfoName[0]);
             final String mangledType = ByteCodeToJavaScript.mangleClassName(methodInfoName[0]);
@@ -76,16 +96,37 @@ final class MetafactoryHandler extends IndyHandler {
             char[] returnType = { 'V' };
             String mangledMethod = ByteCodeToJavaScript.findMethodName(methodInfoName, cnt, returnType);
 
-            ctx.out.append("\n      return ");
-            ctx.out.append(ctx.byteCodeToJavaScript.accessClassFalse(mangledType));
-            ctx.out.append(".").append(mangledMethod).append('(');
             String sep = "";
-            for (int i = 0; i < cnt.length(); i++) {
-                ctx.out.append(sep);
-                if (i < fixedArgsCount) {
-                    ctx.out.append("args1[" + i + "]");
+            ctx.out.append("\n      return ");
+            if (isVirtual) {
+                if (fixedArgsCount > 0) {
+                    ctx.out.append("args1[0]");
                 } else {
-                    ctx.out.append("args2[" + (i - fixedArgsCount) + "]");
+                    ctx.out.append("args2[0]");
+                }
+                ctx.out.append(".").append(mangledMethod).append('(');
+            } else {
+                ctx.out.append(ctx.byteCodeToJavaScript.accessClassFalse(mangledType));
+                ctx.out.append(".").append(mangledMethod);
+                if (!isStatic) {
+                    ctx.out.append(".call(");
+                    if (fixedArgsCount > 0) {
+                        ctx.out.append("args1[0]");
+                    } else {
+                        ctx.out.append("args2[0]");
+                    }
+                    sep = ", ";
+                } else {
+                    ctx.out.append('(');
+                }
+            }
+            for (int i = 0; i < cnt.length(); i++) {
+                int index = isStatic ? i : i + 1;
+                ctx.out.append(sep);
+                if (index < fixedArgsCount) {
+                    ctx.out.append("args1[" + index + "]");
+                } else {
+                    ctx.out.append("args2[" + (index - fixedArgsCount) + "]");
                 }
                 sep = ", ";
             }

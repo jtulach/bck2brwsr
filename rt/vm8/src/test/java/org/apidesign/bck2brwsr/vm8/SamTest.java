@@ -22,14 +22,60 @@ import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
 
 public class SamTest {
-    
+
     @Compare
     public int staticLambdas() {
         int[] sum = {0};
         Functions.Compute<Integer> inc = () -> sum[0]++;
         Functions.Compute<Integer> ret = () -> sum[0];
-        inc.get();
-        return ret.get();
+        return inc.andThen(inc).andThen(inc).andThen(ret).get();
+    }
+
+    @Compare
+    public int instanceLambda() {
+        class Cnt {
+            int sum = 0;
+
+            Integer increment() {
+                return sum++;
+            }
+
+            Integer value() {
+                return sum;
+            }
+        }
+        Cnt sum = new Cnt();
+        Functions.Compute<Integer> inc = sum::increment;
+        Functions.Compute<Integer> ret = sum::value;
+        return inc.andThen(inc).andThen(inc).andThen(ret).get();
+    }
+
+    static abstract class VirtualLambdaSum {
+        abstract Integer increment();
+        abstract Integer value();
+
+        static VirtualLambdaSum create() {
+            class Cnt extends VirtualLambdaSum {
+                int sum = 0;
+
+                Integer increment() {
+                    return sum++;
+                }
+
+                Integer value() {
+                    return sum;
+                }
+            }
+            return new Cnt();
+        }
+    }
+
+    @Compare
+    public int virtualLambda() {
+        VirtualLambdaSum sum = VirtualLambdaSum.create();
+        Functions.Compute<Integer> inc = sum::increment;
+        Functions.Compute<Integer> ret = sum::value;
+        return inc.andThen(inc).andThen(ret).get();
     }
 
     @Factory public static Object[] create() {
