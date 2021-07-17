@@ -30,6 +30,7 @@ final class MetafactoryHandler extends IndyHandler {
         ByteCodeParser.CPX2 methodHandle = ctx.bm.clazz.getCpoolEntry(ctx.bm.args[1]);
         boolean isStatic;
         boolean isVirtual = false;
+        boolean isConstructor = false;
         switch (methodHandle.cpx1) {
             case 6: /* REF_invokeStatic */
                 isStatic = true;
@@ -39,8 +40,11 @@ final class MetafactoryHandler extends IndyHandler {
                 isVirtual = true;
                 // fallthru
             case 7: /* REF_invokeSpecial */
-            case 8: /* REF_newInvokeSpecial */
                 isStatic = false;
+                break;
+            case 8: /* REF_newInvokeSpecial */
+                isStatic = true;
+                isConstructor = true;
                 break;
             case 1: /* REF_getField */
             case 2: /* REF_getStatic */
@@ -97,6 +101,7 @@ final class MetafactoryHandler extends IndyHandler {
             String mangledMethod = ByteCodeToJavaScript.findMethodName(methodInfoName, cnt, returnType);
 
             String sep = "";
+            ctx.out.append("\n      var type = ").append(ctx.byteCodeToJavaScript.accessClassFalse(mangledType)).append(";");
             ctx.out.append("\n      var ret = ");
             if (isVirtual) {
                 if (fixedArgsCount > 0) {
@@ -106,18 +111,23 @@ final class MetafactoryHandler extends IndyHandler {
                 }
                 ctx.out.append(".").append(mangledMethod).append('(');
             } else {
-                ctx.out.append(ctx.byteCodeToJavaScript.accessClassFalse(mangledType));
-                ctx.out.append(".").append(mangledMethod);
-                if (!isStatic) {
-                    ctx.out.append(".call(");
-                    if (fixedArgsCount > 0) {
-                        ctx.out.append("args1[0]");
-                    } else {
-                        ctx.out.append("args2[0]");
-                    }
+                if (isConstructor) {
+                    ctx.out.append("new ").append(ctx.byteCodeToJavaScript.accessClass(mangledType)).append(";");
+                    ctx.out.append("\n      type.constructor['").append(mangledMethod).append("'].call(ret");
                     sep = ", ";
                 } else {
-                    ctx.out.append('(');
+                    ctx.out.append("type.").append(mangledMethod);
+                    if (!isStatic) {
+                        ctx.out.append(".call(");
+                        if (fixedArgsCount > 0) {
+                            ctx.out.append("args1[0]");
+                        } else {
+                            ctx.out.append("args2[0]");
+                        }
+                        sep = ", ";
+                    } else {
+                        ctx.out.append('(');
+                    }
                 }
             }
             for (int i = 0; i < cnt.length(); i++) {

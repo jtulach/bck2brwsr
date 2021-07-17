@@ -124,6 +124,23 @@ public class LambdasTest extends LambdasSuper {
     }
 
     @Compare
+    public String callConstructorWithArgs() throws Exception {
+        CallWithArgs<String> ref = MyList::new;
+        return ref.call("Hello", "World").toString();
+    }
+
+    interface CallWithArgs<T> {
+        List<T> call(T e1, T e2);
+    }
+
+    static class MyList extends ArrayList<String> {
+        public MyList(String e1, String e2) {
+            add(e1);
+            add(e2);
+        }
+    }
+
+    @Compare
     public String superMethodOverridenByThis() throws Exception {
         Callable<String> ref = super::inheritedMethod;
         return ref.call();
@@ -163,7 +180,7 @@ public class LambdasTest extends LambdasSuper {
     private String unrelatedPrivateMethod() {
         return "foo";
     }
-    
+
     @Factory public static Object[] create() {
         return VMTest.create(LambdasTest.class);
     }
