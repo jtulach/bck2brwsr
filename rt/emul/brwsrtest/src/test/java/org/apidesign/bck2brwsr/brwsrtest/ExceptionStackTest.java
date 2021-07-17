@@ -19,6 +19,7 @@ package org.apidesign.bck2brwsr.brwsrtest;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import net.java.html.js.JavaScriptBody;
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
@@ -29,7 +30,7 @@ import org.testng.annotations.Factory;
  */
 public class ExceptionStackTest {
     @Compare
-    public boolean containsClassName() {
+    public String verifyFormatOfStackTrace() {
         IllegalStateException ex;
         try {
             throw new IllegalStateException();
@@ -42,7 +43,19 @@ public class ExceptionStackTest {
         pw.close();
 
         String trace = sw.toString();
-        return trace.contains("ExceptionStackTest") || trace.contains("containsClassName");
+        if (userAgent() != null && userAgent().contains("Safari")) {
+            return "Skipping test on safari";
+        }
+        if (trace.contains("ExceptionStackTest") && trace.contains("verifyFormatOfStackTrace")) {
+            return "Stack trace includes ExceptionStackTest and verifyFormatOfStackTrace";
+        }
+        return trace;
+    }
+    
+    @JavaScriptBody(args = {}, body = "return navigator.userAgent;")
+    private static String userAgent() {
+        String os = System.getProperty("os.name");
+        return os == null || os.contains("Mac") ? "Safari" : "any";
     }
 
     @Factory public static Object[] create() {
