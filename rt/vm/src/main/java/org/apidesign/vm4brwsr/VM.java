@@ -900,7 +900,7 @@ abstract class VM extends ByteCodeToJavaScript {
         protected void generateEpilogue(Appendable out) throws IOException {
             out.append("});");
             if (exportedCount == 0) {
-                throw new IOException("Creating library without any exported symbols is useless!");
+                System.err.println("Creating library without any exported symbols is (most often) useless!");
             }
         }
 
