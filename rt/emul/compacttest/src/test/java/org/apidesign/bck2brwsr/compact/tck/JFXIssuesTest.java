@@ -26,16 +26,16 @@ public class JFXIssuesTest {
     private abstract class Application {
         public abstract int getID();
     }
-    
+
     private class MyApplication extends Application {
 
         @Override
         public int getID() {
             return 1;
         }
-        
-    } 
-    
+
+    }
+
     @Compare public boolean isClassAssignable() {
         return Application.class.isAssignableFrom(MyApplication.class);
     }
@@ -54,36 +54,82 @@ public class JFXIssuesTest {
 
         return l1 == l2;
     }
-    
+
     @Compare public boolean roundOnDouble() {
         long l1 = Math.round(System.currentTimeMillis() / 1.1);
         long l2 = l1 + 0;
-        
+
         return l1 == l2;
     }
 
     private static final long val = 1238078409318L;
-    
+
     @Compare public int valueConvertedToString() {
         long[] arr = { val };
         return dumpValue(arr);
     }
-    
+
     int dumpValue(long[] val) {
         return (int) val[0]++;
     }
-    
-    
+
+
     @Compare public boolean roundOnFloat() {
         final float f = System.currentTimeMillis() / 1.1f;
         int l1 = Math.round(f);
         int l2 = l1 + 0;
-        
+
         assert l1 == l2 : "Round " + l1 + " == " + l2;
-        
+
         return l1 == l2;
     }
-    
+
+    abstract class EventHandler<T> {
+        public static final int RIGHT_TO_LEFT = 0;
+
+        abstract void handle(KeyEvent ev);
+
+        int getEffectiveNodeOrientation() {
+            return RIGHT_TO_LEFT;
+        }
+
+        void processRightKey(KeyEvent ev) {
+        }
+
+        void processLeftKey(KeyEvent ev) {
+        }
+    }
+
+    static class KeyEvent {
+        public static final int LEFT = 0;
+
+        int getCode() {
+            return LEFT;
+        }
+    }
+
+    private void setOnKeyPressed(EventHandler<KeyEvent> e) {
+    }
+
+    @Compare
+    public String missingComma() {
+        setOnKeyPressed(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent ke) {
+                switch (ke.getCode()) {
+                    case KeyEvent.LEFT:
+                        if (getEffectiveNodeOrientation() == RIGHT_TO_LEFT) {
+                            processRightKey(ke);
+                        } else {
+                            processLeftKey(ke);
+                        }
+                        break;
+                }
+            }
+        });
+        return "CompiledOK";
+    }
+
     @Factory public static Object[] create() {
         return VMTest.create(JFXIssuesTest.class);
     }
