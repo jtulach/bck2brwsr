@@ -32,6 +32,11 @@ public class NestMatesTest {
         return NestMates.protectedMessage();
     }
 
+    @Compare
+    public String concatenateBothMethods() throws Exception {
+        return NestMates.privateMessage() + NestMates.protectedMessage();
+    }
+
     @Factory
     public static Object[] create() {
         return VMTest.create(NestMatesTest.class);

@@ -35,6 +35,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <target>11</target>
+                    <testTarget>11</testTarget>
                 </configuration>
             </plugin>
             <plugin>
