@@ -45,7 +45,7 @@ final class StringConcatHandler extends IndyHandler {
         ctx.stackMapper.flush(ctx.out);
 
         final Variable stringVar = ctx.stackMapper.pushA();
-        ctx.out.append("var ").append(stringVar).append(" = ");
+        ctx.out.append("\nvar ").append(stringVar).append(" = ");
 
         StringBuilder sep = new StringBuilder();
         sep.append("'");
@@ -60,11 +60,28 @@ final class StringConcatHandler extends IndyHandler {
                     break;
                 case '\2':
                     throw new IllegalStateException("#2 stackvalue not supported yet");
+                case '\n':
+                    sep.append("\\n");
+                    break;
+                case '\r':
+                    sep.append("\\r");
+                    break;
+                case '\t':
+                    sep.append("\\t");
+                    break;
+                case '\'':
+                    sep.append("\\'");
+                    break;
                 default:
-                    sep.append(ch);
+                    if (ch < 32) {
+                        String four = "0000" + Integer.toHexString(ch);
+                        sep.append("\\u").append(four.substring(four.length() - 4));
+                    } else {
+                        sep.append(ch);
+                    }
             }
         }
-        ctx.out.append(sep).append("'");
+        ctx.out.append(sep).append("';");
         return true;
     }
 }
