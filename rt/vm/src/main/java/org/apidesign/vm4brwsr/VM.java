@@ -899,9 +899,6 @@ abstract class VM extends ByteCodeToJavaScript {
         @Override
         protected void generateEpilogue(Appendable out) throws IOException {
             out.append("});");
-            if (exportedCount == 0) {
-                System.err.println("Creating library without any exported symbols is (most often) useless!");
-            }
         }
 
         @Override
