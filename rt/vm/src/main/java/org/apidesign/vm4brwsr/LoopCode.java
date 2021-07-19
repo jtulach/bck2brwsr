@@ -1050,12 +1050,12 @@ class LoopCode implements Runnable {
         }
 
         boolean callbacksFinished = beginCall(mi, vars, false);
-        out.append(byteCodeToJavaScript.accessVirtualMethod(this.jc, vars[0].toString(), mn, mi, numArguments));
-        String sep = "";
+        String[] sep = { "" };
+        out.append(byteCodeToJavaScript.accessVirtualMethod(this.jc, vars[0].toString(), mn, mi, numArguments, sep));
         for (int j = 1; j < numArguments; ++j) {
-            out.append(sep);
+            out.append(sep[0]);
             out.append(vars[j]);
-            sep = ", ";
+            sep[0] = ", ";
         }
         out.append(");");
         i += 2;

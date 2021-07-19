@@ -107,7 +107,8 @@ abstract class ByteCodeToJavaScript {
             String object,
             String mangledName,
             String[] fieldInfoName,
-            int params
+            int params,
+            String[] sep
     ) throws IOException {
         return object + "." + mangledName + '(';
     }

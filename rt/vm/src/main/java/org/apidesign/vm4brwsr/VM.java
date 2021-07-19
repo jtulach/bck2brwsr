@@ -384,7 +384,8 @@ abstract class VM extends ByteCodeToJavaScript {
             String object,
             String mangledName,
             String[] fieldInfoName,
-            int params
+            int params,
+            String[] sep
     ) throws IOException {
         final ClassData referencedClass =
                 classDataCache.getClassData(fieldInfoName[0]);
@@ -397,6 +398,7 @@ abstract class VM extends ByteCodeToJavaScript {
             if (methodIsPrivate && referencedClass != caller) {
                 String mcn = mangleClassName(referencedClass.getClassName());
                 String nestedClass = accessClassFalse(mcn);
+                sep[0] = ", ";
                 return nestedClass + "." + mangledName + ".call(" + object;
             }
             boolean methodIsFinal = (method.access & ByteCodeParser.ACC_FINAL) != 0;
