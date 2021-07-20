@@ -84,6 +84,12 @@ public class JFXIssuesTest {
         return l1 == l2;
     }
 
+    @Compare public boolean sysprops() {
+        System.setProperty("foo", "bar");
+        String p = System.getProperty("foo", "foobar");
+        return "bar".equals(p);
+    }
+
     public static final class KeyEvent {
         public static final int LEFT = 0;
 
