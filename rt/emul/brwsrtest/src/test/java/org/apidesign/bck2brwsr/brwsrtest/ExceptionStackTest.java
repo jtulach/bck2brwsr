@@ -43,8 +43,8 @@ public class ExceptionStackTest {
         pw.close();
 
         String trace = sw.toString();
-        if (userAgent() != null && userAgent().contains("Safari")) {
-            return "Skipping test on safari";
+        if (skipOnSafari()) {
+            return "Skipping test on Mac/Safari";
         }
         if (trace.contains("ExceptionStackTest") && trace.contains("verifyFormatOfStackTrace")) {
             return "Stack trace includes ExceptionStackTest and verifyFormatOfStackTrace";
@@ -52,10 +52,12 @@ public class ExceptionStackTest {
         return trace;
     }
     
-    @JavaScriptBody(args = {}, body = "return navigator.userAgent;")
-    private static String userAgent() {
+    @JavaScriptBody(args = {}, body = """
+        return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    """)
+    private static boolean skipOnSafari() {
         String os = System.getProperty("os.name");
-        return os == null || os.contains("Mac") ? "Safari" : "any";
+        return os != null && os.contains("Mac");
     }
 
     @Factory public static Object[] create() {
