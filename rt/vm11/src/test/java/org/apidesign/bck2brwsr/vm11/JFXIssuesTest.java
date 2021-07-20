@@ -84,6 +84,16 @@ public class JFXIssuesTest {
         return l1 == l2;
     }
 
+    public String concatBackslash(String a, String b) {
+        return a + "\\" + b;
+    }
+
+    @Compare public boolean doubleBackslash() {
+        String a = "a";
+        String b = "b";
+        return "a\\b".equals(concatBackslash(a,b));
+    }
+
     public static final class KeyEvent {
         public static final int LEFT = 0;
 

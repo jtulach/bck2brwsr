@@ -72,6 +72,9 @@ final class StringConcatHandler extends IndyHandler {
                 case '\'':
                     sep.append("\\'");
                     break;
+                case '\\':
+                    sep.append("\\\\");
+                    break;
                 default:
                     if (ch < 32) {
                         String four = "0000" + Integer.toHexString(ch);
