@@ -31,6 +31,9 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class System {
+
+    private static Properties mprops = new Properties();
+
     private System() {
     }
 
@@ -58,22 +61,27 @@ public class System {
         if ("java.version".equals(name)) {
             return "1.7";
         }
-        return null;
+        return (String) mprops.get(name);
     }
 
     @JavaScriptBody(args = {}, body = "return (typeof navigator !== 'undefined') ? navigator.userAgent : 'unknown';")
     private static native String userAgent();
 
     public static String getProperty(String key, String def) {
-        return def;
+        String answer = (String) mprops.get(key);
+        return (answer == null ? def : answer);
     }
 
     public static Properties getProperties() {
-        throw new SecurityException();
+        return mprops;
     }
 
     public static void setProperties(Properties p) {
-        throw new SecurityException();
+        mprops = p;
+    }
+
+    public static String setProperty(String key, String value) {
+        return (String) mprops.setProperty(key, value);
     }
 
     /**
