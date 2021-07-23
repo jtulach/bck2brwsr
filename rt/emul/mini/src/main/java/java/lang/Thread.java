@@ -853,6 +853,7 @@ class Thread implements Runnable {
      * @see        ThreadGroup#getMaxPriority()
      */
     public final void setPriority(int newPriority) {
+        // no-op
     }
 
     /**
@@ -880,7 +881,7 @@ class Thread implements Runnable {
      * @see        #checkAccess()
      */
     public final void setName(String name) {
-        throw new SecurityException();
+        this.name = name;
     }
 
     /**
@@ -1071,7 +1072,7 @@ class Thread implements Runnable {
      *          thread cannot modify this thread
      */
     public final void setDaemon(boolean on) {
-        throw new SecurityException();
+        // no-op
     }
 
     /**
@@ -1098,7 +1099,7 @@ class Thread implements Runnable {
      * @see        SecurityManager#checkAccess(Thread)
      */
     public final void checkAccess() {
-        throw new SecurityException();
+        // no-op
     }
 
     /**
@@ -1472,7 +1473,7 @@ class Thread implements Runnable {
      * @since 1.5
      */
     public static void setDefaultUncaughtExceptionHandler(UncaughtExceptionHandler eh) {
-        throw new SecurityException();
+        defaultUncaughtExceptionHandler = eh;
     }
 
     /**
