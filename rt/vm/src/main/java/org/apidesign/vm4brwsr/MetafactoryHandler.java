@@ -194,7 +194,7 @@ final class MetafactoryHandler extends IndyHandler {
             }
 
             ctx.out.append("\n      return ret;");
-            ctx.out.append("\n   })");
+            ctx.out.append("\n   });");
         }
         return true;
     }
