@@ -26,6 +26,7 @@
 package java.lang;
 
 import java.util.Map;
+import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 
 /**
@@ -504,8 +505,16 @@ class Thread implements Runnable {
      * @see        #stop()
      */
     public void start() {
-        throw new SecurityException();
+        startBlueThread(target);
     }
+
+    @JavaScriptBody(args = "r", body =
+        "window.setTimeout(function() {\n" +
+        "  r.run__V();\n" +
+        "}, 0);\n"
+    )
+    private static native void startBlueThread(Runnable r);
+
 
     /**
      * If this thread was constructed using a separate
@@ -844,7 +853,6 @@ class Thread implements Runnable {
      * @see        ThreadGroup#getMaxPriority()
      */
     public final void setPriority(int newPriority) {
-        throw new SecurityException();
     }
 
     /**
