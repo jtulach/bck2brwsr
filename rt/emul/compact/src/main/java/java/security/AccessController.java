@@ -320,8 +320,10 @@ public final class AccessController {
      * @see #doPrivileged(PrivilegedAction)
      * @see #doPrivileged(PrivilegedExceptionAction,AccessControlContext)
      */
-//    public static native <T> T doPrivileged(PrivilegedAction<T> action,
-//                                            AccessControlContext context);
+    public static <T> T doPrivileged(PrivilegedAction<T> action,
+                                            AccessControlContext context) {
+        return doPrivileged(action);
+    }
 
     /**
      * Performs the specified <code>PrivilegedExceptionAction</code> with
@@ -422,6 +424,8 @@ public final class AccessController {
 //                     AccessControlContext context)
 //        throws PrivilegedActionException;
 
+    private static AccessControlContext staticContext = new AccessControlContext();
+
     /**
      * This method takes a "snapshot" of the current calling context, which
      * includes the current Thread's inherited AccessControlContext,
@@ -432,18 +436,9 @@ public final class AccessController {
      *
      * @return the AccessControlContext based on the current context.
      */
-
-//    public static AccessControlContext getContext()
-//    {
-//        AccessControlContext acc = getStackAccessControlContext();
-//        if (acc == null) {
-//            // all we had was privileged system code. We don't want
-//            // to return null though, so we construct a real ACC.
-//            return new AccessControlContext(null, true);
-//        } else {
-//            return acc.optimize();
-//        }
-//    }
+    public static AccessControlContext getContext() {
+        return staticContext;
+    }
 
     /**
      * Determines whether the access request indicated by the
