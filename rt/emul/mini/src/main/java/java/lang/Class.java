@@ -167,7 +167,8 @@ public final
             return arrType;
         }
         try {
-            final String inJsName = className.replace('.', '_');
+            final String inJsName0 = className.replace("_", "_1");
+            final String inJsName = inJsName0.replace('.', '_');
             Class<?> c = loadCls(className, inJsName);
             if (c == null) {
                 c = loadCls(className, inJsName);

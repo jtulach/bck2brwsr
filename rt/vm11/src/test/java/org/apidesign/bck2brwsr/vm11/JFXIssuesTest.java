@@ -139,6 +139,21 @@ public class JFXIssuesTest {
         return "CompiledOK";
     }
 
+    class Foo_Bar {
+        public Foo_Bar() {}
+    }
+
+    @Compare
+    public boolean underscoreClass() {
+        int err = 0;
+        try {
+            Class answer = Class.forName("org.apidesign.bck2brwsr.vm11.JFXIssuesTest$Foo_Bar");
+        } catch (ClassNotFoundException ex) {
+            err = 1;
+        }
+        return err == 0;
+    }
+
     @Factory public static Object[] create() {
         return VMTest.create(JFXIssuesTest.class);
     }
