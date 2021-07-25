@@ -197,12 +197,18 @@ abstract class ByteCodeToJavaScript {
             out.append("\n    var c = p;");
             out.append("\n    var sprcls = pp.constructor.$class;");
         } else {
-            out.append("\n    var p = CLS.prototype = ").append(proto[1]).append(";");
-            if (proto[0] == null) {
-                proto[0] = "p";
+            if (proto[1].isEmpty()) {
+                out.append("\n    var c = ").append(proto[0]).append(";");
+                out.append("\n    var p = c;");
+                out.append("\n    var sprcls = null");
+            } else {
+                out.append("\n    var p = CLS.prototype = ").append(proto[1]).append(";");
+                if (proto[0] == null) {
+                    proto[0] = "p";
+                }
+                out.append("\n    var c = ").append(proto[0]).append(";");
+                out.append("\n    var sprcls = null;");
             }
-            out.append("\n    var c = ").append(proto[0]).append(";");
-            out.append("\n    var sprcls = null;");
         }
         for (FieldData v : jc.getFields()) {
             if (v.isStatic()) {
@@ -257,90 +263,94 @@ abstract class ByteCodeToJavaScript {
             out.append("\n    m.cls = CLS;");
         }
         out.append(numbers.generate());
-        out.append("\n    c.constructor = CLS;");
-        out.append("\n    function ").append(className).append("fillInstOf(x) {");
-        String instOfName = "$instOf_" + className;
-        out.append("\n        Object.defineProperty(x, '").append(instOfName).append("', { value : true });");
-        MethodData functionalInterfaceMethod = null;
-        if (jc.isInterface()) {
-            int cnt = 0;
-            for (MethodData m : jc.getMethods()) {
-                if ((m.getAccess() & ACC_ABSTRACT) == 0) {
-                    if ((m.getAccess() & ACC_STATIC) == 0
-                        && (m.getAccess() & ACC_PRIVATE) == 0) {
-                        final String mn = findMethodName(m, new StringBuilder());
-                        out.append("\n        if (!x['").append(mn).append("']) Object.defineProperty(x, '").append(mn).append("', { value : c['").append(mn).append("']});");
+        if (proto != null && proto[0] != null && proto[1].isEmpty()) {
+
+        } else {
+            out.append("\n    c.constructor = CLS;");
+            out.append("\n    function ").append(className).append("fillInstOf(x) {");
+            String instOfName = "$instOf_" + className;
+            out.append("\n        Object.defineProperty(x, '").append(instOfName).append("', { value : true });");
+            MethodData functionalInterfaceMethod = null;
+            if (jc.isInterface()) {
+                int cnt = 0;
+                for (MethodData m : jc.getMethods()) {
+                    if ((m.getAccess() & ACC_ABSTRACT) == 0) {
+                        if ((m.getAccess() & ACC_STATIC) == 0
+                            && (m.getAccess() & ACC_PRIVATE) == 0) {
+                            final String mn = findMethodName(m, new StringBuilder());
+                            out.append("\n        if (!x['").append(mn).append("']) Object.defineProperty(x, '").append(mn).append("', { value : c['").append(mn).append("']});");
+                        }
+                    } else {
+                        functionalInterfaceMethod = m;
+                        cnt++;
                     }
-                } else {
-                    functionalInterfaceMethod = m;
-                    cnt++;
-                }
-                if (cnt != 1) {
-                    functionalInterfaceMethod = null;
+                    if (cnt != 1) {
+                        functionalInterfaceMethod = null;
+                    }
                 }
             }
-        }
-        for (String superInterface : jc.getSuperInterfaces()) {
-            String intrfc = mangleClassName(superInterface);
-            out.append("\n      vm.").append(intrfc).append("(false)['fillInstOf'](x);");
-            requireReference(superInterface);
-        }
-        out.append("\n    }");
-        out.append("\n    if (!c.hasOwnProperty('fillInstOf')) Object.defineProperty(c, 'fillInstOf', { value: ").append(className).append("fillInstOf });");
-        out.append("\n    ").append(className).append("fillInstOf(c);");
-//        obfuscationDelegate.exportJSProperty(this, "c", instOfName);
-        out.append("\n    CLS.$class = 'temp';");
-        out.append("\n    CLS.$class = ");
-        out.append(accessClass("java_lang_Class")).append("(true);");
-        out.append("\n    CLS.$class.jvmName = '").append(cn).append("';");
-        out.append("\n    CLS.$class.superclass = sprcls;");
-        if (functionalInterfaceMethod != null) {
-            char[] returnType = { 'V' };
-            final String mn = findMethodName(functionalInterfaceMethod, new StringBuilder(), returnType);
-            out.append("\n    CLS.$class.$lambda = function(arr, fn) {");
-            out.append("\n      var inst = new CLS();");
-            out.append("\n      inst['").append(mn).append("'] = function() {");
-            out.append("\n          var ret = fn(arr, arguments);");
-            switch (returnType[0]) {
-                case 'V':
-                    break;
-                case 'L':
-                    out.append("\n      return ret;");
-                    break;
-                default:
-                    out.append("\n      return ret.valueOf();");
+            for (String superInterface : jc.getSuperInterfaces()) {
+                String intrfc = mangleClassName(superInterface);
+                out.append("\n      vm.").append(intrfc).append("(false)['fillInstOf'](x);");
+                requireReference(superInterface);
             }
-            out.append("\n      };");
-            out.append("\n      return inst;");
-            out.append("\n    };");
-        }
-        out.append("\n    CLS.$class.interfaces = function() { return [");
-        {
-            boolean first = true;
-            for (String intrfc : jc.getSuperInterfaces()) {
-                if (!first) {
-                    out.append(",");
+            out.append("\n    }");
+            out.append("\n    if (!c.hasOwnProperty('fillInstOf')) Object.defineProperty(c, 'fillInstOf', { value: ").append(className).append("fillInstOf });");
+            out.append("\n    ").append(className).append("fillInstOf(c);");
+    //        obfuscationDelegate.exportJSProperty(this, "c", instOfName);
+            out.append("\n    CLS.$class = 'temp';");
+            out.append("\n    CLS.$class = ");
+            out.append(accessClass("java_lang_Class")).append("(true);");
+            out.append("\n    CLS.$class.jvmName = '").append(cn).append("';");
+            out.append("\n    CLS.$class.superclass = sprcls;");
+            if (functionalInterfaceMethod != null) {
+                char[] returnType = { 'V' };
+                final String mn = findMethodName(functionalInterfaceMethod, new StringBuilder(), returnType);
+                out.append("\n    CLS.$class.$lambda = function(arr, fn) {");
+                out.append("\n      var inst = new CLS();");
+                out.append("\n      inst['").append(mn).append("'] = function() {");
+                out.append("\n          var ret = fn(arr, arguments);");
+                switch (returnType[0]) {
+                    case 'V':
+                        break;
+                    case 'L':
+                        out.append("\n      return ret;");
+                        break;
+                    default:
+                        out.append("\n      return ret.valueOf();");
                 }
-                requireReference(intrfc);
-                String mangledIface = mangleClassName(intrfc);
-                out.append("\n        ");
-                out.append(accessClass(mangledIface)).append("(false).constructor.$class");
-                first = false;
+                out.append("\n      };");
+                out.append("\n      return inst;");
+                out.append("\n    };");
             }
-        }
-        out.append("\n    ]; };");
-        int flags = jc.getAccessFlags();
-        if (jc.hasEnclosingMethod()) {
-            flags |= 0x10000;
-        }
-        out.append("\n    CLS.$class.access = ").append(flags+";");
-        out.append("\n    CLS.$class.cnstr = CLS;");
-        byte[] classAnno = jc.findAnnotationData(false);
-        if (classAnno != null) {
-            out.append("\n    CLS.$class.anno = {");
-            AnnotationParser ap = new GenerateAnno(out, true, false);
-            ap.parse(classAnno, jc);
-            out.append("\n    };");
+            out.append("\n    CLS.$class.interfaces = function() { return [");
+            {
+                boolean first = true;
+                for (String intrfc : jc.getSuperInterfaces()) {
+                    if (!first) {
+                        out.append(",");
+                    }
+                    requireReference(intrfc);
+                    String mangledIface = mangleClassName(intrfc);
+                    out.append("\n        ");
+                    out.append(accessClass(mangledIface)).append("(false).constructor.$class");
+                    first = false;
+                }
+            }
+            out.append("\n    ]; };");
+            int flags = jc.getAccessFlags();
+            if (jc.hasEnclosingMethod()) {
+                flags |= 0x10000;
+            }
+            out.append("\n    CLS.$class.access = ").append(flags+";");
+            out.append("\n    CLS.$class.cnstr = CLS;");
+            byte[] classAnno = jc.findAnnotationData(false);
+            if (classAnno != null) {
+                out.append("\n    CLS.$class.anno = {");
+                AnnotationParser ap = new GenerateAnno(out, true, false);
+                ap.parse(classAnno, jc);
+                out.append("\n    };");
+            }
         }
         for (String init : toInitilize.toArray()) {
             out.append("\n    ").append(init).append("();");
