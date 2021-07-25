@@ -45,6 +45,7 @@ abstract class ByteCodeToJavaScript {
         this.output = out;
         this.indyHandlers = new IndyHandler[] {
             new MetafactoryHandler(),
+            new AltMetafactoryHandler(),
             new StringConcatHandler(),
         };
     }

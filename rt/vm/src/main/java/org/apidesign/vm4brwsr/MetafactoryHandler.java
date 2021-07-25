@@ -19,9 +19,13 @@ package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
 
-final class MetafactoryHandler extends IndyHandler {
+class MetafactoryHandler extends IndyHandler {
     MetafactoryHandler() {
         super("java/lang/invoke/LambdaMetafactory", "metafactory");
+    }
+
+    MetafactoryHandler(String clazz, String method) {
+        super(clazz, method);
     }
 
     @Override
