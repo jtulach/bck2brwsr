@@ -1,15 +1,15 @@
 # Let's get started with **Gradle** and [Bck2Brwsr VM](../README.md)!!
 
 The way to create new projects in **Gradle** is to initialize an empty
-skeleton. Execute:
+skeleton. Execute (with Gradle 7.0 and JDK8 or JDK11):
 ```bash
 $ mkdir demo
 $ cd demo
 demo$ gradle init --type java-application
 demo$ find *
-build.gradle
-src/test/java/AppTest.java
-src/main/java/App.java
+app/build.gradle
+app/src/main/java/mytest/App.java
+app/src/test/java/mytest/AppTest.java
 gradle/wrapper/gradle-wrapper.properties
 gradle/wrapper/gradle-wrapper.jar
 gradlew
@@ -29,45 +29,83 @@ BUILD SUCCESSFUL
 Now let's run it in a browser! Apply following change to your project
 `build.gradle` configuration file:
 ```diff
-diff -r b3329c3585ca build.gradle
---- a/build.gradle      Fri Jun 01 05:35:47 2018 +0200
-+++ b/build.gradle      Fri Jun 01 05:41:25 2018 +0200
-@@ -6,22 +6,33 @@
-  * user guide available at https://docs.gradle.org/3.5/userguide/tutorial_java_projects.html
+diff --git a/app/build.gradle b/app/build.gradle
+index 2259ee7..adf3461 100644
+--- a/app/build.gradle
++++ b/app/build.gradle
+@@ -6,11 +6,22 @@
+  * User Manual available at https://docs.gradle.org/7.0/userguide/building_java_projects.html
   */
-
+ 
 +buildscript {
 +    repositories {
 +        mavenCentral()
 +    }
 +    dependencies {
-+        classpath "org.apidesign.bck2brwsr:bck2brwsr-maven-plugin:0.23"
++        classpath "org.apidesign.bck2brwsr:bck2brwsr-maven-plugin:0.32"
 +    }
 +}
 +
- // Apply the java plugin to add support for Java
- apply plugin: 'java'
-
- // Apply the application plugin to add support for building an application
- apply plugin: 'application'
-+apply plugin: 'bck2brwsr'
-
- // In this section you declare where to find the dependencies of your project
- repositories {
-     // Use jcenter for resolving your dependencies.
-     // You can declare any Maven/Ivy/file repository here.
-     jcenter()
-+    mavenCentral()
+ plugins {
+     // Apply the application plugin to add support for building a CLI application in Java.
+     id 'application'
  }
-
- dependencies {
--    // This dependency is found on compile classpath of this component and consumers.
--    compile 'com.google.guava:guava:21.0'
-+// No need for this additional huge library in the browser:
-+//    compile 'com.google.guava:guava:21.0'
-
-     // Use JUnit test framework
-     testCompile 'junit:junit:4.12'
+ 
++apply plugin: 'bck2brwsr'
++
+ repositories {
+     // Use Maven Central for resolving dependencies.
+     mavenCentral()
+@@ -20,8 +31,8 @@ dependencies {
+     // Use JUnit test framework.
+     testImplementation 'junit:junit:4.13.1'
+ 
+-    // This dependency is used by the application.
+-    implementation 'com.google.guava:guava:30.0-jre'
++    // No need for such a huge dependency in browser
++    // implementation 'com.google.guava:guava:30.0-jre'
+ }
+ 
+ application {
+jarda@xps:~/tmp/x$ git diff
+diff --git a/app/build.gradle b/app/build.gradle
+index 2259ee7..adf3461 100644
+--- a/app/build.gradle
++++ b/app/build.gradle
+@@ -6,11 +6,22 @@
+  * User Manual available at https://docs.gradle.org/7.0/userguide/building_java_projects.html
+  */
+ 
++buildscript {
++    repositories {
++        mavenCentral()
++    }
++    dependencies {
++        classpath "org.apidesign.bck2brwsr:bck2brwsr-maven-plugin:0.50"
++    }
++}
++
+ plugins {
+     // Apply the application plugin to add support for building a CLI application in Java.
+     id 'application'
+ }
+ 
++apply plugin: 'bck2brwsr'
++
+ repositories {
+     // Use Maven Central for resolving dependencies.
+     mavenCentral()
+@@ -20,8 +31,8 @@ dependencies {
+     // Use JUnit test framework.
+     testImplementation 'junit:junit:4.13.1'
+ 
+-    // This dependency is used by the application.
+-    implementation 'com.google.guava:guava:30.0-jre'
++    // No need for such a huge dependency in browser
++    // implementation 'com.google.guava:guava:30.0-jre'
+ }
+ 
+ application {
 ```
 and your project is ready to be executed in the browser:
 ```bash

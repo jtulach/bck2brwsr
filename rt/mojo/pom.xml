@@ -73,6 +73,8 @@
                             <include>org.apidesign.bck2brwsr:*</include>
                             <include>com.google.*:*</include>
                             <include>args4j:args4j</include>
+                            <include>org.glassfish.grizzly:*</include>
+                            <include>javax.servlet:*</include>
                         </includes>
                         <excludes>
                             <exclude>org.apache.maven:*</exclude>
@@ -199,6 +201,12 @@
         <groupId>org.gradle</groupId>
         <artifactId>gradle-core</artifactId>
         <version>3.0</version>
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.gradle</groupId>
+        <artifactId>gradle-plugins</artifactId>
+        <version>6.1.1</version>
         <scope>provided</scope>
     </dependency>
     <dependency>

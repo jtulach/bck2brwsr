@@ -29,6 +29,7 @@ import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
+import org.gradle.api.plugins.JavaApplication;
 import org.gradle.api.tasks.Copy;
 
 public final class AheadOfTimeGradle implements Plugin<Project> {
@@ -36,7 +37,11 @@ public final class AheadOfTimeGradle implements Plugin<Project> {
     static final String PROP_MAIN_CLASS_NAME = "mainClassName";
 
     static String findMainClass(final Project p) {
+        JavaApplication app = p.getExtensions().findByType(JavaApplication.class);
         String mainClass = (String) p.getProperties().get(PROP_MAIN_CLASS_NAME);
+        if (app != null) {
+            return app.getMainClassName();
+        }
         return mainClass;
     }
 
