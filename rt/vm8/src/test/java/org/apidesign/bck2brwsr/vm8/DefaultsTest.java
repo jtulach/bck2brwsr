@@ -29,13 +29,28 @@ public class DefaultsTest {
     @Compare public int overridenValue() throws Exception {
         return Defaults.myValue();
     }
-    
+
     @Compare public int doubleDefault() throws Exception {
         return Defaults.sndValue();
+    }
+
+    @Compare
+    public String hashObjectLikeFn() {
+        ObjectLikeFn fn = () -> {
+            return "fourtyTwo";
+        };
+        return fn.value();
     }
 
     @Factory public static Object[] create() {
         return VMTest.create(DefaultsTest.class);
     }
-    
+
+    public static interface ObjectLikeFn {
+        String value();
+
+        int hashCode();
+        boolean equals(Object obj);
+        String toString();
+    }
 }

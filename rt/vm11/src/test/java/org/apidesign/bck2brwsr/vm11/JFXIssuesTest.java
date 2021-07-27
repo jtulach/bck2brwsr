@@ -17,6 +17,10 @@
  */
 package org.apidesign.bck2brwsr.vm11;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
@@ -105,14 +109,14 @@ public class JFXIssuesTest {
         public static final int LEFT = 0;
 
     }
-    
+
     @FunctionalInterface
     interface EventHandler<T> {
         void handle(KeyEvent ev);
     }
-    
+
     class Circle {
- 
+
         public Circle() {
             initialize();
         }
@@ -153,6 +157,40 @@ public class JFXIssuesTest {
         }
         return err == 0;
     }
+
+    private static class GlassScene {
+        final String name;
+        private final boolean sync;
+
+        GlassScene(String name, boolean sync) {
+            this.name = name;
+            this.sync = sync;
+        }
+
+        private boolean isSynchronous() {
+            return sync;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+    @Compare
+    public String glassSceneSorter() {
+        GlassScene gs1 = new GlassScene("asynch", false);
+        GlassScene gs2 = new GlassScene("synch", true);
+
+        List<GlassScene> arr = Arrays.asList(gs1, gs2);
+        Collections.sort(arr, DIRTY_SCENE_SORTER);
+
+        return arr.toString();
+    }
+    private static final Comparator<GlassScene> DIRTY_SCENE_SORTER = (o1, o2) -> {
+        int i1 = o1.isSynchronous() ? 1 : 0;
+        int i2 = o2.isSynchronous() ? 1 : 0;
+        return i1 - i2;
+    };
 
     @Factory public static Object[] create() {
         return VMTest.create(JFXIssuesTest.class);

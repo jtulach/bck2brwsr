@@ -281,6 +281,16 @@ abstract class ByteCodeToJavaScript {
                             out.append("\n        if (!x['").append(mn).append("']) Object.defineProperty(x, '").append(mn).append("', { value : c['").append(mn).append("']});");
                         }
                     } else {
+                        final String name = m.getName();
+                        if (name.equals("equals") && m.getInternalSig().equals("(Ljava/lang/Object;)Z")) {
+                            continue;
+                        }
+                        if (name.equals("hashCode") && m.getInternalSig().equals("()I")) {
+                            continue;
+                        }
+                        if (name.equals("toString") && m.getInternalSig().equals("()Ljava/lang/String;")) {
+                            continue;
+                        }
                         functionalInterfaceMethod = m;
                         cnt++;
                     }
