@@ -518,6 +518,12 @@ abstract class ByteCodeToJavaScript {
                    out.append(jc.getClassName()).append('.')
                    .append(m.getName()).append("';\n");
                 }
+                if (m.isNative()) {
+                    out.append("return native_").append(className(jc)).append('_')
+                            .append(m.getName()).append("(");
+                    lmapper.outputArguments(out, m.isStatic());
+                    out.append(");\n");
+                }
             }
             if (defineProp) {
                 out.append("}});");

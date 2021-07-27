@@ -2000,6 +2000,10 @@ final class ByteCodeParser {
             return false;
         }
 
+        public boolean isNative() {
+           return ((access & ACC_NATIVE) != 0);
+        }
+
         /**
          * Return max depth of operand stack.
          */
