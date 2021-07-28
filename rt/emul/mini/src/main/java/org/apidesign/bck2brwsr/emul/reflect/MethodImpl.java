@@ -127,6 +127,9 @@ public abstract class MethodImpl {
     public static Method findMethod(
         Class<?> clazz, String name, Class<?>... parameterTypes
     ) {
+        if (parameterTypes == null) {
+            parameterTypes = new Class[0];
+        }
         name = name.replace("_", "_1");
         Object[] data = findMethodData(clazz, name + "__", false);
         BIG: for (int i = 0; i < data.length; i += 3) {

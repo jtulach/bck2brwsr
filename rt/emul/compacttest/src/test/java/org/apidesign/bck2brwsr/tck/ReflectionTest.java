@@ -339,6 +339,27 @@ public class ReflectionTest {
 
         return Data.getStatic();
     }
+
+    public static final class DummyClass {
+
+        public static DummyClass getInstance() {
+            return new DummyClass();
+        }
+
+        public String toString() {
+            return "DummyClass";
+        }
+    }
+
+    @Compare
+    public String nullArrayClass() throws Exception {
+        return DummyClass.class.getMethod("getInstance", (Class[]) null).invoke(null).toString();
+    }
+
+    @Compare
+    public String emptyArrayClass() throws Exception {
+        return DummyClass.class.getMethod("getInstance", new Class[0]).invoke(null).toString();
+    }
     
     @JavaScriptBody(args = { "arr", "len" }, body="var a = arr.slice(0, len); a.sort(); return a;")
     private static String[] sort(String[] arr, int len) {
@@ -351,7 +372,7 @@ public class ReflectionTest {
     private static Object newObject() {
         return new Object();
     }
-    
+
     @Factory
     public static Object[] create() {
         return VMTest.create(ReflectionTest.class);
