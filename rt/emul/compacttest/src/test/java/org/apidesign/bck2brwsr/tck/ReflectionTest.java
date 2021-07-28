@@ -425,4 +425,11 @@ public class ReflectionTest {
         Co_Ty coTy = (Co_Ty) factory.invoke(null);
         return coTy.toString();
     }
+
+    @Compare
+    public String underscoresInNamesWithCast() throws Exception {
+        Method factory = Co_Ty.class.getMethod("fac_to_ry");
+        Co_Ty coTy = Co_Ty.class.cast(factory.invoke(null));
+        return coTy.toString();
+    }
 }

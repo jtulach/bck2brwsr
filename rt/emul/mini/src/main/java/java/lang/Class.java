@@ -379,8 +379,8 @@ public final
         if (isArray()) {
             return isAssignableFrom(obj.getClass());
         }
-        
-        String prop = "$instOf_" + getName().replace('.', '_');
+        final String mangledName = getName().replace("_", "_1").replace('.', '_');
+        String prop = "$instOf_" + mangledName;
         return hasProperty(obj, prop);
     }
     
