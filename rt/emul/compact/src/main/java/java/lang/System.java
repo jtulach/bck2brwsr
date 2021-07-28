@@ -209,4 +209,37 @@ public class System {
             write(new byte[] { (byte)b });
         }
     } // end of SystemStream
+
+    public interface Logger {
+
+        public enum Level {
+
+            ALL(Integer.MIN_VALUE),  // typically mapped to/from j.u.l.Level.ALL
+            TRACE(400),   // typically mapped to/from j.u.l.Level.FINER
+            DEBUG(500),   // typically mapped to/from j.u.l.Level.FINEST/FINE/CONFIG
+            INFO(800),    // typically mapped to/from j.u.l.Level.INFO
+            WARNING(900), // typically mapped to/from j.u.l.Level.WARNING
+            ERROR(1000),  // typically mapped to/from j.u.l.Level.SEVERE
+            OFF(Integer.MAX_VALUE);  // typically mapped to/from j.u.l.Level.OFF
+
+            private final int severity;
+
+            private Level(int severity) {
+                this.severity = severity;
+            }
+
+            public final String getName() {
+                return name();
+            }
+
+            public final int getSeverity() {
+                return severity;
+            }
+        }
+
+        public String getName();
+
+        public boolean isLoggable(Level level);
+    }
+
 }
