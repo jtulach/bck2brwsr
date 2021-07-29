@@ -406,14 +406,6 @@ abstract class ByteCodeToJavaScript {
         return "";
     }
 
-    private void versionCheck() throws IOException {
-        if (jc.getMajor_version() < 50) {
-            throw new IOException("Can't compile " + jc.getClassName() + ". Class file version " + jc.getMajor_version() + "."
-                    + jc.getMinor_version() + " - recompile with -target 1.6 (at least)."
-            );
-        }
-    }
-
     private StringArray findJavaScriptResources(byte[] arr, final String cn) throws IOException {
         if (arr == null) {
             return null;
@@ -506,18 +498,25 @@ abstract class ByteCodeToJavaScript {
         out.append(") {").append("\n");
 
         final byte[] byteCodes = m.getCode();
-        if (byteCodes == null) {
-            byte[] defaultAttr = m.getDefaultAttribute();
-            if (defaultAttr != null) {
-                out.append("  return ");
-                AnnotationParser ap = new GenerateAnno(out, true, false);
-                ap.parseDefault(defaultAttr, jc);
-                out.append(";\n");
-            } else {
-                if (debug(out, "  throw 'no code found for ")) {
-                   out.append(jc.getClassName()).append('.')
-                   .append(m.getName()).append("';\n");
+        if (byteCodes == null || jc.getMajor_version() < 50) {
+            if (byteCodes == null) {
+                byte[] defaultAttr = m.getDefaultAttribute();
+                if (defaultAttr != null) {
+                    out.append("  return ");
+                    AnnotationParser ap = new GenerateAnno(out, true, false);
+                    ap.parseDefault(defaultAttr, jc);
+                    out.append(";\n");
+                } else {
+                    if (debug(out, "  throw 'no code found for ")) {
+                       out.append(jc.getClassName()).append('.')
+                       .append(m.getName()).append("';\n");
+                    }
                 }
+            } else {
+                out.append("  throw 'Class file version for " + jc.getClassName() + " is " + jc.getMajor_version() + "."
+                    + jc.getMinor_version() + " - recompile with -target 1.6 (at least)';\n"
+            );
+
             }
             if (defineProp) {
                 out.append("}});");
@@ -526,8 +525,6 @@ abstract class ByteCodeToJavaScript {
             }
             return defineProp;
         }
-
-        versionCheck();
 
         final StackMapper smapper = new StackMapper();
 
@@ -681,9 +678,7 @@ abstract class ByteCodeToJavaScript {
         int at = 0;
         for (int i = from; i < till; i++) {
             if (at > buf.length - 10) {
-                char[] copy = new char[buf.length * 2];
-                org.apidesign.bck2brwsr.emul.lang.System.arraycopy(buf, 0, copy, 0, buf.length);
-                buf = copy;
+                buf = copyDouble(buf);
             }
             final char ch = originalName.charAt(i);
             switch (ch) {
@@ -717,6 +712,14 @@ abstract class ByteCodeToJavaScript {
             }
         }
         return new String(buf, 0, at);
+    }
+
+    private static char[] copyDouble(char[] buf) {
+        char[] copy = new char[buf.length * 2];
+        for (int i = 0; i < buf.length; i++) {
+            copy[i] = buf[i];
+        }
+        return copy;
     }
 
     private static String mangleMethodName(String name) {
