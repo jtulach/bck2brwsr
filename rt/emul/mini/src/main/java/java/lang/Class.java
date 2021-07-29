@@ -39,6 +39,7 @@ import java.net.URL;
 import org.apidesign.bck2brwsr.core.Exported;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.core.JavaScriptOnly;
+import org.apidesign.bck2brwsr.emul.reflect.Mangling;
 import org.apidesign.bck2brwsr.emul.reflect.AnnotationImpl;
 import org.apidesign.bck2brwsr.emul.reflect.MethodImpl;
 
@@ -379,8 +380,7 @@ public final
         if (isArray()) {
             return isAssignableFrom(obj.getClass());
         }
-        final String mangledName = getName().replace("_", "_1").replace('.', '_');
-        String prop = "$instOf_" + mangledName;
+        String prop = "$instOf_" + Mangling.mangle(getName(), true);
         return hasProperty(obj, prop);
     }
     

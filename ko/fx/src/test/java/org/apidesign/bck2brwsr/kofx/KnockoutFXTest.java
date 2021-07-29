@@ -146,8 +146,8 @@ public final class KnockoutFXTest extends KnockoutTCK {
             for (int i = 0; i < parameters.length; i++) {
                 sb.append("&param" + i).append("=").append(parameters[i]);
             }
-            String mangle = content.replace("\n", "%0a").replace(" ", "%20");
-            sb.append("&content=").append(mangle);
+            String urlEncode = content.replace("\n", "%0a").replace(" ", "%20");
+            sb.append("&content=").append(urlEncode);
 
             URL query = new URL(baseURL, sb.toString());
             URLConnection c = query.openConnection();

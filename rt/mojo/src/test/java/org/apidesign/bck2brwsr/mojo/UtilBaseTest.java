@@ -38,12 +38,12 @@ public class UtilBaseTest {
             "    </body>\n" +
             "</html>";
 
-        String res = UtilBase.mangleIndexPage(data, "main.js", "org.apidesign.demo.Test");
+        String res = UtilBase.augmentedIndexPage(data, "main.js", "org.apidesign.demo.Test");
 
         assertNotEquals(res.indexOf("loadClass('org.apidesign.demo.Test'"), -1, "loadClass found");
         assertNotEquals(res.indexOf("script src='bck2brwsr.js'>"), -1, "init vm found");
 
-        String res2 = UtilBase.mangleIndexPage(data, "main.js", "org.apidesign.demo.Test");
+        String res2 = UtilBase.augmentedIndexPage(data, "main.js", "org.apidesign.demo.Test");
         assertEquals(res2, res, "No change then");
     }
 }
