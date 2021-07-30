@@ -33,6 +33,8 @@ import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ResolvedArtifact;
+import org.gradle.api.file.FileCollection;
+import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.OutputFiles;
 
@@ -45,6 +47,8 @@ public class AheadOfTimeTask extends DefaultTask {
     private File mainJs;
     @OutputFiles
     private Map<String,File> libraries;
+    @InputFiles
+    private FileCollection jars;
 
     public AheadOfTimeTask() {
     }
@@ -52,9 +56,14 @@ public class AheadOfTimeTask extends DefaultTask {
     void registerJarTask(Project p, Task task) {
         assert this.jarTask == null;
         this.jarTask = task;
+        this.jars = task.getOutputs().getFiles();
         this.bck2brwsrJs = new File(webDir(p), "bck2brwsr.js");
         this.mainJs = new File(webDir(p), "main.js");
         this.libraries = new TreeMap<>();
+    }
+
+    public FileCollection getJars() {
+        return jars;
     }
 
     private File webDir(Project p) {
