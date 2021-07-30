@@ -27,7 +27,7 @@ matrix:
       jdk: openjdk8
       env:
         - ARGS=-Dnone
-        - DIR=zulu8.40.0.25-ca-fx-jdk8.0.222-linux_x64
+        - DIR=zulu8.54.0.21-ca-fx-jdk8.0.292-linux_x64
         - URL=https://cdn.azul.com/zulu/bin/$DIR.tar.gz
     - os: linux
       name: Linux GraalVM11 19.3.3
@@ -55,5 +55,5 @@ matrix:
       jdk: openjdk11
       env:
         - ARGS=-Dnone
-        - DIR=zulu8.40.0.25-ca-fx-jdk8.0.222-macosx_x64
+        - DIR=zulu8.54.0.21-ca-fx-jdk8.0.292-macosx_x64
         - URL=https://cdn.azul.com/zulu/bin/$DIR.tar.gz
