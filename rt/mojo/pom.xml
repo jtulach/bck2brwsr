@@ -186,9 +186,8 @@
     <dependency>
         <groupId>org.ow2.asm</groupId>
         <artifactId>asm</artifactId>
-        <version>5.0</version>
+        <version>5.2</version>
         <type>jar</type>
-        <scope>test</scope>
     </dependency>
     <dependency>
         <groupId>${project.groupId}</groupId>
@@ -213,12 +212,6 @@
         <groupId>org.codehaus.groovy</groupId>
         <artifactId>groovy</artifactId>
         <version>1.8.3</version>
-        <scope>provided</scope>
-    </dependency>
-    <dependency>
-        <groupId>org.ow2.asm</groupId>
-        <artifactId>asm</artifactId>
-        <version>9.0</version>
         <scope>provided</scope>
     </dependency>
 </dependencies>
