@@ -31,7 +31,10 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class System {
-
+    private static final Object[] lifeCycle = { null };
+    static {
+        initLifeCycle(lifeCycle);
+    }
     private static Properties mprops = new Properties();
 
     private System() {
@@ -96,6 +99,30 @@ public class System {
         return "\n";
     }
 
+    @JavaScriptBody(args = { "socket" }, body = """
+        socket[0] = null;
+        if (typeof WebSocket !== 'undefined') {
+            var s = new WebSocket('ws://' + location.host + '/heartbeat');
+            s.onopen = function(ev) {
+                socket[0] = s;
+                s.send('Application is running');
+            }
+            s.onmessage = function(ev) {
+                console.log(ev.data);
+            }
+        }
+        """)
+    private static void initLifeCycle(Object[] socket) {
+        socket[0] = null;
+    }
+
+    @JavaScriptBody(args = { "s", "exitCode" }, body = """
+         s.send('exit: ' + exitCode);
+         window.close();
+    """)
+    private static void lifeCycleExit(Object lifeCycle, int exitCode) {
+    }
+
     @JavaScriptBody(args = { "exitCode" }, body = ""
         + "var xhttp = new XMLHttpRequest();\n"
         + "xhttp.open('GET', '/?exit=' + exitCode, true);\n"
@@ -104,7 +131,15 @@ public class System {
         + "};\n"
         + "xhttp.send();\n"
     )
+    private static void xhrExit(int exitCode) {
+    }
+
     public static void exit(int exitCode) {
+        if (lifeCycle[0] != null) {
+            lifeCycleExit(lifeCycle[0], exitCode);
+        } else {
+            xhrExit(exitCode);
+        }
     }
 
     public final static InputStream in;

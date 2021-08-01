@@ -46,6 +46,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -68,6 +70,7 @@ import org.glassfish.grizzly.http.server.ServerConfiguration;
 import org.glassfish.grizzly.http.server.StaticHttpHandler;
 import org.glassfish.grizzly.http.util.Header;
 import org.glassfish.grizzly.http.util.HttpStatus;
+import org.glassfish.grizzly.websockets.DataFrame;
 import org.glassfish.grizzly.websockets.WebSocket;
 import org.glassfish.grizzly.websockets.WebSocketAddOn;
 import org.glassfish.grizzly.websockets.WebSocketApplication;
@@ -82,8 +85,8 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
     static final Logger LOG = Logger.getLogger(BaseHTTPLauncher.class.getName());
     private static final Logger OUT = Logger.getLogger(BaseHTTPLauncher.class.getName() + ".out");
     private static final InvocationContext END = new InvocationContext(null, null, null);
-    private final Set<ClassLoader> loaders = new LinkedHashSet<ClassLoader>();
-    private final BlockingQueue<InvocationContext> methods = new LinkedBlockingQueue<InvocationContext>();
+    private final Set<ClassLoader> loaders = new LinkedHashSet<>();
+    private final BlockingQueue<InvocationContext> methods = new LinkedBlockingQueue<>();
     private long timeOut;
     private final Res resources = new Res();
     private final String cmd;
@@ -92,7 +95,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
     private CountDownLatch wait;
     private Thread flushing;
     private String rootPage;
-    private int exitCode;
+    private Integer exitCode;
 
     public BaseHTTPLauncher(String cmd) {
         this.cmd = cmd;
@@ -112,11 +115,12 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
         return c;
     }
 
-    public void setTimeout(long ms) {
+    public final void setTimeout(long ms) {
         timeOut = ms;
     }
 
-    public void addClassLoader(ClassLoader url) {
+    @Override
+    public final void addClassLoader(ClassLoader url) {
         this.loaders.add(url);
     }
 
@@ -144,7 +148,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
         if (!startpage.startsWith("/")) {
             startpage = "/" + startpage;
         }
-        HttpServer s = initServer(".", true, "", false);
+        HttpServer s = initServer(".", true, "", 5000, false);
         int last = startpage.lastIndexOf('/');
         String prefix = startpage.substring(0, last);
         String simpleName = startpage.substring(last);
@@ -157,6 +161,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
         }
     }
 
+    @Override
     void showDirectory(File dir, String startpage, boolean addClasses) throws IOException {
         if (!startpage.startsWith("/")) {
             startpage = "/" + startpage;
@@ -168,7 +173,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
                 prefix = startpage.substring(0, last);
             }
         }
-        HttpServer s = initServer(dir.getPath(), addClasses, prefix, false);
+        HttpServer s = initServer(dir.getPath(), addClasses, prefix, 5000, false);
         try {
             launchServerAndBrwsr(s, startpage);
         } catch (Exception ex) {
@@ -195,7 +200,9 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
         }
     }
 
-    private HttpServer initServer(String path, boolean addClasses, String vmPrefix, boolean unitTests) throws IOException {
+    private HttpServer initServer(
+        String path, boolean addClasses, String vmPrefix, int countDownTime, boolean unitTests
+    ) throws IOException {
         HttpServer s = HttpServer.createSimpleServer(null, new PortRange(8080, 65535));
         /*
         ThreadPoolConfig fewThreads = ThreadPoolConfig.defaultConfig().copy().
@@ -257,6 +264,10 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
         serverLogger.setUseParentHandlers(false);
         serverLogger.addHandler(consoleHandler);
 
+        if (countDownTime > 0) {
+            WebSocketEngine.getEngine().register("", "/heartbeat", new LifeCycleApp(this, countDownTime, serverLogger));
+        }
+
         LOG.addHandler(consoleHandler);
         LOG.setUseParentHandlers(false);
         return s;
@@ -265,7 +276,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
     private static int resourcesCount;
     private void executeInBrowser() throws InterruptedException, URISyntaxException, IOException {
         wait = new CountDownLatch(1);
-        server = initServer(".", true, "", true);
+        server = initServer(".", true, "", -1, true);
         final ServerConfiguration conf = server.getServerConfiguration();
 
         class DynamicResourceHandler extends HttpHandler {
@@ -293,8 +304,8 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
                 if ("/dynamic".equals(request.getRequestURI())) {
                     boolean webSocket = false;
                     String mimeType = request.getParameter("mimeType");
-                    List<String> params = new ArrayList<String>();
-                    for (int i = 0; ; i++) {
+                    List<String> params = new ArrayList<>();
+                    for (int i = 0;; i++) {
                         String p = request.getParameter("param" + i);
                         if (p == null) {
                             break;
@@ -302,8 +313,8 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
                         params.add(p);
                         if ("protocol:ws".equals(p)) {
                             webSocket = true;
-                            continue;
-                        }                    }
+                        }
+                    }
                     final String cnt = request.getParameter("content");
                     String mangle = cnt.replace("%20", " ").replace("%0A", "\n");
                     ByteArrayInputStream is = new ByteArrayInputStream(mangle.getBytes("UTF-8"));
@@ -380,7 +391,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
 
         conf.addHttpHandler(new HttpHandler() {
             int cnt;
-            List<InvocationContext> cases = new ArrayList<InvocationContext>();
+            List<InvocationContext> cases = new ArrayList<>();
             DynamicResourceHandler prev;
             @Override
             public void service(Request request, Response response) throws Exception {
@@ -498,38 +509,44 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
 
     @Override
     public void shutdown() throws IOException {
-        shutdown(0);
+        shutdown(0, true);
     }
-    private void shutdown(int exitCode) throws IOException {
+
+    private void shutdown(int exitCode, boolean wait4methods) throws IOException {
         synchronized (this) {
+            if (this.exitCode != null) {
+                return;
+            }
             this.exitCode = exitCode;
             if (flushing != null) {
                 flushing.interrupt();
                 flushing = null;
             }
         }
-        methods.offer(END);
-        for (;;) {
-            int prev = methods.size();
-            try {
-                if (wait != null && wait.await(timeOut, TimeUnit.MILLISECONDS)) {
+        if (wait4methods) {
+            methods.offer(END);
+            for (;;) {
+                int prev = methods.size();
+                try {
+                    if (wait != null && wait.await(timeOut, TimeUnit.MILLISECONDS)) {
+                        break;
+                    }
+                } catch (InterruptedException ex) {
+                    throw new IOException(ex);
+                }
+                if (prev == methods.size()) {
+                    LOG.log(
+                        Level.WARNING,
+                        "Timeout and no test has been executed meanwhile (at {0}). Giving up.",
+                        methods.size()
+                    );
                     break;
                 }
-            } catch (InterruptedException ex) {
-                throw new IOException(ex);
-            }
-            if (prev == methods.size()) {
-                LOG.log(
-                    Level.WARNING,
-                    "Timeout and no test has been executed meanwhile (at {0}). Giving up.",
-                    methods.size()
+                LOG.log(Level.INFO,
+                    "Timeout, but tests got from {0} to {1}. Trying again.",
+                    new Object[]{prev, methods.size()}
                 );
-                break;
             }
-            LOG.log(Level.INFO,
-                "Timeout, but tests got from {0} to {1}. Trying again.",
-                new Object[]{prev, methods.size()}
-            );
         }
         stopServerAndBrwsr(server, brwsr);
     }
@@ -707,11 +724,11 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
     }
 
     final class Res {
-        private final Set<URL> ignore = new HashSet<URL>();
+        private final Set<URL> ignore = new HashSet<>();
 
         Object compileJar(URL jarURL) throws IOException {
-            List<String[]> libraries = new ArrayList<String[]>();
-            Map<String,Object[]> osgiJars = new HashMap<String, Object[]>();
+            List<String[]> libraries = new ArrayList<>();
+            Map<String,Object[]> osgiJars = new HashMap<>();
             for (ClassLoader loader : loaders) {
                 Enumeration<URL> en = loader.getResources("META-INF/MANIFEST.MF");
                 while (en.hasMoreElements()) {
@@ -755,9 +772,9 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
                     if (props != null) {
                         URLConnection c = props.openConnection();
                         Properties load = new Properties();
-                        final InputStream is = c.getInputStream();
-                        load.load(is);
-                        is.close();
+                        try (InputStream is = c.getInputStream()) {
+                            load.load(is);
+                        }
                         if (lib[2].equals(load.getProperty("version"))) {
                             if (c instanceof JarURLConnection) {
                                 final URL definedInURL = ((JarURLConnection)c).getJarFileURL();
@@ -966,7 +983,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
                 }
                 if (exitCode != -1) {
                     LOG.info("Exit request received. Shutting down!");
-                    shutdown(exitCode);
+                    shutdown(exitCode, false);
                 }
             }
             if (request.getRequestURI().equals(vmResource)) {
@@ -1012,9 +1029,9 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
                         throw new IOException("Can't compile " + url.toExternalForm(), iOException);
                     }
                     if (s instanceof String) {
-                        Writer w = response.getWriter();
-                        w.append((String)s);
-                        w.close();
+                        try (Writer w = response.getWriter()) {
+                            w.append((String)s);
+                        }
                         return;
                     }
                     if (s instanceof InputStream) {
@@ -1034,9 +1051,9 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
                     }
                     String s = loader.compileFromClassPath(url);
                     if (s != null) {
-                        Writer w = response.getWriter();
-                        w.append(s);
-                        w.close();
+                        try (Writer w = response.getWriter()) {
+                            w.append(s);
+                        }
                         return;
                     }
                 }
@@ -1101,5 +1118,105 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
                 LOG.log(Level.WARNING, null, ex);
             }
         }
+    }
 
-    }}
+    private static class LifeCycleApp extends WebSocketApplication {
+        private final Timer countDown = new Timer("Server countdown");
+        private final BaseHTTPLauncher server;
+        private final Logger log;
+        private final int countDownTime;
+        private int heartBeatCount;
+        private TimerTask countDownTask;
+
+        public LifeCycleApp(BaseHTTPLauncher s, int timeout, Logger log) {
+            this.server = s;
+            this.log = log;
+            this.countDownTime = timeout;
+        }
+
+        @Override
+        protected boolean onError(WebSocket webSocket, Throwable t) {
+            log.log(Level.WARNING, null, t);
+            return true;
+        }
+
+        @Override
+        public void onConnect(WebSocket socket) {
+            newCountDownTask(null);
+            heartBeatCount++;
+            log.log(Level.INFO, "Client #{0} connected.", heartBeatCount);
+        }
+
+        @Override
+        public void onClose(WebSocket socket, DataFrame frame) {
+            if (--heartBeatCount <= 0) {
+                log.info("Last client disconnected. Final countdown.");
+                long then = System.currentTimeMillis();
+                TimerTask newTask = new TimerTask() {
+                    @Override
+                    public void run() {
+                        if (heartBeatCount > 0) {
+                            return;
+                        }
+
+                        long now = System.currentTimeMillis();
+                        int delay = (int) Math.round((now - then) / 1000.0);
+                        log.log(Level.INFO, "No client for {0} seconds. Shutting down.", delay);
+                        try {
+                            server.shutdown(0, false);
+                        } catch (IOException ex) {
+                            log.log(Level.SEVERE, null, ex);
+                        }
+                    }
+                };
+                newCountDownTask(newTask);
+                return;
+            }
+            log.log(Level.INFO, "Client disconnected. {0} client(s) remaining", heartBeatCount);
+        }
+
+        @Override
+        public void onPong(WebSocket socket, byte[] bytes) {
+        }
+
+        @Override
+        public void onPing(WebSocket socket, byte[] bytes) {
+        }
+
+        @Override
+        public void onMessage(WebSocket socket, byte[] bytes) {
+        }
+
+        @Override
+        public void onMessage(WebSocket socket, String text) {
+            if (text.startsWith("exit:")) {
+                String exit = text.substring(5).trim();
+                int exitCode;
+                try {
+                    exitCode = Integer.parseInt(exit);
+                } catch (NumberFormatException ex) {
+                    exitCode = "true".equals(exit) ? 0 : -1;
+                }
+                if (exitCode != -1) {
+                    log.info("Exit request received. Shutting down!");
+                    try {
+                        server.shutdown(exitCode, false);
+                    } catch (IOException ex) {
+                        log.log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        }
+
+        private synchronized void newCountDownTask(TimerTask newTask) {
+            TimerTask prevTask = countDownTask;
+            if (prevTask != null) {
+                prevTask.cancel();
+            }
+            countDownTask = newTask;
+            if (newTask != null) {
+                countDown.schedule(newTask, countDownTime);
+            }
+        }
+    }
+}
