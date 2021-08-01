@@ -23,12 +23,12 @@
   <parent>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>kosample-pom</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>0.50</version>
   </parent>
 
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>kosample-js</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>0.50</version>
   <packaging>bundle</packaging>
 
   <name>kosample JavaScript Libraries</name>

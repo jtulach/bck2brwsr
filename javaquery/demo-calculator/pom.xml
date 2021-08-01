@@ -23,13 +23,13 @@
 
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>demo.static.calculator</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>0.50</version>
   <packaging>jar</packaging>
   
   <parent>
       <groupId>org.apidesign.bck2brwsr</groupId>
       <artifactId>javaquery</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>0.50</version>
   </parent>
 
   <name>JavaQuery Demo - Calculator - Static Compilation</name>
