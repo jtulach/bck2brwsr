@@ -17,13 +17,17 @@
  */
 package org.apidesign.bck2brwsr.launcher;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.Flushable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -48,6 +52,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.WeakHashMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -173,9 +178,52 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
                 prefix = startpage.substring(0, last);
             }
         }
+
+        Properties props = new Properties();
+        File portFile = new File(dir, ".bck2brwsrPort");
+        Integer port = null;
+        if (portFile.exists()) {
+            try (FileInputStream fis = new FileInputStream(portFile)) {
+                props.load(fis);
+            }
+            String p = props.getProperty("port");
+            if (p != null) {
+                try {
+                    port = Integer.parseInt(p);
+                } catch (NumberFormatException ex) {
+                    // go on
+                }
+            }
+        }
+        if (port != null) {
+            URL url = new URL("http://localhost:" + port + "/heartbeat/reload");
+            LOG.log(Level.INFO, "Requesting reload via {0}", url);
+            try (BufferedReader r = new BufferedReader(new InputStreamReader(url.openStream()))) {
+                final String reply = r.readLine();
+                if ("Reloaded".equals(reply)) {
+                    synchronized (this) {
+                        flushing = Thread.currentThread();
+                        notifyAll();
+                    }
+                    LOG.log(Level.INFO, "Reload OK: {0}", reply);
+                    return;
+                }
+                LOG.log(Level.INFO, "Reload rejected {0}", reply);
+            } catch (IOException ex) {
+                LOG.log(Level.INFO, "Reload rejected: " + ex.getMessage(), ex);
+            }
+        }
+
         HttpServer s = initServer(dir.getPath(), addClasses, prefix, 5000, false);
         try {
             launchServerAndBrwsr(s, startpage);
+            props.setProperty("port", "" + findPort(s));
+            try (FileOutputStream out = new FileOutputStream(portFile)) {
+                props.store(out, cmd);
+            } catch (IOException ex) {
+                LOG.log(Level.WARNING, "Cannot store port in {0}", portFile);
+            }
+            portFile.deleteOnExit();
         } catch (Exception ex) {
             throw new IOException(ex);
         }
@@ -265,7 +313,9 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
         serverLogger.addHandler(consoleHandler);
 
         if (countDownTime > 0) {
-            WebSocketEngine.getEngine().register("", "/heartbeat", new LifeCycleApp(this, countDownTime, serverLogger));
+            final LifeCycleApp lifeCycleApp = new LifeCycleApp(this, countDownTime, serverLogger);
+            WebSocketEngine.getEngine().register("", "/heartbeat", lifeCycleApp);
+            conf.addHttpHandler(lifeCycleApp.getReloadHandler(), "/heartbeat/reload");
         }
 
         LOG.addHandler(consoleHandler);
@@ -655,6 +705,9 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
 
     @Override
     public synchronized void flush() throws IOException {
+        if (flushing != null) {
+            return;
+        }
         flushing = Thread.currentThread();
         while (flushing == Thread.currentThread()) {
             try {
@@ -714,13 +767,18 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
     }
 
     private static URI pageURL(String protocol, HttpServer server, final String page) {
-        NetworkListener listener = server.getListeners().iterator().next();
-        int port = listener.getPort();
+        int port = findPort(server);
         try {
             return new URI(protocol + "://localhost:" + port + page);
         } catch (URISyntaxException ex) {
             throw new IllegalStateException(ex);
         }
+    }
+
+    private static int findPort(HttpServer s) {
+        NetworkListener listener = s.getListeners().iterator().next();
+        int port = listener.getPort();
+        return port;
     }
 
     final class Res {
@@ -962,13 +1020,14 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
         }
     }
 
-    private class VMAndPages extends StaticHttpHandler {
+    private final class VMAndPages extends StaticHttpHandler {
         private final boolean unitTestMode;
         private String vmResource;
 
         public VMAndPages(boolean unitTestMode) {
             super((String[]) null);
             this.unitTestMode = unitTestMode;
+            this.setFileCacheEnabled(false);
         }
 
         @Override
@@ -1123,15 +1182,17 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
     private static class LifeCycleApp extends WebSocketApplication {
         private final Timer countDown = new Timer("Server countdown");
         private final BaseHTTPLauncher server;
+        private final ReloadHandler reloadHandler;
         private final Logger log;
         private final int countDownTime;
-        private int heartBeatCount;
+        private final Map<WebSocket,Object> activeClients = new WeakHashMap<>();
         private TimerTask countDownTask;
 
         public LifeCycleApp(BaseHTTPLauncher s, int timeout, Logger log) {
             this.server = s;
             this.log = log;
             this.countDownTime = timeout;
+            this.reloadHandler = new ReloadHandler();
         }
 
         @Override
@@ -1143,19 +1204,20 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
         @Override
         public void onConnect(WebSocket socket) {
             newCountDownTask(null);
-            heartBeatCount++;
-            log.log(Level.INFO, "Client #{0} connected.", heartBeatCount);
+            activeClients.put(socket, this);
+            log.log(Level.INFO, "Connected client count: #{0}", activeClients.size());
         }
 
         @Override
         public void onClose(WebSocket socket, DataFrame frame) {
-            if (--heartBeatCount <= 0) {
+            activeClients.remove(socket);
+            if (activeClients.isEmpty()) {
                 log.info("Last client disconnected. Final countdown.");
                 long then = System.currentTimeMillis();
                 TimerTask newTask = new TimerTask() {
                     @Override
                     public void run() {
-                        if (heartBeatCount > 0) {
+                        if (!activeClients.isEmpty()) {
                             return;
                         }
 
@@ -1172,7 +1234,7 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
                 newCountDownTask(newTask);
                 return;
             }
-            log.log(Level.INFO, "Client disconnected. {0} client(s) remaining", heartBeatCount);
+            log.log(Level.INFO, "Client disconnected. {0} client(s) remaining", activeClients.size());
         }
 
         @Override
@@ -1216,6 +1278,29 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
             countDownTask = newTask;
             if (newTask != null) {
                 countDown.schedule(newTask, countDownTime);
+            }
+        }
+
+        public HttpHandler getReloadHandler() {
+            return reloadHandler;
+        }
+
+        private class ReloadHandler extends HttpHandler {
+            @Override
+            public void service(Request rqst, Response rspns) throws Exception {
+                log.log(Level.INFO, "Request to reload {0} with {1} active clients.", new Object[] { rqst.getRequestURI(), activeClients.keySet().size() });
+                try (Writer w = rspns.getWriter()) {
+                    if (activeClients.isEmpty()) {
+                        w.write("No client to reload");
+                        rspns.setStatus(HttpStatus.NOT_FOUND_404);
+                    } else {
+                        for (WebSocket s : activeClients.keySet()) {
+                            s.send("reload");
+                        }
+                        w.write("Reloaded");
+                        rspns.setStatus(HttpStatus.OK_200);
+                    }
+                }
             }
         }
     }

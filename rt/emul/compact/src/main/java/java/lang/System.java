@@ -109,6 +109,9 @@ public class System {
             }
             s.onmessage = function(ev) {
                 console.log(ev.data);
+                if ('reload' === ev.data) {
+                    window.location.reload();
+                }
             }
         }
         """)

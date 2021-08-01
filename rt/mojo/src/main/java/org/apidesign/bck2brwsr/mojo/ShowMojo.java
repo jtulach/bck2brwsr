@@ -24,8 +24,6 @@ import java.io.File;
 import java.io.Flushable;
 import java.io.IOException;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -42,15 +40,15 @@ import org.apidesign.bck2brwsr.launcher.Launcher;
 public class ShowMojo extends AbstractMojo {
     public ShowMojo() {
     }
-    
-    /** The identification of a launcher to use. Known values <code>fxbrwsr</code>, 
-     * <code>bck2brwsr</code>, or 
+
+    /** The identification of a launcher to use. Known values <code>fxbrwsr</code>,
+     * <code>bck2brwsr</code>, or
      * name of an external process to execute.
      */
     @Parameter
     private String launcher;
-    
-    
+
+
     /** Resource to show as initial page */
     @Parameter
     private String startpage;
@@ -64,7 +62,7 @@ public class ShowMojo extends AbstractMojo {
 
     @Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}.js")
     private File mainJavaScript;
-    
+
     @Override
     public void execute() throws MojoExecutionException {
         if (startpage == null) {

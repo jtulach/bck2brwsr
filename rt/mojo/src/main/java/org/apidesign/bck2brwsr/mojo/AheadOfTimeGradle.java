@@ -110,7 +110,8 @@ public final class AheadOfTimeGradle implements Plugin<Project> {
                     @Override
                     public void execute(Task t) {
                         try {
-                            show.show(p);
+                            final boolean continuous = p.getGradle().getStartParameter().isContinuous();
+                            show.show(p, continuous);
                         } catch (IOException ex) {
                             throw new GradleScriptException(ex.getMessage(), ex);
                         }

@@ -18,19 +18,13 @@
 
 package org.apidesign.bck2brwsr.mojo;
 
-import java.io.Closeable;
 import java.io.File;
-import java.io.Flushable;
 import java.io.IOException;
 import java.util.LinkedList;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
-import org.apidesign.bck2brwsr.launcher.Launcher;
 import static org.apidesign.bck2brwsr.mojo.AheadOfTimeGradle.PROP_MAIN_CLASS_NAME;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleScriptException;
@@ -38,7 +32,7 @@ import org.gradle.api.Project;
 import org.gradle.api.logging.Logger;
 
 public class ShowTask extends DefaultTask {
-    void show(final Project p) throws IOException {
+    void show(final Project p, boolean continuous) throws IOException {
         String mainClass = AheadOfTimeGradle.findMainClass(p);
         if (mainClass == null) {
             throw new GradleScriptException("Define property " + PROP_MAIN_CLASS_NAME + " in the project", null);
@@ -48,48 +42,38 @@ public class ShowTask extends DefaultTask {
         web.mkdirs();
         UtilBase.verifyIndexHtml(web, "main.js", mainClass);
 
-        final Logger gradleLogger = this.getLogger();
-        final java.util.logging.Logger javaLogger = java.util.logging.Logger.getLogger("org.apidesign.bck2brwsr.launcher.BaseHTTPLauncher");
-        final java.util.logging.Logger serverLogger = java.util.logging.Logger.getLogger("org.glassfish.grizzly.http.server");
-        final DelegatingHandler handler = new DelegatingHandler(gradleLogger);
-        javaLogger.addHandler(handler);
-        serverLogger.addHandler(handler);
+        /*
+        URL u = getClass().getClassLoader().getResource("META-INF/gradle-plugins/bck2brwsr.properties");
+        JarURLConnection juc = (JarURLConnection) u.openConnection();
+        URL myJar = juc.getJarFileURL();
+        getLogger().info("cp: " + myJar);
+        getLogger().info("web: " + web);
+        */
 
-        try (Closeable httpServer = Launcher.showDir("bck2brwsr", web, null, "index.html")) {
-            keepOneHandler(javaLogger, handler);
-            keepOneHandler(serverLogger, handler);
-
-            final CountDownLatch finished = new CountDownLatch(1);
-            if (httpServer instanceof Flushable) {
-                Executors.newSingleThreadExecutor().execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            ((Flushable) httpServer).flush();
-                        } catch (IOException ex) {
-                            gradleLogger.warn(ex.getMessage(), ex);
-                        } finally {
-                            finished.countDown();
-                        }
-                    }
-                });
-            }
-            while (finished.getCount() > 0) {
-                handler.logPending();
+        final DelegatingHandler handler = new DelegatingHandler(getLogger());
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Thread t = Thread.currentThread();
                 try {
-                    finished.await(100, TimeUnit.MILLISECONDS);
-                } catch (InterruptedException ex) {
-                    gradleLogger.warn(ex.getMessage(), ex);
+                    ShowMain.execute(handler, web);
+                } catch (IOException ex) {
+                    getLogger().error(ex.getMessage(), ex);
+                } finally {
+                    getLogger().warn("HTTP server is shutting down.");
                 }
             }
-        }
-        gradleLogger.warn("Finished");
-    }
-
-    private void keepOneHandler(final java.util.logging.Logger logger, final Handler handler) {
-        for (Handler h : logger.getHandlers()) {
-            if (h != handler) {
-                logger.removeHandler(h);
+        }, "Bck2Brwsr Server");
+        t.setDaemon(true);
+        t.start();
+        if (!continuous) {
+            try {
+                getLogger().warn("Avaiting HTTP server...");
+                t.join();
+            } catch (InterruptedException ex) {
+                getLogger().warn("Interrupted", ex);
+            } finally {
+                getLogger().warn("HTTP server finished. Continuing...");
             }
         }
     }
@@ -109,7 +93,7 @@ public class ShowTask extends DefaultTask {
             this.pending.add(record);
         }
 
-        public void logPending() {
+        private void logPending() {
             LogRecord[] arr;
             synchronized (this) {
                 arr = pending.toArray(new LogRecord[0]);
@@ -121,11 +105,15 @@ public class ShowTask extends DefaultTask {
                 if (msg == null) {
                     msg = "";
                 }
-                for (String line : msg.split("\n")) {
-                    if (record.getLevel().intValue() >= Level.WARNING.intValue()) {
-                        gradleLogger.warn(line);
-                    } else {
-                        gradleLogger.lifecycle(line);
+                if (gradleLogger == null) {
+                    System.out.append(msg);
+                } else {
+                    for (String line : msg.split("\n")) {
+                        if (record.getLevel().intValue() >= Level.WARNING.intValue()) {
+                            gradleLogger.warn(line);
+                        } else {
+                            gradleLogger.lifecycle(line);
+                        }
                     }
                 }
             }
@@ -133,6 +121,7 @@ public class ShowTask extends DefaultTask {
 
         @Override
         public void flush() {
+            logPending();
         }
 
         @Override
