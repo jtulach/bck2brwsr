@@ -52,9 +52,9 @@ public class ExceptionStackTest {
         return trace;
     }
     
-    @JavaScriptBody(args = {}, body = """
-        return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-    """)
+    @JavaScriptBody(args = {}, body = "\n" +
+        "    return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);\n" +
+        "\n")
     private static boolean skipOnSafari() {
         String os = System.getProperty("os.name");
         return os != null && os.contains("Mac");

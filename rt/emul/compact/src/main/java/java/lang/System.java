@@ -99,30 +99,30 @@ public class System {
         return "\n";
     }
 
-    @JavaScriptBody(args = { "socket" }, body = """
-        socket[0] = null;
-        if (typeof WebSocket !== 'undefined') {
-            var s = new WebSocket('ws://' + location.host + '/heartbeat');
-            s.onopen = function(ev) {
-                socket[0] = s;
-                s.send('Application is running');
-            }
-            s.onmessage = function(ev) {
-                console.log(ev.data);
-                if ('reload' === ev.data) {
-                    window.location.reload();
-                }
-            }
-        }
-        """)
+    @JavaScriptBody(args = { "socket" }, body = "\n"
+            + "        socket[0] = null;\n" +
+"        if (typeof WebSocket !== 'undefined') {\n" +
+"            var s = new WebSocket('ws://' + location.host + '/heartbeat');\n" +
+"            s.onopen = function(ev) {\n" +
+"                socket[0] = s;\n" +
+"                s.send('Application is running');\n" +
+"            }\n" +
+"            s.onmessage = function(ev) {\n" +
+"                console.log(ev.data);\n" +
+"                if ('reload' === ev.data) {\n" +
+"                    window.location.reload();\n" +
+"                }\n" +
+"            }\n" +
+"        }\n" +
+    "")
     private static void initLifeCycle(Object[] socket) {
         socket[0] = null;
     }
 
-    @JavaScriptBody(args = { "s", "exitCode" }, body = """
-         s.send('exit: ' + exitCode);
-         window.close();
-    """)
+    @JavaScriptBody(args = { "s", "exitCode" }, body = "\n"
+            + "         s.send('exit: ' + exitCode);\n" +
+              "         window.close();\n"
+    )
     private static void lifeCycleExit(Object lifeCycle, int exitCode) {
     }
 

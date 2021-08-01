@@ -26,12 +26,11 @@ import javax.script.ScriptException;
 public abstract class Base64Convert {
     static void defineAtoB(ScriptEngine js) throws ScriptException, NoSuchMethodException {
         Object thiz = js.eval("this");
-        Object register = js.eval("""
-            (function(global, convert) {
-              global.atob = function(s) {
-                return new String(convert.convert(s));
-              }
-            })"""
+        Object register = js.eval("(function(global, convert) {\n" +
+"              global.atob = function(s) {\n" +
+"                return new String(convert.convert(s));\n" +
+"              }\n" +
+"            })\n"
         );
         Base64Convert convert = Base64Convert.create();
         ((Invocable) js).invokeMethod(register, "call", thiz, thiz, convert);

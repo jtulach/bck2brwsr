@@ -27,7 +27,10 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import org.netbeans.api.scripting.Scripting;
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 import org.testng.annotations.Test;
 
 public class Gradle1BuildTest {
@@ -46,31 +49,29 @@ public class Gradle1BuildTest {
         ScriptEngineManager sem = Scripting.createManager();
         ScriptEngine js = sem.getEngineByMimeType("text/javascript");
         assertNotNull(js, "JavaScript engine has been found");
-        Object rawDocument = js.eval("""
-            (function(g) {
-                var elements = {};
-
-                g.document = {};
-                g.document.createElement = function(tagName) {
-                    var tag = {};
-                    tag.name = tagName;
-                    return tag;
-                };
-                g.document.appendChild = function(tag) {
-                    var tagName = tag.name;
-                    if (!elements[tagName]) {
-                        elements[tagName] = [];
-                    }
-                    elements[tagName].push(tag);
-                };
-                g.document.getElementsByTagName = function(tagName) {
-                    if (tagName === "head") return [ g.document ];
-                    var arr = elements[tagName];
-                    return arr ? arr : [];
-                };
-                return g.document;
-            })(this);
-            """
+        Object rawDocument = js.eval("(function(g) {\n" +
+"                var elements = {};\n" +
+"\n" +
+"                g.document = {};\n" +
+"                g.document.createElement = function(tagName) {\n" +
+"                    var tag = {};\n" +
+"                    tag.name = tagName;\n" +
+"                    return tag;\n" +
+"                };\n" +
+"                g.document.appendChild = function(tag) {\n" +
+"                    var tagName = tag.name;\n" +
+"                    if (!elements[tagName]) {\n" +
+"                        elements[tagName] = [];\n" +
+"                    }\n" +
+"                    elements[tagName].push(tag);\n" +
+"                };\n" +
+"                g.document.getElementsByTagName = function(tagName) {\n" +
+"                    if (tagName === \"head\") return [ g.document ];\n" +
+"                    var arr = elements[tagName];\n" +
+"                    return arr ? arr : [];\n" +
+"                };\n" +
+"                return g.document;\n" +
+"            })(this);\n"
         );
         Document p = ((Invocable)js).getInterface(rawDocument, Document.class);
         js.eval(readStream(bck2brwsrJs));
@@ -83,12 +84,11 @@ public class Gradle1BuildTest {
 
         Base64Convert.defineAtoB(js);
 
-        Object result = js.eval("""
-                (() => {
-                    var vm = bck2brwsr();
-                    return vm.loadClass('Gradle1Check').invoke('formulate');
-                })();
-                """);
+        Object result = js.eval("(function () {\n" +
+        "  var vm = bck2brwsr();\n" +
+        "  return vm.loadClass('Gradle1Check').invoke('formulate');\n" +
+        "})();\n" +
+        "");
 
         assertEquals(result, "Gradle1Check value: 42");
     }

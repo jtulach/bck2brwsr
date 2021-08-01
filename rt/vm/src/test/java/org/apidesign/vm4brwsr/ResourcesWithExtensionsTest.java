@@ -17,7 +17,6 @@
  */
 package org.apidesign.vm4brwsr;
 
-import java.io.UnsupportedEncodingException;
 import javax.script.ScriptEngine;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
