@@ -117,8 +117,8 @@ public final class Bck2BrwsrKnockoutImpl extends KnockoutTCK {
             for (int i = 0; i < parameters.length; i++) {
                 sb.append("&param" + i).append("=").append(parameters[i]);
             }
-            String mangle = content.replace("\n", "%0a").replace(" ", "%20");
-            sb.append("&content=").append(mangle);
+            String urlEncode = content.replace("\n", "%0a").replace(" ", "%20");
+            sb.append("&content=").append(urlEncode);
 
             URL query = new URL(baseURL, sb.toString());
             String uri = (String) query.getContent(new Class[] { String.class });

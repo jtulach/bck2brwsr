@@ -67,7 +67,7 @@ final class UtilBase {
         } else {
             byte[] arr = Files.readAllBytes(index.toPath());
             String data = new String(arr, "UTF-8");
-            String newText = UtilBase.mangleIndexPage(data, mainJS, mainClass);
+            String newText = UtilBase.augmentedIndexPage(data, mainJS, mainClass);
             if (!newText.equals(data)) {
                 try (final Writer w = new OutputStreamWriter(new FileOutputStream(index), "UTF-8")) {
                     w.write(newText);
@@ -78,7 +78,7 @@ final class UtilBase {
     private UtilBase() {
     }
 
-    static String mangleIndexPage(String data, String mainJS, String mainClass) {
+    static String augmentedIndexPage(String data, String mainJS, String mainClass) {
         Pattern loadClass = Pattern.compile("loadClass *\\( *[\"']" + mainClass);
         Matcher loadClassMatcher = loadClass.matcher(data);
         if (loadClassMatcher.find()) {

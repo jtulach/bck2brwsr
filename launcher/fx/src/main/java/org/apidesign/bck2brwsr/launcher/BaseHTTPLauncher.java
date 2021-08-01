@@ -366,8 +366,8 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
                         }
                     }
                     final String cnt = request.getParameter("content");
-                    String mangle = cnt.replace("%20", " ").replace("%0A", "\n");
-                    ByteArrayInputStream is = new ByteArrayInputStream(mangle.getBytes("UTF-8"));
+                    String urlEncode = cnt.replace("%20", " ").replace("%0A", "\n");
+                    ByteArrayInputStream is = new ByteArrayInputStream(urlEncode.getBytes("UTF-8"));
                     URI url;
                     final Resource res = new Resource(is, mimeType, "/dynamic/res" + ++resourcesCount, params.toArray(new String[params.size()]));
                     if (webSocket) {

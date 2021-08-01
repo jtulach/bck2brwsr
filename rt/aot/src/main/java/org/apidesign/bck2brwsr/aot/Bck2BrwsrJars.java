@@ -198,6 +198,9 @@ public final class Bck2BrwsrJars {
             if (n.equals("module-info.class")) {
                 continue;
             }
+            if (n.startsWith("META-INF/versions/") && n.endsWith("/module-info.class")) {
+                continue;
+            }
             int last = n.lastIndexOf('/');
             String pkg = n.substring(0, last + 1);
             if (pkg.isEmpty()) {

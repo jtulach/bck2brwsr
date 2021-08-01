@@ -406,14 +406,6 @@ abstract class ByteCodeToJavaScript {
         return "";
     }
 
-    private void versionCheck() throws IOException {
-        if (jc.getMajor_version() < 50) {
-            throw new IOException("Can't compile " + jc.getClassName() + ". Class file version " + jc.getMajor_version() + "."
-                    + jc.getMinor_version() + " - recompile with -target 1.6 (at least)."
-            );
-        }
-    }
-
     private StringArray findJavaScriptResources(byte[] arr, final String cn) throws IOException {
         if (arr == null) {
             return null;
@@ -506,18 +498,25 @@ abstract class ByteCodeToJavaScript {
         out.append(") {").append("\n");
 
         final byte[] byteCodes = m.getCode();
-        if (byteCodes == null) {
-            byte[] defaultAttr = m.getDefaultAttribute();
-            if (defaultAttr != null) {
-                out.append("  return ");
-                AnnotationParser ap = new GenerateAnno(out, true, false);
-                ap.parseDefault(defaultAttr, jc);
-                out.append(";\n");
-            } else {
-                if (debug(out, "  throw 'no code found for ")) {
-                   out.append(jc.getClassName()).append('.')
-                   .append(m.getName()).append("';\n");
+        if (byteCodes == null || jc.getMajor_version() < 50) {
+            if (byteCodes == null) {
+                byte[] defaultAttr = m.getDefaultAttribute();
+                if (defaultAttr != null) {
+                    out.append("  return ");
+                    AnnotationParser ap = new GenerateAnno(out, true, false);
+                    ap.parseDefault(defaultAttr, jc);
+                    out.append(";\n");
+                } else {
+                    if (debug(out, "  throw 'no code found for ")) {
+                       out.append(jc.getClassName()).append('.')
+                       .append(m.getName()).append("';\n");
+                    }
                 }
+            } else {
+                out.append("  throw 'Class file version for " + jc.getClassName() + " is " + jc.getMajor_version() + "."
+                    + jc.getMinor_version() + " - recompile with -target 1.6 (at least)';\n"
+            );
+
             }
             if (defineProp) {
                 out.append("}});");
@@ -526,8 +525,6 @@ abstract class ByteCodeToJavaScript {
             }
             return defineProp;
         }
-
-        versionCheck();
 
         final StackMapper smapper = new StackMapper();
 
@@ -672,21 +669,63 @@ abstract class ByteCodeToJavaScript {
     }
 
     static String mangleSig(String sig) {
-        return mangleSig(sig, 0, sig.length());
+        return mangle(sig, 0, sig.length(), false);
+    }
+
+    static String mangle(String originalName, int from, int till, boolean replaceDot) {
+        final int bufferSize = Math.max((till - from) * 2, 32);
+        char[] buf = new char[bufferSize];
+        int at = 0;
+        for (int i = from; i < till; i++) {
+            if (at > buf.length - 10) {
+                buf = copyDouble(buf);
+            }
+            final char ch = originalName.charAt(i);
+            switch (ch) {
+                case '/': buf[at++] = '_'; break;
+                case '_': buf[at++] = '_'; buf[at++] = '1'; break;
+                case ';': buf[at++] = '_'; buf[at++] = '2'; break;
+                case '[': buf[at++] = '_'; buf[at++] = '3'; break;
+                case '.':
+                    if (replaceDot) {
+                        buf[at++] = '_';
+                        break;
+                    }
+                    // fallhrough
+                default:
+                    boolean valid = i == 0 ?
+                            Character.isJavaIdentifierStart(ch) : Character.isJavaIdentifierPart(ch);
+                    if (valid) {
+                        buf[at++] = ch;
+                    } else {
+                        buf[at++] = '_';
+                        buf[at++] = '0';
+                        String hex = Integer.toHexString(ch).toLowerCase();
+                        for (int m = hex.length(); m < 4; m++) {
+                            buf[at++] = '0';
+                        }
+                        for (int r = 0; r < hex.length(); r++) {
+                            buf[at++] = hex.charAt(r);
+                        }
+                    }
+                break;
+            }
+        }
+        return new String(buf, 0, at);
+    }
+
+    private static char[] copyDouble(char[] buf) {
+        char[] copy = new char[buf.length * 2];
+        for (int i = 0; i < buf.length; i++) {
+            copy[i] = buf[i];
+        }
+        return copy;
     }
 
     private static String mangleMethodName(String name) {
-        StringBuilder sb = new StringBuilder(name.length() * 2);
-        int last = name.length();
-        for (int i = 0; i < last; i++) {
-            final char ch = name.charAt(i);
-            switch (ch) {
-                case '_': sb.append("_1"); break;
-                default: sb.append(ch); break;
-            }
-        }
-        return sb.toString();
+        return mangle(name, 0, name.length(), false);
     }
+
     private static String mangleSig(String txt, int first, int last) {
         StringBuilder sb = new StringBuilder((last - first) * 2);
         for (int i = first; i < last; i++) {
