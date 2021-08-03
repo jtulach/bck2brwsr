@@ -60,6 +60,16 @@ public class AheadOfTimeTask extends DefaultTask {
         this.bck2brwsrJs = new File(webDir(p), "bck2brwsr.js");
         this.mainJs = new File(webDir(p), "main.js");
         this.libraries = new TreeMap<>();
+        Configuration conf = p.getConfigurations().getByName(CONF_NAME);
+        if (conf != null) {
+            for (File f : conf.getFiles()) {
+                if (f.isDirectory()) {
+                    getInputs().dir(f);
+                } else {
+                    getInputs().file(f);
+                }
+            }
+        }
     }
 
     public FileCollection getJars() {
