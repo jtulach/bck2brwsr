@@ -106,6 +106,7 @@ public class AOTLibrary extends AbstractMojo {
                 attr.putValue("Bck2BrwsrArtifactId", prj.getArtifactId());
                 attr.putValue("Bck2BrwsrGroupId", prj.getGroupId());
                 attr.putValue("Bck2BrwsrVersion", prj.getVersion());
+                attr.putValue("Bck2BrwsrMagic", "melta");
                 attr.putValue("Bck2BrwsrMinified", "true");
                 bundleName(attr, mainJar);
                 m.getEntries().put(minified, attr);
@@ -115,6 +116,7 @@ public class AOTLibrary extends AbstractMojo {
                 attr.putValue("Bck2BrwsrArtifactId", prj.getArtifactId());
                 attr.putValue("Bck2BrwsrGroupId", prj.getGroupId());
                 attr.putValue("Bck2BrwsrVersion", prj.getVersion());
+                attr.putValue("Bck2BrwsrMagic", "melta");
                 attr.putValue("Bck2BrwsrDebug", "true");
                 bundleName(attr, mainJar);
                 m.getEntries().put(debug, attr);
@@ -131,6 +133,7 @@ public class AOTLibrary extends AbstractMojo {
                         attr.putValue("Bck2BrwsrArtifactId", a.getArtifactId());
                         attr.putValue("Bck2BrwsrGroupId", a.getGroupId());
                         attr.putValue("Bck2BrwsrVersion", a.getVersion());
+                        attr.putValue("Bck2BrwsrMagic", "melta");
                         attr.putValue("Bck2BrwsrDebug", "true");
                         bundleName(attr, a.getFile());
 
@@ -141,6 +144,7 @@ public class AOTLibrary extends AbstractMojo {
                         attr.putValue("Bck2BrwsrArtifactId", a.getArtifactId());
                         attr.putValue("Bck2BrwsrGroupId", a.getGroupId());
                         attr.putValue("Bck2BrwsrVersion", a.getVersion());
+                        attr.putValue("Bck2BrwsrMagic", "melta");
                         attr.putValue("Bck2BrwsrMinified", "true");
                         bundleName(attr, a.getFile());
                         m.getEntries().put(artifactName(a, false), attr);

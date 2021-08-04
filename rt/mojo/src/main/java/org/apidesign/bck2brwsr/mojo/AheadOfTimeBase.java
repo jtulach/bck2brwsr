@@ -55,7 +55,7 @@ abstract class AheadOfTimeBase<Art> {
     protected abstract File file(Art a);
     protected abstract Scope scope(Art a);
     protected abstract String classifier(Art a);
-    protected abstract String artifactId(Art a);
+     protected abstract String artifactId(Art a);
     protected abstract String groupId(Art a);
     protected abstract String version(Art a);
 
@@ -155,6 +155,7 @@ abstract class AheadOfTimeBase<Art> {
                         artifactId(a).equals(attr.getValue("Bck2BrwsrArtifactId")) &&
                         groupId(a).equals(attr.getValue("Bck2BrwsrGroupId")) &&
                         version(a).equals(attr.getValue("Bck2BrwsrVersion")) &&
+                        "melta".equals(attr.getValue("Bck2BrwsrMagic")) &&
                         (
                             obfuscation() == ObfuscationLevel.FULL && "true".equals(attr.getValue("Bck2BrwsrMinified"))
                             ||
