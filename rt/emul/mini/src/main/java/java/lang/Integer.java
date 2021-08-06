@@ -694,7 +694,21 @@ public final class Integer extends Number implements Comparable<Integer> {
      *          primitive {@code int} value represented by this
      *          {@code Integer} object.
      */
+    @Override
     public int hashCode() {
+        return Integer.hashCode(value);
+    }
+
+    /**
+     * Returns a hash code for a {@code int} value; compatible with
+     * {@code Integer.hashCode()}.
+     *
+     * @param value the value to hash
+     * @since 1.8
+     *
+     * @return a hash code value for a {@code int} value.
+     */
+    public static int hashCode(int value) {
         return value;
     }
 
@@ -1186,6 +1200,125 @@ public final class Integer extends Number implements Comparable<Integer> {
                ((i <<   8) & 0xFF0000) |
                ((i << 24));
     }
+
+    /**
+     * Adds two integers together as per the + operator.
+     *
+     * @param a the first operand
+     * @param b the second operand
+     * @return the sum of {@code a} and {@code b}
+     * @see java.util.function.BinaryOperator
+     * @since 1.8
+     */
+    public static int sum(int a, int b) {
+        return a + b;
+    }
+
+    /**
+     * Returns the greater of two {@code int} values
+     * as if by calling {@link Math#max(int, int) Math.max}.
+     *
+     * @param a the first operand
+     * @param b the second operand
+     * @return the greater of {@code a} and {@code b}
+     * @see java.util.function.BinaryOperator
+     * @since 1.8
+     */
+    public static int max(int a, int b) {
+        return Math.max(a, b);
+    }
+
+    /**
+     * Returns the smaller of two {@code int} values
+     * as if by calling {@link Math#min(int, int) Math.min}.
+     *
+     * @param a the first operand
+     * @param b the second operand
+     * @return the smaller of {@code a} and {@code b}
+     * @see java.util.function.BinaryOperator
+     * @since 1.8
+     */
+    public static int min(int a, int b) {
+        return Math.min(a, b);
+    }
+
+    /**
+     * Compares two {@code int} values numerically treating the values
+     * as unsigned.
+     *
+     * @param  x the first {@code int} to compare
+     * @param  y the second {@code int} to compare
+     * @return the value {@code 0} if {@code x == y}; a value less
+     *         than {@code 0} if {@code x < y} as unsigned values; and
+     *         a value greater than {@code 0} if {@code x > y} as
+     *         unsigned values
+     * @since 1.8
+     */
+    public static int compareUnsigned(int x, int y) {
+        return compare(x + MIN_VALUE, y + MIN_VALUE);
+    }
+
+    /**
+     * Converts the argument to a {@code long} by an unsigned
+     * conversion.  In an unsigned conversion to a {@code long}, the
+     * high-order 32 bits of the {@code long} are zero and the
+     * low-order 32 bits are equal to the bits of the integer
+     * argument.
+     *
+     * Consequently, zero and positive {@code int} values are mapped
+     * to a numerically equal {@code long} value and negative {@code
+     * int} values are mapped to a {@code long} value equal to the
+     * input plus 2<sup>32</sup>.
+     *
+     * @param  x the value to convert to an unsigned {@code long}
+     * @return the argument converted to {@code long} by an unsigned
+     *         conversion
+     * @since 1.8
+     */
+    public static long toUnsignedLong(int x) {
+        return ((long) x) & 0xffffffffL;
+    }
+
+    /**
+     * Returns the unsigned quotient of dividing the first argument by
+     * the second where each argument and the result is interpreted as
+     * an unsigned value.
+     *
+     * <p>Note that in two's complement arithmetic, the three other
+     * basic arithmetic operations of add, subtract, and multiply are
+     * bit-wise identical if the two operands are regarded as both
+     * being signed or both being unsigned.  Therefore separate {@code
+     * addUnsigned}, etc. methods are not provided.
+     *
+     * @param dividend the value to be divided
+     * @param divisor the value doing the dividing
+     * @return the unsigned quotient of the first argument divided by
+     * the second argument
+     * @see #remainderUnsigned
+     * @since 1.8
+     */
+    public static int divideUnsigned(int dividend, int divisor) {
+        // In lieu of tricky code, for now just use long arithmetic.
+        return (int)(toUnsignedLong(dividend) / toUnsignedLong(divisor));
+    }
+
+    /**
+     * Returns the unsigned remainder from dividing the first argument
+     * by the second where each argument and the result is interpreted
+     * as an unsigned value.
+     *
+     * @param dividend the value to be divided
+     * @param divisor the value doing the dividing
+     * @return the unsigned remainder of the first argument divided by
+     * the second argument
+     * @see #divideUnsigned
+     * @since 1.8
+     */
+    public static int remainderUnsigned(int dividend, int divisor) {
+        // In lieu of tricky code, for now just use long arithmetic.
+        return (int)(toUnsignedLong(dividend) % toUnsignedLong(divisor));
+    }
+
 
     /** use serialVersionUID from JDK 1.0.2 for interoperability */
     private static final long serialVersionUID = 1360826667806852920L;

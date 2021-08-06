@@ -21,6 +21,8 @@ package java.io;
  * @author Jaroslav Tulach
  */
 public abstract class PrintWriter {
+    PrintWriter() {
+    }
     public abstract PrintWriter append(CharSequence s);
     public abstract void println(String s);
 }

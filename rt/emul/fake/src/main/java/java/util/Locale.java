@@ -21,4 +21,6 @@ package java.util;
  * @author Jaroslav Tulach
  */
 public abstract class Locale {
+    private Locale() {
+    }
 }

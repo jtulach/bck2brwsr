@@ -182,6 +182,7 @@ class MetafactoryHandler extends IndyHandler {
                     convertMethod = "valueOf__Ljava_lang_Character_2C";
                     break;
                 case 'L':
+                case '[':
                 case 'V':
                     convertType = null;
                     convertMethod = null;

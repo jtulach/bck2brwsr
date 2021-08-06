@@ -21,5 +21,6 @@ package java.net;
  * @author Jaroslav Tulach
  */
 public class URISyntaxException extends Exception {
-    
+    URISyntaxException() {
+    }
 }

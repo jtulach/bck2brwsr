@@ -32,6 +32,14 @@ public class SamTest {
     }
 
     @Compare
+    public int arrayLambdas() {
+        int[] sum = {0};
+        Functions.Compute<int[]> inc = () -> { sum[0]++; return sum; };
+        Functions.Compute<int[]> ret = () -> new int[] { sum[0] };
+        return inc.andThen(inc).andThen(inc).andThen(ret).get()[0];
+    }
+
+    @Compare
     public int instanceLambda() {
         class Cnt {
             int sum = 0;

@@ -25,7 +25,7 @@ import java.io.InputStream;
  */
 public abstract class URLConnection {
     protected URL url;
-    public URLConnection(URL u) {
+    protected URLConnection(URL u) {
     }
     public abstract void connect() throws IOException;
     public abstract InputStream getInputStream() throws IOException;

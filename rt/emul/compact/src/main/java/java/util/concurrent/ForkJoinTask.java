@@ -219,7 +219,7 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
     volatile int status; // accessed directly by pool and workers
     private static final int NORMAL      = -1;
     private static final int CANCELLED   = -2;
-    private static final int EXCEPTIONAL = -3;
+    static final int EXCEPTIONAL = -3;
     private static final int SIGNAL      =  1;
 
     /**
@@ -241,6 +241,18 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
         }
     }
 
+    /**
+     * Completes this task normally without setting a value. The most
+     * recent value established by {@link #setRawResult} (or {@code
+     * null} by default) will be returned as the result of subsequent
+     * invocations of {@code join} and related operations.
+     *
+     * @since 1.8
+     */
+    public final void quietlyComplete() {
+        setCompletion(NORMAL);
+    }
+    
     /**
      * Tries to block a worker thread until completed or timed out.
      * Uses Object.wait time argument conventions.
@@ -1332,6 +1344,10 @@ public abstract class ForkJoinTask<V> implements Future<V>, Serializable {
     public static <T> ForkJoinTask<T> adapt(Callable<? extends T> callable) {
         return new AdaptedCallable<T>(callable);
     }
+    
+    final int recordExceptionalCompletion(Throwable ex) {
+        return 0;
+    }    
 
     // Serialization support
 

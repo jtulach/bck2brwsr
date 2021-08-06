@@ -2164,4 +2164,14 @@ public class ForkJoinPool extends AbstractExecutorService {
         ASHIFT = 31 - Integer.numberOfLeadingZeros(s);
     }
 
+    /**
+     * Returns the targeted parallelism level of the common pool.
+     *
+     * @return the targeted parallelism level of the common pool
+     * @since 1.8
+     */
+    public static int getCommonPoolParallelism() {
+        return 1;
+    }
+
 }

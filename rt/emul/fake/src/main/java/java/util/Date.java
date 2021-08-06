@@ -18,5 +18,7 @@
 package java.util;
 
 public abstract class Date {
+    private Date() {
+    }
     public abstract long getTime();
 }

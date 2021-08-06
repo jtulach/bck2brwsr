@@ -21,6 +21,8 @@ package java.io;
  * @author Jaroslav Tulach
  */
 public abstract class PrintStream {
+    PrintStream() {
+    }
     public abstract void print(String s);
     public abstract void println(String s);
 }
