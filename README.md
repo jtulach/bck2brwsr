@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/jtulach/bck2brwsr.svg?branch=master)](https://travis-ci.org/jtulach/bck2brwsr)
+[![Build Status](http://hudson.apidesign.org/hudson/job/bck2brwsr/badge/icon)](http://hudson.apidesign.org/hudson/job/bck2brwsr/badge/icon)
 
 
 # Bring Java Back to Browser!
