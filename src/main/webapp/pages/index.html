@@ -49,10 +49,14 @@
                 </li>
             </ul>
         </div>
-        <!-- Remove this line to remove the button bar in the footer -->
-        <script async=true src="http://dukescript.com/presenters/welcome.js"></script>
-
 
         <!-- ${browser.bootstrap} -->
+        <script src='bck2brwsr.js'></script>
+        <script>
+        var vm = bck2brwsr('main.js');
+        vm.loadClass('org.frontend.app.BrowserMain', function(mainClass) {
+          mainClass.invoke('main');
+        });
+        </script>
     </body>
 </html>
