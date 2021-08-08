@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.kt.mvvm.demo">
+
+    <application
+        android:allowBackup="true"
+        android:label="Demo"
+        android:supportsRtl="true"
+    >
+        <activity android:name="com.dukescript.presenters.Android"
+                  android:configChanges="keyboardHidden|orientation|screenSize"
+        >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <meta-data android:name="loadPage" android:value="file:///android_asset/pages/index.html"/>
+        <meta-data android:name="loadClass" android:value="org.frontend.app.Demo"/>
+        <meta-data android:name="invoke" android:value="onPageLoad"/>
+    </application>
+</manifest>
