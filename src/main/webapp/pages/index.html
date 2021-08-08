@@ -27,6 +27,7 @@
                         <label for="key">New Todo:</label>
                         <input id="key" type="text" data-bind="textInput: desc" placeholder="Enter a task"/>
                         <a data-bind="click: addTodo, css: { disabled : desc().length === 0 }" class="waves-effect waves-light btn">Add</a>
+                        <a data-bind="click: clearTodos" class="waves-effect waves-light btn">Clear</a>
                     </div>
                 </div>
             </form>
@@ -45,7 +46,10 @@
         <div class="row">
             <ul class="col s12 collection" data-bind='foreach: todos'>
                 <li class="collection-item">
-                    <span data-bind="text: $data"></span>
+                    <label data-bind="click: check">
+                        <input type="checkbox" data-bind="checked: done"/>
+                        <span data-bind="text: desc"></span>
+                    </label>
                 </li>
             </ul>
         </div>
