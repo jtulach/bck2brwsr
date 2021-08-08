@@ -23,11 +23,11 @@
     <parent>
         <groupId>org.apidesign.bck2brwsr</groupId>
         <artifactId>rt</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>0.51</version>
     </parent>
     <groupId>org.apidesign.bck2brwsr</groupId>
     <artifactId>gradletest</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.51</version>
     <packaging>jar</packaging>
     <name>Bck2Brwsr Gradle Plugin Tests</name>
     <url>http://bck2brwsr.apidesign.org/</url>
