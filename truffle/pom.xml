@@ -23,7 +23,7 @@
     <parent>
         <groupId>org.apidesign</groupId>
         <artifactId>bck2brwsr</artifactId>
-        <version>0.51</version>
+        <version>1.0-SNAPSHOT</version>
     </parent>
     <groupId>org.apidesign.bck2brwsr</groupId>
     <artifactId>java4graal</artifactId>
