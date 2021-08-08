@@ -20,7 +20,12 @@
                 </div>
             </nav>
         </div>
-        <div class="row">
+        <div class="row" data-bind="visible: false">
+            <div class="progress">
+                <div class="indeterminate"></div>
+            </div>
+        </div>
+        <div class="row" style="display: none" data-bind="visible: true">
             <form class="col s6" data-bind="submit: addTodo">
                 <div class="row">
                     <div class="input-field col s12">
@@ -30,6 +35,14 @@
                         <a data-bind="click: clearTodos" class="waves-effect waves-light btn">Clear</a>
                     </div>
                 </div>
+                <ul class="col s12 collection" data-bind='foreach: todos'>
+                    <li class="collection-item">
+                        <label data-bind="click: check">
+                            <input type="checkbox" data-bind="checked: done"/>
+                            <span data-bind="text: desc"></span>
+                        </label>
+                    </li>
+                </ul>
             </form>
             <div class="col s6">
                 <div class="card blue-grey darken-1">
@@ -42,16 +55,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="row">
-            <ul class="col s12 collection" data-bind='foreach: todos'>
-                <li class="collection-item">
-                    <label data-bind="click: check">
-                        <input type="checkbox" data-bind="checked: done"/>
-                        <span data-bind="text: desc"></span>
-                    </label>
-                </li>
-            </ul>
         </div>
 
         <!-- ${browser.bootstrap} -->
