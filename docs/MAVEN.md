@@ -7,7 +7,7 @@ and execute:
 mvn archetype:generate \
   -DarchetypeGroupId=org.apache.maven.archetypes \
   -DarchetypeArtifactId=maven-archetype-quickstart \
-  -DarchetypeVersion=1.3 -DgroupId=org.yourorg -DartifactId=demo -Dversion=1.0-SNAPSHOT
+  -DarchetypeVersion=1.4 -DgroupId=org.yourorg -DartifactId=demo -Dversion=1.0-SNAPSHOT
 ```
 A project in the `demo` directory is created with its `pom.xml` configuration file.
 In addition to that it also contains two source files `App.java` and `AppTest.java`
@@ -26,7 +26,7 @@ diff -r 37410ddd908f pom.xml
 +          <plugin>
 +              <groupId>org.apidesign.bck2brwsr</groupId>
 +              <artifactId>bck2brwsr-maven-plugin</artifactId>
-+              <version>0.23</version>
++              <version>0.51</version>
 +          </plugin>
 +      </plugins>
 +
@@ -62,8 +62,8 @@ demo$ mvn clean install bck2brwsr:aot bck2brwsr:show
 Well done!
 
 The next step is to interact with JavaScript. For that purpose **Bck2Brwsr VM**
-uses [Apache HTML/Java](https://github.com/apache/incubator-netbeans-html4j/)
-`@JavaScriptBody` annotation. See the [package tutorial](http://bits.netbeans.org/html+java/1.5.1/net/java/html/js/package-summary.html)
+    uses [Apache HTML/Java](https://github.com/apache/netbeans-html4j/)
+`@JavaScriptBody` annotation. See the [package tutorial](http://bits.netbeans.org/html+java/1.7.1/net/java/html/js/package-summary.html)
 for list of examples.
 
 There are some ready to use libraries built around this annotation:

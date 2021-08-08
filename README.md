@@ -28,7 +28,7 @@ then it is just about adding following plugin into your `pom.xml`:
             <plugin>
                 <groupId>org.apidesign.bck2brwsr</groupId>
                 <artifactId>bck2brwsr-maven-plugin</artifactId>
-                <version>0.23</version>
+                <version>0.51</version>
             </plugin>
         </plugins>
     </build>
@@ -44,7 +44,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath "org.apidesign.bck2brwsr:bck2brwsr-maven-plugin:0.23"
+        classpath "org.apidesign.bck2brwsr:bck2brwsr-maven-plugin:0.51"
     }
 }
 
@@ -68,7 +68,7 @@ $ find build/web/
 build/web/
 build/web/index.html
 build/web/lib
-build/web/lib/emul-0.23-rt.js
+build/web/lib/emul-0.51-rt.js
 build/web/main.js
 build/web/bck2brwsr.js
 ```

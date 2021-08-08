@@ -42,7 +42,7 @@ index 2259ee7..adf3461 100644
 +        mavenCentral()
 +    }
 +    dependencies {
-+        classpath "org.apidesign.bck2brwsr:bck2brwsr-maven-plugin:0.32"
++        classpath "org.apidesign.bck2brwsr:bck2brwsr-maven-plugin:0.51"
 +    }
 +}
 +
@@ -107,14 +107,36 @@ index 2259ee7..adf3461 100644
  
  application {
 ```
-and your project is ready to be executed in the browser:
+Now verify your `build.gradle` project changes are correct and your project
+can still be executed from a command line. Run:
 ```bash
-demo$ ./gradlew bck2brwsrShow
-Launching [xdg-open, http://localhost:10039/index.html]
-Hello world.
-<===========--> 85% EXECUTING
-> :bck2brwsrShow
+demo$ ./gradlew run
 
+> Task :app:run
+Hello World!
+
+BUILD SUCCESSFUL in 1s
+2 actionable tasks: 2 executed
+```
+again. If it succeeds, your project should also be ready to be executed in
+a browser:
+```bash
+demo$ $ ./gradlew bck2brwsrShow
+Starting a Gradle Daemon, 2 incompatible Daemons could not be reused, use --status for details
+[INFO] Started listener bound to [0.0.0.0:28099]
+[INFO] [HttpServer] Started.
+[INFO] Showing http://localhost:28099/index.html
+[INFO] Trying Desktop.browse on OpenJDK 64-Bit Server VM 11.0.8+10-LTS by Azul Systems, Inc.
+[INFO] Desktop.browse not supported: The BROWSE action is not supported on the current platform!
+[INFO] Launching [xdg-open, http://localhost:28099/index.html]
+
+> Task :app:bck2brwsrShow
+Avaiting HTTP server...
+Started listener bound to [0.0.0.0:28099]
+[HttpServer] Started.
+Showing http://localhost:28099/index.html
+Launching [xdg-open, http://localhost:28099/index.html]
+Hello World!
 ```
 A browser is opened and a **Hello World.** message gets printed into its console
 and also console of your terminal window.
@@ -140,8 +162,8 @@ demo$ ./gradlew bck2brwsrShow
 Well done!
 
 The next step is to interact with JavaScript. For that purpose **Bck2Brwsr VM**
-uses [Apache HTML/Java](https://github.com/apache/incubator-netbeans-html4j/)
-`@JavaScriptBody` annotation. See the [package tutorial](http://bits.netbeans.org/html+java/1.5.1/net/java/html/js/package-summary.html)
+uses [Apache HTML/Java](https://github.com/apache/netbeans-html4j/)
+`@JavaScriptBody` annotation. See the [package tutorial](http://bits.netbeans.org/html+java/1.7.1/net/java/html/js/package-summary.html)
 for list of examples.
 
 There are some ready to use libraries built around this annotation:
