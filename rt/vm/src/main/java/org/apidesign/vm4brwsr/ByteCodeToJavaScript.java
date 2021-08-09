@@ -162,6 +162,7 @@ abstract class ByteCodeToJavaScript {
     private String compileImpl(Appendable out, final String cn) throws IOException {
         this.numbers.reset();
         this.callbacks = cn.endsWith("/$JsCallbacks$");
+        final String className = className(jc);
         byte[] arrData = jc.findAnnotationData(true);
         {
             String[] arr = findAnnotation(arrData, jc,
@@ -169,10 +170,17 @@ abstract class ByteCodeToJavaScript {
                 "resource", "processByteCode"
             );
             if (arr != null) {
+                boolean scriptLoaded = false;
                 if (!arr[0].isEmpty()) {
                     requireScript(arr[0]);
+                    scriptLoaded = true;
                 }
                 if ("0".equals(arr[1])) {
+                    if (!scriptLoaded) {
+                        out.append("\nfunction ").append(className).append("() {\n");
+                        debug(out, "  throw '@ExtraJavaScript(" + className + ");\n");
+                        out.append("}\n");
+                    }
                     return null;
                 }
             }
@@ -183,7 +191,6 @@ abstract class ByteCodeToJavaScript {
             "container", "prototype"
         );
         StringArray toInitilize = new StringArray();
-        final String className = className(jc);
         out.append("\n\n");
         out.append("function ").append(className).append("() {");
         out.append("\n  var m;");
@@ -535,7 +542,7 @@ abstract class ByteCodeToJavaScript {
         LoopCode loop;
         if (this.callbacks && !name.equals("class__V")) {
             lmapper.outputUndefinedCheck(out);
-            loop = new JsCallbackCode(this, out, numbers, jc);
+            loop = new JsCallbackCode(this, out, numbers, jc, m);
         } else {
             loop = new LoopCode(this, output, numbers, jc);
         }
@@ -1044,7 +1051,6 @@ abstract class ByteCodeToJavaScript {
     }
 
     private static String className(ClassData jc) {
-        //return jc.getName().getInternalName().replace('/', '_');
         return mangleClassName(jc.getClassName());
     }
 

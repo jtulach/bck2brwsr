@@ -18,18 +18,21 @@
 package org.apidesign.vm4brwsr;
 
 import java.io.IOException;
+import org.apidesign.vm4brwsr.ByteCodeParser.ClassData;
+import org.apidesign.vm4brwsr.ByteCodeParser.MethodData;
 
 final class JsCallbackCode extends LoopCode {
-
+    private final MethodData m;
     private final StringBuilder sb;
     private Appendable dump;
 
-    JsCallbackCode(ByteCodeToJavaScript b, Appendable out, NumberOperations n, ByteCodeParser.ClassData jc) {
-        this(b, new StringBuilder(), out, n, jc);
+    JsCallbackCode(ByteCodeToJavaScript b, Appendable out, NumberOperations n, ClassData jc, MethodData m) {
+        this(b, new StringBuilder(), out, n, jc, m);
     }
 
-    private JsCallbackCode(ByteCodeToJavaScript b, StringBuilder sb, Appendable out, NumberOperations n, ByteCodeParser.ClassData jc) {
+    private JsCallbackCode(ByteCodeToJavaScript b, StringBuilder sb, Appendable out, NumberOperations n, ClassData jc, MethodData m) {
         super(b, sb, n, jc);
+        this.m = m;
         this.sb = sb;
         this.dump = out;
     }
@@ -38,8 +41,16 @@ final class JsCallbackCode extends LoopCode {
     protected boolean beginCall(String[] mi, CharSequence[] vars, boolean isStatic) {
         if (dump != null && !isSpecialHtmlJavaCall(mi)) {
             sb.setLength(0);
-            if (!isStatic) {
-                vars[0] = "lcA1";
+            if (
+                "current".equals(m.getName()) &&
+                "<init>".equals(mi[1]) &&
+                "(Lorg/netbeans/html/boot/spi/Fn$Presenter;)V".equals(mi[2])
+            ) {
+                vars[0] = vars[1] = "null";
+            } else {
+                if (!isStatic) {
+                    vars[0] = "lcA1";
+                }
             }
             sb.append("return ");
             return true;

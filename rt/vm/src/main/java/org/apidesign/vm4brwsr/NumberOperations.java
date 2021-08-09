@@ -120,7 +120,7 @@ final class NumberOperations {
         StringBuilder sb = new StringBuilder();
         if ((used & MUL32) != 0) {
             sb.append(
-                "    __mul32 = function(x, y) {\n" +
+                "    function __mul32(x, y) {\n" +
                 "        return (((x * (y >> 16)) << 16) + x * (y & 0xFFFF)) | 0;\n" +
                 "    };\n" +
                 ""

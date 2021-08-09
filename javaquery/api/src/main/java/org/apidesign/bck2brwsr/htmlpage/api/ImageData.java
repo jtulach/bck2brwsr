@@ -50,14 +50,14 @@ public class ImageData {
         return getWidthImpl(imageData);
     }
 
-    @JavaScriptBody(args = {"imageData"}, body = "return imagedata.width;")
+    @JavaScriptBody(args = {"imageData"}, body = "return imageData.width;")
     private static native double getWidthImpl(Object imageData);
 
     public double getHeight() {
         return getHeightImpl(imageData);
     }
 
-    @JavaScriptBody(args = {"imageData"}, body = "return imagedata.height;")
+    @JavaScriptBody(args = {"imageData"}, body = "return imageData.height;")
     private static native double getHeightImpl(Object imageData);
 
     Object object() {
@@ -83,7 +83,7 @@ public class ImageData {
         @JavaScriptBody(args = {"data", "index", "value"}, body = "data[index]=value;")
         private static native void setImpl(Object data, int index, int value);
 
-        @JavaScriptBody(args = {"imagedata", "index"}, body = "return data[index];")
+        @JavaScriptBody(args = {"data", "index"}, body = "return data[index];")
         private static native int getImpl(Object data, int index);
     }
 }

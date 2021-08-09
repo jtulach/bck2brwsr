@@ -18,6 +18,8 @@
 package org.apidesign.vm4brwsr;
 
 import com.google.javascript.jscomp.CommandLineRunner;
+import com.google.javascript.jscomp.CompilerOptions;
+import com.google.javascript.jscomp.FlagUsageException;
 import com.google.javascript.jscomp.SourceFile;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -59,38 +61,21 @@ final class ClosureWrapper extends CommandLineRunner {
     }
 
     @Override
-    protected List<SourceFile> createInputs(List<String> files, boolean allowStdIn) throws FlagUsageException, IOException {
-        if (files.size() != 1 || !"bck2brwsr-raw.js".equals(files.get(0))) {
-            throw new IOException("Unexpected files: " + files);
+    protected List<SourceFile> createInputs(List<FlagEntry<JsSourceType>> files, List<JsonFileSpec> jsonFiles, boolean allowStdIn, List<JsChunkSpec> jsChunkSpecs) throws IOException {
+        if (files.size() != 1 || !"bck2brwsr-raw.js".equals(files.get(0).getValue())) {
+            return super.createInputs(files, jsonFiles, allowStdIn, jsChunkSpecs);
         }
-        return Collections.nCopies(
-                   1,
-                   SourceFile.fromGenerator(
-                       "bck2brwsr-raw.js",
-                       new SourceFile.Generator() {
-                           @Override
-                           public String getCode() {
-                               return getCompiledCode();
-                           }
-                       }));
+        return Collections.nCopies(1,
+            SourceFile.fromCode("bck2brwsr-raw.js",getCompiledCode())
+        );
     }
 
-
     @Override
-    protected List<SourceFile> createExterns()
-            throws FlagUsageException, IOException {
-        final List<SourceFile> externsFiles =
-                new ArrayList<SourceFile>(super.createExterns());
-
-        externsFiles.add(
-                SourceFile.fromGenerator(
-                        "bck2brwsr_externs.js",
-                        new SourceFile.Generator() {
-                            @Override
-                            public String getCode() {
-                                return getExternsCode();
-                            }
-                        }));
+    protected List<SourceFile> createExterns(CompilerOptions options) throws IOException {
+        final List<SourceFile> externsFiles = new ArrayList<>(super.createExterns(options));
+        externsFiles.add(SourceFile.fromCode(
+            "bck2brwsr_externs.js", getExternsCode()
+        ));
         return externsFiles;
     }
 
@@ -114,6 +99,7 @@ final class ClosureWrapper extends CommandLineRunner {
             getCompiledCode();
 
             final StringBuilder sb = new StringBuilder("function RAW() {};\n");
+            sb.append("function bck2brwsr() {};\n");
             for (final String extern: FIXED_EXTERNS) {
                 sb.append("RAW.prototype.").append(extern).append(";\n");
             }
@@ -157,6 +143,8 @@ final class ClosureWrapper extends CommandLineRunner {
                 throw cw.compilerError;
             }
             if (result != 0) {
+//                out.write("\n=====\n".getBytes("UTF-8"));
+//                out.write(cw.getCompiledCode().getBytes("UTF-8"));
                 throw new IOException(out.toString());
             }
             return result;

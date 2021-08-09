@@ -75,7 +75,7 @@
                   </execution>
               </executions>
               <configuration>
-                  <obfuscation>NONE</obfuscation>
+                  <obfuscation>FULL</obfuscation>
               </configuration>
           </plugin>
       </plugins>
@@ -89,6 +89,18 @@
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.graalvm.js</groupId>
+      <artifactId>js</artifactId>
+      <version>20.3.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.graalvm.js</groupId>
+      <artifactId>js-scriptengine</artifactId>
+      <version>20.3.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>

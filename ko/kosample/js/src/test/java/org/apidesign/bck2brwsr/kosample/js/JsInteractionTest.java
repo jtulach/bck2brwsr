@@ -18,9 +18,12 @@
 package org.apidesign.bck2brwsr.kosample.js;
 
 import java.io.Closeable;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 import net.java.html.boot.script.Scripts;
 import org.netbeans.html.boot.spi.Fn;
 import static org.testng.Assert.assertEquals;
+import static org.testng.AssertJUnit.assertNotNull;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -33,7 +36,10 @@ import org.testng.annotations.Test;
 public class JsInteractionTest {
     private Closeable jsEngine;
     @BeforeMethod public void initializeJSEngine() throws Exception {
-        jsEngine = Fn.activate(Scripts.createPresenter());
+        ScriptEngineManager sem = new ScriptEngineManager();
+        ScriptEngine graalJs = sem.getEngineByName("Graal.js");
+        assertNotNull("Graal.js engine found", graalJs);
+        jsEngine = Fn.activate(Scripts.newPresenter().engine(graalJs).build());
     }
     
     @AfterMethod public void shutdownJSEngine() throws Exception {

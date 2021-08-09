@@ -37,11 +37,12 @@ public final class Dialogs {
         args = { "msg", "callback" }, 
         javacall = true, 
         body = "if (typeof confirm === 'undefined' || confirm(msg)) {\n"
-             + "  callback.@java.lang.Runnable::run()();\n"
+             + "  var fn = () => callback.@java.lang.Runnable::run()();\n"
+             + "  fn();\n"
              + "}\n"
     )
     public static native void confirmByUser(String msg, Runnable callback);
-    
+
     @JavaScriptBody(
         args = {}, body = 
         "var w = window,\n" +

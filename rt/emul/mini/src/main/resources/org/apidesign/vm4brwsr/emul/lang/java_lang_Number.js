@@ -255,53 +255,6 @@ function $objectGetClass(instance) {
   }
 };
 
-function $dp_toString__T(instance) {
-  if (instance === void 0)
-    return "undefined";
-  else
-    return instance.toString();
-};
-
-function $dp_getClass__jl_Class(instance) {
-  return $objectGetClass(instance);
-};
-
-function $dp_clone__O(instance) {
-  if ($isScalaJSObject(instance) || (instance === null))
-    return instance.clone__O();
-  else
-    throw new $c_jl_CloneNotSupportedException().init___();
-};
-
-function $dp_notify__V(instance) {
-  // final and no-op in java.lang.Object
-  if (instance === null)
-    instance.notify__V();
-};
-
-function $dp_notifyAll__V(instance) {
-  // final and no-op in java.lang.Object
-  if (instance === null)
-    instance.notifyAll__V();
-};
-
-function $dp_finalize__V(instance) {
-  if ($isScalaJSObject(instance) || (instance === null))
-    instance.finalize__V();
-  // else no-op
-};
-
-function $dp_equals__O__Z(instance, rhs) {
-  if ($isScalaJSObject(instance) || (instance === null))
-    return instance.equals__O__Z(rhs);
-  else if (typeof instance === "number")
-    return $f_jl_Double__equals__O__Z(instance, rhs);
-  else if ($isChar(instance))
-    return $f_jl_Character__equals__O__Z(instance, rhs);
-  else
-    return instance === rhs;
-};
-
 function $dp_hashCode__I(instance) {
   switch (typeof instance) {
     case "string":
@@ -320,84 +273,6 @@ function $dp_hashCode__I(instance) {
       else
         return $systemIdentityHashCode(instance);
   }
-};
-
-function $dp_compareTo__O__I(instance, rhs) {
-  switch (typeof instance) {
-    case "string":
-      return $f_T__compareTo__O__I(instance, rhs);
-    case "number":
-      return $f_jl_Double__compareTo__O__I(instance, rhs);
-    case "boolean":
-      return $f_jl_Boolean__compareTo__O__I(instance, rhs);
-    default:
-      if ($isChar(instance))
-        return $f_jl_Character__compareTo__O__I(instance, rhs);
-      else
-        return instance.compareTo__O__I(rhs);
-  }
-};
-
-function $dp_length__I(instance) {
-  if (typeof(instance) === "string")
-    return $f_T__length__I(instance);
-  else
-    return instance.length__I();
-};
-
-function $dp_charAt__I__C(instance, index) {
-  if (typeof(instance) === "string")
-    return $f_T__charAt__I__C(instance, index);
-  else
-    return instance.charAt__I__C(index);
-};
-
-function $dp_subSequence__I__I__jl_CharSequence(instance, start, end) {
-  if (typeof(instance) === "string")
-    return $f_T__subSequence__I__I__jl_CharSequence(instance, start, end);
-  else
-    return instance.subSequence__I__I__jl_CharSequence(start, end);
-};
-
-function $dp_byteValue__B(instance) {
-  if (typeof instance === "number")
-    return $f_jl_Double__byteValue__B(instance);
-  else
-    return instance.byteValue__B();
-};
-function $dp_shortValue__S(instance) {
-  if (typeof instance === "number")
-    return $f_jl_Double__shortValue__S(instance);
-  else
-    return instance.shortValue__S();
-};
-function $dp_intValue__I(instance) {
-  if (typeof instance === "number")
-    return $f_jl_Double__intValue__I(instance);
-  else
-    return instance.intValue__I();
-};
-function $dp_longValue__J(instance) {
-  if (typeof instance === "number")
-    return $f_jl_Double__longValue__J(instance);
-  else
-    return instance.longValue__J();
-};
-function $dp_floatValue__F(instance) {
-  if (typeof instance === "number")
-    return $f_jl_Double__floatValue__F(instance);
-  else
-    return instance.floatValue__F();
-};
-function $dp_doubleValue__D(instance) {
-  if (typeof instance === "number")
-    return $f_jl_Double__doubleValue__D(instance);
-  else
-    return instance.doubleValue__D();
-};
-
-function $doubleToInt(x) {
-  return (x > 2147483647) ? (2147483647) : ((x < -2147483648) ? -2147483648 : (x | 0));
 };
 
 /** Instantiates a JS object with variadic arguments to the constructor. */
@@ -426,57 +301,6 @@ function $resolveSuperRef(superClass, propName) {
   }
 
   return void 0;
-};
-
-function $superGet(superClass, self, propName) {
-  var desc = $resolveSuperRef(superClass, propName);
-  if (desc !== void 0) {
-    var getter = desc["get"];
-    if (getter !== void 0)
-      return getter["call"](self);
-    else
-      return desc["value"];
-  }
-  return void 0;
-};
-
-function $superSet(superClass, self, propName, value) {
-  var desc = $resolveSuperRef(superClass, propName);
-  if (desc !== void 0) {
-    var setter = desc["set"];
-    if (setter !== void 0) {
-      setter["call"](self, value);
-      return void 0;
-    }
-  }
-  throw new TypeError("super has no setter '" + propName + "'.");
-};
-
-
-
-
-
-
-
-function $systemArraycopy(src, srcPos, dest, destPos, length) {
-  var srcu = src.u;
-  var destu = dest.u;
-
-
-
-
-
-
-
-
-
-  if (srcu !== destu || destPos < srcPos || (((srcPos + length) | 0) < destPos)) {
-    for (var i = 0; i < length; i = (i + 1) | 0)
-      destu[(destPos + i) | 0] = srcu[(srcPos + i) | 0];
-  } else {
-    for (var i = (length - 1) | 0; i >= 0; i = (i - 1) | 0)
-      destu[(destPos + i) | 0] = srcu[(srcPos + i) | 0];
-  }
 };
 
 var $systemIdentityHashCode =

@@ -67,7 +67,11 @@ public class Knockout {
     }
     
 
-    @JavaScriptBody(args = { "id", "ev" }, body = "ko.utils.triggerEvent(window.document.getElementById(id), ev.substring(2));")
+    @JavaScriptBody(args = { "id", "ev" }, body = "\n"
+            + "if (typeof ko === 'object') {\n"
+            + "  ko.utils.triggerEvent(window.document.getElementById(id), ev.substring(2));\n"
+            + "}\n"
+    )
     public static void triggerEvent(String id, String ev) {
     }
     
