@@ -801,8 +801,9 @@ abstract class BaseHTTPLauncher extends Launcher implements Flushable, Closeable
                         final String v = attr.getValue("Bck2BrwsrVersion");
                         final String d = attr.getValue("Bck2BrwsrDebug");
                         final String n = attr.getValue("Bck2BrwsrName");
+                        final String m = attr.getValue("Bck2BrwsrMagic");
 
-                        if (g != null && a != null && v != null && "true".equals(d)) {
+                        if ("melta".equals(m) && g != null && a != null && v != null && "true".equals(d)) {
                             libraries.add(new String[] {
                                 a, g, v, key, n
                             });
