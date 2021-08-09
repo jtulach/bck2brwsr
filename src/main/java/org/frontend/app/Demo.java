@@ -1,8 +1,10 @@
 package org.frontend.app;
 
 import com.dukescript.api.javafx.beans.FXBeanInfo;
+import javafx.beans.Observable;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.IntegerBinding;
+import javafx.beans.binding.NumberBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -16,8 +18,12 @@ import static net.java.html.json.Models.applyBindings;
 public final class Demo extends DemoBeanInfo {
 
     final StringProperty desc = new SimpleStringProperty(this, "desc", "");
-    final ListProperty<Item> todos = new SimpleListProperty<>(this, "todos", FXCollections.observableArrayList());
+    final ListProperty<Item> todos = new SimpleListProperty<>(this, "todos", FXCollections.observableArrayList(item -> new Observable[] { item.done }));
     final IntegerBinding numTodos = Bindings.createIntegerBinding(todos::size, todos);
+    final IntegerBinding numPending = Bindings.createIntegerBinding(() -> {
+        return (int) todos.stream().filter((item) -> !item.done.get()).count();
+    }, todos);
+    final NumberBinding numFinished = Bindings.subtract(numTodos, numPending);
 
     void addTodo() {
         todos.getValue().add(new Item(desc.getValue()));
