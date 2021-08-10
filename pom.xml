@@ -22,7 +22,6 @@
       <javadoc.opts>-author</javadoc.opts>
   </properties>
   <modules>
-    <module>javaquery</module>
     <module>ko</module>
     <module>launcher</module>
     <module>rt</module>
@@ -360,6 +359,17 @@
           </activation>
           <modules>
               <module>benchmarks</module>
+          </modules>
+      </profile>
+      <profile>
+          <id>javaquery</id>
+          <activation>
+              <property>
+                  <name>!skipTests</name>
+              </property>
+          </activation>
+          <modules>
+              <module>javaquery</module>
           </modules>
       </profile>
   </profiles>

@@ -36,8 +36,11 @@
   </modules>
   <profiles>
       <profile>
+          <id>kosample</id>
           <activation>
-              <jdk>[1.8,)</jdk>
+              <property>
+                  <name>!skipTests</name>
+              </property>
           </activation>
           <modules>
               <module>kosample</module>
