@@ -1113,12 +1113,6 @@ abstract class ByteCodeToJavaScript {
         return ",";
     }
 
-    final void emitNoFlush(
-        Appendable out, StackMapper sm,
-        final String format, final CharSequence... params
-    ) throws IOException {
-        emitImpl(out, format, params);
-    }
     static final void emit(
         final Appendable out, StackMapper sm, final String format, final CharSequence... params
     ) throws IOException {
@@ -1332,10 +1326,16 @@ abstract class ByteCodeToJavaScript {
 
     void generateCheckcast(Appendable out, int indx, final StackMapper smapper) throws IOException {
         String type = jc.getClassName(indx);
+        final CharSequence varName = smapper.getT(0, VarType.REFERENCE, false);
+        generateCheckcast(out, type, varName);
+    }
+
+    void generateCheckcast(Appendable out, String type, CharSequence varName) throws IOException {
         if (!type.startsWith("[")) {
-            emitNoFlush(out, smapper,
-                 "if (@1 !== null && !@1['$instOf_@2']) vm.java_lang_Class(false).castEx(@1, '@3');",
-                 smapper.getT(0, VarType.REFERENCE, false), mangleClassName(type), type.replace('/', '.'));
+            emitImpl(out,
+                    "if (@1 !== null && !@1['$instOf_@2']) vm.java_lang_Class(false).castEx(@1, '@3');",
+                    varName, mangleClassName(type), type.replace('/', '.')
+            );
         } else {
             int cnt = 0;
             while (type.charAt(cnt) == '[') {
@@ -1345,14 +1345,14 @@ abstract class ByteCodeToJavaScript {
                 String component = type.substring(cnt + 1, type.length() - 1);
                 requireReference(component);
                 type = "vm." + mangleClassName(component);
-                emitNoFlush(out, smapper,
-                    "if (@1 !== null && !Array.prototype['isInstance__ZLjava_lang_Object_2ILjava_lang_Object_2'](@1, @3, @2)) vm.java_lang_Class(false).castEx(@1, '');",
-                     smapper.getT(0, VarType.REFERENCE, false), type, "" + cnt
+                emitImpl(out,
+                        "if (@1 !== null && !Array.prototype['isInstance__ZLjava_lang_Object_2ILjava_lang_Object_2'](@1, @3, @2)) vm.java_lang_Class(false).castEx(@1, '');",
+                        varName, type, "" + cnt
                 );
             } else {
-                emitNoFlush(out, smapper,
-                    "if (@1 !== null && !Array.prototype['isInstance__ZLjava_lang_Object_2Ljava_lang_String_2'](@1, '@2')) vm.java_lang_Class(false).castEx(@1, '');",
-                     smapper.getT(0, VarType.REFERENCE, false), type
+                emitImpl(out,
+                        "if (@1 !== null && !Array.prototype['isInstance__ZLjava_lang_Object_2Ljava_lang_String_2'](@1, '@2')) vm.java_lang_Class(false).castEx(@1, '');",
+                        varName, type
                 );
             }
         }
