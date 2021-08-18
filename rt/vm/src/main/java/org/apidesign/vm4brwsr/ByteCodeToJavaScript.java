@@ -1136,6 +1136,9 @@ abstract class ByteCodeToJavaScript {
     }
 
     void generateCheckcast(Appendable out, String type, CharSequence varName) throws IOException {
+        if ("java/lang/Object".equals(type)) {
+            return;
+        }
         if (!type.startsWith("[")) {
             emitImpl(out,
                     "if (@1 !== null && !@1['$instOf_@2']) vm.java_lang_Class(false).castEx(@1, '@3');",

@@ -72,13 +72,13 @@ class MetafactoryHandler extends IndyHandler {
 
             InternalSig internalSig = InternalSig.find(null, sig);
 
-            fixedArgsCount = internalSig.getParametersLength();
+            fixedArgsCount = internalSig.getParameterCount();
             final CharSequence[] vars = new CharSequence[fixedArgsCount];
             for (int j = fixedArgsCount - 1; j >= 0; --j) {
                 vars[j] = ctx.stackMapper.popValue();
             }
 
-            assert internalSig.getType().startsWith("L");
+            assert internalSig.getMangledType().startsWith("L");
 
             ctx.stackMapper.flush(ctx.out);
 
@@ -97,9 +97,25 @@ class MetafactoryHandler extends IndyHandler {
             String[] methodInfoName = ctx.bm.clazz.getFieldInfoName(methodHandle.cpx2);
             ctx.byteCodeToJavaScript.requireReference(methodInfoName[0]);
             final String mangledType = InternalSig.mangleClassName(methodInfoName[0]);
-            StringBuilder cnt = new StringBuilder();
-            char[] returnType = { 'V' };
-            String mangledMethod = InternalSig.findMethodName(methodInfoName, cnt, returnType);
+            InternalSig internalSig = InternalSig.find(methodInfoName[1], methodInfoName[2]);
+            String mangledMethod = internalSig.getJniName();
+            for (int i = 0; i < internalSig.getParameterCount(); i++) {
+                String type = internalSig.getJvmParameterType(i);
+                if (type.length() == 1) {
+                    // primitive types
+                    continue;
+                }
+                if (type.startsWith("L") && type.endsWith(";")) {
+                    type = type.substring(1, type.length() - 1);
+                }
+                ctx.out.append("\n      ");
+                int index = isStatic ? i : i + 1;
+                if (index < fixedArgsCount) {
+                    ctx.byteCodeToJavaScript.generateCheckcast(ctx.out, type, "args1[" + index + "]");
+                } else {
+                    ctx.byteCodeToJavaScript.generateCheckcast(ctx.out, type, "args2[" + (index - fixedArgsCount) + "]");
+                }
+            }
 
             String sep = "";
             ctx.out.append("\n      var type = ").append(ctx.byteCodeToJavaScript.accessClassFalse(mangledType)).append(";");
@@ -131,7 +147,7 @@ class MetafactoryHandler extends IndyHandler {
                     }
                 }
             }
-            for (int i = 0; i < cnt.length(); i++) {
+            for (int i = 0; i < internalSig.getParameterCount(); i++) {
                 int index = isStatic ? i : i + 1;
                 ctx.out.append(sep);
                 if (index < fixedArgsCount) {
@@ -145,7 +161,7 @@ class MetafactoryHandler extends IndyHandler {
 
             String convertType;
             String convertMethod;
-            switch (returnType[0]) {
+            switch (internalSig.getMangledType().charAt(0)) {
                 case 'I':
                     convertType = "java_lang_Integer";
                     convertMethod = "valueOf__Ljava_lang_Integer_2I";
@@ -185,7 +201,7 @@ class MetafactoryHandler extends IndyHandler {
                     convertMethod = null;
                     break;
                 default:
-                    throw new IllegalStateException("Unexpected return type: " + returnType[0]);
+                    throw new IllegalStateException("Unexpected return type: " + internalSig.getMangledType());
             }
 
             if (convertType != null) {

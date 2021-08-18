@@ -129,6 +129,20 @@ public class LambdasTest extends LambdasSuper {
         return ref.call("Hello", "World").toString();
     }
 
+    @Compare
+    public String callWithMessyArgs() throws Exception {
+        CallWithArgs<String> ref = (x, y) -> Arrays.asList("x: " + x.length(), "y: " + y.length());
+        CallWithArgs raw = ref;
+        try {
+            return raw.call(10, 20).toString();
+        } catch (Exception ex) {
+            // on JDK11 the full message is:
+            // java.lang.ClassCastException:class java.lang.Integer cannot be cast to class java.lang.String (java.lang.Integer and java.lang.String are in module java.base of loader 'bootstrap')
+            final String simpleMessage = ex.getMessage().replaceAll("class *", "").replaceAll(" *\\(.*\\)$", "");
+            return ex.getClass().getName() + ":" + simpleMessage;
+        }
+    }
+
     interface CallWithArgs<T> {
         List<T> call(T e1, T e2);
     }

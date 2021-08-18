@@ -30,9 +30,9 @@ final class StringConcatHandler extends IndyHandler {
         String recipe = ctx.bm.clazz.StringValue(ctx.bm.args[0]);
         final String sig = ctx.mt[1];
         InternalSig internalSig = InternalSig.find(null, sig);
-        assert internalSig.getType().equals("Ljava/lang/String;");
+        assert internalSig.getMangledType().equals("Ljava_lang_String_2") : internalSig.getMangledType();
 
-        fixedArgsCount = internalSig.getParametersLength();
+        fixedArgsCount = internalSig.getParameterCount();
         final CharSequence[] vars = new CharSequence[fixedArgsCount];
         for (int j = fixedArgsCount - 1; j >= 0; --j) {
             vars[j] = ctx.stackMapper.popValue();

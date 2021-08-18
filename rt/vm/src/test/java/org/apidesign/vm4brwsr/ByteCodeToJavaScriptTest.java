@@ -57,16 +57,16 @@ public class ByteCodeToJavaScriptTest {
     @Test
     public void manglingDashSig() {
         InternalSig ret = InternalSig.find("isSuccess-impl", "(Ljava/lang/Object;)Z");
-        assertEquals(ret.getParametersLength(), 1, "One argument");
-        assertEquals(ret.getType(), "Z", "Returns boolean");
+        assertEquals(ret.getParameterCount(), 1, "One argument");
+        assertEquals(ret.getMangledType(), "Z", "Returns boolean");
         assertEquals(ret.getJniName(), "isSuccess_0002dimpl__ZLjava_lang_Object_2");
     }
 
     @Test
     public void manglingNoNameSig() {
         InternalSig ret = InternalSig.find(null, "(Ljava/lang/Object;)Z");
-        assertEquals(ret.getParametersLength(), 1, "One argument");
-        assertEquals(ret.getType(), "Z", "Returns boolean");
+        assertEquals(ret.getParameterCount(), 1, "One argument");
+        assertEquals(ret.getMangledType(), "Z", "Returns boolean");
         assertEquals(ret.getJniName(), "ZLjava_lang_Object_2");
     }
 

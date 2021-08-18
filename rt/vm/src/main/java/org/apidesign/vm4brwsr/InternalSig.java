@@ -21,13 +21,13 @@ import org.apidesign.vm4brwsr.ByteCodeParser.MethodData;
 
 final class InternalSig {
     private final String jniName;
-    private final String type;
-    private final String[] parameters;
+    private final String mangledType;
+    private final String[] jvmParams;
 
-    private InternalSig(String jniName, String type, String[] parameters) {
+    private InternalSig(String jniName, String mangledType, String[] parameters) {
         this.jniName = jniName;
-        this.type = type;
-        this.parameters = parameters;
+        this.mangledType = mangledType;
+        this.jvmParams = parameters;
     }
 
     static InternalSig find(MethodData m) {
@@ -69,8 +69,8 @@ final class InternalSig {
     private static String findMethodName(String methodName, String internalSig, StringBuilder cnt, char[] retType) {
         InternalSig sig = find(methodName, internalSig);
         if (cnt != null) {
-            for (int i = 0; i < sig.parameters.length; i++) {
-                if ("J".equals(sig.parameters[i]) || "D".equals(sig.parameters[i])) {
+            for (int i = 0; i < sig.jvmParams.length; i++) {
+                if ("J".equals(sig.jvmParams[i]) || "D".equals(sig.jvmParams[i])) {
                     cnt.append("1");
                 } else {
                     cnt.append('0');
@@ -78,7 +78,7 @@ final class InternalSig {
             }
         }
         if (retType != null) {
-            retType[0] = sig.type.charAt(0);
+            retType[0] = sig.mangledType.charAt(0);
         }
         return sig.jniName;
     }
@@ -290,16 +290,17 @@ final class InternalSig {
                     continue;
                 case 'L':
                     int next = descriptor.indexOf(';', i);
-                    String realSig = InternalSig.mangleSig(descriptor, i - 1, next + 1);
+                    String rawSig = descriptor.substring(i - 1, next + 1);
+                    String realSig = mangleSig(rawSig);
                     if (count) {
                         if (array != null) {
                             sig.append("_3");
                             if (arr != null) {
-                                arr.add(array + realSig);
+                                arr.add(array + rawSig);
                             }
                         } else {
                             if (arr != null) {
-                                arr.add(realSig);
+                                arr.add(rawSig);
                             }
                         }
                         sig.append(realSig);
@@ -339,15 +340,19 @@ final class InternalSig {
         return copy;
     }
 
-    int getParametersLength() {
-        return parameters.length;
+    int getParameterCount() {
+        return jvmParams.length;
     }
 
-    String getType() {
-        return type;
+    String getMangledType() {
+        return mangledType;
     }
 
     String getJniName() {
         return jniName;
+    }
+
+    String getJvmParameterType(int i) {
+        return jvmParams[i];
     }
 }
