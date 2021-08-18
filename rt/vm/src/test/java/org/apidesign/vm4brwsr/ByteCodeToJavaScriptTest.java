@@ -78,6 +78,18 @@ public class ByteCodeToJavaScriptTest {
         assertEquals(ret, "toJavaScript__Ljava_lang_String_2_3B");
     }
 
+    @Test
+    public void manglingDoubleArrays() {
+        StringBuilder cnt = new StringBuilder();
+        char[] returnType = { 'V' };
+        String ret = ByteCodeToJavaScript.findMethodName(new String[] {
+            "VMinVM", "toJavaScript", "([D)Ljava/lang/String;"
+        }, cnt, returnType);
+        assertEquals(cnt.toString(), "0", "No doubles or longs");
+        assertTrue(returnType[0] != 'V', "Returns string");
+        assertEquals(ret, "toJavaScript__Ljava_lang_String_2_3D");
+    }
+
     @Test public void mangleJsCallbackToAType() throws Exception {
         String res = ByteCodeToJavaScript.mangleJsCallbacks(
             "org.apidesign.bck2brwsr.vmtest.impl.HtmlAnnotations",

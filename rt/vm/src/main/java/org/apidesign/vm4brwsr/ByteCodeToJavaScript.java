@@ -624,13 +624,15 @@ abstract class ByteCodeToJavaScript {
                     if (count) {
                         if (array) {
                             sig.append("_3");
+                            cnt.append("0");
+                        } else {
+                            if (ch == 'J' || ch == 'D') {
+                                cnt.append('1');
+                            } else {
+                                cnt.append('0');
+                            }
                         }
                         sig.append(ch);
-                        if (ch == 'J' || ch == 'D') {
-                            cnt.append('1');
-                        } else {
-                            cnt.append('0');
-                        }
                     } else {
                         sig.insert(firstPos, ch);
                         if (array) {
