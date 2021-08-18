@@ -21,6 +21,9 @@ public class NestMates {
     NestMates() {
     }
 
+    public static void main(String... args) {
+    }
+
     public static String privateMessage() {
         Subclass bar = new Subclass();
         return Nested.findPrivate(bar);
