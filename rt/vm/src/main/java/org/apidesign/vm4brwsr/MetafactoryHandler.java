@@ -67,21 +67,18 @@ class MetafactoryHandler extends IndyHandler {
             }
             final String type = typeSig.substring(1, typeSig.length() - 1);
             ctx.byteCodeToJavaScript.requireReference(type);
-            final String mangledType = ByteCodeToJavaScript.mangleClassName(type);
+            final String mangledType = InternalSig.mangleClassName(type);
             String interfaceToCreate = ctx.byteCodeToJavaScript.accessClassFalse(mangledType);
 
-            StringBuilder sigB = new StringBuilder();
-            StringBuilder cnt = new StringBuilder();
-            char[] returnType = { 'V' };
-            ByteCodeToJavaScript.countArgs(sig, returnType, sigB, cnt);
+            InternalSig internalSig = InternalSig.find(null, sig);
 
-            fixedArgsCount = cnt.length();
+            fixedArgsCount = internalSig.getParametersLength();
             final CharSequence[] vars = new CharSequence[fixedArgsCount];
             for (int j = fixedArgsCount - 1; j >= 0; --j) {
                 vars[j] = ctx.stackMapper.popValue();
             }
 
-            assert returnType[0] == 'L';
+            assert internalSig.getType().startsWith("L");
 
             ctx.stackMapper.flush(ctx.out);
 
@@ -99,10 +96,10 @@ class MetafactoryHandler extends IndyHandler {
         {
             String[] methodInfoName = ctx.bm.clazz.getFieldInfoName(methodHandle.cpx2);
             ctx.byteCodeToJavaScript.requireReference(methodInfoName[0]);
-            final String mangledType = ByteCodeToJavaScript.mangleClassName(methodInfoName[0]);
+            final String mangledType = InternalSig.mangleClassName(methodInfoName[0]);
             StringBuilder cnt = new StringBuilder();
             char[] returnType = { 'V' };
-            String mangledMethod = ByteCodeToJavaScript.findMethodName(methodInfoName, cnt, returnType);
+            String mangledMethod = InternalSig.findMethodName(methodInfoName, cnt, returnType);
 
             String sep = "";
             ctx.out.append("\n      var type = ").append(ctx.byteCodeToJavaScript.accessClassFalse(mangledType)).append(";");

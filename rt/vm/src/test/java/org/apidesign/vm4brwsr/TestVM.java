@@ -114,6 +114,9 @@ public final class TestVM {
 
 
     private void assertNumber(Number actual, Number expected, String msg) throws IOException {
+        if (Math.abs(actual.doubleValue() - expected.doubleValue()) < 0.1) {
+            return;
+        }
         assertEquals(actual.doubleValue(), expected.doubleValue(), 0.1, msg + "was: " + actual + "\n" + dumpJS(codeSeq));
     }
 

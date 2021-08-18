@@ -79,7 +79,7 @@ abstract class ByteCodeToJavaScript {
     }
 
     final String accessClassFalse(String classOperation) {
-        if (mangleClassName(jc.getClassName()).equals(classOperation)) {
+        if (InternalSig.mangleClassName(jc.getClassName()).equals(classOperation)) {
             return "c";
         }
         classRefs.addIfMissing(classOperation);
@@ -199,7 +199,7 @@ abstract class ByteCodeToJavaScript {
         if (proto == null) {
             String sc = jc.getSuperClassName(); // with _
             out.append("\n    var pp = ").
-                append(accessClass(mangleClassName(sc))).append("(true);");
+                append(accessClass(InternalSig.mangleClassName(sc))).append("(true);");
             out.append("\n    var p = CLS.prototype = pp;");
             out.append("\n    var c = p;");
             out.append("\n    var sprcls = pp.constructor.$class;");
@@ -284,7 +284,7 @@ abstract class ByteCodeToJavaScript {
                     if ((m.getAccess() & ACC_ABSTRACT) == 0) {
                         if ((m.getAccess() & ACC_STATIC) == 0
                             && (m.getAccess() & ACC_PRIVATE) == 0) {
-                            final String mn = findMethodName(m, new StringBuilder());
+                            final String mn = InternalSig.findMethodName(m, new StringBuilder());
                             out.append("\n        if (!x['").append(mn).append("']) Object.defineProperty(x, '").append(mn).append("', { value : c['").append(mn).append("']});");
                         }
                     } else {
@@ -307,7 +307,7 @@ abstract class ByteCodeToJavaScript {
                 }
             }
             for (String superInterface : jc.getSuperInterfaces()) {
-                String intrfc = mangleClassName(superInterface);
+                String intrfc = InternalSig.mangleClassName(superInterface);
                 out.append("\n      vm.").append(intrfc).append("(false)['fillInstOf'](x);");
                 requireReference(superInterface);
             }
@@ -322,7 +322,7 @@ abstract class ByteCodeToJavaScript {
             out.append("\n    CLS.$class.superclass = sprcls;");
             if (functionalInterfaceMethod != null) {
                 char[] returnType = { 'V' };
-                final String mn = findMethodName(functionalInterfaceMethod, new StringBuilder(), returnType);
+                final String mn = InternalSig.findMethodName(functionalInterfaceMethod, new StringBuilder(), returnType);
                 out.append("\n    CLS.$class.$lambda = function(arr, fn) {");
                 out.append("\n      var inst = new CLS();");
                 out.append("\n      inst['").append(mn).append("'] = function() {");
@@ -348,7 +348,7 @@ abstract class ByteCodeToJavaScript {
                         out.append(",");
                     }
                     requireReference(intrfc);
-                    String mangledIface = mangleClassName(intrfc);
+                    String mangledIface = InternalSig.mangleClassName(intrfc);
                     out.append("\n        ");
                     out.append(accessClass(mangledIface)).append("(false).constructor.$class");
                     first = false;
@@ -462,7 +462,7 @@ abstract class ByteCodeToJavaScript {
         if (jsb != null) {
             return jsb;
         }
-        final String mn = findMethodName(m, new StringBuilder());
+        final String mn = InternalSig.findMethodName(m, new StringBuilder());
         boolean defineProp = generateMethod(out, destObject, mn, m);
         if (mn.equals("class__V")) {
             if (defineProp) {
@@ -479,7 +479,7 @@ abstract class ByteCodeToJavaScript {
         if (jsb != null) {
             return jsb;
         }
-        final String mn = findMethodName(m, new StringBuilder());
+        final String mn = InternalSig.findMethodName(m, new StringBuilder());
         generateMethod(out, destObject, mn, m);
         return mn;
     }
@@ -598,203 +598,6 @@ abstract class ByteCodeToJavaScript {
         return readShort(byteCodes, offsetInstruction + 1);
     }
 
-    static void countArgs(String descriptor, char[] returnType, StringBuilder sig, StringBuilder cnt) {
-        int i = 0;
-        Boolean count = null;
-        boolean array = false;
-        sig.append("__");
-        int firstPos = sig.length();
-        while (i < descriptor.length()) {
-            char ch = descriptor.charAt(i++);
-            switch (ch) {
-                case '(':
-                    count = true;
-                    continue;
-                case ')':
-                    count = false;
-                    continue;
-                case 'B':
-                case 'C':
-                case 'D':
-                case 'F':
-                case 'I':
-                case 'J':
-                case 'S':
-                case 'Z':
-                    if (count) {
-                        if (array) {
-                            sig.append("_3");
-                            cnt.append("0");
-                        } else {
-                            if (ch == 'J' || ch == 'D') {
-                                cnt.append('1');
-                            } else {
-                                cnt.append('0');
-                            }
-                        }
-                        sig.append(ch);
-                    } else {
-                        sig.insert(firstPos, ch);
-                        if (array) {
-                            returnType[0] = '[';
-                            sig.insert(firstPos, "_3");
-                        } else {
-                            returnType[0] = ch;
-                        }
-                    }
-                    array = false;
-                    continue;
-                case 'V':
-                    assert !count;
-                    returnType[0] = 'V';
-                    sig.insert(firstPos, 'V');
-                    continue;
-                case 'L':
-                    int next = descriptor.indexOf(';', i);
-                    String realSig = mangleSig(descriptor, i - 1, next + 1);
-                    if (count) {
-                        if (array) {
-                            sig.append("_3");
-                        }
-                        sig.append(realSig);
-                        cnt.append('0');
-                    } else {
-                        sig.insert(firstPos, realSig);
-                        if (array) {
-                            sig.insert(firstPos, "_3");
-                        }
-                        returnType[0] = 'L';
-                    }
-                    i = next + 1;
-                    array = false;
-                    continue;
-                case '[':
-                    array = true;
-                    continue;
-                default:
-                    throw new IllegalStateException("Invalid char: " + ch);
-            }
-        }
-    }
-
-    static String mangleSig(String sig) {
-        return mangle(sig, 0, sig.length(), false);
-    }
-
-    static String mangle(String originalName, int from, int till, boolean replaceDot) {
-        final int bufferSize = Math.max((till - from) * 2, 32);
-        char[] buf = new char[bufferSize];
-        int at = 0;
-        for (int i = from; i < till; i++) {
-            if (at > buf.length - 10) {
-                buf = copyDouble(buf);
-            }
-            final char ch = originalName.charAt(i);
-            switch (ch) {
-                case '/': buf[at++] = '_'; break;
-                case '_': buf[at++] = '_'; buf[at++] = '1'; break;
-                case ';': buf[at++] = '_'; buf[at++] = '2'; break;
-                case '[': buf[at++] = '_'; buf[at++] = '3'; break;
-                case '.':
-                    if (replaceDot) {
-                        buf[at++] = '_';
-                        break;
-                    }
-                    // fallhrough
-                default:
-                    boolean valid = i == 0 ?
-                            Character.isJavaIdentifierStart(ch) : Character.isJavaIdentifierPart(ch);
-                    if (valid) {
-                        buf[at++] = ch;
-                    } else {
-                        buf[at++] = '_';
-                        buf[at++] = '0';
-                        String hex = Integer.toHexString(ch).toLowerCase();
-                        for (int m = hex.length(); m < 4; m++) {
-                            buf[at++] = '0';
-                        }
-                        for (int r = 0; r < hex.length(); r++) {
-                            buf[at++] = hex.charAt(r);
-                        }
-                    }
-                break;
-            }
-        }
-        return new String(buf, 0, at);
-    }
-
-    private static char[] copyDouble(char[] buf) {
-        char[] copy = new char[buf.length * 2];
-        for (int i = 0; i < buf.length; i++) {
-            copy[i] = buf[i];
-        }
-        return copy;
-    }
-
-    private static String mangleMethodName(String name) {
-        return mangle(name, 0, name.length(), false);
-    }
-
-    private static String mangleSig(String txt, int first, int last) {
-        StringBuilder sb = new StringBuilder((last - first) * 2);
-        for (int i = first; i < last; i++) {
-            final char ch = txt.charAt(i);
-            switch (ch) {
-                case '/': sb.append('_'); break;
-                case '_': sb.append("_1"); break;
-                case ';': sb.append("_2"); break;
-                case '[': sb.append("_3"); break;
-                default:
-                    if (Character.isJavaIdentifierPart(ch)) {
-                        sb.append(ch);
-                    } else {
-                        sb.append("_0");
-                        String hex = Integer.toHexString(ch).toLowerCase();
-                        for (int m = hex.length(); m < 4; m++) {
-                            sb.append("0");
-                        }
-                        sb.append(hex);
-                    }
-                break;
-            }
-        }
-        return sb.toString();
-    }
-
-    static String mangleClassName(String name) {
-        return mangleSig(name);
-    }
-
-    private static String findMethodName(MethodData m, StringBuilder cnt) {
-        return findMethodName(m, cnt, new char[1]);
-    }
-
-    private static String findMethodName(MethodData m, StringBuilder cnt, char[] retType) {
-        StringBuilder name = new StringBuilder();
-        if ("<init>".equals(m.getName())) { // NOI18N
-            name.append("cons"); // NOI18N
-        } else if ("<clinit>".equals(m.getName())) { // NOI18N
-            name.append("class"); // NOI18N
-        } else {
-            name.append(mangleMethodName(m.getName()));
-        }
-        countArgs(m.getInternalSig(), retType, name, cnt);
-        return name.toString();
-    }
-
-    static String findMethodName(String[] mi, StringBuilder cnt, char[] returnType) {
-        StringBuilder name = new StringBuilder();
-        String descr = mi[2];//mi.getDescriptor();
-        String nm= mi[1];
-        if ("<init>".equals(nm)) { // NOI18N
-            name.append("cons"); // NOI18N
-        } else {
-            name.append(mangleMethodName(nm));
-        }
-        countArgs(descr, returnType, name, cnt);
-        return name.toString();
-    }
-
     void addReference(Appendable out, String cn) throws IOException {
         if (requireReference(cn)) {
             debug(out, " /* needs " + cn + " */");
@@ -808,7 +611,7 @@ abstract class ByteCodeToJavaScript {
         }
         if (d.charAt(0) == 'L') {
             assert d.charAt(d.length() - 1) == ';';
-            out.append(mangleClassName(d).substring(0, d.length() - 1));
+            out.append(InternalSig.mangleClassName(d).substring(0, d.length() - 1));
         } else {
             out.append(d);
         }
@@ -822,7 +625,7 @@ abstract class ByteCodeToJavaScript {
                 s = accessClass("java_lang_Class") + "(false)['forName__Ljava_lang_Class_2Ljava_lang_String_2']('" + classRef[0] + "')";
             } else {
                 addReference(out, classRef[0]);
-                s = accessClassFalse(mangleClassName(s)) + ".constructor.$class";
+                s = accessClassFalse(InternalSig.mangleClassName(s)) + ".constructor.$class";
             }
         }
         return s;
@@ -879,7 +682,7 @@ abstract class ByteCodeToJavaScript {
             return null;
         }
         StringBuilder cnt = new StringBuilder();
-        final String mn = findMethodName(m, cnt);
+        final String mn = InternalSig.findMethodName(m, cnt);
         out.append("m = ").append(destObject).append(".").append(mn);
         out.append(" = function(");
         if (p.html4j) {
@@ -954,7 +757,7 @@ abstract class ByteCodeToJavaScript {
             int paramEnd = closingParenthesis(body, paramBeg);
 
             sb.append(accessClass("java_lang_Class")).append("(false).toJS(");
-            sb.append("vm.").append(mangleClassName(pkgName)).append("_$JsCallbacks$(false)._VM().");
+            sb.append("vm.").append(InternalSig.mangleClassName(pkgName)).append("_$JsCallbacks$(false)._VM().");
             sb.append(mangleJsCallbacks(fqn, method, params, false));
             sb.append("(").append(refId);
             if (body.charAt(paramBeg + 1) != ')') {
@@ -995,7 +798,7 @@ abstract class ByteCodeToJavaScript {
             int paramEnd = closingParenthesis(body, paramBeg);
 
             sb.append(accessClass("java_lang_Class")).append("(false).toJS(");
-            sb.append("vm.").append(mangleClassName(pkgName)).append("_$JsCallbacks$(false)._VM().");
+            sb.append("vm.").append(InternalSig.mangleClassName(pkgName)).append("_$JsCallbacks$(false)._VM().");
             sb.append(mangleJsCallbacks(fqn, method, params, true));
             sb.append("(");
             sb.append(body.substring(paramBeg + 1, paramEnd));
@@ -1013,8 +816,8 @@ abstract class ByteCodeToJavaScript {
         }
         StringBuilder sb = new StringBuilder();
         final String fqnu = fqn.replace('.', '_');
-        final String rfqn = mangleClassName(fqnu);
-        final String rm = mangleMethodName(method);
+        final String rfqn = InternalSig.mangleClassName(fqnu);
+        final String rm = InternalSig.mangleMethodName(method);
         final String srp;
         {
             StringBuilder pb = new StringBuilder();
@@ -1039,10 +842,10 @@ abstract class ByteCodeToJavaScript {
                     indx++;
                 }
             }
-            srp = mangleSig(pb.toString());
+            srp = InternalSig.mangleSig(pb.toString());
         }
-        final String rp = mangleSig(params);
-        final String mrp = mangleMethodName(rp);
+        final String rp = InternalSig.mangleSig(params);
+        final String mrp = InternalSig.mangleMethodName(rp);
         sb.append(rfqn).append("$").append(rm).
             append('$').append(mrp).append("__Ljava_lang_Object_2");
         if (!isStatic) {
@@ -1053,7 +856,7 @@ abstract class ByteCodeToJavaScript {
     }
 
     private static String className(ClassData jc) {
-        return mangleClassName(jc.getClassName());
+        return InternalSig.mangleClassName(jc.getClassName());
     }
 
     private static String[] findAnnotation(
@@ -1157,7 +960,7 @@ abstract class ByteCodeToJavaScript {
                 final String classInternalName = jc.getClassName(e.catch_cpx);
                 addReference(out, classInternalName);
                 out.append("e = vm.java_lang_Class(false).bck2BrwsrThrwrbl(e);");
-                out.append("if (e['$instOf_" + mangleClassName(classInternalName) + "']) {");
+                out.append("if (e['$instOf_" + InternalSig.mangleClassName(classInternalName) + "']) {");
                 out.append("var stA0 = e;");
                 goTo(out, current, e.handler_pc, topMostLabel);
                 out.append("}\n");
@@ -1218,7 +1021,7 @@ abstract class ByteCodeToJavaScript {
         if (typeName.startsWith("[")) {
             typeName = "'[" + typeName + "'";
         } else {
-            ref = "vm." + mangleClassName(typeName);
+            ref = "vm." + InternalSig.mangleClassName(typeName);
             typeName = "'[L" + typeName + ";'";
         }
         emit(out, smapper,
@@ -1240,7 +1043,7 @@ abstract class ByteCodeToJavaScript {
         dims.append(']');
         String fn = "null";
         if (typeName.charAt(dim) == 'L') {
-            fn = "vm." + mangleClassName(typeName.substring(dim + 1, typeName.length() - 1));
+            fn = "vm." + InternalSig.mangleClassName(typeName.substring(dim + 1, typeName.length() - 1));
         }
         emit(out, smapper,
             "var @2 = Array.prototype['multiNewArray__Ljava_lang_Object_2Ljava_lang_String_2_3ILjava_lang_Object_2']('@3', @1, @4);",
@@ -1302,7 +1105,7 @@ abstract class ByteCodeToJavaScript {
             emit(out, smapper,
                     "var @2 = @1 != null && @1['$instOf_@3'] ? 1 : 0;",
                  smapper.popA(), smapper.pushI(),
-                 mangleClassName(type));
+                 InternalSig.mangleClassName(type));
         } else {
             int cnt = 0;
             while (type.charAt(cnt) == '[') {
@@ -1311,7 +1114,7 @@ abstract class ByteCodeToJavaScript {
             if (type.charAt(cnt) == 'L') {
                 String component = type.substring(cnt + 1, type.length() - 1);
                 requireReference(component);
-                type = "vm." + mangleClassName(component);
+                type = "vm." + InternalSig.mangleClassName(component);
                 emit(out, smapper,
                     "var @2 = Array.prototype['isInstance__ZLjava_lang_Object_2ILjava_lang_Object_2'](@1, @4, @3);",
                     smapper.popA(), smapper.pushI(),
@@ -1336,7 +1139,7 @@ abstract class ByteCodeToJavaScript {
         if (!type.startsWith("[")) {
             emitImpl(out,
                     "if (@1 !== null && !@1['$instOf_@2']) vm.java_lang_Class(false).castEx(@1, '@3');",
-                    varName, mangleClassName(type), type.replace('/', '.')
+                    varName, InternalSig.mangleClassName(type), type.replace('/', '.')
             );
         } else {
             int cnt = 0;
@@ -1346,7 +1149,7 @@ abstract class ByteCodeToJavaScript {
             if (type.charAt(cnt) == 'L') {
                 String component = type.substring(cnt + 1, type.length() - 1);
                 requireReference(component);
-                type = "vm." + mangleClassName(component);
+                type = "vm." + InternalSig.mangleClassName(component);
                 emitImpl(out,
                         "if (@1 !== null && !Array.prototype['isInstance__ZLjava_lang_Object_2ILjava_lang_Object_2'](@1, @3, @2)) vm.java_lang_Class(false).castEx(@1, '');",
                         varName, type, "" + cnt
@@ -1459,7 +1262,7 @@ abstract class ByteCodeToJavaScript {
             final String slashType = attrType.substring(1, attrType.length() - 1);
             requireReference(slashType);
 
-            final String cn = mangleClassName(slashType);
+            final String cn = InternalSig.mangleClassName(slashType);
             out.append(accessClassFalse(cn))
                 .append("['valueOf__L").
                 append(cn).
@@ -1474,7 +1277,7 @@ abstract class ByteCodeToJavaScript {
                 final String slashType = className.substring(1, className.length() - 1);
                 requireReference(slashType);
 
-                final String cn = mangleClassName(slashType);
+                final String cn = InternalSig.mangleClassName(slashType);
                 out.append(accessClassFalse(cn)).append(".constructor.$class");
             } else {
                 String primitiveType = null;

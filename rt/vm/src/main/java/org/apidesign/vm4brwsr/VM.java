@@ -396,7 +396,7 @@ abstract class VM extends ByteCodeToJavaScript {
         if (method != null) {
             boolean methodIsPrivate = (method.access & ByteCodeParser.ACC_PRIVATE) != 0;
             if (methodIsPrivate && referencedClass != caller) {
-                String mcn = mangleClassName(referencedClass.getClassName());
+                String mcn = InternalSig.mangleClassName(referencedClass.getClassName());
                 String nestedClass = accessClassFalse(mcn);
                 sep[0] = ", ";
                 return nestedClass + "." + mangledName + ".call(" + object;

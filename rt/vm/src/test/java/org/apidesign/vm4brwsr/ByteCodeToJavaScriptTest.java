@@ -34,7 +34,7 @@ public class ByteCodeToJavaScriptTest {
     public void findMethodNameManglesObjectsCorrectly() {
         StringBuilder cnt = new StringBuilder();
         char[] returnType = { 'V' };
-        String ret = ByteCodeToJavaScript.findMethodName(new String[] {
+        String ret = InternalSig.findMethodName(new String[] {
             "StringTest", "replace", "(Ljava/lang/String;CC)Ljava/lang/String;"
         }, cnt, returnType);
         assertEquals(cnt.toString(), "000", "No doubles or longs");
@@ -46,12 +46,28 @@ public class ByteCodeToJavaScriptTest {
     public void manglingDash() {
         StringBuilder cnt = new StringBuilder();
         char[] returnType = { 'V' };
-        String ret = ByteCodeToJavaScript.findMethodName(new String[] {
+        String ret = InternalSig.findMethodName(new String[] {
             "StringKt", "isSuccess-impl", "(Ljava/lang/Object;)Z"
         }, cnt, returnType);
         assertEquals(cnt.toString(), "0", "One argument");
-        assertTrue(returnType[0] != 'V', "Returns string");
+        assertTrue(returnType[0] != 'V', "Returns boolean");
         assertEquals(ret, "isSuccess_0002dimpl__ZLjava_lang_Object_2");
+    }
+
+    @Test
+    public void manglingDashSig() {
+        InternalSig ret = InternalSig.find("isSuccess-impl", "(Ljava/lang/Object;)Z");
+        assertEquals(ret.getParametersLength(), 1, "One argument");
+        assertEquals(ret.getType(), "Z", "Returns boolean");
+        assertEquals(ret.getJniName(), "isSuccess_0002dimpl__ZLjava_lang_Object_2");
+    }
+
+    @Test
+    public void manglingNoNameSig() {
+        InternalSig ret = InternalSig.find(null, "(Ljava/lang/Object;)Z");
+        assertEquals(ret.getParametersLength(), 1, "One argument");
+        assertEquals(ret.getType(), "Z", "Returns boolean");
+        assertEquals(ret.getJniName(), "ZLjava_lang_Object_2");
     }
 
     @Test
@@ -61,7 +77,7 @@ public class ByteCodeToJavaScriptTest {
             sb.append((char)i);
         }
         String mangleEmulMini = Mangling.mangle(sb, true);
-        String mangleCompiler = ByteCodeToJavaScript.mangle(sb.toString(), 0, sb.length(), true);
+        String mangleCompiler = InternalSig.mangle(sb.toString(), 0, sb.length(), true);
 
         assertEquals(mangleCompiler, mangleEmulMini);
     }
@@ -70,7 +86,7 @@ public class ByteCodeToJavaScriptTest {
     public void manglingArrays() {
         StringBuilder cnt = new StringBuilder();
         char[] returnType = { 'V' };
-        String ret = ByteCodeToJavaScript.findMethodName(new String[] {
+        String ret = InternalSig.findMethodName(new String[] {
             "VMinVM", "toJavaScript", "([B)Ljava/lang/String;"
         }, cnt, returnType);
         assertEquals(cnt.toString(), "0", "No doubles or longs");
@@ -82,7 +98,7 @@ public class ByteCodeToJavaScriptTest {
     public void manglingDoubleArrays() {
         StringBuilder cnt = new StringBuilder();
         char[] returnType = { 'V' };
-        String ret = ByteCodeToJavaScript.findMethodName(new String[] {
+        String ret = InternalSig.findMethodName(new String[] {
             "VMinVM", "toJavaScript", "([D)Ljava/lang/String;"
         }, cnt, returnType);
         assertEquals(cnt.toString(), "0", "No doubles or longs");
@@ -91,7 +107,7 @@ public class ByteCodeToJavaScriptTest {
     }
 
     @Test public void mangleJsCallbackToAType() throws Exception {
-        String res = ByteCodeToJavaScript.mangleJsCallbacks(
+        String res = InternalSig.mangleJsCallbacks(
             "org.apidesign.bck2brwsr.vmtest.impl.HtmlAnnotations",
             "onError", "Ljava/lang/Object;", false
         );
@@ -103,7 +119,7 @@ public class ByteCodeToJavaScriptTest {
         );
     }
     @Test public void mangleJsCallbackToATypeWithString() throws Exception {
-        String res = ByteCodeToJavaScript.mangleJsCallbacks(
+        String res = InternalSig.mangleJsCallbacks(
             "org.apidesign.bck2brwsr.vmtest.impl.HtmlAnnotations",
             "onMessage", "Ljava/lang/String;", false
         );

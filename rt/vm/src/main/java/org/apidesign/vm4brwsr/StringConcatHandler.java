@@ -29,13 +29,10 @@ final class StringConcatHandler extends IndyHandler {
         final int fixedArgsCount;
         String recipe = ctx.bm.clazz.StringValue(ctx.bm.args[0]);
         final String sig = ctx.mt[1];
-        StringBuilder sigB = new StringBuilder();
-        StringBuilder cnt = new StringBuilder();
-        char[] returnType = {'V'};
-        ByteCodeToJavaScript.countArgs(sig, returnType, sigB, cnt);
-        assert returnType[0] == 'L';
+        InternalSig internalSig = InternalSig.find(null, sig);
+        assert internalSig.getType().equals("Ljava/lang/String;");
 
-        fixedArgsCount = cnt.length();
+        fixedArgsCount = internalSig.getParametersLength();
         final CharSequence[] vars = new CharSequence[fixedArgsCount];
         for (int j = fixedArgsCount - 1; j >= 0; --j) {
             vars[j] = ctx.stackMapper.popValue();
