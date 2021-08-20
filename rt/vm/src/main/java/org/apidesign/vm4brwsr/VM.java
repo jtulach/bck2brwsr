@@ -815,7 +815,7 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "        csUrl = cs['src'];\n"
                 + "      }\n"
                 + "    }\n"
-                + "    var prefix = csUrl ? csUrl['replace'](/\\/[^\\/]*$/,'/') : '';\n"
+                + "    var prefix = csUrl ? csUrl['replace'](/[^\\/]*$/,'') : '';\n"
                 + "    extensions.push(extension);\n"
                 + "    var cp = config['classpath'];\n"
                 + "    if (cp) for (var i = 0; i < cp.length; i++) {\n"
