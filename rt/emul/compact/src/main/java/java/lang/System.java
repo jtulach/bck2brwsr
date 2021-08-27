@@ -25,15 +25,15 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Properties;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
+import org.apidesign.bck2brwsr.emul.lang.Heartbeat;
 
 /** Poor man's re-implementation of most important System methods.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class System {
-    private static final Object[] lifeCycle = { null };
     static {
-        initLifeCycle(lifeCycle);
+        Heartbeat.initialize();
     }
     private static Properties mprops = new Properties();
 
@@ -99,35 +99,6 @@ public class System {
         return "\n";
     }
 
-    @JavaScriptBody(args = { "socket" }, body = "\n"
-            + "        socket[0] = null;\n" +
-"        try {\n" +
-"            if (location.href.startsWith('http://localhost:')) {\n" +
-"                var s = new WebSocket('ws://' + location.host + '/heartbeat');\n" +
-"                s.onopen = function(ev) {\n" +
-"                    socket[0] = s;\n" +
-"                    s.send('Application is running');\n" +
-"                }\n" +
-"                s.onmessage = function(ev) {\n" +
-"                    console.log(ev.data);\n" +
-"                    if ('reload' === ev.data) {\n" +
-"                        window.location.reload();\n" +
-"                    }\n" +
-"                }\n" +
-"            }\n" +
-"        } catch (_) {}\n" +
-    "")
-    private static void initLifeCycle(Object[] socket) {
-        socket[0] = null;
-    }
-
-    @JavaScriptBody(args = { "s", "exitCode" }, body = "\n"
-            + "         s.send('exit: ' + exitCode);\n" +
-              "         window.close();\n"
-    )
-    private static void lifeCycleExit(Object lifeCycle, int exitCode) {
-    }
-
     @JavaScriptBody(args = { "exitCode" }, body = ""
         + "var xhttp = new XMLHttpRequest();\n"
         + "xhttp.open('GET', '/?exit=' + exitCode, true);\n"
@@ -140,9 +111,7 @@ public class System {
     }
 
     public static void exit(int exitCode) {
-        if (lifeCycle[0] != null) {
-            lifeCycleExit(lifeCycle[0], exitCode);
-        } else {
+        if (!Heartbeat.exit(exitCode)) {
             xhrExit(exitCode);
         }
     }

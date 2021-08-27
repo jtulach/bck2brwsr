@@ -31,6 +31,9 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
 @Exported
 public class System {
     private static OutputStream stdErr;
+    static {
+        Heartbeat.initialize();
+    }
 
     private System() {
     }
