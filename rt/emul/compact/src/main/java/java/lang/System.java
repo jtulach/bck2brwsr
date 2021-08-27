@@ -101,19 +101,21 @@ public class System {
 
     @JavaScriptBody(args = { "socket" }, body = "\n"
             + "        socket[0] = null;\n" +
-"        if (typeof WebSocket !== 'undefined') {\n" +
-"            var s = new WebSocket('ws://' + location.host + '/heartbeat');\n" +
-"            s.onopen = function(ev) {\n" +
-"                socket[0] = s;\n" +
-"                s.send('Application is running');\n" +
-"            }\n" +
-"            s.onmessage = function(ev) {\n" +
-"                console.log(ev.data);\n" +
-"                if ('reload' === ev.data) {\n" +
-"                    window.location.reload();\n" +
+"        try {\n" +
+"            if (location.href.startsWith('http://localhost:')) {\n" +
+"                var s = new WebSocket('ws://' + location.host + '/heartbeat');\n" +
+"                s.onopen = function(ev) {\n" +
+"                    socket[0] = s;\n" +
+"                    s.send('Application is running');\n" +
+"                }\n" +
+"                s.onmessage = function(ev) {\n" +
+"                    console.log(ev.data);\n" +
+"                    if ('reload' === ev.data) {\n" +
+"                        window.location.reload();\n" +
+"                    }\n" +
 "                }\n" +
 "            }\n" +
-"        }\n" +
+"        } catch (_) {}\n" +
     "")
     private static void initLifeCycle(Object[] socket) {
         socket[0] = null;
