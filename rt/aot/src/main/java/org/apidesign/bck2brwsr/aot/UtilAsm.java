@@ -15,7 +15,7 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.mojo;
+package org.apidesign.bck2brwsr.aot;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,12 +43,14 @@ import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
-final class UtilAsm {
+/** Utilities for the mojo. Extracted into aot to simplify dependencies.
+ */
+public final class UtilAsm {
 
     private UtilAsm() {
     }
 
-    static Set<String> findMainClass(File jarOrDir) throws IOException {
+    public static Set<String> findMainClass(File jarOrDir) throws IOException {
         final TreeSet<String> classes = new TreeSet<>();
         Iterable<Path> roots;
         if (jarOrDir.isDirectory()) {

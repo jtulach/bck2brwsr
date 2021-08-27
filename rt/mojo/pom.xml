@@ -184,10 +184,6 @@
         <scope>test</scope>
     </dependency>
     <dependency>
-        <groupId>org.ow2.asm</groupId>
-        <artifactId>asm</artifactId>
-    </dependency>
-    <dependency>
         <groupId>${project.groupId}</groupId>
         <artifactId>emul.mini</artifactId>
         <version>${project.version}</version>

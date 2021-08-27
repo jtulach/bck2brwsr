@@ -17,12 +17,14 @@
  */
 package org.apidesign.bck2brwsr.mojo;
 
+import org.apidesign.bck2brwsr.aot.UtilAsm;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Set;
 import org.apidesign.bck2brwsr.vm11.NestMates;
+import org.apidesign.vm4brwsr.Bck2Brwsr;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 import org.testng.annotations.Test;
@@ -39,11 +41,11 @@ public class UtilAsmJdk11Test {
 
     @Test
     public void tryToFindMainInMojo() throws URISyntaxException, IOException {
-        URL utilAsm = UtilAsm.class.getProtectionDomain().getCodeSource().getLocation();
-        File utilAsmJar = new File(utilAsm.toURI());
-        assertTrue(utilAsmJar.exists(), "Jar exists: " + utilAsmJar);
-        Set<String> res = UtilAsm.findMainClass(utilAsmJar);
-        assertTrue(res.size() > 10, "At least ten main classes found: " + res);
-        assertTrue(res.contains("org.apidesign.bck2brwsr.mojo.ShowMain"), "ShowMain is there: " + res);
+        URL vm4j = Bck2Brwsr.class.getProtectionDomain().getCodeSource().getLocation();
+        File vm4jar = new File(vm4j.toURI());
+        assertTrue(vm4jar.exists(), "Jar exists: " + vm4jar);
+        Set<String> res = UtilAsm.findMainClass(vm4jar);
+        assertEquals(res.size(), 1, "One main class found: " + res);
+        assertTrue(res.contains("org.apidesign.vm4brwsr.Main"), "vm4brwsr Main is there: " + res);
     }
 }
