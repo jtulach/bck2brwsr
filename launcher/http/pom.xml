@@ -23,11 +23,11 @@
   <parent>
     <groupId>org.apidesign.bck2brwsr</groupId>
     <artifactId>launcher-pom</artifactId>
-    <version>0.53</version>
+    <version>1.0-SNAPSHOT</version>
   </parent>
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>launcher.http</artifactId>
-  <version>0.53</version>
+  <version>1.0-SNAPSHOT</version>
   <name>Bck2Brwsr Launcher</name>
   <url>http://maven.apache.org</url>
     <build>
