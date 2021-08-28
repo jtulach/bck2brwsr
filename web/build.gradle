@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath "org.apidesign.bck2brwsr:bck2brwsr-maven-plugin:0.51"
+        classpath "org.apidesign.bck2brwsr:bck2brwsr-maven-plugin:0.53"
     }
 }
 
@@ -20,7 +20,7 @@ def commonProject = project.parent
 
 dependencies {
     implementation commonProject
-    implementation "com.dukescript.api:javafx.beaninfo:0.5"
+    implementation "com.dukescript.api:javafx.beaninfo:0.6"
     runtimeOnly "com.dukescript.api:javafx.base:8.60.11"
 }
 

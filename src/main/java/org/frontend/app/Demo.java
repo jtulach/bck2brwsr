@@ -50,7 +50,7 @@ public final class Demo extends DemoBeanInfo {
 
     public static void onPageLoad() {
         Demo model = new Demo();
-        model.desc.setValue("Try Java in browser @ " + System.currentTimeMillis());
+        model.desc.setValue("Enjoy Java in browser!");
         applyBindings(model);
     }
 
