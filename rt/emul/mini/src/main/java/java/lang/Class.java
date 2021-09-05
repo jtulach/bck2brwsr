@@ -1955,5 +1955,18 @@ public final
     )
     private static void castEx() {
     }
-    
+
+    public Package getPackage() {
+        if (isPrimitive() || isArray()) {
+            return null;
+        }
+
+        String jvmName = jvmName();
+        int lastSlash = jvmName.lastIndexOf('/');
+        if (lastSlash == -1) {
+            return Package.getPackage("");
+        }
+        String name = jvmName.substring(0, lastSlash).replace('/', '.');
+        return Package.getPackage(name);
+    }
 }
