@@ -20,7 +20,7 @@ package org.apidesign.vm4brwsr;
 import java.io.IOException;
 import org.apidesign.vm4brwsr.ByteCodeParser.TypeArray;
 
-final class StackMapper {
+final class StackMapper extends AbstractStackMapper {
     private final TypeArray stackTypeIndexPairs;
     private final StringArray stackValues;
     private boolean dirty;
@@ -45,34 +45,17 @@ final class StackMapper {
         }
     }
 
-    public Variable pushI() {
-        return pushT(VarType.INTEGER);
-    }
-
-    public Variable pushL() {
-        return pushT(VarType.LONG);
-    }
-
-    public Variable pushF() {
-        return pushT(VarType.FLOAT);
-    }
-
-    public Variable pushD() {
-        return pushT(VarType.DOUBLE);
-    }
-
-    public Variable pushA() {
-        return pushT(VarType.REFERENCE);
-    }
-
+    @Override
     public Variable pushT(final int type) {
         return getVariable(pushTypeImpl(type));
     }
 
+    @Override
     void assign(Appendable out, int varType, CharSequence s) throws IOException {
         pushTypeAndValue(varType, s);
     }
     
+    @Override
     void replace(Appendable out, int varType, String format, CharSequence... arr) 
     throws IOException {
         StringBuilder sb = new StringBuilder();
@@ -84,7 +67,12 @@ final class StackMapper {
         final int value = (last << 8) | (varType & 0xff);
         stackTypeIndexPairs.set(last, value);
     }
+
+    @Override
+    void finishStatement(Appendable out) throws IOException {
+    }
     
+    @Override
     void flush(Appendable out) throws IOException {
         int count = stackTypeIndexPairs.getSize();
         for (int i = 0; i < count; i++) {
@@ -98,49 +86,34 @@ final class StackMapper {
         dirty = false;
     }
     
+    @Override
     public boolean isDirty() {
         return dirty;
     }
     
-    public CharSequence popI() {
-        return popT(VarType.INTEGER);
-    }
-
-    public CharSequence popL() {
-        return popT(VarType.LONG);
-    }
-
-    public CharSequence popF() {
-        return popT(VarType.FLOAT);
-    }
-
-    public CharSequence popD() {
-        return popT(VarType.DOUBLE);
-    }
-
-    public CharSequence popA() {
-        return popT(VarType.REFERENCE);
-    }
-
-    public CharSequence popT(final int type) {
-        final CharSequence variable = getT(0, type);
+    @Override
+    public CharSequence popT(Appendable out, final int type) throws IOException {
+        final CharSequence variable = getT(out, 0, type);
         popImpl(1);
         return variable;
     }
 
-    public CharSequence popValue() {
-        final CharSequence variable = getT(0, -1);
+    @Override
+    public CharSequence popValue(Appendable out) throws IOException {
+        final CharSequence variable = getT(out, 0, -1);
         popImpl(1);
         return variable;
     }
+    @Override
     public Variable pop(Appendable out) throws IOException {
         flush(out);
-        final Variable variable = get(0);
+        final Variable variable = get(out, 0);
         popImpl(1);
         return variable;
     }
 
-    public void pop(final int count) {
+    @Override
+    public void pop(Appendable out, final int count) {
         final int stackSize = stackTypeIndexPairs.getSize();
         if (count > stackSize) {
             throw new IllegalStateException("Stack underflow");
@@ -148,30 +121,8 @@ final class StackMapper {
         popImpl(count);
     }
 
-    public CharSequence getI(final int indexFromTop) {
-        return getT(indexFromTop, VarType.INTEGER);
-    }
-
-    public CharSequence getL(final int indexFromTop) {
-        return getT(indexFromTop, VarType.LONG);
-    }
-
-    public CharSequence getF(final int indexFromTop) {
-        return getT(indexFromTop, VarType.FLOAT);
-    }
-
-    public CharSequence getD(final int indexFromTop) {
-        return getT(indexFromTop, VarType.DOUBLE);
-    }
-
-    public CharSequence getA(final int indexFromTop) {
-        return getT(indexFromTop, VarType.REFERENCE);
-    }
-
-    public CharSequence getT(final int indexFromTop, final int type) {
-        return getT(indexFromTop, type, true);
-    }
-    public CharSequence getT(final int indexFromTop, final int type, boolean clear) {
+    @Override
+    public CharSequence getT(Appendable out, final int indexFromTop, final int type, boolean clear) {
         final int stackSize = stackTypeIndexPairs.getSize();
         if (indexFromTop >= stackSize) {
             throw new IllegalStateException("Stack underflow");
@@ -189,7 +140,8 @@ final class StackMapper {
         return getVariable(stackValue);
     }
 
-    public Variable get(final int indexFromTop) {
+    @Override
+    public Variable get(Appendable out, final int indexFromTop) {
         final int stackSize = stackTypeIndexPairs.getSize();
         if (indexFromTop >= stackSize) {
             throw new IllegalStateException("Stack underflow");
@@ -232,10 +184,18 @@ final class StackMapper {
         stackTypeIndexPairs.setSize(stackSize - count);
     }
 
-    public Variable getVariable(final int typeAndIndex) {
-        final int type = typeAndIndex & 0xff;
-        final int index = typeAndIndex >> 8;
+    @Override
+    boolean alwaysUseGt() {
+        return false;
+    }
 
-        return Variable.getStackVariable(type, index);
+    @Override
+    int initCode(Appendable out) throws IOException {
+        return 0;
+    }
+
+    @Override
+    void caughtException(Appendable out, String e) throws IOException {
+        out.append("var stA0 = ").append(e).append(";");
     }
 }

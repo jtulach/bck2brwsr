@@ -85,13 +85,24 @@ public class StringTest {
         );
     }
 
-    @Test(timeOut=10000) public void toStringConcatenation() throws Exception {
+    @Test
+    public void toStringConcatenation1() throws Exception {
+        assertExec(
+            "Five executions should generate 5Hello World!",
+            StringSample.class, "toStringTest__Ljava_lang_String_2I",
+            "Hello World!1", 1
+        );
+    }
+
+    @Test
+    public void toStringConcatenation5() throws Exception {
         assertExec(
             "Five executions should generate 5Hello World!",
             StringSample.class, "toStringTest__Ljava_lang_String_2I",
             "Hello World!5", 5
         );
     }
+
     @Test public void toStringConcatenationJava() throws Exception {
         assertEquals("Hello World!5", StringSample.toStringTest(5));
     }

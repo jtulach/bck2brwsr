@@ -55,7 +55,7 @@ public class ResourcesTest {
             }
         }
         assert different : "Not all manifests should look like first one:\n" + first;
-        if (cnt > 40 && cnt < 50) {
+        if (cnt > 40 && cnt < 60) {
             return "OK";
         } else {
             return "" + cnt;

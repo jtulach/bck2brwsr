@@ -32,12 +32,12 @@ abstract class IndyHandler {
 
     static class Ctx {
         final Appendable out;
-        final StackMapper stackMapper;
+        final AbstractStackMapper stackMapper;
         final ByteCodeToJavaScript byteCodeToJavaScript;
         final ByteCodeParser.BootMethodData bm;
         final String[] mt;
 
-        Ctx(Appendable out, StackMapper m, ByteCodeToJavaScript bc, String[] methodAndType, ByteCodeParser.BootMethodData bm) {
+        Ctx(Appendable out, AbstractStackMapper m, ByteCodeToJavaScript bc, String[] methodAndType, ByteCodeParser.BootMethodData bm) {
             this.out = out;
             this.stackMapper = m;
             this.byteCodeToJavaScript = bc;

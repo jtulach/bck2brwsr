@@ -104,12 +104,10 @@ public class StringSample {
     }
 
     public static int stringSwitch(String txt) {
-        switch (txt) {
-            case "jedna": return 1;
-            case "dve": return 2;
-            case "tri": return 3;
-            case "ctyri": return 4;
-        }
+        if ("jedna".equals(txt)) return 1;
+        if ("dve".equals(txt)) return 2;
+        if ("tri".equals(txt)) return 3;
+        if ("ctyri".equals(txt)) return 4;
         return -1;
     }
     

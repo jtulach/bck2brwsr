@@ -36,6 +36,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.net.URL;
+import java.util.Objects;
 import org.apidesign.bck2brwsr.core.Exported;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.apidesign.bck2brwsr.core.JavaScriptOnly;
@@ -1955,5 +1956,18 @@ public final
     )
     private static void castEx() {
     }
-    
+
+    public Package getPackage() {
+        if (isPrimitive() || isArray()) {
+            return null;
+        }
+
+        String jvmName = jvmName();
+        int lastSlash = jvmName.lastIndexOf('/');
+        if (lastSlash == -1) {
+            return Package.getPackage("");
+        }
+        String name = jvmName.substring(0, lastSlash).replace('/', '.');
+        return Package.getPackage(name);
+    }
 }

@@ -26,6 +26,7 @@ package org.apidesign.vm4brwsr;
 import java.io.IOException;
 import java.io.InputStream;
 import static org.testng.Assert.*;
+import org.testng.SkipException;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -37,7 +38,8 @@ import org.testng.annotations.Test;
 public class SizeOfAMethodTest {
     private static String code;
 
-    @Test public void sumXYShouldBeSmall() {
+    @Test
+    public void sumXYShouldBeSmall() {
         String s = code;
         int beg = s.indexOf("c.sum__III");
         int end = s.indexOf(".access", beg);
@@ -46,7 +48,8 @@ public class SizeOfAMethodTest {
         assertTrue(beg < end, "Found end of sum method in " + code);
         
         String method = s.substring(beg, end);
-        
+    
+        assumeNewStackMapper(method);
         
         assertEquals(method.indexOf("st"), -1, "There should be no stack operations:\n" + method);
     }
@@ -61,10 +64,13 @@ public class SizeOfAMethodTest {
         
         String method = s.substring(beg, end);
         
+        assumeNewStackMapper(method);
+        
         assertEquals(method.indexOf("stA1"), -1, "No need for stA1 register:\n" + method);
     }
 
-    @Test public void deepConstructor() {
+    @Test 
+    public void deepConstructor() {
         String s = code;
         int beg = s.indexOf("c.intHolder__I");
         int end = s.indexOf(".access", beg);
@@ -73,11 +79,14 @@ public class SizeOfAMethodTest {
         assertTrue(beg < end, "Found end of intHolder method in " + code);
         
         String method = s.substring(beg, end);
+    
+        assumeNewStackMapper(method);
         
         assertEquals(method.indexOf("stA3"), -1, "No need for stA3 register on second constructor:\n" + method);
     }
 
-    @Test public void emptyConstructorRequiresNoStack() {
+    @Test 
+    public void emptyConstructorRequiresNoStack() {
         String s = code;
         int beg = s.indexOf("CLS.cons__V");
         int end = s.indexOf(".access", beg);
@@ -87,12 +96,15 @@ public class SizeOfAMethodTest {
         
         String method = s.substring(beg, end);
         method = method.replace("constructor", "CNSTR");
+    
+        assumeNewStackMapper(method);
         
         assertEquals(method.indexOf("st"), -1, "There should be no stack operations:\n" + method);
         assertEquals(method.indexOf("for"), -1, "There should be no for blocks:\n" + method);
     }
     
-    @Test public void dontGeneratePrimitiveFinalConstants() {
+    @Test
+    public void dontGeneratePrimitiveFinalConstants() {
         assertEquals(code.indexOf("MISSING_CONSTANT"), -1, "MISSING_CONSTANT field should not be generated");
     }
     
@@ -116,6 +128,13 @@ public class SizeOfAMethodTest {
     @AfterClass
     public static void releaseTheCode() {
         code = null;
+    }
+
+    private static void assumeNewStackMapper(String code) {
+        int stackArray = code.indexOf("var stack = [];");
+        if (stackArray >= 0) {
+            throw new SkipException("Skipping the text as code contains stack = []");
+        }
     }
     
 }

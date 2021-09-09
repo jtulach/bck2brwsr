@@ -224,7 +224,12 @@ abstract class VM extends ByteCodeToJavaScript {
                 if (name == null) {
                     break;
                 }
-                InputStream is = resources.get(name + ".class");
+                InputStream is;
+                try {
+                    is = resources.get(name + ".class");
+                } catch (IOException noSuchResource) {
+                    is = null;
+                }
                 if (is == null) {
                     lazyReference(out, name);
                     skipClass.add(name);
@@ -235,7 +240,7 @@ abstract class VM extends ByteCodeToJavaScript {
                     processed.add(name);
                     initCode.add(ic == null ? "" : ic);
                 } catch (RuntimeException ex) {
-                    throw new IOException("Error while compiling " + name + "\n", ex);
+                    throw new IOException("Error while compiling " + name + "\n" + ex.getClass().getName() + ": " + ex.getMessage(), ex);
                 }
             }
 
