@@ -413,6 +413,13 @@ abstract class ByteCodeToJavaScript {
         return "";
     }
 
+    private boolean versionCheck() throws IOException {
+        if (jc.getMajor_version() < 50) {
+            return false;
+        }
+        return true;
+    }
+
     private StringArray findJavaScriptResources(byte[] arr, final String cn) throws IOException {
         if (arr == null) {
             return null;
@@ -505,25 +512,18 @@ abstract class ByteCodeToJavaScript {
         out.append(") {").append("\n");
 
         final byte[] byteCodes = m.getCode();
-        if (byteCodes == null || jc.getMajor_version() < 50) {
-            if (byteCodes == null) {
-                byte[] defaultAttr = m.getDefaultAttribute();
-                if (defaultAttr != null) {
-                    out.append("  return ");
-                    AnnotationParser ap = new GenerateAnno(out, true, false);
-                    ap.parseDefault(defaultAttr, jc);
-                    out.append(";\n");
-                } else {
-                    if (debug(out, "  throw 'no code found for ")) {
-                       out.append(jc.getClassName()).append('.')
-                       .append(m.getName()).append("';\n");
-                    }
-                }
+        if (byteCodes == null) {
+            byte[] defaultAttr = m.getDefaultAttribute();
+            if (defaultAttr != null) {
+                out.append("  return ");
+                AnnotationParser ap = new GenerateAnno(out, true, false);
+                ap.parseDefault(defaultAttr, jc);
+                out.append(";\n");
             } else {
-                out.append("  throw 'Class file version for " + jc.getClassName() + " is " + jc.getMajor_version() + "."
-                    + jc.getMinor_version() + " - recompile with -target 1.6 (at least)';\n"
-            );
-
+                if (debug(out, "  throw 'no code found for ")) {
+                   out.append(jc.getClassName()).append('.')
+                   .append(m.getName()).append("';\n");
+                }
             }
             if (defineProp) {
                 out.append("}});");
@@ -533,7 +533,12 @@ abstract class ByteCodeToJavaScript {
             return defineProp;
         }
 
-        final StackMapper smapper = new StackMapper();
+        final AbstractStackMapper smapper;
+        if (versionCheck()) {
+            smapper = new StackMapper();
+        } else {
+            smapper = new OldStackMapper();
+        }
 
         if (!m.isStatic()) {
             out.append("  var ").append(" lcA0 = this;\n");
@@ -557,7 +562,7 @@ abstract class ByteCodeToJavaScript {
         return defineProp;
     }
 
-    static int generateIf(Appendable out, StackMapper mapper, byte[] byteCodes,
+    static int generateIf(Appendable out, AbstractStackMapper mapper, byte[] byteCodes,
         int i, final CharSequence v2, final CharSequence v1,
         final String test, int topMostLabel
     ) throws IOException {
@@ -566,7 +571,7 @@ abstract class ByteCodeToJavaScript {
         out.append("if ((").append(v1)
            .append(") ").append(test).append(" (")
            .append(v2).append(")) ");
-        goTo(out, i, indx, topMostLabel);
+        goTo(out, i, indx, topMostLabel, mapper.alwaysUseGt());
         return i + 2;
     }
 
@@ -918,8 +923,12 @@ abstract class ByteCodeToJavaScript {
         return ",";
     }
 
+    final void emitNoFlush(Appendable out, final String format, final CharSequence... params) throws IOException {
+        emitImpl(out, format, params);
+    }
+
     static final void emit(
-        final Appendable out, StackMapper sm, final String format, final CharSequence... params
+        final Appendable out, AbstractStackMapper sm, final String format, final CharSequence... params
     ) throws IOException {
         sm.flush(out);
         emitImpl(out, format, params);
@@ -949,8 +958,9 @@ abstract class ByteCodeToJavaScript {
         out.append(format, processed, length);
     }
 
-    void generateCatch(Appendable out, TrapData[] traps, int current, int topMostLabel) throws IOException {
+    void generateCatch(Appendable out, AbstractStackMapper mapper, TrapData[] traps, int current, int topMostLabel, boolean useGt) throws IOException {
         out.append("} catch (e) {\n");
+        out.append("    e = vm.java_lang_Class(false).bck2BrwsrThrwrbl(e);\n");
         int finallyPC = -1;
         for (TrapData e : traps) {
             if (e == null) {
@@ -959,11 +969,10 @@ abstract class ByteCodeToJavaScript {
             if (e.catch_cpx != 0) { //not finally
                 final String classInternalName = jc.getClassName(e.catch_cpx);
                 addReference(out, classInternalName);
-                out.append("e = vm.java_lang_Class(false).bck2BrwsrThrwrbl(e);");
-                out.append("if (e['$instOf_" + InternalSig.mangleClassName(classInternalName) + "']) {");
-                out.append("var stA0 = e;");
-                goTo(out, current, e.handler_pc, topMostLabel);
-                out.append("}\n");
+                out.append("    if (e['$instOf_" + InternalSig.mangleClassName(classInternalName) + "']) {\n");
+                mapper.caughtException(out, "e");
+                goTo(out, current, e.handler_pc, topMostLabel, useGt);
+                out.append("    }\n");
             } else {
                 finallyPC = e.handler_pc;
             }
@@ -971,13 +980,18 @@ abstract class ByteCodeToJavaScript {
         if (finallyPC == -1) {
             out.append("throw e;");
         } else {
-            out.append("var stA0 = e;");
-            goTo(out, current, finallyPC, topMostLabel);
+            mapper.caughtException(out, "e");
+            goTo(out, current, finallyPC, topMostLabel, useGt);
         }
         out.append("\n}");
     }
 
-    static void goTo(Appendable out, int current, int to, int canBack) throws IOException {
+    static void goTo(Appendable out, int current, int to, int canBack, boolean useGt) throws IOException {
+        if (useGt) {
+            out.append("{ gt = " + to + "; continue X_0; }");
+            return;
+        }
+
         if (to < current) {
             if (canBack < to) {
                 out.append("{ gt = 0; continue X_" + to + "; }");
@@ -990,14 +1004,14 @@ abstract class ByteCodeToJavaScript {
     }
 
     static void emitIf(
-        Appendable out, StackMapper sm, String pattern, CharSequence param, int current, int to, int canBack
+        Appendable out, AbstractStackMapper sm, String pattern, CharSequence param, int current, int to, int canBack
     ) throws IOException {
         sm.flush(out);
         emitImpl(out, pattern, param);
-        goTo(out, current, to, canBack);
+        goTo(out, current, to, canBack, sm.alwaysUseGt());
     }
 
-    void generateNewArray(Appendable out, int atype, final StackMapper smapper) throws IOException, IllegalStateException {
+    void generateNewArray(Appendable out, int atype, final AbstractStackMapper smapper) throws IOException, IllegalStateException {
         String jvmType;
         switch (atype) {
             case 4: jvmType = "[Z"; break;
@@ -1012,10 +1026,10 @@ abstract class ByteCodeToJavaScript {
         }
         emit(out, smapper,
             "var @2 = Array.prototype['newArray__Ljava_lang_Object_2ZLjava_lang_String_2Ljava_lang_Object_2I'](true, '@3', null, @1);",
-             smapper.popI(), smapper.pushA(), jvmType);
+             smapper.popI(out), smapper.pushA(), jvmType);
     }
 
-    void generateANewArray(Appendable out, int type, final StackMapper smapper) throws IOException {
+    void generateANewArray(Appendable out, int type, final AbstractStackMapper smapper) throws IOException {
         String typeName = jc.getClassName(type);
         String ref = "null";
         if (typeName.startsWith("[")) {
@@ -1026,10 +1040,10 @@ abstract class ByteCodeToJavaScript {
         }
         emit(out, smapper,
             "var @2 = Array.prototype['newArray__Ljava_lang_Object_2ZLjava_lang_String_2Ljava_lang_Object_2I'](false, @3, @4, @1);",
-             smapper.popI(), smapper.pushA(), typeName, ref);
+             smapper.popI(out), smapper.pushA(), typeName, ref);
     }
 
-    int generateMultiANewArray(Appendable out, int type, final byte[] byteCodes, int i, final StackMapper smapper) throws IOException {
+    int generateMultiANewArray(Appendable out, int type, final byte[] byteCodes, int i, final AbstractStackMapper smapper) throws IOException {
         String typeName = jc.getClassName(type);
         int dim = readUByte(byteCodes, ++i);
         StringBuilder dims = new StringBuilder();
@@ -1038,7 +1052,7 @@ abstract class ByteCodeToJavaScript {
             if (d != 0) {
                 dims.insert(1, ",");
             }
-            dims.insert(1, smapper.popI());
+            dims.insert(1, smapper.popI(out));
         }
         dims.append(']');
         String fn = "null";
@@ -1052,7 +1066,7 @@ abstract class ByteCodeToJavaScript {
         return i;
     }
 
-    int generateTableSwitch(Appendable out, int i, final byte[] byteCodes, final StackMapper smapper, int topMostLabel) throws IOException {
+    int generateTableSwitch(Appendable out, int i, final byte[] byteCodes, final AbstractStackMapper smapper, int topMostLabel) throws IOException {
         int table = i / 4 * 4 + 4;
         int dflt = i + readInt4(byteCodes, table);
         table += 4;
@@ -1060,29 +1074,29 @@ abstract class ByteCodeToJavaScript {
         table += 4;
         int high = readInt4(byteCodes, table);
         table += 4;
-        final CharSequence swVar = smapper.popValue();
+        final CharSequence swVar = smapper.popValue(out);
         smapper.flush(out);
         out.append("switch (").append(swVar).append(") {\n");
         while (low <= high) {
             int offset = i + readInt4(byteCodes, table);
             table += 4;
-            out.append("  case " + low).append(":"); goTo(out, i, offset, topMostLabel); out.append('\n');
+            out.append("  case " + low).append(":"); goTo(out, i, offset, topMostLabel, smapper.alwaysUseGt()); out.append('\n');
             low++;
         }
         out.append("  default: ");
-        goTo(out, i, dflt, topMostLabel);
+        goTo(out, i, dflt, topMostLabel, smapper.alwaysUseGt());
         out.append("\n}");
         i = table - 1;
         return i;
     }
 
-    int generateLookupSwitch(Appendable out, int i, final byte[] byteCodes, final StackMapper smapper, int topMostLabel) throws IOException {
+    int generateLookupSwitch(Appendable out, int i, final byte[] byteCodes, final AbstractStackMapper smapper, int topMostLabel) throws IOException {
         int table = i / 4 * 4 + 4;
         int dflt = i + readInt4(byteCodes, table);
         table += 4;
         int n = readInt4(byteCodes, table);
         table += 4;
-        final CharSequence swVar = smapper.popValue();
+        final CharSequence swVar = smapper.popValue(out);
         smapper.flush(out);
         out.append("switch (").append(swVar).append(") {\n");
         while (n-- > 0) {
@@ -1090,22 +1104,23 @@ abstract class ByteCodeToJavaScript {
             table += 4;
             int offset = i + readInt4(byteCodes, table);
             table += 4;
-            out.append("  case " + cnstnt).append(": "); goTo(out, i, offset, topMostLabel); out.append('\n');
+            out.append("  case " + cnstnt).append(": "); goTo(out, i, offset, topMostLabel, smapper.alwaysUseGt()); out.append('\n');
         }
         out.append("  default: ");
-        goTo(out, i, dflt, topMostLabel);
+        goTo(out, i, dflt, topMostLabel, smapper.alwaysUseGt());
         out.append("\n}");
         i = table - 1;
         return i;
     }
 
-    void generateInstanceOf(Appendable out, int indx, final StackMapper smapper) throws IOException {
+    void generateInstanceOf(Appendable out, int indx, final AbstractStackMapper smapper) throws IOException {
         String type = jc.getClassName(indx);
         if (!type.startsWith("[")) {
             emit(out, smapper,
-                    "var @2 = @1 != null && @1['$instOf_@3'] ? 1 : 0;",
-                 smapper.popA(), smapper.pushI(),
-                 InternalSig.mangleClassName(type));
+                "var @2 = @1 != null && @1['$instOf_@3'] ? 1 : 0;",
+                smapper.popA(out), smapper.pushI(),
+                InternalSig.mangleClassName(type)
+            );
         } else {
             int cnt = 0;
             while (type.charAt(cnt) == '[') {
@@ -1117,21 +1132,21 @@ abstract class ByteCodeToJavaScript {
                 type = "vm." + InternalSig.mangleClassName(component);
                 emit(out, smapper,
                     "var @2 = Array.prototype['isInstance__ZLjava_lang_Object_2ILjava_lang_Object_2'](@1, @4, @3);",
-                    smapper.popA(), smapper.pushI(),
+                    smapper.popA(out), smapper.pushI(),
                     type, "" + cnt
                 );
             } else {
                 emit(out, smapper,
                     "var @2 = Array.prototype['isInstance__ZLjava_lang_Object_2Ljava_lang_String_2'](@1, '@3');",
-                    smapper.popA(), smapper.pushI(), type
+                    smapper.popA(out), smapper.pushI(), type
                 );
             }
         }
     }
 
-    void generateCheckcast(Appendable out, int indx, final StackMapper smapper) throws IOException {
+    void generateCheckcast(Appendable out, int indx, AbstractStackMapper smapper) throws IOException {
         String type = jc.getClassName(indx);
-        final CharSequence varName = smapper.getT(0, VarType.REFERENCE, false);
+        final CharSequence varName = smapper.getT(out, 0, VarType.REFERENCE, false);
         generateCheckcast(out, type, varName);
     }
 
@@ -1140,10 +1155,9 @@ abstract class ByteCodeToJavaScript {
             return;
         }
         if (!type.startsWith("[")) {
-            emitImpl(out,
-                    "if (@1 !== null && !@1['$instOf_@2']) vm.java_lang_Class(false).castEx(@1, '@3');",
-                    varName, InternalSig.mangleClassName(type), type.replace('/', '.')
-            );
+            emitNoFlush(out,
+                 "if (@1 !== null && !@1['$instOf_@2']) vm.java_lang_Class(false).castEx(@1, '@3');",
+                 varName, InternalSig.mangleClassName(type), type.replace('/', '.'));
         } else {
             int cnt = 0;
             while (type.charAt(cnt) == '[') {
@@ -1153,14 +1167,14 @@ abstract class ByteCodeToJavaScript {
                 String component = type.substring(cnt + 1, type.length() - 1);
                 requireReference(component);
                 type = "vm." + InternalSig.mangleClassName(component);
-                emitImpl(out,
-                        "if (@1 !== null && !Array.prototype['isInstance__ZLjava_lang_Object_2ILjava_lang_Object_2'](@1, @3, @2)) vm.java_lang_Class(false).castEx(@1, '');",
-                        varName, type, "" + cnt
+                emitNoFlush(out,
+                    "if (@1 !== null && !Array.prototype['isInstance__ZLjava_lang_Object_2ILjava_lang_Object_2'](@1, @3, @2)) vm.java_lang_Class(false).castEx(@1, '');",
+                     varName, type, "" + cnt
                 );
             } else {
-                emitImpl(out,
-                        "if (@1 !== null && !Array.prototype['isInstance__ZLjava_lang_Object_2Ljava_lang_String_2'](@1, '@2')) vm.java_lang_Class(false).castEx(@1, '');",
-                        varName, type
+                emitNoFlush(out,
+                    "if (@1 !== null && !Array.prototype['isInstance__ZLjava_lang_Object_2Ljava_lang_String_2'](@1, '@2')) vm.java_lang_Class(false).castEx(@1, '');",
+                     varName, type
                 );
             }
         }

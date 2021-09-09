@@ -42,7 +42,7 @@ class LoopCode implements Runnable {
     void loopCode(
         final ByteCodeParser.StackMapIterator stackMapIterator,
         final byte[] byteCodes, ByteCodeParser.TrapDataIterator trap,
-        final StackMapper smapper,
+        final AbstractStackMapper smapper,
         final LocalsMapper lmapper
     ) throws IllegalStateException, NumberFormatException, IOException {
         int lastStackFrame;
@@ -57,7 +57,7 @@ class LoopCode implements Runnable {
             lastStackFrame = -1;
             out.append("\n  var gt = 0;\n");
         }
-        int openBraces = 0;
+        int openBraces = smapper.initCode(out);
         int topMostLabel = 0;
         for (int i = 0; i < byteCodes.length; i++) {
             int prev = i;
@@ -66,11 +66,13 @@ class LoopCode implements Runnable {
             boolean changeInCatch = trap.advanceTo(i);
             if (changeInCatch || lastStackFrame != stackMapIterator.getFrameIndex()) {
                 if (previousTrap != null) {
-                    byteCodeToJavaScript.generateCatch(out, previousTrap, i, topMostLabel);
+                    byteCodeToJavaScript.generateCatch(out, smapper, previousTrap, i, topMostLabel, smapper.alwaysUseGt());
                     previousTrap = null;
                 }
             }
-            if (lastStackFrame != stackMapIterator.getFrameIndex()) {
+            if (smapper.alwaysUseGt()) {
+                // no op
+            } else if (lastStackFrame != stackMapIterator.getFrameIndex()) {
                 smapper.flush(out);
                 if (i != 0) {
                     out.append("    }\n");
@@ -94,6 +96,9 @@ class LoopCode implements Runnable {
             if (changeInCatch && trap.useTry()) {
                 out.append("try {");
                 previousTrap = trap.current();
+            }
+            if (smapper.alwaysUseGt()) {
+                out.append("    if (gt <= " + i + ") {\n");
             }
             final int c = ByteCodeToJavaScript.readUByte(byteCodes, i);
             switch (c) {
@@ -204,7 +209,7 @@ class LoopCode implements Runnable {
                         ++i;
                         final int indx = wide ? ByteCodeToJavaScript.readUShort(byteCodes, i++) : ByteCodeToJavaScript.readUByte(byteCodes, i);
                         wide = false;
-                        ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setI(indx), smapper.popI());
+                        ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setI(indx), smapper.popI(out));
                         break;
                     }
                 case ByteCodeParser.opc_lstore:
@@ -212,7 +217,7 @@ class LoopCode implements Runnable {
                         ++i;
                         final int indx = wide ? ByteCodeToJavaScript.readUShort(byteCodes, i++) : ByteCodeToJavaScript.readUByte(byteCodes, i);
                         wide = false;
-                        ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setL(indx), smapper.popL());
+                        ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setL(indx), smapper.popL(out));
                         break;
                     }
                 case ByteCodeParser.opc_fstore:
@@ -220,7 +225,7 @@ class LoopCode implements Runnable {
                         ++i;
                         final int indx = wide ? ByteCodeToJavaScript.readUShort(byteCodes, i++) : ByteCodeToJavaScript.readUByte(byteCodes, i);
                         wide = false;
-                        ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setF(indx), smapper.popF());
+                        ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setF(indx), smapper.popF(out));
                         break;
                     }
                 case ByteCodeParser.opc_dstore:
@@ -228,7 +233,7 @@ class LoopCode implements Runnable {
                         ++i;
                         final int indx = wide ? ByteCodeToJavaScript.readUShort(byteCodes, i++) : ByteCodeToJavaScript.readUByte(byteCodes, i);
                         wide = false;
-                        ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setD(indx), smapper.popD());
+                        ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setD(indx), smapper.popD(out));
                         break;
                     }
                 case ByteCodeParser.opc_astore:
@@ -236,176 +241,176 @@ class LoopCode implements Runnable {
                         ++i;
                         final int indx = wide ? ByteCodeToJavaScript.readUShort(byteCodes, i++) : ByteCodeToJavaScript.readUByte(byteCodes, i);
                         wide = false;
-                        ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setA(indx), smapper.popA());
+                        ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setA(indx), smapper.popA(out));
                         break;
                     }
                 case ByteCodeParser.opc_astore_0:
-                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setA(0), smapper.popA());
+                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setA(0), smapper.popA(out));
                     break;
                 case ByteCodeParser.opc_istore_0:
-                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setI(0), smapper.popI());
+                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setI(0), smapper.popI(out));
                     break;
                 case ByteCodeParser.opc_lstore_0:
-                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setL(0), smapper.popL());
+                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setL(0), smapper.popL(out));
                     break;
                 case ByteCodeParser.opc_fstore_0:
-                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setF(0), smapper.popF());
+                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setF(0), smapper.popF(out));
                     break;
                 case ByteCodeParser.opc_dstore_0:
-                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setD(0), smapper.popD());
+                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setD(0), smapper.popD(out));
                     break;
                 case ByteCodeParser.opc_astore_1:
-                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setA(1), smapper.popA());
+                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setA(1), smapper.popA(out));
                     break;
                 case ByteCodeParser.opc_istore_1:
-                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setI(1), smapper.popI());
+                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setI(1), smapper.popI(out));
                     break;
                 case ByteCodeParser.opc_lstore_1:
-                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setL(1), smapper.popL());
+                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setL(1), smapper.popL(out));
                     break;
                 case ByteCodeParser.opc_fstore_1:
-                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setF(1), smapper.popF());
+                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setF(1), smapper.popF(out));
                     break;
                 case ByteCodeParser.opc_dstore_1:
-                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setD(1), smapper.popD());
+                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setD(1), smapper.popD(out));
                     break;
                 case ByteCodeParser.opc_astore_2:
-                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setA(2), smapper.popA());
+                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setA(2), smapper.popA(out));
                     break;
                 case ByteCodeParser.opc_istore_2:
-                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setI(2), smapper.popI());
+                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setI(2), smapper.popI(out));
                     break;
                 case ByteCodeParser.opc_lstore_2:
-                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setL(2), smapper.popL());
+                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setL(2), smapper.popL(out));
                     break;
                 case ByteCodeParser.opc_fstore_2:
-                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setF(2), smapper.popF());
+                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setF(2), smapper.popF(out));
                     break;
                 case ByteCodeParser.opc_dstore_2:
-                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setD(2), smapper.popD());
+                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setD(2), smapper.popD(out));
                     break;
                 case ByteCodeParser.opc_astore_3:
-                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setA(3), smapper.popA());
+                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setA(3), smapper.popA(out));
                     break;
                 case ByteCodeParser.opc_istore_3:
-                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setI(3), smapper.popI());
+                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setI(3), smapper.popI(out));
                     break;
                 case ByteCodeParser.opc_lstore_3:
-                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setL(3), smapper.popL());
+                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setL(3), smapper.popL(out));
                     break;
                 case ByteCodeParser.opc_fstore_3:
-                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setF(3), smapper.popF());
+                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setF(3), smapper.popF(out));
                     break;
                 case ByteCodeParser.opc_dstore_3:
-                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setD(3), smapper.popD());
+                    ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setD(3), smapper.popD(out));
                     break;
                 case ByteCodeParser.opc_iadd:
-                    smapper.replace(out, VarType.INTEGER, "(((@1) + (@2)) | 0)", smapper.getI(1), smapper.popI());
+                    smapper.replace(out, VarType.INTEGER, "(((@1) + (@2)) | 0)", smapper.getI(out, 1), smapper.popI(out));
                     break;
                 case ByteCodeParser.opc_ladd:
-                    smapper.replace(out, VarType.LONG, numbers.add64(), smapper.getL(1), smapper.popL());
+                    smapper.replace(out, VarType.LONG, numbers.add64(), smapper.getL(out, 1), smapper.popL(out));
                     break;
                 case ByteCodeParser.opc_fadd:
-                    smapper.replace(out, VarType.FLOAT, "(@1 + @2)", smapper.getF(1), smapper.popF());
+                    smapper.replace(out, VarType.FLOAT, "(@1 + @2)", smapper.getF(out, 1), smapper.popF(out));
                     break;
                 case ByteCodeParser.opc_dadd:
-                    smapper.replace(out, VarType.DOUBLE, "(@1 + @2)", smapper.getD(1), smapper.popD());
+                    smapper.replace(out, VarType.DOUBLE, "(@1 + @2)", smapper.getD(out, 1), smapper.popD(out));
                     break;
                 case ByteCodeParser.opc_isub:
-                    smapper.replace(out, VarType.INTEGER, "(((@1) - (@2)) | 0)", smapper.getI(1), smapper.popI());
+                    smapper.replace(out, VarType.INTEGER, "(((@1) - (@2)) | 0)", smapper.getI(out, 1), smapper.popI(out));
                     break;
                 case ByteCodeParser.opc_lsub:
-                    smapper.replace(out, VarType.LONG, numbers.sub64(), smapper.getL(1), smapper.popL());
+                    smapper.replace(out, VarType.LONG, numbers.sub64(), smapper.getL(out, 1), smapper.popL(out));
                     break;
                 case ByteCodeParser.opc_fsub:
-                    smapper.replace(out, VarType.FLOAT, "(@1 - @2)", smapper.getF(1), smapper.popF());
+                    smapper.replace(out, VarType.FLOAT, "(@1 - @2)", smapper.getF(out, 1), smapper.popF(out));
                     break;
                 case ByteCodeParser.opc_dsub:
-                    smapper.replace(out, VarType.DOUBLE, "(@1 - @2)", smapper.getD(1), smapper.popD());
+                    smapper.replace(out, VarType.DOUBLE, "(@1 - @2)", smapper.getD(out, 1), smapper.popD(out));
                     break;
                 case ByteCodeParser.opc_imul:
-                    smapper.replace(out, VarType.INTEGER, numbers.mul32(), smapper.getI(1), smapper.popI());
+                    smapper.replace(out, VarType.INTEGER, numbers.mul32(), smapper.getI(out, 1), smapper.popI(out));
                     break;
                 case ByteCodeParser.opc_lmul:
-                    smapper.replace(out, VarType.LONG, numbers.mul64(), smapper.getL(1), smapper.popL());
+                    smapper.replace(out, VarType.LONG, numbers.mul64(), smapper.getL(out, 1), smapper.popL(out));
                     break;
                 case ByteCodeParser.opc_fmul:
-                    smapper.replace(out, VarType.FLOAT, "(@1 * @2)", smapper.getF(1), smapper.popF());
+                    smapper.replace(out, VarType.FLOAT, "(@1 * @2)", smapper.getF(out, 1), smapper.popF(out));
                     break;
                 case ByteCodeParser.opc_dmul:
-                    smapper.replace(out, VarType.DOUBLE, "(@1 * @2)", smapper.getD(1), smapper.popD());
+                    smapper.replace(out, VarType.DOUBLE, "(@1 * @2)", smapper.getD(out, 1), smapper.popD(out));
                     break;
                 case ByteCodeParser.opc_idiv:
-                    smapper.replace(out, VarType.INTEGER, numbers.div32(), smapper.getI(1), smapper.popI());
+                    smapper.replace(out, VarType.INTEGER, numbers.div32(), smapper.getI(out, 1), smapper.popI(out));
                     break;
                 case ByteCodeParser.opc_ldiv:
-                    smapper.replace(out, VarType.LONG, numbers.div64(), smapper.getL(1), smapper.popL());
+                    smapper.replace(out, VarType.LONG, numbers.div64(), smapper.getL(out, 1), smapper.popL(out));
                     break;
                 case ByteCodeParser.opc_fdiv:
-                    smapper.replace(out, VarType.FLOAT, "(@1 / @2)", smapper.getF(1), smapper.popF());
+                    smapper.replace(out, VarType.FLOAT, "(@1 / @2)", smapper.getF(out, 1), smapper.popF(out));
                     break;
                 case ByteCodeParser.opc_ddiv:
-                    smapper.replace(out, VarType.DOUBLE, "(@1 / @2)", smapper.getD(1), smapper.popD());
+                    smapper.replace(out, VarType.DOUBLE, "(@1 / @2)", smapper.getD(out, 1), smapper.popD(out));
                     break;
                 case ByteCodeParser.opc_irem:
-                    smapper.replace(out, VarType.INTEGER, numbers.mod32(), smapper.getI(1), smapper.popI());
+                    smapper.replace(out, VarType.INTEGER, numbers.mod32(), smapper.getI(out, 1), smapper.popI(out));
                     break;
                 case ByteCodeParser.opc_lrem:
-                    smapper.replace(out, VarType.LONG, numbers.mod64(), smapper.getL(1), smapper.popL());
+                    smapper.replace(out, VarType.LONG, numbers.mod64(), smapper.getL(out, 1), smapper.popL(out));
                     break;
                 case ByteCodeParser.opc_frem:
-                    smapper.replace(out, VarType.FLOAT, "(@1 % @2)", smapper.getF(1), smapper.popF());
+                    smapper.replace(out, VarType.FLOAT, "(@1 % @2)", smapper.getF(out, 1), smapper.popF(out));
                     break;
                 case ByteCodeParser.opc_drem:
-                    smapper.replace(out, VarType.DOUBLE, "(@1 % @2)", smapper.getD(1), smapper.popD());
+                    smapper.replace(out, VarType.DOUBLE, "(@1 % @2)", smapper.getD(out, 1), smapper.popD(out));
                     break;
                 case ByteCodeParser.opc_iand:
-                    smapper.replace(out, VarType.INTEGER, "(@1 & @2)", smapper.getI(1), smapper.popI());
+                    smapper.replace(out, VarType.INTEGER, "(@1 & @2)", smapper.getI(out, 1), smapper.popI(out));
                     break;
                 case ByteCodeParser.opc_land:
-                    smapper.replace(out, VarType.LONG, numbers.and64(), smapper.getL(1), smapper.popL());
+                    smapper.replace(out, VarType.LONG, numbers.and64(), smapper.getL(out, 1), smapper.popL(out));
                     break;
                 case ByteCodeParser.opc_ior:
-                    smapper.replace(out, VarType.INTEGER, "(@1 | @2)", smapper.getI(1), smapper.popI());
+                    smapper.replace(out, VarType.INTEGER, "(@1 | @2)", smapper.getI(out, 1), smapper.popI(out));
                     break;
                 case ByteCodeParser.opc_lor:
-                    smapper.replace(out, VarType.LONG, numbers.or64(), smapper.getL(1), smapper.popL());
+                    smapper.replace(out, VarType.LONG, numbers.or64(), smapper.getL(out, 1), smapper.popL(out));
                     break;
                 case ByteCodeParser.opc_ixor:
-                    smapper.replace(out, VarType.INTEGER, "(@1 ^ @2)", smapper.getI(1), smapper.popI());
+                    smapper.replace(out, VarType.INTEGER, "(@1 ^ @2)", smapper.getI(out, 1), smapper.popI(out));
                     break;
                 case ByteCodeParser.opc_lxor:
-                    smapper.replace(out, VarType.LONG, numbers.xor64(), smapper.getL(1), smapper.popL());
+                    smapper.replace(out, VarType.LONG, numbers.xor64(), smapper.getL(out, 1), smapper.popL(out));
                     break;
                 case ByteCodeParser.opc_ineg:
-                    smapper.replace(out, VarType.INTEGER, "(-(@1) | 0)", smapper.getI(0));
+                    smapper.replace(out, VarType.INTEGER, "(-(@1) | 0)", smapper.getI(out, 0));
                     break;
                 case ByteCodeParser.opc_lneg:
-                    smapper.replace(out, VarType.LONG, numbers.neg64(), smapper.getL(0));
+                    smapper.replace(out, VarType.LONG, numbers.neg64(), smapper.getL(out, 0));
                     break;
                 case ByteCodeParser.opc_fneg:
-                    smapper.replace(out, VarType.FLOAT, "(-@1)", smapper.getF(0));
+                    smapper.replace(out, VarType.FLOAT, "(-@1)", smapper.getF(out, 0));
                     break;
                 case ByteCodeParser.opc_dneg:
-                    smapper.replace(out, VarType.DOUBLE, "(-@1)", smapper.getD(0));
+                    smapper.replace(out, VarType.DOUBLE, "(-@1)", smapper.getD(out, 0));
                     break;
                 case ByteCodeParser.opc_ishl:
-                    smapper.replace(out, VarType.INTEGER, "(@1 << @2)", smapper.getI(1), smapper.popI());
+                    smapper.replace(out, VarType.INTEGER, "(@1 << @2)", smapper.getI(out, 1), smapper.popI(out));
                     break;
                 case ByteCodeParser.opc_lshl:
-                    smapper.replace(out, VarType.LONG, numbers.shl64(), smapper.getL(1), smapper.popI());
+                    smapper.replace(out, VarType.LONG, numbers.shl64(), smapper.getL(out, 1), smapper.popI(out));
                     break;
                 case ByteCodeParser.opc_ishr:
-                    smapper.replace(out, VarType.INTEGER, "(@1 >> @2)", smapper.getI(1), smapper.popI());
+                    smapper.replace(out, VarType.INTEGER, "(@1 >> @2)", smapper.getI(out, 1), smapper.popI(out));
                     break;
                 case ByteCodeParser.opc_lshr:
-                    smapper.replace(out, VarType.LONG, numbers.shr64(), smapper.getL(1), smapper.popI());
+                    smapper.replace(out, VarType.LONG, numbers.shr64(), smapper.getL(out, 1), smapper.popI(out));
                     break;
                 case ByteCodeParser.opc_iushr:
-                    smapper.replace(out, VarType.INTEGER, "(@1 >>> @2)", smapper.getI(1), smapper.popI());
+                    smapper.replace(out, VarType.INTEGER, "(@1 >>> @2)", smapper.getI(out, 1), smapper.popI(out));
                     break;
                 case ByteCodeParser.opc_lushr:
-                    smapper.replace(out, VarType.LONG, numbers.ushr64(), smapper.getL(1), smapper.popI());
+                    smapper.replace(out, VarType.LONG, numbers.ushr64(), smapper.getL(out, 1), smapper.popI(out));
                     break;
                 case ByteCodeParser.opc_iinc:
                     {
@@ -425,63 +430,63 @@ class LoopCode implements Runnable {
                     ByteCodeToJavaScript.emit(out, smapper, "return;");
                     break;
                 case ByteCodeParser.opc_ireturn:
-                    ByteCodeToJavaScript.emit(out, smapper, "return @1;", smapper.popI());
+                    ByteCodeToJavaScript.emit(out, smapper, "return @1;", smapper.popI(out));
                     break;
                 case ByteCodeParser.opc_lreturn:
-                    ByteCodeToJavaScript.emit(out, smapper, "return @1;", smapper.popL());
+                    ByteCodeToJavaScript.emit(out, smapper, "return @1;", smapper.popL(out));
                     break;
                 case ByteCodeParser.opc_freturn:
-                    ByteCodeToJavaScript.emit(out, smapper, "return @1;", smapper.popF());
+                    ByteCodeToJavaScript.emit(out, smapper, "return @1;", smapper.popF(out));
                     break;
                 case ByteCodeParser.opc_dreturn:
-                    ByteCodeToJavaScript.emit(out, smapper, "return @1;", smapper.popD());
+                    ByteCodeToJavaScript.emit(out, smapper, "return @1;", smapper.popD(out));
                     break;
                 case ByteCodeParser.opc_areturn:
-                    ByteCodeToJavaScript.emit(out, smapper, "return @1;", smapper.popA());
+                    ByteCodeToJavaScript.emit(out, smapper, "return @1;", smapper.popA(out));
                     break;
                 case ByteCodeParser.opc_i2l:
-                    smapper.replace(out, VarType.LONG, "(@1).toLong()", smapper.getI(0));
+                    smapper.replace(out, VarType.LONG, "(@1).toLong()", smapper.getI(out, 0));
                     break;
                 case ByteCodeParser.opc_i2f:
-                    smapper.replace(out, VarType.FLOAT, "@1", smapper.getI(0));
+                    smapper.replace(out, VarType.FLOAT, "@1", smapper.getI(out, 0));
                     break;
                 case ByteCodeParser.opc_i2d:
-                    smapper.replace(out, VarType.DOUBLE, "@1", smapper.getI(0));
+                    smapper.replace(out, VarType.DOUBLE, "@1", smapper.getI(out, 0));
                     break;
                 case ByteCodeParser.opc_l2i:
-                    smapper.replace(out, VarType.INTEGER, "((@1) | 0)", smapper.getL(0));
+                    smapper.replace(out, VarType.INTEGER, "((@1) | 0)", smapper.getL(out, 0));
                     break;
             // max int check?
                 case ByteCodeParser.opc_l2f:
-                    smapper.replace(out, VarType.FLOAT, numbers.toFP(), smapper.getL(0));
+                    smapper.replace(out, VarType.FLOAT, numbers.toFP(), smapper.getL(out, 0));
                     break;
                 case ByteCodeParser.opc_l2d:
-                    smapper.replace(out, VarType.DOUBLE, numbers.toFP(), smapper.getL(0));
+                    smapper.replace(out, VarType.DOUBLE, numbers.toFP(), smapper.getL(out, 0));
                     break;
                 case ByteCodeParser.opc_f2d:
-                    smapper.replace(out, VarType.DOUBLE, "@1", smapper.getF(0));
+                    smapper.replace(out, VarType.DOUBLE, "@1", smapper.getF(out, 0));
                     break;
                 case ByteCodeParser.opc_d2f:
-                    smapper.replace(out, VarType.FLOAT, "@1", smapper.getD(0));
+                    smapper.replace(out, VarType.FLOAT, "@1", smapper.getD(out, 0));
                     break;
                 case ByteCodeParser.opc_f2i:
-                    smapper.replace(out, VarType.INTEGER, "((@1) | 0)", smapper.getF(0));
+                    smapper.replace(out, VarType.INTEGER, "((@1) | 0)", smapper.getF(out, 0));
                     break;
                 case ByteCodeParser.opc_f2l:
-                    smapper.replace(out, VarType.LONG, "(@1).toLong()", smapper.getF(0));
+                    smapper.replace(out, VarType.LONG, "(@1).toLong()", smapper.getF(out, 0));
                     break;
                 case ByteCodeParser.opc_d2i:
-                    smapper.replace(out, VarType.INTEGER, "((@1)| 0)", smapper.getD(0));
+                    smapper.replace(out, VarType.INTEGER, "((@1)| 0)", smapper.getD(out, 0));
                     break;
                 case ByteCodeParser.opc_d2l:
-                    smapper.replace(out, VarType.LONG, "(@1).toLong()", smapper.getD(0));
+                    smapper.replace(out, VarType.LONG, "(@1).toLong()", smapper.getD(out, 0));
                     break;
                 case ByteCodeParser.opc_i2b:
-                    smapper.replace(out, VarType.INTEGER, "(((@1) << 24) >> 24)", smapper.getI(0));
+                    smapper.replace(out, VarType.INTEGER, "(((@1) << 24) >> 24)", smapper.getI(out, 0));
                     break;
                 case ByteCodeParser.opc_i2c:
                 case ByteCodeParser.opc_i2s:
-                    smapper.replace(out, VarType.INTEGER, "(((@1) << 16) >> 16)", smapper.getI(0));
+                    smapper.replace(out, VarType.INTEGER, "(((@1) << 16) >> 16)", smapper.getI(out, 0));
                     break;
                 case ByteCodeParser.opc_aconst_null:
                     smapper.assign(out, VarType.REFERENCE, "null");
@@ -558,101 +563,101 @@ class LoopCode implements Runnable {
                         break;
                     }
                 case ByteCodeParser.opc_lcmp:
-                    smapper.replace(out, VarType.INTEGER, numbers.compare64(), smapper.popL(), smapper.getL(0));
+                    smapper.replace(out, VarType.INTEGER, numbers.compare64(), smapper.popL(out), smapper.getL(out, 0));
                     break;
                 case ByteCodeParser.opc_fcmpl:
                 case ByteCodeParser.opc_fcmpg:
-                    ByteCodeToJavaScript.emit(out, smapper, "var @3 = (@2 == @1) ? 0 : ((@2 < @1) ? -1 : 1);", smapper.popF(), smapper.popF(), smapper.pushI());
+                    ByteCodeToJavaScript.emit(out, smapper, "var @3 = (@2 == @1) ? 0 : ((@2 < @1) ? -1 : 1);", smapper.popF(out), smapper.popF(out), smapper.pushI());
                     break;
                 case ByteCodeParser.opc_dcmpl:
                 case ByteCodeParser.opc_dcmpg:
-                    ByteCodeToJavaScript.emit(out, smapper, "var @3 = (@2 == @1) ? 0 : ((@2 < @1) ? -1 : 1);", smapper.popD(), smapper.popD(), smapper.pushI());
+                    ByteCodeToJavaScript.emit(out, smapper, "var @3 = (@2 == @1) ? 0 : ((@2 < @1) ? -1 : 1);", smapper.popD(out), smapper.popD(out), smapper.pushI());
                     break;
                 case ByteCodeParser.opc_if_acmpeq:
-                    i = byteCodeToJavaScript.generateIf(out, smapper, byteCodes, i, smapper.popA(), smapper.popA(), "===", topMostLabel);
+                    i = byteCodeToJavaScript.generateIf(out, smapper, byteCodes, i, smapper.popA(out), smapper.popA(out), "===", topMostLabel);
                     break;
                 case ByteCodeParser.opc_if_acmpne:
-                    i = byteCodeToJavaScript.generateIf(out, smapper, byteCodes, i, smapper.popA(), smapper.popA(), "!==", topMostLabel);
+                    i = byteCodeToJavaScript.generateIf(out, smapper, byteCodes, i, smapper.popA(out), smapper.popA(out), "!==", topMostLabel);
                     break;
                 case ByteCodeParser.opc_if_icmpeq:
-                    i = byteCodeToJavaScript.generateIf(out, smapper, byteCodes, i, smapper.popI(), smapper.popI(), "==", topMostLabel);
+                    i = byteCodeToJavaScript.generateIf(out, smapper, byteCodes, i, smapper.popI(out), smapper.popI(out), "==", topMostLabel);
                     break;
                 case ByteCodeParser.opc_ifeq:
                     {
                         int indx = i + ByteCodeToJavaScript.readShortArg(byteCodes, i);
-                        ByteCodeToJavaScript.emitIf(out, smapper, "if ((@1) == 0) ", smapper.popI(), i, indx, topMostLabel);
+                        ByteCodeToJavaScript.emitIf(out, smapper, "if ((@1) == 0) ", smapper.popI(out), i, indx, topMostLabel);
                         i += 2;
                         break;
                     }
                 case ByteCodeParser.opc_ifne:
                     {
                         int indx = i + ByteCodeToJavaScript.readShortArg(byteCodes, i);
-                        ByteCodeToJavaScript.emitIf(out, smapper, "if ((@1) != 0) ", smapper.popI(), i, indx, topMostLabel);
+                        ByteCodeToJavaScript.emitIf(out, smapper, "if ((@1) != 0) ", smapper.popI(out), i, indx, topMostLabel);
                         i += 2;
                         break;
                     }
                 case ByteCodeParser.opc_iflt:
                     {
                         int indx = i + ByteCodeToJavaScript.readShortArg(byteCodes, i);
-                        ByteCodeToJavaScript.emitIf(out, smapper, "if ((@1) < 0) ", smapper.popI(), i, indx, topMostLabel);
+                        ByteCodeToJavaScript.emitIf(out, smapper, "if ((@1) < 0) ", smapper.popI(out), i, indx, topMostLabel);
                         i += 2;
                         break;
                     }
                 case ByteCodeParser.opc_ifle:
                     {
                         int indx = i + ByteCodeToJavaScript.readShortArg(byteCodes, i);
-                        ByteCodeToJavaScript.emitIf(out, smapper, "if ((@1) <= 0) ", smapper.popI(), i, indx, topMostLabel);
+                        ByteCodeToJavaScript.emitIf(out, smapper, "if ((@1) <= 0) ", smapper.popI(out), i, indx, topMostLabel);
                         i += 2;
                         break;
                     }
                 case ByteCodeParser.opc_ifgt:
                     {
                         int indx = i + ByteCodeToJavaScript.readShortArg(byteCodes, i);
-                        ByteCodeToJavaScript.emitIf(out, smapper, "if ((@1) > 0) ", smapper.popI(), i, indx, topMostLabel);
+                        ByteCodeToJavaScript.emitIf(out, smapper, "if ((@1) > 0) ", smapper.popI(out), i, indx, topMostLabel);
                         i += 2;
                         break;
                     }
                 case ByteCodeParser.opc_ifge:
                     {
                         int indx = i + ByteCodeToJavaScript.readShortArg(byteCodes, i);
-                        ByteCodeToJavaScript.emitIf(out, smapper, "if ((@1) >= 0) ", smapper.popI(), i, indx, topMostLabel);
+                        ByteCodeToJavaScript.emitIf(out, smapper, "if ((@1) >= 0) ", smapper.popI(out), i, indx, topMostLabel);
                         i += 2;
                         break;
                     }
                 case ByteCodeParser.opc_ifnonnull:
                     {
                         int indx = i + ByteCodeToJavaScript.readShortArg(byteCodes, i);
-                        ByteCodeToJavaScript.emitIf(out, smapper, "if ((@1) !== null) ", smapper.popA(), i, indx, topMostLabel);
+                        ByteCodeToJavaScript.emitIf(out, smapper, "if ((@1) !== null) ", smapper.popA(out), i, indx, topMostLabel);
                         i += 2;
                         break;
                     }
                 case ByteCodeParser.opc_ifnull:
                     {
                         int indx = i + ByteCodeToJavaScript.readShortArg(byteCodes, i);
-                        ByteCodeToJavaScript.emitIf(out, smapper, "if ((@1) === null) ", smapper.popA(), i, indx, topMostLabel);
+                        ByteCodeToJavaScript.emitIf(out, smapper, "if ((@1) === null) ", smapper.popA(out), i, indx, topMostLabel);
                         i += 2;
                         break;
                     }
                 case ByteCodeParser.opc_if_icmpne:
-                    i = byteCodeToJavaScript.generateIf(out, smapper, byteCodes, i, smapper.popI(), smapper.popI(), "!=", topMostLabel);
+                    i = byteCodeToJavaScript.generateIf(out, smapper, byteCodes, i, smapper.popI(out), smapper.popI(out), "!=", topMostLabel);
                     break;
                 case ByteCodeParser.opc_if_icmplt:
-                    i = byteCodeToJavaScript.generateIf(out, smapper, byteCodes, i, smapper.popI(), smapper.popI(), "<", topMostLabel);
+                    i = byteCodeToJavaScript.generateIf(out, smapper, byteCodes, i, smapper.popI(out), smapper.popI(out), "<", topMostLabel);
                     break;
                 case ByteCodeParser.opc_if_icmple:
-                    i = byteCodeToJavaScript.generateIf(out, smapper, byteCodes, i, smapper.popI(), smapper.popI(), "<=", topMostLabel);
+                    i = byteCodeToJavaScript.generateIf(out, smapper, byteCodes, i, smapper.popI(out), smapper.popI(out), "<=", topMostLabel);
                     break;
                 case ByteCodeParser.opc_if_icmpgt:
-                    i = byteCodeToJavaScript.generateIf(out, smapper, byteCodes, i, smapper.popI(), smapper.popI(), ">", topMostLabel);
+                    i = byteCodeToJavaScript.generateIf(out, smapper, byteCodes, i, smapper.popI(out), smapper.popI(out), ">", topMostLabel);
                     break;
                 case ByteCodeParser.opc_if_icmpge:
-                    i = byteCodeToJavaScript.generateIf(out, smapper, byteCodes, i, smapper.popI(), smapper.popI(), ">=", topMostLabel);
+                    i = byteCodeToJavaScript.generateIf(out, smapper, byteCodes, i, smapper.popI(out), smapper.popI(out), ">=", topMostLabel);
                     break;
                 case ByteCodeParser.opc_goto:
                     {
                         smapper.flush(out);
                         int indx = i + ByteCodeToJavaScript.readShortArg(byteCodes, i);
-                        ByteCodeToJavaScript.goTo(out, i, indx, topMostLabel);
+                        ByteCodeToJavaScript.goTo(out, i, indx, topMostLabel, smapper.alwaysUseGt());
                         i += 2;
                         break;
                     }
@@ -720,52 +725,52 @@ class LoopCode implements Runnable {
                         break;
                     }
                 case ByteCodeParser.opc_arraylength:
-                    smapper.replace(out, VarType.INTEGER, "(@1).length", smapper.getA(0));
+                    smapper.replace(out, VarType.INTEGER, "(@1).length", smapper.getA(out, 0));
                     break;
                 case ByteCodeParser.opc_lastore:
-                    ByteCodeToJavaScript.emit(out, smapper, "Array.at(@3, @2, @1);", smapper.popL(), smapper.popI(), smapper.popA());
+                    ByteCodeToJavaScript.emit(out, smapper, "Array.at(@3, @2, @1);", smapper.popL(out), smapper.popI(out), smapper.popA(out));
                     break;
                 case ByteCodeParser.opc_fastore:
-                    ByteCodeToJavaScript.emit(out, smapper, "Array.at(@3, @2, @1);", smapper.popF(), smapper.popI(), smapper.popA());
+                    ByteCodeToJavaScript.emit(out, smapper, "Array.at(@3, @2, @1);", smapper.popF(out), smapper.popI(out), smapper.popA(out));
                     break;
                 case ByteCodeParser.opc_dastore:
-                    ByteCodeToJavaScript.emit(out, smapper, "Array.at(@3, @2, @1);", smapper.popD(), smapper.popI(), smapper.popA());
+                    ByteCodeToJavaScript.emit(out, smapper, "Array.at(@3, @2, @1);", smapper.popD(out), smapper.popI(out), smapper.popA(out));
                     break;
                 case ByteCodeParser.opc_aastore:
-                    ByteCodeToJavaScript.emit(out, smapper, "Array.at(@3, @2, @1);", smapper.popA(), smapper.popI(), smapper.popA());
+                    ByteCodeToJavaScript.emit(out, smapper, "Array.at(@3, @2, @1);", smapper.popA(out), smapper.popI(out), smapper.popA(out));
                     break;
                 case ByteCodeParser.opc_iastore:
                 case ByteCodeParser.opc_bastore:
                 case ByteCodeParser.opc_castore:
                 case ByteCodeParser.opc_sastore:
-                    ByteCodeToJavaScript.emit(out, smapper, "Array.at(@3, @2, @1);", smapper.popI(), smapper.popI(), smapper.popA());
+                    ByteCodeToJavaScript.emit(out, smapper, "Array.at(@3, @2, @1);", smapper.popI(out), smapper.popI(out), smapper.popA(out));
                     break;
                 case ByteCodeParser.opc_laload:
-                    smapper.replace(out, VarType.LONG, "(@2[@1] || Array.at(@2, @1))", smapper.popI(), smapper.getA(0));
+                    smapper.replace(out, VarType.LONG, "(@2[@1] || Array.at(@2, @1))", smapper.popI(out), smapper.getA(out, 0));
                     break;
                 case ByteCodeParser.opc_faload:
-                    smapper.replace(out, VarType.FLOAT, "(@2[@1] || Array.at(@2, @1))", smapper.popI(), smapper.getA(0));
+                    smapper.replace(out, VarType.FLOAT, "(@2[@1] || Array.at(@2, @1))", smapper.popI(out), smapper.getA(out, 0));
                     break;
                 case ByteCodeParser.opc_daload:
-                    smapper.replace(out, VarType.DOUBLE, "(@2[@1] || Array.at(@2, @1))", smapper.popI(), smapper.getA(0));
+                    smapper.replace(out, VarType.DOUBLE, "(@2[@1] || Array.at(@2, @1))", smapper.popI(out), smapper.getA(out, 0));
                     break;
                 case ByteCodeParser.opc_aaload:
-                    smapper.replace(out, VarType.REFERENCE, "(@2[@1] || Array.at(@2, @1))", smapper.popI(), smapper.getA(0));
+                    smapper.replace(out, VarType.REFERENCE, "(@2[@1] || Array.at(@2, @1))", smapper.popI(out), smapper.getA(out, 0));
                     break;
                 case ByteCodeParser.opc_iaload:
                 case ByteCodeParser.opc_baload:
                 case ByteCodeParser.opc_caload:
                 case ByteCodeParser.opc_saload:
-                    smapper.replace(out, VarType.INTEGER, "(@2[@1] || Array.at(@2, @1))", smapper.popI(), smapper.getA(0));
+                    smapper.replace(out, VarType.INTEGER, "(@2[@1] || Array.at(@2, @1))", smapper.popI(out), smapper.getA(out, 0));
                     break;
                 case ByteCodeParser.opc_pop:
                 case ByteCodeParser.opc_pop2:
-                    smapper.pop(1);
+                    smapper.pop(out, 1);
                     byteCodeToJavaScript.debug(out, "/* pop */");
                     break;
                 case ByteCodeParser.opc_dup:
                     {
-                        final Variable v = smapper.get(0);
+                        final Variable v = smapper.get(out, 0);
                         if (smapper.isDirty()) {
                             ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", smapper.pushT(v.getType()), v);
                         } else {
@@ -775,11 +780,11 @@ class LoopCode implements Runnable {
                     }
                 case ByteCodeParser.opc_dup2:
                     {
-                        final Variable vi1 = smapper.get(0);
+                        final Variable vi1 = smapper.get(out, 0);
                         if (vi1.isCategory2()) {
                             ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", smapper.pushT(vi1.getType()), vi1);
                         } else {
-                            final Variable vi2 = smapper.get(1);
+                            final Variable vi2 = smapper.get(out, 1);
                             ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2, @3 = @4;", smapper.pushT(vi2.getType()), vi2, smapper.pushT(vi1.getType()), vi1);
                         }
                         break;
@@ -788,9 +793,9 @@ class LoopCode implements Runnable {
                     {
                         final Variable vi1 = smapper.pop(out);
                         final Variable vi2 = smapper.pop(out);
-                        final Variable vo3 = smapper.pushT(vi1.getType());
-                        final Variable vo2 = smapper.pushT(vi2.getType());
-                        final Variable vo1 = smapper.pushT(vi1.getType());
+                        final CharSequence vo3 = smapper.pushT(vi1.getType());
+                        final CharSequence vo2 = smapper.pushT(vi2.getType());
+                        final CharSequence vo1 = smapper.pushT(vi1.getType());
                         ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2, @3 = @4, @5 = @6;", vo1, vi1, vo2, vi2, vo3, vo1);
                         break;
                     }
@@ -799,17 +804,17 @@ class LoopCode implements Runnable {
                         final Variable vi1 = smapper.pop(out);
                         final Variable vi2 = smapper.pop(out);
                         if (vi1.isCategory2()) {
-                            final Variable vo3 = smapper.pushT(vi1.getType());
-                            final Variable vo2 = smapper.pushT(vi2.getType());
-                            final Variable vo1 = smapper.pushT(vi1.getType());
+                            final CharSequence vo3 = smapper.pushT(vi1.getType());
+                            final CharSequence vo2 = smapper.pushT(vi2.getType());
+                            final CharSequence vo1 = smapper.pushT(vi1.getType());
                             ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2, @3 = @4, @5 = @6;", vo1, vi1, vo2, vi2, vo3, vo1);
                         } else {
                             final Variable vi3 = smapper.pop(out);
-                            final Variable vo5 = smapper.pushT(vi2.getType());
-                            final Variable vo4 = smapper.pushT(vi1.getType());
-                            final Variable vo3 = smapper.pushT(vi3.getType());
-                            final Variable vo2 = smapper.pushT(vi2.getType());
-                            final Variable vo1 = smapper.pushT(vi1.getType());
+                            final CharSequence vo5 = smapper.pushT(vi2.getType());
+                            final CharSequence vo4 = smapper.pushT(vi1.getType());
+                            final CharSequence vo3 = smapper.pushT(vi3.getType());
+                            final CharSequence vo2 = smapper.pushT(vi2.getType());
+                            final CharSequence vo1 = smapper.pushT(vi1.getType());
                             ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2, @3 = @4, @5 = @6,", vo1, vi1, vo2, vi2, vo3, vi3);
                             ByteCodeToJavaScript.emit(out, smapper, " @1 = @2, @3 = @4;", vo4, vo1, vo5, vo2);
                         }
@@ -820,16 +825,16 @@ class LoopCode implements Runnable {
                         final Variable vi1 = smapper.pop(out);
                         final Variable vi2 = smapper.pop(out);
                         if (vi2.isCategory2()) {
-                            final Variable vo3 = smapper.pushT(vi1.getType());
-                            final Variable vo2 = smapper.pushT(vi2.getType());
-                            final Variable vo1 = smapper.pushT(vi1.getType());
+                            final CharSequence vo3 = smapper.pushT(vi1.getType());
+                            final CharSequence vo2 = smapper.pushT(vi2.getType());
+                            final CharSequence vo1 = smapper.pushT(vi1.getType());
                             ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2, @3 = @4, @5 = @6;", vo1, vi1, vo2, vi2, vo3, vo1);
                         } else {
                             final Variable vi3 = smapper.pop(out);
-                            final Variable vo4 = smapper.pushT(vi1.getType());
-                            final Variable vo3 = smapper.pushT(vi3.getType());
-                            final Variable vo2 = smapper.pushT(vi2.getType());
-                            final Variable vo1 = smapper.pushT(vi1.getType());
+                            final CharSequence vo4 = smapper.pushT(vi1.getType());
+                            final CharSequence vo3 = smapper.pushT(vi3.getType());
+                            final CharSequence vo2 = smapper.pushT(vi2.getType());
+                            final CharSequence vo1 = smapper.pushT(vi1.getType());
                             ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2, @3 = @4, @5 = @6, @7 = @8;", vo1, vi1, vo2, vi2, vo3, vi3, vo4, vo1);
                         }
                         break;
@@ -840,36 +845,36 @@ class LoopCode implements Runnable {
                         final Variable vi2 = smapper.pop(out);
                         if (vi1.isCategory2()) {
                             if (vi2.isCategory2()) {
-                                final Variable vo3 = smapper.pushT(vi1.getType());
-                                final Variable vo2 = smapper.pushT(vi2.getType());
-                                final Variable vo1 = smapper.pushT(vi1.getType());
+                                final CharSequence vo3 = smapper.pushT(vi1.getType());
+                                final CharSequence vo2 = smapper.pushT(vi2.getType());
+                                final CharSequence vo1 = smapper.pushT(vi1.getType());
                                 ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2, @3 = @4, @5 = @6;", vo1, vi1, vo2, vi2, vo3, vo1);
                             } else {
                                 final Variable vi3 = smapper.pop(out);
-                                final Variable vo4 = smapper.pushT(vi1.getType());
-                                final Variable vo3 = smapper.pushT(vi3.getType());
-                                final Variable vo2 = smapper.pushT(vi2.getType());
-                                final Variable vo1 = smapper.pushT(vi1.getType());
+                                final CharSequence vo4 = smapper.pushT(vi1.getType());
+                                final CharSequence vo3 = smapper.pushT(vi3.getType());
+                                final CharSequence vo2 = smapper.pushT(vi2.getType());
+                                final CharSequence vo1 = smapper.pushT(vi1.getType());
                                 ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2, @3 = @4, @5 = @6, @7 = @8;", vo1, vi1, vo2, vi2, vo3, vi3, vo4, vo1);
                             }
                         } else {
                             final Variable vi3 = smapper.pop(out);
                             if (vi3.isCategory2()) {
-                                final Variable vo5 = smapper.pushT(vi2.getType());
-                                final Variable vo4 = smapper.pushT(vi1.getType());
-                                final Variable vo3 = smapper.pushT(vi3.getType());
-                                final Variable vo2 = smapper.pushT(vi2.getType());
-                                final Variable vo1 = smapper.pushT(vi1.getType());
+                                final CharSequence vo5 = smapper.pushT(vi2.getType());
+                                final CharSequence vo4 = smapper.pushT(vi1.getType());
+                                final CharSequence vo3 = smapper.pushT(vi3.getType());
+                                final CharSequence vo2 = smapper.pushT(vi2.getType());
+                                final CharSequence vo1 = smapper.pushT(vi1.getType());
                                 ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2, @3 = @4, @5 = @6,", vo1, vi1, vo2, vi2, vo3, vi3);
                                 ByteCodeToJavaScript.emit(out, smapper, " @1 = @2, @3 = @4;", vo4, vo1, vo5, vo2);
                             } else {
                                 final Variable vi4 = smapper.pop(out);
-                                final Variable vo6 = smapper.pushT(vi2.getType());
-                                final Variable vo5 = smapper.pushT(vi1.getType());
-                                final Variable vo4 = smapper.pushT(vi4.getType());
-                                final Variable vo3 = smapper.pushT(vi3.getType());
-                                final Variable vo2 = smapper.pushT(vi2.getType());
-                                final Variable vo1 = smapper.pushT(vi1.getType());
+                                final CharSequence vo6 = smapper.pushT(vi2.getType());
+                                final CharSequence vo5 = smapper.pushT(vi1.getType());
+                                final CharSequence vo4 = smapper.pushT(vi4.getType());
+                                final CharSequence vo3 = smapper.pushT(vi3.getType());
+                                final CharSequence vo2 = smapper.pushT(vi2.getType());
+                                final CharSequence vo1 = smapper.pushT(vi1.getType());
                                 ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2, @3 = @4, @5 = @6, @7 = @8,", vo1, vi1, vo2, vi2, vo3, vi3, vo4, vi4);
                                 ByteCodeToJavaScript.emit(out, smapper, " @1 = @2, @3 = @4;", vo5, vo1, vo6, vo2);
                             }
@@ -878,11 +883,11 @@ class LoopCode implements Runnable {
                     }
                 case ByteCodeParser.opc_swap:
                     {
-                        final Variable vi1 = smapper.get(0);
-                        final Variable vi2 = smapper.get(1);
-                        final Variable tmp = smapper.pushT(vi1.getType());
+                        final Variable vi1 = smapper.get(out, 0);
+                        final Variable vi2 = smapper.get(out, 1);
+                        final CharSequence tmp = smapper.pushT(vi1.getType());
                         ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2, @2 = @3, @3 = @1;", tmp, vi1, vi2);
-                        smapper.pop(1);
+                        smapper.pop(out, 1);
                         break;
                     }
                 case ByteCodeParser.opc_bipush:
@@ -901,10 +906,10 @@ class LoopCode implements Runnable {
                         if (field == null) {
                             final String mangleClass = InternalSig.mangleClassName(fi[0]);
                             final String mangleClassAccess = byteCodeToJavaScript.accessClassFalse(mangleClass);
-                            smapper.replace(out, type, "@2.call(@1)", smapper.getA(0), byteCodeToJavaScript.accessField(mangleClassAccess, null, fi));
+                            smapper.replace(out, type, "@2.call(@1)", smapper.getA(out, 0), byteCodeToJavaScript.accessField(mangleClassAccess, null, fi));
                         } else {
                             final String fieldOwner = InternalSig.mangleClassName(field.cls.getClassName());
-                            smapper.replace(out, type, "@1@2", smapper.getA(0), byteCodeToJavaScript.accessField(fieldOwner, field, fi));
+                            smapper.replace(out, type, "@1@2", smapper.getA(out, 0), byteCodeToJavaScript.accessField(fieldOwner, field, fi));
                         }
                         i += 2;
                         byteCodeToJavaScript.addReference(out, fi[0]);
@@ -919,10 +924,10 @@ class LoopCode implements Runnable {
                         if (field == null) {
                             final String mangleClass = InternalSig.mangleClassName(fi[0]);
                             final String mangleClassAccess = byteCodeToJavaScript.accessClassFalse(mangleClass);
-                            ByteCodeToJavaScript.emit(out, smapper, "@3.call(@2, @1);", smapper.popT(type), smapper.popA(), byteCodeToJavaScript.accessField(mangleClassAccess, null, fi));
+                            ByteCodeToJavaScript.emit(out, smapper, "@3.call(@2, @1);", smapper.popT(out, type), smapper.popA(out), byteCodeToJavaScript.accessField(mangleClassAccess, null, fi));
                         } else {
                             final String fieldOwner = InternalSig.mangleClassName(field.cls.getClassName());
-                            ByteCodeToJavaScript.emit(out, smapper, "@2@3 = @1;", smapper.popT(type), smapper.popA(), byteCodeToJavaScript.accessField(fieldOwner, field, fi));
+                            ByteCodeToJavaScript.emit(out, smapper, "@2@3 = @1;", smapper.popT(out, type), smapper.popA(out), byteCodeToJavaScript.accessField(fieldOwner, field, fi));
                         }
                         i += 2;
                         byteCodeToJavaScript.addReference(out, fi[0]);
@@ -946,7 +951,7 @@ class LoopCode implements Runnable {
                         int indx = ByteCodeToJavaScript.readUShortArg(byteCodes, i);
                         String[] fi = jc.getFieldInfoName(indx);
                         final int type = VarType.fromFieldType(fi[2].charAt(0));
-                        ByteCodeToJavaScript.emit(out, smapper, "@1._@2(@3);", byteCodeToJavaScript.accessClassFalse(InternalSig.mangleClassName(fi[0])), fi[1], smapper.popT(type));
+                        ByteCodeToJavaScript.emit(out, smapper, "@1._@2(@3);", byteCodeToJavaScript.accessClassFalse(InternalSig.mangleClassName(fi[0])), fi[1], smapper.popT(out, type));
                         i += 2;
                         byteCodeToJavaScript.addReference(out, fi[0]);
                         break;
@@ -967,21 +972,21 @@ class LoopCode implements Runnable {
                     }
                 case ByteCodeParser.opc_athrow:
                     {
-                        final CharSequence v = smapper.popA();
+                        final CharSequence v = smapper.popA(out);
                         smapper.clear();
                         ByteCodeToJavaScript.emit(out, smapper, "{ var @1 = @2; throw @2; }", smapper.pushA(), v);
                         break;
                     }
                 case ByteCodeParser.opc_monitorenter:
                     {
-                        byteCodeToJavaScript.debug(null, "/* monitor enter */");
-                        smapper.popA();
+                        byteCodeToJavaScript.debug(out, "/* monitor enter */");
+                        smapper.popA(out);
                         break;
                     }
                 case ByteCodeParser.opc_monitorexit:
                     {
-                        byteCodeToJavaScript.debug(null, "/* monitor exit */");
-                        smapper.popA();
+                        byteCodeToJavaScript.debug(out, "/* monitor exit */");
+                        smapper.popA(out);
                         break;
                     }
                 case ByteCodeParser.opc_wide:
@@ -999,9 +1004,10 @@ class LoopCode implements Runnable {
             if (modified) {
                 out.append("\n");
             }
+            smapper.finishStatement(out);
         }
         if (previousTrap != null) {
-            byteCodeToJavaScript.generateCatch(out, previousTrap, byteCodes.length, topMostLabel);
+            byteCodeToJavaScript.generateCatch(out, smapper, previousTrap, byteCodes.length, topMostLabel, smapper.alwaysUseGt());
         }
         if (didBranches) {
             out.append("\n    }\n");
@@ -1011,7 +1017,7 @@ class LoopCode implements Runnable {
         }
     }
 
-    private void handleIndy(int indx, String[] methodAndType, String[] mi, ByteCodeParser.BootMethodData bm, StackMapper mapper) throws IOException {
+    private void handleIndy(int indx, String[] methodAndType, String[] mi, ByteCodeParser.BootMethodData bm, AbstractStackMapper mapper) throws IOException {
         for (IndyHandler h : byteCodeToJavaScript.getIndyHandlers()) {
             if (h.factoryClazz.equals(mi[0]) && h.factoryMethod.equals(mi[1])) {
                 IndyHandler.Ctx ctx = new IndyHandler.Ctx(out, mapper, byteCodeToJavaScript, methodAndType, bm);
@@ -1033,7 +1039,7 @@ class LoopCode implements Runnable {
         mapper.pushT(type);
     }
 
-    int invokeVirtualMethod(Appendable out, byte[] byteCodes, int i, final StackMapper mapper) throws IOException {
+    int invokeVirtualMethod(Appendable out, byte[] byteCodes, int i, final AbstractStackMapper mapper) throws IOException {
         int methodIndex = ByteCodeToJavaScript.readUShortArg(byteCodes, i);
         String[] mi = jc.getFieldInfoName(methodIndex);
         char[] returnType = {'V'};
@@ -1042,7 +1048,7 @@ class LoopCode implements Runnable {
         final int numArguments = cnt.length() + 1;
         final CharSequence[] vars = new CharSequence[numArguments];
         for (int j = numArguments - 1; j >= 0; --j) {
-            vars[j] = mapper.popValue();
+            vars[j] = mapper.popValue(out);
         }
         if (returnType[0] != 'V') {
             mapper.flush(out);
@@ -1063,7 +1069,7 @@ class LoopCode implements Runnable {
         return i;
     }
 
-    int invokeStaticMethod(Appendable out, byte[] byteCodes, int i, final StackMapper mapper, boolean isStatic) throws IOException {
+    int invokeStaticMethod(Appendable out, byte[] byteCodes, int i, final AbstractStackMapper mapper, boolean isStatic) throws IOException {
         int methodIndex = ByteCodeToJavaScript.readUShortArg(byteCodes, i);
         String[] mi = jc.getFieldInfoName(methodIndex);
         char[] returnType = {'V'};
@@ -1072,7 +1078,7 @@ class LoopCode implements Runnable {
         final int numArguments = isStatic ? cnt.length() : cnt.length() + 1;
         final CharSequence[] vars = new CharSequence[numArguments];
         for (int j = numArguments - 1; j >= 0; --j) {
-            vars[j] = mapper.popValue();
+            vars[j] = mapper.popValue(out);
         }
         if ("java/lang/Object".equals(mi[0]) && "<init>".equals(mi[1])) {
             return i + 2;

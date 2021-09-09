@@ -35,13 +35,13 @@ final class StringConcatHandler extends IndyHandler {
         fixedArgsCount = internalSig.getParameterCount();
         final CharSequence[] vars = new CharSequence[fixedArgsCount];
         for (int j = fixedArgsCount - 1; j >= 0; --j) {
-            vars[j] = ctx.stackMapper.popValue();
+            vars[j] = ctx.stackMapper.popValue(ctx.out);
         }
 
 
         ctx.stackMapper.flush(ctx.out);
 
-        final Variable stringVar = ctx.stackMapper.pushA();
+        final CharSequence stringVar = ctx.stackMapper.pushA();
         ctx.out.append("\nvar ").append(stringVar).append(" = ");
 
         StringBuilder sep = new StringBuilder();

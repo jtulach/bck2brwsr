@@ -71,7 +71,9 @@ public class Exceptions {
                 return ("CNFE:" + ex.getMessage()).toString();
             }
             return c.newInstance().getClass().getName();
-        } catch (InstantiationException | IllegalAccessException ex) {
+        } catch (InstantiationException  ex) {
+            return ex.getMessage();
+        } catch (IllegalAccessException ex) {
             return ex.getMessage();
         }
     }

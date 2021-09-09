@@ -75,14 +75,14 @@ class MetafactoryHandler extends IndyHandler {
             fixedArgsCount = internalSig.getParameterCount();
             final CharSequence[] vars = new CharSequence[fixedArgsCount];
             for (int j = fixedArgsCount - 1; j >= 0; --j) {
-                vars[j] = ctx.stackMapper.popValue();
+                vars[j] = ctx.stackMapper.popValue(ctx.out);
             }
 
             assert internalSig.getMangledType().startsWith("L");
 
             ctx.stackMapper.flush(ctx.out);
 
-            final Variable samVar = ctx.stackMapper.pushA();
+            final CharSequence samVar = ctx.stackMapper.pushA();
             ctx.out.append("var ").append(samVar).append(" = ").append(interfaceToCreate).append(".constructor.$class.$lambda([");
 
             String sep = "";

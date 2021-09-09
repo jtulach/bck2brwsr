@@ -46,7 +46,8 @@ public final class BytesLoader {
         if (u == null) {
             throw new IOException("Can't find " + name);
         }
-        try (InputStream is = u.openStream()) {
+        InputStream is = u.openStream();
+        try {
             byte[] arr;
             arr = new byte[is.available()];
             int offset = 0;
@@ -58,6 +59,8 @@ public final class BytesLoader {
                 offset += len;
             }
             return arr;
+        } finally {
+            is.close();
         }
     }
     

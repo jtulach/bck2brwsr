@@ -47,7 +47,12 @@ final class ClassDataCache {
         }
         Object cacheEntry = classDataMap.get(className);
         if (cacheEntry == null) {
-            final InputStream is = loadClass(resources, className);
+            InputStream is = null;
+            try {
+                is = loadClass(resources, className);
+            } catch (IOException loadOrNot) {
+                is = null;
+            }
             try {
                 cacheEntry = (is != null) ? new ClassData(is) : MISSING_CLASS;
             } catch (IOException ex) {

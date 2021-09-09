@@ -67,7 +67,7 @@
                   </archive>
               </configuration>
           </plugin>
-         <plugin>
+          <plugin>
              <groupId>org.apache.maven.plugins</groupId>
              <artifactId>maven-javadoc-plugin</artifactId>
              <configuration>
@@ -119,4 +119,26 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+  <profiles>
+      <profile>
+          <id>target15</id>
+          <build>
+              <plugins>
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-compiler-plugin</artifactId>
+                      <configuration>
+                          <compilerId>javac</compilerId>
+                          <source>8</source>
+                          <testSource>1.5</testSource>
+                          <testTarget>1.5</testTarget>
+                          <compilerArgs>
+                              <arg>-Xlint:deprecation</arg>
+                          </compilerArgs>
+                      </configuration>
+                  </plugin>
+              </plugins>
+          </build>
+      </profile>
+  </profiles>
 </project>

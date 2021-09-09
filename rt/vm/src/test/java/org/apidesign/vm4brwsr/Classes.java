@@ -281,7 +281,7 @@ public class Classes {
     
     public static int reflectiveSum(int a, int b) throws Exception {
         Method m = StaticMethod.class.getMethod("sum", int.class, int.class);
-        return (int) m.invoke(null, a, b);
+        return ((Number) m.invoke(null, a, b)).intValue();
     }
     
     private abstract class Application {
