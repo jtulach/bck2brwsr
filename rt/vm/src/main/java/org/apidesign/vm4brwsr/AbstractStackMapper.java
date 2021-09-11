@@ -21,6 +21,8 @@ import java.io.IOException;
 import org.apidesign.vm4brwsr.ByteCodeParser.TypeArray;
 
 abstract class AbstractStackMapper {
+    private int uniqueVariableCounter;
+
     public abstract void clear();
 
     public abstract void syncWithFrameStack(final TypeArray frameStack);
@@ -125,4 +127,8 @@ abstract class AbstractStackMapper {
     abstract void finishStatement(Appendable out) throws IOException;
 
     abstract void caughtException(Appendable out, String e) throws IOException;
+
+    final String allocUniqueVariablePrefix() {
+        return "t" + (uniqueVariableCounter++) + "_";
+    }
 }
