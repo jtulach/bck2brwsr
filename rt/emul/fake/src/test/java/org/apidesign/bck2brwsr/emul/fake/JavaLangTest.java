@@ -17,24 +17,11 @@
  */
 package org.apidesign.bck2brwsr.emul.fake;
 
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import org.testng.annotations.Test;
 
-public class JavaUtilStreamTest {
+public class JavaLangTest {
     @Test
-    public void stream() throws Exception {
-        JavaUtilTest.assertSignatures(Stream.class);
-    }
-
-    @Test
-    public void intStream() throws Exception {
-        JavaUtilTest.assertSignatures(IntStream.class);
-    }
-
-    @Test
-    public void streamSupport() throws Exception {
-        JavaUtilTest.assertSignatures(StreamSupport.class);
+    public void packages() throws Exception {
+        JavaUtilTest.assertSignatures(java.lang.Package.class);
     }
 }

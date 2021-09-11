@@ -34,28 +34,28 @@ public class StackMapperTest {
     throws Exception {
         StringBuilder sb = new StringBuilder();
         
-        StackMapper smapper = new StackMapper();
+        AbstractStackMapper smapper = new StackMapper();
         
         smapper.assign(sb, VarType.INTEGER, "0");
         
         smapper.assign(sb, VarType.REFERENCE, "arr");
         smapper.assign(sb, VarType.INTEGER, "33");
         smapper.replace(sb, VarType.INTEGER, "@2[@1]", 
-            smapper.popI(), smapper.getA(0)
+            smapper.popI(sb), smapper.getA(sb, 0)
         );
 
         smapper.replace(sb, VarType.INTEGER, "(@1) + (@2)", 
-            smapper.getI(1), smapper.popI()
+            smapper.getI(sb, 1), smapper.popI(sb)
         );
         
         smapper.assign(sb, VarType.REFERENCE, "arr");
         smapper.assign(sb, VarType.INTEGER, "22");
         smapper.replace(sb, VarType.INTEGER, "@2[@1]", 
-            smapper.popI(), smapper.getA(0)
+            smapper.popI(sb), smapper.getA(sb, 0)
         );
         
         smapper.replace(sb, VarType.INTEGER, "(@1) + (@2)", 
-            smapper.getI(1), smapper.popI()
+            smapper.getI(sb, 1), smapper.popI(sb)
         );
         
         smapper.flush(sb);

@@ -15,26 +15,13 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.emul.fake;
+package java.lang;
 
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-import org.testng.annotations.Test;
-
-public class JavaUtilStreamTest {
-    @Test
-    public void stream() throws Exception {
-        JavaUtilTest.assertSignatures(Stream.class);
+public final class Package {
+    private Package() {
     }
 
-    @Test
-    public void intStream() throws Exception {
-        JavaUtilTest.assertSignatures(IntStream.class);
-    }
-
-    @Test
-    public void streamSupport() throws Exception {
-        JavaUtilTest.assertSignatures(StreamSupport.class);
+    public static Package getPackage(String name) {
+        return null;
     }
 }

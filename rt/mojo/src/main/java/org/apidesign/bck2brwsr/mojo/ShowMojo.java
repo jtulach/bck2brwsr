@@ -17,6 +17,7 @@
  */
 package org.apidesign.bck2brwsr.mojo;
 
+import org.apidesign.bck2brwsr.aot.UtilAsm;
 import java.io.Closeable;
 import org.apache.maven.plugin.AbstractMojo;
 

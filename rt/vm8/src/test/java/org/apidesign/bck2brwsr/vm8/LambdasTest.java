@@ -19,8 +19,16 @@ package org.apidesign.bck2brwsr.vm8;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.IntSummaryStatistics;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.IntBinaryOperator;
+import java.util.function.IntFunction;
+import java.util.function.LongFunction;
+import java.util.function.ToDoubleFunction;
+import java.util.function.ToLongFunction;
 import org.apidesign.bck2brwsr.vmtest.Compare;
 import org.apidesign.bck2brwsr.vmtest.VMTest;
 import org.testng.annotations.Factory;
@@ -143,6 +151,65 @@ public class LambdasTest extends LambdasSuper {
         }
     }
 
+    private static String describe(Object object) {
+        return object.getClass().getSimpleName() + ": " + object;
+    }
+
+    @Compare
+    public String argBox() {
+        LongFunction<String> ref = LambdasTest::describe;
+        return ref.apply(42);
+    }
+
+    @Compare
+    public String argUnbox() {
+        // there is only one variant of toHexString: static, accepting primitive long
+        Function<Long, String> ref = Long::toHexString;
+        return ref.apply(0x123456789abcdefL);
+    }
+
+    @Compare
+    public String argWiden() {
+        IntFunction<String> ref = Long::toHexString;
+        return ref.apply(42);
+    }
+
+    @Compare
+    public String argUnboxWiden() {
+        Function<Integer, String> ref = Long::toHexString;
+        return ref.apply(42);
+    }
+
+    @Compare
+    public String retBox() {
+        Function<String, Long> ref = Long::parseLong;
+        return describe(ref.apply("123456789123456789"));
+    }
+
+    @Compare
+    public long retUnbox() {
+        ToLongFunction<String> ref = Long::valueOf;
+        return ref.applyAsLong("123456789123456789");
+    }
+
+    @Compare
+    public double retWiden() {
+        ToDoubleFunction<String> ref = Long::parseLong;
+        return ref.applyAsDouble("42");
+    }
+
+    @Compare
+    public double retUnboxWiden() {
+        ToDoubleFunction<String> ref = Long::valueOf;
+        return ref.applyAsDouble("42");
+    }
+
+    @Compare
+    public String binaryOperator() {
+        BinaryOperator<String> concat = String::concat;
+        return concat.apply("cares", "s");
+    }
+
     interface CallWithArgs<T> {
         List<T> call(T e1, T e2);
     }
@@ -181,6 +248,15 @@ public class LambdasTest extends LambdasSuper {
         sb.append("\n").append(privateInstanceMethod());
 
         return sb.toString();
+    }
+
+    @Compare
+    public String streamToInt() {
+        String[] keywords = { "private", "package", "int" };
+        IntSummaryStatistics charStats = Arrays.stream(keywords).flatMapToInt(String::chars).summaryStatistics();
+        int start = charStats.getMin();
+        int size = charStats.getMax() - start + 1;
+        return start + ":" + size;
     }
 
     private String privateInstanceMethod() {

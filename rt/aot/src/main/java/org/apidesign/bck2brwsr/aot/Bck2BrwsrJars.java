@@ -248,6 +248,7 @@ public final class Bck2BrwsrJars {
         String exp = mainAttr.getValue("Export-Package"); // NOI18N
         if (exp != null) {
             for (String def : exp.split(",")) {
+                def = def.trim();
                 for (String sep : def.split(";")) {
                     keep.add(sep.replace('.', '/') + "/");
                     break;

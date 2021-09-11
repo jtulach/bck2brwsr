@@ -30,8 +30,25 @@ class MetafactoryHandler extends IndyHandler {
 
     @Override
     protected boolean handle(Ctx ctx) throws IOException {
-        final int fixedArgsCount;
         ByteCodeParser.CPX2 methodHandle = ctx.bm.clazz.getCpoolEntry(ctx.bm.args[1]);
+        String samMethodType = getMethodTypeArg(ctx.bm, 0);
+        String instantiatedMethodType = getMethodTypeArg(ctx.bm, 2);
+        String implMethodType;
+        if (samMethodType == null || instantiatedMethodType == null) {
+            return false;
+        }
+        InternalSig samMethodSig = InternalSig.find(ctx.mt[0], samMethodType);
+        InternalSig instantiatedMethodSig = InternalSig.find(null, instantiatedMethodType);
+        InternalSig implMethodSig;
+        String implMethodClass;
+        {
+            String[] methodInfoName = ctx.bm.clazz.getFieldInfoName(methodHandle.cpx2);
+            ctx.byteCodeToJavaScript.requireReference(implMethodClass = methodInfoName[0]);
+            implMethodSig = InternalSig.find(methodInfoName[1], implMethodType = methodInfoName[2]);
+        }
+        if (samMethodSig.getParameterCount() != instantiatedMethodSig.getParameterCount()) {
+            return false;
+        }
         boolean isStatic;
         boolean isVirtual = false;
         boolean isConstructor = false;
@@ -58,8 +75,100 @@ class MetafactoryHandler extends IndyHandler {
                 // unsupported by this indy handler
                 return false;
         }
+        final int firstArgIndex = isStatic ? 0 : 1;
+        final int totalArgsCount = implMethodSig.getParameterCount() + firstArgIndex;
+        final int interfaceArgsCount = samMethodSig.getParameterCount();
+        final int fixedArgsCount = totalArgsCount - interfaceArgsCount;
+        final String prefix = ctx.stackMapper.allocUniqueVariablePrefix();
         {
-            final String sig = ctx.mt[1];
+            final CharSequence[] vars = new CharSequence[fixedArgsCount];
+            for (int j = fixedArgsCount - 1; j >= 0; --j) {
+                vars[j] = ctx.stackMapper.popValue(ctx.out);
+            }
+
+            ctx.stackMapper.flush(ctx.out);
+
+            for (int j = 0; j < fixedArgsCount; j++) {
+                ctx.out.append("\n   var ").append(prefix).append(Integer.toString(j)).append(" = ").append(vars[j]).append(';');
+            }
+            ctx.out.append("\n   var ").append(prefix).append(" = function(");
+            String sep = "";
+            for (int j = fixedArgsCount; j < totalArgsCount; j++) {
+                ctx.out.append(sep).append(prefix).append(Integer.toString(j));
+                sep = ", ";
+            }
+            ctx.out.append(") {");
+        }
+        for (int i = 0; i < interfaceArgsCount; i++) {
+            int index = fixedArgsCount + i;
+            String fromType = samMethodSig.getJvmParameterType(i);
+            String toType = instantiatedMethodSig.getJvmParameterType(i);
+            if (toType.equals(fromType)) {
+                // also primitive types
+                continue;
+            }
+            if (toType.startsWith("L") && toType.endsWith(";")) {
+                toType = toType.substring(1, toType.length() - 1);
+            }
+            ctx.out.append("\n      ");
+            ctx.byteCodeToJavaScript.generateCheckcast(ctx.out, toType, prefix + index);
+        }
+        for (int i = 0; i < interfaceArgsCount; i++) {
+            int index = fixedArgsCount + i;
+            if (index < firstArgIndex) {
+                // receiver, no implicit conversions
+                continue;
+            }
+            String fromType = instantiatedMethodSig.getJvmParameterType(i);
+            String toType = implMethodSig.getJvmParameterType(index - firstArgIndex);
+            if (toType.equals(fromType)) {
+                continue;
+            }
+            implicitConversion(ctx, fromType, toType, prefix + index);
+        }
+        {
+            final String mangledType = InternalSig.mangleClassName(implMethodClass);
+            final String mangledMethod = implMethodSig.getJniName();
+
+            String sep = "";
+            ctx.out.append("\n      var type = ").append(ctx.byteCodeToJavaScript.accessClassFalse(mangledType)).append(";");
+            ctx.out.append("\n      var ret = ");
+            if (isVirtual) {
+                ctx.out.append(prefix).append("0.").append(mangledMethod).append('(');
+            } else {
+                if (isConstructor) {
+                    ctx.out.append("new ").append(ctx.byteCodeToJavaScript.accessClass(mangledType)).append(";");
+                    ctx.out.append("\n      type.constructor['").append(mangledMethod).append("'].call(ret");
+                    sep = ", ";
+                } else {
+                    ctx.out.append("type.").append(mangledMethod);
+                    if (!isStatic) {
+                        ctx.out.append(".call(").append(prefix).append("0");
+                        sep = ", ";
+                    } else {
+                        ctx.out.append('(');
+                    }
+                }
+            }
+            for (int i = firstArgIndex; i < totalArgsCount; i++) {
+                ctx.out.append(sep).append(prefix).append(Integer.toString(i));
+                sep = ", ";
+            }
+            ctx.out.append(");");
+
+            if (!instantiatedMethodType.endsWith("V")) {
+                if (!isConstructor) {
+                    String fromType = implMethodType.substring(implMethodType.indexOf(')') + 1);
+                    String toType = instantiatedMethodType.substring(instantiatedMethodType.indexOf(')') + 1);
+                    implicitConversion(ctx, fromType, toType, "ret");
+                }
+                ctx.out.append("\n      return ret;");
+            }
+        }
+        {
+            ctx.out.append("\n   };");
+
+            String sig = ctx.mt[1];
             int typeEnd = sig.lastIndexOf(')');
             String typeSig = sig.substring(typeEnd + 1);
             if (!typeSig.startsWith("L") || !typeSig.endsWith(";")) {
@@ -69,152 +178,103 @@ class MetafactoryHandler extends IndyHandler {
             ctx.byteCodeToJavaScript.requireReference(type);
             final String mangledType = InternalSig.mangleClassName(type);
             String interfaceToCreate = ctx.byteCodeToJavaScript.accessClassFalse(mangledType);
+            String interfaceMethod = samMethodSig.getJniName();
 
-            InternalSig internalSig = InternalSig.find(null, sig);
-
-            fixedArgsCount = internalSig.getParameterCount();
-            final CharSequence[] vars = new CharSequence[fixedArgsCount];
-            for (int j = fixedArgsCount - 1; j >= 0; --j) {
-                vars[j] = ctx.stackMapper.popValue();
-            }
-
-            assert internalSig.getMangledType().startsWith("L");
-
-            ctx.stackMapper.flush(ctx.out);
-
-            final Variable samVar = ctx.stackMapper.pushA();
-            ctx.out.append("var ").append(samVar).append(" = ").append(interfaceToCreate).append(".constructor.$class.$lambda([");
-
-            String sep = "";
-            for (int j = 0; j < fixedArgsCount; j++) {
-                ctx.out.append(sep).append(vars[j]);
-                sep = ", ";
-            }
-
-            ctx.out.append("], function(args1, args2) {\n");
-        }
-        {
-            String[] methodInfoName = ctx.bm.clazz.getFieldInfoName(methodHandle.cpx2);
-            ctx.byteCodeToJavaScript.requireReference(methodInfoName[0]);
-            final String mangledType = InternalSig.mangleClassName(methodInfoName[0]);
-            InternalSig internalSig = InternalSig.find(methodInfoName[1], methodInfoName[2]);
-            String mangledMethod = internalSig.getJniName();
-            for (int i = 0; i < internalSig.getParameterCount(); i++) {
-                String type = internalSig.getJvmParameterType(i);
-                if (type.length() == 1) {
-                    // primitive types
-                    continue;
-                }
-                if (type.startsWith("L") && type.endsWith(";")) {
-                    type = type.substring(1, type.length() - 1);
-                }
-                ctx.out.append("\n      ");
-                int index = isStatic ? i : i + 1;
-                if (index < fixedArgsCount) {
-                    ctx.byteCodeToJavaScript.generateCheckcast(ctx.out, type, "args1[" + index + "]");
-                } else {
-                    ctx.byteCodeToJavaScript.generateCheckcast(ctx.out, type, "args2[" + (index - fixedArgsCount) + "]");
-                }
-            }
-
-            String sep = "";
-            ctx.out.append("\n      var type = ").append(ctx.byteCodeToJavaScript.accessClassFalse(mangledType)).append(";");
-            ctx.out.append("\n      var ret = ");
-            if (isVirtual) {
-                if (fixedArgsCount > 0) {
-                    ctx.out.append("args1[0]");
-                } else {
-                    ctx.out.append("args2[0]");
-                }
-                ctx.out.append(".").append(mangledMethod).append('(');
-            } else {
-                if (isConstructor) {
-                    ctx.out.append("new ").append(ctx.byteCodeToJavaScript.accessClass(mangledType)).append(";");
-                    ctx.out.append("\n      type.constructor['").append(mangledMethod).append("'].call(ret");
-                    sep = ", ";
-                } else {
-                    ctx.out.append("type.").append(mangledMethod);
-                    if (!isStatic) {
-                        ctx.out.append(".call(");
-                        if (fixedArgsCount > 0) {
-                            ctx.out.append("args1[0]");
-                        } else {
-                            ctx.out.append("args2[0]");
-                        }
-                        sep = ", ";
-                    } else {
-                        ctx.out.append('(');
-                    }
-                }
-            }
-            for (int i = 0; i < internalSig.getParameterCount(); i++) {
-                int index = isStatic ? i : i + 1;
-                ctx.out.append(sep);
-                if (index < fixedArgsCount) {
-                    ctx.out.append("args1[" + index + "]");
-                } else {
-                    ctx.out.append("args2[" + (index - fixedArgsCount) + "]");
-                }
-                sep = ", ";
-            }
-            ctx.out.append(");");
-
-            String convertType;
-            String convertMethod;
-            switch (internalSig.getMangledType().charAt(0)) {
-                case 'I':
-                    convertType = "java_lang_Integer";
-                    convertMethod = "valueOf__Ljava_lang_Integer_2I";
-                    break;
-                case 'J':
-                    convertType = "java_lang_Long";
-                    convertMethod = "valueOf__Ljava_lang_Long_2J";
-                    break;
-                case 'D':
-                    convertType = "java_lang_Double";
-                    convertMethod = "valueOf__Ljava_lang_Double_2D";
-                    break;
-                case 'F':
-                    convertType = "java_lang_Float";
-                    convertMethod = "valueOf__Ljava_lang_Float_2F";
-                    break;
-                case 'B':
-                    convertType = "java_lang_Byte";
-                    convertMethod = "valueOf__Ljava_lang_Byte_2B";
-                    break;
-                case 'Z':
-                    convertType = "java_lang_Boolean";
-                    convertMethod = "valueOf__Ljava_lang_Boolean_2Z";
-                    break;
-                case 'S':
-                    convertType = "java_lang_Short";
-                    convertMethod = "valueOf__Ljava_lang_Short_2S";
-                    break;
-                case 'C':
-                    convertType = "java_lang_Character";
-                    convertMethod = "valueOf__Ljava_lang_Character_2C";
-                    break;
-                case 'L':
-                case '[':
-                case 'V':
-                    convertType = null;
-                    convertMethod = null;
-                    break;
-                default:
-                    throw new IllegalStateException("Unexpected return type: " + internalSig.getMangledType());
-            }
-
-            if (convertType != null) {
-                String jvmConvertType = convertType.replace('_', '/');
-                ctx.byteCodeToJavaScript.requireReference(jvmConvertType);
-                ctx.out.append("\n      ret = ").append(ctx.byteCodeToJavaScript.accessClassFalse(convertType));
-                ctx.out.append(".").append(convertMethod).append("(ret);");
-            }
-
-            ctx.out.append("\n      return ret;");
-            ctx.out.append("\n   });");
+            final CharSequence samVar = ctx.stackMapper.pushA();
+            ctx.out.append("\n   var ").append(samVar).append(" = new ").append(interfaceToCreate).append(".constructor();\n");
+            ctx.out.append("\n   ").append(samVar).append("['").append(interfaceMethod).append("'] = " + prefix + ";");
         }
         return true;
     }
 
+    private static String getMethodTypeArg(ByteCodeParser.BootMethodData bm, int i) {
+        Object index = bm.clazz.getCpoolEntryobj(bm.args[i]);
+        if (index instanceof ByteCodeParser.CPX) {
+            Object value = bm.clazz.getCpoolEntryobj(((ByteCodeParser.CPX) index).cpx);
+            if (value instanceof String) {
+                return (String) value;
+            }
+        }
+        return null;
+    }
+
+    private static void implicitConversion(Ctx ctx, String fromType, String toType, String var) throws IOException {
+        boolean fromPrimitive = fromType.length() == 1;
+        boolean toPrimitive = toType.length() == 1;
+        if (toPrimitive) {
+            final char fromLetter;
+            if (!fromPrimitive) {
+                // unboxing
+                PrimitiveType pt = PrimitiveType.unbox(fromType);
+                ctx.out.append("\n      ").append(var).append(" = ").append(var).append(".").append(pt.unboxMethod).append("();");
+                fromLetter = pt.letter();
+            } else {
+                fromLetter = fromType.charAt(0);
+            }
+            // primitive widening conversion
+            widen(ctx, fromLetter, toType.charAt(0), var);
+        } else if (fromPrimitive) {
+            // boxing
+            PrimitiveType pt = PrimitiveType.valueOf(fromType);
+            ctx.byteCodeToJavaScript.requireReference(pt.jvmWrapperType);
+            ctx.out.append("\n      ").append(var).append(" = ").append(ctx.byteCodeToJavaScript.accessClassFalse(pt.wrapperType));
+            ctx.out.append(".").append(pt.convertMethod).append("(").append(var).append(");");
+        } else {
+            // upcast
+            // no check or conversion needed
+        }
+    }
+
+    private static void widen(Ctx ctx, char fromType, char toType, String var) throws IOException {
+        if (fromType == 'J') {
+            if (toType == 'D') {
+                ctx.out.append("\n      ").append(var).append(" = ").append(var).append(".doubleValue__D();");
+            } else if (toType == 'F') {
+                ctx.out.append("\n      ").append(var).append(" = ").append(var).append(".floatValue__F();");
+            }
+        } else if (toType == 'J') {
+            ctx.out.append("\n      ").append(var).append(" = ").append(var).append(".toLong();");
+        }
+    }
+
+    private enum PrimitiveType {
+        I("java_lang_Integer", "valueOf__Ljava_lang_Integer_2I", "intValue__I"),
+        J("java_lang_Long", "valueOf__Ljava_lang_Long_2J", "longValue__J"),
+        D("java_lang_Double", "valueOf__Ljava_lang_Double_2D", "doubleValue__D"),
+        F("java_lang_Float", "valueOf__Ljava_lang_Float_2F", "floatValue__F"),
+        B("java_lang_Byte", "valueOf__Ljava_lang_Byte_2B", "byteValue__B"),
+        Z("java_lang_Boolean", "valueOf__Ljava_lang_Boolean_2Z", "booleanValue__Z"),
+        S("java_lang_Short", "valueOf__Ljava_lang_Short_2S", "shortValue__S"),
+        C("java_lang_Character", "valueOf__Ljava_lang_Character_2C", "charValue__C");
+
+        final String wrapperType;
+        final String convertMethod;
+        final String jvmWrapperType;
+        final String unboxMethod;
+
+        PrimitiveType(String wrapperType, String convertMethod, String unboxMethod) {
+            this.wrapperType = wrapperType;
+            this.convertMethod = convertMethod;
+            this.jvmWrapperType = wrapperType.replace('_', '/');
+            this.unboxMethod = unboxMethod;
+        }
+
+        static PrimitiveType unbox(String wrapper) {
+            switch (wrapper) {
+                case "Ljava/lang/Integer;": return I;
+                case "Ljava/lang/Long;": return J;
+                case "Ljava/lang/Double;": return D;
+                case "Ljava/lang/Float;": return F;
+                case "Ljava/lang/Byte;": return B;
+                case "Ljava/lang/Boolean;": return Z;
+                case "Ljava/lang/Short;": return S;
+                case "Ljava/lang/Character;": return C;
+                default: throw new IllegalStateException("Cannot unbox " + wrapper);
+            }
+        }
+
+        char letter() {
+            return name().charAt(0);
+        }
+    }
 }

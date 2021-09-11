@@ -224,7 +224,12 @@ abstract class VM extends ByteCodeToJavaScript {
                 if (name == null) {
                     break;
                 }
-                InputStream is = resources.get(name + ".class");
+                InputStream is;
+                try {
+                    is = resources.get(name + ".class");
+                } catch (IOException noSuchResource) {
+                    is = null;
+                }
                 if (is == null) {
                     lazyReference(out, name);
                     skipClass.add(name);
@@ -235,7 +240,7 @@ abstract class VM extends ByteCodeToJavaScript {
                     processed.add(name);
                     initCode.add(ic == null ? "" : ic);
                 } catch (RuntimeException ex) {
-                    throw new IOException("Error while compiling " + name + "\n", ex);
+                    throw new IOException("Error while compiling " + name + "\n" + ex.getClass().getName() + ": " + ex.getMessage(), ex);
                 }
             }
 
@@ -529,6 +534,7 @@ abstract class VM extends ByteCodeToJavaScript {
                   "  return vm;\n"
                 + "  };\n"
                 + "  var extensions = [];\n"
+                + "  var importingScript = null;\n"
                 + "  function replaceAll(s, target, replacement) {\n"
                 + "    var pos = 0;\n"
                 + "    for (;;) {\n"
@@ -625,16 +631,29 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "    extensionLoaded(ev);\n"
                 + "  }\n"
                 + "  function loadExtension(url, registerScript) {\n"
-                + "      if (url.substring(url.length - 4) == '.jar')\n"
-                + "        url = url.substring(0, url.length - 4) + '.js';\n"
-                + "      var script = document.createElement('script');\n"
-                + "      script.type = 'text/javascript';\n"
-                + "      script.src = url;\n"
-                + "      script.onload = extensionLoaded;\n"
-                + "      script.onerror = extensionError;\n"
-                + "      if (registerScript) document['currentScript'] = script;\n"
-                + "      document.getElementsByTagName('head')[0].appendChild(script);\n"
-                + "      pending.push(script);\n"
+                + "      if (url.substring(url.length - 4) == '.jar') {\n"
+                + "          url = url.substring(0, url.length - 4) + '.js';\n"
+                + "      }\n"
+                + "      if (typeof document !== 'undefined') {\n"
+                + "          var script = document.createElement('script');\n"
+                + "          script.type = 'text/javascript';\n"
+                + "          script.src = url;\n"
+                + "          script.onload = extensionLoaded;\n"
+                + "          script.onerror = extensionError;\n"
+                + "          if (registerScript && !document['currentScript']) {\n"
+                + "              document['currentScript'] = script;\n"
+                + "          }\n"
+                + "          document.getElementsByTagName('head')[0].appendChild(script);\n"
+                + "          pending.push(script);\n"
+                + "      } else {\n"
+                + "          var previousScript = importingScript;\n"
+                + "          try {\n"
+                + "              importingScript = url;\n"
+                + "              importScripts(url);\n"
+                + "          } finally {\n"
+                + "              importingScript = previousScript;\n"
+                + "          }\n"
+                + "      }\n"
                 + "  }\n"
                 + "  global.bck2brwsr = function() {\n"
                 + "    var args = Array.prototype.slice.apply(arguments);\n"
@@ -678,7 +697,7 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "        if(!at) continue;\n"
                 + "        var ret;\n"
                 + "        if (typeof at === 'string' && at.substring(at.length - 3) === '.js') {\n"
-                + "          loadExtension(at, document && !document['currentScript']);\n"
+                + "          loadExtension(at, true);\n"
                 + "          args[i] = null;\n"
                 + "        } else if (typeof at === 'function') ret = at(name, skip);\n"
                 + "        else {\n"
@@ -785,8 +804,9 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "      console.log('Will not register: ' + extension);\n"
                 + "      return false;\n"
                 + "    }\n"
-                + "    if (typeof document == 'undefined') {\n"
-                + "      var cs = null;\n"
+                + "    var csUrl = null;\n"
+                + "    if (typeof document === 'undefined') {\n"
+                + "      csUrl = importingScript;\n"
                 + "    } else {\n"
                 + "      var cs = document['currentScript'];\n"
                 + "      if (!cs) {\n"
@@ -796,13 +816,15 @@ abstract class VM extends ByteCodeToJavaScript {
                 + "        }\n"
                 + "        cs = all[last];\n"
                 + "      }\n"
+                + "      if (cs) {\n"
+                + "        csUrl = cs['src'];\n"
+                + "      }\n"
                 + "    }\n"
-                + "    var csUrl = cs ? cs['src'] : null;\n"
-                + "    var prefix = csUrl ? csUrl['replace'](/\\/[^\\/]*$/,'/') : '';\n"
+                + "    var prefix = csUrl ? csUrl['replace'](/[^\\/]*$/,'') : '';\n"
                 + "    extensions.push(extension);\n"
                 + "    var cp = config['classpath'];\n"
                 + "    if (cp) for (var i = 0; i < cp.length; i++) {\n"
-                + "      loadExtension(prefix + cp[i]);\n"
+                + "      loadExtension(prefix + cp[i], false);\n"
                 + "    }\n"
                 + "    return null;\n"
                 + "  };\n");

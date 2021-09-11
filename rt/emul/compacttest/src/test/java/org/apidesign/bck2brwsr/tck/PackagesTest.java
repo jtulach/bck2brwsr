@@ -15,26 +15,39 @@
  * along with this program. Look for COPYING file in the top folder.
  * If not, see http://opensource.org/licenses/GPL-2.0.
  */
-package org.apidesign.bck2brwsr.emul.fake;
+package org.apidesign.bck2brwsr.tck;
 
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-import org.testng.annotations.Test;
+import org.apidesign.bck2brwsr.vmtest.Compare;
+import org.apidesign.bck2brwsr.vmtest.VMTest;
+import org.testng.annotations.Factory;
 
-public class JavaUtilStreamTest {
-    @Test
-    public void stream() throws Exception {
-        JavaUtilTest.assertSignatures(Stream.class);
+/**
+ *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
+ */
+public class PackagesTest {
+    class Inner {
     }
 
-    @Test
-    public void intStream() throws Exception {
-        JavaUtilTest.assertSignatures(IntStream.class);
+    @Compare
+    public String topMostPackage() {
+        return getClass().getPackage().getName();
     }
 
-    @Test
-    public void streamSupport() throws Exception {
-        JavaUtilTest.assertSignatures(StreamSupport.class);
+    @Compare
+    public String innerPackage() {
+        return new Inner().getClass().getPackage().getName();
+    }
+
+    @Compare
+    public boolean areTheSame() {
+        Package p1 = getClass().getPackage();
+        Package p2 = new Inner().getClass().getPackage();
+        return p1 == p2;
+    }
+
+    @Factory
+    public static Object[] create() {
+        return VMTest.create(PackagesTest.class);
     }
 }
