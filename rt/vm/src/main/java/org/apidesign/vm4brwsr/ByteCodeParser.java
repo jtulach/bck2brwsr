@@ -517,7 +517,7 @@ final class ByteCodeParser {
      *
      * @author Sucheta Dambalkar (Adopted code from jdis)
      */
-    private static class CPX {
+    static class CPX {
 
         final int cpx;
 

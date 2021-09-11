@@ -277,7 +277,7 @@ abstract class ByteCodeToJavaScript {
             out.append("\n    function ").append(className).append("fillInstOf(x) {");
             String instOfName = "$instOf_" + className;
             out.append("\n        Object.defineProperty(x, '").append(instOfName).append("', { value : true });");
-            MethodData functionalInterfaceMethod = null;
+            MethodData functionalInterfaceMethod = null; // melta
             if (jc.isInterface()) {
                 int cnt = 0;
                 for (MethodData m : jc.getMethods()) {
@@ -320,6 +320,7 @@ abstract class ByteCodeToJavaScript {
             out.append(accessClass("java_lang_Class")).append("(true);");
             out.append("\n    CLS.$class.jvmName = '").append(cn).append("';");
             out.append("\n    CLS.$class.superclass = sprcls;");
+            // melta
             if (functionalInterfaceMethod != null) {
                 char[] returnType = { 'V' };
                 final String mn = InternalSig.findMethodName(functionalInterfaceMethod, new StringBuilder(), returnType);
