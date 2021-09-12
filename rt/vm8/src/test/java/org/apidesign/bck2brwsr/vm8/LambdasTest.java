@@ -19,6 +19,7 @@ package org.apidesign.bck2brwsr.vm8;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.IntSummaryStatistics;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.BinaryOperator;
@@ -247,6 +248,15 @@ public class LambdasTest extends LambdasSuper {
         sb.append("\n").append(privateInstanceMethod());
 
         return sb.toString();
+    }
+
+    @Compare
+    public String streamToInt() {
+        String[] keywords = { "private", "package", "int" };
+        IntSummaryStatistics charStats = Arrays.stream(keywords).flatMapToInt(String::chars).summaryStatistics();
+        int start = charStats.getMin();
+        int size = charStats.getMax() - start + 1;
+        return start + ":" + size;
     }
 
     private String privateInstanceMethod() {

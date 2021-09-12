@@ -85,6 +85,11 @@
       <type>jar</type>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.netbeans.api</groupId>
+      <artifactId>org-openide-util-lookup</artifactId>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
   <build>
       <plugins>
