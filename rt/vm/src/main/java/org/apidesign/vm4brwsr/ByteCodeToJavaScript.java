@@ -192,7 +192,7 @@ abstract class ByteCodeToJavaScript {
         );
         StringArray toInitilize = new StringArray();
         out.append("\n\n");
-        out.append("function ").append(className).append("() {");
+        out.append("function ").append(className).append("(instance) {");
         out.append("\n  var m;");
         out.append("\n  var CLS = ").append(className).append(';');
         out.append("\n  if (!CLS.$class) {");
@@ -400,7 +400,7 @@ abstract class ByteCodeToJavaScript {
         }
         out.append("\n    return this;");
         out.append("\n  }");
-        out.append("\n  return arguments[0] ? new CLS() : CLS.prototype;");
+        out.append("\n  return instance ? new CLS() : CLS.prototype;");
         out.append("\n};");
 
         out.append("\n").append(assignClass(className));

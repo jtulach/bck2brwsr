@@ -17,10 +17,16 @@
  */
 package org.apidesign.vm4brwsr;
 
+import com.google.javascript.jscomp.CheckLevel;
 import com.google.javascript.jscomp.CommandLineRunner;
 import com.google.javascript.jscomp.CompilerOptions;
+import com.google.javascript.jscomp.ComposeWarningsGuard;
+import com.google.javascript.jscomp.DiagnosticGroup;
+import com.google.javascript.jscomp.DiagnosticGroups;
 import com.google.javascript.jscomp.FlagUsageException;
+import com.google.javascript.jscomp.JSError;
 import com.google.javascript.jscomp.SourceFile;
+import com.google.javascript.jscomp.WarningsGuard;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -127,6 +133,13 @@ final class ClosureWrapper extends CommandLineRunner {
         return finalArgs;
     }
 
+    @Override
+    protected CompilerOptions createOptions() {
+        CompilerOptions opts = super.createOptions();
+        opts.addWarningsGuard(new IgnoreRedeclaredVariablesAndNonConstructors());
+        return opts;
+    }
+
     static int produceTo(Appendable output,
         ObfuscationLevel obfuscationLevel,
         Bck2Brwsr config
@@ -213,4 +226,25 @@ final class ClosureWrapper extends CommandLineRunner {
         , "notify"
         , "valueHasMutated"
     };
+
+    private static class IgnoreRedeclaredVariablesAndNonConstructors extends WarningsGuard {
+        @Override
+        protected boolean disables(DiagnosticGroup group) {
+            return group == DiagnosticGroups.CHECK_VARIABLES;
+        }
+
+        @Override
+        public CheckLevel level(JSError error) {
+            if (DiagnosticGroups.CHECK_VARIABLES.matches(error)) {
+                return CheckLevel.OFF;
+            }
+            if ("JSC_NOT_A_CONSTRUCTOR".equals(error.getType().key)) {
+                return CheckLevel.OFF;
+            }
+            if ("JSC_UNREACHABLE_CODE".equals(error.getType().key)) {
+                return CheckLevel.OFF;
+            }
+            return null;
+        }
+    }
 }

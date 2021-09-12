@@ -701,7 +701,7 @@ class LoopCode implements Runnable {
                     {
                         int indx = ByteCodeToJavaScript.readUShortArg(byteCodes, i);
                         String ci = jc.getClassName(indx);
-                        ByteCodeToJavaScript.emit(out, smapper, "var @1 = new @2;", smapper.pushA(), byteCodeToJavaScript.accessClass(InternalSig.mangleClassName(ci)));
+                        ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2(true);", smapper.pushA(), byteCodeToJavaScript.accessClass(InternalSig.mangleClassName(ci)));
                         byteCodeToJavaScript.addReference(out, ci);
                         i += 2;
                         break;
