@@ -29,7 +29,7 @@ public final class Demo extends DemoBeanInfo {
     final NumberBinding numFinished = Bindings.subtract(numTodos, numPending);
 
     void addTodo() {
-        todos.getValue().add(new Item(desc.getValue(), null, null));
+        todos.getValue().add(new Item(desc.getValue(), null, null, null, null));
         desc.setValue("");
     }
 
@@ -54,11 +54,15 @@ public final class Demo extends DemoBeanInfo {
         final BooleanBinding selected = Bindings.createBooleanBinding(() -> this == Demo.this.selected.getValue(), Demo.this.selected);
         final String html;
         final String url;
+        final String img;
+        final String urlInfo;
 
-        public Item(String desc, String html, String url) {
+        public Item(String desc, String img, String html, String url, String urlInfo) {
             this.desc = desc;
             this.html = html;
             this.url = url;
+            this.img = img == null ? "images/java.svg" : img;
+            this.urlInfo = urlInfo;
         }
 
         void check() {
@@ -73,17 +77,7 @@ public final class Demo extends DemoBeanInfo {
     public static void onPageLoad() {
         Demo model = new Demo();
         model.desc.setValue("Enjoy Java in browser!");
-        model.addItem(model.new Item(
-            "Why Java in a browser?",
-            "<p>Hi there!</p>",
-            "http://apidesign.org"
-        ));
-        model.addItem(model.new Item(
-            "Yes HTML in a browser?",
-            "<p>Hello there!</p>",
-            "http://xelfi.cz"
-        ));
-        model.addItem(model.new Item("Ahoj", "Kuk", "xyz"));
+        Lyrics.initialize(model);
         applyBindings(model);
     }
 

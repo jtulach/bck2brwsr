@@ -4,6 +4,7 @@
         <title>JavaFX Light Tutorial</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <link rel="stylesheet" href="materialize.min.css">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         <script src="materialize.min.js"></script>
     </head>
     <body>
@@ -12,10 +13,8 @@
                 <div class="naí-wrapper" >
                     <a href="#" class="brand-logo center">JavaFX Light Tutorial</a>
                     <ul id="nav-mobile" class="right hide-on-med-and-down">
-                        <li><a target="_blank" href="http://netbeans.org">NetBeans</a></li>
-                        <li><a target="_blank" href="https://github.com/dukescript/kt-mvvm-demo/tree/FXBeanInfo#readme">JavaFX</a></li>
-                        <li><a target="_blank" href="https://materializecss.com/">Materialize CSS</a></li>
-                        <li><a target="_blank" href="http://dukescript.com">DukeScript</a></li>
+                        <li><a target="_blank" href="https://materializecss.com/">Components</a></li>
+                        <li><a target="_blank" href="http://bck2brwsr.apidesign.org">Transpiler</a></li>
                     </ul>
                 </div>
             </nav>
@@ -38,11 +37,16 @@
                     </div>
                 </div>
                 <ul class="col s12 collection" data-bind='foreach: todos'>
-                    <li class="collection-item selected">
-                        <label data-bind="click: check">
-                            <input type="checkbox" data-bind="checked: done"/>
-                            <span data-bind="text: desc, click: select"></span>
-                        </label>
+                    <li class="collection-item">
+                        <div>
+                            <label data-bind="click: check">
+                                <input type="checkbox" data-bind="checked: done"/>
+                                <span data-bind="text: desc, click: select"></span>
+                            </label>
+                            <a href="#!" data-bind="click: select" class="secondary-content">
+                                <i class="material-icons">send</i>
+                            </a>
+                        </div>
                     </li>
                 </ul>
             </form>
@@ -51,13 +55,14 @@
                     <div class="col s12 m12">
                         <div class="card">
                             <div class="card-image">
-                                <img src="img.png">
-                                <span class="card-title black-text" data-bind="text: desc"></span>
+                                <img data-bind="attr: { src : img }">
                             </div>
-                            <div class="card-content" data-bind="html: html">
+                            <div class="card-content">
+                                <span class="card-title black-text" data-bind="text: desc"></span>
+                                <p data-bind="html: html"></p>
                             </div>
                             <div class="card-action">
-                                <a href="#" target="_blank" data-bind="attr: { href : url }">More info</a>...
+                                <a href="#" target="_blank" data-bind="attr: { href : url }, text: urlInfo"></a>...
                             </div>
                         </div>
                     </div>
