@@ -8,9 +8,9 @@ final class Lyrics {
         model.addItem(model.new Item(
                 "Why Java in a browser?", null,
                 "<p><b>Java</b> is a rock solid programming language "
-                + "with more than <em>25 years</em>"
-                + "of industry support. Libraries, tooling and overall"
-                + "ecosystem of Java is unprecedently large. <em>Write in Java,"
+                + "with more than <em>25 years</em> "
+                + "of industry support. Libraries, tooling and overall "
+                + "ecosystem of Java is unprecedently large. <em>Write in Java, "
                 + "run anywhere</em>. Including in <b>browser</b>!</p>",
                 "https://developer.oracle.com/java/", "Learn more about Java"
         ));
@@ -57,8 +57,21 @@ final class Lyrics {
                 + "<li><code>$ cd gradledemo</code></li>"
                 + "<li><code>$ JAVA_HOME=/jdk-11 ./gradlew -t bck2brwsrShow</code></li>"
                 + "</ul>"
+                + "<p>"
+                + "A browser page opens. "
+                + "Locate HTML pages like <code>src/main/webapp/pages/index.html</code> "
+                + "or Java code like like <code>src/main/java/org/frontend/app/Demo.java</code> "
+                + "and modify it. Once saved, the browser page shall <em>automatically reload</em> "
+                + "with your changes."
                 + "</p>",
                 "https://github.com/jtulach/bck2brwsr/tree/GradleDemo", "Demo Repository"
+        ));
+        model.addItem(model.new Item(
+                "Ask a Question!", null,
+                "<p>Do you want to know more? Ask a question on Twitter: "
+                + "Follow the link below and reply with a comment! "
+                + "</p>",
+                "https://twitter.com/JaroslavTulach/status/1449827890300915718", "Ask a Question"
         ));
     }
 }
