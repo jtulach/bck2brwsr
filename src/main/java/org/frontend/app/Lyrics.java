@@ -60,11 +60,24 @@ final class Lyrics {
                 + "<p>"
                 + "A browser page opens. "
                 + "Locate HTML pages like <code>src/main/webapp/pages/index.html</code> "
-                + "or Java code like like <code>src/main/java/org/frontend/app/Demo.java</code> "
+                + "or Java code like <code>src/main/java/org/frontend/app/Demo.java</code> "
                 + "and modify it. Once saved, the browser page shall <em>automatically reload</em> "
                 + "with your changes."
                 + "</p>",
                 "https://github.com/jtulach/bck2brwsr/tree/GradleDemo", "Demo Repository"
+        ));
+        model.addItem(model.new Item(
+                "Debugging!", "images/java.svg",
+                "<p>Launch the application in classical JVM mode:</p>"
+                + "<pre> "
+                + "$ JAVA_HOME=/jdk-11 ./gradlew run --debug-jvm"
+                + "Listening for transport dt_socket at address: 5005"
+                + "</pre>"
+                + "<p>"
+                + "A <code>WebView</code> page opens. Attach your favorite debugger "
+                + "and step through your code as with any regular <em>Java(FX) code</em>."
+                + "</p>",
+                "https://netbeans.org", "Get some good Java IDE!"
         ));
         model.addItem(model.new Item(
                 "Ask a Question!", null,
