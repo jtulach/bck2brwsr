@@ -28,7 +28,7 @@ final class Lyrics {
                 "https://developer.mozilla.org/en-US/docs/Learn/Getting_started_with_the_web/HTML_basics", "More about HTML"
         ));
         model.addItem(model.new Item(
-                "Where's JavaFX?", "images/javafx.png",
+                "Where's JavaFX?", "images/javafx.svg",
                 "<p>HTML!? <em>I want my JavaFX</em>!<p> "
                 + "<p>Sure, you can have your JavaFX even in the browser "
                 + "(btw. thanks to the <em>same transpiler</em> technology), "
@@ -72,10 +72,10 @@ final class Lyrics {
         model.addItem(model.new Item(
                 "Debugging!", "images/java.svg",
                 "<p>Launch the application in classical JVM mode:</p>"
-                + "<pre> "
-                + "$ JAVA_HOME=/jdk-11 ./gradlew run --debug-jvm"
-                + "Listening for transport dt_socket at address: 5005"
-                + "</pre>"
+                + "<pre>\n"
+                + "$ JAVA_HOME=/jdk-11 ./gradlew run --debug-jvm\n"
+                + "Listening for transport dt_socket at address: 5005\n"
+                + "</pre>\n"
                 + "<p>"
                 + "A <code>WebView</code> page opens. Attach your favorite debugger "
                 + "and step through your code as with any regular <em>Java(FX) code</em>."
