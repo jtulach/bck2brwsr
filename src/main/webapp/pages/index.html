@@ -26,16 +26,14 @@
             </div>
         </div>
         <div class="row" style="display: none" data-bind="visible: true">
-            <form class="col s8" data-bind="submit: addTodo">
-                <div class="row">
-                    <div class="input-field col s12">
-                        <label for="key">New Todo:</label>
-                        <input id="key" type="text" data-bind="textInput: desc" placeholder="Enter a task"/>
-                        <a data-bind="click: addTodo, css: { disabled : desc().length === 0 }" class="waves-effect waves-light btn">Add</a>
-                        <a data-bind="click: clearTodos, css: { disabled : numFinished() === 0 }" class="waves-effect waves-light btn">Clear
-                            (<span data-bind="text: numFinished"></span>)
-                        </a>
-                    </div>
+            <form class="col s12 m12 l8" data-bind="submit: addTodo">
+                <div class="input-field col s12">
+                    <label for="key">New Todo:</label>
+                    <input id="key" type="text" data-bind="textInput: desc" placeholder="Enter a task"/>
+                    <a data-bind="click: addTodo, css: { disabled : desc().length === 0 }" class="waves-effect waves-light btn">Add</a>
+                    <a data-bind="click: clearTodos, css: { disabled : numFinished() === 0 }" class="waves-effect waves-light btn">Clear
+                        (<span data-bind="text: numFinished"></span>)
+                    </a>
                 </div>
                 <ul class="col s12 collection" data-bind='foreach: todos'>
                     <li class="collection-item" data-bind='css: { active : selected }'>
@@ -51,9 +49,9 @@
                     </li>
                 </ul>
             </form>
-            <div class="col s4" data-bind="if: selected">
-                <div class="row" data-bind="with: selected">
-                    <div class="col s12 m12">
+            <div class="col s12 m12 l4" data-bind="if: selected">
+                <div data-bind="with: selected">
+                    <div class="col s12 m12 l12">
                         <div class="card">
                             <div class="card-image">
                                 <img data-bind="attr: { src : img }" width="200px" height="200px">
