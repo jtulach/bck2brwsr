@@ -6,6 +6,7 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
 import javafx.beans.binding.IntegerBinding;
 import javafx.beans.binding.NumberBinding;
+import javafx.beans.binding.StringBinding;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ObjectProperty;
@@ -27,6 +28,12 @@ public final class Demo extends DemoBeanInfo {
         return (int) todos.stream().filter((item) -> !item.done.get()).count();
     }, todos);
     final NumberBinding numFinished = Bindings.subtract(numTodos, numPending);
+    final StringBinding selectedHash = Bindings.createStringBinding(() -> {
+        final Item item = selected.getValue();
+        String hash = Route.sanitize(item == null ? "" : item.desc);
+        Route.setLocation("hash", hash);
+        return hash;
+    }, selected);
 
     void addTodo() {
         todos.getValue().add(new Item(desc.getValue(), null, null, null, null));

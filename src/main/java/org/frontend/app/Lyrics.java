@@ -1,5 +1,8 @@
 package org.frontend.app;
 
+import java.util.Objects;
+import org.frontend.app.Demo.Item;
+
 final class Lyrics {
     private Lyrics() {
     }
@@ -86,5 +89,13 @@ final class Lyrics {
                 + "</p>",
                 "https://twitter.com/JaroslavTulach/status/1449827890300915718", "Ask a Question"
         ));
+
+        String hash = Route.getLocation("hash");
+        for (Item item : model.todos) {
+            String text = Route.sanitize(item.desc);
+            if (Objects.equals(hash, text)) {
+                model.selected.set(item);
+            }
+        }
     }
 }
