@@ -4,6 +4,7 @@
         <title>JavaFX Light Tutorial</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <link rel="stylesheet" href="materialize.min.css">
+        <link rel="stylesheet" href="index.css">
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         <script src="materialize.min.js"></script>
     </head>
@@ -37,7 +38,7 @@
                     </div>
                 </div>
                 <ul class="col s12 collection" data-bind='foreach: todos'>
-                    <li class="collection-item">
+                    <li class="collection-item" data-bind='css: { active : selected }'>
                         <div>
                             <label data-bind="click: check">
                                 <input type="checkbox" data-bind="checked: done"/>
@@ -55,7 +56,7 @@
                     <div class="col s12 m12">
                         <div class="card">
                             <div class="card-image">
-                                <img data-bind="attr: { src : img }">
+                                <img data-bind="attr: { src : img }" width="200px" height="200px">
                             </div>
                             <div class="card-content">
                                 <span class="card-title black-text" data-bind="text: desc"></span>
