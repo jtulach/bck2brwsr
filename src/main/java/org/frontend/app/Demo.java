@@ -36,8 +36,10 @@ public final class Demo extends DemoBeanInfo {
     }, selected);
 
     void addTodo() {
-        todos.getValue().add(new Item(desc.getValue(), null, null, null, null));
+        final Item item = new Item(desc.getValue(), null, null, null, null);
+        todos.getValue().add(item);
         desc.setValue("");
+        selected.set(item);
     }
 
     void clearTodos() {
@@ -67,9 +69,9 @@ public final class Demo extends DemoBeanInfo {
         public Item(String desc, String img, String html, String url, String urlInfo) {
             this.desc = desc;
             this.html = html;
-            this.url = url;
+            this.url = url == null ? "https://twitter.com/JaroslavTulach/status/1449827890300915718" : url;
             this.img = img == null ? "images/java.svg" : img;
-            this.urlInfo = urlInfo;
+            this.urlInfo = urlInfo == null ? "Ask a Question!" : urlInfo;
         }
 
         void check() {

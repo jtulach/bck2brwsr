@@ -100,7 +100,7 @@ final class Lyrics {
                 "<p>Do you want to know more? Ask a question on Twitter: "
                 + "Follow the link below and reply with a comment! "
                 + "</p>",
-                "https://twitter.com/JaroslavTulach/status/1449827890300915718", "Ask a Question"
+                null, null
         ));
 
         String hash = Route.getLocation("hash");
