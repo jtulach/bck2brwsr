@@ -53,6 +53,19 @@ final class Lyrics {
                 "https://dukescript.com/javadoc/javafx/com/dukescript/api/javafx/beans/FXBeanInfo.html", "JavaFX Bindings"
         ));
         model.addItem(model.new Item(
+                "Transpile Java into JavaScript!", "images/js.svg",
+                "<p>Unlike other solutions that try to bring <b>Java</b>  "
+                + "experience to browser, this one is based on <em>transpiling</em> - "
+                + "converting <em>Java bytecode</em> into <em>JavaScript</em> that does the same thing. "
+                + "</p><p> "
+                + "There are many JVM to JavaScript transpilers including <b>Bck2Brwsr VM</b>, <b>TeaVM</b> and more. "
+                + "They work suprisingly well. The execution speed is usually not a problem. "
+                + "However one cannot expect miracles - browser environment is limited - "
+                + "no <em>filesystem</em>, no <em>sockets</em>, etc. The <b>Java</b> code needs to "
+                + "be properly crafted for the browser.",
+                "https://github.com/jtulach/bck2brwsr", "Learn about a transpiler"
+        ));
+        model.addItem(model.new Item(
                 "Try it Yourself!", "images/ds.svg",
                 "<p>These are the simple steps to try it yourself:<p>"
                 + "<ul> "
