@@ -83,7 +83,7 @@ final class Lyrics {
                 "https://netbeans.org", "Get some good Java IDE!"
         ));
         model.addItem(model.new Item(
-                "Ask a Question!", null,
+                "Ask a Question!", "images/twitter.svg",
                 "<p>Do you want to know more? Ask a question on Twitter: "
                 + "Follow the link below and reply with a comment! "
                 + "</p>",
