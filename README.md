@@ -1,5 +1,5 @@
 
-# JavaFX Light Tutorial
+# OpenJFX Lite Tutorial
 
 Demo and tutorial for **JavaFX** coding used to control **HTML5**
 components. Check http://javafx.apidesign.org for live demo and interactive

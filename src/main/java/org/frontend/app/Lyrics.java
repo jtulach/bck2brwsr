@@ -9,26 +9,24 @@ final class Lyrics {
 
     static void initialize(Demo model) {
         model.addItem(model.new Item(
-                "Why Java in a browser?", null,
+                "Why Java in a browser?", null, "https://www.youtube.com/embed/cUSDknlhxcY",
                 "<p><b>Java</b> is a rock solid programming language "
                 + "with more than <em>25 years</em> "
                 + "of industry support. Libraries, tooling and overall "
                 + "ecosystem of Java is unprecedently large. <em>Write in Java, "
                 + "run anywhere</em>. Including in <b>browser</b>!</p>",
-                "https://developer.oracle.com/java/", "Learn more about Java"
-        ));
+                "https://www.youtube.com/watch?v=cUSDknlhxcY", "Learn more about Java"));
         model.addItem(model.new Item(
-                "Yes, HTML in a browser!?", "images/html5.svg",
+                "Yes, HTML in a browser!?", "images/html5.svg", null,
                 "<p>HTML (and CSS) is a natural rendering toolkit "
                 + "of the browser. <b>HTML</b> is an industry standard even longer "
                 + "than <b>Java</b>. "
                 + "Reusing it as a primary rendering toolking in Java makes "
                 + "a lot of sense! Even when it is not the <em>primary Java UI toolkit</em>."
                 + "</p>",
-                "https://developer.mozilla.org/en-US/docs/Learn/Getting_started_with_the_web/HTML_basics", "More about HTML"
-        ));
+                "https://developer.mozilla.org/en-US/docs/Learn/Getting_started_with_the_web/HTML_basics", "More about HTML"));
         model.addItem(model.new Item(
-                "Where's JavaFX?", "images/javafx.svg",
+                "Where's JavaFX?", "images/javafx.svg", null,
                 "<p>HTML!? <em>I want my JavaFX</em>!<p> "
                 + "<p>Sure, you can have your JavaFX even in the browser "
                 + "(btw. thanks to the <em>same transpiler</em> technology), "
@@ -39,10 +37,9 @@ final class Lyrics {
                 + "and heavily optimized rendering toolkit. Rather than duplicating it, "
                 + "let's reuse it!"
                 + "</p>",
-                "https://gluonhq.com/developer-preview-for-javafx-inside-a-web-browser/", "Real JavaFX in Browser"
-        ));
+                "https://gluonhq.com/developer-preview-for-javafx-inside-a-web-browser/", "Real JavaFX in Browser"));
         model.addItem(model.new Item(
-                "JavaFX Light!", "images/ds.svg",
+                "JavaFX Lite!", "images/ds.svg", null,
                 "<p>Let's take just the <em>property bindings</em> API and use it "
                 + "in the browser! That allows us to use the same "
                 + "<em>programming model</em> as <b>JavaFX</b> while avoiding "
@@ -50,10 +47,9 @@ final class Lyrics {
                 + "<p>"
                 + "Feels like <b>JavaFX</b>, renders like <b>HTML</b>!"
                 + "</p>",
-                "https://dukescript.com/javadoc/javafx/com/dukescript/api/javafx/beans/FXBeanInfo.html", "JavaFX Bindings"
-        ));
+                "https://dukescript.com/javadoc/javafx/com/dukescript/api/javafx/beans/FXBeanInfo.html", "JavaFX Bindings"));
         model.addItem(model.new Item(
-                "Transpile Java into JavaScript!", "images/js.svg",
+                "Transpile Java into JavaScript!", "images/js.svg", null,
                 "<p>Unlike other solutions that try to bring <b>Java</b>  "
                 + "experience to browser, this one is based on <em>transpiling</em> - "
                 + "converting <em>Java bytecode</em> into <em>JavaScript</em> that does the same thing. "
@@ -63,10 +59,9 @@ final class Lyrics {
                 + "However one cannot expect miracles - browser environment is limited - "
                 + "no <em>filesystem</em>, no <em>sockets</em>, etc. The <b>Java</b> code needs to "
                 + "be properly crafted for the browser.",
-                "https://github.com/jtulach/bck2brwsr", "Learn about a transpiler"
-        ));
+                "https://github.com/jtulach/bck2brwsr", "Learn about a transpiler"));
         model.addItem(model.new Item(
-                "Try it Yourself!", "images/ds.svg",
+                "Try it Yourself!", "images/ds.svg", null,
                 "<p>These are the simple steps to try it yourself:<p>"
                 + "<ul> "
                 + "<li><code>$ git clone -b GradleDemo https://github.com/jtulach/bck2brwsr.git gradledemo</code></li>"
@@ -80,10 +75,9 @@ final class Lyrics {
                 + "and modify it. Once saved, the browser page shall <em>automatically reload</em> "
                 + "with your changes."
                 + "</p>",
-                "https://github.com/jtulach/bck2brwsr/tree/GradleDemo", "Demo Repository"
-        ));
+                "https://github.com/jtulach/bck2brwsr/tree/GradleDemo", "Demo Repository"));
         model.addItem(model.new Item(
-                "Debugging!", "images/java.svg",
+                "Debugging!", "images/java.svg", null,
                 "<p>Launch the application in classical JVM mode:</p>"
                 + "<pre>\n"
                 + "$ JAVA_HOME=/jdk-11 ./gradlew run --debug-jvm\n"
@@ -93,15 +87,13 @@ final class Lyrics {
                 + "A <code>WebView</code> page opens. Attach your favorite debugger "
                 + "and step through your code as with any regular <em>Java(FX) code</em>."
                 + "</p>",
-                "https://netbeans.org", "Get some good Java IDE!"
-        ));
+                "https://netbeans.org", "Get some good Java IDE!"));
         model.addItem(model.new Item(
-                "Ask a Question!", "images/twitter.svg",
+                "Ask a Question!", "images/twitter.svg", null,
                 "<p>Do you want to know more? Ask a question on Twitter: "
                 + "Follow the link below and reply with a comment! "
                 + "</p>",
-                null, null
-        ));
+                null, null));
 
         String hash = Route.getLocation("hash");
         for (Item item : model.todos) {

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>JavaFX Light Tutorial</title>
+        <title>JavaFX Lite Tutorial</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <link rel="stylesheet" href="materialize.min.css">
         <link rel="stylesheet" href="index.css">
@@ -12,7 +12,7 @@
         <div class="navbar-fixed">
             <nav>
                 <div class="naí-wrapper" >
-                    <a href="#" class="brand-logo center">JavaFX Light Tutorial</a>
+                    <a href="#" class="brand-logo center">OpenJFX Lite Tutorial</a>
                     <ul id="nav-mobile" class="right hide-on-med-and-down">
                         <li><a target="_blank" href="https://materializecss.com/">Components</a></li>
                         <li><a target="_blank" href="http://bck2brwsr.apidesign.org">Transpiler</a></li>
@@ -53,9 +53,18 @@
                 <div data-bind="with: selected">
                     <div class="col s12 m12 l12">
                         <div class="card">
+                            <!-- ko ifnot: video -->
                             <div class="card-image">
                                 <img data-bind="attr: { src : img }" width="200px" height="200px">
                             </div>
+                            <!-- /ko -->
+                            <!-- ko if: video -->
+                            <div class="card-image">
+                                <center>
+                                    <iframe data-bind="attr: { src : video, title: urlInfo }" width="560" height="315" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                </center>
+                            </div>
+                            <!-- /ko -->
                             <div class="card-content">
                                 <span class="card-title black-text" data-bind="text: desc"></span>
                                 <p data-bind="html: html"></p>
