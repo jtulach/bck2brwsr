@@ -694,19 +694,19 @@ final class ByteCodeParser {
                 switch (tags[i] = tag) {
                     case CONSTANT_UTF8:
                         String str = in.readUTF();
-                        indexHashAscii.put(cpool[i] = str, new Integer(i));
+                        indexHashAscii.put(cpool[i] = str, i);
                         break;
                     case CONSTANT_INTEGER:
-                        cpool[i] = new Integer(in.readInt());
+                        cpool[i] = in.readInt();
                         break;
                     case CONSTANT_FLOAT:
-                        cpool[i] = new Float(in.readFloat());
+                        cpool[i] = in.readFloat();
                         break;
                     case CONSTANT_LONG:
-                        cpool[i++] = new Long(in.readLong());
+                        cpool[i++] = in.readLong();
                         break;
                     case CONSTANT_DOUBLE:
-                        cpool[i++] = new Double(in.readDouble());
+                        cpool[i++] = in.readDouble();
                         break;
                     case CONSTANT_CLASS:
                     case CONSTANT_STRING:
