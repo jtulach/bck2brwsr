@@ -23,23 +23,48 @@ import org.apidesign.vm4brwsr.ByteCodeParser.MethodData;
 
 final class JsCallbackCode extends LoopCode {
     private final MethodData m;
+    private final LocalsMapper lmapper;
+    private final String[] expectingCall;
     private final StringBuilder sb;
     private Appendable dump;
 
-    JsCallbackCode(ByteCodeToJavaScript b, Appendable out, NumberOperations n, ClassData jc, MethodData m) {
-        this(b, new StringBuilder(), out, n, jc, m);
+    JsCallbackCode(ByteCodeToJavaScript b, Appendable out, NumberOperations n, ClassData jc, MethodData m, LocalsMapper lmapper) {
+        this(b, new StringBuilder(), out, n, jc, m, lmapper);
     }
 
-    private JsCallbackCode(ByteCodeToJavaScript b, StringBuilder sb, Appendable out, NumberOperations n, ClassData jc, MethodData m) {
+    private JsCallbackCode(ByteCodeToJavaScript b, StringBuilder sb, Appendable out, NumberOperations n, ClassData jc, MethodData m, LocalsMapper lmapper) {
         super(b, sb, n, jc);
         this.m = m;
         this.sb = sb;
         this.dump = out;
+        this.expectingCall = splitIntoThree(m);
+        this.lmapper = lmapper;
+    }
+
+    private static String[] splitIntoThree(MethodData m) {
+        String n = m.getName();
+        int first;
+        if (n.startsWith("raw$")) {
+            first = 4;
+        } else {
+            first = 0;
+        }
+        int middle = n.indexOf('$', first);
+        int end = n.indexOf('$', middle + 1);
+        if (end == -1) {
+            return new String[3];
+        } else {
+            return new String[] {
+                n.substring(first, middle),
+                n.substring(middle + 1, end),
+                n.substring(end + 1)
+            };
+        }
     }
 
     @Override
     protected boolean beginCall(String[] mi, CharSequence[] vars, boolean isStatic) {
-        if (dump != null && !isSpecialHtmlJavaCall(mi)) {
+        if (dump != null && isSpecialMyJavaCall(mi)) {
             sb.setLength(0);
             if (
                 "current".equals(m.getName()) &&
@@ -48,9 +73,7 @@ final class JsCallbackCode extends LoopCode {
             ) {
                 vars[0] = vars[1] = "null";
             } else {
-                if (!isStatic) {
-                    vars[0] = "lcA1";
-                }
+                lmapper.fillJsCallbacksArguments(vars, 1);
             }
             sb.append("return ");
             return true;
@@ -66,9 +89,22 @@ final class JsCallbackCode extends LoopCode {
         }
     }
 
-    private static boolean isSpecialHtmlJavaCall(String[] mi) {
-        return mi[0].startsWith("org/netbeans/html/boot/spi/Fn")
-                || mi[0].startsWith("org/apidesign/html/boot/spi/Fn");
+    private boolean isSpecialMyJavaCall(String[] mi) {
+        String mangClassName = InternalSig.mangleClassName(mi[0]);
+        if (!mangClassName.equals(expectingCall[0])) {
+            return false;
+        }
+        String mangMethodName = InternalSig.mangleMethodName(mi[1]);
+        if (!mangMethodName.equals(expectingCall[1])) {
+            return false;
+        }
+        int beg = mi[2].indexOf('(');
+        int end = mi[2].indexOf(')');
+        if (beg == -1 || end == -1) {
+            return false;
+        }
+        String mangMethodSig = InternalSig.mangleSig(mi[2], beg + 1, end);
+        return mangMethodSig.equals(expectingCall[2]);
     }
 
 

@@ -58,6 +58,14 @@ final class LocalsMapper {
         }
     }
 
+    void fillJsCallbacksArguments(CharSequence[] vars, int off) {
+        for (int i = 0, at = off; i < vars.length; i++) {
+            Variable variable = getVariable(argTypeRecords, at);
+            vars[i] = variable;
+            at += variable.isCategory2() ? 2 : 1;
+        }
+    }
+
     public void syncWithFrameLocals(final TypeArray frameLocals) {
         updateRecords(localTypeRecords, frameLocals);
     }

@@ -548,7 +548,7 @@ abstract class ByteCodeToJavaScript {
         LoopCode loop;
         if (this.callbacks && !name.equals("class__V")) {
             lmapper.outputUndefinedCheck(out);
-            loop = new JsCallbackCode(this, out, numbers, jc, m);
+            loop = new JsCallbackCode(this, out, numbers, jc, m, lmapper);
         } else {
             loop = new LoopCode(this, output, numbers, jc);
         }
