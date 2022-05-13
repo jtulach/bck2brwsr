@@ -49,9 +49,9 @@ final class JsCallbackCode extends LoopCode {
         } else {
             first = 0;
         }
-        int middle = n.indexOf('$', first);
-        int end = n.indexOf('$', middle + 1);
-        if (end == -1) {
+        int end = n.lastIndexOf('$');
+        int middle = n.lastIndexOf('$', end - 1);
+        if (middle == -1) {
             return new String[3];
         } else {
             return new String[] {

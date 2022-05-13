@@ -654,6 +654,7 @@ abstract class ByteCodeToJavaScript {
             String body;
             boolean javacall;
             boolean html4j;
+            boolean wait4java = true;
 
             @Override
             protected void visitAttr(String type, String attr, String at, String value) {
@@ -676,6 +677,10 @@ abstract class ByteCodeToJavaScript {
                         javacall = "1".equals(value);
                     } else if ("wait4js".equals(attr)) {
                         // ignore, we always invoke synchronously
+                    } else if ("keepAlive".equals(attr)) {
+                        // ignore
+                    } else if ("wait4java".equals(attr)) {
+                        wait4java = "1".equals(value);
                     } else {
                         throw new IllegalArgumentException(attr);
                     }
@@ -715,7 +720,7 @@ abstract class ByteCodeToJavaScript {
         if (p.javacall) {
             int lastSlash = jc.getClassName().lastIndexOf('/');
             final String pkg = jc.getClassName().substring(0, lastSlash);
-            out.append(mangleCallbacks(pkg, p.body));
+            out.append(mangleCallbacks(pkg, p.body, !p.wait4java));
             requireReference(pkg + "/$JsCallbacks$");
         } else {
             out.append(p.body);
@@ -728,7 +733,7 @@ abstract class ByteCodeToJavaScript {
         return mn;
     }
 
-    private CharSequence mangleCallbacks(String pkgName, String body) {
+    private CharSequence mangleCallbacks(String pkgName, String body, boolean wrapByPromise) {
         StringBuilder sb = new StringBuilder();
         int pos = 0;
         for (;;) {
@@ -761,7 +766,9 @@ abstract class ByteCodeToJavaScript {
 
             int paramBeg = body.indexOf('(', sigEnd + 1);
             int paramEnd = closingParenthesis(body, paramBeg);
-
+            if (wrapByPromise) {
+                sb.append("Promise.resolve(");
+            }
             sb.append(accessClass("java_lang_Class")).append("(false).toJS(");
             sb.append("vm.").append(InternalSig.mangleClassName(pkgName)).append("_$JsCallbacks$(false)._VM().");
             sb.append(mangleJsCallbacks(fqn, method, params, false));
@@ -771,6 +778,9 @@ abstract class ByteCodeToJavaScript {
             }
             sb.append(body.substring(paramBeg + 1, paramEnd));
             sb.append(")");
+            if (wrapByPromise) {
+                sb.append(")");
+            }
             pos = paramEnd;
         }
         sb = null;
