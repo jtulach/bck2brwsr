@@ -28,6 +28,7 @@ import org.netbeans.html.context.spi.Contexts;
 import org.netbeans.html.json.spi.Technology;
 import org.netbeans.html.json.spi.Transfer;
 import org.netbeans.html.json.spi.WSTransfer;
+import org.netbeans.html.json.tck.JavaScriptTCK;
 import org.netbeans.html.json.tck.KnockoutTCK;
 import org.netbeans.html.ko4j.KO4J;
 import org.openide.util.lookup.ServiceProvider;
@@ -38,8 +39,9 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = KnockoutTCK.class)
 public final class Bck2BrwsrKnockoutImpl extends KnockoutTCK {
+    private final JavaScriptTCK jsci;
     public Bck2BrwsrKnockoutImpl() {
-        Bck2BrwsrJavaScriptImpl.init();
+        jsci = new Bck2BrwsrJavaScriptImpl();
     }
 
     static Class[] createClasses() {

@@ -19,21 +19,18 @@ package org.apidesign.bck2brwsr.ko2brwsr;
 
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 import org.netbeans.html.json.tck.JavaScriptTCK;
+import org.openide.util.lookup.ServiceProvider;
 
+@ServiceProvider(service = JavaScriptTCK.class)
 public final class Bck2BrwsrJavaScriptImpl extends JavaScriptTCK {
-    private static final Bck2BrwsrJavaScriptImpl TCK = new Bck2BrwsrJavaScriptImpl();
-
-    public static void init() {
-        log("Bck2BrwsrJavaScriptImpl is ready " + TCK);
-    }
-
-    private Bck2BrwsrJavaScriptImpl() {
+    public Bck2BrwsrJavaScriptImpl() {
+        log("Bck2BrwsrJavaScriptImpl is ready " + this);
     }
 
     @JavaScriptBody(args = "s", body = "if (typeof console === 'object') console.log(s);")
     private static native void log(String s);
 
-    @JavaScriptBody(args = "script", body = "(0 || eval)(script); return true;")
+    @JavaScriptBody(args = "script", body = "(0 || eval)(script.toString()); return true;")
     @Override
     public boolean executeNow(String script) throws Exception {
         return false;
