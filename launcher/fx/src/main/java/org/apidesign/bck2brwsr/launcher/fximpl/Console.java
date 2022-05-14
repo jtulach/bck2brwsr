@@ -27,13 +27,18 @@ import java.net.URL;
 import java.util.Enumeration;
 import net.java.html.js.JavaScriptBody;
 import netscape.javascript.JSObject;
+import org.netbeans.html.boot.spi.Fn;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public final class Console {
+    private final Fn.Presenter presenter;
+
     public Console() {
+        this.presenter = Fn.activePresenter();
+        assert this.presenter != null;
     }
 
     @JavaScriptBody(args = { "elem", "attr" }, body = "return elem[attr].toString();")
@@ -130,8 +135,10 @@ public final class Console {
     }
     
     public void harness(String url) throws IOException {
-        log("Connecting to " + url);
-        Request r = new Request(url);
+        try (var c = Fn.activate(presenter)) {
+            log("Connecting to " + url);
+            Request r = new Request(url);
+        }
     }
     
     private static class Request implements Runnable, OnMessage {

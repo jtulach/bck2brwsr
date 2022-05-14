@@ -18,6 +18,8 @@
 package org.apidesign.bck2brwsr.launcher.fximpl;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
+import java.io.IOException;
 import java.io.Reader;
 import java.lang.ref.WeakReference;
 import java.net.URL;
@@ -28,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TooManyListenersException;
 import java.util.concurrent.Executor;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -78,24 +81,28 @@ public final class JVMBridge {
 
     public final static class NewInstance {
         private final Class<?> clazz;
+        private final Fn.Presenter presenter;
 
-        NewInstance(Class<?> clazz) {
+
+        NewInstance(Class<?> clazz, Fn.Presenter p) {
             this.clazz = clazz;
+            this.presenter = p;
         }
 
         public String getName() {
             return this.clazz.getName();
         }
 
-        public Object newInstance() throws ReflectiveOperationException {
-            return this.clazz.newInstance();
+        public Object newInstance() throws ReflectiveOperationException, IOException {
+            try (var c = Fn.activate(presenter)) {
+                return this.clazz.newInstance();
+            }
         }
     }
 
-    public Object loadClass(String name) throws ClassNotFoundException {
-        Fn.activate(presenter);
+    public Object loadClass(String name) throws ClassNotFoundException, IOException {
         Class<?> clazz = Class.forName(name, true, cl);
-        return new NewInstance(clazz);
+        return new NewInstance(clazz, presenter);
     }
 
     private final class WebPresenter implements Fn.Presenter,
@@ -181,9 +188,19 @@ public final class JVMBridge {
         @Override
         public void execute(Runnable command) {
             if (Platform.isFxApplicationThread()) {
-                command.run();
+                try (var c = Fn.activate(this)) {
+                    command.run();
+                } catch (IOException ex) {
+                    throw new IllegalStateException(ex);
+                }
             } else {
-                Platform.runLater(command);
+                Platform.runLater(() -> {
+                    try (var c = Fn.activate(this)) {
+                        command.run();
+                    } catch (IOException ex) {
+                        throw new IllegalStateException(ex);
+                    }
+                });
             }
         }
 
