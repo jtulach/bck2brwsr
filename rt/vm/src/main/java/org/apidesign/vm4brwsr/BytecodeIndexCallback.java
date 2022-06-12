@@ -17,34 +17,15 @@
  */
 package org.apidesign.vm4brwsr;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
+abstract class BytecodeIndexCallback {
+    public static final BytecodeIndexCallback NOOP = new BytecodeIndexCallback() {
+        @Override
+        void call(int bytecodeIndex) { }
 
-/**
- *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
- */
-class VMinVM extends ByteCodeToJavaScript {
-    private VMinVM(Appendable out) {
-        super(out, null);
-    }
-    
-    static String toJavaScript(byte[] is) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        new VMinVM(sb).compile(new ByteArrayInputStream(is));
-        return sb.toString().toString();
-    }
+        @Override
+        void call() { }
+    };
 
-    @Override
-    protected boolean requireReference(String internalClassName) {
-        return false;
-    }
-
-    @Override
-    protected void requireScript(String resourcePath) {
-    }
-
-    @Override
-    protected void requireResource(Appendable out, String resourcePath) throws IOException {
-    }
+    abstract void call(int bytecodeIndex);
+    abstract void call();
 }

@@ -43,7 +43,8 @@ class LoopCode implements Runnable {
         final ByteCodeParser.StackMapIterator stackMapIterator,
         final byte[] byteCodes, ByteCodeParser.TrapDataIterator trap,
         final AbstractStackMapper smapper,
-        final LocalsMapper lmapper
+        final LocalsMapper lmapper,
+        final BytecodeIndexCallback bcicb
     ) throws IllegalStateException, NumberFormatException, IOException {
         int lastStackFrame;
         ByteCodeParser.TrapData[] previousTrap = null;
@@ -100,6 +101,7 @@ class LoopCode implements Runnable {
             if (smapper.alwaysUseGt()) {
                 out.append("    if (gt <= " + i + ") {\n");
             }
+            bcicb.call(i);
             final int c = ByteCodeToJavaScript.readUByte(byteCodes, i);
             switch (c) {
                 case ByteCodeParser.opc_nop:
@@ -1015,6 +1017,7 @@ class LoopCode implements Runnable {
         while (openBraces-- > 0) {
             out.append('}');
         }
+        bcicb.call();
     }
 
     private void handleIndy(int indx, String[] methodAndType, String[] mi, ByteCodeParser.BootMethodData bm, AbstractStackMapper mapper) throws IOException {

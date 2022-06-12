@@ -41,10 +41,10 @@ abstract class VM extends ByteCodeToJavaScript {
     int exportedCount;
 
     private VM(
-        Appendable out, Bck2Brwsr.Resources resources,
+        Appendable out, SourceMapBuilder smb, Bck2Brwsr.Resources resources,
         StringArray explicitlyExported, StringArray asBinary
     ) {
-        super(out);
+        super(out, smb);
         this.resources = resources;
         this.classDataCache = new ClassDataCache(resources);
         this.exportedSymbols = new ExportedSymbols(resources, explicitlyExported);
@@ -67,7 +67,7 @@ abstract class VM extends ByteCodeToJavaScript {
         return false;
     }
 
-    static void compile(Appendable out,
+    static void compile(Appendable out, SourceMapBuilder smb,
         Bck2Brwsr config
     ) throws IOException {
         String[] both = config.classes().toArray();
@@ -77,7 +77,7 @@ abstract class VM extends ByteCodeToJavaScript {
 
         VM vm;
         if (config.isExtension()) {
-            vm = new Extension(out,
+            vm = new Extension(out, smb,
                 config.getResources(), both, config.exported(),
                 config.allResources(), config.classpath()
             );
@@ -87,7 +87,7 @@ abstract class VM extends ByteCodeToJavaScript {
                 fixedNames.add(VM.class.getName().replace('.', '/'));
                 addThree = true;
             }
-            vm = new Standalone(out,
+            vm = new Standalone(out, smb,
                 config.getResources(), config.exported(),
                 config.allResources()
             );
@@ -516,11 +516,11 @@ abstract class VM extends ByteCodeToJavaScript {
     }
 
     private static final class Standalone extends VM {
-        private Standalone(Appendable out,
+        private Standalone(Appendable out, SourceMapBuilder smb,
             Bck2Brwsr.Resources resources,
             StringArray explicitlyExported, StringArray asBinary
         ) {
-            super(out, resources, explicitlyExported, asBinary);
+            super(out, smb, resources, explicitlyExported, asBinary);
         }
 
         @Override
@@ -865,11 +865,11 @@ abstract class VM extends ByteCodeToJavaScript {
         private final StringArray extensionClasses;
         private final StringArray classpath;
 
-        private Extension(Appendable out, Bck2Brwsr.Resources resources,
+        private Extension(Appendable out, SourceMapBuilder smb, Bck2Brwsr.Resources resources,
             String[] extClassesArray, StringArray explicitlyExported,
             StringArray asBinary, StringArray classpath
         ) throws IOException {
-            super(out, resources, explicitlyExported, asBinary);
+            super(out, smb, resources, explicitlyExported, asBinary);
             this.extensionClasses = StringArray.asList(extClassesArray);
             this.classpath = classpath;
         }

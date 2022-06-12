@@ -38,11 +38,13 @@ abstract class ByteCodeToJavaScript {
     private final StringArray classRefs = new StringArray();
     private final NumberOperations numbers = new NumberOperations();
     private final Appendable output;
+    private final SourceMapBuilder smb;
     private final IndyHandler[] indyHandlers;
     private boolean callbacks;
 
-    protected ByteCodeToJavaScript(final Appendable out) {
+    protected ByteCodeToJavaScript(final Appendable out, SourceMapBuilder smb) {
         this.output = out;
+        this.smb = smb;
         this.indyHandlers = new IndyHandler[] {
             new MetafactoryHandler(),
             new AltMetafactoryHandler(),
@@ -553,7 +555,13 @@ abstract class ByteCodeToJavaScript {
             loop = new LoopCode(this, output, numbers, jc);
         }
 
-        loop.loopCode(stackMapIterator, byteCodes, trap, smapper, lmapper);
+        BytecodeIndexCallback bcicb = BytecodeIndexCallback.NOOP;
+        if (smb != null) {
+            String srcName = m.cls.getPkgName() + '/' + m.cls.getSourceName().replace("\"", "");
+            bcicb = new MethodSourceMapBuilder(smb, srcName, m.getLineNumberTable());
+        }
+
+        loop.loopCode(stackMapIterator, byteCodes, trap, smapper, lmapper, bcicb);
 
         if (defineProp) {
             out.append("\n}});");

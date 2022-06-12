@@ -43,6 +43,7 @@ final class Main {
     public static void main(String... args) throws IOException, URISyntaxException {
         final String obfuscate = "--obfuscatelevel";
         final String extension = "--createextension";
+        final String sourcemap = "--sourcemap";
 
         if (args.length < 2) {
             System.err.println("Bck2Brwsr Translator from Java(tm) to JavaScript, (c) Jaroslav Tulach 2012");
@@ -59,6 +60,8 @@ final class Main {
             }
             System.err.print("]] [");
             System.err.print(extension);
+            System.err.print("] [");
+            System.err.print(sourcemap);
             System.err.println("] <file_to_generate_js_code_to> java/lang/Class org/your/App ...");
             System.exit(9);
         }
@@ -69,6 +72,8 @@ final class Main {
         boolean createExtension = false;
         StringArray classes = new StringArray();
         String generateTo = null;
+        boolean generateSourceMap = false;
+        String sourceMapSourceRoot = null;
         for (int i = 0; i < args.length; i++) {
             if (obfuscate.equals(args[i])) { // NOI18N
                 i++;
@@ -94,6 +99,10 @@ final class Main {
                 createExtension = true;
                 continue;
             }
+            if (sourcemap.equals(args[i])) { // NOI18N
+                generateSourceMap = true;
+                continue;
+            }
             if (generateTo == null) {
                 generateTo = args[i];
             } else {
@@ -117,7 +126,21 @@ final class Main {
                 c = c.library();
             }
             
-            c.generate(w);
+            if (generateSourceMap) {
+                String generateSourceMapTo = gt.getName() + ".map";
+                File gsmt = new File(gt.getParentFile(), generateSourceMapTo);
+
+                LineCountingAppendable w2 = new LineCountingAppendable(w);
+                SourceMapBuilder smb = new SourceMapBuilder(sourceMapSourceRoot, w2);
+
+                w2.append("//# sourceMappingURL=").append(generateSourceMapTo).append('\n');
+                c.generate(w2, smb);
+                try (Writer smw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(gsmt), "UTF-8"))) {
+                    smb.generate(smw);
+                }
+            } else {
+                c.generate(w);
+            }
         }
     }
 

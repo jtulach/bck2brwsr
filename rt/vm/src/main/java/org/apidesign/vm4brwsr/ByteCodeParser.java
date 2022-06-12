@@ -2072,6 +2072,19 @@ final class ByteCodeParser {
         public boolean isConstructor() {
             return "<init>".equals(getName());
         }
+
+        long[] getLineNumberTable() {
+            Vector tab = lin_num_tb;
+            int size = tab.size();
+            long[] result = new long[size];
+            for (int i = 0; i < size; i++) {
+                LineNumData e = (LineNumData) tab.elementAt(i);
+                long startPC = (int) e.start_pc & 0xffff;
+                long lineNumber = (int) e.line_number & 0xffff;
+                result[i] = startPC << 32 | lineNumber;
+            }
+            return result;
+        }
     }
 
     /* represents one entry of StackMap attribute
