@@ -23,9 +23,17 @@ abstract class BytecodeIndexCallback {
         void call(int bytecodeIndex) { }
 
         @Override
+        void call(int bytecodeIndex, int localVariableSlot) { }
+
+        @Override
+        void call(String name) { }
+
+        @Override
         void call() { }
     };
 
     abstract void call(int bytecodeIndex);
+    abstract void call(int bytecodeIndex, int localVariableSlot);
+    abstract void call(String name);
     abstract void call();
 }

@@ -501,6 +501,13 @@ abstract class ByteCodeToJavaScript {
         final LocalsMapper lmapper =
                 new LocalsMapper(stackMapIterator.getArguments());
 
+        BytecodeIndexCallback bcicb = BytecodeIndexCallback.NOOP;
+        if (smb != null) {
+            String srcName = m.cls.getPkgName() + '/' + m.cls.getSourceName().replace("\"", "");
+            bcicb = new MethodSourceMapBuilder(smb, srcName, m.getLineNumberTable(), m.getLocalVariableTableKeys(), m.getLocalVariableTableValues());
+            smb.addItem(srcName, m.getLineNumber(), 0);
+        }
+
         boolean defineProp =
             "java/lang/Object".equals(jc.getClassName()) ||
             "java/lang/reflect/Array".equals(jc.getClassName());
@@ -511,7 +518,7 @@ abstract class ByteCodeToJavaScript {
         } else {
             out.append("m = ").append(destObject).append(".").append(name).append(" = function(");
         }
-        lmapper.outputArguments(out, m.isStatic());
+        lmapper.outputArguments(out, m.isStatic(), bcicb);
         out.append(") {").append("\n");
 
         final byte[] byteCodes = m.getCode();
@@ -553,12 +560,6 @@ abstract class ByteCodeToJavaScript {
             loop = new JsCallbackCode(this, out, numbers, jc, m, lmapper);
         } else {
             loop = new LoopCode(this, output, numbers, jc);
-        }
-
-        BytecodeIndexCallback bcicb = BytecodeIndexCallback.NOOP;
-        if (smb != null) {
-            String srcName = m.cls.getPkgName() + '/' + m.cls.getSourceName().replace("\"", "");
-            bcicb = new MethodSourceMapBuilder(smb, srcName, m.getLineNumberTable());
         }
 
         loop.loopCode(stackMapIterator, byteCodes, trap, smapper, lmapper, bcicb);

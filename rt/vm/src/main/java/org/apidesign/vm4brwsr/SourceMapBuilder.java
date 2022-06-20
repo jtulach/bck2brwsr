@@ -33,13 +33,14 @@ final class SourceMapBuilder {
     private final LineCountingAppendable lineCounter;
 
     private int prevLine = 0, prevColumn = 0, prevSrcFileIndex = 0, prevSrcLine = 0, prevSrcColumn = 0, prevSrcNameIndex = 0;
+    private int prevSize = 0;
 
     public SourceMapBuilder(String sourceRoot, LineCountingAppendable lineCounter) {
         this.sourceRoot = sourceRoot;
         this.lineCounter = lineCounter;
     }
 
-    public void addItem() {
+    private void setPos() {
         int line = lineCounter.getLineNumber();
         int column = lineCounter.getColumnNumber();
 
@@ -49,7 +50,7 @@ final class SourceMapBuilder {
             putInt(column);
             prevLine = line;
             prevColumn = column;
-        } else if (mappings.length() == 0) {
+        } else if (prevSize == 0) {
             putInt(column);
             prevColumn = column;
         } else {
@@ -59,8 +60,13 @@ final class SourceMapBuilder {
         }
     }
 
+    public void addItem() {
+        setPos();
+        prevSize = 1;
+    }
+
     public void addItem(String srcFile, int srcLine, int srcColumn) {
-        addItem();
+        setPos();
         int srcFileIndex = sourceFileToIndex(srcFile);
         putInt(srcFileIndex - prevSrcFileIndex);
         prevSrcFileIndex = srcFileIndex;
@@ -68,14 +74,30 @@ final class SourceMapBuilder {
         prevSrcLine = srcLine;
         putInt(srcColumn - prevSrcColumn);
         prevSrcColumn = srcColumn;
+        prevSize = 4;
     }
 
-//    public void addItem(String srcFile, int srcLine, int srcColumn, String srcName) {
-//        addItem(srcFile, srcLine, srcColumn);
-//        int srcNameIndex = sourceNameToIndex(srcName);
-//        putInt(srcNameIndex - prevSrcNameIndex);
-//        prevSrcNameIndex = srcNameIndex;
-//    }
+    public void extendLastItem(String srcName) {
+        switch (prevSize) {
+            // fall-throughs!
+            case 5:
+                mappings.append(',');
+            case 0:
+                putInt(0); // column
+            case 1:
+                putInt(0); // srcFile
+                putInt(0); // srcLine
+                putInt(0); // srcColumn
+            case 4:
+                break;
+            default:
+                throw new AssertionError();
+        }
+        int srcNameIndex = sourceNameToIndex(srcName);
+        putInt(srcNameIndex - prevSrcNameIndex);
+        prevSrcNameIndex = srcNameIndex;
+        prevSize = 5;
+    }
 
     private int sourceFileToIndex(String srcFile) {
         return sourcesIndices.computeIfAbsent(srcFile, sf -> {

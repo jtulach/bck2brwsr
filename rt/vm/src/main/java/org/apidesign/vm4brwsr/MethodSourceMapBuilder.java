@@ -24,12 +24,17 @@ class MethodSourceMapBuilder extends BytecodeIndexCallback {
     private final SourceMapBuilder smb;
     private final String file;
     private final long[] lineNumberTable;
+    private final long[] localVariableTableKeys;
+    private final String[] localVariableTableValues;
     private int pos;
 
-    MethodSourceMapBuilder(SourceMapBuilder smb, String file, long[] lineNumberTable) {
+    MethodSourceMapBuilder(SourceMapBuilder smb, String file, long[] lineNumberTable,
+            long[] localVariableTableKeys, String[] localVariableTableValues) {
         this.smb = smb;
         this.file = file;
         this.lineNumberTable = lineNumberTable;
+        this.localVariableTableKeys = localVariableTableKeys;
+        this.localVariableTableValues = localVariableTableValues;
     }
 
     private int next(int bytecodeIndex) {
@@ -45,12 +50,44 @@ class MethodSourceMapBuilder extends BytecodeIndexCallback {
         }
     }
 
+    private String findLocalVar(int followingBytecodeIndex, int searchedSlot) {
+        int n = localVariableTableKeys.length;
+        for (int i = 0; i < n; i++) {
+            long key = localVariableTableKeys[i];
+            int slot = (int) (key & 0xffff);
+            if (slot != searchedSlot)
+                continue;
+            int start = (int) (key >> 32 & 0xffff);
+            if (followingBytecodeIndex < start)
+                continue;
+            int length = (int) (key >> 16 & 0xffff);
+            if (followingBytecodeIndex > start + length)
+                continue;
+            return localVariableTableValues[i];
+        }
+        return null;
+    }
+
     @Override
     void call(int bytecodeIndex) {
         int lineNumber = next(bytecodeIndex);
         if (lineNumber == -1)
             return;
         smb.addItem(file, lineNumber, 0);
+    }
+
+    @Override
+    void call(int followingBytecodeIndex, int localVariableSlot) {
+        String name = findLocalVar(followingBytecodeIndex, localVariableSlot);
+        if (name == null)
+            return;
+        smb.extendLastItem(name);
+    }
+
+    @Override
+    void call(String name) {
+        smb.addItem();
+        smb.extendLastItem(name);
     }
 
     @Override

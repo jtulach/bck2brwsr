@@ -2073,6 +2073,14 @@ final class ByteCodeParser {
             return "<init>".equals(getName());
         }
 
+        int getLineNumber() {
+            Vector tab = lin_num_tb;
+            if (tab.size() == 0)
+                return 0;
+            LineNumData e = (LineNumData) tab.elementAt(0);
+            return Math.max(e.line_number - 2, 0);
+        }
+
         long[] getLineNumberTable() {
             Vector tab = lin_num_tb;
             int size = tab.size();
@@ -2082,6 +2090,31 @@ final class ByteCodeParser {
                 long startPC = (int) e.start_pc & 0xffff;
                 long lineNumber = (int) e.line_number & 0xffff;
                 result[i] = startPC << 32 | lineNumber;
+            }
+            return result;
+        }
+
+        long[] getLocalVariableTableKeys() {
+            Vector tab = loc_var_tb;
+            int size = tab.size();
+            long[] result = new long[size];
+            for (int i = 0; i < size; i++) {
+                LocVarData e = (LocVarData) tab.elementAt(i);
+                long startPC = (int) e.start_pc & 0xffff;
+                long length = (int) e.length & 0xffff;
+                long slot = (int) e.slot & 0xffff;
+                result[i] = startPC << 32 | length << 16 | slot;
+            }
+            return result;
+        }
+
+        String[] getLocalVariableTableValues() {
+            Vector tab = loc_var_tb;
+            int size = tab.size();
+            String[] result = new String[size];
+            for (int i = 0; i < size; i++) {
+                LocVarData e = (LocVarData) tab.elementAt(i);
+                result[i] = cls.getString(e.name_cpx);
             }
             return result;
         }
