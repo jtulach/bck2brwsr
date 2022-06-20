@@ -344,12 +344,12 @@ public final class Bck2Brwsr {
         VM.compile(out, null, this);
     }
 
-    void generate(Appendable out, SourceMapBuilder smb) throws IOException {
+    void generate(Appendable out, SourceMapGenerator srcmap) throws IOException {
         if (!ignoreClosureCompiler && level != ObfuscationLevel.NONE) {
             throw new IllegalStateException("Cannot generate source map for obfuscated code");
         }
 
-        VM.compile(out, smb, this);
+        VM.compile(out, srcmap, this);
     }
     
     //

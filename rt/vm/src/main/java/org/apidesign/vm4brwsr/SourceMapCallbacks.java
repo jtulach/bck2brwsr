@@ -19,38 +19,43 @@ package org.apidesign.vm4brwsr;
 
 import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 
+/**
+ * Implements {@link ByteCodePositionCallbacks} by converting bytecode offsets
+ * to lines and passing the latter to a {@link SourceMapGenerator}.
+ * One instance per Java method.
+ */
 @ExtraJavaScript(processByteCode = false, resource="")
-class MethodSourceMapBuilder extends BytecodeIndexCallback {
-    private final SourceMapBuilder smb;
+class SourceMapCallbacks extends ByteCodePositionCallbacks {
+    private final SourceMapGenerator srcmap;
     private final String file;
     private final long[] lineNumberTable;
     private final long[] localVariableTableKeys;
     private final String[] localVariableTableValues;
     private int pos;
 
-    MethodSourceMapBuilder(SourceMapBuilder smb, String file, long[] lineNumberTable,
+    SourceMapCallbacks(SourceMapGenerator srcmap, String file, long[] lineNumberTable,
             long[] localVariableTableKeys, String[] localVariableTableValues) {
-        this.smb = smb;
+        this.srcmap = srcmap;
         this.file = file;
         this.lineNumberTable = lineNumberTable;
         this.localVariableTableKeys = localVariableTableKeys;
         this.localVariableTableValues = localVariableTableValues;
     }
 
-    private int next(int bytecodeIndex) {
+    private int next(int byteCodeIndex) {
         for (;; pos++) {
             if (pos >= lineNumberTable.length)
                 return -1;
             long entry = lineNumberTable[pos];
             int key = (int) (entry >> 32);
-            if (key > bytecodeIndex)
+            if (key > byteCodeIndex)
                 return -1;
-            if (key == bytecodeIndex)
+            if (key == byteCodeIndex)
                 return (int) entry - 1; // value, convert 1-based to 0-based
         }
     }
 
-    private String findLocalVar(int followingBytecodeIndex, int searchedSlot) {
+    private String findLocalVar(int followingByteCodeIndex, int searchedSlot) {
         int n = localVariableTableKeys.length;
         for (int i = 0; i < n; i++) {
             long key = localVariableTableKeys[i];
@@ -58,10 +63,10 @@ class MethodSourceMapBuilder extends BytecodeIndexCallback {
             if (slot != searchedSlot)
                 continue;
             int start = (int) (key >> 32 & 0xffff);
-            if (followingBytecodeIndex < start)
+            if (followingByteCodeIndex < start)
                 continue;
             int length = (int) (key >> 16 & 0xffff);
-            if (followingBytecodeIndex > start + length)
+            if (followingByteCodeIndex > start + length)
                 continue;
             return localVariableTableValues[i];
         }
@@ -69,29 +74,29 @@ class MethodSourceMapBuilder extends BytecodeIndexCallback {
     }
 
     @Override
-    void call(int bytecodeIndex) {
-        int lineNumber = next(bytecodeIndex);
+    void reportPosition(int byteCodeIndex) {
+        int lineNumber = next(byteCodeIndex);
         if (lineNumber == -1)
             return;
-        smb.addItem(file, lineNumber, 0);
+        srcmap.addItem(file, lineNumber, 0);
     }
 
     @Override
-    void call(int followingBytecodeIndex, int localVariableSlot) {
-        String name = findLocalVar(followingBytecodeIndex, localVariableSlot);
+    void reportLocalVariable(int followingByteCodeIndex, int localVariableSlot) {
+        String name = findLocalVar(followingByteCodeIndex, localVariableSlot);
         if (name == null)
             return;
-        smb.extendLastItem(name);
+        srcmap.extendLastItem(name);
     }
 
     @Override
-    void call(String name) {
-        smb.addItem();
-        smb.extendLastItem(name);
+    void reportLocalVariable(String name) {
+        srcmap.addItem();
+        srcmap.extendLastItem(name);
     }
 
     @Override
-    void call() {
-        smb.addItem();
+    void reportEmptyPosition() {
+        srcmap.addItem();
     }
 }

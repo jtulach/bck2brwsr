@@ -38,13 +38,13 @@ abstract class ByteCodeToJavaScript {
     private final StringArray classRefs = new StringArray();
     private final NumberOperations numbers = new NumberOperations();
     private final Appendable output;
-    private final SourceMapBuilder smb;
+    private final SourceMapGenerator srcmap;
     private final IndyHandler[] indyHandlers;
     private boolean callbacks;
 
-    protected ByteCodeToJavaScript(final Appendable out, SourceMapBuilder smb) {
+    protected ByteCodeToJavaScript(final Appendable out, SourceMapGenerator srcmap) {
         this.output = out;
-        this.smb = smb;
+        this.srcmap = srcmap;
         this.indyHandlers = new IndyHandler[] {
             new MetafactoryHandler(),
             new AltMetafactoryHandler(),
@@ -501,11 +501,11 @@ abstract class ByteCodeToJavaScript {
         final LocalsMapper lmapper =
                 new LocalsMapper(stackMapIterator.getArguments());
 
-        BytecodeIndexCallback bcicb = BytecodeIndexCallback.NOOP;
-        if (smb != null) {
+        ByteCodePositionCallbacks bcicb = ByteCodePositionCallbacks.NOOP;
+        if (srcmap != null) {
             String srcName = m.cls.getPkgName() + '/' + m.cls.getSourceName().replace("\"", "");
-            bcicb = new MethodSourceMapBuilder(smb, srcName, m.getLineNumberTable(), m.getLocalVariableTableKeys(), m.getLocalVariableTableValues());
-            smb.addItem(srcName, m.getLineNumber(), 0);
+            bcicb = new SourceMapCallbacks(srcmap, srcName, m.getLineNumberTable(), m.getLocalVariableTableKeys(), m.getLocalVariableTableValues());
+            srcmap.addItem(srcName, m.getLineNumber(), 0);
         }
 
         boolean defineProp =

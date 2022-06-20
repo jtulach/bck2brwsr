@@ -23,7 +23,7 @@ import java.util.HashMap;
 import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 
 @ExtraJavaScript(processByteCode = false, resource="")
-final class SourceMapBuilder {
+final class SourceMapGenerator {
     private final String sourceRoot;
     private final ArrayList<String> sources = new ArrayList<>();
     private final HashMap<String, Integer> sourcesIndices = new HashMap<>();
@@ -35,7 +35,7 @@ final class SourceMapBuilder {
     private int prevLine = 0, prevColumn = 0, prevSrcFileIndex = 0, prevSrcLine = 0, prevSrcColumn = 0, prevSrcNameIndex = 0;
     private int prevSize = 0;
 
-    public SourceMapBuilder(String sourceRoot, LineCountingAppendable lineCounter) {
+    SourceMapGenerator(String sourceRoot, LineCountingAppendable lineCounter) {
         this.sourceRoot = sourceRoot;
         this.lineCounter = lineCounter;
     }
@@ -60,12 +60,12 @@ final class SourceMapBuilder {
         }
     }
 
-    public void addItem() {
+    void addItem() {
         setPos();
         prevSize = 1;
     }
 
-    public void addItem(String srcFile, int srcLine, int srcColumn) {
+    void addItem(String srcFile, int srcLine, int srcColumn) {
         setPos();
         int srcFileIndex = sourceFileToIndex(srcFile);
         putInt(srcFileIndex - prevSrcFileIndex);
@@ -77,7 +77,7 @@ final class SourceMapBuilder {
         prevSize = 4;
     }
 
-    public void extendLastItem(String srcName) {
+    void extendLastItem(String srcName) {
         switch (prevSize) {
             // fall-throughs!
             case 5:
@@ -144,7 +144,7 @@ final class SourceMapBuilder {
         mappings.append(BASE64_DIGITS.charAt(digitValue));
     }
 
-    public void generate(Appendable out) throws IOException {
+    void generate(Appendable out) throws IOException {
         out.append("{\n");
 
         out.append("\t\"version\": 3,\n");

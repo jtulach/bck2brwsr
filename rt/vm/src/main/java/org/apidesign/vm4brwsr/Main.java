@@ -131,12 +131,12 @@ final class Main {
                 File gsmt = new File(gt.getParentFile(), generateSourceMapTo);
 
                 LineCountingAppendable w2 = new LineCountingAppendable(w);
-                SourceMapBuilder smb = new SourceMapBuilder(sourceMapSourceRoot, w2);
+                SourceMapGenerator srcmap = new SourceMapGenerator(sourceMapSourceRoot, w2);
 
                 w2.append("//# sourceMappingURL=").append(generateSourceMapTo).append('\n');
-                c.generate(w2, smb);
+                c.generate(w2, srcmap);
                 try (Writer smw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(gsmt), "UTF-8"))) {
-                    smb.generate(smw);
+                    srcmap.generate(smw);
                 }
             } else {
                 c.generate(w);

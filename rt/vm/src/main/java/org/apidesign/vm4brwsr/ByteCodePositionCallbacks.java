@@ -17,23 +17,28 @@
  */
 package org.apidesign.vm4brwsr;
 
-abstract class BytecodeIndexCallback {
-    public static final BytecodeIndexCallback NOOP = new BytecodeIndexCallback() {
+/**
+ * Called by {@link LoopCode} and {@link LocalsMapper#outputArguments}
+ * when printing to output.
+ * @see SourceMapGeneratorCallbacks the non-empty implementation
+ */
+abstract class ByteCodePositionCallbacks {
+    public static final ByteCodePositionCallbacks NOOP = new ByteCodePositionCallbacks() {
         @Override
-        void call(int bytecodeIndex) { }
+        void reportPosition(int byteCodeIndex) { }
 
         @Override
-        void call(int bytecodeIndex, int localVariableSlot) { }
+        void reportLocalVariable(int byteCodeIndex, int localVariableSlot) { }
 
         @Override
-        void call(String name) { }
+        void reportLocalVariable(String name) { }
 
         @Override
-        void call() { }
+        void reportEmptyPosition() { }
     };
 
-    abstract void call(int bytecodeIndex);
-    abstract void call(int bytecodeIndex, int localVariableSlot);
-    abstract void call(String name);
-    abstract void call();
+    abstract void reportPosition(int byteCodeIndex);
+    abstract void reportLocalVariable(int byteCodeIndex, int localVariableSlot);
+    abstract void reportLocalVariable(String name);
+    abstract void reportEmptyPosition();
 }
