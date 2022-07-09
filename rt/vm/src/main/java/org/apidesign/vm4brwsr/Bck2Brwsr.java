@@ -42,7 +42,7 @@ import java.io.InputStream;
  * In case one wants to initialize the virtual machine with ability to
  * load classes lazily when needed, one can provide a loader function to
  * when creating the virtual machine: <pre>
- * var vm = bck2brwsr(function(resource) { 
+ * var vm = bck2brwsr(function(resource) {
  *   return null; // byte[] for the resource
  * });
  * </pre>
@@ -63,7 +63,7 @@ import java.io.InputStream;
  * </pre>
  * The provided URLs and loader functions will be consulted one by one.
  * <p>
- * The initialization of the <b>Bck2Brwsr</b> is done asynchronously since 
+ * The initialization of the <b>Bck2Brwsr</b> is done asynchronously since
  * version 0.9. E.g. call to <pre>
  * var vm = bck2brwsr('myapp.js');
  * var main = vm.loadClass('org.your.pkg.Main');
@@ -85,9 +85,9 @@ public final class Bck2Brwsr {
     private final StringArray classpath;
 
     private Bck2Brwsr(
-            ObfuscationLevel level, 
-            StringArray exported, StringArray classes, StringArray resources, 
-            Resources res, 
+            ObfuscationLevel level,
+            StringArray exported, StringArray classes, StringArray resources,
+            Resources res,
             Boolean extension, StringArray classpath
     ) {
         this.level = level;
@@ -98,7 +98,7 @@ public final class Bck2Brwsr {
         this.extension = extension;
         this.classpath = classpath;
     }
-    
+
     /** Helper method to generate virtual machine from bytes served by a <code>resources</code>
      * provider.
      *
@@ -121,55 +121,55 @@ public final class Bck2Brwsr {
     public static void generate(Appendable out, ClassLoader loader, String... classes) throws IOException {
         newCompiler().resources(loader).addRootClasses(classes).generate(out);
     }
-    
+
     /** Creates new instance of Bck2Brwsr compiler which is ready to generate
      * empty Bck2Brwsr virtual machine. The instance can be further
-     * configured by calling chain of methods. For example: 
+     * configured by calling chain of methods. For example:
      * <pre>
      * {@link #newCompiler()}.{@link #resources(org.apidesign.vm4brwsr.Bck2Brwsr.Resources) resources(loader)}.{@link #addRootClasses(java.lang.String[]) addRootClasses("your/Clazz")}.{@link #generate(java.lang.Appendable) generate(out)};
      * </pre>
-     * 
+     *
      * @return new instance of the Bck2Brwsr compiler
      * @since 0.5
      */
     public static Bck2Brwsr newCompiler() {
         return new Bck2Brwsr(
-            ObfuscationLevel.NONE, 
-            new StringArray(), new StringArray(), new StringArray(), 
+            ObfuscationLevel.NONE,
+            new StringArray(), new StringArray(), new StringArray(),
             null, false, null
         );
     }
-    
-    /** Adds exported classes or packages. If the string ends 
+
+    /** Adds exported classes or packages. If the string ends
      * with slash, it is considered a name of package. If it does not,
      * it is a name of a class (without <code>.class</code> suffix).
-     * The exported classes are prevented from being obfuscated. 
+     * The exported classes are prevented from being obfuscated.
      * All public classes in exported packages are prevented from
-     * being obfuscated. By listing the packages or classes in this 
+     * being obfuscated. By listing the packages or classes in this
      * method, these classes are not guaranteed to be included in
      * the generated script. Use {@link #addClasses} to include
      * the classes.
-     * 
+     *
      * @param exported names of classes and packages to treat as exported
      * @return new instances of the Bck2Brwsr compiler which inherits
      *   all values from <code>this</code> except list of exported classes
      */
     public Bck2Brwsr addExported(String... exported) {
         return new Bck2Brwsr(
-            level, this.exported.addAndNew(exported), 
+            level, this.exported.addAndNew(exported),
             classes, resources, res, extension, classpath
         );
     }
 
-    /** Adds additional classes 
+    /** Adds additional classes
      * to the list of those that should be included in the generated
      * JavaScript file.
      * These classes are guaranteed to be available in the
-     * generated virtual machine code accessible using their fully 
+     * generated virtual machine code accessible using their fully
      * qualified name. This brings the same behavior as if the
      * classes were added by {@link #addClasses(java.lang.String...) } and
      * exported via {@link #addExported(java.lang.String...)}.
-     * 
+     *
      * @param classes the classes to add to the compilation
      * @return new instance of the Bck2Brwsr compiler which inherits
      * all values from <code>this</code>
@@ -177,16 +177,16 @@ public final class Bck2Brwsr {
     public Bck2Brwsr addRootClasses(String... classes) {
         if (classes.length == 0) {
             return this;
-        } 
+        }
         return addExported(classes).addClasses(classes);
     }
-    
-    /** Adds additional classes 
+
+    /** Adds additional classes
      * to the list of those that should be included in the generated
      * JavaScript file. These classes are guaranteed to be present,
      * but they may not be accessible through their fully qualified
      * name.
-     * 
+     *
      * @param classes the classes to add to the compilation
      * @return new instance of the Bck2Brwsr compiler which inherits
      * all values from <code>this</code>
@@ -196,17 +196,17 @@ public final class Bck2Brwsr {
         if (classes.length == 0) {
             return this;
         } else {
-            return new Bck2Brwsr(level, exported, 
+            return new Bck2Brwsr(level, exported,
                 this.classes.addAndNew(classes), resources, res,
                 extension, classpath);
         }
     }
-    
+
     /** These resources should be made available in the compiled file in
      * binary form. These resources can then be loaded
-     * by {@link ClassLoader#getResource(java.lang.String)} and similar 
+     * by {@link ClassLoader#getResource(java.lang.String)} and similar
      * methods.
-     * 
+     *
      * @param resources names of the resources to be loaded by {@link Resources#get(java.lang.String)}
      * @return new instance of the Bck2Brwsr compiler which inherits
      *   all values from <code>this</code> just adds few more resource names
@@ -217,16 +217,16 @@ public final class Bck2Brwsr {
         if (resources.length == 0) {
             return this;
         } else {
-            return new Bck2Brwsr(level, exported, this.classes, 
+            return new Bck2Brwsr(level, exported, this.classes,
                 this.resources.addAndNew(resources), res, extension, classpath
             );
         }
     }
-    
+
     /** Changes the obfuscation level for the compiler by creating new instance
      * which inherits all values from <code>this</code> and adjust the level
      * of obfuscation.
-     * 
+     *
      * @param level the new level of obfuscation
      * @return new instance of the compiler with changed level of obfuscation
      * @since 0.5
@@ -234,18 +234,18 @@ public final class Bck2Brwsr {
     public Bck2Brwsr obfuscation(ObfuscationLevel level) {
         return new Bck2Brwsr(level, exported, classes, resources, res, extension, classpath);
     }
-    
-    /** A way to change the provider of additional resources (classes) for the 
-     * compiler. 
-     * 
+
+    /** A way to change the provider of additional resources (classes) for the
+     * compiler.
+     *
      * @param res the implementation of resources provider
-     * @return new instance of the compiler with all values remaining the same, just 
+     * @return new instance of the compiler with all values remaining the same, just
      *   with different resources provider
      * @since 0.5
      */
     public Bck2Brwsr resources(Resources res) {
         return new Bck2Brwsr(
-            level, exported, classes, resources, 
+            level, exported, classes, resources,
             res, extension, classpath
         );
     }
@@ -258,12 +258,12 @@ public final class Bck2Brwsr {
      * as external ones.
      * <p>
      * A library archive may specify its <em>classpath</em> - e.g. link to
-     * other libraries that should also be included in the application. 
+     * other libraries that should also be included in the application.
      * One can specify the list of libraries as vararg to this method.
      * These are relative URL with respect to location of this library.
      * The runtime system then prefers seek for ".js" suffix of the library
      * and only then seeks for the classical ".jar" path.
-     * 
+     *
      * @param classpath the array of JARs that are referenced by this library,
      *   one can specify {@code library((String[])null)} to turn the library
      *   mode on, but keep the list of libraries unchanged
@@ -273,33 +273,33 @@ public final class Bck2Brwsr {
     public Bck2Brwsr library(String... classpath) {
         final StringArray newCP = classpath == null ? this.classpath : StringArray.asList(classpath);
         return new Bck2Brwsr(
-            level, exported, classes, 
+            level, exported, classes,
             resources, res, true, newCP
         );
     }
-    
+
     /** Turns on the standalone mode. E.g. does the opposite of
      * calling {@link #library(java.lang.String...)},
      * but also allows to specify whether the <em>Bck2Brwsr VM</em> should
      * be included at all. If not, only the skeleton of the launcher is
      * generated without any additional VM classes referenced.
-     * 
+     *
      * @param includeVM should the VM be compiled in, or left out
      * @return new instance of the compiler with standalone mode on
      * @since 0.9
      */
     public Bck2Brwsr standalone(boolean includeVM) {
         return new Bck2Brwsr(
-            level, exported, classes, resources, 
+            level, exported, classes, resources,
             res, includeVM ? false : null, null
         );
     }
 
-    /** A way to change the provider of additional resources (classes) for the 
+    /** A way to change the provider of additional resources (classes) for the
      * compiler by specifying classloader to use for loading them.
-     * 
+     *
      * @param loader class loader to load the resources from
-     * @return new instance of the compiler with all values being the same, just 
+     * @return new instance of the compiler with all values being the same, just
      *   different resources provider
      * @since 0.5
      */
@@ -307,23 +307,23 @@ public final class Bck2Brwsr {
         return resources(loader, false);
     }
 
-    /** A way to change the provider of additional resources (classes) for the 
+    /** A way to change the provider of additional resources (classes) for the
      * compiler by specifying classloader to use for loading them.
-     * 
+     *
      * @param loader class loader to load the resources from
      * @param ignoreBootClassPath <code>true</code> if classes loaded
-     *    from <code>rt.jar</code> 
-     * @return new instance of the compiler with all values being the same, just 
+     *    from <code>rt.jar</code>
+     * @return new instance of the compiler with all values being the same, just
      *   different resources provider
      * @since 0.9
      */
     public Bck2Brwsr resources(final ClassLoader loader, boolean ignoreBootClassPath) {
         return resources(new LdrRsrcs(loader, ignoreBootClassPath));
     }
-    
-    /** Generates virtual machine based on previous configuration of the 
+
+    /** Generates virtual machine based on previous configuration of the
      * compiler.
-     * 
+     *
      * @param out the output to write the generated JavaScript to
      * @throws IOException I/O exception can be thrown when something goes wrong
      * @since 0.5
@@ -344,22 +344,40 @@ public final class Bck2Brwsr {
         VM.compile(out, null, this);
     }
 
-    void generate(Appendable out, SourceMapGenerator srcmap) throws IOException {
+    /** Generates virtual machine based on previous configuration of the
+     * compiler together with source map information.
+     *
+     * @param out the output to write the generated JavaScript to
+     * @param relativePath path from {@code out} to {@code map} file
+     * @param map the output to write the generated source map file to
+     * @throws IOException I/O exception can be thrown when something goes wrong
+     * @since 0.90
+     */
+    public void generate(Appendable out, String relativePath, Appendable map) throws IOException {
+        LineCountingAppendable w2 = new LineCountingAppendable(out);
+        SourceMapGenerator srcmap = new SourceMapGenerator(null, w2);
+
+        w2.append("//# sourceMappingURL=").append(relativePath).append('\n');
+        generate(w2, srcmap);
+        srcmap.generate(map);
+    }
+
+    private void generate(Appendable out, SourceMapGenerator srcmap) throws IOException {
         if (!ignoreClosureCompiler && level != ObfuscationLevel.NONE) {
-            throw new IllegalStateException("Cannot generate source map for obfuscated code");
+            throw new IOException("Cannot generate source map for obfuscated code");
         }
 
         VM.compile(out, srcmap, this);
     }
-    
+
     //
     // Internal getters
-    // 
-    
+    //
+
     Resources getResources() {
         return res != null ? res : new LdrRsrcs(Bck2Brwsr.class.getClassLoader(), false);
     }
-    
+
     StringArray allResources() {
         return resources;
     }
@@ -371,31 +389,31 @@ public final class Bck2Brwsr {
     StringArray exported() {
         return exported;
     }
-    
+
     boolean isExtension() {
         return Boolean.TRUE.equals(extension);
     }
-    
+
     boolean includeVM() {
         return extension != null;
     }
-    
+
     StringArray classpath() {
         return classpath;
     }
 
-    /** Provider of resources (classes and other files). The 
-     * {@link #generate(java.lang.Appendable, org.apidesign.vm4brwsr.Bck2Brwsr.Resources, java.lang.String[]) 
+    /** Provider of resources (classes and other files). The
+     * {@link #generate(java.lang.Appendable, org.apidesign.vm4brwsr.Bck2Brwsr.Resources, java.lang.String[])
      * generator method} will call back here for all classes needed during
      * translation to JavaScript.
      */
     public interface Resources {
-        /** Loads given resource (class or other file like image). The 
+        /** Loads given resource (class or other file like image). The
          * resource name to load bytes for the {@link String} class
          * would be <code>"java/lang/String.class"</code>.
-         * 
+         *
          * @param resource path to resource to load
-         * @return the input stream for the resource 
+         * @return the input stream for the resource
          * @throws IOException can be thrown if the loading fails on some error
          *   or the file cannot be found
          */
