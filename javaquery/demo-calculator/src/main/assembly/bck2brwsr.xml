@@ -40,7 +40,22 @@
           <outputDirectory>/app/</outputDirectory>
           <includes>
               <include>calculator.js</include>
+              <include>calculator.js.map</include>
               <include>lib/*.js</include>
+          </includes>
+      </fileSet>
+      <fileSet>
+          <directory>${project.build.directory}/classes</directory>
+          <outputDirectory>/app/</outputDirectory>
+          <includes>
+              <include>org/apidesign/bck2brwsr/demo/calc/staticcompilation/*.java</include>
+          </includes>
+      </fileSet>
+      <fileSet>
+          <directory>${project.basedir}/src/main/java</directory>
+          <outputDirectory>/app/</outputDirectory>
+          <includes>
+              <include>**/*</include>
           </includes>
       </fileSet>
   </fileSets>

@@ -55,7 +55,7 @@ abstract class AheadOfTimeBase<Art> {
     protected abstract File file(Art a);
     protected abstract Scope scope(Art a);
     protected abstract String classifier(Art a);
-     protected abstract String artifactId(Art a);
+    protected abstract String artifactId(Art a);
     protected abstract String groupId(Art a);
     protected abstract String version(Art a);
 
@@ -108,9 +108,15 @@ abstract class AheadOfTimeBase<Art> {
                     }
                 }
                 try (Writer w = new OutputStreamWriter(new FileOutputStream(mainJavaScript()), "UTF-8")) {
-                    c.
-                            obfuscation(obfuscation()).
-                            generate(w);
+                    c = c.obfuscation(obfuscation());
+                    if (obfuscation() == ObfuscationLevel.NONE) {
+                        File mapFile = new File(mainJavaScript().getParentFile(), mainJavaScript().getName() + ".map");
+                        try (Writer map = new OutputStreamWriter(new FileOutputStream(mapFile), "UTF-8")) {
+                           c.generate(w, mapFile.getName(), map);
+                        }
+                    } else {
+                        c.generate(w);
+                    }
                 }
             }
         } catch (IOException ex) {
