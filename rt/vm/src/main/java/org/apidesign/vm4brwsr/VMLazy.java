@@ -95,7 +95,7 @@ final class VMLazy {
         private final VMLazy lazy;
 
         public Gen(VMLazy vm, Appendable out) {
-            super(out);
+            super(out, null);
             this.lazy = vm;
         }
         

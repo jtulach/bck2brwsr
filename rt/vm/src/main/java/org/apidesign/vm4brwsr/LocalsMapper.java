@@ -41,17 +41,21 @@ final class LocalsMapper {
         }
     }
 
-    public void outputArguments(final Appendable out, boolean isStatic) throws IOException {
+    public void outputArguments(final Appendable out, boolean isStatic, ByteCodePositionCallbacks bcicb) throws IOException {
         final int argRecordCount = argTypeRecords.getSize();
         int first = isStatic ? 0 : 1;
         if (argRecordCount > first) {
             Variable variable = getVariable(argTypeRecords, first);
+            bcicb.reportEmptyPosition();
+            bcicb.reportLocalVariable(0, first);
             out.append(variable);
 
             int i = first + (variable.isCategory2() ? 2 : 1);
             while (i < argRecordCount) {
                 variable = getVariable(argTypeRecords, i);
                 out.append(", ");
+                bcicb.reportEmptyPosition();
+                bcicb.reportLocalVariable(0, i);
                 out.append(variable);
                 i += variable.isCategory2() ? 2 : 1;
             }

@@ -38,11 +38,13 @@ abstract class ByteCodeToJavaScript {
     private final StringArray classRefs = new StringArray();
     private final NumberOperations numbers = new NumberOperations();
     private final Appendable output;
+    private final SourceMapGenerator srcmap;
     private final IndyHandler[] indyHandlers;
     private boolean callbacks;
 
-    protected ByteCodeToJavaScript(final Appendable out) {
+    protected ByteCodeToJavaScript(final Appendable out, SourceMapGenerator srcmap) {
         this.output = out;
+        this.srcmap = srcmap;
         this.indyHandlers = new IndyHandler[] {
             new MetafactoryHandler(),
             new AltMetafactoryHandler(),
@@ -499,6 +501,13 @@ abstract class ByteCodeToJavaScript {
         final LocalsMapper lmapper =
                 new LocalsMapper(stackMapIterator.getArguments());
 
+        ByteCodePositionCallbacks bcicb = ByteCodePositionCallbacks.NOOP;
+        if (srcmap != null) {
+            String srcName = m.cls.getPkgName() + '/' + m.cls.getSourceName().replace("\"", "");
+            bcicb = new SourceMapCallbacks(srcmap, srcName, m.getLineNumberTable(), m.getLocalVariableTableKeys(), m.getLocalVariableTableValues());
+            srcmap.addItem(srcName, m.getLineNumber(), 0);
+        }
+
         boolean defineProp =
             "java/lang/Object".equals(jc.getClassName()) ||
             "java/lang/reflect/Array".equals(jc.getClassName());
@@ -509,7 +518,7 @@ abstract class ByteCodeToJavaScript {
         } else {
             out.append("m = ").append(destObject).append(".").append(name).append(" = function(");
         }
-        lmapper.outputArguments(out, m.isStatic());
+        lmapper.outputArguments(out, m.isStatic(), bcicb);
         out.append(") {").append("\n");
 
         final byte[] byteCodes = m.getCode();
@@ -553,7 +562,7 @@ abstract class ByteCodeToJavaScript {
             loop = new LoopCode(this, output, numbers, jc);
         }
 
-        loop.loopCode(stackMapIterator, byteCodes, trap, smapper, lmapper);
+        loop.loopCode(stackMapIterator, byteCodes, trap, smapper, lmapper, bcicb);
 
         if (defineProp) {
             out.append("\n}});");

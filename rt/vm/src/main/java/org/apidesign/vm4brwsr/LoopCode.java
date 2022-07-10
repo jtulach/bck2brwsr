@@ -43,7 +43,8 @@ class LoopCode implements Runnable {
         final ByteCodeParser.StackMapIterator stackMapIterator,
         final byte[] byteCodes, ByteCodeParser.TrapDataIterator trap,
         final AbstractStackMapper smapper,
-        final LocalsMapper lmapper
+        final LocalsMapper lmapper,
+        final ByteCodePositionCallbacks bcicb
     ) throws IllegalStateException, NumberFormatException, IOException {
         int lastStackFrame;
         ByteCodeParser.TrapData[] previousTrap = null;
@@ -55,6 +56,7 @@ class LoopCode implements Runnable {
         } else {
             didBranches = true;
             lastStackFrame = -1;
+            bcicb.reportLocalVariable("goto");
             out.append("\n  var gt = 0;\n");
         }
         int openBraces = smapper.initCode(out);
@@ -100,6 +102,7 @@ class LoopCode implements Runnable {
             if (smapper.alwaysUseGt()) {
                 out.append("    if (gt <= " + i + ") {\n");
             }
+            bcicb.reportPosition(i);
             final int c = ByteCodeToJavaScript.readUByte(byteCodes, i);
             switch (c) {
                 case ByteCodeParser.opc_nop:
@@ -209,6 +212,7 @@ class LoopCode implements Runnable {
                         ++i;
                         final int indx = wide ? ByteCodeToJavaScript.readUShort(byteCodes, i++) : ByteCodeToJavaScript.readUByte(byteCodes, i);
                         wide = false;
+                        bcicb.reportLocalVariable(i+1, indx);
                         ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setI(indx), smapper.popI(out));
                         break;
                     }
@@ -217,6 +221,7 @@ class LoopCode implements Runnable {
                         ++i;
                         final int indx = wide ? ByteCodeToJavaScript.readUShort(byteCodes, i++) : ByteCodeToJavaScript.readUByte(byteCodes, i);
                         wide = false;
+                        bcicb.reportLocalVariable(i+1, indx);
                         ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setL(indx), smapper.popL(out));
                         break;
                     }
@@ -225,6 +230,7 @@ class LoopCode implements Runnable {
                         ++i;
                         final int indx = wide ? ByteCodeToJavaScript.readUShort(byteCodes, i++) : ByteCodeToJavaScript.readUByte(byteCodes, i);
                         wide = false;
+                        bcicb.reportLocalVariable(i+1, indx);
                         ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setF(indx), smapper.popF(out));
                         break;
                     }
@@ -233,6 +239,7 @@ class LoopCode implements Runnable {
                         ++i;
                         final int indx = wide ? ByteCodeToJavaScript.readUShort(byteCodes, i++) : ByteCodeToJavaScript.readUByte(byteCodes, i);
                         wide = false;
+                        bcicb.reportLocalVariable(i+1, indx);
                         ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setD(indx), smapper.popD(out));
                         break;
                     }
@@ -241,67 +248,88 @@ class LoopCode implements Runnable {
                         ++i;
                         final int indx = wide ? ByteCodeToJavaScript.readUShort(byteCodes, i++) : ByteCodeToJavaScript.readUByte(byteCodes, i);
                         wide = false;
+                        bcicb.reportLocalVariable(i+1, indx);
                         ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setA(indx), smapper.popA(out));
                         break;
                     }
                 case ByteCodeParser.opc_astore_0:
+                    bcicb.reportLocalVariable(i+1, 0);
                     ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setA(0), smapper.popA(out));
                     break;
                 case ByteCodeParser.opc_istore_0:
+                    bcicb.reportLocalVariable(i+1, 0);
                     ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setI(0), smapper.popI(out));
                     break;
                 case ByteCodeParser.opc_lstore_0:
+                    bcicb.reportLocalVariable(i+1, 0);
                     ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setL(0), smapper.popL(out));
                     break;
                 case ByteCodeParser.opc_fstore_0:
+                    bcicb.reportLocalVariable(i+1, 0);
                     ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setF(0), smapper.popF(out));
                     break;
                 case ByteCodeParser.opc_dstore_0:
+                    bcicb.reportLocalVariable(i+1, 0);
                     ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setD(0), smapper.popD(out));
                     break;
                 case ByteCodeParser.opc_astore_1:
+                    bcicb.reportLocalVariable(i+1, 1);
                     ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setA(1), smapper.popA(out));
                     break;
                 case ByteCodeParser.opc_istore_1:
+                    bcicb.reportLocalVariable(i+1, 1);
                     ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setI(1), smapper.popI(out));
                     break;
                 case ByteCodeParser.opc_lstore_1:
+                    bcicb.reportLocalVariable(i+1, 1);
                     ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setL(1), smapper.popL(out));
                     break;
                 case ByteCodeParser.opc_fstore_1:
+                    bcicb.reportLocalVariable(i+1, 1);
                     ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setF(1), smapper.popF(out));
                     break;
                 case ByteCodeParser.opc_dstore_1:
+                    bcicb.reportLocalVariable(i+1, 1);
                     ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setD(1), smapper.popD(out));
                     break;
                 case ByteCodeParser.opc_astore_2:
+                    bcicb.reportLocalVariable(i+1, 2);
                     ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setA(2), smapper.popA(out));
                     break;
                 case ByteCodeParser.opc_istore_2:
+                    bcicb.reportLocalVariable(i+1, 2);
                     ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setI(2), smapper.popI(out));
                     break;
                 case ByteCodeParser.opc_lstore_2:
+                    bcicb.reportLocalVariable(i+1, 2);
                     ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setL(2), smapper.popL(out));
                     break;
                 case ByteCodeParser.opc_fstore_2:
+                    bcicb.reportLocalVariable(i+1, 2);
                     ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setF(2), smapper.popF(out));
                     break;
                 case ByteCodeParser.opc_dstore_2:
+                    bcicb.reportLocalVariable(i+1, 2);
                     ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setD(2), smapper.popD(out));
                     break;
                 case ByteCodeParser.opc_astore_3:
+                    bcicb.reportLocalVariable(i+1, 3);
                     ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setA(3), smapper.popA(out));
                     break;
                 case ByteCodeParser.opc_istore_3:
+                    bcicb.reportLocalVariable(i+1, 3);
                     ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setI(3), smapper.popI(out));
                     break;
                 case ByteCodeParser.opc_lstore_3:
+                    bcicb.reportLocalVariable(i+1, 3);
                     ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setL(3), smapper.popL(out));
                     break;
                 case ByteCodeParser.opc_fstore_3:
+                    bcicb.reportLocalVariable(i+1, 3);
                     ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setF(3), smapper.popF(out));
                     break;
                 case ByteCodeParser.opc_dstore_3:
+                    bcicb.reportLocalVariable(i+1, 3);
                     ByteCodeToJavaScript.emit(out, smapper, "var @1 = @2;", lmapper.setD(3), smapper.popD(out));
                     break;
                 case ByteCodeParser.opc_iadd:
@@ -1015,6 +1043,7 @@ class LoopCode implements Runnable {
         while (openBraces-- > 0) {
             out.append('}');
         }
+        bcicb.reportEmptyPosition();
     }
 
     private void handleIndy(int indx, String[] methodAndType, String[] mi, ByteCodeParser.BootMethodData bm, AbstractStackMapper mapper) throws IOException {

@@ -26,7 +26,7 @@ import java.io.IOException;
  */
 class VMinVM extends ByteCodeToJavaScript {
     private VMinVM(Appendable out) {
-        super(out);
+        super(out, null);
     }
     
     static String toJavaScript(byte[] is) throws IOException {

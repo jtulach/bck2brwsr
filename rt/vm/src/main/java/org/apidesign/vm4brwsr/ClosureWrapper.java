@@ -89,7 +89,7 @@ final class ClosureWrapper extends CommandLineRunner {
         if (compiledCode == null) {
             StringBuilder sb = new StringBuilder();
             try {
-                VM.compile(sb, config);
+                VM.compile(sb, null, config);
                 compiledCode = sb.toString();
             } catch (IOException ex) {
                 compilerError = ex;

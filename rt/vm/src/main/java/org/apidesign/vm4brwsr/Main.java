@@ -39,10 +39,11 @@ import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 @ExtraJavaScript(processByteCode = false, resource="")
 final class Main {
     private Main() {}
-    
+
     public static void main(String... args) throws IOException, URISyntaxException {
         final String obfuscate = "--obfuscatelevel";
         final String extension = "--createextension";
+        final String sourcemap = "--sourcemap";
 
         if (args.length < 2) {
             System.err.println("Bck2Brwsr Translator from Java(tm) to JavaScript, (c) Jaroslav Tulach 2012");
@@ -59,6 +60,8 @@ final class Main {
             }
             System.err.print("]] [");
             System.err.print(extension);
+            System.err.print("] [");
+            System.err.print(sourcemap);
             System.err.println("] <file_to_generate_js_code_to> java/lang/Class org/your/App ...");
             System.exit(9);
         }
@@ -69,6 +72,7 @@ final class Main {
         boolean createExtension = false;
         StringArray classes = new StringArray();
         String generateTo = null;
+        boolean generateSourceMap = false;
         for (int i = 0; i < args.length; i++) {
             if (obfuscate.equals(args[i])) { // NOI18N
                 i++;
@@ -94,30 +98,41 @@ final class Main {
                 createExtension = true;
                 continue;
             }
+            if (sourcemap.equals(args[i])) { // NOI18N
+                generateSourceMap = true;
+                continue;
+            }
             if (generateTo == null) {
                 generateTo = args[i];
             } else {
                 collectClasses(classes, mainClassLoader, args[i]);
             }
         }
-        
+
         File gt = new File(generateTo);
         if (Boolean.getBoolean("skip.if.exists") && gt.isFile()) {
             System.err.println("Skipping as " + gt + " exists.");
             System.exit(0);
         }
-        
+
         try (Writer w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(gt), "UTF-8"))) {
             Bck2Brwsr c = Bck2Brwsr.newCompiler().
                 obfuscation(obfLevel).
                 addRootClasses(classes.toArray()).
                 resources(new LdrRsrcs(Main.class.getClassLoader(), true));
-            
+
             if (createExtension) {
                 c = c.library();
             }
-            
-            c.generate(w);
+
+            if (generateSourceMap) {
+                File mapFile = new File(gt.getParentFile(), gt.getName() + ".map");
+                try (Writer map = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(mapFile), "UTF-8"))) {
+                    c.generate(w, mapFile.getName(), map);
+                }
+            } else {
+                c.generate(w);
+            }
         }
     }
 

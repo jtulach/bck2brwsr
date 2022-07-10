@@ -66,7 +66,6 @@ public class Calc {
 
     public static void main(String... args) throws Exception {
         CALCULATOR.applyBindings().setOperation("plus");
-        notifyFinish();
     }
 
     @On(event = CLICK, id="clear")
@@ -163,11 +162,4 @@ public class Calc {
     static boolean emptyHistory(List<?> history) {
         return history.isEmpty();
     }
-
-    @JavaScriptBody(args = {  }, body =
-        "var xhttp = new XMLHttpRequest();\n" +
-        "xhttp.open('GET', '/?exit=true', true);\n" +
-        "xhttp.send();\n"
-    )
-    private static native void notifyFinish();
 }
