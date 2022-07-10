@@ -106,39 +106,39 @@ final class Bck2BrwsrLauncher extends BaseHTTPLauncher {
             LOG.log(Level.INFO, "Generating bck2brwsr.js from scratch", b2b);
             CompileCP.compileVM(sb, loader);
         }
-        sb.append(
-              "(function WrapperVM(global) {\n"
-            + "  var cache = {};\n"
-            + "  var empty = {};\n"
-            + "  function ldCls(res, skip) {\n"
-            + "    var c = cache[res];\n"
-            + "    if (c) {\n"
-            + "      if (c[skip] === empty) return null;\n"
-            + "      if (c[skip] !== undefined) return c[skip];\n"
-            + "    } else {\n"
-            + "      cache[res] = c = new Array();\n"
-            + "    }\n"
-            + "    var request = new XMLHttpRequest();\n"
-            + "    request.open('GET', '/classes/' + res + '?skip=' + skip, false);\n"
-            + "    request.send();\n"
-            + "    if (request.status !== 200) {\n"
-            + "      c[skip] = null;\n"
-            + "      return null;\n"
-            + "    }\n"
-            + "    var arr = eval(request.responseText);\n"
-            + "    if (arr === null) c[skip] = empty;\n"
-            + "    else c[skip] = arr;\n"
-            + "    return arr;\n"
-            + "  }\n"
-            + "  var prevvm = global.bck2brwsr;\n"
-            + "  global.bck2brwsr = function() {\n"
-            + "    var args = Array.prototype.slice.apply(arguments);\n"
-            + "    args.unshift(ldCls);\n"
-            + "    return prevvm.apply(null, args);\n"
-            + "  };\n"
-            + "  global.bck2brwsr.register = prevvm.register;\n"
-            + "})(this);\n"
-        );
+        sb.append("""
+            (function WrapperVM(global) {
+              var cache = {};
+              var empty = {};
+              function ldCls(res, skip) {
+                var c = cache[res];
+                if (c) {
+                  if (c[skip] === empty) return null;
+                  if (c[skip] !== undefined) return c[skip];
+                } else {
+                  cache[res] = c = new Array();
+                }
+                var request = new XMLHttpRequest();
+                request.open('GET', '/classes/' + res + '?skip=' + skip, false);
+                request.send();
+                if (request.status !== 200) {
+                  c[skip] = null;
+                  return null;
+                }
+                var arr = eval(request.responseText);
+                if (arr === null) c[skip] = empty;
+                else c[skip] = arr;
+                return arr;
+              }
+              var prevvm = global.bck2brwsr;
+              global.bck2brwsr = function() {
+                var args = Array.prototype.slice.apply(arguments);
+                args.unshift(ldCls);
+                return prevvm.apply(null, args);
+              };
+              global.bck2brwsr.register = prevvm.register;
+            })(this);
+            """);
 
         if (unitTestMode) {
             sb.append("var vm = bck2brwsr();\n");
