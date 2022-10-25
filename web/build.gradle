@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath "org.apidesign.bck2brwsr:bck2brwsr-maven-plugin:0.53"
+        classpath "org.apidesign.bck2brwsr:bck2brwsr-maven-plugin:0.54"
     }
 }
 
