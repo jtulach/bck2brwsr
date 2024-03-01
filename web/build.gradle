@@ -20,8 +20,6 @@ def commonProject = project.parent
 
 dependencies {
     implementation commonProject
-    implementation "com.dukescript.api:javafx.beaninfo:0.6"
-    runtimeOnly "com.dukescript.api:javafx.base:8.60.11"
 }
 
 bck2brwsrPages.from {

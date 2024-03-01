@@ -3,7 +3,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'org.netbeans.html:html4j-maven-plugin:1.7.2'
+        classpath 'org.netbeans.html:html4j-maven-plugin:1.8.1'
     }
 }
 
@@ -20,13 +20,12 @@ targetCompatibility = '1.8'
 sourceCompatibility = '1.8'
 
 dependencies {
-    implementation "org.netbeans.html:net.java.html.json:1.7.2"
-    implementation "org.netbeans.html:net.java.html.boot:1.7.2"
-    implementation "com.dukescript.api:javafx.base:8.60.11"
-    implementation "com.dukescript.api:javafx.beaninfo:0.6"
+    implementation "org.netbeans.html:net.java.html.json:1.8.1"
+    implementation "org.netbeans.html:net.java.html.boot:1.8.1"
+    implementation "com.dukescript.canvas:canvas-api:0.13"
+    implementation "com.dukescript.events:events-api:0.4"
 
-    annotationProcessor "com.dukescript.api:javafx.beaninfo:0.6"
-    annotationProcessor "org.netbeans.html:net.java.html.boot:1.7.2"
+    annotationProcessor "org.netbeans.html:net.java.html.boot:1.8.1"
 
-    runtimeOnly "org.netbeans.html:ko4j:1.7.2"
+    runtimeOnly "org.netbeans.html:ko4j:1.8.1"
 }

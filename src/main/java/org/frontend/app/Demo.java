@@ -1,95 +1,55 @@
 package org.frontend.app;
 
-import com.dukescript.api.javafx.beans.FXBeanInfo;
-import javafx.beans.Observable;
-import javafx.beans.binding.Bindings;
-import javafx.beans.binding.BooleanBinding;
-import javafx.beans.binding.IntegerBinding;
-import javafx.beans.binding.NumberBinding;
-import javafx.beans.binding.StringBinding;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ListProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleListProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
-import javafx.collections.FXCollections;
-import static net.java.html.json.Models.applyBindings;
+import com.dukescript.api.canvas.GraphicsContext2D;
+import com.dukescript.api.canvas.Style;
+import com.dukescript.api.events.EventSource;
+import com.dukescript.api.events.KeyEvent;
+import com.dukescript.api.events.MouseEvent;
 
-@FXBeanInfo.Generate
-public final class Demo extends DemoBeanInfo {
-    final StringProperty desc = new SimpleStringProperty(this, "desc", "");
-    final ObjectProperty<Item> selected = new SimpleObjectProperty<>(null);
-    final ListProperty<Item> todos = new SimpleListProperty<>(this, "todos", FXCollections.observableArrayList(item -> new Observable[] { item.done }));
-    final IntegerBinding numTodos = Bindings.createIntegerBinding(todos::size, todos);
-    final IntegerBinding numPending = Bindings.createIntegerBinding(() -> {
-        return (int) todos.stream().filter((item) -> !item.done.get()).count();
-    }, todos);
-    final NumberBinding numFinished = Bindings.subtract(numTodos, numPending);
-    final StringBinding selectedHash = Bindings.createStringBinding(() -> {
-        final Item item = selected.getValue();
-        String hash = Route.sanitize(item == null ? "" : item.desc);
-        Route.setLocation("hash", hash);
-        return hash;
-    }, selected);
+public final class Demo  {
+    private final GraphicsContext2D ctx;
+    private final EventSource es;
+    private int y = 100;
 
-    void addTodo() {
-        final Item item = new Item(desc.getValue(), null, null, null, null, null);
-        todos.getValue().add(item);
-        desc.setValue("");
-        selected.set(item);
+    private Demo(String id) {
+        this.ctx = GraphicsContext2D.getOrCreate(id);
+        this.es = EventSource.create(ctx, id);
+
+
+        es.addEventHandler(KeyEvent.KEY_PRESSED, (ev) -> {
+            System.err.println("ev: " + ev);
+            KeyEvent kev = (KeyEvent) ev;
+            switch (kev.getKeyCode()) {
+                case UP:
+                    y -= 10;
+                    break;
+                case DOWN:
+                    y += 10;
+                    break;
+            }
+            paint();
+        });
+        es.addEventHandler(MouseEvent.MOUSE_MOVED, (ev) -> {
+            System.err.println("mouse: " + ev);
+            MouseEvent mev = (MouseEvent) ev;
+            y = (int) mev.getY();
+            paint();
+        });
     }
 
-    void clearTodos() {
-        todos.removeIf((item) -> item.done.get());
-        if (!todos.contains(selected.getValue())) {
-            selected.setValue(todos.isEmpty() ? null : todos.get(0));
-        }
-    }
-
-    void addItem(Item item) {
-        todos.add(item);
-        if (selected.getValue() == null) {
-            selected.setValue(item);
-        }
-    }
-
-    @FXBeanInfo.Generate
-    final class Item extends ItemBeanInfo {
-        final String desc;
-        final BooleanProperty done = new SimpleBooleanProperty();
-        final BooleanBinding selected = Bindings.createBooleanBinding(() -> this == Demo.this.selected.getValue(), Demo.this.selected);
-        final String html;
-        final String url;
-        final String img;
-        final String video;
-        final String urlInfo;
-
-        Item(String desc, String img, String video, String html, String url, String urlInfo) {
-            this.desc = desc;
-            this.html = html;
-            this.url = url == null ? "https://twitter.com/JaroslavTulach/status/1449827890300915718" : url;
-            this.img = img == null ? "images/java.svg" : img;
-            this.video = video;
-            this.urlInfo = urlInfo == null ? "Ask a Question!" : urlInfo;
-        }
-
-        void check() {
-            this.done.set(!this.done.get());
-        }
-
-        void select() {
-            Demo.this.selected.setValue(this);
-        }
+    void paint() {
+        ctx.clearRect(0, 0, 1024, 1024);
+        ctx.setStrokeStyle(Style.Color.BLACK);
+        ctx.setFillStyle(Style.Color.BLACK);
+        ctx.strokeRect(100, y - 150, 300, 400);
+        ctx.beginPath();
+        ctx.moveTo(100, y-150);
+        ctx.lineTo(100 + 300, y - 150 + 400);
+        ctx.stroke();
     }
 
     public static void onPageLoad() {
-        Demo model = new Demo();
-        model.desc.setValue("Enjoy Java in browser!");
-        Lyrics.initialize(model);
-        applyBindings(model);
+        Demo model = new Demo("canvas");
+        model.paint();
     }
-
 }

@@ -1,16 +1,16 @@
 
-# OpenJFX Lite Tutorial
+# HTML/Java Canvas Tutorial
 
-Demo and tutorial for **JavaFX** coding used to control **HTML5**
-components. Check http://javafx.apidesign.org for live demo and interactive
-presentation of many additional details.
+Demo and tutorial showing usage of [HTML5 Canvas](https://dukescript.com/javadoc/canvas/)
+and [mouse events](https://dukescript.com/javadoc/events/) from Java.
+Derived from http://javafx.apidesign.org presentation.
 
 ## Getting Started
 
 Get the demo and run in it in development mode:
 
 ```bash
-$ git clone -b GradleDemo https://github.com/jtulach/bck2brwsr.git gradledemo
+$ git clone -b CanvasDemo https://github.com/jtulach/bck2brwsr.git gradledemo
 $ cd gradledemo
 $ JAVA_HOME=/jdk-11 ./gradlew -t bck2brwsrShow
 ```
@@ -29,7 +29,7 @@ $ JAVA_HOME=/jdk-11 ./gradlew run --debug-jvm
 Listening for transport dt_socket at address: 5005
 ```
 A `WebView` page opens. Attach your favorite debugger
-and step through your code as with any regular <em>Java(FX) code</em>.
+and step through your code as with any regular <em>Java code</em>.
 
 # Ask a Question
 

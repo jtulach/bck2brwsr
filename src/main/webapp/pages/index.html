@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>JavaFX Lite Tutorial</title>
+        <title>Pac Man</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <link rel="stylesheet" href="materialize.min.css">
         <link rel="stylesheet" href="index.css">
@@ -9,74 +9,7 @@
         <script src="materialize.min.js"></script>
     </head>
     <body>
-        <div class="navbar-fixed">
-            <nav>
-                <div class="naí-wrapper" >
-                    <a href="#" class="brand-logo center">OpenJFX Lite Tutorial</a>
-                    <ul id="nav-mobile" class="right hide-on-med-and-down">
-                        <li><a target="_blank" href="https://materializecss.com/">Components</a></li>
-                        <li><a target="_blank" href="http://bck2brwsr.apidesign.org">Transpiler</a></li>
-                    </ul>
-                </div>
-            </nav>
-        </div>
-        <div class="row" data-bind="visible: false">
-            <div class="progress">
-                <div class="indeterminate"></div>
-            </div>
-        </div>
-        <div class="row" style="display: none" data-bind="visible: true">
-            <form class="col s12 m12 l4" data-bind="submit: addTodo">
-                <div class="input-field col s12">
-                    <label for="key">New Todo:</label>
-                    <input id="key" type="text" data-bind="textInput: desc" placeholder="Enter a task"/>
-                    <a data-bind="click: addTodo, css: { disabled : desc().length === 0 }" class="waves-effect waves-light btn">Add</a>
-                    <a data-bind="click: clearTodos, css: { disabled : numFinished() === 0 }" class="waves-effect waves-light btn">Clear
-                        (<span data-bind="text: numFinished"></span>)
-                    </a>
-                </div>
-                <ul class="col s12 collection" data-bind='foreach: todos'>
-                    <li class="collection-item" data-bind='css: { active : selected }'>
-                        <div>
-                            <label data-bind="click: check">
-                                <input type="checkbox" data-bind="checked: done"/>
-                                <span data-bind="text: desc, click: select"></span>
-                            </label>
-                            <a href="#!" data-bind="click: select" class="secondary-content">
-                                <i class="material-icons">send</i>
-                            </a>
-                        </div>
-                    </li>
-                </ul>
-            </form>
-            <div class="col s12 m12 l8" data-bind="if: selected">
-                <div data-bind="with: selected">
-                    <div class="col s12 m12 l12">
-                        <div class="card">
-                            <!-- ko ifnot: video -->
-                            <div class="card-image">
-                                <img data-bind="attr: { src : img }" width="200px" height="200px">
-                            </div>
-                            <!-- /ko -->
-                            <!-- ko if: video -->
-                            <div class="card-image">
-                                <center>
-                                    <iframe data-bind="attr: { src : video, title: urlInfo }" width="560" height="315" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                                </center>
-                            </div>
-                            <!-- /ko -->
-                            <div class="card-content">
-                                <span class="card-title black-text" data-bind="text: desc"></span>
-                                <p data-bind="html: html"></p>
-                            </div>
-                            <div class="card-action">
-                                <a href="#" target="_blank" data-bind="attr: { href : url }, text: urlInfo"></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <canvas id="canvas" width="1024" height="1024" tabindex="0" autofocus></canvas>
 
         <!-- ${browser.bootstrap} -->
         <script src='bck2brwsr.js'></script>

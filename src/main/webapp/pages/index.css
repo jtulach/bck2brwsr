@@ -1,4 +1,7 @@
-.collection .collection-item.active {
-     background-color:#eeeeee;
-     color:#eafaf9;
- }
+#canvas {
+    position:fixed;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+}
