@@ -32,6 +32,7 @@
   <name>Bck2Brwsr Maven Plugin</name>
   <url>http://bck2brwsr.apidesign.org/</url>
   <properties>
+      <gradle.version>7.3</gradle.version>
       <gradle.bck2brwsrAot>bck2brwsrAot</gradle.bck2brwsrAot>
       <gradle.bck2brwsrPages>bck2brwsrPages</gradle.bck2brwsrPages>
   </properties>
@@ -242,7 +243,7 @@
                                 <arg>-PprjVersion=${project.version}</arg>
                                 <arg>-PnjhVersion=${net.java.html.version}</arg>
                             </args>
-                            <gradleVersion>7.0</gradleVersion>
+                            <gradleVersion>${gradle.version}</gradleVersion>
                         </configuration>
                         <executions>
                             <execution>
