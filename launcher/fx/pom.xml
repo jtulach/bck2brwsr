@@ -87,6 +87,18 @@
       <artifactId>testng</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+        <groupId>org.graalvm.js</groupId>
+        <artifactId>js</artifactId>
+        <version>${graalvm.version}</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.graalvm.js</groupId>
+        <artifactId>js-scriptengine</artifactId>
+        <version>${graalvm.version}</version>
+        <scope>test</scope>
+    </dependency>
     <!--
     <dependency>
       <groupId>org.netbeans.modules</groupId>
