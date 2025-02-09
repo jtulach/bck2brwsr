@@ -18,6 +18,7 @@
       <net.java.html.version>1.8</net.java.html.version>
       <netbeans.compile.on.save>none</netbeans.compile.on.save>
       <trufflejs.jar>${project.build.directory}/test-classes</trufflejs.jar>
+      <graalvm.version>21.3.0</graalvm.version>
       <test.java.home>${java.home}</test.java.home>
       <javadoc.opts>-author</javadoc.opts>
   </properties>
@@ -331,29 +332,6 @@
           </activation>
           <properties>
             <jfxrt.jar>${java.home}/lib/jfxrt.jar</jfxrt.jar>
-          </properties>
-      </profile>
-      <profile>
-          <id>graalvm-old</id>
-          <activation>
-              <file>
-                  <exists>${java.home}/language/js/trufflejs.jar</exists>
-              </file>
-          </activation>
-          <properties>
-              <trufflejs.jar>${java.home}/language/js/trufflejs.jar</trufflejs.jar>
-          </properties>
-      </profile>
-      <profile>
-          <id>graalvm-0.20</id>
-          <activation>
-              <file>
-                  <exists>${java.home}/../../language/js/trufflejs.jar</exists>
-              </file>
-          </activation>
-          <properties>
-              <trufflejs.jar>${java.home}/../../language/js/trufflejs.jar</trufflejs.jar>
-              <test.java.home>${java.home}/../../</test.java.home>
           </properties>
       </profile>
       <profile>

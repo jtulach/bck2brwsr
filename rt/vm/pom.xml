@@ -118,6 +118,18 @@
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+        <groupId>org.graalvm.js</groupId>
+        <artifactId>js</artifactId>
+        <version>${graalvm.version}</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.graalvm.js</groupId>
+        <artifactId>js-scriptengine</artifactId>
+        <version>${graalvm.version}</version>
+        <scope>test</scope>
+    </dependency>
   </dependencies>
   <profiles>
       <profile>
@@ -130,8 +142,8 @@
                       <configuration>
                           <compilerId>javac</compilerId>
                           <source>8</source>
-                          <testSource>1.5</testSource>
-                          <testTarget>1.5</testTarget>
+                          <testSource>8</testSource>
+                          <testTarget>8</testTarget>
                           <compilerArgs>
                               <arg>-Xlint:deprecation</arg>
                           </compilerArgs>
