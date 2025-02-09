@@ -24,6 +24,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
@@ -66,6 +69,18 @@ public class Classes {
     @ClassesMarker(number = 1, nicknames = { "One", "Jedna" } )
     public static String name() {
         return IOException.class.getName().toString();
+    }
+
+    private static void sortByName(Method[] methods) {
+        for (int i = 0; i < methods.length; i++) {
+            for (int j = i + 1; j < methods.length; j++) {
+                if (methods[i].getName().compareTo(methods[j].getName()) < 0) {
+                    Method tmp = methods[i];
+                    methods[i] = methods[j];
+                    methods[j] = tmp;
+                }
+            }
+        }
     }
 
     @ClassesMarker(self = Self.class, number = 42, nicknames = {})
@@ -169,7 +184,9 @@ public class Classes {
     static String listObject(boolean string, String prefix) {
         final Class<?> c = string ? String.class : Object.class;
         StringBuilder sb = new StringBuilder();
-        for (Method m : c.getMethods()) {
+        var methods = c.getMethods();
+        sortByName(methods);
+        for (Method m : methods) {
             final String n = m.getName();
             if (n.startsWith(prefix)) {
                 sb.append(n).append("\n");
