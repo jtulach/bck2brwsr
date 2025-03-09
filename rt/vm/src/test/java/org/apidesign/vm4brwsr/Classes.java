@@ -184,7 +184,7 @@ public class Classes {
     static String listObject(boolean string, String prefix) {
         final Class<?> c = string ? String.class : Object.class;
         StringBuilder sb = new StringBuilder();
-        var methods = c.getMethods();
+        Method[] methods = c.getMethods();
         sortByName(methods);
         for (Method m : methods) {
             final String n = m.getName();
