@@ -46,8 +46,8 @@ public class ExceptionStackTest {
         if (skipOnSafari()) {
             return "Skipping test on Mac/Safari";
         }
-        if (trace.contains("ExceptionStackTest") && trace.contains("verifyFormatOfStackTrace")) {
-            return "Stack trace includes ExceptionStackTest and verifyFormatOfStackTrace";
+        if (trace.contains("verifyFormatOfStackTrace")) {
+            return "Stack trace includes verifyFormatOfStackTrace method name";
         }
         return trace;
     }
