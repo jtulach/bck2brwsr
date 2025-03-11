@@ -1,4 +1,4 @@
-/**
+/*
  * Back 2 Browser Bytecode Translator
  * Copyright (C) 2012 Jaroslav Tulach <jaroslav.tulach@apidesign.org>
  *
