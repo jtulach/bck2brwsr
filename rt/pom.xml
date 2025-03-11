@@ -34,11 +34,8 @@
     <module>core</module>
     <module>emul</module>
     <module>mojo</module>
-    <module>gradletest</module>
     <module>vm</module>
-    <module>vmtest</module>
     <module>aot</module>
-    <module>aot-nb-test</module>
   </modules>
   <profiles>
       <profile>
@@ -58,6 +55,19 @@
           <modules>
               <module>vm11</module>
           </modules>
+      </profile>
+      <profile>
+        <id>test-only</id>
+        <activation>
+            <property>
+                <name>!skipTests</name>
+            </property>
+        </activation>
+        <modules>
+            <module>gradletest</module>
+            <module>vmtest</module>
+            <module>aot-nb-test</module>
+        </modules>
       </profile>
   </profiles>
 </project>
