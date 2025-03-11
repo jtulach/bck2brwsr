@@ -56,5 +56,18 @@
               <module>vm11</module>
           </modules>
       </profile>
+      <profile>
+        <id>test-only</id>
+        <activation>
+            <property>
+                <name>!skipTests</name>
+            </property>
+        </activation>
+        <modules>
+            <module>gradletest</module>
+            <module>vmtest</module>
+            <module>aot-nb-test</module>
+        </modules>
+      </profile>
   </profiles>
 </project>
