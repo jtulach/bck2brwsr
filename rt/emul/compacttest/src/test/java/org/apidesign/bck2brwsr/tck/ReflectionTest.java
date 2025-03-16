@@ -149,7 +149,12 @@ public class ReflectionTest {
     }
     
     @Compare public String cannotCallNonStaticMethodWithNull() throws Exception {
-        StaticUse.class.getMethod("instanceMethod").invoke(null);
+        try {
+            StaticUse.class.getMethod("instanceMethod").invoke(null);
+        } catch (NullPointerException ex) {
+            // bck2brwsr doesn't support JEP 358: Helpful NullPointerExceptions
+            throw new NullPointerException();
+        }
         return "should not happen";
     }
     
@@ -216,7 +221,12 @@ public class ReflectionTest {
         return pt[0].getName();
     }
     @Compare public String paramTypesNotFound() throws Exception {
-        return StaticUse.class.getMethod("plus", int.class, double.class).toString();
+        try {
+            return StaticUse.class.getMethod("plus", int.class, double.class).toString();
+        } catch (NoSuchMethodException ex) {
+            // the format of the error message changed in JDK 17
+            throw new NoSuchMethodException();
+        }
     }
     @Compare public int methodWithArgs() throws Exception {
         Method plus = StaticUse.class.getMethod("plus", int.class, Integer.TYPE);
