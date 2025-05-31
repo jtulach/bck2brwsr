@@ -6,11 +6,6 @@
   <version>1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Back 2 Browser</name>
-  <parent>
-    <groupId>net.java</groupId>
-    <artifactId>jvnet-parent</artifactId>
-    <version>3</version>
-  </parent>  
   <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <netbeans.version>RELEASE120-u1</netbeans.version>
@@ -116,6 +111,15 @@
               <arguments>-Pjvnet-release -Pgpg -DskipTests</arguments>
               <tag>release-${releaseVersion}</tag>
             </configuration>
+          </plugin>
+          <plugin>
+              <groupId>org.sonatype.central</groupId>
+              <artifactId>central-publishing-maven-plugin</artifactId>
+              <version>0.7.0</version>
+              <extensions>true</extensions>
+              <configuration>
+                  <publishingServerId>central</publishingServerId>
+              </configuration>
           </plugin>
       </plugins>
       <pluginManagement>
