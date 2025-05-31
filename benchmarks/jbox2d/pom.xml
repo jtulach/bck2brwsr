@@ -23,12 +23,12 @@
 
   <groupId>org.apidesign.bck2brwsr</groupId>
   <artifactId>jbox2d</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>0.81</version>
   <packaging>jar</packaging>
   <parent>
     <artifactId>benchmarks</artifactId>
     <groupId>org.apidesign.bck2brwsr</groupId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.81</version>
   </parent>
 
   <name>JBox2D in Action</name>
