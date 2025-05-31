@@ -5,9 +5,9 @@
 
 [Bck2Brwsr](http://bck2brwsr.apidesign.org) VM is a Java virtual machine which is capable to take bytecode 
 and transpile it
-(either ahead-of-time - e.g. during compilation on desktop - or just-in-time, e.g. in a browser) 
+(either ahead-of-time - e.g. during compilation on your build machine - or just-in-time, e.g. in a browser)
 into appropriate JavaScript code which does the same thing. As a result one can write in Java, 
-compile with JavaC, run it with [Bck2Brwsr](http://bck2brwsr.apidesign.org) in any modern browser. 
+compile with `javac` compiler, run it with [Bck2Brwsr](http://bck2brwsr.apidesign.org) in any modern browser.
 
 # Getting Started
 
