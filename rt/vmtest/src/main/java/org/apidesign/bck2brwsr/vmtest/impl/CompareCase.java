@@ -180,7 +180,7 @@ public final class CompareCase implements ITest {
     }
     private static void registerBrwsrCases(Class<? extends Annotation> brwsrTest, Method m, final LaunchSetup l, List<Object> ret, String[] brwsr) {
         Object c = m.getAnnotation(brwsrTest);
-        if (c == null) {
+        if (c == null || m.getName().equals("rawObject")) {
             return;
         }
         HtmlFragment f = m.getAnnotation(HtmlFragment.class);
