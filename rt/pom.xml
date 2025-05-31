@@ -31,11 +31,12 @@
     <version>0.81</version>
   </parent>  
   <modules>
+    <module>aot</module>
     <module>core</module>
     <module>emul</module>
     <module>mojo</module>
     <module>vm</module>
-    <module>aot</module>
+    <module>vmtest</module>
   </modules>
   <profiles>
       <profile>
@@ -65,7 +66,6 @@
         </activation>
         <modules>
             <module>gradletest</module>
-            <module>vmtest</module>
             <module>aot-nb-test</module>
         </modules>
       </profile>
