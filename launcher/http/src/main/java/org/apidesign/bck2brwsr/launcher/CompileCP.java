@@ -63,7 +63,7 @@ class CompileCP {
         try {
             f = new File(u.toURI());
         } catch (URISyntaxException ex) {
-            throw new IOException(ex);
+            throw new IOException("Cannot compileFromClassPath: " + u, ex);
         }
         String s = f.isDirectory() ? f.getPath() : null;
         
