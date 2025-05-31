@@ -25,7 +25,7 @@ import org.testng.annotations.Test;
 /** Tests whether we can access public field from a class in extension
  * in an underscored package.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public class Imported_Field_Test {
     @Test public void checkHello() throws Exception {

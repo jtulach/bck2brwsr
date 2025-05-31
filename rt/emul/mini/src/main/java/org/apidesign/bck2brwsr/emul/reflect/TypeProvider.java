@@ -23,7 +23,7 @@ import java.lang.reflect.TypeVariable;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public abstract class TypeProvider {
     private TypeProvider() {

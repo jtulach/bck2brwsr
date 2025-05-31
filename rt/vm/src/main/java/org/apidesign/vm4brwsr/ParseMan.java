@@ -23,7 +23,7 @@ import org.apidesign.bck2brwsr.emul.lang.ManifestInputStream;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 final class ParseMan extends ManifestInputStream {
     private String cp;

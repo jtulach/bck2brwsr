@@ -33,7 +33,7 @@ import org.testng.annotations.Test;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @Page(xhtml = "Empty.html", className = "Modelik", properties = {
     @Property(name = "value", type = int.class),

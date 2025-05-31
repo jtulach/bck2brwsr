@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
 
 /** 
  * @deprecated Replaced by new {@link net.java.html.json.Function net.java.html.json} API.
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.SOURCE)

@@ -23,7 +23,7 @@ import org.testng.annotations.Test;
 
 /** Checks behavior on Math class.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public class MathTest {
     @Test public void rintNegativeUp() throws Exception {

@@ -46,7 +46,7 @@ import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @ExtraJavaScript(processByteCode = false, resource = "")
 final class Compile implements DiagnosticListener<JavaFileObject> {

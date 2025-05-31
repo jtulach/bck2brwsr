@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
  * generate completely independent JavaScript code consisting of
  * <code>"{@link #name()}" = "{@link #value()}"</code>.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @Retention(RetentionPolicy.CLASS)
 @Target({ ElementType.METHOD })

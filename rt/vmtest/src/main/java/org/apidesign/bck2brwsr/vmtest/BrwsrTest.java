@@ -34,7 +34,7 @@ import java.lang.annotation.Target;
  * the processing to the browser and after 100ms, called again. This is useful
  * for testing asynchronous communication, etc.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

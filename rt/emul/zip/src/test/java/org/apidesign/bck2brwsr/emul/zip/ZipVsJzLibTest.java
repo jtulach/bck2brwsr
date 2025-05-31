@@ -23,7 +23,7 @@ import org.testng.annotations.Test;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public class ZipVsJzLibTest {
     @Test public void r() throws IOException {

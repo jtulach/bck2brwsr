@@ -24,7 +24,7 @@ import org.testng.annotations.BeforeClass;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public class ClassTest {
 

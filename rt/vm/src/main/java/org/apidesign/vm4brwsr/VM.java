@@ -29,7 +29,7 @@ import org.apidesign.vm4brwsr.ByteCodeParser.MethodData;
 
 /** Generator of JavaScript from bytecode of classes on classpath of the VM.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 abstract class VM extends ByteCodeToJavaScript {
     protected final ClassDataCache classDataCache;

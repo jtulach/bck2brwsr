@@ -27,7 +27,7 @@ import org.testng.annotations.Factory;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public class ProxyTest {
     @Compare public String generateAnnotation() throws Exception {

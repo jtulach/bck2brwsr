@@ -29,7 +29,7 @@ import java.lang.reflect.Constructor;
  * There also are methods to {@link #showDir(java.io.File, java.lang.String) display pages} 
  * in an external browser served by internal HTTP server.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public abstract class Launcher {
 

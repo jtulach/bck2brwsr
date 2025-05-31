@@ -31,7 +31,7 @@ import org.apidesign.vm4brwsr.ByteCodeParser.TrapDataIterator;
 
 /** Translator of the code inside class files to JavaScript.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 abstract class ByteCodeToJavaScript {
     private ClassData jc;

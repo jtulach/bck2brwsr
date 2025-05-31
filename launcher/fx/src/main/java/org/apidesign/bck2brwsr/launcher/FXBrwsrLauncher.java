@@ -40,7 +40,7 @@ import org.apidesign.bck2brwsr.launcher.fximpl.JVMBridge;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 final class FXBrwsrLauncher extends BaseHTTPLauncher {
     private static final Logger LOG = Logger.getLogger(FXBrwsrLauncher.class.getName());

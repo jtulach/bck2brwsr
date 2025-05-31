@@ -23,7 +23,7 @@ import org.testng.annotations.Test;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public class ProxiesTest {
     @Test public void runViaProxy() throws Exception {

@@ -21,7 +21,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public class StaticMethod {
     public static final int MISSING_CONSTANT = 1;

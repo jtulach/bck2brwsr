@@ -19,7 +19,7 @@ package org.apidesign.bck2brwsr.htmlpage.api;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public final class Button extends Element {
     public Button(String id) {

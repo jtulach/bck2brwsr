@@ -19,7 +19,7 @@ package org.apidesign.vm4brwsr;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public class Under_Score {
     public static int under_field = 10;

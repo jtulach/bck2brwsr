@@ -24,7 +24,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptOnly;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public final class KOList<T> extends ArrayList<T> {
     private final String name;

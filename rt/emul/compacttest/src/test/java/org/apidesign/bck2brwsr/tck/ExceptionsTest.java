@@ -28,7 +28,7 @@ import org.testng.annotations.Factory;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public class ExceptionsTest {
     @Compare public String firstLineIsTheSame() throws UnsupportedEncodingException {

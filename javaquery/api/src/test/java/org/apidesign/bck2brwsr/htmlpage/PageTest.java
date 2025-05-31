@@ -27,7 +27,7 @@ import org.testng.annotations.Test;
 
 /** Verify errors emitted by the processor.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @ExtraJavaScript(processByteCode = false, resource = "")
 public class PageTest {

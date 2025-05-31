@@ -40,7 +40,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @ServiceProvider(service = Processor.class)
 @SupportedAnnotationTypes("org.apidesign.bck2brwsr.vmtest.impl.GenerateZip")

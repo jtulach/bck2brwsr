@@ -19,7 +19,7 @@ package org.apidesign.bck2brwsr.mini.tck;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public class InheritanceA {
     private String name;

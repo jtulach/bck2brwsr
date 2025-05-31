@@ -37,7 +37,7 @@ import org.testng.annotations.Test;
  *   return @{link VMTest}.{@link #create(YourClass.class);
  * }</pre>
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public final class CompareCase implements ITest {
     private final Bck2BrwsrCase first, second;

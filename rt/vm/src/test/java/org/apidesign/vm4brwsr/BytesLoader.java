@@ -24,7 +24,7 @@ import java.util.Enumeration;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public final class BytesLoader {
     private final StringArray requested = new StringArray();

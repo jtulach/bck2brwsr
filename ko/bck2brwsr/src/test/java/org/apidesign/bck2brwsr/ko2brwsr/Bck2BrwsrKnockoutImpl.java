@@ -35,7 +35,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @ServiceProvider(service = KnockoutTCK.class)
 public final class Bck2BrwsrKnockoutImpl extends KnockoutTCK {

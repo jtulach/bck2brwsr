@@ -22,7 +22,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /** Test to verify external scripts are processed in lazy mode.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @ExtraJavaScript(resource = "/org/apidesign/vm4brwsr/ko.js")
 public class Script {

@@ -22,7 +22,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public class Timer implements Closeable {
     private final Object t;

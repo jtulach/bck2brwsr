@@ -28,7 +28,7 @@ import org.testng.annotations.BeforeGroups;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public final class LaunchSetup {
     static LaunchSetup INSTANCE = new LaunchSetup();

@@ -22,7 +22,7 @@ import java.lang.annotation.RetentionPolicy;
 
 /** Annotation to generate a ZIP or JAR file during build.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @Retention(RetentionPolicy.SOURCE)
 @interface GenerateZip {

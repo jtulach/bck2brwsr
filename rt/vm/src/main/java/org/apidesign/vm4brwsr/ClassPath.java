@@ -26,7 +26,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /** Conversion from classpath to load function.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @Exported
 final class ClassPath {

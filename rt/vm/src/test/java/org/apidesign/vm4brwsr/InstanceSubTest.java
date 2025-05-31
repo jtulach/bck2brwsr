@@ -20,7 +20,7 @@ package org.apidesign.vm4brwsr;
 /** Checks if everything works OK, when we switch the
  * order of loaded classes.
  * 
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public class InstanceSubTest extends InstanceTest {
 

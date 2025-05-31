@@ -23,7 +23,7 @@ import org.testng.annotations.Factory;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public class Bck2BrwsrJavaScriptBodyTest {
     @Factory public static Object[] create() {

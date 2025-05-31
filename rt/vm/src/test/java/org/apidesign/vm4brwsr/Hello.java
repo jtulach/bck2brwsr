@@ -21,7 +21,7 @@ import java.io.IOException;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public class Hello {
     public static String hello() {

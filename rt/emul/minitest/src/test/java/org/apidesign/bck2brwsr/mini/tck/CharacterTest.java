@@ -23,7 +23,7 @@ import org.testng.annotations.Factory;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public class CharacterTest {
     @Compare public boolean dolarJavaStart() {

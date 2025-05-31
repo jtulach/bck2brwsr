@@ -32,7 +32,7 @@ import org.apidesign.bck2brwsr.htmlpage.api.Property;
  * <a href="http://wiki.apidesign.org/wiki/AnnotationProcessor">annotation processors</a>
  * as well as other goodies.
  *
- * @author Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * @author Jaroslav Tulach
  */
 @Page(xhtml="Calculator.xhtml", properties = {
     @Property(name = "memory", type = double.class),

@@ -35,7 +35,7 @@ import org.testng.annotations.Factory;
  * where <code>YourClass</code> contains methods annotated with
  * {@link Compare} and {@link BrwsrTest} annotations.
  * 
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public final class VMTest {
     private final List<Class> classes = new ArrayList<>();

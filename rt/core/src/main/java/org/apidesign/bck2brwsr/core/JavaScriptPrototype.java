@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
  * and use <code>String.prototype</code> as a container for all {@link String}
  * methods.
  * 
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @Retention(RetentionPolicy.CLASS)
 @Target({ ElementType.TYPE })
