@@ -131,25 +131,6 @@
               <tag>release-${releaseVersion}</tag>
             </configuration>
           </plugin>
-          <plugin>
-              <groupId>org.sonatype.central</groupId>
-              <artifactId>central-publishing-maven-plugin</artifactId>
-              <version>0.7.0</version>
-              <extensions>true</extensions>
-              <configuration>
-                  <publishingServerId>central</publishingServerId>
-                  <excludeArtifacts>
-                      <artifactId>java4graal</artifactId>
-                      <artifactId>fake</artifactId>
-                      <artifactId>jbox2d-osgi</artifactId>
-                      <artifactId>jbox2d</artifactId>
-                      <artifactId>sieve</artifactId>
-                      <artifactId>kotlintest</artifactId>
-                      <artifactId>vm8</artifactId>
-                      <artifactId>vm11</artifactId>
-                  </excludeArtifacts>
-              </configuration>
-          </plugin>
       </plugins>
       <pluginManagement>
           <plugins>
@@ -344,6 +325,78 @@
       </dependencies>
   </dependencyManagement>
   <profiles>
+      <profile>
+          <id>release</id>
+          <properties>
+              <skipTests>true</skipTests>
+          </properties>
+          <build>
+              <plugins>
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-source-plugin</artifactId>
+                      <version>3.3.0</version>
+                      <extensions>true</extensions>
+                      <executions>
+                          <execution>
+                              <goals>
+                                  <goal>jar</goal>
+                              </goals>
+                              <phase>package</phase>
+                          </execution>
+                      </executions>
+                      <configuration>
+                      </configuration>
+                  </plugin>
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-gpg-plugin</artifactId>
+                      <version>3.2.7</version>
+                      <extensions>true</extensions>
+                      <executions>
+                          <execution>
+                              <goals>
+                                  <goal>sign</goal>
+                              </goals>
+                              <id>sign</id>
+                          </execution>
+                      </executions>
+                  </plugin>
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-javadoc-plugin</artifactId>
+                      <extensions>true</extensions>
+                      <executions>
+                          <execution>
+                              <goals>
+                                  <goal>jar</goal>
+                              </goals>
+                              <phase>package</phase>
+                          </execution>
+                      </executions>
+                  </plugin>
+                  <plugin>
+                      <groupId>org.sonatype.central</groupId>
+                      <artifactId>central-publishing-maven-plugin</artifactId>
+                      <version>0.7.0</version>
+                      <extensions>true</extensions>
+                      <configuration>
+                          <publishingServerId>central</publishingServerId>
+                          <excludeArtifacts>
+                              <artifactId>java4graal</artifactId>
+                              <artifactId>fake</artifactId>
+                              <artifactId>jbox2d-osgi</artifactId>
+                              <artifactId>jbox2d</artifactId>
+                              <artifactId>sieve</artifactId>
+                              <artifactId>kotlintest</artifactId>
+                              <artifactId>vm8</artifactId>
+                              <artifactId>vm11</artifactId>
+                          </excludeArtifacts>
+                      </configuration>
+                  </plugin>
+              </plugins>
+          </build>
+      </profile>
       <profile>
           <id>jdk8</id>
           <activation>
