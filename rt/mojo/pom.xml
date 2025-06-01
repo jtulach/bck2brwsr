@@ -231,6 +231,9 @@
                 <property>
                     <name>!skipTests</name>
                 </property>
+                <jdk>
+                    [8, 17]
+                </jdk>
             </activation>
             <build>
                 <plugins>
