@@ -103,7 +103,7 @@ final class Compile implements DiagnosticListener<JavaFileObject> {
         
         JavaFileManager jfm = new ForwardingJavaFileManagerImpl(sjfm, class2BAOS, scratch, htmlFile);
 
-        ToolProvider.getSystemJavaCompiler().getTask(null, jfm, this, /*XXX:*/Arrays.asList("-source", "1.7", "-target", "1.7"), null, Arrays.asList(file)).call();
+        ToolProvider.getSystemJavaCompiler().getTask(null, jfm, this, /*XXX:*/Arrays.asList("-source", "1.8", "-target", "1.8"), null, Arrays.asList(file)).call();
 
         Map<String, byte[]> result = new HashMap<>();
 
