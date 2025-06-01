@@ -388,6 +388,7 @@
                               <artifactId>jbox2d-osgi</artifactId>
                               <artifactId>jbox2d</artifactId>
                               <artifactId>sieve</artifactId>
+                              <artifactId>benchmarks</artifactId>
                               <artifactId>minitest</artifactId>
                               <artifactId>brwsrtest</artifactId>
                               <artifactId>compacttest</artifactId>
