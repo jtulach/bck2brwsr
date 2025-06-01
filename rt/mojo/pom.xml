@@ -92,6 +92,14 @@
                 </executions>
             </plugin>
             <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-javadoc-plugin</artifactId>
+               <configuration>
+                 <skip>false</skip>
+                 <subpackages>org.apidesign.bck2brwsr.mojo</subpackages>
+               </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <executions>
@@ -171,13 +179,6 @@
       <type>jar</type>
     </dependency>
     <dependency>
-        <groupId>org.apidesign.bck2brwsr</groupId>
-        <artifactId>vmtest</artifactId>
-      <version>${project.version}</version>
-      <type>jar</type>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
         <groupId>org.netbeans.html</groupId>
         <artifactId>net.java.html.boot</artifactId>
         <version>${net.java.html.version}</version>
@@ -208,6 +209,11 @@
         <artifactId>groovy</artifactId>
         <version>1.8.3</version>
         <scope>provided</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.testng</groupId>
+        <artifactId>testng</artifactId>
+        <scope>test</scope>
     </dependency>
 </dependencies>
     <profiles>

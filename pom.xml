@@ -6,11 +6,6 @@
   <version>1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Back 2 Browser</name>
-  <parent>
-    <groupId>net.java</groupId>
-    <artifactId>jvnet-parent</artifactId>
-    <version>3</version>
-  </parent>  
   <properties>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <netbeans.version>RELEASE120-u1</netbeans.version>
@@ -35,10 +30,29 @@
           <distribution>repo</distribution>
       </license>
   </licenses>
+  <url>https://github.com/jtulach/bck2brwsr</url>
+  <description>
+      Bck2Brwsr VM is a Java virtual machine which is capable to take bytecode
+      and transpile it(either ahead-of-time - e.g. during compilation on your build machine - or just-in-time, e.g. in a browser)
+      into appropriate JavaScript code which does the same thing. As a result one can write in Java,
+      compile with javac compiler, run it with Bck2Brwsr in any modern browser.
+  </description>
   <organization>
       <name>API Design</name>
       <url>http://apidesign.org</url>
   </organization>
+  <developers>
+      <developer>
+          <name>Jaroslav Tulach</name>
+          <organization>API Design</organization>
+          <email>jaroslav.tulach@apidesign.org</email>
+          <roles>
+              <role>Architect</role>
+              <role>Initial Developer</role>
+              <role>Maintainer</role>
+          </roles>
+      </developer>
+  </developers>
   <scm>
       <connection>scm:git:https://github.com/jtulach/bck2brwsr.git</connection>
       <developerConnection>scm:git:https://github.com/jtulach/bck2brwsr.git</developerConnection>
@@ -311,6 +325,82 @@
       </dependencies>
   </dependencyManagement>
   <profiles>
+      <profile>
+          <id>release</id>
+          <properties>
+              <skipTests>true</skipTests>
+          </properties>
+          <build>
+              <plugins>
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-source-plugin</artifactId>
+                      <version>3.3.0</version>
+                      <extensions>true</extensions>
+                      <executions>
+                          <execution>
+                              <goals>
+                                  <goal>jar</goal>
+                              </goals>
+                              <phase>package</phase>
+                          </execution>
+                      </executions>
+                      <configuration>
+                      </configuration>
+                  </plugin>
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-gpg-plugin</artifactId>
+                      <version>3.2.7</version>
+                      <extensions>true</extensions>
+                      <executions>
+                          <execution>
+                              <goals>
+                                  <goal>sign</goal>
+                              </goals>
+                              <id>sign</id>
+                          </execution>
+                      </executions>
+                  </plugin>
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-javadoc-plugin</artifactId>
+                      <extensions>true</extensions>
+                      <executions>
+                          <execution>
+                              <goals>
+                                  <goal>jar</goal>
+                              </goals>
+                              <phase>package</phase>
+                          </execution>
+                      </executions>
+                  </plugin>
+                  <plugin>
+                      <groupId>org.sonatype.central</groupId>
+                      <artifactId>central-publishing-maven-plugin</artifactId>
+                      <version>0.7.0</version>
+                      <extensions>true</extensions>
+                      <configuration>
+                          <publishingServerId>central</publishingServerId>
+                          <excludeArtifacts>
+                              <artifactId>java4graal</artifactId>
+                              <artifactId>fake</artifactId>
+                              <artifactId>jbox2d-osgi</artifactId>
+                              <artifactId>jbox2d</artifactId>
+                              <artifactId>sieve</artifactId>
+                              <artifactId>benchmarks</artifactId>
+                              <artifactId>minitest</artifactId>
+                              <artifactId>brwsrtest</artifactId>
+                              <artifactId>compacttest</artifactId>
+                              <artifactId>kotlintest</artifactId>
+                              <artifactId>vm8</artifactId>
+                              <artifactId>vm11</artifactId>
+                          </excludeArtifacts>
+                      </configuration>
+                  </plugin>
+              </plugins>
+          </build>
+      </profile>
       <profile>
           <id>jdk8</id>
           <activation>
