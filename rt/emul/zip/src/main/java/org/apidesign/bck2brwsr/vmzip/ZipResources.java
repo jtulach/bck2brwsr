@@ -27,7 +27,7 @@ import org.apidesign.vm4brwsr.Bck2Brwsr;
 
 /** Conversion from classpath to load function.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @Exported
 public final class ZipResources implements Bck2Brwsr.Resources {

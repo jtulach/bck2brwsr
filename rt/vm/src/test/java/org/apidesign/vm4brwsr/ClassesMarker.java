@@ -22,7 +22,7 @@ import java.lang.annotation.RetentionPolicy;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ClassesMarker {

@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
 /** Adds an onClick handler to an element identified by given <em>id</em>.
  * Apply on a <code>public static void</code> method with no arguments.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.METHOD)

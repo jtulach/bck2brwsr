@@ -24,7 +24,7 @@ import java.util.List;
 
 /** 
  * @deprecated Replaced by new {@link net.java.html.json.Property net.java.html.json} API.
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target({})

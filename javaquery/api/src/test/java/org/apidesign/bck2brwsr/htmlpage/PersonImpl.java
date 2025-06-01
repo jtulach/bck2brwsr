@@ -24,7 +24,7 @@ import org.apidesign.bck2brwsr.htmlpage.api.Property;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @Model(className = "Person", properties = {
     @Property(name = "firstName", type = String.class),

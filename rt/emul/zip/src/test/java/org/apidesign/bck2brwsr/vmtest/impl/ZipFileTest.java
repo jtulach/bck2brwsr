@@ -30,7 +30,7 @@ import org.testng.annotations.Factory;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @GenerateZip(name = "readAnEntry.zip", contents = { 
     "my/main/file.txt", "Hello World!"

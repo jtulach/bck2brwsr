@@ -21,7 +21,7 @@ import java.net.URL;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public class DelayedLoading {
     public static String toStrViaURI(String url) throws Exception {

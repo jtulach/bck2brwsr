@@ -24,7 +24,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /** Provides binding between models and 
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @ExtraJavaScript(resource = "/org/apidesign/bck2brwsr/htmlpage/knockout-2.2.1.js")
 public class Knockout {

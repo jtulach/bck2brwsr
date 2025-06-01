@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
 /** Converts an XHTML page into a Java class that contains 
  * references to all IDs.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)

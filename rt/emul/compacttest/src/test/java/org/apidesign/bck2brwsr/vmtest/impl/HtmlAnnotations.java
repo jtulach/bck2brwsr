@@ -23,7 +23,7 @@ import net.java.html.js.JavaScriptResource;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @JavaScriptResource("htmlannotations.js")
 public class HtmlAnnotations {

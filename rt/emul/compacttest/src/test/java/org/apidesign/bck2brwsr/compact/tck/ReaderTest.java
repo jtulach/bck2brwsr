@@ -30,7 +30,7 @@ import org.testng.annotations.Factory;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public class ReaderTest {
     @Compare public String readUTFString() throws IOException {

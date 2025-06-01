@@ -23,7 +23,7 @@ import org.testng.annotations.Test;
 
 /** Tests related to loading resources from the VM.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public class ResourcesTest {
     @Test public void loadPrecompiledResource() throws Exception {

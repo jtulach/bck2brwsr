@@ -25,7 +25,7 @@ import org.testng.annotations.Test;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public class NumbersAsExtensionTest {
     @Test public void integerFromString() throws Exception {

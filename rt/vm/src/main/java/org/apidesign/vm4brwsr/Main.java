@@ -34,7 +34,7 @@ import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 /** Generator of JavaScript from bytecode of classes on classpath of the VM
  * with a Main method.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @ExtraJavaScript(processByteCode = false, resource="")
 final class Main {

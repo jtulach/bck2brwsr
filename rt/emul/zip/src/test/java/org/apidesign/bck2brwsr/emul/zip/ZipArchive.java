@@ -23,7 +23,7 @@ import java.util.zip.ZipEntry;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 final class ZipArchive {
     private Entry first;

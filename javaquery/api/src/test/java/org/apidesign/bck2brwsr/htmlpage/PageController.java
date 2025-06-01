@@ -39,7 +39,7 @@ import org.apidesign.bck2brwsr.htmlpage.api.Page;
  * <p>
  * Welcome to the type-safe HTML5 world!
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @Page(xhtml="TestPage.html")
 public class PageController {

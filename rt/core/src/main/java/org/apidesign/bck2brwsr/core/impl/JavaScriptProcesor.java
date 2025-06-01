@@ -41,7 +41,7 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @ExtraJavaScript(processByteCode = false, resource="")
 @ServiceProvider(service = Processor.class)

@@ -34,7 +34,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptPrototype;
 /** This is a byte code parser heavily based on original code of JavaP utility.
  * As such I decided to keep the original Oracle's GPLv2 header.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 final class ByteCodeParser {
     private ByteCodeParser() {
@@ -1505,7 +1505,7 @@ final class ByteCodeParser {
     /**
      * A JavaScript optimized replacement for Hashtable.
      *
-     * @author Jaroslav Tulach <jtulach@netbeans.org>
+     * @author Jaroslav Tulach
      */
     private static final class Hashtable {
 
@@ -2543,7 +2543,7 @@ final class ByteCodeParser {
     }
     /**
      *
-     * @author Jaroslav Tulach <jtulach@netbeans.org>
+     * @author Jaroslav Tulach
      */
     static final class TrapDataIterator {
 
@@ -2786,7 +2786,7 @@ final class ByteCodeParser {
     /**
      * A JavaScript ready replacement for java.util.Vector
      *
-     * @author Jaroslav Tulach <jtulach@netbeans.org>
+     * @author Jaroslav Tulach
      */
     @JavaScriptPrototype(prototype = "new Array")
     private static final class Vector {

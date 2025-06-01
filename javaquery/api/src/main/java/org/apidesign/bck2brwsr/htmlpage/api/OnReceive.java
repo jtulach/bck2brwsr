@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
 
 /** 
  * @deprecated Replaced by new {@link net.java.html.json.OnReceive net.java.html.json} API.
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  * @since 0.6
  */
 @Retention(RetentionPolicy.SOURCE)

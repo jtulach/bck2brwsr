@@ -24,7 +24,7 @@ import org.testng.annotations.Factory;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public class JavaScriptBodyFXBrwsrTest extends JavaScriptTCK {
     @Factory public static Object[] create() throws ClassNotFoundException {

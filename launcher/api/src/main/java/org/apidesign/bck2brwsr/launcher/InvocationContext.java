@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 /** Represents individual method invocation, its context and its result.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public final class InvocationContext {
     final CountDownLatch wait = new CountDownLatch(1);

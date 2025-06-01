@@ -25,7 +25,7 @@ import static org.testng.Assert.*;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @GenerateZip(name = "five.zip", contents = {
     "1.txt", "one",

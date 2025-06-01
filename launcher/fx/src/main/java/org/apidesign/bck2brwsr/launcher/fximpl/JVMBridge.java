@@ -42,7 +42,7 @@ import org.netbeans.html.boot.spi.Fn;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public final class JVMBridge {
     static final Logger LOG = Logger.getLogger(JVMBridge.class.getName());

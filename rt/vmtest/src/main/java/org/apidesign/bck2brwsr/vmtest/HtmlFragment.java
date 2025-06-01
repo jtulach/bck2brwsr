@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
  * made available in the page that executes given test. Its elements shall
  * be regularly accessible from the test.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.TYPE})

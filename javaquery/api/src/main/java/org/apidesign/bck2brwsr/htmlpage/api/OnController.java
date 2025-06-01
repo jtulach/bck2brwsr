@@ -19,7 +19,7 @@ package org.apidesign.bck2brwsr.htmlpage.api;
 
 /** Controller created via {@link OnEvent#of(org.apidesign.bck2brwsr.htmlpage.api.Element[])}.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public final class OnController {
     private final Element[] arr;

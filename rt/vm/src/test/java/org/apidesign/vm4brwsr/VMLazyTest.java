@@ -25,7 +25,7 @@ import org.testng.annotations.BeforeClass;
 
 /** Implements loading class by class.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public final class VMLazyTest extends VMLazyAbstract {
     private static TestVM code;

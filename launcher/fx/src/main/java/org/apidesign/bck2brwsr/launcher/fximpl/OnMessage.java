@@ -19,7 +19,7 @@ package org.apidesign.bck2brwsr.launcher.fximpl;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 interface OnMessage {
     public void onMessage(String msg);

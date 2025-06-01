@@ -24,7 +24,7 @@ import org.testng.annotations.Test;
 
 /** Checks the basic behavior of the translator.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public class StaticMethodTest {
     @Test public void threePlusFour() throws Exception {

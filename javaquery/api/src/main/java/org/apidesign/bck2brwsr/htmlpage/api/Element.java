@@ -21,7 +21,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /** Represents a generic HTML element.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public abstract class Element {
     private final String id;

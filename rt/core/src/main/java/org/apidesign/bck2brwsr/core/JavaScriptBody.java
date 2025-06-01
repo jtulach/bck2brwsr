@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
  * in JavaScript. This is a way to define <em>native</em> methods that 
  * interact with the surrounding environment.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @Retention(RetentionPolicy.CLASS)
 @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })

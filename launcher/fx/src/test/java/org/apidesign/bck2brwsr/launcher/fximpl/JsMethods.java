@@ -21,7 +21,7 @@ import net.java.html.js.JavaScriptBody;
 
 /**
  *
- * @author Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * @author Jaroslav Tulach
  */
 public class JsMethods {
     @JavaScriptBody(args = {}, body = "return 42;")

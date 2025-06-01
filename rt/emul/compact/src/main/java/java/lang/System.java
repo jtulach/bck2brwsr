@@ -29,7 +29,7 @@ import org.apidesign.bck2brwsr.emul.lang.Heartbeat;
 
 /** Poor man's re-implementation of most important System methods.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public class System {
     static {

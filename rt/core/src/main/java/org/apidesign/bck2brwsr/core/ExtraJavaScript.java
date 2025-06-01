@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
  * The {@link #resource()} is loaded into the JavaScript VM and its object
  * can be referenced from the class annotated by this annotation.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)

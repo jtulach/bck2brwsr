@@ -22,7 +22,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /** Utility methods to talk to the Bck2Brwsr virtual machine.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  * @since 0.9
  */
 public final class VM {

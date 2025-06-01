@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
  * methods which are executed in real VM as well as JavaScript VMs and
  * their results are compared.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

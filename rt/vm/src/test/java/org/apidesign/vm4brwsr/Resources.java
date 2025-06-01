@@ -27,7 +27,7 @@ import org.apidesign.bck2brwsr.core.ExtraJavaScript;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @ExtraJavaScript(resource = "org/apidesign/vm4brwsr/var.js", processByteCode = true)
 @JavaScriptResource("obj.js")

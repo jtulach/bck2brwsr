@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
 /**
  * Exposes an {@link Resource HTTP page} or a set of {@link #value() pages} to the running {@link BrwsrTest}.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})
@@ -38,7 +38,7 @@ public @interface Http {
      * content can either be specified inline via {@link #content()} or as
      * an external {@link #resource() resource}.
      *
-     * @author Jaroslav Tulach <jtulach@netbeans.org>
+     * @author Jaroslav Tulach
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target({})

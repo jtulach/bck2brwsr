@@ -27,7 +27,7 @@ import org.testng.annotations.Factory;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @ExtraJavaScript(resource = "/org/apidesign/bck2brwsr/tck/console.js")
 public class SystemTest {

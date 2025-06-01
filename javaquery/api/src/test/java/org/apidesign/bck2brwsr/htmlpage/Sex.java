@@ -19,7 +19,7 @@ package org.apidesign.bck2brwsr.htmlpage;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public enum Sex {
     MALE, FEMALE;

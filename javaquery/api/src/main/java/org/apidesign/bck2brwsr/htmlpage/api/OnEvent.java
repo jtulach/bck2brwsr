@@ -19,7 +19,7 @@ package org.apidesign.bck2brwsr.htmlpage.api;
 
 /** Type of events to use in connection with {@link On} annotation.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public enum OnEvent {
     ABORT("onabort"),

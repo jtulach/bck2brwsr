@@ -25,7 +25,7 @@ import org.testng.annotations.Factory;
 
 /** Verify cooperation with net.java.html.js annotations.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public class HtmlAnnotationsTest {
     static int firstCheck;

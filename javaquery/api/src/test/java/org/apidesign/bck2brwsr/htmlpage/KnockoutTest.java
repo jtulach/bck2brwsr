@@ -33,7 +33,7 @@ import org.testng.annotations.Test;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @Page(xhtml="Knockout.xhtml", className="KnockoutModel", properties={
     @Property(name="name", type=String.class),

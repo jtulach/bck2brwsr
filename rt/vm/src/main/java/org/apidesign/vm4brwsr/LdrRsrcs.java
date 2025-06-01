@@ -24,7 +24,7 @@ import java.util.Enumeration;
 
 /** Implementation of Resources that delegates to some class loader.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 final class LdrRsrcs implements Bck2Brwsr.Resources {
     private final ClassLoader loader;

@@ -22,7 +22,7 @@ import java.io.IOException;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 class VMinVM extends ByteCodeToJavaScript {
     private VMinVM(Appendable out) {

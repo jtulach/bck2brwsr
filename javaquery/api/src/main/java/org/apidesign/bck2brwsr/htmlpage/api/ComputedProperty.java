@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
 
 /** 
  * @deprecated Replaced by new {@link net.java.html.json.ComputedProperty net.java.html.json} API.
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @Deprecated
 @Retention(RetentionPolicy.SOURCE)

@@ -40,7 +40,7 @@ import org.testng.annotations.Test;
 
 /**
  *
- * @author Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * @author Jaroslav Tulach
  */
 public class JsClassLoaderTest {
     private static ClassLoader loader;

@@ -21,7 +21,7 @@ package org.apidesign.bck2brwsr.htmlpage.api;
  * @see OnEvent
  * @see OnController
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public interface OnHandler {
     /** Called when a DOM event appears

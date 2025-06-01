@@ -31,7 +31,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 @ClassesMarker(number = 10, nicknames = { "Ten", "Deset" }, count = ClassesMarker.E.TWO, subs = {
     @ClassesMarker.Anno(Integer.SIZE),

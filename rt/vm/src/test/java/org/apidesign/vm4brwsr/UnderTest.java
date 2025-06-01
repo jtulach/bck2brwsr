@@ -23,7 +23,7 @@ import org.testng.annotations.Test;
 
 /** Checks behavior of classes and methods with underscore.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public class UnderTest {
     @Test public void one() throws Exception {

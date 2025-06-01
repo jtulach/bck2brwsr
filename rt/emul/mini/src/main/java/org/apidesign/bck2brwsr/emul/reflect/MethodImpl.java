@@ -26,7 +26,7 @@ import org.apidesign.bck2brwsr.core.JavaScriptBody;
 
 /** Utilities to work on methods.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public abstract class MethodImpl {
     public static MethodImpl INSTANCE;

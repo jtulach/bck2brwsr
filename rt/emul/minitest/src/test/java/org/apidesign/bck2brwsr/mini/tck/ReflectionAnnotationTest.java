@@ -26,7 +26,7 @@ import org.testng.annotations.Factory;
 
 /**
  *
- * @author Jaroslav Tulach <jaroslav.tulach@apidesign.org>
+ * @author Jaroslav Tulach
  */
 public class ReflectionAnnotationTest {
     @Retention(RetentionPolicy.RUNTIME)

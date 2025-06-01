@@ -25,7 +25,7 @@ import org.testng.annotations.Test;
 /** Tests whether private impl can implement public interface method
  * from another extension.
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jaroslav Tulach
  */
 public class ImplementExternalInterfaceTest {
     @Test public void checkHello() throws Exception {
