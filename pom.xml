@@ -138,6 +138,16 @@
               <extensions>true</extensions>
               <configuration>
                   <publishingServerId>central</publishingServerId>
+                  <excludeArtifacts>
+                      <artifactId>java4graal</artifactId>
+                      <artifactId>fake</artifactId>
+                      <artifactId>jbox2d-osgi</artifactId>
+                      <artifactId>jbox2d</artifactId>
+                      <artifactId>sieve</artifactId>
+                      <artifactId>kotlintest</artifactId>
+                      <artifactId>vm8</artifactId>
+                      <artifactId>vm11</artifactId>
+                  </excludeArtifacts>
               </configuration>
           </plugin>
       </plugins>
